@@ -244,7 +244,7 @@ var drag_legend_func = function(legend_group){
 //     make_legend_context_menu(legend_root, layer);
 // }
 
-function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision){
+function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
     var space_elem = 18,
         boxgap = 12,
         xpos = 30,
@@ -341,7 +341,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
             .insert("text").attr("id", "legend_bottom_note")
             .attrs({x: xpos + space_elem, y: last_pos + 2*space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
-            .html('');
+            .text(note_bottom != null ? note_bottom : '');
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
@@ -394,7 +394,7 @@ function make_underlying_rect(legend_root, under_rect, fill){
     }
 }
 
-function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value, rounding_precision){
+function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value, rounding_precision, note_bottom){
     var space_elem = 18,
         boxgap = 4,
         xpos = 30,
@@ -453,8 +453,14 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                                   .attr('class', (d,i) => "legend_feature lg legend_" + i );
 
     let max_size = ref_symbols_params[0].size,
-        last_size = 0,
-        last_pos = y_pos2;
+        last_size = 0;
+
+    if(symbol_type === "rect"){
+        y_pos2 = y_pos2 - max_size / 2;
+    }
+
+    let last_pos = y_pos2;
+
     if(nested == "false"){
         if(symbol_type === "circle"){
             legend_elems
@@ -499,13 +505,13 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                   });
 
             last_pos = y_pos2; last_size = 0;
-            let x_text_pos = xpos + space_elem + boxgap + max_size * 1.5 + 5;
+            let x_text_pos = xpos + space_elem + max_size * 1.25;
             legend_elems.append("text")
                 .attr("x", x_text_pos)
                 .attr("y", (d,i) => {
                         last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
                         last_size = d.size;
-                        return last_pos + (d.size * 2 / 3);
+                        return last_pos + (d.size * 0.6);
                         })
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
                 .text(d => round_value(d.value, rounding_precision));
@@ -537,8 +543,8 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                   .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
-                .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
-                .attr("y", d => ypos + 45 + max_size - d.size)
+                .attr("x", xpos + space_elem + max_size * 1.25)
+                .attr("y", d => ypos + 46 + max_size - d.size)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
                 .text(d => round_value(d.value, rounding_precision));
             last_pos = ypos + 30 + max_size + (max_size / 2);
@@ -575,7 +581,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
             .insert("text").attr("id", "legend_bottom_note")
             .attrs({x:  xpos + space_elem, y: last_pos + coef * space_elem})
             .style("font", "11px 'Enriqueta', arial, serif")
-            .html('');
+            .text(note_bottom != null ? note_bottom : '');
 
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
@@ -584,7 +590,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     return legend_root;
 }
 
-function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt){
+function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom){
     var boxheight = 18,
         boxwidth = 18,
         xpos = 30,
@@ -716,7 +722,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             .insert("text").attr("id", "legend_bottom_note")
             .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight})
             .style("font", "11px 'Enriqueta', arial, serif")
-            .text('');
+            .text(note_bottom != null ? note_bottom : '');
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
@@ -926,10 +932,12 @@ function createlegendEditBox(legend_id, layer_name){
                 let rounding_precision = legend_node.getAttribute("rounding_precision");
                 let transform_param = legend_node.getAttribute("transform"),
                     lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                    lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
-
+                    lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+                    note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+                let no_data_txt = legend_node.querySelector("#no_data_txt");
+                no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
                 legend_node.remove();
-                createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision);
+                createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
                 bind_selections();
                 if(transform_param)
                     svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
@@ -952,10 +960,11 @@ function createlegendEditBox(legend_id, layer_name){
                     let rounding_precision = legend_node.getAttribute("rounding_precision");
                     let transform_param = legend_node.getAttribute("transform"),
                         lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML;
+                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+                        note = legend_node.querySelector('#legend_bottom_note').innerHTML;
 
                     legend_node.remove();
-                    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
+                    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
                     bind_selections();
                     if(transform_param)
                         svg_map.querySelector(["#legend_root2.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);

@@ -1838,7 +1838,8 @@ function redraw_legends_symbols(targeted_node){
         let transform_param = legend_nodes[i].getAttribute("transform"),
             rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
             lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML;
+            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
+            notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
 
         let rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
             color: legend_nodes[i].querySelector("#under_rect").style.fill,
@@ -1846,7 +1847,7 @@ function redraw_legends_symbols(targeted_node){
         } : undefined;
 
         legend_nodes[i].remove();
-        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
         let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);

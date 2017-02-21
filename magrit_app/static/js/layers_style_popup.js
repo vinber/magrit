@@ -530,16 +530,17 @@ function createStyleBox(layer_name){
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
                         rounding_precision = lgd.getAttribute("rounding_precision"),
+                        note = lgd.querySelector("#legend_bottom_note").innerHTML,
                         boxgap = lgd.getAttribute("boxgap");
 
                     if(_type_layer_links){
                         lgd.remove();
-                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision);
+                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
                     } else {
                         let no_data_txt = document.getElementById("no_data_txt");
                         no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
                         lgd.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
                     }
                     lgd = document.querySelector(
                         [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
@@ -1096,9 +1097,14 @@ function createStyleBox_ProbSymbol(layer_name){
                         let transform_param = lgd_choro.getAttribute("transform"),
                             lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
                             lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
+                            rounding_precision = lgd.getAttribute("rounding_precision"),
                             boxgap = lgd_choro.getAttribute("boxgap");
+                        let no_data_txt = lgd_choro.querySelector("#no_data_txt");
+                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+
                         lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
+                        console.log('here iam');
                         lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_choro.setAttribute("transform", transform_param);
