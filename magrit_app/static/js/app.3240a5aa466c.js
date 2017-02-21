@@ -1691,7 +1691,7 @@ function change_projection(new_proj_name) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Allow to use more options than only the lambda axis on specific projection :
-    if (new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic" || new_proj_name == "ConicConformal") {
+    if (new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1 || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic") {
         document.getElementById('btn_customize_projection').style.display = "";
     } else {
         document.getElementById('btn_customize_projection').style.display = "none";
@@ -13309,12 +13309,15 @@ function apply_user_preferences(json_pref) {
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
-    {
-        var proj_select = document.getElementById('form_projection');
-        proj_select.value = current_proj_name;
-    }
+    document.getElementById('form_projection').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+
+    if (current_proj_name.indexOf("Azimuthal") > -1 || current_proj_name.indexOf("Conic") > -1 || current_proj_name == "Orthographic" || current_proj_name == "Gnomonic") {
+        document.getElementById('btn_customize_projection').style.display = "";
+    } else {
+        document.getElementById('btn_customize_projection').style.display = "none";
+    }
 
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
