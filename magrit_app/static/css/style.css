@@ -640,7 +640,6 @@ div.panel.show {
 .twbs .modal-title {
     margin: 0;
     line-height: 1.42857143;
-    color: #173a50;
     font-weight: bold;
     font-size: 1.3em;
     padding: 4px;
@@ -648,6 +647,8 @@ div.panel.show {
     border-top-left-radius: 8px;
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
+    overflow-wrap: break-word;
+    width: 90%;
 }
 
 .twbs .modal-dialog {
@@ -670,7 +671,8 @@ div.panel.show {
 
 .twbs .modal-header {
     padding: 8px;
-    background-color: rgba(23, 58, 80, 0.4);
+    background-color: #595959;
+    color: white;
 }
 
 .twbs #xclose {

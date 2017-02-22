@@ -141,7 +141,7 @@ function setUpInterface(resume_project) {
     proj_select.node().value = "NaturalEarth";
 
     proj_options.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
-        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: window.innerHeight && window.innerHeight > 1024 ? "120px" : '60px',
+        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
         'margin': "0 0 0 15px",
         "vertical-align": "text-top" }).on("input", function () {
         handle_proj_center_button([this.value, null, null]);
@@ -149,7 +149,7 @@ function setUpInterface(resume_project) {
     });
 
     proj_options.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
-        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "38px", "margin": "0 10px",
+        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "40px", "margin": "0 10px",
         "color": " white", "background-color": "#000",
         "vertical-align": "calc(20%)" }).on("change", function () {
         var val = +this.value,
