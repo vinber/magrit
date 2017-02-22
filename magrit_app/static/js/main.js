@@ -894,8 +894,8 @@ function setUpInterface(resume_project)
         {id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-"},
         {id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+"},
         {id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i"},
-        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.svg" width="18" height="18" alt="Hand_closed"/>'}/*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
+        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}/*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}*/
     ];
 
     let selec = lm.selectAll("input")
@@ -1751,7 +1751,7 @@ function handle_click_hand(behavior){
     behavior = behavior && typeof behavior !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
     if(behavior == "lock"){
         hb.classed("locked", true);
-        hb.html('<img src="/static/img/Twemoji_1f512.svg" width="18" height="18" alt="locked"/>');
+        hb.html('<img src="/static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
         zoom.on("zoom", function(){
             let blocked = svg_map.__zoom;
             return function(){
@@ -1760,7 +1760,7 @@ function handle_click_hand(behavior){
         }());
     } else {
         hb.classed("locked", false);
-        hb.html('<img src="/static/img/Twemoji_1f513.svg" width="18" height="18" alt="unlocked"/>');
+        hb.html('<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
         zoom.on("zoom", zoom_without_redraw);
         //map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
     }

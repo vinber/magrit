@@ -10,7 +10,7 @@ function get_fun_operator(operator){
     let operators = new Map([
         ["+", function(a, b){ return a + b; }],
         ["-", function(a, b){ return a - b; }],
-        ["/", function(a, b){ return a / b; }],
+        ["/", function(a, b){ if(b === 0){ return ""; } else { return a / b; } }],
         ["*", function(a, b){ return a * b; }],
         ["^", function(a, b){ return Math.pow(a, b); }],
     ]);

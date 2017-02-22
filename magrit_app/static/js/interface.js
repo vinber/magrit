@@ -574,12 +574,7 @@ function handle_dataset(f, target_layer_on_add){
             } else {
                 sep = ",";
             }
-//            let encoding = jschardet.detect(data);
-//            if(encoding.encoding != "utf-8"
-//                    || encoding.confidence){
-//                console.log(encoding);
-//                // Todo : do something in order to get a correct encoding
-//            }
+
             let tmp_dataset = d3.dsvFormat(sep).parse(data);
             let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
