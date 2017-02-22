@@ -27,22 +27,23 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
                   "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
     gdf = GeoDataFrame.from_file(input_file)
-    mask = GeoSeries(
-        cascaded_union(gdf.geometry.buffer(0)),
-        crs=gdf.crs
-        ).to_crs(crs=proj4_eck4).values[0]
-    gdf.to_crs(crs=proj4_eck4, inplace=True)
-
-    try:
-        mask = mask.buffer(1).buffer(-1)
-    except TopologicalError:
-        mask = mask.buffer(0)
 
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
     gdf = gdf[gdf[field_name].notnull()]
     gdf.index = range(len(gdf))
+
+    mask = GeoSeries(
+        cascaded_union(gdf.geometry.buffer(0)),
+        crs=gdf.crs
+        ).to_crs(crs=proj4_eck4).values[0]
+    try:
+        mask = mask.buffer(1).buffer(-1)
+    except TopologicalError:
+        mask = mask.buffer(0)
+
+    gdf.to_crs(crs=proj4_eck4, inplace=True)
 
     res_geoms = {
         "square": get_square_dens_grid2,
