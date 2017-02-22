@@ -5220,11 +5220,6 @@ var fields_Anamorphose = {
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
-
                 var_to_send[field_name] = [];
                 if (!current_layers[layer].original_fields.has(field_name)) {
                     var table = user_data[layer],
@@ -6437,7 +6432,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
     }
 
     if (current_layers[layer].original_fields.has(field_n)) var_to_send[field_n] = [];else var_to_send[field_n] = user_data[layer].map(function (i) {
-        return +i[field_n];
+        return i[field_n];
     });
 
     formToSend.append("json", JSON.stringify({
@@ -9886,26 +9881,26 @@ function createStyleBox(layer_name) {
             }
             // Also change the legend if there is one displayed :
             var _type_layer_links = renderer == "DiscLayer" || renderer == "Links";
-            var _lgd = document.querySelector([_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
-            if (_lgd && (lgd_to_change || rendering_params)) {
-                var transform_param = _lgd.getAttribute("transform"),
-                    lgd_title = _lgd.querySelector("#legendtitle").innerHTML,
-                    lgd_subtitle = _lgd.querySelector("#legendsubtitle").innerHTML,
-                    rounding_precision = _lgd.getAttribute("rounding_precision"),
-                    _note = _lgd.querySelector("#legend_bottom_note").innerHTML,
-                    boxgap = _lgd.getAttribute("boxgap");
+            var lgd = document.querySelector([_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
+            if (lgd && (lgd_to_change || rendering_params)) {
+                var transform_param = lgd.getAttribute("transform"),
+                    lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+                    lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+                    rounding_precision = lgd.getAttribute("rounding_precision"),
+                    note = lgd.querySelector("#legend_bottom_note").innerHTML,
+                    boxgap = lgd.getAttribute("boxgap");
 
                 if (_type_layer_links) {
-                    _lgd.remove();
-                    createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, _note);
+                    lgd.remove();
+                    createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
                 } else {
                     var no_data_txt = document.getElementById("no_data_txt");
                     no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-                    _lgd.remove();
-                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, _note);
+                    lgd.remove();
+                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
                 }
-                _lgd = document.querySelector([_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
-                if (transform_param) _lgd.setAttribute("transform", transform_param);
+                lgd = document.querySelector([_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join(''));
+                if (transform_param) lgd.setAttribute("transform", transform_param);
             }
             zoom_without_redraw();
         } else {
@@ -10393,14 +10388,14 @@ function createStyleBox_ProbSymbol(layer_name) {
                     var transform_param = lgd_choro.getAttribute("transform"),
                         lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
-                        rounding_precision = lgd.getAttribute("rounding_precision"),
-                        boxgap = lgd_choro.getAttribute("boxgap");
+                        rounding_precision = lgd_choro.getAttribute("rounding_precision"),
+                        boxgap = lgd_choro.getAttribute("boxgap"),
+                        note = lgd_choro.querySelector("#legend_bottom_note").innerHTML;
                     var no_data_txt = lgd_choro.querySelector("#no_data_txt");
                     no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
                     lgd_choro.remove();
                     createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-                    console.log('here iam');
                     lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     if (transform_param) lgd_choro.setAttribute("transform", transform_param);
                 }
@@ -12982,6 +12977,8 @@ function get_map_template() {
             }
         } else if (!current_layer_prop.renderer) {
             selection = map.select("#" + layer_id).selectAll("path");
+            layer_style_i.fill_opacity = selection.style("fill-opacity");
+            layer_style_i.topo_geom = String(current_layer_prop.key_name);
         } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1) {
             var type_symbol = current_layer_prop.symbol;
             selection = map.select("#" + layer_id).selectAll(type_symbol);
@@ -13039,7 +13036,7 @@ function get_map_template() {
             layer_style_i.size = current_layer_prop.size;
             layer_style_i.min_display = current_layer_prop.min_display;
             layer_style_i.breaks = current_layer_prop.breaks;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
+            // layer_style_i.topo_geom = String(current_layer_prop.key_name);
             if (current_layer_prop.renderer == "Links") {
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
@@ -13427,9 +13424,9 @@ function apply_user_preferences(json_pref) {
                     }
                 }
 
-                if (_layer.fill_color.single && _layer.renderer != "DiscLayer") {
+                if (_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer") {
                     layer_selec.selectAll('path').style("fill", _layer.fill_color.single);
-                } else if (_layer.fill_color.random) {
+                } else if (_layer.fill_color && _layer.fill_color.random) {
                     layer_selec.selectAll('path').style("fill", function () {
                         return Colors.names[Colors.random()];
                     });
@@ -13609,7 +13606,7 @@ function reorder_elem_list_layer(desired_order) {
         layers = parent.childNodes,
         nb_layers = desired_order.length;
     for (var i = 0; i < nb_layers; i++) {
-        var selec = "li." + desired_order[i];
+        var selec = "li." + _app.layer_to_id.get(desired_order[i]);
         if (parent.querySelector(selec)) parent.insertBefore(parent.querySelector(selec), parent.firstChild);
     }
 }
@@ -14066,19 +14063,19 @@ function add_field_table(table, layer_name, parent) {
             var math_func = get_fun_operator(operation);
             if (fi2 != "user_const_value") {
                 for (var _i3 = 0; _i3 < table.length; _i3++) {
-                    if (table[_i3][fi1] != null && table[_i3][fi2] != null) {
+                    if (table[_i3][fi1] != null && table[_i3][fi1] != "" && table[_i3][fi2] != null && table[_i3][fi2] != "") {
                         table[_i3][new_name_field] = math_func(+table[_i3][fi1], +table[_i3][fi2]);
                     } else {
-                        table[_i3][new_name_field] = null;
+                        table[_i3][new_name_field] = "";
                     }
                 }
             } else {
                 opt_val = +opt_val;
                 for (var _i4 = 0; _i4 < table.length; _i4++) {
-                    if (table[_i4][fi1] != null) {
+                    if (table[_i4][fi1] != null && table[_i4][fi1] != "") {
                         table[_i4][new_name_field] = math_func(+table[_i4][fi1], opt_val);
                     } else {
-                        table[_i4][new_name_field] = null;
+                        table[_i4][new_name_field] = "";
                     }
                 }
             }

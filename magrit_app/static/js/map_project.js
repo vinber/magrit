@@ -186,6 +186,8 @@ function get_map_template(){
             }
         } else if(!current_layer_prop.renderer){
             selection = map.select("#" + layer_id).selectAll("path");
+            layer_style_i.fill_opacity = selection.style("fill-opacity");
+            layer_style_i.topo_geom = String(current_layer_prop.key_name);
         } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layer_prop.symbol;
             selection = map.select("#" + layer_id).selectAll(type_symbol);
@@ -247,7 +249,7 @@ function get_map_template(){
             layer_style_i.size = current_layer_prop.size;
             layer_style_i.min_display = current_layer_prop.min_display;
             layer_style_i.breaks = current_layer_prop.breaks;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
+            // layer_style_i.topo_geom = String(current_layer_prop.key_name);
             if(current_layer_prop.renderer == "Links"){
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
@@ -633,11 +635,11 @@ function apply_user_preferences(json_pref){
                     }
                 }
 
-                if(_layer.fill_color.single && _layer.renderer != "DiscLayer"){
+                if(_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer"){
                   layer_selec
                       .selectAll('path')
                       .style("fill", _layer.fill_color.single);
-                } else if(_layer.fill_color.random) {
+                } else if(_layer.fill_color && _layer.fill_color.random) {
                       layer_selec
                           .selectAll('path')
                           .style("fill", () => Colors.names[Colors.random()]);
@@ -816,7 +818,7 @@ function reorder_elem_list_layer(desired_order){
       layers = parent.childNodes,
       nb_layers = desired_order.length;
   for(let i = 0; i < nb_layers; i++){
-      let selec = "li." + desired_order[i];
+      let selec = "li." + _app.layer_to_id.get(desired_order[i]);
       if(parent.querySelector(selec))
         parent.insertBefore(parent.querySelector(selec), parent.firstChild);
   }

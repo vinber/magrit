@@ -1477,11 +1477,6 @@ var fields_Anamorphose = {
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
-                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
-
                 var_to_send[field_name] = [];
                 if(!current_layers[layer].original_fields.has(field_name)){
                     let table = user_data[layer],
@@ -2806,7 +2801,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
   if(current_layers[layer].original_fields.has(field_n))
       var_to_send[field_n] = [];
   else
-      var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+      var_to_send[field_n] = user_data[layer].map(i => i[field_n]);
 
   formToSend.append("json", JSON.stringify({
       "topojson": current_layers[layer].key_name,

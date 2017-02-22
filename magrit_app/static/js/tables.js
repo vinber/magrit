@@ -82,19 +82,19 @@ function add_field_table(table, layer_name, parent){
             let math_func = get_fun_operator(operation)
             if(fi2 != "user_const_value"){
                 for(let i=0; i<table.length; i++){
-                    if(table[i][fi1] != null && table[i][fi2] != null){
+                    if(table[i][fi1] != null && table[i][fi1] != "" && table[i][fi2] != null && table[i][fi2] != ""){
                         table[i][new_name_field] = math_func(+table[i][fi1], +table[i][fi2]);
                     } else {
-                        table[i][new_name_field] = null;
+                        table[i][new_name_field] = "";
                     }
                 }
             } else {
                 opt_val = +opt_val;
                 for(let i=0; i<table.length; i++){
-                    if(table[i][fi1] != null){
+                    if(table[i][fi1] != null && table[i][fi1] != ""){
                         table[i][new_name_field] = math_func(+table[i][fi1], opt_val);
                     } else {
-                        table[i][new_name_field] = null;
+                        table[i][new_name_field] = "";
                     }
                 }
             }

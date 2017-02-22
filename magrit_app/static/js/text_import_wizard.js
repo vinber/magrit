@@ -10,7 +10,6 @@ function createBoxTextImportWizard(){
       container = document.getElementById("box_text_import_wizard"),
       fn_cb = (evt) => { helper_esc_key_twbs(evt, _onclose); };
       _onclose = () => {
-          console.log('_onclose');
           deferred.resolve(false);
           modal_box.close();
           container.remove();
