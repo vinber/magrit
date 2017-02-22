@@ -623,7 +623,7 @@ function update_menu_dataset(){
     d3.select(data_ext.parentElement.firstChild)
         .attrs({"id": "img_data_ext",
                "class": "user_panel",
-               "src": "/static/img/b/tabular.svg",
+               "src": "/static/img/b/tabular.png",
                "width": "26", "height": "26",
                "alt": "Additional dataset"});
 

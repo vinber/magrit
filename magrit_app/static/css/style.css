@@ -643,7 +643,6 @@ div.panel.show {
     color: #173a50;
     font-weight: bold;
     font-size: 1.3em;
-    background: #173a504d;
     padding: 4px;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
@@ -665,8 +664,13 @@ div.panel.show {
     margin: 0px 0px 0px 15px;
 }
 
-.twbs .modal-header, .twbs .modal-footer {
+.twbs .modal-footer {
+    padding: 6px;
+}
+
+.twbs .modal-header {
     padding: 8px;
+    background-color: rgba(23, 58, 80, 0.4);
 }
 
 .twbs #xclose {

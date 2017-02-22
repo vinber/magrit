@@ -1347,7 +1347,7 @@ function fillMenu_Stewart(){
 
     dialog_content.insert('select')
       .attrs({class: 'params', id: "stewart_mask"})
-      .styles({position: 'relative', float: 'right', margin: '0 0 10px 0'});
+      .styles({position: 'relative', float: 'right', margin: '1px 0px 10px 0px'});
 
     [['exponential', 'app_page.func_options.smooth.func_exponential'],
      ['pareto', 'app_page.func_options.smooth.func_pareto']
@@ -2531,7 +2531,9 @@ function fillMenu_TypoSymbol(){
     let field_selec = a.insert('select')
       .attrs({class: "params", id: "field_Symbol"});
 
-    let b = dv2.insert('p').style("margin", "auto").attr('class', 'params_section2');
+    let b = dv2.insert('p')
+      .attr('class', 'params_section2')
+      .styles({'text-align': 'center', 'margin': 'auto'});
     b.append("button")
       .attrs({id: "selec_Symbol", class: "button_disc params i18n",
               "data-i18n": "[html]app_page.func_options.typosymbol.symbols_choice"})

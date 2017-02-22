@@ -370,7 +370,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual(True, btn_customization.is_displayed())
 
         parallels_1 = driver.execute_script(
-            '''return proj.parallels();''');
+            '''proj.parallels([22, 25]); return proj.parallels();''');
 
         # Change for a projection offering customization options:
         Select(driver.find_element_by_id("form_projection")
@@ -594,7 +594,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Confirm the fact that there is a lot of features for this kind of representation :
         self.waitClickButtonSwal()
 
-        time.sleep(0.8)
+        time.sleep(1.5)
 
         if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_result_layer", 5):
             self.fail("Legend not displayed for Categorical map")

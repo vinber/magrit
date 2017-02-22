@@ -137,14 +137,16 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         i18next.t("app_page.box_choice_symbol.title"),
         "dialog");
     overlay_under_modal.display();
-    var newbox = d3.select("#box_choice_symbol").select(".modal-body");
+    let container = document.getElementById("box_choice_symbol");
+    container.querySelector('.modal-dialog').classList.add('fitContent');
+    var newbox = d3.select(container).select(".modal-body").style('width', '220px');
 
-    newbox.append("h3").html(i18next.t("app_page.box_choice_symbol.title"));
-    newbox.append("p").html(i18next.t("app_page.box_choice_symbol.select_symbol"));
+    newbox.append("p")
+        .html('<b>' + i18next.t("app_page.box_choice_symbol.select_symbol") + '</b>');
 
     var box_select = newbox.append("div")
-                        .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
-                        .attr("id", "symbols_select");
+        .styles({width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b"})
+        .attr("id", "symbols_select");
 
     box_select.selectAll("p")
         .data(sample_symbols)
@@ -177,8 +179,10 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
 
     newbox.append("p")
         .attr("display", "inline")
-        .html(i18next.t("app_page.box_choice_symbol.upload_symbol"));
-    newbox.append("button")
+        .html('<b>' + i18next.t("app_page.box_choice_symbol.upload_symbol") + '</b>');
+    newbox.append("p")
+        .styles({margin: 'auto', 'text-align': 'center'})
+        .append("button")
         .html(i18next.t("app_page.box_choice_symbol.browse"))
         .on("click", function(){
             let input = document.createElement('input');
@@ -197,16 +201,19 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
             input.dispatchEvent(new MouseEvent("click"));
         });
 
-    newbox.insert("p").html(i18next.t("app_page.box_choice_symbol.selected_symbol"))
     newbox.insert("p")
-            .attrs({"class": "symbol_section", "id": "current_symb"})
-            .styles({width: "32px", height: "32px", display: "inline-block",
-                    "border-radius": "10%", "background-size": "32px 32px",
-                    "vertical-align": "middle", "margin": "auto", "background-image": "url('')"
-                  });
+        .style('text-align', 'center')
+        .html(i18next.t("app_page.box_choice_symbol.selected_symbol"));
+    newbox.insert('div')
+        .style('text-align', 'center')
+        .append("p")
+        .attrs({"class": "symbol_section", "id": "current_symb"})
+        .styles({width: "32px", height: "32px", display: "inline-block",
+                "border-radius": "10%", "background-size": "32px 32px",
+                "vertical-align": "middle", "margin": "auto", "background-image": "url('')"
+              });
 
-    let deferred = Q.defer(),
-        container = document.getElementById("box_choice_symbol");
+    let deferred = Q.defer();
 
     container.querySelector(".btn_ok").onclick = function(){
         let res_url = newbox.select("#current_symb").style("background-image");
