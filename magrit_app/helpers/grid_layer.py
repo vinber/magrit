@@ -2,14 +2,14 @@
 """
 @author: mz
 """
-from geopandas import GeoDataFrame
+from geopandas import GeoDataFrame, GeoSeries
 from shapely.geometry import Polygon
 from math import ceil
 from shapely.ops import cascaded_union
 import rtree
 import numpy as np
 import ujson as json
-from .geo import repairCoordsPole
+from .geo import repairCoordsPole, TopologicalError
 
 
 def idx_generator_func(bounds):
@@ -27,12 +27,23 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
                   "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
     gdf = GeoDataFrame.from_file(input_file)
-    gdf.to_crs(crs=proj4_eck4, inplace=True)
+
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
     gdf = gdf[gdf[field_name].notnull()]
     gdf.index = range(len(gdf))
+
+    mask = GeoSeries(
+        cascaded_union(gdf.geometry.buffer(0)),
+        crs=gdf.crs
+        ).to_crs(crs=proj4_eck4).values[0]
+    try:
+        mask = mask.buffer(1).buffer(-1)
+    except TopologicalError:
+        mask = mask.buffer(0)
+
+    gdf.to_crs(crs=proj4_eck4, inplace=True)
 
     res_geoms = {
         "square": get_square_dens_grid2,
@@ -41,7 +52,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         # "diamond2": get_diams_dens_grid,
         "hexagon": get_hex_dens_grid2,
         # "hexagon2": get_hex_dens_grid
-        }[grid_shape](gdf, height, field_name)
+        }[grid_shape](gdf, height, field_name, mask)
 
     n_field_name = "".join([field_name, "_density"])
     grid = GeoDataFrame(
@@ -62,7 +73,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
     else:
         return grid.to_json()
 
-def get_diams_dens_grid2(gdf, height, field_name):
+def get_diams_dens_grid2(gdf, height, field_name, mask):
     xmin, ymin, xmax, ymax = gdf.total_bounds
     height = height * 1.45
     rows = ceil((ymax-ymin) / height) + 1
@@ -74,7 +85,6 @@ def get_diams_dens_grid2(gdf, height, field_name):
     half_height = (height / 2)
     geoms = gdf.geometry
     index = make_index([g.bounds for g in geoms])
-    mask = cascaded_union(gdf.geometry).buffer(1).buffer(-1)
     array_values = gdf[field_name].values
 
     res = []
@@ -145,7 +155,7 @@ def get_diams_dens_grid2(gdf, height, field_name):
 #
 #     return res
 
-def get_hex_dens_grid2(gdf, height, field_name):
+def get_hex_dens_grid2(gdf, height, field_name, mask):
     xmin, ymin, xmax, ymax = gdf.total_bounds
     rows = ceil((ymax-ymin) / height) + 1
     cols = ceil((xmax-xmin) / height)
@@ -156,7 +166,6 @@ def get_hex_dens_grid2(gdf, height, field_name):
     half_height = (height / 2)
     geoms = gdf.geometry
     index = make_index([g.bounds for g in geoms])
-    mask = cascaded_union(gdf.geometry).buffer(1).buffer(-1)
     array_values = gdf[field_name].values
 
     xvertexlo = 0.288675134594813 * height
@@ -238,7 +247,7 @@ def get_hex_dens_grid2(gdf, height, field_name):
 #
 #     return res
 
-def get_square_dens_grid2(gdf, height, field_name):
+def get_square_dens_grid2(gdf, height, field_name, mask):
     xmin, ymin, xmax, ymax = gdf.total_bounds
     rows = ceil((ymax-ymin) / height)
     cols = ceil((xmax-xmin) / height)
@@ -251,7 +260,6 @@ def get_square_dens_grid2(gdf, height, field_name):
     geoms = gdf.geometry
     index = make_index([g.bounds for g in geoms])
     idx_intersects = index.intersection
-    mask = cascaded_union(gdf.geometry).buffer(1).buffer(-1)
     array_values = gdf[field_name].values
 
     res = []

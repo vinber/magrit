@@ -5,6 +5,7 @@
 """
 import os
 import sys
+import csscompressor
 from uuid import uuid4
 from shutil import copy
 from subprocess import Popen, PIPE
@@ -64,7 +65,55 @@ def build_js_file(use_minified):
         f.writelines(lines)
     os.remove('.babelrc')
     print('OK')
+    return name
+
+def build_css_file():
+    with open('../../magrit_app/static/css/style.css', 'r') as f:
+        css = f.read()
+    try:
+        comp = csscompressor.compress(css)
+        with open('../../magrit_app/static/css/style.min.css', 'w') as f:
+            f.write(comp)
+    except Exception as err:
+        print('Error while compressing css files :')
+        print(err)
+
+def is_node_modules_present():
+    return ('node_modules' in os.listdir('../../magrit_app/static/js/'))
+
+def install_package_js():
+    print('Installing node dependencies...')
+    copy('package.json', '../../magrit_app/static/js/package.json')
+    os.chdir('../../magrit_app/static/js/')
+    p = Popen(['npm', 'install'], stdout=PIPE, stderr=PIPE)
+    r = p.communicate()
+    if len(r[1]) > 0 and not 'WARN' in r[1].decode():
+        print("Error when installing node dependencies : ", r[1])
+        sys.exit(1)
+    os.remove('package.json')
+    os.chdir('../../misc/jsbuild')
 
 if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
     use_minified = True if len(sys.argv) > 1 and '-m' in sys.argv[1] else False
-    build_js_file(use_minified)
+    if not is_node_modules_present():
+        install_package_js()
+    build_css_file()
+    name = build_js_file(use_minified)
+    if 'VIRTUAL_ENV' in os.environ:
+        try:
+            import magrit_app
+            installed_dir = magrit_app.__file__.replace('__init__.py', '')
+        except ImportError:
+            raise ValueError(
+                'Magrit should have been installed before '
+                'building js files in the virtual environnement')
+        except Exception as err:
+            raise ValueError('Unable to locate js directory')
+        else:
+            previous_files = [i for i in os.listdir(installed_dir + 'static/js/') if 'app.' in i]
+            for f_path in previous_files:
+                os.remove(installed_dir + 'static/js/' + f_path)
+            copy(name, installed_dir + "static/js/" + name)
+            copy('../css/style.min.css', installed_dir + "static/css/style.min.css")
+            copy('../../templates/modules.html', installed_dir + "templates/modules.html")

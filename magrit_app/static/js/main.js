@@ -132,7 +132,9 @@ function setUpInterface(resume_project)
     proj_options.append("input")
         .attrs({type: "range", id: "form_projection_center", value: 0.0,
                 min: -180.0, max: 180.0, step: 0.1})
-        .styles({width: "120px", 'margin': "0 0 0 15px", "vertical-align": "text-top"})
+        .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
+                 'margin': "0 0 0 15px",
+                 "vertical-align": "text-top"})
         .on("input", function(){
             handle_proj_center_button([this.value, null, null]);
             document.getElementById("proj_center_value_txt").value = +this.value;
@@ -141,7 +143,7 @@ function setUpInterface(resume_project)
     proj_options.append("input")
         .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                 min: -180.0, max: 180.0, value: 0, step: "any"})
-        .styles({width: "38px", "margin": "0 10px",
+        .styles({width: "40px", "margin": "0 10px",
                  "color": " white", "background-color": "#000",
                  "vertical-align": "calc(20%)"})
         .on("change", function(){
@@ -192,7 +194,7 @@ function setUpInterface(resume_project)
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.svg" width="20" height="auto" alt="Documentation"/>')
+        .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
         .on('click', function(){
             window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         });
@@ -369,7 +371,10 @@ function setUpInterface(resume_project)
         .attrs({'id': 'btn_type_fields', 'class': 'i18n',
                 'data-i18n': '[html]app_page.box_type_fields.title',
                 'disabled': true})
-        .styles({cursor: 'pointer', disabled: 'true'})
+        .styles({cursor: 'pointer',
+                 'border-radius': '4px',
+                 'border': '1px solid lightgrey',
+                 'padding': '3.5px'})
         .html(i18next.t('app_page.box_type_fields.title'))
         .on('click', function(){
             let layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -796,7 +801,8 @@ function setUpInterface(resume_project)
     geo_b.append('span')
         .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype'});
     let selec_type = geo_b.insert("select")
-        .attrs({id: 'datatype_to_use', class: 'i18n m_elem_right'});
+        .attrs({id: 'datatype_to_use', class: 'i18n m_elem_right'})
+        .style('margin-top', '5px');
 
     export_geo_options.append('p')
         .style('margin', 'auto')
@@ -888,8 +894,8 @@ function setUpInterface(resume_project)
         {id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-"},
         {id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+"},
         {id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i"},
-        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.svg" width="18" height="18" alt="Hand_closed"/>'}/*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.svg" width="18" height="18" alt="Zoom_select"/>'}*/
+        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}/*,
+        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}*/
     ];
 
     let selec = lm.selectAll("input")
@@ -1014,7 +1020,7 @@ function bindTooltips(dataAttr="tooltip-title"){
 function make_eye_button(state){
     if(state == "open"){
         let eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "/static/img/b/eye_open.svg");
+        eye_open.setAttribute("src", "/static/img/b/eye_open.png");
         eye_open.setAttribute("class", "active_button i18n")
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
@@ -1023,7 +1029,7 @@ function make_eye_button(state){
         return eye_open;
     } else if (state == "closed"){
         let eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "/static/img/b/eye_closed.svg");
+        eye_closed.setAttribute("src", "/static/img/b/eye_closed.png");
         eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
@@ -1207,20 +1213,20 @@ const button_trash = ' <img src="/static/img/Trash_font_awesome.png" id="trash_b
         ]);
 
 const button_result_type = new Map([
-        ["flow", '<img src="/static/img/type_geom/layer_flow.svg" class="ico_type" width="17" height="17" alt="flow"/>'],
-        ["symbol", '<img src="/static/img/type_geom/layer_symbol.svg" class="ico_type" width="17" height="17" alt="symbol"/>'],
-        ["grid", '<img src="/static/img/type_geom/layer_grid.svg" class="ico_type" width="17" height="17" alt="grid"/>'],
-        ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.svg" class="ico_type" width="17" height="17" alt="propchoro"/>'],
-        ["typo", '<img src="/static/img/type_geom/layer_typo.svg" class="ico_type" width="17" height="17" alt="typo"/>'],
-        ["discont", '<img src="/static/img/type_geom/layer_disc.svg" class="ico_type" width="17" height="17" alt="discont"/>'],
-        ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.svg" class="ico_type" width="17" height="17" alt="cartogram"/>'],
-        ["label", '<img src="/static/img/type_geom/layer_label.svg" class="ico_type" width="17" height="17" alt="label"/>'],
-        ["choro", '<img src="/static/img/type_geom/layer_choro.svg" class="ico_type" width="17" height="17" alt="choro"/>'],
-        ["smooth", '<img src="/static/img/type_geom/layer_smooth.svg" class="ico_type" width="17" height="17" alt="smooth"/>'],
-        ["prop", '<img src="/static/img/type_geom/layer_prop.svg" class="ico_type" width="17" height="17" alt="prop"/>']
+        ["flow", '<img src="/static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'],
+        ["symbol", '<img src="/static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'],
+        ["grid", '<img src="/static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'],
+        ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'],
+        ["typo", '<img src="/static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'],
+        ["discont", '<img src="/static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'],
+        ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'],
+        ["label", '<img src="/static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'],
+        ["choro", '<img src="/static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'],
+        ["smooth", '<img src="/static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'],
+        ["prop", '<img src="/static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']
         ]);
 
-const eye_open0 = '<img src="/static/img/b/eye_open.svg" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
+const eye_open0 = '<img src="/static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
 const sys_run_button = '<img src="/static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
@@ -1651,7 +1657,7 @@ function remove_ext_dataset_cleanup(){
     joined_dataset = new Array();
     dataset_name = undefined;
     let ext_dataset_img = document.getElementById("img_data_ext");
-    ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.svg");
+    ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.png");
     ext_dataset_img.setAttribute("alt", "Additional dataset");
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
@@ -1745,7 +1751,7 @@ function handle_click_hand(behavior){
     behavior = behavior && typeof behavior !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
     if(behavior == "lock"){
         hb.classed("locked", true);
-        hb.html('<img src="/static/img/Twemoji_1f512.svg" width="18" height="18" alt="locked"/>');
+        hb.html('<img src="/static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
         zoom.on("zoom", function(){
             let blocked = svg_map.__zoom;
             return function(){
@@ -1754,7 +1760,7 @@ function handle_click_hand(behavior){
         }());
     } else {
         hb.classed("locked", false);
-        hb.html('<img src="/static/img/Twemoji_1f513.svg" width="18" height="18" alt="unlocked"/>');
+        hb.html('<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
         zoom.on("zoom", zoom_without_redraw);
         //map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
     }
@@ -1838,7 +1844,8 @@ function redraw_legends_symbols(targeted_node){
         let transform_param = legend_nodes[i].getAttribute("transform"),
             rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
             lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML;
+            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
+            notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
 
         let rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
             color: legend_nodes[i].querySelector("#under_rect").style.fill,
@@ -1846,7 +1853,7 @@ function redraw_legends_symbols(targeted_node){
         } : undefined;
 
         legend_nodes[i].remove();
-        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision);
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
         let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
         new_lgd.setAttribute("display", display_value);
@@ -1956,7 +1963,9 @@ function handleClipPath(proj_name){
 }
 
 function change_projection(new_proj_name) {
-    let prev_rotate = proj.rotate();
+    // Only keep the first argument of the rotation parameter :
+    let prev_rotate = [proj.rotate()[0], 0, 0];
+
     // Update global variables:
     proj = eval(available_projections.get(new_proj_name));
     path = d3.geoPath().projection(proj).pointRadius(4);
@@ -1966,8 +1975,8 @@ function change_projection(new_proj_name) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Allow to use more options than only the lambda axis on specific projection :
-    if(new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"
-            || new_proj_name == "ConicConformal" || new_proj_name == "AzimuthalEquidistant"){
+    if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
+            || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
         document.getElementById('btn_customize_projection').style.display = "";
     } else {
         document.getElementById('btn_customize_projection').style.display = "none";

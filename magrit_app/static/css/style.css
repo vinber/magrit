@@ -640,15 +640,15 @@ div.panel.show {
 .twbs .modal-title {
     margin: 0;
     line-height: 1.42857143;
-    color: #173a50;
     font-weight: bold;
     font-size: 1.3em;
-    background: #173a504d;
     padding: 4px;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
     border-bottom-right-radius: 8px;
     border-bottom-left-radius: 8px;
+    overflow-wrap: break-word;
+    width: 90%;
 }
 
 .twbs .modal-dialog {
@@ -665,8 +665,14 @@ div.panel.show {
     margin: 0px 0px 0px 15px;
 }
 
-.twbs .modal-header, .twbs .modal-footer {
+.twbs .modal-footer {
+    padding: 6px;
+}
+
+.twbs .modal-header {
     padding: 8px;
+    background-color: #595959;
+    color: white;
 }
 
 .twbs #xclose {
@@ -763,4 +769,9 @@ img.layout_ft_ico:hover {
 
 .swal2_custom {
     overflow-wrap: break-word;
+}
+
+.swal2_large {
+    min-width: 380px;
+    min-height: 310px;
 }

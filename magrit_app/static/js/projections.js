@@ -2,15 +2,15 @@
 
 const available_projections = new Map([
 	["Armadillo", "d3.geoArmadillo().scale(400)"],
-	["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().rotate([-10,-52]).scale(700)"],
-	["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().rotate([-10,-52]).scale(700)"],
+	["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().scale(700)"],
+	["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().scale(700)"],
 	["Baker", "d3.geoBaker().scale(400)"],
 	["Boggs", "d3.geoBoggs().scale(400)"],
 	["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"],
 	["Bonne", "d3.geoBonne().scale(400)"],
 	["Bromley", "d3.geoBromley().scale(400)"],
 	["Collignon", "d3.geoCollignon().scale(400)"],
-	["ConicConformal", "d3.geoConicConformal().scale(400).parallels([43, 49])"],
+	["ConicConformal", "d3.geoConicConformal().scale(400).parallels([44, 49])"],
 	["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"],
 	["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"],
 	["CrasterParabolic", "d3.geoCraster().scale(400)"],
@@ -48,6 +48,7 @@ const createBoxCustomProjection = function(){
 			showConfirmButton: true,
 			cancelButtonText: i18next.t('app_page.common.close'),
 			animation: "slide-from-top",
+			customClass: "swal2_large",
 			onOpen: function(){
 					let content = d3.select('.custom_proj_content');
 					let lambda_section = content.append('p');
@@ -84,11 +85,11 @@ const createBoxCustomProjection = function(){
 					if(current_proj_name.indexOf('Conic') > -1){
 							prev_parallels = proj.parallels();
 							let parallels_section = content.append('p')
-									.style('text-align', 'center');
+									.styles({'text-align': 'center', 'clear': 'both'});
 							parallels_section.append('span')
 									.html(i18next.t('app_page.section5.parallels'));
 							let inputs = parallels_section.append('p')
-									.style('text-align', 'center');
+									.styles({'text-align': 'center', 'margin': 'auto'});
 							inputs.append('input')
 									.style('width', '50px').style('display', 'inline')
 									.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
@@ -100,8 +101,14 @@ const createBoxCustomProjection = function(){
 					}
 
 			}
-	 }).then(inputValue => { console.log('a :', inputValue); },
-					 dismissValue => { console.log('b :', dismissValue); });
+	 }).then(inputValue => { null; },
+					 dismissValue => {
+					 			// Reset the parameters to the previous values if the user click on cancel :
+								handle_proj_center_button(prev_rotate);
+								if(prev_parallels != undefined){
+										handle_parallels_change(prev_parallels);
+								}
+					 });
 };
 
 // Function to change (one of more of) the three rotations axis of a d3 projection

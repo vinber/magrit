@@ -484,7 +484,7 @@ async def carto_doug(posted_data, user_id, app):
     except asyncio.CancelledError:
         app['logger'].info(
             'Cancelled after {:.4f}s : carto_doug'
-            .format(user_id, time.time()-st))
+            .format(time.time()-st))
         return
 
     os.remove(tmp_path)
@@ -612,10 +612,10 @@ async def carto_gridded(posted_data, user_id, app):
     except asyncio.CancelledError:
         app['logger'].info(
             'Cancelled after {:.4f}s : get_grid_layer'
-            .format(user_id, time.time()-st))
+            .format(time.time()-st))
         return
-    except TopologicalError:
-        return '{"Error": "TopologicalError"}'
+    except (TopologicalError, ValueError) as err:
+        return json.dumps({"Error": "geometry_error"})
 
     savefile(filenames['src_layer'], result_geojson.encode())
     res = await geojson_to_topojson(filenames['src_layer'], remove=True)
@@ -656,7 +656,7 @@ async def compute_olson(posted_data, user_id, app):
     except asyncio.CancelledError:
         app['logger'].info(
             'Cancelled after {:.4f}s : olson_transform'
-            .format(user_id, time.time()-st))
+            .format(time.time()-st))
         return
 
     tmp_part = get_name()
@@ -784,7 +784,7 @@ async def call_stewart(posted_data, user_id, app):
     except asyncio.CancelledError:
         app['logger'].info(
             'Cancelled after {:.4f}s : stewart'
-            .format(user_id, time.time()-st))
+            .format(time.time()-st))
         return
 
     os.remove(filenames['point_layer'])

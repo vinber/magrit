@@ -259,7 +259,7 @@ function make_discretization_icons(discr_section){
       .styles({float: 'right', 'margin-top': '5px'});
     subsection2.append('img')
       .styles({width: '15px', position: 'absolute', right: '5px'})
-      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.svg'});
+      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.png'});
 }
 
 
@@ -276,7 +276,7 @@ function make_ok_button(parent, id, disabled=true){
 function insert_legend_button(layer_name){
     let selec = d3.select("#sortable").select(['.', layer_name, ' .layer_buttons'].join('')),
         inner_html = selec.node().innerHTML,
-        const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.svg"',
+        const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png"',
         split_content = inner_html.split();
     selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
@@ -500,7 +500,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
             uncolor_icons();
             ico_quantiles.style('border', 'solid 1px green');
         }
@@ -538,7 +538,7 @@ var fields_PropSymbolChoro = {
             uo_layer_name.attr('value', ["PropSymbols", field_size.node().value, field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
                 // ok_button.attr('disabled', null);
-                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
                 uncolor_icons();
@@ -547,7 +547,7 @@ var fields_PropSymbolChoro = {
             } else {
                 prepare_disc_quantiles(field_name);
                 // ok_button.attr('disabled', true);
-                // img_valid_disc.attr('src', '/static/img/Red_x.svg');
+                // img_valid_disc.attr('src', '/static/img/Red_x.png');
                 // choro_mini_choice_disc.html('');
             }
 
@@ -568,7 +568,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_quantiles.on('click', function(){
@@ -586,7 +586,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_equal_interval.on('click', function(){
@@ -604,7 +604,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_q6.on('click', function(){
@@ -621,7 +621,7 @@ var fields_PropSymbolChoro = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_disc.on("click", function(){
@@ -937,7 +937,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
             uncolor_icons();
             ico_quantiles.style('border', 'solid 1px green');
         }
@@ -965,7 +965,7 @@ var fields_Choropleth = {
             uo_layer_name.attr('value', ["Choro", field_name, layer].join('_'));
             if(self.rendering_params[field_name] !== undefined){
                 // ok_button.attr('disabled', null);
-                img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                 choro_mini_choice_disc.html(
                     i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ", " + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
                 uncolor_icons();
@@ -990,7 +990,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_quantiles.on('click', function(){
@@ -1008,7 +1008,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_equal_interval.on('click', function(){
@@ -1026,7 +1026,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_q6.on('click', function(){
@@ -1043,7 +1043,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
             // ok_button.attr("disabled", null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         btn_class.on("click", function(){
@@ -1070,7 +1070,7 @@ var fields_Choropleth = {
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
                     // ok_button.attr("disabled", null);
-                    img_valid_disc.attr('src', '/static/img/Light_green_check.svg');
+                    img_valid_disc.attr('src', '/static/img/Light_green_check.png');
                     choro_mini_choice_disc.html(
                         i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', {count: confirmed[0]}));
                     uncolor_icons();
@@ -1347,7 +1347,7 @@ function fillMenu_Stewart(){
 
     dialog_content.insert('select')
       .attrs({class: 'params', id: "stewart_mask"})
-      .styles({position: 'relative', float: 'right', margin: '0 0 10px 0'});
+      .styles({position: 'relative', float: 'right', margin: '1px 0px 10px 0px'});
 
     [['exponential', 'app_page.func_options.smooth.func_exponential'],
      ['pareto', 'app_page.func_options.smooth.func_pareto']
@@ -1476,11 +1476,6 @@ var fields_Anamorphose = {
                 let formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
-
-                // if(contains_empty_val(user_data[layer].map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
 
                 var_to_send[field_name] = [];
                 if(!current_layers[layer].original_fields.has(field_name)){
@@ -2531,7 +2526,9 @@ function fillMenu_TypoSymbol(){
     let field_selec = a.insert('select')
       .attrs({class: "params", id: "field_Symbol"});
 
-    let b = dv2.insert('p').style("margin", "auto").attr('class', 'params_section2');
+    let b = dv2.insert('p')
+      .attr('class', 'params_section2')
+      .styles({'text-align': 'center', 'margin': 'auto'});
     b.append("button")
       .attrs({id: "selec_Symbol", class: "button_disc params i18n",
               "data-i18n": "[html]app_page.func_options.typosymbol.symbols_choice"})
@@ -2804,7 +2801,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
   if(current_layers[layer].original_fields.has(field_n))
       var_to_send[field_n] = [];
   else
-      var_to_send[field_n] = user_data[layer].map(i => +i[field_n]);
+      var_to_send[field_n] = user_data[layer].map(i => i[field_n]);
 
   formToSend.append("json", JSON.stringify({
       "topojson": current_layers[layer].key_name,

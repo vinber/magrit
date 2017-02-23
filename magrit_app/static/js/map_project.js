@@ -186,6 +186,8 @@ function get_map_template(){
             }
         } else if(!current_layer_prop.renderer){
             selection = map.select("#" + layer_id).selectAll("path");
+            layer_style_i.fill_opacity = selection.style("fill-opacity");
+            layer_style_i.topo_geom = String(current_layer_prop.key_name);
         } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layer_prop.symbol;
             selection = map.select("#" + layer_id).selectAll(type_symbol);
@@ -205,6 +207,8 @@ function get_map_template(){
             if(current_layer_prop.renderer === "PropSymbolsTypo"){
                 layer_style_i.color_map = [...current_layer_prop.color_map];
             }
+            if(current_layer_prop.break_val)
+                layer_style_i.break_val = current_layer_prop.break_val;
         } else if (current_layer_prop.renderer == "Stewart"
                     || current_layer_prop.renderer == "Gridded"
                     || current_layer_prop.renderer == "Choropleth"
@@ -245,7 +249,7 @@ function get_map_template(){
             layer_style_i.size = current_layer_prop.size;
             layer_style_i.min_display = current_layer_prop.min_display;
             layer_style_i.breaks = current_layer_prop.breaks;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
+            // layer_style_i.topo_geom = String(current_layer_prop.key_name);
             if(current_layer_prop.renderer == "Links"){
                 layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
             }
@@ -515,12 +519,16 @@ function apply_user_preferences(json_pref){
     document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
-    {
-      let proj_select = document.getElementById('form_projection');
-      proj_select.value = current_proj_name;
-    }
+    document.getElementById('form_projection').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
+
+    if( current_proj_name.indexOf("Azimuthal") > -1 || current_proj_name.indexOf("Conic") > -1
+            || current_proj_name == "Orthographic" || current_proj_name == "Gnomonic"){
+        document.getElementById('btn_customize_projection').style.display = "";
+    } else {
+        document.getElementById('btn_customize_projection').style.display = "none";
+    }
 
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
@@ -627,11 +635,11 @@ function apply_user_preferences(json_pref){
                     }
                 }
 
-                if(_layer.fill_color.single && _layer.renderer != "DiscLayer"){
+                if(_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer"){
                   layer_selec
                       .selectAll('path')
                       .style("fill", _layer.fill_color.single);
-                } else if(_layer.fill_color.random) {
+                } else if(_layer.fill_color && _layer.fill_color.random) {
                       layer_selec
                           .selectAll('path')
                           .style("fill", () => Colors.names[Colors.random()]);
@@ -671,14 +679,23 @@ function apply_user_preferences(json_pref){
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
-                  fill_color: (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")? _layer.fill_color.class : _layer.fill_color.single,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,
                   nb_features: geojson_pt_layer.features.length,
                   ref_layer_name: _layer.ref_layer_name,
-                  renderer: _layer.renderer
+                  renderer: _layer.renderer,
               };
+              if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")
+                  rendering_params.fill_color = _layer.fill_color.class
+              else if(_layer.fill_color.random)
+                  rendering_params.fill_color = "#fff";
+              else if(_layer.fill_color.single != undefined)
+                  rendering_params.fill_color = _layer.fill_color.single;
+              else if(_layer.fill_color.two){
+                  rendering_params.fill_color = _layer.fill_color;
+                  rendering_params.break_val = _layer.break_val;
+              }
               make_prop_symbols(rendering_params, geojson_pt_layer);
               if(_layer.renderer == "PropSymbolsTypo"){
                   current_layers[layer_name].color_map = new Map(_layer.color_map);
@@ -701,7 +718,11 @@ function apply_user_preferences(json_pref){
                   .styles({'stroke-width': _layer['stroke-width-const'] + "px",
                            'fill-opacity': fill_opacity,
                            'stroke-opacity': stroke_opacity});
-
+              if(_layer.fill_color.random){
+                  map.select('#' + _app.layer_to_id.get(layer_name))
+                      .selectAll(_layer.symbol)
+                      .style('fill', _ => Colors.names[Colors.random()]);
+              }
           // ... or this is a layer of labels :
           } else if (_layer.renderer && _layer.renderer.startsWith("Label")){
               let rendering_params = {
@@ -797,7 +818,7 @@ function reorder_elem_list_layer(desired_order){
       layers = parent.childNodes,
       nb_layers = desired_order.length;
   for(let i = 0; i < nb_layers; i++){
-      let selec = "li." + desired_order[i];
+      let selec = "li." + _app.layer_to_id.get(desired_order[i]);
       if(parent.querySelector(selec))
         parent.insertBefore(parent.querySelector(selec), parent.firstChild);
   }
@@ -807,11 +828,11 @@ function rehandle_legend(layer_name, properties){
     for(let i = 0; i < properties.length; i++){
         let prop = properties[i];
         if(prop.type == 'legend_root'){
-            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision, prop.no_data_txt);
+            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
         } else if(prop.type == 'legend_root2') {
-            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision);
+            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision, prop.bottom_note);
         } else if(prop.type == 'legend_root_links'){
-            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision)
+            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision, prop.bottom_note)
         }
         let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);

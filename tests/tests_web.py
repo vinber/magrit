@@ -288,6 +288,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Valid the type of each field :
         self.validTypefield()
 
+        # Get a reference to the (not displayed) button to tweak the projection
+        btn_customization = driver.find_element_by_id('btn_customize_projection')
+
         # Open the section of the menu with the layer manager :
         self.open_menu_section(3)
 
@@ -295,6 +298,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("form_projection")
             ).select_by_value("InterruptedSinusoidal")
         time.sleep(2)
+
+        # Button to tweak projection is not displayed :
+        self.assertEqual(False, btn_customization.is_displayed())
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
@@ -313,6 +319,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("form_projection")
             ).select_by_value("Baker")
         time.sleep(2)
+
+        # Button to tweak projection is not displayed :
+        self.assertEqual(False, btn_customization.is_displayed())
+
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
         self.assertEqual(proj_name, "Baker")
@@ -350,6 +360,30 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             '''val = svg_map.__zoom.toString(); return val;''');
         # This time it should have changed :
         self.assertNotEqual(zoom_val, zoom_val3)
+
+        # Change for a projection offering customization options:
+        Select(driver.find_element_by_id("form_projection")
+            ).select_by_value("ConicEqualArea")
+        time.sleep(2)
+
+        # Button to tweak projection is displayed :
+        self.assertEqual(True, btn_customization.is_displayed())
+
+        parallels_1 = driver.execute_script(
+            '''proj.parallels([22, 25]); return proj.parallels();''');
+
+        # Change for a projection offering customization options:
+        Select(driver.find_element_by_id("form_projection")
+            ).select_by_value("ConicEquidistant")
+        time.sleep(2)
+
+        # Button to tweak projection is displayed :
+        self.assertEqual(True, btn_customization.is_displayed())
+
+        # Value for parallels have been changed :
+        parallels_2 = driver.execute_script(
+            '''return proj.parallels();''');
+        self.assertNotEqual(parallels_1, parallels_2)
 
     def test_reload_project_localStorage(self):
         driver = self.driver
@@ -551,11 +585,21 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("Pays")
         time.sleep(0.1)
 
+        driver.find_element_by_id('Typo_output_name').clear()
+        driver.find_element_by_id('Typo_output_name').send_keys('result_layer')
+
         # Valid theses properties and click on the "render" button :
         driver.find_element_by_id("Typo_yes").click()
 
         # Confirm the fact that there is a lot of features for this kind of representation :
         self.waitClickButtonSwal()
+
+        time.sleep(1.5)
+
+        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_result_layer", 5):
+            self.fail("Legend not displayed for Categorical map")
+
+        self._verif_legend_hide_show_button('result_layer')
 
     def test_stewart(self):
         driver = self.driver
@@ -589,6 +633,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # The legend is displayed :
         if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_0", 5):
             self.fail("Legend not displayed on stewart")
+
+        self._verif_legend_hide_show_button('my_result_0')
+
         # The legend contains the correct number of class :
         legend_elems = driver.find_element_by_class_name(
             'lgdf_my_result_0').find_elements_by_css_selector(
@@ -612,6 +659,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # The legend is displayed :
         if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_1", 5):
             self.fail("Legend not displayed on stewart")
+
+        self._verif_legend_hide_show_button('my_result_1')
+
         # The legend contains the correct number of class :
         legend_elems = driver.find_element_by_class_name(
             'lgdf_my_result_1').find_elements_by_css_selector(
@@ -640,6 +690,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # The legend is displayed :
         if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_my_result_2", 5):
             self.fail("Legend not displayed on stewart")
+
+        self._verif_legend_hide_show_button('my_result_2')
+
         # The legend contains the correct number of class :
         legend_elems = driver.find_element_by_class_name(
             'lgdf_my_result_2').find_elements_by_css_selector(
@@ -813,11 +866,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             driver.find_element_by_id(
                 "discretiz_charts").find_elements_by_css_selector(
                 ".btn_ok")[0])
+        driver.find_element_by_id('Choro_output_name').clear()
+        driver.find_element_by_id('Choro_output_name').send_keys('my_result_layer')
         driver.find_element_by_id("choro_yes").click()
         time.sleep(1)  # Little delay for the map to be rendered
 
         if not self.try_element_present(By.ID, "legend_root", 5):
             self.fail("Legend not displayed on choropleth")
+
+        self._verif_legend_hide_show_button('my_result_layer')
 
     def test_discont_new_field(self):
         driver = self.driver
@@ -846,11 +903,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("Discont_output_name").send_keys('my_result_layer')
         driver.find_element_by_id("yes_Discont").click()
         time.sleep(1)  # Delay for the discontinuities to be computed
-        driver.find_element_by_id("legend_button").click()
         if not self.try_element_present(By.ID, "legend_root_links", 5):
             self.fail("Legend won't display")
 
+        self._verif_legend_hide_show_button("my_result_layer")
+
         self._verif_export_result('my_result_layer')
+
 
     def test_propSymbolsTypo(self):
         driver = self.driver
@@ -868,6 +927,10 @@ class MainFunctionnalitiesTest(unittest.TestCase):
                 ).select_by_visible_text('Pop2014')
         Select(driver.find_element_by_id('PropSymbolTypo_field_2')
                 ).select_by_visible_text('REGIONS')
+
+        driver.find_element_by_id('PropSymbolTypo_output_name').clear()
+        driver.find_element_by_id('PropSymbolTypo_output_name').send_keys('my_result_layer')
+
         driver.find_element_by_id("Typo_class").click()
         time.sleep(0.2)
         # self.waitClickButtonSwal()
@@ -881,6 +944,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "legend_root2", 5) \
                 or not self.try_element_present(By.ID, 'legend_root'):
             self.fail("Legend won't display on Prop Symbol Choro")
+
+        self._verif_legend_hide_show_button('my_result_layer')
 
     def test_propSymbolsChoro_and_remove(self):
         driver = self.driver
@@ -918,11 +983,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.is_element_present(By.CSS_SELECTOR, "#container_sparkline_propsymbolchoro > canvas"):
             self.fail("Missing mini sparkline canvas in the interface")
 
+        driver.find_element_by_id('PropSymbolChoro_output_name').clear()
+        driver.find_element_by_id('PropSymbolChoro_output_name').send_keys('my_result_layer')
+
         driver.find_element_by_id('propChoro_yes').click()
         time.sleep(1.5)
         if not self.try_element_present(By.ID, "legend_root2", 5) \
                 or not self.try_element_present(By.ID, 'legend_root'):
             self.fail("Legend won't display on Prop Symbol Choro")
+
+        self._verif_legend_hide_show_button('my_result_layer')
 
         # Try to remove a layer from the map (the 'World' layer, here by default):
         driver.find_element_by_css_selector('.sortable.World > div > #trash_button').click()
@@ -969,15 +1039,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             "document.getElementById('PropSymbol_color1').value = '#e3a5f3';")
         driver.execute_script(
             "document.getElementById('PropSymbol_color1').value = '#ffff00';")
+        driver.find_element_by_id("PropSymbol_output_name").clear()
+        driver.find_element_by_id("PropSymbol_output_name").send_keys('my_result_layer')
         driver.find_element_by_id("PropSymbol_yes").click()
         time.sleep(1.5)
+
         if not self.try_element_present(By.ID, "legend_root2", 5):
             self.fail("Legend won't display")
         time.sleep(0.1)
 
-        self.clickWaitTransition("#legend_button")
-        if not self.try_element_present(By.ID, "legend_root2", 5):
-            self.fail("Legend won't hide")
+        self._verif_legend_hide_show_button('my_result_layer')
 
         # driver.find_element_by_css_selector(
         #     "img.style_target_layer").click()
@@ -991,6 +1062,24 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         #     ".styleBox").find_elements_by_css_selector(
         #     ".btn_ok")[0].click()
         # driver.find_element_by_id("legend_button").click()
+
+    def _verif_legend_hide_show_button(self, layer_name):
+        driver = self.driver
+        button_legend = driver.find_element_by_css_selector("li." + layer_name
+            ).find_element_by_css_selector('#legend_button')
+        legends = driver.find_elements_by_css_selector(".lgdf_" + layer_name)
+
+        # Hide legend(s) for this representation :
+        button_legend.click()
+        time.sleep(0.1)
+        for lgd in legends:
+            self.assertEqual(False, lgd.is_displayed())
+
+        # Redisplay legend(s)
+        button_legend.click()
+        time.sleep(0.1)
+        for lgd in legends:
+            self.assertEqual(True, lgd.is_displayed())
 
     def _verif_export_result(self, layer_name, layer_format="GeoJSON"):
         driver = self.driver

@@ -398,18 +398,20 @@ function createStyleBoxGraticule(layer_name){
             .attrs({id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1})
             .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
+                let next_layer = selection_strokeW.node().nextSibling;
                 let step_val = +this.value,
                     dasharray_val = +document.getElementById("graticule_dasharray_txt").value;
                 current_layers["Graticule"].step = step_val;
                 map.select("#Graticule").remove()
                 map.append("g").attrs({id: "Graticule", class: "layer"})
-                               .append("path")
-                               .datum(d3.geoGraticule().step([step_val, step_val]))
-                               .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
-                               .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
+                     .append("path")
+                     .datum(d3.geoGraticule().step([step_val, step_val]))
+                     .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
+                     .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
                 zoom_without_redraw();
                 selection = map.select("#Graticule").selectAll("path");
                 selection_strokeW = map.select("#Graticule");
+                svg_map.insertBefore(selection_strokeW.node(), next_layer);
                 popup.select("#graticule_step_txt").attr("value", step_val);
             });
     steps_choice.append("input")
@@ -528,16 +530,17 @@ function createStyleBox(layer_name){
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
                         lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
                         rounding_precision = lgd.getAttribute("rounding_precision"),
+                        note = lgd.querySelector("#legend_bottom_note").innerHTML,
                         boxgap = lgd.getAttribute("boxgap");
 
                     if(_type_layer_links){
                         lgd.remove();
-                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision);
+                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
                     } else {
                         let no_data_txt = document.getElementById("no_data_txt");
                         no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
                         lgd.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
                     }
                     lgd = document.querySelector(
                         [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
@@ -1094,9 +1097,14 @@ function createStyleBox_ProbSymbol(layer_name){
                         let transform_param = lgd_choro.getAttribute("transform"),
                             lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
                             lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
-                            boxgap = lgd_choro.getAttribute("boxgap");
+                            rounding_precision = lgd_choro.getAttribute("rounding_precision"),
+                            boxgap = lgd_choro.getAttribute("boxgap"),
+                            note = lgd_choro.querySelector("#legend_bottom_note").innerHTML;
+                        let no_data_txt = lgd_choro.querySelector("#no_data_txt");
+                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+
                         lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap);
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
                         lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                         if(transform_param)
                             lgd_choro.setAttribute("transform", transform_param);

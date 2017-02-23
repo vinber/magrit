@@ -11,8 +11,7 @@ const MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
 * to the file type
 */
 function click_button_add_layer(){
-    var res = [],
-        self = this,
+    var self = this,
         input = document.createElement('input');
 
     let target_layer_on_add = false;
@@ -20,7 +19,7 @@ function click_button_add_layer(){
     if(self.id == "img_data_ext" || self.id == "data_ext"){
         input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
         target_layer_on_add = true;
-    } else if (self.id === "input_geom" || self.id === "input_geom") {
+    } else if (self.id === "input_geom" || self.id === "img_in_geom") {
         input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
         target_layer_on_add = true;
     } else if (self.id == "input_layout_geom") {
@@ -31,13 +30,11 @@ function click_button_add_layer(){
     input.setAttribute('name', 'file[]');
     input.setAttribute('enctype', 'multipart/form-data');
     input.onchange = function(event){
-
         let files = event.target.files;
-
         handle_upload_files(files, target_layer_on_add, self);
+        input.remove();
     };
-
-    input.dispatchEvent(new MouseEvent("click"))
+    input.click();
 }
 
 function handle_upload_files(files, target_layer_on_add, elem){
@@ -300,8 +297,7 @@ function prepare_drop_section(){
                 e.preventDefault(); e.stopPropagation();
                 if(document.body.classList.contains("no-drop"))
                     return;
-                let overlay_drop = document.getElementById("overlay_drop");
-                overlay_drop.style.display = "";
+                document.getElementById("overlay_drop").style.display = "";
             });
 
             elem.addEventListener("dragover", e => {
@@ -311,9 +307,8 @@ function prepare_drop_section(){
                 if(timeout){
                     clearTimeout(timeout);
                     timeout = setTimeout(function(){
-                        let overlay_drop = document.getElementById("overlay_drop");
                         e.preventDefault(); e.stopPropagation();
-                        overlay_drop.style.display = "none";
+                        document.getElementById("overlay_drop").style.display = "none";
                         timeout = null;
                     }, 2500);
                 }
@@ -326,8 +321,7 @@ function prepare_drop_section(){
                     return;
                 }
                 timeout = setTimeout(function(){
-                    let overlay_drop = document.getElementById("overlay_drop");
-                    overlay_drop.style.display = "none";
+                    document.getElementById("overlay_drop").style.display = "none";
                     timeout = null;
                 }, 2500);
             });
@@ -580,12 +574,7 @@ function handle_dataset(f, target_layer_on_add){
             } else {
                 sep = ",";
             }
-//            let encoding = jschardet.detect(data);
-//            if(encoding.encoding != "utf-8"
-//                    || encoding.confidence){
-//                console.log(encoding);
-//                // Todo : do something in order to get a correct encoding
-//            }
+
             let tmp_dataset = d3.dsvFormat(sep).parse(data);
             let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
             if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
@@ -629,7 +618,7 @@ function update_menu_dataset(){
     d3.select(data_ext.parentElement.firstChild)
         .attrs({"id": "img_data_ext",
                "class": "user_panel",
-               "src": "/static/img/b/tabular.svg",
+               "src": "/static/img/b/tabular.png",
                "width": "26", "height": "26",
                "alt": "Additional dataset"});
 
@@ -977,27 +966,22 @@ function add_layer_topojson(text, options){
     return lyr_name_to_add;
 };
 
+
 /**
-* Change the projection scale and translate properties in order to fit the layer.
-* Redraw the path from all the current layers to reflect the change.
+*  Get the bounding box (in map/svg coordinates) of a layer using path.bounds()
 *
-* @param {string} name - The name of layer to scale on
+*  @param {string} name - The name of layer
 */
-function scale_to_lyr(name){
+function get_bbox_layer_path(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
     if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
         bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    } else if (name == 'Graticule') {
-        map.select("#Graticule").selectAll("path").each( (d,i) => {
-            bbox_layer_path = path.bounds(d);
-        });
     } else {
-        map.select("#"+_app.layer_to_id.get(name)).selectAll(symbol).each( (d,i) => {
-            var bbox_path = path.bounds(d.geometry);
-            if(bbox_layer_path === undefined){
+        map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
+            let bbox_path = path.bounds(d);
+            if(!bbox_layer_path)
                 bbox_layer_path = bbox_path;
-            }
             else {
                 bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
                 bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
@@ -1006,6 +990,17 @@ function scale_to_lyr(name){
             }
         });
     }
+    return bbox_layer_path;
+}
+
+/**
+* Change the projection scale and translate properties in order to fit the layer.
+* Redraw the path from all the current layers to reflect the change.
+*
+* @param {string} name - The name of layer to scale on
+*/
+function scale_to_lyr(name){
+    let bbox_layer_path = get_bbox_layer_path(name);
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     t = [0, 0];
     proj.scale(s).translate(t);
@@ -1020,27 +1015,7 @@ function scale_to_lyr(name){
 * @param {string} name - The name of layer to zoom on
 */
 function center_map(name){
-    var symbol = current_layers[name].symbol || "path",
-        bbox_layer_path = undefined;
-    if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
-        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    } else if (name == 'Graticule') {
-        map.select("#Graticule").selectAll("path").each( (d,i) => {
-            bbox_layer_path = path.bounds(d);
-          });
-    } else {
-        map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
-            let bbox_path = path.bounds(d.geometry);
-            if(!bbox_layer_path)
-                bbox_layer_path = bbox_path;
-            else {
-                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-            }
-        });
-    }
+    let bbox_layer_path = get_bbox_layer_path(name);
     let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
     let _zoom = svg_map.__zoom;
