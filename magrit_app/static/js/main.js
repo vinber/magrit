@@ -1430,6 +1430,11 @@ function reproj_lgd_elem(){
 }
 */
 
+/**
+*  Function redrawing the prop symbol / img / labels when the projection changes
+*   (also taking care of redrawing point layer with appropriate 'pointRadius')
+*
+*/
 function reproj_symbol_layer(){
   for(let lyr_name in current_layers){
     if(current_layers[lyr_name].renderer
@@ -1480,6 +1485,10 @@ function reproj_symbol_layer(){
                 };
               });
       }
+    } else if (current_layers[lyr_name].pointRadius != undefined){
+        map.select("#"+_app.layer_to_id.get(lyr_name))
+            .selectAll("path")
+            .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
     }
   }
 }

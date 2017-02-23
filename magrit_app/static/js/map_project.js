@@ -843,6 +843,7 @@ function rehandle_legend(layer_name, properties){
         }
         let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);
-        lgd.setAttribute('display', prop.display);
+        if(prop.display == "none")
+            lgd.setAttribute('display', "none");
     }
 }

@@ -9,12 +9,13 @@
 function handle_legend(layer){
     let state = current_layers[layer].renderer;
     if(state != undefined){
-        let class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
-        if(map.selectAll(class_name).node()){
-            if(!map.selectAll(class_name).attr("display"))
-                map.selectAll(class_name).attr("display", "none");
+        let class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
+        let legends = svg_map.getElementsByClassName(class_name);
+        if(legends.length > 0){
+            if(legends[0].getAttribute('display') == null)
+                Array.prototype.forEach.call(legends, el => el.setAttribute('display', 'none'));
             else {
-                map.selectAll(class_name).attr("display", null);
+                Array.prototype.forEach.call(legends, el => el.removeAttribute('display'));
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:
@@ -26,7 +27,7 @@ function handle_legend(layer){
                     limit_right = map_xy0.x + +w + tol,
                     limit_top = map_xy0.y - tol,
                     limit_bottom = map_xy0.y + +h + tol;
-                let legends = svg_map.getElementsByClassName(class_name.slice(1, class_name.length));
+
                 for(let i = 0; i < legends.length; i++){
                     let bbox_legend = legends[i].getBoundingClientRect();
                     if(bbox_legend.left < limit_left || bbox_legend.left > limit_right

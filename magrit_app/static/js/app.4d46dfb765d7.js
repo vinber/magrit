@@ -1219,6 +1219,11 @@ function reproj_lgd_elem(){
 }
 */
 
+/**
+*  Function redrawing the prop symbol / img / labels when the projection changes
+*   (also taking care of redrawing point layer with appropriate 'pointRadius')
+*
+*/
 function reproj_symbol_layer() {
     for (var lyr_name in current_layers) {
         if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
@@ -1264,6 +1269,8 @@ function reproj_symbol_layer() {
                     };
                 });
             }
+        } else if (current_layers[lyr_name].pointRadius != undefined) {
+            map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll("path").attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
         }
     }
 }
@@ -8484,13 +8491,16 @@ function ask_existing_feature(feature_name) {
 }
 
 // Add the TopoJSON to the 'svg' element :
-function add_layer_topojson(text, options) {
+function add_layer_topojson(text) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
 
     var parsedJSON = JSON.parse(text);
-    var result_layer_on_add = options && options.result_layer_on_add ? true : false,
-        target_layer_on_add = options && options.target_layer_on_add ? true : false,
-        skip_alert = options && options.skip_alert ? true : false,
-        fields_type = options && options.fields_type ? options.fields_type : undefined;
+    var result_layer_on_add = options.result_layer_on_add ? true : false,
+        target_layer_on_add = options.target_layer_on_add ? true : false,
+        skip_alert = options.skip_alert ? true : false,
+        skip_rescale = options.skip_rescale === true ? true : false,
+        fields_type = options.fields_type ? options.fields_type : undefined;
 
     if (parsedJSON.Error) {
         // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
@@ -8508,9 +8518,8 @@ function add_layer_topojson(text, options) {
 
     var random_color1 = ColorsSelected.random(),
         lyr_name = layers_names[0],
-        lyr_name_to_add = check_layer_name(options && options.choosed_name ? options.choosed_name : lyr_name),
-        lyr_id = encodeId(lyr_name_to_add),
-        skip_rescale = options && options.skip_rescale ? skip_rescale : false;
+        lyr_name_to_add = check_layer_name(options.choosed_name ? options.choosed_name : lyr_name),
+        lyr_id = encodeId(lyr_name_to_add);
 
     _app.layer_to_id.set(lyr_name_to_add, lyr_id);
     _app.id_to_layer.set(lyr_id, lyr_name_to_add);
@@ -8545,7 +8554,7 @@ function add_layer_topojson(text, options) {
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    var path_to_use = options.pointRadius != undefined ? path.pointRadius(options.pointRadius) : path;
+    var path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
 
     map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path_to_use, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
@@ -8631,7 +8640,7 @@ function add_layer_topojson(text, options) {
         fields_handler.fill();
     }
 
-    if (!result_layer_on_add && type === "Point") {
+    if (type === "Point") {
         current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
     }
 
@@ -11874,10 +11883,15 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function handle_legend(layer) {
     var state = current_layers[layer].renderer;
     if (state != undefined) {
-        var class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
-        if (map.selectAll(class_name).node()) {
-            if (!map.selectAll(class_name).attr("display")) map.selectAll(class_name).attr("display", "none");else {
-                map.selectAll(class_name).attr("display", null);
+        var class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
+        var legends = svg_map.getElementsByClassName(class_name);
+        if (legends.length > 0) {
+            if (legends[0].getAttribute('display') == null) Array.prototype.forEach.call(legends, function (el) {
+                return el.setAttribute('display', 'none');
+            });else {
+                Array.prototype.forEach.call(legends, function (el) {
+                    return el.removeAttribute('display');
+                });
                 // Redisplay the legend(s) and also
                 // verify if still in the visible part
                 // of the map, if not, move them in:
@@ -11889,7 +11903,7 @@ function handle_legend(layer) {
                     limit_right = map_xy0.x + +w + tol,
                     limit_top = map_xy0.y - tol,
                     limit_bottom = map_xy0.y + +h + tol;
-                var legends = svg_map.getElementsByClassName(class_name.slice(1, class_name.length));
+
                 for (var i = 0; i < legends.length; i++) {
                     var bbox_legend = legends[i].getBoundingClientRect();
                     if (bbox_legend.left < limit_left || bbox_legend.left > limit_right || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom) legends[i].setAttribute("transform", "translate(0, 0)");
@@ -13639,7 +13653,7 @@ function rehandle_legend(layer_name, properties) {
         }
         var lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);
-        lgd.setAttribute('display', prop.display);
+        if (prop.display == "none") lgd.setAttribute('display', "none");
     }
 }
 "use strict";
