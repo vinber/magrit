@@ -2699,7 +2699,6 @@ var display_discretization = function display_discretization(layer_name, field_n
 
             if (type === "Q6") {
                 var tmp = getBreaksQ6(values, serie.precision);
-                console.log(values);console.log(tmp);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 breaks[0] = serie.min();
@@ -2707,9 +2706,21 @@ var display_discretization = function display_discretization(layer_name, field_n
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+                nb_class = tmp.breaks.length - 1;
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
-                serie.setClassManually(breaks);
+
+                if (breaks[0] > serie.min()) breaks[0] = serie.min();
+                if (breaks[nb_class] < serie.max()) breaks[nb_class] = serie.max();
+
+                var breaks_serie = breaks.slice();
+                if (breaks_serie[0] < serie.min()) {
+                    breaks_serie[0] = serie.min();
+                }
+                if (breaks_serie[nb_class] > serie.max()) {
+                    breaks_serie[nb_class] = serie.max();
+                }
+                serie.setClassManually(breaks_serie);
             } else {
                 var _func = discretiz_geostats_switch.get(type);
                 breaks = serie[_func](nb_class);
@@ -3941,7 +3952,7 @@ function make_discretization_icons(discr_section) {
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/others.png', 'id': 'ico_others' });
-    subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px' });
+    subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });
     subsection2.append('img').styles({ width: '15px', position: 'absolute', right: '5px' }).attrs({ 'id': 'img_choice_disc', 'src': '/static/img/Red_x.png' });
 }
 
@@ -6891,10 +6902,11 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
     svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + id_ref_layer).cloneNode(true));
     svg_map.lastChild.setAttribute("id", id_new_layer);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
+    result_data[new_name] = [];
     current_layers[new_name] = { n_features: current_layers[ref_layer].n_features,
         type: current_layers[ref_layer].type,
         ref_layer_name: ref_layer };
-    result_data[new_name] = [];
+    if (current_layers[ref_layer].pointRadius) current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
     var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
     var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
     if (!fields_to_copy) {
@@ -7496,10 +7508,12 @@ function getBreaksQ6(serie) {
     }
     stock_class.shift();
     if (breaks[0] == breaks[1]) {
-        breaks[1] = (breaks[2] - breaks[1]) / 2;
+        // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
+        breaks[1] = (+serie[1] + breaks[0]) / 2;
     }
     if (breaks[6] == breaks[5]) {
-        breaks[5] = (breaks[5] - breaks[4]) / 2;
+        breaks[5] = serie[len_serie - 2];
+        // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
     }
     if (precision != null) {
         breaks = breaks.map(function (val) {
@@ -8531,7 +8545,9 @@ function add_layer_topojson(text, options) {
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
+    var path_to_use = options.pointRadius != undefined ? path.pointRadius(options.pointRadius) : path;
+
+    map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path_to_use, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
             if (field_names.length > 0) {
                 if (d.id != undefined && d.id != ix) {
@@ -8616,7 +8632,7 @@ function add_layer_topojson(text, options) {
     }
 
     if (!result_layer_on_add && type === "Point") {
-        current_layers[lyr_name_to_add].pointRadius = path.pointRadius();
+        current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
     }
 
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
@@ -9839,7 +9855,7 @@ function createStyleBox(layer_name) {
     make_confirm_dialog2("styleBox", layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
         if (confirmed) {
             // Update the object holding the properties of the layer if Yes is clicked
-            if (type === "Point" && !renderer) {
+            if (type === "Point" && current_layers[layer_name].pointRadius) {
                 current_layers[layer_name].pointRadius = +current_pt_size;
             }
             if (renderer != undefined && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical") {
@@ -9905,7 +9921,7 @@ function createStyleBox(layer_name) {
             map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + "px");
             current_layers[layer_name]['stroke-width-const'] = stroke_width;
             var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-            if (type === "Point" && !renderer) {
+            if (type === "Point" && current_layers[layer_name].pointRadius) {
                 selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius));
             } else if (type == "Line") {
                 if (current_layers[layer_name].renderer == "Links" && prev_min_display != undefined) {
@@ -9960,7 +9976,7 @@ function createStyleBox(layer_name) {
 
     var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
-    if (type === "Point" && !renderer) {
+    if (type === "Point") {
         var current_pt_size = current_layers[layer_name].pointRadius;
         var pt_size = popup.append("p").attr("class", "line_elem");
         pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));
@@ -12949,6 +12965,8 @@ function get_map_template() {
 
         if (current_layer_prop["stroke-width-const"]) layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
 
+        if (current_layer_prop.pointRadius != undefined) layer_style_i.pointRadius = current_layer_prop.pointRadius;
+
         if (current_layer_prop.fixed_stroke != undefined) layer_style_i.fixed_stroke = current_layer_prop.fixed_stroke;
 
         if (current_layer_prop.colors_breaks) layer_style_i.colors_breaks = current_layer_prop.colors_breaks;
@@ -12973,6 +12991,7 @@ function get_map_template() {
         } else if (!current_layer_prop.renderer) {
             selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
+            layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
         } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1) {
             var type_symbol = current_layer_prop.symbol;
@@ -13351,6 +13370,8 @@ function apply_user_preferences(json_pref) {
                 tmp['func_name'] = func_name_corresp.get(_layer.renderer);
                 tmp['result_layer_on_add'] = true;
             }
+            if (_layer.pointRadius != undefined) tmp['pointRadius'] = _layer.pointRadius;
+
             handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function (n_layer_name) {
                 layer_name = n_layer_name;
                 var current_layer_prop = current_layers[layer_name];

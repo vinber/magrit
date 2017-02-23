@@ -833,13 +833,15 @@ function add_layer_topojson(text, options){
         current_layers[lyr_name_to_add].is_result = true;
     }
 
+    let path_to_use = options.pointRadius != undefined ? path.pointRadius(options.pointRadius) : path;
+
     map.append("g").attr("id", lyr_id)
         .attr("class", data_to_load ? "targeted_layer layer" : "layer")
         .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
         .selectAll(".subunit")
         .data(topojson.feature(topoObj, topoObj_objects).features)
         .enter().append("path")
-        .attrs({"d": path, "height": "100%", "width": "100%"})
+        .attrs({"d": path_to_use, "height": "100%", "width": "100%"})
         .attr("id", function(d, ix) {
               if(data_to_load){
                   if(field_names.length > 0){
@@ -931,7 +933,7 @@ function add_layer_topojson(text, options){
     }
 
     if(!result_layer_on_add && type === "Point"){
-        current_layers[lyr_name_to_add].pointRadius = path.pointRadius();
+        current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
     }
 
     layers_listed.insertBefore(li, layers_listed.childNodes[0])

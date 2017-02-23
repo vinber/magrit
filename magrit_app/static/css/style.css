@@ -775,3 +775,9 @@ img.layout_ft_ico:hover {
     min-width: 380px;
     min-height: 310px;
 }
+
+#txtwzr_table > tbody > tr > td, #txtwzr_table > thead > tr > th {
+    border-top: 1px solid #999;
+    padding: 8px;
+    vertical-align: top;
+}

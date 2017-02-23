@@ -1,11 +1,15 @@
-function createBoxTextImportWizard(){
+function createBoxTextImportWizard(file){
   var modal_box = make_dialog_container(
       "box_text_import_wizard",
       i18next.t("app_page.box_text_import.title"),
       "dialog");
 
+  if(!file){
+      file = new File(['id;val1;val2\r\n"foo";2;3\r\n"bar";5;6\r\n'], "filename.csv");
+  }
+
   let box_content = d3.select("#box_text_import_wizard").select(".modal-body");
-  let a = new TextImportWizard(box_content.node());
+  let a = new TextImportWizard(box_content.node(), file);
   let deferred = Q.defer(),
       container = document.getElementById("box_text_import_wizard"),
       fn_cb = (evt) => { helper_esc_key_twbs(evt, _onclose); };
@@ -63,9 +67,6 @@ class TextImportWizard {
     constructor(parent_element, file_txt){
         if(!parent_element)
             parent_element = document.body;
-        if(!file_txt){
-            file_txt = new File(['id;val1;val2\r\n"foo";2;3\r\n"bar";5;6\r\n'], "filename.csv");
-        }
         let self = this;
         self.delim_char = {"tab": "\t", "comma": ",", "semi-collon": ";", "space": " "};
         let handle_change_delimiter = () => {
@@ -91,10 +92,11 @@ class TextImportWizard {
             "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"comma\" style=\"margin-left: 10px;\">Virgule</input>" +
             "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"semi-collon\" style=\"margin-left: 10px;\">Point-virgule</input>" +
             "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"space\" style=\"margin-left: 10px;\">Espace</input></p>" +
-            "<p><span>Séparateur de texte</span><select id=\"txtwzrd_encoding\" style=\"position: absolute; left: 200px;\"><option value=\"&quot;\">&quot;</option><option value=\"'\">'</option></select></p>" +
+            "<p><span>Séparateur de texte</span><select id=\"txtwzrd_txt_sep\" style=\"position: absolute; left: 200px;\"><option value=\"&quot;\">&quot;</option><option value=\"'\">'</option></select></p>" +
+            "<p><span>Séparateur des décimales</span><select id=\"txtwzrd_decimal_sep\" style=\"position: absolute; left: 200px;\"><option value=\".\">.</option><option value=\",\">,</option></select></p>" +
             "</div>" +
             "<div style=\"max-height: 160px;\">" +
-            "<p style=\"font-weight: bold;\"><span>Table</span></p>" +
+            "<p style=\"font-weight: bold;\"><span>Table</span><span id=\"valid_message\" style=\"float: right; color: red; font-weight: bold;\"></span></p>" +
             "<table id=\"txtwzr_table\" style=\"font-size: 14px; margin: 0 5px 0 5px;\"><thead></thead><tbody></tbody>";
         let div_content = document.createElement('div');
         div_content.setAttribute('class', '.txtwzrd_box_content');
@@ -121,6 +123,9 @@ class TextImportWizard {
         this.delimiter = undefined;
         this.from_line = 1;
         this.line_separator = undefined;
+        this.parsed_data = undefined;
+        this.valid = undefined;
+        this.valid_message;
         self.add_encodage_to_selection([self.encoding]);
         self.read_file_to_text({first_read: true, update: true});
     }
@@ -162,6 +167,7 @@ class TextImportWizard {
                 self.set_first_guess_delimiter();
             }
             if(options.update == true){
+                self.parse_data();
                 self.update_table();
             }
         }
@@ -171,13 +177,40 @@ class TextImportWizard {
     change_first_line(from_line){
         let self = this;
         self.from_line = from_line;
+        self.parse_data();
         self.update_table();
     }
 
     change_delimiter(new_delim){
         let self = this;
         self.delimiter = new_delim;
+        self.parse_data();
         self.update_table();
+    }
+
+    parse_data(){
+        let self = this,
+            lines = self.readed_text.split('\r\n'),
+            fields = lines[self.from_line - 1].split(self.delimiter),
+            tmp_nb_fields = fields.length,
+            nb_ft;
+
+        lines = lines.slice(self.from_line).filter(line => line != "");
+        nb_ft = lines.length;
+        self.parsed_data = [];
+        self.valid = true;
+        for(let i = 0; i < nb_ft; i++){
+            let values = lines[i].split(self.delimiter);
+            let ft = {};
+            if(values.length != tmp_nb_fields){
+                self.valid = false;
+                self.valid_message = "Nombre de colonne différent (en-tetes / valeurs)"
+            }
+            for(let j=0; j < tmp_nb_fields; j++){
+                ft[fields[j] || "Field" + j] = values[j];
+            }
+            self.parsed_data.push(ft);
+        }
     }
 
     update_table(){
@@ -186,34 +219,30 @@ class TextImportWizard {
 
         self.table.innerHTML = "<thead></thead><tbody></tbody>";
 
-        let lines = self.readed_text.split('\r\n');
-        let header_line = lines[self.from_line - 1].split(self.delimiter);
-        let tmp_nb_fields = header_line.length;
-
+        let field_names = Object.getOwnPropertyNames(self.parsed_data[0]);
         let headers = self.table.querySelector('thead');
-        let headers_row = doc.createElement("tr");
+        let tbody = self.table.querySelector('tbody');
+        let length_table = self.parsed_data.length < 10 ? self.parsed_data.length: 10;
+        let headers_row = doc.createElement('tr');
 
-        for(let i=0; i < tmp_nb_fields; i++){
+        for(let i=0; i < field_names.length; i++){
             let cell = doc.createElement("th");
-            cell.innerHTML = header_line[i];
+            cell.innerHTML = field_names[i];
             headers_row.appendChild(cell);
         }
         headers.append(headers_row);
-        let tbody = self.table.querySelector('tbody');
-        lines = lines.slice(self.from_line);
-        let length_table = lines.length < 10 ? lines.length : 10;
-        for(let i=0; i < lines.length; i++){
-            let row = doc.createElement("tr");
-            let values = lines[i].split(self.delimiter);
-            if(tmp_nb_fields != values.length){
-                return;
-            }
-            for(let j=0; j < tmp_nb_fields; j++){
+
+        for(let i=0; i < length_table; i++){
+            let row = doc.createElement("tr"),
+                values = self.parsed_data[i],
+                fields = Object.getOwnPropertyNames(values);
+            for(let j=0; j < fields.length; j++){
                 let cell = doc.createElement("td");
-                cell.innerHTML = values[j]
+                cell.innerHTML = values[fields[j]];
                 row.appendChild(cell);
             }
             tbody.appendChild(row);
         }
+        self.content.querySelector('#valid_message').innerHTML = self.valid === false ? self.valid_message : "";
     }
 }

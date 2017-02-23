@@ -256,7 +256,7 @@ function make_discretization_icons(discr_section){
       .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
     subsection2.append('span')
       .attrs({id: 'choro_mini_choice_disc'})
-      .styles({float: 'right', 'margin-top': '5px'});
+      .styles({float: 'right', 'margin-top': '5px', 'margin-left': '15px'});
     subsection2.append('img')
       .styles({width: '15px', position: 'absolute', right: '5px'})
       .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.png'});

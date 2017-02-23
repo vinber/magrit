@@ -198,10 +198,12 @@ function getBreaksQ6(serie, precision=null){
     }
     stock_class.shift();
     if(breaks[0] == breaks[1]){
-        breaks[1] = (breaks[2] - breaks[1]) / 2
+        // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
+        breaks[1] = (+serie[1] + breaks[0]) / 2;
     }
     if(breaks[6] == breaks[5]){
-        breaks[5] = (breaks[5] - breaks[4]) / 2
+        breaks[5] = serie[len_serie - 2];
+        // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
     }
     if(precision != null){
         breaks = breaks.map(val => round_value(val, precision));

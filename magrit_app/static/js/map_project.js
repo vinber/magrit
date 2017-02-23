@@ -160,6 +160,9 @@ function get_map_template(){
         if(current_layer_prop["stroke-width-const"])
             layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
 
+        if(current_layer_prop.pointRadius != undefined)
+            layer_style_i.pointRadius = current_layer_prop.pointRadius;
+
         if(current_layer_prop.fixed_stroke != undefined)
             layer_style_i.fixed_stroke = current_layer_prop.fixed_stroke;
 
@@ -187,6 +190,7 @@ function get_map_template(){
         } else if(!current_layer_prop.renderer){
             selection = map.select("#" + layer_id).selectAll("path");
             layer_style_i.fill_opacity = selection.style("fill-opacity");
+            layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
         } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
             let type_symbol = current_layer_prop.symbol;
@@ -564,6 +568,9 @@ function apply_user_preferences(json_pref){
                 tmp['func_name'] = func_name_corresp.get(_layer.renderer)
                 tmp['result_layer_on_add'] = true;
             }
+            if(_layer.pointRadius != undefined)
+                tmp['pointRadius'] = _layer.pointRadius;
+
             handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
                 layer_name = n_layer_name;
                 let current_layer_prop = current_layers[layer_name];

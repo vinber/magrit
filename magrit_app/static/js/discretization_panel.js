@@ -328,7 +328,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
             if(type === "Q6"){
                 var tmp = getBreaksQ6(values, serie.precision);
-                console.log(values); console.log(tmp)
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 breaks[0] = serie.min();
@@ -336,9 +335,23 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+                nb_class = tmp.breaks.length - 1;
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
-                serie.setClassManually(breaks);
+
+                if(breaks[0] > serie.min())
+                    breaks[0] = serie.min();
+                if(breaks[nb_class] < serie.max())
+                    breaks[nb_class] = serie.max();
+
+                let breaks_serie = breaks.slice();
+                if(breaks_serie[0] < serie.min()){
+                    breaks_serie[0] = serie.min();
+                }
+                if(breaks_serie[nb_class] > serie.max()){
+                    breaks_serie[nb_class] = serie.max();
+                }
+                serie.setClassManually(breaks_serie);
             } else {
                 let _func = discretiz_geostats_switch.get(type);
                 breaks = serie[_func](nb_class);

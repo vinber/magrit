@@ -483,7 +483,7 @@ function createStyleBox(layer_name){
         .then(function(confirmed){
             if(confirmed){
                 // Update the object holding the properties of the layer if Yes is clicked
-                if(type === "Point" && !renderer) {
+                if(type === "Point" && current_layers[layer_name].pointRadius) {
                     current_layers[layer_name].pointRadius = +current_pt_size;
                 }
                 if(renderer != undefined
@@ -557,7 +557,7 @@ function createStyleBox(layer_name){
                 map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
                 current_layers[layer_name]['stroke-width-const'] = stroke_width;
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-                if(type === "Point" && !renderer) {
+                if(type === "Point" && current_layers[layer_name].pointRadius) {
                     selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius))
                 } else if(type == "Line"){
                     if(current_layers[layer_name].renderer == "Links" && prev_min_display != undefined){
@@ -616,7 +616,7 @@ function createStyleBox(layer_name){
 
     var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
-    if(type === "Point" && !renderer){
+    if(type === "Point"){
         var current_pt_size = current_layers[layer_name].pointRadius;
         let pt_size = popup.append("p").attr("class", "line_elem");
         pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));

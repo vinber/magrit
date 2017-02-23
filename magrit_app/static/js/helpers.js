@@ -131,10 +131,12 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
     svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+id_ref_layer).cloneNode(true));
     svg_map.lastChild.setAttribute("id", id_new_layer);
     svg_map.lastChild.setAttribute("class", "result_layer layer");
+    result_data[new_name] = [];
     current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
                              type: current_layers[ref_layer].type,
                              ref_layer_name: ref_layer};
-    result_data[new_name] = [];
+    if(current_layers[ref_layer].pointRadius)
+        current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
     let selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
     let selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
     if(!fields_to_copy){
