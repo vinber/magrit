@@ -621,17 +621,27 @@ function createStyleBox(layer_name){
         let pt_size = popup.append("p").attr("class", "line_elem");
         pt_size.append("span").html(i18next.t("app_page.layer_style_popup.point_radius"));
         pt_size.append("input")
-                .attrs({type: "range", min: 0, max: 40, value: current_pt_size})
-                .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
-                .on("change", function(){
-                    current_pt_size = +this.value;
-                    document.getElementById("txt_pt_radius").innerHTML = current_pt_size;
-                    selection.attr("d", path.pointRadius(current_pt_size));
-                });
-        pt_size.append("span")
-                .attr("id", "txt_pt_radius")
-                .style("float", "right")
-                .html(current_pt_size + "");
+            .attrs({type: "range", min: 0, max: 80, value: current_pt_size, id: 'point_radius_size'})
+            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
+            .on("change", function(){
+                current_pt_size = +this.value;
+                document.getElementById("point_radius_size_txt").value = current_pt_size;
+                selection.attr("d", path.pointRadius(current_pt_size));
+            });
+        pt_size.append("input")
+            .attrs({type: "number", value: +current_pt_size, min: 0, max: 80, step: "any", class: "without_spinner", id: 'point_radius_size_txt'})
+            .styles({width: "30px", "margin-left": "10px", "float": "right"})
+            .on("change", function(){
+                let pt_size_range = document.getElementById("point_radius_size"),
+                    old_value = pt_size_range.value;
+                if(this.value == "" || isNaN(+this.value)){
+                    this.value = old_value;
+                } else {
+                    this.value = round_value(+this.value, 2);
+                    pt_size_range.value = this.value;
+                    selection.attr("d", path.pointRadius(this.value));
+                }
+            });
     }
 
      if(type !== 'Line'){

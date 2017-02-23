@@ -12,7 +12,7 @@ function createBoxTextImportWizard(file){
   let a = new TextImportWizard(box_content.node(), file);
   let deferred = Q.defer(),
       container = document.getElementById("box_text_import_wizard"),
-      fn_cb = (evt) => { helper_esc_key_twbs(evt, _onclose); };
+      fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
       _onclose = () => {
           deferred.resolve(false);
           modal_box.close();
@@ -50,17 +50,6 @@ function firstGuessSeparator(line){
     } else {
         return 'comma';
     }
-}
-
-function helper_esc_key_twbs(evt, callback){
-      evt = evt || window.event;
-      let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
-      if (isEscape) {
-        evt.stopPropagation();
-        if(callback){
-            callback();
-        }
-      }
 }
 
 class TextImportWizard {

@@ -514,3 +514,14 @@ const clickLinkFromDataUrl = (url, filename) => {
         URL.revokeObjectURL(blobUrl);
     });
 }
+
+const helper_esc_key_twbs_cb = function(evt, callback){
+    evt = evt || window.event;
+    let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
+    if (isEscape) {
+      evt.stopPropagation();
+      if(callback){
+          callback();
+      }
+    }
+}
