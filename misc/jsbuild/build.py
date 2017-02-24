@@ -31,7 +31,9 @@ def build_js_file(use_minified):
                'map_project.js',
                'symbols_picto.js',
                'projections.js',
-               'tables.js'], stderr=PIPE, stdout=PIPE)
+               'tables.js',
+               'text_import_wizard.js',
+               'zoom_rect.js'], stderr=PIPE, stdout=PIPE)
     r = p.communicate()
     if len(r[1]) > 0 or len(r[0]) == 0:
         print(r[1])

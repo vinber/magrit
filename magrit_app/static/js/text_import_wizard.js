@@ -89,9 +89,11 @@ class TextImportWizard {
             "<p><span>Séparateur de texte</span><select id=\"txtwzrd_txt_sep\" style=\"position: absolute; left: 200px;\"><option value=\"&quot;\">&quot;</option><option value=\"'\">'</option></select></p>" +
             "<p><span>Séparateur des décimales</span><select id=\"txtwzrd_decimal_sep\" style=\"position: absolute; left: 200px;\"><option value=\".\">.</option><option value=\",\">,</option></select></p>" +
             "</div>" +
-            "<div style=\"max-height: 160px;\">" +
-            "<p style=\"font-weight: bold;\"><span>Table</span><span id=\"valid_message\" style=\"float: right; color: red; font-weight: bold;\"></span></p>" +
-            "<table id=\"txtwzr_table\" style=\"font-size: 14px; margin: 0 5px 0 5px;\"><thead></thead><tbody></tbody>";
+            "<p style=\"font-weight: bold;clear: both;\"><span>Table</span><span id=\"valid_message\" style=\"float: right; color: red; font-weight: bold;\"></span></p>" +
+            "<div style=\"max-height: 160px; overflow-y: scroll; margin-top: 12px;\">" +
+            "<table id=\"txtwzr_table\" style=\"font-size: 14px; margin: 0 5px 0 5px;\"><thead></thead><tbody></tbody>" +
+            "</div>";
+
         let div_content = document.createElement('div');
         div_content.setAttribute('class', '.txtwzrd_box_content');
         div_content.style = "minWidth: 400px; maxWidth: 600px; minHeight: 400px; maxHeight: 600px";
@@ -103,7 +105,7 @@ class TextImportWizard {
             if(isNaN(val) || val < 1 || (val | 0) != val){
                 this.value = self.from_line;
             } else {
-                self.from_line = from_line;
+                self.from_line = val;
                 self.parse_data();
                 self.update_table()
             }
@@ -130,6 +132,7 @@ class TextImportWizard {
         this.valid_message;
         self.add_encodage_to_selection([self.encoding]);
         self.read_file_to_text({first_read: true, update: true});
+        return this;
     }
 
     add_encodage_to_selection(encodage){
@@ -146,7 +149,7 @@ class TextImportWizard {
 
     set_first_guess_delimiter(){
         let self = this;
-        let delim = firstGuessSeparator(self.readed_text.split(self.line_separator));
+        let delim = firstGuessSeparator(self.readed_text.split(self.line_separator)[0]);
         self.delimiter = self.delim_char[delim]
         Array.prototype.forEach.call(document.getElementsByName('txtwzrd_delim_char'), el => {
             if(el.value == delim){
@@ -194,7 +197,7 @@ class TextImportWizard {
             }
         };
         let self = this,
-            lines = self.readed_text.split('\r\n'),
+            lines = self.readed_text.split(self.line_separator),
             fields = lines[self.from_line - 1].split(self.delimiter),
             tmp_nb_fields = fields.length,
             nb_ft;
@@ -224,6 +227,7 @@ class TextImportWizard {
         let self = this;
         let doc = document;
 
+        self.table.parentElement.scrollTop = 0;
         self.table.innerHTML = "<thead></thead><tbody></tbody>";
 
         let field_names = Object.getOwnPropertyNames(self.parsed_data[0]);

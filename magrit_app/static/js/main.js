@@ -27,6 +27,7 @@ Function.prototype.memoize = function() {
   };
 };
 
+
 /**
 * Function setting-up main elements of the interface
 *
@@ -894,8 +895,8 @@ function setUpInterface(resume_project)
         {id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-"},
         {id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+"},
         {id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i"},
-        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}/*,
-        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}*/
+        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}
+        // {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}
     ];
 
     let selec = lm.selectAll("input")
@@ -914,7 +915,7 @@ function setUpInterface(resume_project)
     d3.selectAll(".zoom_button").on("click", zoomClick);
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
-    //document.getElementById("brush_zoom_button").onclick = brush_rect;
+    // document.getElementById("brush_zoom_button").onclick = handleZoomRect;
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -1595,33 +1596,25 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         });
         modal_box.open();
         overlay_under_modal.display();
-        container.querySelector(".btn_ok").onclick = function(){
-            deferred.resolve(true);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+        let func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
+        let clean_up_box = () => {
+            document.removeEventListener('keydown', func_cb);
             existing.delete(new_id);
             overlay_under_modal.hide();
-            container.remove();
-        }
-        let _onclose = () => {
-            deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
             modal_box.close();
-            existing.delete(new_id);
-            overlay_under_modal.hide();
             container.remove();
         };
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        function helper_esc_key_twbs(evt){
-              evt = evt || window.event;
-              let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
-              if (isEscape) {
-                  evt.stopPropagation();
-                  _onclose();
-                  document.removeEventListener('keydown', helper_esc_key_twbs);
-              }
+        let _onclose_false = () => {
+            deferred.resolve(false);
+            clean_up_box();
+        };
+        container.querySelector(".btn_cancel").onclick = _onclose_false;
+        container.querySelector("#xclose").onclick = _onclose_false;
+        container.querySelector(".btn_ok").onclick = function(){
+            deferred.resolve(true);
+            clean_up_box();
         }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', func_cb);
         return deferred.promise;
     };
 })();
@@ -1969,11 +1962,10 @@ function handleClipPath(proj_name, main_layer){
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else if (proj_name.indexOf('conicconformal') > -1){
 
-        let outline = d3.geoGraticule().extentMajor([[-175, 0], [175, 90]]).outline();
+        let outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
-        proj.fitSize([w, h], outline);
-        proj.scale(s).translate(t);
-
+        // proj.fitSize([w, h], outline);
+        proj.scale(s).translate(t)
         path.projection(proj);
 
         defs.append("path")
@@ -1990,6 +1982,7 @@ function handleClipPath(proj_name, main_layer){
         map.selectAll('.layer')
             .selectAll('path')
             .attr('d', path);
+
         reproj_symbol_layer();
         if(main_layer){
           center_map(main_layer);

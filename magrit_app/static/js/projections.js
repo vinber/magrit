@@ -60,7 +60,7 @@ const createBoxCustomProjection = function(){
 			.style('float', 'left')
 			.html(i18next.t('app_page.section5.projection_center_lambda'));
 	lambda_section.append('input')
-			.styles({'width': '50px', 'float': 'right'})
+			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50})
 			.on("input", function(){
 					handle_proj_center_button([this.value, null, null]);

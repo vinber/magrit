@@ -565,7 +565,6 @@ function handle_dataset(f, target_layer_on_add){
 
         reader.onload = function(e) {
             var data = e.target.result;
-            dataset_name = name.substring(0, name.indexOf('.csv'));
             let sep = data.split("\n")[0];
             if(sep.indexOf("\t") > -1) {
                 sep = "\t";
@@ -593,6 +592,7 @@ function handle_dataset(f, target_layer_on_add){
                     return;
                 }
             }
+            dataset_name = name.substring(0, name.indexOf('.csv'));
             add_dataset(tmp_dataset);
         };
         reader.readAsText(f);
@@ -607,6 +607,51 @@ function handle_dataset(f, target_layer_on_add){
         check_dataset();
     }
 }
+
+// function handle_dataset(f, target_layer_on_add){
+//     function box_dataset(){
+//         createBoxTextImportWizard(f).then(confirm => {
+//             if(confirm){
+//                 let [tmp_dataset, valid] = confirm;
+//                 console.log(tmp_dataset, valid);
+//                 let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
+//                 if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+//                     if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+//                         if(target_layer_on_add && _app.targeted_layer_added){
+//                             swal({title: i18next.t("app_page.common.error") + "!",
+//                                   text: i18next.t('app_page.common.error_only_one'),
+//                                   customClass: 'swal2_custom',
+//                                   type: "error",
+//                                   allowEscapeKey: false,
+//                                   allowOutsideClick: false});
+//
+//                         } else {
+//                             let reader = new FileReader(),
+//                                 name = f.name;
+//
+//                             reader.onload = function(e) {
+//                                 add_csv_geom(e.target.result, f.name.substring(0, name.indexOf('.csv')));
+//                             }
+//                             reader.readAsText();
+//                         }
+//                         return;
+//                     }
+//                 }
+//                 dataset_name = f.name.substring(0, f.name.indexOf('.csv'));
+//                 add_dataset(tmp_dataset);
+//             }
+//         });
+//     }
+//
+//     if(joined_dataset.length !== 0){
+//         ask_replace_dataset().then(() => {
+//             remove_ext_dataset_cleanup();
+//             box_dataset();
+//           }, () => { null; });
+//     } else {
+//         box_dataset();
+//     }
+// }
 
 function update_menu_dataset(){
     let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
@@ -977,9 +1022,9 @@ function add_layer_topojson(text, options = {}){
 function get_bbox_layer_path(name){
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
-        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    } else {
+    // if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
+    //     bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    // } else {
         map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
             let bbox_path = path.bounds(d);
             if(!bbox_layer_path)
@@ -991,7 +1036,13 @@ function get_bbox_layer_path(name){
                 bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
             }
         });
-    }
+        if(current_proj_name == "ConicConformal"){
+            let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+            let bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+            let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+            if(s2 < s1) bbox_layer_path = bbox_layer_path2;
+        }
+    // }
     return bbox_layer_path;
 }
 

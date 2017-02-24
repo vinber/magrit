@@ -735,8 +735,8 @@ function setUpInterface(resume_project) {
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
 
-    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' } /*,
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}*/
+    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }
+    // {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}
     ];
 
     var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
@@ -753,7 +753,7 @@ function setUpInterface(resume_project) {
     d3.selectAll(".zoom_button").on("click", zoomClick);
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
-    //document.getElementById("brush_zoom_button").onclick = brush_rect;
+    // document.getElementById("brush_zoom_button").onclick = handleZoomRect;
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -1359,33 +1359,27 @@ var make_confirm_dialog2 = function (class_box, title, options) {
         });
         modal_box.open();
         overlay_under_modal.display();
+        var func_cb = function func_cb(evt) {
+            helper_esc_key_twbs_cb(evt, _onclose_false);
+        };
+        var clean_up_box = function clean_up_box() {
+            document.removeEventListener('keydown', func_cb);
+            existing.delete(new_id);
+            overlay_under_modal.hide();
+            modal_box.close();
+            container.remove();
+        };
+        var _onclose_false = function _onclose_false() {
+            deferred.resolve(false);
+            clean_up_box();
+        };
+        container.querySelector(".btn_cancel").onclick = _onclose_false;
+        container.querySelector("#xclose").onclick = _onclose_false;
         container.querySelector(".btn_ok").onclick = function () {
             deferred.resolve(true);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
-            existing.delete(new_id);
-            overlay_under_modal.hide();
-            container.remove();
+            clean_up_box();
         };
-        var _onclose = function _onclose() {
-            deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
-            modal_box.close();
-            existing.delete(new_id);
-            overlay_under_modal.hide();
-            container.remove();
-        };
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        function helper_esc_key_twbs(evt) {
-            evt = evt || window.event;
-            var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-            if (isEscape) {
-                evt.stopPropagation();
-                _onclose();
-                document.removeEventListener('keydown', helper_esc_key_twbs);
-            }
-        }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        document.addEventListener('keydown', func_cb);
         return deferred.promise;
     };
 }();
@@ -1691,11 +1685,10 @@ function handleClipPath(proj_name, main_layer) {
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else if (proj_name.indexOf('conicconformal') > -1) {
 
-        var outline = d3.geoGraticule().extentMajor([[-175, 0], [175, 90]]).outline();
+        var outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
-        proj.fitSize([w, h], outline);
+        // proj.fitSize([w, h], outline);
         proj.scale(s).translate(t);
-
         path.projection(proj);
 
         defs.append("path").attr("id", "extent").attr("d", path(outline));
@@ -1704,6 +1697,7 @@ function handleClipPath(proj_name, main_layer) {
         map.selectAll(".layer").attr("clip-path", "url(#clip)");
 
         map.selectAll('.layer').selectAll('path').attr('d', path);
+
         reproj_symbol_layer();
         if (main_layer) {
             center_map(main_layer);
@@ -8327,7 +8321,6 @@ function handle_dataset(f, target_layer_on_add) {
 
         reader.onload = function (e) {
             var data = e.target.result;
-            dataset_name = name.substring(0, name.indexOf('.csv'));
             var sep = data.split("\n")[0];
             if (sep.indexOf("\t") > -1) {
                 sep = "\t";
@@ -8354,6 +8347,7 @@ function handle_dataset(f, target_layer_on_add) {
                     return;
                 }
             }
+            dataset_name = name.substring(0, name.indexOf('.csv'));
             add_dataset(tmp_dataset);
         };
         reader.readAsText(f);
@@ -8370,6 +8364,51 @@ function handle_dataset(f, target_layer_on_add) {
         check_dataset();
     }
 }
+
+// function handle_dataset(f, target_layer_on_add){
+//     function box_dataset(){
+//         createBoxTextImportWizard(f).then(confirm => {
+//             if(confirm){
+//                 let [tmp_dataset, valid] = confirm;
+//                 console.log(tmp_dataset, valid);
+//                 let field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
+//                 if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
+//                     if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
+//                         if(target_layer_on_add && _app.targeted_layer_added){
+//                             swal({title: i18next.t("app_page.common.error") + "!",
+//                                   text: i18next.t('app_page.common.error_only_one'),
+//                                   customClass: 'swal2_custom',
+//                                   type: "error",
+//                                   allowEscapeKey: false,
+//                                   allowOutsideClick: false});
+//
+//                         } else {
+//                             let reader = new FileReader(),
+//                                 name = f.name;
+//
+//                             reader.onload = function(e) {
+//                                 add_csv_geom(e.target.result, f.name.substring(0, name.indexOf('.csv')));
+//                             }
+//                             reader.readAsText();
+//                         }
+//                         return;
+//                     }
+//                 }
+//                 dataset_name = f.name.substring(0, f.name.indexOf('.csv'));
+//                 add_dataset(tmp_dataset);
+//             }
+//         });
+//     }
+//
+//     if(joined_dataset.length !== 0){
+//         ask_replace_dataset().then(() => {
+//             remove_ext_dataset_cleanup();
+//             box_dataset();
+//           }, () => { null; });
+//     } else {
+//         box_dataset();
+//     }
+// }
 
 function update_menu_dataset() {
     var d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), "(...)"].join('') : dataset_name,
@@ -8714,19 +8753,25 @@ function add_layer_topojson(text) {
 function get_bbox_layer_path(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    if (current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")) {
-        bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
-    } else {
-        map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
-            var bbox_path = path.bounds(d);
-            if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
-                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-            }
-        });
+    // if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
+    //     bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    // } else {
+    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
+        var bbox_path = path.bounds(d);
+        if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
+            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+        }
+    });
+    if (current_proj_name == "ConicConformal") {
+        var s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+        var bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
+        var s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+        if (s2 < s1) bbox_layer_path = bbox_layer_path2;
     }
+    // }
     return bbox_layer_path;
 }
 
@@ -13979,7 +14024,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 
 		var lambda_section = content.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
-		lambda_section.append('input').styles({ 'width': '50px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
+		lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
 				handle_proj_center_button([this.value, null, null]);
 				document.getElementById('form_projection_center').value = this.value;
 				document.getElementById('proj_center_value_txt').value = this.value;
@@ -14542,5 +14587,314 @@ var boxExplore2 = {
         this.display_table(layer_name);
         return deferred.promise;
     }
+};
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function createBoxTextImportWizard(file) {
+    var modal_box = make_dialog_container("box_text_import_wizard", i18next.t("app_page.box_text_import.title"), "dialog");
+
+    if (!file) {
+        file = new File(['id;val1;val2\r\n"foo";2;3\r\n"bar";5;6\r\n'], "filename.csv");
+    }
+
+    var box_content = d3.select("#box_text_import_wizard").select(".modal-body");
+    var a = new TextImportWizard(box_content.node(), file);
+    var deferred = Q.defer(),
+        container = document.getElementById("box_text_import_wizard"),
+        dialog = container.querySelector('.modal-dialog');
+    dialog.style.width = undefined;
+    dialog.style.maxWidth = '620px';
+    dialog.style.minWidth = '380px';
+
+    var clean_up_box = function clean_up_box() {
+        modal_box.close();
+        container.remove();
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', fn_cb);
+    };
+    var fn_cb = function fn_cb(evt) {
+        helper_esc_key_twbs_cb(evt, _onclose);
+    };
+    var _onclose = function _onclose() {
+        clean_up_box();
+        deferred.resolve(false);
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    container.querySelector(".btn_ok").onclick = function () {
+        clean_up_box();
+        deferred.resolve([a.parsed_data, a.valid]);
+    };
+    document.addEventListener('keydown', fn_cb);
+    overlay_under_modal.display();
+
+    return deferred.promise;
+}
+
+// let encoding = jschardet.detect(data);
+// if(encoding.encoding != "utf-8"
+//         || encoding.confidence){
+//     console.log(encoding);
+//    //  Todo : do something in order to get a correct encoding
+// }
+
+function firstGuessSeparator(line) {
+    if (line.indexOf('\t') > -1) {
+        return 'tab';
+    } else if (line.indexOf(';') > -1) {
+        return 'semi-collon';
+    } else {
+        return 'comma';
+    }
+}
+
+var TextImportWizard = function () {
+    function TextImportWizard(parent_element, file_txt) {
+        _classCallCheck(this, TextImportWizard);
+
+        if (!parent_element) parent_element = document.body;
+        var self = this;
+        self.delim_char = { "tab": "\t", "comma": ",", "semi-collon": ";", "space": " " };
+        var handle_change_delimiter = function handle_change_delimiter() {
+            var buttons = document.getElementsByName('txtwzrd_delim_char'),
+                n_buttons = buttons.length,
+                delim = void 0;
+            for (var i = 0; i < n_buttons; i++) {
+                if (buttons[i].checked) delim = self.delim_char[buttons[i].value];
+            }
+            if (delim) self.change_delimiter(delim);
+        };
+        var html_content = "<div>" + "<p style=\"font-weight: bold;\"><span>Import</span><span style=\"float: right;\" id=\"txtwzrd_filename\"></span></p>" + "<p><span>Encodage</span><select id=\"txtwzrd_encoding\" style=\"position: absolute; left: 200px;\"></select></p>" + "<p><span>A partir de la ligne</span><input style=\"position: absolute; left: 200px;width: 60px;\" type=\"number\" value=\"1\" min=\"1\" step=\"1\" id=\"txtwzrd_from_line\"/></p>" + "</div>" + "<div>" + "<p style=\"font-weight: bold;\"><span>Délimiteur</span></p>" +
+        // "<p><input type=\"radio\" name=\"txtwzrd_radio_delim\" value=\"fixed\">Taille de colonne fixe</input><input type=\"radio\" name=\"txtwzrd_radio_delim\" value=\"char\">Caractère</input></p>" +
+        "<p><input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"tab\" style=\"margin-left: 10px;\">Tabulation</input>" + "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"comma\" style=\"margin-left: 10px;\">Virgule</input>" + "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"semi-collon\" style=\"margin-left: 10px;\">Point-virgule</input>" + "<input type=\"radio\" name=\"txtwzrd_delim_char\" value=\"space\" style=\"margin-left: 10px;\">Espace</input></p>" + "<p><span>Séparateur de texte</span><select id=\"txtwzrd_txt_sep\" style=\"position: absolute; left: 200px;\"><option value=\"&quot;\">&quot;</option><option value=\"'\">'</option></select></p>" + "<p><span>Séparateur des décimales</span><select id=\"txtwzrd_decimal_sep\" style=\"position: absolute; left: 200px;\"><option value=\".\">.</option><option value=\",\">,</option></select></p>" + "</div>" + "<p style=\"font-weight: bold;clear: both;\"><span>Table</span><span id=\"valid_message\" style=\"float: right; color: red; font-weight: bold;\"></span></p>" + "<div style=\"max-height: 160px; overflow-y: scroll; margin-top: 12px;\">" + "<table id=\"txtwzr_table\" style=\"font-size: 14px; margin: 0 5px 0 5px;\"><thead></thead><tbody></tbody>" + "</div>";
+
+        var div_content = document.createElement('div');
+        div_content.setAttribute('class', '.txtwzrd_box_content');
+        div_content.style = "minWidth: 400px; maxWidth: 600px; minHeight: 400px; maxHeight: 600px";
+        div_content.innerHTML = html_content;
+        parent_element.appendChild(div_content);
+        parent_element.querySelector('#txtwzrd_filename').innerHTML = file_txt.name;
+        parent_element.querySelector('#txtwzrd_from_line').onchange = function () {
+            var val = +this.value;
+            if (isNaN(val) || val < 1 || (val | 0) != val) {
+                this.value = self.from_line;
+            } else {
+                self.from_line = val;
+                self.parse_data();
+                self.update_table();
+            }
+        };
+        parent_element.querySelector('#txtwzrd_txt_sep').onchange = function () {
+            self.text_separator = this.value;
+            self.parse_data();
+            self.update_table();
+        };
+        Array.prototype.forEach.call(document.getElementsByName('txtwzrd_delim_char'), function (el) {
+            el.onclick = handle_change_delimiter;
+        });
+        this.content = div_content;
+        this.table = div_content.querySelector('table');
+        this.file = file_txt;
+        this.readed_text = null;
+        this.encoding = document.characterSet;
+        this.delimiter = undefined;
+        this.from_line = 1;
+        this.line_separator = undefined;
+        this.text_separator = '"';
+        this.parsed_data = undefined;
+        this.valid = undefined;
+        this.valid_message;
+        self.add_encodage_to_selection([self.encoding]);
+        self.read_file_to_text({ first_read: true, update: true });
+        return this;
+    }
+
+    _createClass(TextImportWizard, [{
+        key: "add_encodage_to_selection",
+        value: function add_encodage_to_selection(encodage) {
+            var select = this.content.querySelector('#txtwzrd_encoding');
+            if (typeof encodage == "string") encodage = [encodage];
+            for (var i = 0; i < encodage.length; i++) {
+                var o = document.createElement('option');
+                o.value = encodage[i];
+                o.innerText = encodage[i];
+                select.append(o);
+            }
+        }
+    }, {
+        key: "set_first_guess_delimiter",
+        value: function set_first_guess_delimiter() {
+            var self = this;
+            var delim = firstGuessSeparator(self.readed_text.split(self.line_separator)[0]);
+            self.delimiter = self.delim_char[delim];
+            Array.prototype.forEach.call(document.getElementsByName('txtwzrd_delim_char'), function (el) {
+                if (el.value == delim) {
+                    el.checked = true;
+                }
+            });
+        }
+    }, {
+        key: "set_line_separator",
+        value: function set_line_separator() {
+            this.line_separator = this.readed_text.indexOf('\r\n') > -1 ? '\r\n' : '\n';
+        }
+    }, {
+        key: "read_file_to_text",
+        value: function read_file_to_text() {
+            var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+            var self = this;
+            var reader = new FileReader();
+            reader.onloadend = function () {
+                self.readed_text = reader.result;
+                if (options.first_read == true) {
+                    self.set_line_separator();
+                    self.set_first_guess_delimiter();
+                }
+                if (options.update == true) {
+                    self.parse_data();
+                    self.update_table();
+                }
+            };
+            reader.readAsText(self.file, self.encoding);
+        }
+    }, {
+        key: "change_delimiter",
+        value: function change_delimiter(new_delim) {
+            var self = this;
+            self.delimiter = new_delim;
+            self.parse_data();
+            self.update_table();
+        }
+    }, {
+        key: "parse_data",
+        value: function parse_data() {
+            var strip_text_separator = function strip_text_separator(line) {
+                var len = line.length;
+                for (var i = 0; i < len; i++) {
+                    var val = line[i];
+                    if (val.startsWith(self.text_separator) && val.endsWith(self.text_separator)) {
+                        line[i] = val.slice(1, -1);
+                    }
+                }
+            };
+            var self = this,
+                lines = self.readed_text.split(self.line_separator),
+                fields = lines[self.from_line - 1].split(self.delimiter),
+                tmp_nb_fields = fields.length,
+                nb_ft = void 0;
+
+            strip_text_separator(fields);
+
+            lines = lines.slice(self.from_line).filter(function (line) {
+                return line != "";
+            });
+            nb_ft = lines.length;
+            self.parsed_data = [];
+            self.valid = true;
+            for (var i = 0; i < nb_ft; i++) {
+                var values = lines[i].split(self.delimiter);
+                strip_text_separator(values);
+                var ft = {};
+                if (values.length != tmp_nb_fields) {
+                    self.valid = false;
+                    self.valid_message = "Nombre de colonne différent (en-tetes / valeurs)";
+                }
+                for (var j = 0; j < tmp_nb_fields; j++) {
+                    ft[fields[j] || "Field" + j] = values[j];
+                }
+                self.parsed_data.push(ft);
+            }
+        }
+    }, {
+        key: "update_table",
+        value: function update_table() {
+            var self = this;
+            var doc = document;
+
+            self.table.parentElement.scrollTop = 0;
+            self.table.innerHTML = "<thead></thead><tbody></tbody>";
+
+            var field_names = Object.getOwnPropertyNames(self.parsed_data[0]);
+            var headers = self.table.querySelector('thead');
+            var tbody = self.table.querySelector('tbody');
+            var length_table = self.parsed_data.length < 10 ? self.parsed_data.length : 10;
+            var headers_row = doc.createElement('tr');
+
+            for (var i = 0; i < field_names.length; i++) {
+                var cell = doc.createElement("th");
+                cell.innerHTML = field_names[i];
+                headers_row.appendChild(cell);
+            }
+            headers.append(headers_row);
+
+            for (var _i = 0; _i < length_table; _i++) {
+                var row = doc.createElement("tr"),
+                    values = self.parsed_data[_i],
+                    fields = Object.getOwnPropertyNames(values);
+                for (var j = 0; j < fields.length; j++) {
+                    var _cell = doc.createElement("td");
+                    _cell.innerHTML = values[fields[j]];
+                    row.appendChild(_cell);
+                }
+                tbody.appendChild(row);
+            }
+            self.content.querySelector('#valid_message').innerHTML = self.valid === false ? self.valid_message : "";
+        }
+    }]);
+
+    return TextImportWizard;
+}();
+"use strict";
+
+var handleZoomRect = function handleZoomRect() {
+    var b = map.select('.brush');
+    if (b.node()) {
+        b.remove();
+    } else {
+        makeZoomRect();
+    }
+};
+
+var makeZoomRect = function makeZoomRect() {
+    function idled() {
+        idleTimeout = null;
+    };
+    function brushended() {
+        var s = d3.event.selection;
+        if (!s) {
+            if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+        } else {
+            var x_min = s[0][0],
+                x_max = s[1][0];
+            var y_min = s[1][1],
+                y_max = s[0][1];
+            var transform = d3.zoomTransform(svg_map),
+                z_trans = [transform.x, transform.y],
+                z_scale = transform.k;
+
+            var pt1 = proj.invert([(x_min - z_trans[0]) / z_scale, (y_min - z_trans[1]) / z_scale]),
+                pt2 = proj.invert([(x_max - z_trans[0]) / z_scale, (y_max - z_trans[1]) / z_scale]);
+            var path_bounds = path.bounds({ "type": "MultiPoint", "coordinates": [pt1, pt2] });
+            // Todo : use these two points to make zoom on them
+            map.select(".brush").call(brush.move, null);
+
+            var zoom_scale = .95 / Math.max((path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
+            var zoom_translate = [(w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2, (h - zoom_scale * (path_bounds[1][1] + path_bounds[0][1])) / 2];
+            svg_map.__zoom.k = zoom_scale;
+            svg_map.__zoom.x = zoom_translate[0];
+            svg_map.__zoom.y = zoom_translate[1];
+            zoom_without_redraw();
+        }
+    }
+
+    var brush = d3.brush().on("end", brushended),
+        idleTimeout,
+        idleDelay = 350;
+    map.append("g").attr("class", "brush").call(brush);
 };
 
