@@ -1329,13 +1329,13 @@ function add_simplified_land_layer(options = {}){
             "fill_color": {single: options.fill}
         };
         map.append("g")
-            .attrs({id: "World", class: "layer"})
+            .attrs({id: "World", class: "layer", "clip-path": "url(#clip)"})
             .style("stroke-width", options.stroke_width)
             .selectAll('.subunit')
             .data(topojson.feature(json, json.objects.World).features)
             .enter()
             .append('path')
-            .attrs({'d': path, 'clip-path': 'url(#clip)'})
+            .attr('d', path)
             .styles({stroke: options.stroke, fill: options.fill,
                      "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
         create_li_layer_elem("World", null, "Polygon", "sample");

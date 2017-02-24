@@ -1943,11 +1943,13 @@ function isInterrupted(proj_name){
             || proj_name.indexOf("healpix") > -1);
 }
 
-function handleClipPath(proj_name){
+function handleClipPath(proj_name, main_layer){
     proj_name = proj_name.toLowerCase();
     let defs_sphere = defs.node().querySelector("#sphere"),
+        defs_extent = defs.node().querySelector("#extent"),
         defs_clipPath = defs.node().querySelector("clipPath");
     if(defs_sphere){ defs_sphere.remove(); }
+    if(defs_extent){ defs_extent.remove(); }
     if(defs_clipPath){ defs_clipPath.remove(); }
 
     if(isInterrupted(proj_name)){
@@ -1965,6 +1967,34 @@ function handleClipPath(proj_name){
             .attr("clip-path", "url(#clip)");
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+    } else if (proj_name.indexOf('conicconformal') > -1){
+
+        let outline = d3.geoGraticule().extentMajor([[-175, 0], [175, 90]]).outline();
+
+        proj.fitSize([w, h], outline);
+        proj.scale(s).translate(t);
+
+        path.projection(proj);
+
+        defs.append("path")
+            .attr("id", "extent")
+            .attr("d", path(outline));
+        defs.append("clipPath")
+            .attr("id", "clip")
+          .append("use")
+            .attr("xlink:href", "#extent");
+
+        map.selectAll(".layer")
+            .attr("clip-path", "url(#clip)");
+
+        map.selectAll('.layer')
+            .selectAll('path')
+            .attr('d', path);
+        reproj_symbol_layer();
+        if(main_layer){
+          center_map(main_layer);
+          zoom_without_redraw();
+        }
     } else {
         map.selectAll(".layer")
                 .attr("clip-path", null);
@@ -2005,7 +2035,7 @@ function change_projection(new_proj_name) {
       reproj_symbol_layer();
     }
     // Set or remove the clip-path according to the projection:
-    handleClipPath(new_proj_name);
+    handleClipPath(new_proj_name, layer_name);
 }
 
 
@@ -2493,3 +2523,4 @@ let beforeUnloadWindow = (event) => {
     event.returnValue = (_app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
                         ? "Confirm exit" : undefined;
 };
+;

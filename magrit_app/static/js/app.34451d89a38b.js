@@ -1666,12 +1666,16 @@ function isInterrupted(proj_name) {
     return proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1;
 }
 
-function handleClipPath(proj_name) {
+function handleClipPath(proj_name, main_layer) {
     proj_name = proj_name.toLowerCase();
     var defs_sphere = defs.node().querySelector("#sphere"),
+        defs_extent = defs.node().querySelector("#extent"),
         defs_clipPath = defs.node().querySelector("clipPath");
     if (defs_sphere) {
         defs_sphere.remove();
+    }
+    if (defs_extent) {
+        defs_extent.remove();
     }
     if (defs_clipPath) {
         defs_clipPath.remove();
@@ -1685,6 +1689,26 @@ function handleClipPath(proj_name) {
         map.selectAll(".layer").attr("clip-path", "url(#clip)");
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+    } else if (proj_name.indexOf('conicconformal') > -1) {
+
+        var outline = d3.geoGraticule().extentMajor([[-175, 0], [175, 90]]).outline();
+
+        proj.fitSize([w, h], outline);
+        proj.scale(s).translate(t);
+
+        path.projection(proj);
+
+        defs.append("path").attr("id", "extent").attr("d", path(outline));
+        defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#extent");
+
+        map.selectAll(".layer").attr("clip-path", "url(#clip)");
+
+        map.selectAll('.layer').selectAll('path').attr('d', path);
+        reproj_symbol_layer();
+        if (main_layer) {
+            center_map(main_layer);
+            zoom_without_redraw();
+        }
     } else {
         map.selectAll(".layer").attr("clip-path", null);
     }
@@ -1725,7 +1749,7 @@ function change_projection(new_proj_name) {
         reproj_symbol_layer();
     }
     // Set or remove the clip-path according to the projection:
-    handleClipPath(new_proj_name);
+    handleClipPath(new_proj_name, layer_name);
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
@@ -2193,6 +2217,7 @@ var beforeUnloadWindow = function beforeUnloadWindow(event) {
     });
     event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
 };
+;
 "use strict";
 // Helper function in order to have a colorbrewer color ramp with
 // non-supported number of value using interpolation between the colorbrewer color
@@ -9018,7 +9043,7 @@ function add_simplified_land_layer() {
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "World", class: "layer" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attrs({ 'd': path, 'clip-path': 'url(#clip)' }).styles({ stroke: options.stroke, fill: options.fill,
+        map.append("g").attrs({ id: "World", class: "layer", "clip-path": "url(#clip)" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
         create_li_layer_elem("World", null, "Polygon", "sample");
         if (!options.skip_rescale) {
@@ -13849,44 +13874,35 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     });
 
     var deferred = Q.defer();
+    var fn_cb = function fn_cb(evt) {
+        helper_esc_key_twbs_cb(evt, _onclose);
+    };
+    var clean_up_box = function clean_up_box() {
+        modal_box.close();
+        container.remove();
+        if (parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
+        document.removeEventListener('keydown', fn_cb);
+    };
 
     container.querySelector(".btn_ok").onclick = function () {
         var res_url = newbox.select("#current_symb").style("background-image");
         deferred.resolve(res_url);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
-        container.remove();
-        if (parent_css_selector) {
-            reOpenParent(parent_css_selector);
-        } else {
-            overlay_under_modal.hide();
-        }
+        clean_up_box();
     };
 
     var _onclose = function _onclose() {
         deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
-        container.remove();
-        if (parent_css_selector) {
-            reOpenParent(parent_css_selector);
-        } else {
-            overlay_under_modal.hide();
-        }
+        clean_up_box();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.stopPropagation();
-            _onclose();
-        }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', fn_cb);
     return deferred.promise;
-};
+}
 
 function make_style_box_indiv_symbol(symbol_node) {
     var parent = symbol_node.parentElement;
@@ -13953,7 +13969,13 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		    prev_parallels = void 0;
 		var modal_box = make_dialog_container("box_projection_customization", i18next.t("app_page.section5.title"), "dialog");
 		var container = document.getElementById("box_projection_customization"),
-		    content = d3.select(container).select(".modal-body");
+		    dialog = container.querySelector('.modal-dialog');
+
+		var content = d3.select(container).select(".modal-body").attr('id', 'box_projection');
+
+		dialog.style.width = undefined;
+		dialog.style.maxWidth = '400px';
+		dialog.style.minWidth = '250px';
 
 		var lambda_section = content.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
@@ -13965,13 +13987,13 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 
 		var phi_section = content.append('p').style('clear', 'both');
 		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
-		phi_section.append('input').styles({ 'width': '50px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+		phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
 				handle_proj_center_button([null, this.value, null]);
 		});
 
 		var gamma_section = content.append('p').style('clear', 'both');
 		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
-		gamma_section.append('input').styles({ 'width': '50px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+		gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
 				handle_proj_center_button([null, null, this.value]);
 		});
 
@@ -13980,112 +14002,38 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				var parallels_section = content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
 				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
-				inputs.append('input').style('width', '50px').style('display', 'inline').attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
+				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
 						handle_parallels_change([this.value, null]);
 				});
-				inputs.append('input').style('width', '50px').style('display', 'inline').attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
+				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
 						handle_parallels_change([null, this.value]);
 				});
 		}
 
+		var clean_up_box = function clean_up_box() {
+				modal_box.close();
+				container.remove();
+				overlay_under_modal.hide();
+				document.removeEventListener('keydown', fn_cb);
+		};
 		var fn_cb = function fn_cb(evt) {
 				helper_esc_key_twbs_cb(evt, _onclose_cancel);
 		};
 		var _onclose_cancel = function _onclose_cancel() {
+				clean_up_box();
 				handle_proj_center_button(prev_rotate);
 				if (prev_parallels != undefined) {
 						handle_parallels_change(prev_parallels);
 				}
-				modal_box.close();
-				container.remove();
-				overlay_under_modal.hide();
-				document.removeEventListener('keydown', fn_cb);
 		};
 		container.querySelector(".btn_cancel").onclick = _onclose_cancel;
 		container.querySelector("#xclose").onclick = _onclose_cancel;
 		container.querySelector(".btn_ok").onclick = function () {
-				modal_box.close();
-				container.remove();
-				overlay_under_modal.hide();
-				document.removeEventListener('keydown', fn_cb);
+				clean_up_box();
 		};
 		document.addEventListener('keydown', fn_cb);
 		overlay_under_modal.display();
 };
-
-// const createBoxCustomProjection = function(){
-// 	let box_content = '<div class="custom_proj_content" style="font-size:0.8rem;"></div>';
-// 	let prev_rotate = proj.rotate(),
-// 			prev_parallels;
-// 	swal({
-// 			title: i18next.t("app_page.section5.title"),
-// 			html: box_content,
-// 			showCancelButton: true,
-// 			showConfirmButton: true,
-// 			cancelButtonText: i18next.t('app_page.common.close'),
-// 			animation: "slide-from-top",
-// 			customClass: "swal2_large",
-// 			onOpen: function(){
-// 					let content = d3.select('.custom_proj_content');
-// 					let lambda_section = content.append('p');
-// 					lambda_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_lambda'));
-// 					lambda_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50})
-// 							.on("input", function(){
-// 									handle_proj_center_button([this.value, null, null]);
-// 									document.getElementById('form_projection_center').value = this.value;
-// 									document.getElementById('proj_center_value_txt').value = this.value;
-// 							});
-// 					let phi_section = content.append('p')
-// 							.style('clear', 'both');
-// 					phi_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_phi'));
-// 					phi_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5})
-// 							.on("input", function(){ handle_proj_center_button([null, this.value, null]); });
-// 					let gamma_section = content.append('p')
-// 							.style('clear', 'both');
-// 					gamma_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_gamma'));
-// 					gamma_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5})
-// 							.on("input", function(){ handle_proj_center_button([null, null, this.value]); });
-//
-// 					if(current_proj_name.indexOf('Conic') > -1){
-// 							prev_parallels = proj.parallels();
-// 							let parallels_section = content.append('p')
-// 									.styles({'text-align': 'center', 'clear': 'both'});
-// 							parallels_section.append('span')
-// 									.html(i18next.t('app_page.section5.parallels'));
-// 							let inputs = parallels_section.append('p')
-// 									.styles({'text-align': 'center', 'margin': 'auto'});
-// 							inputs.append('input')
-// 									.style('width', '50px').style('display', 'inline')
-// 									.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
-// 									.on("input", function(){ handle_parallels_change([this.value, null]); });
-// 							inputs.append('input')
-// 									.style('width', '50px').style('display', 'inline')
-// 									.attrs({type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5})
-// 									.on("input", function(){ handle_parallels_change([null, this.value]); });
-// 					}
-//
-// 			}
-// 	 }).then(inputValue => { null; },
-// 					 dismissValue => {
-// 					 			// Reset the parameters to the previous values if the user click on cancel :
-// 								handle_proj_center_button(prev_rotate);
-// 								if(prev_parallels != undefined){
-// 										handle_parallels_change(prev_parallels);
-// 								}
-// 					 });
-// };
 
 // Function to change (one of more of) the three rotations axis of a d3 projection
 // and redraw all the path (+ move symbols layers) in respect to that

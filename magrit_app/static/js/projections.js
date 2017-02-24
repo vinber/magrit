@@ -45,7 +45,15 @@ const createBoxCustomProjection = function(){
       i18next.t("app_page.section5.title"),
       "dialog");
 	let container = document.getElementById("box_projection_customization"),
-			content = d3.select(container).select(".modal-body");
+			dialog = container.querySelector('.modal-dialog');
+
+	let content = d3.select(container)
+			.select(".modal-body")
+			.attr('id', 'box_projection');
+
+	dialog.style.width = undefined;
+	dialog.style.maxWidth = '400px';
+	dialog.style.minWidth = '250px';
 
 	let lambda_section = content.append('p');
 	lambda_section.append('span')
@@ -66,7 +74,7 @@ const createBoxCustomProjection = function(){
 			.style('float', 'left')
 			.html(i18next.t('app_page.section5.projection_center_phi'));
 	phi_section.append('input')
-			.styles({'width': '50px', 'float': 'right'})
+			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5})
 			.on("input", function(){ handle_proj_center_button([null, this.value, null]); });
 
@@ -76,7 +84,7 @@ const createBoxCustomProjection = function(){
 			.style('float', 'left')
 			.html(i18next.t('app_page.section5.projection_center_gamma'));
 	gamma_section.append('input')
-			.styles({'width': '50px', 'float': 'right'})
+			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5})
 			.on("input", function(){ handle_proj_center_button([null, null, this.value]); });
 
@@ -89,112 +97,36 @@ const createBoxCustomProjection = function(){
 			let inputs = parallels_section.append('p')
 					.styles({'text-align': 'center', 'margin': 'auto'});
 			inputs.append('input')
-					.style('width', '50px').style('display', 'inline')
+					.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
 					.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
 					.on("input", function(){ handle_parallels_change([this.value, null]); });
 			inputs.append('input')
-					.style('width', '50px').style('display', 'inline')
+					.styles({width: '60px', display: 'inline', 'margin-left': '2px'})
 					.attrs({type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5})
 					.on("input", function(){ handle_parallels_change([null, this.value]); });
 	}
 
+	let clean_up_box = () => {
+			modal_box.close();
+			container.remove();
+			overlay_under_modal.hide();
+			document.removeEventListener('keydown', fn_cb);
+	};
 	let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_cancel); };
   let _onclose_cancel = () => {
+					clean_up_box();
 					handle_proj_center_button(prev_rotate);
 					if(prev_parallels != undefined){
 							handle_parallels_change(prev_parallels);
 					}
-          modal_box.close();
-          container.remove();
-          overlay_under_modal.hide();
-          document.removeEventListener('keydown', fn_cb);
       };
   container.querySelector(".btn_cancel").onclick = _onclose_cancel;
   container.querySelector("#xclose").onclick = _onclose_cancel;
-  container.querySelector(".btn_ok").onclick = function(){
-      modal_box.close();
-      container.remove();
-      overlay_under_modal.hide();
-      document.removeEventListener('keydown', fn_cb);
-  };
+  container.querySelector(".btn_ok").onclick = function(){ clean_up_box(); };
   document.addEventListener('keydown', fn_cb);
   overlay_under_modal.display();
 };
 
-
-// const createBoxCustomProjection = function(){
-// 	let box_content = '<div class="custom_proj_content" style="font-size:0.8rem;"></div>';
-// 	let prev_rotate = proj.rotate(),
-// 			prev_parallels;
-// 	swal({
-// 			title: i18next.t("app_page.section5.title"),
-// 			html: box_content,
-// 			showCancelButton: true,
-// 			showConfirmButton: true,
-// 			cancelButtonText: i18next.t('app_page.common.close'),
-// 			animation: "slide-from-top",
-// 			customClass: "swal2_large",
-// 			onOpen: function(){
-// 					let content = d3.select('.custom_proj_content');
-// 					let lambda_section = content.append('p');
-// 					lambda_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_lambda'));
-// 					lambda_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50})
-// 							.on("input", function(){
-// 									handle_proj_center_button([this.value, null, null]);
-// 									document.getElementById('form_projection_center').value = this.value;
-// 									document.getElementById('proj_center_value_txt').value = this.value;
-// 							});
-// 					let phi_section = content.append('p')
-// 							.style('clear', 'both');
-// 					phi_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_phi'));
-// 					phi_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5})
-// 							.on("input", function(){ handle_proj_center_button([null, this.value, null]); });
-// 					let gamma_section = content.append('p')
-// 							.style('clear', 'both');
-// 					gamma_section.append('span')
-// 							.style('float', 'left')
-// 							.html(i18next.t('app_page.section5.projection_center_gamma'));
-// 					gamma_section.append('input')
-// 							.styles({'width': '50px', 'float': 'right'})
-// 							.attrs({type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5})
-// 							.on("input", function(){ handle_proj_center_button([null, null, this.value]); });
-//
-// 					if(current_proj_name.indexOf('Conic') > -1){
-// 							prev_parallels = proj.parallels();
-// 							let parallels_section = content.append('p')
-// 									.styles({'text-align': 'center', 'clear': 'both'});
-// 							parallels_section.append('span')
-// 									.html(i18next.t('app_page.section5.parallels'));
-// 							let inputs = parallels_section.append('p')
-// 									.styles({'text-align': 'center', 'margin': 'auto'});
-// 							inputs.append('input')
-// 									.style('width', '50px').style('display', 'inline')
-// 									.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
-// 									.on("input", function(){ handle_parallels_change([this.value, null]); });
-// 							inputs.append('input')
-// 									.style('width', '50px').style('display', 'inline')
-// 									.attrs({type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5})
-// 									.on("input", function(){ handle_parallels_change([null, this.value]); });
-// 					}
-//
-// 			}
-// 	 }).then(inputValue => { null; },
-// 					 dismissValue => {
-// 					 			// Reset the parameters to the previous values if the user click on cancel :
-// 								handle_proj_center_button(prev_rotate);
-// 								if(prev_parallels != undefined){
-// 										handle_parallels_change(prev_parallels);
-// 								}
-// 					 });
-// };
 
 // Function to change (one of more of) the three rotations axis of a d3 projection
 // and redraw all the path (+ move symbols layers) in respect to that

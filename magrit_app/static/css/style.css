@@ -781,3 +781,9 @@ img.layout_ft_ico:hover {
     padding: 8px;
     vertical-align: top;
 }
+
+#box_projection > p {
+    clear: both;
+    padding: 8px;
+    font-size: 13px;
+}

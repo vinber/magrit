@@ -1,38 +1,43 @@
 function createBoxTextImportWizard(file){
-  var modal_box = make_dialog_container(
-      "box_text_import_wizard",
-      i18next.t("app_page.box_text_import.title"),
-      "dialog");
+    var modal_box = make_dialog_container(
+        "box_text_import_wizard",
+        i18next.t("app_page.box_text_import.title"),
+        "dialog");
 
-  if(!file){
-      file = new File(['id;val1;val2\r\n"foo";2;3\r\n"bar";5;6\r\n'], "filename.csv");
-  }
+    if(!file){
+        file = new File(['id;val1;val2\r\n"foo";2;3\r\n"bar";5;6\r\n'], "filename.csv");
+    }
 
-  let box_content = d3.select("#box_text_import_wizard").select(".modal-body");
-  let a = new TextImportWizard(box_content.node(), file);
-  let deferred = Q.defer(),
-      container = document.getElementById("box_text_import_wizard"),
-      fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
-      _onclose = () => {
-          deferred.resolve(false);
-          modal_box.close();
-          container.remove();
-          overlay_under_modal.hide();
-          document.removeEventListener('keydown', fn_cb);
-      };
-  container.querySelector(".btn_cancel").onclick = _onclose;
-  container.querySelector("#xclose").onclick = _onclose;
-  container.querySelector(".btn_ok").onclick = function(){
-      deferred.resolve(true);
-      modal_box.close();
-      container.remove();
-      overlay_under_modal.hide();
-      document.removeEventListener('keydown', fn_cb);
-  };
-  document.addEventListener('keydown', fn_cb);
-  overlay_under_modal.display();
+    let box_content = d3.select("#box_text_import_wizard").select(".modal-body");
+    let a = new TextImportWizard(box_content.node(), file);
+    let deferred = Q.defer(),
+        container = document.getElementById("box_text_import_wizard"),
+        dialog = container.querySelector('.modal-dialog');
+    dialog.style.width = undefined;
+  	dialog.style.maxWidth = '620px';
+  	dialog.style.minWidth = '380px';
 
-  return deferred.promise;
+    let clean_up_box = function(){
+        modal_box.close();
+        container.remove();
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', fn_cb);
+    };
+    let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
+    let _onclose = function() {
+            clean_up_box();
+            deferred.resolve(false);
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    container.querySelector(".btn_ok").onclick = function(){
+        clean_up_box();
+        deferred.resolve([a.parsed_data, a.valid]);
+    };
+    document.addEventListener('keydown', fn_cb);
+    overlay_under_modal.display();
+
+    return deferred.promise;
 }
 
  // let encoding = jschardet.detect(data);
@@ -98,9 +103,16 @@ class TextImportWizard {
             if(isNaN(val) || val < 1 || (val | 0) != val){
                 this.value = self.from_line;
             } else {
-                self.change_first_line(val);
+                self.from_line = from_line;
+                self.parse_data();
+                self.update_table()
             }
-        }
+        };
+        parent_element.querySelector('#txtwzrd_txt_sep').onchange = function(){
+            self.text_separator = this.value;
+            self.parse_data();
+            self.update_table();
+        };
         Array.prototype.forEach.call(
             document.getElementsByName('txtwzrd_delim_char'),
             el => { el.onclick = handle_change_delimiter });
@@ -112,6 +124,7 @@ class TextImportWizard {
         this.delimiter = undefined;
         this.from_line = 1;
         this.line_separator = undefined;
+        this.text_separator = '"';
         this.parsed_data = undefined;
         this.valid = undefined;
         this.valid_message;
@@ -163,13 +176,6 @@ class TextImportWizard {
         reader.readAsText(self.file, self.encoding);
     }
 
-    change_first_line(from_line){
-        let self = this;
-        self.from_line = from_line;
-        self.parse_data();
-        self.update_table();
-    }
-
     change_delimiter(new_delim){
         let self = this;
         self.delimiter = new_delim;
@@ -178,11 +184,22 @@ class TextImportWizard {
     }
 
     parse_data(){
+        let strip_text_separator = (line) => {
+            let len = line.length;
+            for(let i = 0; i < len; i++){
+                let val = line[i];
+                if(val.startsWith(self.text_separator) && val.endsWith(self.text_separator)){
+                    line[i] = val.slice(1, -1);
+                }
+            }
+        };
         let self = this,
             lines = self.readed_text.split('\r\n'),
             fields = lines[self.from_line - 1].split(self.delimiter),
             tmp_nb_fields = fields.length,
             nb_ft;
+
+        strip_text_separator(fields);
 
         lines = lines.slice(self.from_line).filter(line => line != "");
         nb_ft = lines.length;
@@ -190,6 +207,7 @@ class TextImportWizard {
         self.valid = true;
         for(let i = 0; i < nb_ft; i++){
             let values = lines[i].split(self.delimiter);
+            strip_text_separator(values);
             let ft = {};
             if(values.length != tmp_nb_fields){
                 self.valid = false;

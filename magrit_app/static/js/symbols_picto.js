@@ -214,44 +214,33 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
               });
 
     let deferred = Q.defer();
+    let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
+    let clean_up_box = function(){
+        modal_box.close();
+        container.remove();
+        if(parent_css_selector) {
+            reOpenParent(parent_css_selector);
+        } else {
+            overlay_under_modal.hide();
+        }
+        document.removeEventListener('keydown', fn_cb);
+    };
 
     container.querySelector(".btn_ok").onclick = function(){
         let res_url = newbox.select("#current_symb").style("background-image");
         deferred.resolve(res_url);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
-        container.remove();
-        if(parent_css_selector) {
-            reOpenParent(parent_css_selector);
-        } else {
-            overlay_under_modal.hide();
-        }
+        clean_up_box();
     }
 
     let _onclose = () => {
         deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
-        container.remove();
-        if(parent_css_selector) {
-            reOpenParent(parent_css_selector);
-        } else {
-            overlay_under_modal.hide();
-        }
+        clean_up_box();
     };
     container.querySelector(".btn_cancel").onclick = _onclose;
     container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt){
-          evt = evt || window.event;
-          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
-          if (isEscape) {
-              evt.stopPropagation();
-              _onclose();
-          }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.addEventListener('keydown', fn_cb);
     return deferred.promise;
-};
+}
 
 
 function make_style_box_indiv_symbol(symbol_node){
@@ -311,10 +300,10 @@ function make_style_box_indiv_symbol(symbol_node){
                     parent.setAttribute('transform', ['translate(', zoom_scale.x, ', ', zoom_scale.y, ') scale(', zoom_scale.k, ',', zoom_scale.k, ')'].join(''));
                     parent.classList.add('scalable-legend');
                 } else {
-                  symbol_node.setAttribute('x', (zoom_scale.x + symbol_node.x.baseVal.value) * zoom_scale.k);
-                  symbol_node.setAttribute('y', (zoom_scale.y + symbol_node.y.baseVal.value) * zoom_scale.k);
-                  parent.setAttribute('transform', undefined);
-                  parent.classList.remove('scalable-legend');
+                    symbol_node.setAttribute('x', (zoom_scale.x + symbol_node.x.baseVal.value) * zoom_scale.k);
+                    symbol_node.setAttribute('y', (zoom_scale.y + symbol_node.y.baseVal.value) * zoom_scale.k);
+                    parent.setAttribute('transform', undefined);
+                    parent.classList.remove('scalable-legend');
                 }
             });
         document.getElementById("checkbox_symbol_zoom_scale").checked = current_options.scalable;
