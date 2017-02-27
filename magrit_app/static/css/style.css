@@ -738,6 +738,8 @@ p.line_elem {
 }
 
 img.layout_ft_ico {
+  width: 27px;
+  height: auto;
   margin: 2px;
   -webkit-filter: grayscale(1); /* Webkit Nightlies & Chrome Canary */
   -webkit-transform: scale(0.9);

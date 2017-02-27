@@ -117,7 +117,8 @@
             "map_title": "Map title",
             "resize_fit": "Resize map on screen size",
             "background_color": "Background color ",
-            "canvas_rotation": "Canvas rotation "
+            "canvas_rotation": "Canvas rotation ",
+            "layout_features": "<b>Add layout features:</b>"
         },
         "section5b": {
             "title": "Export options",

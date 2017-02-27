@@ -591,6 +591,39 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     return legend_root;
 }
 
+const get_lgd_display_precision = function(layer){
+    let breaks = current_layers[layer].options_disc.breaks;
+    // Set rounding precision to 0 if they are all integers :
+    if(breaks.filter(b => (b | 0) == b).length == breaks.length){
+        return 0;
+    }
+    // Compute the difference between each break to set
+    // ... the rounding precision in order to differenciate each class :
+    let diff;
+    for(let i = 0; i < (breaks.length - 1); i++){
+        let d = +breaks[i+1] - +breaks[i];
+        if(!diff) diff = d;
+        else if(d < diff) diff = d;
+    }
+    if(diff > 1 || diff > 0.1){
+        return 1;
+    } else if (diff > 0.01){
+      return 2;
+    } else if (diff > 0.001){
+      return 3;
+    } else if (diff > 0.0001) {
+      return 4;
+    } else if (diff > 0.00001) {
+      return 5;
+    } else if (diff > 0.000001) {
+      return 6;
+    } else if (diff > 0.0000001) {
+      return 7;
+    } else {
+      return undefined;
+    }
+}
+
 function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom){
     var boxheight = 18,
         boxwidth = 18,
@@ -603,6 +636,26 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
         data_colors_label;
 
     boxgap = +boxgap;
+
+    if(current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1){
+        data_colors_label = [];
+        current_layers[layer].color_map.forEach( (v,k) => {
+            data_colors_label.push({value: v[1], color: v[0]}); } );
+        nb_class = current_layers[layer].color_map.size;
+    } else if(current_layers[layer].renderer.indexOf('TypoSymbols') > -1){
+        data_colors_label = [];
+        current_layers[layer].symbols_map.forEach( (v,k) => {
+            data_colors_label.push({value: k, image: v}); } );
+        nb_class = current_layers[layer].symbols_map.size;
+    } else {
+        data_colors_label = current_layers[layer].colors_breaks.map(obj => {
+            return {value: obj[0], color: obj[1]};
+        });
+        nb_class = current_layers[layer].colors_breaks.length;
+        if(rounding_precision == undefined){
+            rounding_precision = get_lgd_display_precision(layer)
+        }
+    }
 
     var legend_root = map.insert('g')
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
@@ -620,23 +673,6 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
             .attrs({x: xpos + boxheight, y: ypos + 15});
 
-
-    if(current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1){
-        data_colors_label = [];
-        current_layers[layer].color_map.forEach( (v,k) => {
-            data_colors_label.push({value: v[1], color: v[0]}); } );
-        nb_class = current_layers[layer].color_map.size;
-    } else if(current_layers[layer].renderer.indexOf('TypoSymbols') > -1){
-        data_colors_label = [];
-        current_layers[layer].symbols_map.forEach( (v,k) => {
-            data_colors_label.push({value: k, image: v}); } );
-        nb_class = current_layers[layer].symbols_map.size;
-    } else {
-        data_colors_label = current_layers[layer].colors_breaks.map(obj => {
-            return {value: obj[0], color: obj[1]};
-        });
-        nb_class = current_layers[layer].colors_breaks.length;
-    }
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(data_colors_label)

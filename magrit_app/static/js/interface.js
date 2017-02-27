@@ -1468,7 +1468,7 @@ function handleClickAddEllipse(){
     } else {
         ellipse_id = "user_ellipse_" + ellipse_id;
     }
-
+    document.body.style.cursor = "not-allowed";
     map.style("cursor", "crosshair")
         .on("click", function(){
             start_point = [d3.event.layerX, d3.event.layerY];
@@ -1478,16 +1478,18 @@ function handleClickAddEllipse(){
             setTimeout(function(){
                 tmp_start_point.remove();
             }, 1000);
-            map.style("cursor", "")
-                .on("click", null);
+            map.style("cursor", "").on("click", null);
+            document.body.style.cursor = "";
             new UserEllipse(ellipse_id, start_point, svg_map);
         });
 }
 
 function handleClickTextBox(text_box_id){
+    document.body.style.cursor = "not-allowed";
     map.style("cursor", "crosshair")
         .on("click", function(){
             map.style("cursor", "").on("click", null);
+            document.body.style.cursor = "";
             let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
             setTimeout(_ => { text_box.editStyle(); }, 350);
         });
@@ -1532,7 +1534,7 @@ function handleClickAddArrow(){
     } else {
         arrow_id = "arrow_" + arrow_id;
     }
-
+    document.body.style.cursor = "not-allowed";
     map.style("cursor", "crosshair")
         .on("click", function(){
             if(!start_point){
@@ -1551,8 +1553,8 @@ function handleClickAddArrow(){
                     tmp_start_point.remove();
                     tmp_end_point.remove();
                 }, 1000);
-                map.style("cursor", "")
-                    .on("click", null);
+                map.style("cursor", "").on("click", null);
+                document.body.style.cursor = "";
                 new UserArrow(arrow_id, start_point, end_point, svg_map);
             }
         });
