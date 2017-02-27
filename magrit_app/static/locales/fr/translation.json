@@ -351,9 +351,9 @@
             "credits": "Réalisé par Matthieu Viry, Timothée Giraud et Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
-            "title": "North arrow options",
-            "size": "Arrow size ",
-            "rotation": "Arrow rotation "
+            "title": "Options de la fleche d'orientation",
+            "size": "Taille ",
+            "rotation": "Rotation "
         },
         "scale_bar_edit_box": {
             "title": "Options de l'échelle",

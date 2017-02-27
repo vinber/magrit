@@ -735,9 +735,7 @@ function setUpInterface(resume_project) {
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
 
-    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }
-    // {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'}
-    ];
+    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
 
     var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
         return {
@@ -753,7 +751,7 @@ function setUpInterface(resume_project) {
     d3.selectAll(".zoom_button").on("click", zoomClick);
     document.getElementById("info_button").onclick = displayInfoOnMove;
     document.getElementById("hand_button").onclick = handle_click_hand;
-    // document.getElementById("brush_zoom_button").onclick = handleZoomRect;
+    document.getElementById("brush_zoom_button").onclick = handleZoomRect;
 
     // Already append the div for displaying information on features,
     // setting it currently unactive until it will be requested :
@@ -1513,9 +1511,12 @@ function handle_click_hand(behavior) {
     if (behavior == "lock") {
         hb.classed("locked", true);
         hb.html('<img src="/static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
+        map.select('.brush').remove();
+        document.getElementById("zoom_in").parentElement.style.display = "none";
+        document.getElementById("zoom_out").parentElement.style.display = "none";
+        document.getElementById("brush_zoom_button").parentElement.style.display = "none";
         zoom.on("zoom", function () {
-            var blocked = svg_map.__zoom;
-            return function () {
+            var blocked = svg_map.__zoom;return function () {
                 this.__zoom = blocked;
             };
         }());
@@ -1523,7 +1524,10 @@ function handle_click_hand(behavior) {
         hb.classed("locked", false);
         hb.html('<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
         zoom.on("zoom", zoom_without_redraw);
-        //map.on("mousemove.zoomRect", null).on("mouseup.zoomRect", null);
+        document.getElementById("zoom_in").parentElement.style.display = "";
+        document.getElementById("zoom_out").parentElement.style.display = "";
+        document.getElementById("brush_zoom_button").parentElement.style.display = "";
+        map.select('.brush').remove();
     }
 }
 
@@ -6749,7 +6753,21 @@ var render_label = function render_label(layer, rendering_params, options) {
         nb_ft = ref_selection.length;
         for (var i = 0; i < nb_ft; i++) {
             var ft = ref_selection[i].__data__;
-            var coords = d3.geoCentroid(ft.geometry);
+            var coords = void 0;
+            if (ft.geometry.type.indexOf('Multi') == -1) {
+                coords = d3.geoCentroid(ft.geometry);
+            } else {
+                var areas = [];
+                for (var j = 0; j < ft.geometry.coordinates.length; j++) {
+                    areas.push(path.area({
+                        type: ft.geometry.type,
+                        coordinates: [ft.geometry.coordinates[j]]
+                    }));
+                }
+                var ix_max = areas.indexOf(max_fast(areas));
+                coords = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+            }
+
             new_layer_data.push({
                 id: i,
                 type: "Feature",

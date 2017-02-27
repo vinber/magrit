@@ -3123,7 +3123,21 @@ var render_label = function(layer, rendering_params, options){
         nb_ft = ref_selection.length;
         for(let i=0; i<nb_ft; i++){
             let ft = ref_selection[i].__data__;
-            let coords = d3.geoCentroid(ft.geometry);
+            let coords;
+            if(ft.geometry.type.indexOf('Multi') == -1){
+                coords = d3.geoCentroid(ft.geometry);
+            } else {
+                let areas = [];
+                for(let j = 0; j < ft.geometry.coordinates.length; j++){
+                  areas.push(path.area({
+                    type: ft.geometry.type,
+                    coordinates: [ft.geometry.coordinates[j]]
+                  }));
+                }
+                let ix_max = areas.indexOf(max_fast(areas));
+                coords = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+            }
+
             new_layer_data.push({
                 id: i,
                 type: "Feature",
