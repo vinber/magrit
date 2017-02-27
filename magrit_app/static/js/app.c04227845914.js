@@ -3255,7 +3255,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 function reOpenParent(css_selector) {
     var parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
     if (parent_style_box) {
-        parent_style_box.className = parent_style_box.className.concat(" in");
+        parent_style_box.classList.add("in");
         parent_style_box.setAttribute("aria-hidden", false);
         parent_style_box.style.display = "block";
         return true;
@@ -7157,6 +7157,13 @@ function make_box_type_fields(layer_name) {
     var deferred = Q.defer(),
         container = document.getElementById("box_type_fields");
 
+    var clean_up_box = function clean_up_box() {
+        modal_box.close();
+        container.remove();
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
+    };
+
     if (f.length === 0) {
         // If the user dont have already selected the type :
         fields_type = tmp.slice();
@@ -7166,10 +7173,7 @@ function make_box_type_fields(layer_name) {
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if (tmp.length > fields_type.length) {
@@ -7183,10 +7187,7 @@ function make_box_type_fields(layer_name) {
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector("#xclose").onclick = _onclose2;
     } else {
@@ -7195,10 +7196,7 @@ function make_box_type_fields(layer_name) {
         var _onclose3 = function _onclose3() {
             current_layers[layer_name].fields_type = fields_type;
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector(".btn_cancel").onclick = _onclose3;
         container.querySelector("#xclose").onclick = _onclose3;
@@ -7210,7 +7208,6 @@ function make_box_type_fields(layer_name) {
         Array.prototype.forEach.call(document.getElementById('fields_select').getElementsByTagName('p'), function (elem) {
             r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
         });
-        // deferred.resolve(r);
         deferred.resolve(true);
         current_layers[layer_name].fields_type = r.slice();
         getAvailablesFunctionnalities(layer_name);
@@ -7218,10 +7215,7 @@ function make_box_type_fields(layer_name) {
             fields_handler.unfill();
             fields_handler.fill(layer_name);
         }
-        modal_box.close();
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        clean_up_box();
     };
     function helper_esc_key_twbs(evt) {
         evt = evt || window.event;
@@ -7231,16 +7225,13 @@ function make_box_type_fields(layer_name) {
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         }
     }
     document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
-    newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
-    newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
+
+    newbox.append("h3").html(i18next.t("app_page.box_type_fields.message_invite"));
 
     var box_select = newbox.append("div").attr("id", "fields_select");
 
@@ -7261,6 +7252,10 @@ function make_box_type_fields(layer_name) {
     });
 
     for (var i = 0; i < fields_type.length; i++) {
+        if (fields_type[i].type == "category" || fields_type[i].not_number) {
+            box_select.node().childNodes[i].childNodes[1].options.remove(2);
+            box_select.node().childNodes[i].childNodes[1].options.remove(1);
+        }
         if (fields_type[i].has_duplicate) {
             box_select.node().childNodes[i].childNodes[1].options.remove(0);
         }
@@ -9037,7 +9032,7 @@ function add_sample_layer() {
     var existing_dialog = document.querySelector(".sampleDialogBox");
     if (existing_dialog) existing_dialog.remove();
 
-    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category" }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category" }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category" }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id" }, { "name": "STATUT", "type": "category" }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id" }, { "name": "name", "type": "id" }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category" }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id" }, { "name": "Abbreviation", "type": "id" }, { "name": "Capital", "type": "id" }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category" }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id" }, { "name": "ISO3", "type": "id" }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id" }, { "name": "NAMEfr", "type": "id" }, { "name": "UNRegion", "type": "category" }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]], ['us_states', [{ "name": "NAME", "type": "id" }, { "name": "POPDENS1", "type": "ratio" }, { "name": "POPDENS2", "type": "ratio" }, { "name": "STUSPS", "type": "id" }, { "name": "pop2015_est", "type": "stock" }]]]);
+    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]], ['us_states', [{ "name": "NAME", "type": "id", "not_number": true }, { "name": "POPDENS1", "type": "ratio" }, { "name": "POPDENS2", "type": "ratio" }, { "name": "STUSPS", "type": "id", "not_number": true }, { "name": "pop2015_est", "type": "stock" }]]]);
 
     var dialog_res = [],
         selec,
@@ -11448,7 +11443,14 @@ var scaleBar = {
             this.resize(Math.round(this.dist / 100) * 100);
         } else if (this.dist > 10) {
             this.resize(Math.round(this.dist / 10) * 10);
+        } else if (Math.round(this.dist) > 1) {
+            this.resize(Math.round(this.dist));
+        } else if (Math.round(this.dist * 10) / 10 > 0.1) {
+            this.precision = 1;
+            this.resize(Math.round(this.dist * 10) / 10);
         } else {
+            var t = this.dist.toString().split('.');
+            this.precision = t && t.length > 1 ? t[1].length : ("" + this.dist).length;
             this.resize(this.dist);
         }
     },
@@ -11932,17 +11934,17 @@ var UserEllipse = function () {
             // Desactive the ability to zoom/move on the map ;
             handle_click_hand('lock');
 
-            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y).attr("height", 6).attr("width", 6).style("fill", "red").style("cursor", "grab").call(d3.drag().on("drag", function () {
+            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
                 var t = d3.select(this);
-                t.attr("x", d3.event.x);
+                t.attr("x", d3.event.x - 4);
                 var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
                 ellipse_elem.rx.baseVal.value = dist;
             }));
-            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-                x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+                x: self.pt1[0] * zoom_param.k + zoom_param.x - 4, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this);
-                t.attr("y", d3.event.y);
+                t.attr("y", d3.event.y - 4);
                 var dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 ellipse_elem.ry.baseVal.value = dist;
             }));
@@ -14551,41 +14553,25 @@ var boxExplore2 = {
         this.columns_names = undefined;
         this.tables = this.get_available_tables();
         var modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
-        this.box_table = d3.select("#browse_data_box").select(".modal-body");
-        var self = this;
-
+        var container = document.getElementById("browse_data_box");
+        this.box_table = d3.select(container).select(".modal-body");
         this.top_buttons = this.box_table.append('p').styles({ "margin-left": "15px", "display": "inline", "font-size": "12px" });
 
-        var deferred = Q.defer(),
-            container = document.getElementById("browse_data_box"),
+        var fn_cb = function fn_cb(evt) {
+            helper_esc_key_twbs_cb(evt, _onclose);
+        },
             _onclose = function _onclose() {
-            deferred.resolve(false);
             modal_box.close();
             container.remove();
             overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            document.removeEventListener('keydown', fn_cb);
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = function () {
-            deferred.resolve([true, true]);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
-        };
-        function helper_esc_key_twbs(evt) {
-            evt = evt || window.event;
-            var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-            if (isEscape) {
-                evt.stopPropagation();
-                _onclose();
-            }
-        }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        container.querySelector(".btn_ok").onclick = _onclose;
+        document.addEventListener('keydown', fn_cb);
         overlay_under_modal.display();
         this.display_table(layer_name);
-        return deferred.promise;
     }
 };
 "use strict";

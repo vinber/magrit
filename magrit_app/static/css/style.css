@@ -79,7 +79,6 @@ a.logo {
     display:inline-block;
 }
 
-
 #footer {
     font-family: 'Enriqueta', arial, serif;
     line-height: 1.25;
@@ -133,11 +132,6 @@ a.menu {
 
 #section2 {
     padding: 2px 8px;
-}
-
-#section2 p.container_img_help {
-    text-align: right;
-    margin: auto;
 }
 
 #section2 input[type="text"], #section2 input[type="number"],
@@ -257,11 +251,6 @@ p.params_section2 > span {
     color: #99a8c4;
     font-size:12px;
     margin: auto;
-}
-
-#Simplified_land_polygons {
-    stroke-width: 0.5px;
-    stroke-linecap: round;
 }
 
 #info_features {
@@ -786,4 +775,16 @@ img.layout_ft_ico:hover {
     clear: both;
     padding: 8px;
     font-size: 13px;
+}
+
+.ctrl_pt {
+    fill: red;
+    cursor: grab;
+    cursor: -webkit-grab;
+}
+
+.ctrl_pt:active {
+    fill: red;
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
 }

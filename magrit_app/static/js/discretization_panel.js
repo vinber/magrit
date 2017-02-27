@@ -931,7 +931,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
 function reOpenParent(css_selector){
     let parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox' );
     if(parent_style_box){
-        parent_style_box.className = parent_style_box.className.concat(" in");
+        parent_style_box.classList.add("in");
         parent_style_box.setAttribute("aria-hidden", false);
         parent_style_box.style.display = "block";
         return true;

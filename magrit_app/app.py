@@ -360,19 +360,43 @@ async def convert(request):
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
         dir_path = '/tmp/{}{}/'.format(user_id, hashed_input)
-        os.mkdir(dir_path)
         with ZipFile(dataZip) as myzip:
             list_files = myzip.namelist()
             list_files = [dir_path + i for i in list_files]
-            shp_path = [i for i in list_files if 'shp' in i][0]
+            slots = {"shp": None, "prj": None, "dbf": None, "shx": None}
+            names = []
+            try:
+                for f in list_files:
+                    name, ext = f.split('.')
+                    names.append(name)
+                    if 'shp' in ext:
+                        slots['shp'] = f
+                    elif 'prj' in ext:
+                        slots['prj'] = f
+                    elif 'shx' in ext:
+                        slots['shx'] = f
+                    elif 'dbf' in ext:
+                        slots['dbf'] = f
+                assert(all(v != None for v in slots.values()))
+                assert(all(name == names[0] for name in names))
+                assert(4 <= len(list_files) < 8)
+            except Exception as err:
+                request.app['logger'].info(
+                    'Error with content of zip file : {}'.format(err))
+                return web.Response(text='{"Error": "Incorrect datatype"}')
+
+            os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
-            res = await ogr_to_geojson(shp_path, to_latlong=True)
-            filepath2 = shp_path.replace(
+            res = await ogr_to_geojson(slots['shp'], to_latlong=True)
+            filepath2 = slots['shp'].replace(
                 "{}{}/".format(user_id, hashed_input), "").replace(
                 '.shp', '.geojson')
             with open(filepath2, 'wb') as f:
                 f.write(res)
             result = await geojson_to_topojson(filepath2, "-q 1e5")
+            if len(result) == 0:
+                return web.Response(
+                    text='{"Error": "Error converting input file"}')
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(

@@ -346,6 +346,13 @@ function make_box_type_fields(layer_name){
     let deferred = Q.defer(),
         container = document.getElementById("box_type_fields");
 
+    let clean_up_box = () => {
+        modal_box.close();
+        container.remove();
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', helper_esc_key_twbs);
+    };
+
     if(f.length === 0){ // If the user dont have already selected the type :
         fields_type = tmp.slice();
         container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
@@ -353,10 +360,7 @@ function make_box_type_fields(layer_name){
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else if(tmp.length > fields_type.length){  // There is already types selected but new fields where added :
@@ -369,10 +373,7 @@ function make_box_type_fields(layer_name){
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector("#xclose").onclick = _onclose;
     } else { // There is already types selected and no new fields (so this is a modification) :
@@ -380,10 +381,7 @@ function make_box_type_fields(layer_name){
         let _onclose = () => {
             current_layers[layer_name].fields_type = fields_type;
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
         };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
@@ -397,7 +395,6 @@ function make_box_type_fields(layer_name){
             elem => {
               r.push({name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value})
             });
-        // deferred.resolve(r);
         deferred.resolve(true);
         current_layers[layer_name].fields_type = r.slice();
         getAvailablesFunctionnalities(layer_name);
@@ -405,10 +402,7 @@ function make_box_type_fields(layer_name){
             fields_handler.unfill();
             fields_handler.fill(layer_name);
         }
-        modal_box.close();
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        clean_up_box();
     }
     function helper_esc_key_twbs(evt){
           evt = evt || window.event;
@@ -418,16 +412,13 @@ function make_box_type_fields(layer_name){
             current_layers[layer_name].fields_type = tmp.slice();
             getAvailablesFunctionnalities(layer_name);
             deferred.resolve(false);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
+            clean_up_box();
           }
     }
     document.addEventListener('keydown', helper_esc_key_twbs);
     document.getElementById('btn_type_fields').removeAttribute('disabled');
-    newbox.append("h3").html(i18next.t("app_page.box_type_fields.title"));
-    newbox.append("h4").html(i18next.t("app_page.box_type_fields.message_invite"));
+
+    newbox.append("h3").html(i18next.t("app_page.box_type_fields.message_invite"));
 
     var box_select = newbox.append("div")
       .attr("id", "fields_select");
@@ -457,6 +448,10 @@ function make_box_type_fields(layer_name){
         });
 
     for(let i=0; i < fields_type.length; i++){
+        if(fields_type[i].type == "category" || fields_type[i].not_number){
+            box_select.node().childNodes[i].childNodes[1].options.remove(2);
+            box_select.node().childNodes[i].childNodes[1].options.remove(1);
+        }
         if(fields_type[i].has_duplicate){
             box_select.node().childNodes[i].childNodes[1].options.remove(0);
         }

@@ -410,41 +410,23 @@ var boxExplore2 = {
         this.columns_names = undefined;
         this.tables = this.get_available_tables()
         let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
-        this.box_table = d3.select("#browse_data_box").select(".modal-body");
-        let self = this;
-
+        let container = document.getElementById("browse_data_box");
+        this.box_table = d3.select(container).select(".modal-body");
         this.top_buttons = this.box_table.append('p')
             .styles({"margin-left": "15px", "display": "inline", "font-size": "12px"});
 
-        let deferred = Q.defer(),
-            container = document.getElementById("browse_data_box"),
+        let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); },
             _onclose = () => {
-                deferred.resolve(false);
                 modal_box.close();
                 container.remove();
                 overlay_under_modal.hide();
-                document.removeEventListener('keydown', helper_esc_key_twbs);
+                document.removeEventListener('keydown', fn_cb);
             };
         container.querySelector(".btn_cancel").onclick = _onclose;
         container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = function(){
-            deferred.resolve([true, true]);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', helper_esc_key_twbs);
-        };
-        function helper_esc_key_twbs(evt){
-              evt = evt || window.event;
-              let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
-              if (isEscape) {
-                evt.stopPropagation();
-                _onclose();
-              }
-        }
-        document.addEventListener('keydown', helper_esc_key_twbs);
+        container.querySelector(".btn_ok").onclick = _onclose;
+        document.addEventListener('keydown', fn_cb);
         overlay_under_modal.display();
         this.display_table(layer_name);
-        return deferred.promise;
     }
 };

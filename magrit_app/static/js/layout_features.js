@@ -398,144 +398,144 @@ class Textbox {
         return this;
     }
     editStyle(){
-            let map_xy0 = get_map_xy0();
-            let self = this,
-                inner_p = this.text_annot.select('p');
+        let map_xy0 = get_map_xy0();
+        let self = this,
+            inner_p = this.text_annot.select('p');
 
-            let existing_box = document.querySelector(".styleTextAnnotation");
-            if(existing_box) existing_box.remove();
+        let existing_box = document.querySelector(".styleTextAnnotation");
+        if(existing_box) existing_box.remove();
 
-            let current_options = {
-                size: inner_p.style("font-size"),
-                color: inner_p.style("color"),
-                content: unescape(inner_p.html()),
-                transform_rotate: this.text_annot.attr('transform'),
-                x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-                font: "",
-                font_weight: inner_p.style('font-weight'),
-                font_style: inner_p.style('font-style'),
-                text_decoration: inner_p.style('text-decoration')
-            };
-            current_options.font_weight = (current_options.font_weight == "400" || current_options.font_weight == "") ? '' : 'bold';
-            make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
-                .then(function(confirmed){
-                    if(!confirmed){
-                        self.text_annot.select('p')
-                            .text(current_options.content)
-                            .styles({'color': current_options.color, 'font-size': current_options.size});
-                        self.fontsize = current_options.size;
-                        // self.rotate = current_options.rotate;
-                        self.text_annot.attr('transform', current_options.transform_rotate);
-                    }
+        let current_options = {
+            size: inner_p.style("font-size"),
+            color: inner_p.style("color"),
+            content: unescape(inner_p.html()),
+            transform_rotate: this.text_annot.attr('transform'),
+            x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
+            font: "",
+            font_weight: inner_p.style('font-weight'),
+            font_style: inner_p.style('font-style'),
+            text_decoration: inner_p.style('text-decoration')
+        };
+        current_options.font_weight = (current_options.font_weight == "400" || current_options.font_weight == "") ? '' : 'bold';
+        make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
+            .then(function(confirmed){
+                if(!confirmed){
+                    self.text_annot.select('p')
+                        .text(current_options.content)
+                        .styles({'color': current_options.color, 'font-size': current_options.size});
+                    self.fontsize = current_options.size;
+                    // self.rotate = current_options.rotate;
+                    self.text_annot.attr('transform', current_options.transform_rotate);
+                }
+            });
+        let box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
+
+        let current_rotate = typeof current_options.transform_rotate == "string" ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
+        if(current_rotate && current_rotate.length == 3){
+            current_rotate = +current_rotate[0];
+        } else {
+            current_rotate = 0;
+        }
+
+        let bbox = inner_p.node().getBoundingClientRect(),
+            nx = bbox.left - map_xy0.x,
+            ny = bbox.top - map_xy0.y,
+            x_center = nx + bbox.width / 2,
+            y_center = ny + bbox.height / 2;
+
+        let option_rotation = box_content.append('p').attr('class', 'line_elem');
+        option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
+        option_rotation.append('span').style('float', 'right').html(' °');
+        option_rotation.append("input")
+            .attrs({type: "number", min: 0, max: 360, step: "any", value: current_rotate,
+                    class: "without_spinner", id: "textbox_txt_rotate"})
+            .styles({'width': '40px', 'float': 'right'})
+            .on("change", function(){
+              let rotate_value = +this.value;
+              self.text_annot
+                  .attrs({x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+              document.getElementById("textbox_range_rotate").value = rotate_value;
+            });
+
+        option_rotation.append("input")
+            .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_rotate})
+            .styles({"vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px"})
+            .on("change", function(){
+              let rotate_value = +this.value;
+              self.text_annot
+                  .attrs({x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
+              document.getElementById("textbox_txt_rotate").value = rotate_value;
+            });
+
+        let options_font = box_content.append('p'),
+            font_select = options_font.insert("select").on("change", function(){ inner_p.style("font-family", this.value); });
+
+        available_fonts.forEach(function(font){
+            font_select.append("option").text(font[0]).attr("value", font[1])
+        });
+        font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
+
+        options_font.append("input")
+            .attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
+            .style('width', '60px')
+            .on("change", function(){
+                self.fontsize = +this.value;
+                inner_p.style("font-size", self.fontsize + "px");
+            });
+
+        options_font.append("input")
+            .attrs({type: "color", id: "font_color", value: current_options.color})
+            .style('width', '60px')
+            .on("change", function(){
+                inner_p.style("color", this.value);
+            });
+
+        let options_format = box_content.append('p'),
+            btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+            btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+            btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+        let content_modif_zone = box_content.append("p");
+        content_modif_zone.append("span")
+                .html(i18next.t("app_page.text_box_edit_box.content"));
+        content_modif_zone.append("span")
+                .html("<br>");
+        let textarea = content_modif_zone.append("textarea")
+                .attr("id", "annotation_content")
+                .style("margin", "5px 0px 0px")
+                .on("keyup", function(){
+                    inner_p.html(this.value)
                 });
-            let box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
-
-            let current_rotate = typeof current_options.transform_rotate == "string" ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
-            if(current_rotate && current_rotate.length == 3){
-                current_rotate = +current_rotate[0];
+        textarea = textarea.node();
+        document.getElementById("annotation_content").value = current_options.content;
+        btn_bold.on('click', function(){
+            if(this.classList.contains('active')){
+                this.classList.remove('active');
+                inner_p.style('font-weight', '');
             } else {
-                current_rotate = 0;
+                this.classList.add('active');
+                inner_p.style('font-weight', 'bold');
             }
+        });
 
-            let bbox = inner_p.node().getBoundingClientRect(),
-                nx = bbox.left - map_xy0.x,
-                ny = bbox.top - map_xy0.y,
-                x_center = nx + bbox.width / 2,
-                y_center = ny + bbox.height / 2;
-
-            let option_rotation = box_content.append('p').attr('class', 'line_elem');
-            option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
-            option_rotation.append('span').style('float', 'right').html(' °');
-            option_rotation.append("input")
-                .attrs({type: "number", min: 0, max: 360, step: "any", value: current_rotate,
-                        class: "without_spinner", id: "textbox_txt_rotate"})
-                .styles({'width': '40px', 'float': 'right'})
-                .on("change", function(){
-                  let rotate_value = +this.value;
-                  self.text_annot
-                      .attrs({x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
-                  document.getElementById("textbox_range_rotate").value = rotate_value;
-                });
-
-            option_rotation.append("input")
-                .attrs({type: "range", min: 0, max: 360, step: 0.1, id: "textbox_range_rotate", value: current_rotate})
-                .styles({"vertical-align": "middle", "width": "100px", "float": "right", "margin": "auto 10px"})
-                .on("change", function(){
-                  let rotate_value = +this.value;
-                  self.text_annot
-                      .attrs({x: nx, y: ny, 'transform': "rotate(" + [rotate_value, x_center, y_center] + ")"});
-                  document.getElementById("textbox_txt_rotate").value = rotate_value;
-                });
-
-            let options_font = box_content.append('p'),
-                font_select = options_font.insert("select").on("change", function(){ inner_p.style("font-family", this.value); });
-
-            available_fonts.forEach(function(font){
-                font_select.append("option").text(font[0]).attr("value", font[1])
-            });
-            font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? "1" : "0").indexOf("1");
-
-            options_font.append("input")
-                .attrs({type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize})
-                .style('width', '60px')
-                .on("change", function(){
-                    self.fontsize = +this.value;
-                    inner_p.style("font-size", self.fontsize + "px");
-                });
-
-            options_font.append("input")
-                .attrs({type: "color", id: "font_color", value: current_options.color})
-                .style('width', '60px')
-                .on("change", function(){
-                    inner_p.style("color", this.value);
-                });
-
-            let options_format = box_content.append('p'),
-                btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
-                btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
-                btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
-
-            let content_modif_zone = box_content.append("p");
-            content_modif_zone.append("span")
-                    .html(i18next.t("app_page.text_box_edit_box.content"));
-            content_modif_zone.append("span")
-                    .html("<br>");
-            let textarea = content_modif_zone.append("textarea")
-                    .attr("id", "annotation_content")
-                    .style("margin", "5px 0px 0px")
-                    .on("keyup", function(){
-                        inner_p.html(this.value)
-                    });
-            textarea = textarea.node();
-            document.getElementById("annotation_content").value = current_options.content;
-            btn_bold.on('click', function(){
-                if(this.classList.contains('active')){
-                    this.classList.remove('active');
-                    inner_p.style('font-weight', '');
-                } else {
-                    this.classList.add('active');
-                    inner_p.style('font-weight', 'bold');
-                }
-            });
-
-            btn_italic.on('click', function(){
-                if(this.classList.contains('active')){
-                    this.classList.remove('active');
-                    inner_p.style('font-style', '');
-                } else {
-                    this.classList.add('active');
-                    inner_p.style('font-style', 'italic');
-                }
-            });
-            btn_underline.on('click', function(){
-                if(this.classList.contains('active')){
-                    this.classList.remove('active');
-                    inner_p.style('text-decoration', '');
-                } else {
-                    this.classList.add('active');
-                    inner_p.style('text-decoration', 'underline');
-                }
-            });
+        btn_italic.on('click', function(){
+            if(this.classList.contains('active')){
+                this.classList.remove('active');
+                inner_p.style('font-style', '');
+            } else {
+                this.classList.add('active');
+                inner_p.style('font-style', 'italic');
+            }
+        });
+        btn_underline.on('click', function(){
+            if(this.classList.contains('active')){
+                this.classList.remove('active');
+                inner_p.style('text-decoration', '');
+            } else {
+                this.classList.add('active');
+                inner_p.style('text-decoration', 'underline');
+            }
+        });
     }
 
     up_element(){
@@ -598,26 +598,31 @@ var scaleBar = {
 
         scale_gp.call(drag_legend_func(scale_gp));
         scale_gp.on("mouseover", function(){
-                  this.style.cursor = "pointer";
-                  self.under_rect.style("fill-opacity", 0.1)
-                })
-                .on("mouseout", function(){
-                  this.style.cursor = "pointer";
-                  self.under_rect.style("fill-opacity", 0)
-                })
-                .on("contextmenu dblclick", (d,i) => {
-                    d3.event.preventDefault();
-                    d3.event.stopPropagation();
-                    return scale_context_menu
-                       .showMenu(d3.event, document.querySelector("body"), getItems());
-                });
+            this.style.cursor = "pointer";
+            self.under_rect.style("fill-opacity", 0.1)
+        }).on("mouseout", function(){
+            this.style.cursor = "pointer";
+            self.under_rect.style("fill-opacity", 0)
+        }).on("contextmenu dblclick", (d,i) => {
+            d3.event.preventDefault();
+            d3.event.stopPropagation();
+            return scale_context_menu
+               .showMenu(d3.event, document.querySelector("body"), getItems());
+        });
         this.Scale = scale_gp;
         this.displayed = true;
         if(this.dist > 100){
             this.resize(Math.round(this.dist / 100) * 100);
         } else if (this.dist > 10){
             this.resize(Math.round(this.dist / 10) * 10);
+        } else if (Math.round(this.dist) > 1){
+            this.resize(Math.round(this.dist));
+        } else if (Math.round(this.dist * 10) / 10 > 0.1){
+            this.precision = 1;
+            this.resize(Math.round(this.dist * 10) / 10);
         } else {
+            let t = this.dist.toString().split('.');
+            this.precision = (t && t.length > 1) ? t[1].length : ("" + this.dist).length;
             this.resize(this.dist);
         }
     },
@@ -1171,25 +1176,22 @@ class UserEllipse {
 
         let tmp_start_point = map.append("rect")
             .attr("class", "ctrl_pt").attr('id', 'pt1')
-            .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x)
-            .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y)
-            .attr("height", 6).attr("width", 6)
-            .style("fill", "red")
-            .style("cursor", "grab")
+            .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4)
+            .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y - 4)
+            .attr("height", 8).attr("width", 8)
             .call(d3.drag().on("drag", function(){
                 let t = d3.select(this);
-                t.attr("x", d3.event.x);
+                t.attr("x", d3.event.x - 4);
                 let dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
                 ellipse_elem.rx.baseVal.value = dist;
             }));
         let tmp_end_point = map.append("rect")
-            .attrs({class: 'ctrl_pt', height: 6, width: 6, id: 'pt2',
-                    x: self.pt1[0] * zoom_param.k + zoom_param.x, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y})
-            .styles({fill: 'red', cursor: 'grab'})
+            .attrs({class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+                    x: self.pt1[0] * zoom_param.k + zoom_param.x - 4, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y - 4})
             .call(d3.drag().on("drag", function(){
                 let t = d3.select(this);
-                t.attr("y", d3.event.y);
+                t.attr("y", d3.event.y - 4);
                 let dist = self.pt1[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 ellipse_elem.ry.baseVal.value = dist;
             }));
