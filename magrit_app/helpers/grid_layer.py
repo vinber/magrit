@@ -277,8 +277,8 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
                     intersected_geoms = geoms[idx]
-                    # areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
-                    density = (array_values[idx] * intersected_geoms.intersection(p).area.values / intersected_geoms.area.values).sum() / p.area
+                    areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
+                    density = (array_values[idx] * areas_part).sum() / p.area
                     res.append((p, density))
 
             y_top = y_top - height
