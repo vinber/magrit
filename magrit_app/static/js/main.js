@@ -165,7 +165,7 @@ function setUpInterface(resume_project)
 
     proj_options.append('img')
         .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
-        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px', 'display': 'none'})
+        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px'})
         .on('click', createBoxCustomProjection);
 
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
@@ -2009,13 +2009,13 @@ function change_projection(new_proj_name) {
     proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    // Allow to use more options than only the lambda axis on specific projection :
-    if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
-            || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
-        document.getElementById('btn_customize_projection').style.display = "";
-    } else {
-        document.getElementById('btn_customize_projection').style.display = "none";
-    }
+    // // Allow to use more options than only the lambda axis on specific projection :
+    // if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
+    //         || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
+    //     document.getElementById('btn_customize_projection').style.display = "";
+    // } else {
+    //     document.getElementById('btn_customize_projection').style.display = "none";
+    // }
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     let layer_name = Object.getOwnPropertyNames(user_data)[0];

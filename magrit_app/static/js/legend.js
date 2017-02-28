@@ -59,7 +59,7 @@ function createLegend(layer, title){
     lgd_pos = getTranslateNewLegend();
 
     if(renderer.indexOf("PropSymbolsChoro") != -1){
-        el = createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
+        el = createLegend_choro(layer, field2, title, field2, 0, undefined);
         el2 = createLegend_symbol(layer, field, title, field);
 
     } else if (renderer.indexOf("PropSymbolsTypo") != -1){
@@ -71,7 +71,7 @@ function createLegend(layer, title){
 
     else if (renderer.indexOf("Links") != -1
             || renderer.indexOf("DiscLayer") != -1)
-        el = createLegend_discont_links(layer, field, title, field, undefined, 5);
+        el = createLegend_discont_links(layer, field, title, field);
 
     else if (renderer.indexOf("Choropleth") > -1)
         el = createLegend_choro(layer, field, title, field, 0);
@@ -210,40 +210,6 @@ var drag_legend_func = function(legend_group){
           if(change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
         });
 }
-// function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
-//     var subtitle = subtitle || field,
-//         space_elem = 18,
-//         boxgap = 12,
-//         xpos = 30,
-//         ypos = h / 2,
-//         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
-//
-//     var legend_root = map.insert('g')
-//         .attrs({id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer})
-//         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
-//
-//     var rect_under_legend = legend_root.insert("rect");
-//
-//     legend_root.insert('text')
-//             .text(title || "Title")
-//             .attrs({id: 'legendtitle', x: xpos + space_elem, y: ypos})
-//             .style("font", "bold 12px 'Enriqueta', arial, serif");
-//
-//     legend_root.insert('text')
-//             .text(subtitle)
-//             .attrs({id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15})
-//             .style("font", "italic 12px 'Enriqueta', arial, serif");
-//
-//     legend_root.call(drag_legend_func(legend_root));
-//
-//     legend_root.append("g")
-//             .insert("text")
-//             .attrs({id: 'legend_bottom_note', x: xpos, y: ypos + 2*space_elem})
-//             .html('');
-//     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-//     legend_root.select('#legendtitle').text(title || "");
-//     make_legend_context_menu(legend_root, layer);
-// }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
     var space_elem = 18,
@@ -254,6 +220,11 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         breaks = current_layers[layer].breaks,
         nb_class = breaks.length;
+
+    if(rounding_precision == undefined){
+        let b_val = breaks.map( (v,i) => v[0][0]).concat(breaks[nb_class - 1][0][1]);
+        rounding_precision = get_lgd_display_precision(b_val);
+    }
 
     var legend_root = map.insert('g')
         .attrs({id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer})
@@ -591,8 +562,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     return legend_root;
 }
 
-const get_lgd_display_precision = function(layer){
-    let breaks = current_layers[layer].options_disc.breaks;
+const get_lgd_display_precision = function(breaks){
     // Set rounding precision to 0 if they are all integers :
     if(breaks.filter(b => (b | 0) == b).length == breaks.length){
         return 0;
@@ -653,7 +623,8 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
         });
         nb_class = current_layers[layer].colors_breaks.length;
         if(rounding_precision == undefined){
-            rounding_precision = get_lgd_display_precision(layer)
+            let breaks = current_layers[layer].options_disc.breaks;
+            rounding_precision = get_lgd_display_precision(breaks)
         }
     }
 

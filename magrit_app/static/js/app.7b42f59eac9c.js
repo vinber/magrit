@@ -166,7 +166,7 @@ function setUpInterface(resume_project) {
     });
     proj_options.append("span").style("vertical-align", "calc(20%)").html("°");
 
-    proj_options.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px', 'display': 'none' }).on('click', createBoxCustomProjection);
+    proj_options.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -1725,12 +1725,13 @@ function change_projection(new_proj_name) {
     proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    // Allow to use more options than only the lambda axis on specific projection :
-    if (new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1 || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic") {
-        document.getElementById('btn_customize_projection').style.display = "";
-    } else {
-        document.getElementById('btn_customize_projection').style.display = "none";
-    }
+    // // Allow to use more options than only the lambda axis on specific projection :
+    // if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
+    //         || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
+    //     document.getElementById('btn_customize_projection').style.display = "";
+    // } else {
+    //     document.getElementById('btn_customize_projection').style.display = "none";
+    // }
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -12052,12 +12053,12 @@ function createLegend(layer, title) {
     lgd_pos = getTranslateNewLegend();
 
     if (renderer.indexOf("PropSymbolsChoro") != -1) {
-        el = createLegend_choro(layer, field2, title, field2, 0, undefined, 2);
+        el = createLegend_choro(layer, field2, title, field2, 0, undefined);
         el2 = createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 4);
         el2 = createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field, undefined, 5);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
+    } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
     // else if (renderer.indexOf("Carto_doug") != -1)
     //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
     else swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
@@ -12178,40 +12179,6 @@ var drag_legend_func = function drag_legend_func(legend_group) {
         if (change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
     });
 };
-// function createLegend_nothing(layer, field, title, subtitle, rect_fill_value){
-//     var subtitle = subtitle || field,
-//         space_elem = 18,
-//         boxgap = 12,
-//         xpos = 30,
-//         ypos = h / 2,
-//         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
-//
-//     var legend_root = map.insert('g')
-//         .attrs({id: 'legend_root_nothing', class: tmp_class_name, layer_field: field, layer_name: layer})
-//         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
-//
-//     var rect_under_legend = legend_root.insert("rect");
-//
-//     legend_root.insert('text')
-//             .text(title || "Title")
-//             .attrs({id: 'legendtitle', x: xpos + space_elem, y: ypos})
-//             .style("font", "bold 12px 'Enriqueta', arial, serif");
-//
-//     legend_root.insert('text')
-//             .text(subtitle)
-//             .attrs({id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15})
-//             .style("font", "italic 12px 'Enriqueta', arial, serif");
-//
-//     legend_root.call(drag_legend_func(legend_root));
-//
-//     legend_root.append("g")
-//             .insert("text")
-//             .attrs({id: 'legend_bottom_note', x: xpos, y: ypos + 2*space_elem})
-//             .html('');
-//     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-//     legend_root.select('#legendtitle').text(title || "");
-//     make_legend_context_menu(legend_root, layer);
-// }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
     var space_elem = 18,
@@ -12222,6 +12189,13 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
         tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
         breaks = current_layers[layer].breaks,
         nb_class = breaks.length;
+
+    if (rounding_precision == undefined) {
+        var b_val = breaks.map(function (v, i) {
+            return v[0][0];
+        }).concat(breaks[nb_class - 1][0][1]);
+        rounding_precision = get_lgd_display_precision(b_val);
+    }
 
     var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
@@ -12250,13 +12224,13 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
     try {
         for (var _iterator = breaks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var b_val = _step.value;
+            var _b_val = _step.value;
 
-            if (b_val[1] != 0) {
-                if (current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {
-                    ref_symbols_params.push({ value: [current_min_value, b_val[0][1]], size: b_val[1] });
-                } else if (current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1]) {
-                    ref_symbols_params.push({ value: b_val[0], size: b_val[1] });
+            if (_b_val[1] != 0) {
+                if (current_min_value >= +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
+                    ref_symbols_params.push({ value: [current_min_value, _b_val[0][1]], size: _b_val[1] });
+                } else if (current_min_value < +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
+                    ref_symbols_params.push({ value: _b_val[0], size: _b_val[1] });
                 }
             }
         }
@@ -12517,8 +12491,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
     return legend_root;
 }
 
-var get_lgd_display_precision = function get_lgd_display_precision(layer) {
-    var breaks = current_layers[layer].options_disc.breaks;
+var get_lgd_display_precision = function get_lgd_display_precision(breaks) {
     // Set rounding precision to 0 if they are all integers :
     if (breaks.filter(function (b) {
         return (b | 0) == b;
@@ -12588,7 +12561,8 @@ function createLegend_choro(layer, field, title, subtitle) {
         });
         nb_class = current_layers[layer].colors_breaks.length;
         if (rounding_precision == undefined) {
-            rounding_precision = get_lgd_display_precision(layer);
+            var breaks = current_layers[layer].options_disc.breaks;
+            rounding_precision = get_lgd_display_precision(breaks);
         }
     }
 
@@ -14070,7 +14044,7 @@ function make_style_box_indiv_symbol(symbol_node) {
 };
 "use strict";
 
-var available_projections = new Map([["Armadillo", "d3.geoArmadillo().scale(400)"], ["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().scale(700)"], ["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().scale(700)"], ["Baker", "d3.geoBaker().scale(400)"], ["Boggs", "d3.geoBoggs().scale(400)"], ["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"], ["Bonne", "d3.geoBonne().scale(400)"], ["Bromley", "d3.geoBromley().scale(400)"], ["Collignon", "d3.geoCollignon().scale(400)"], ["ConicConformal", "d3.geoConicConformal().scale(400).parallels([44, 49])"], ["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"], ["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"], ["CrasterParabolic", "d3.geoCraster().scale(400)"], ["EckertI", "d3.geoEckert1().scale(400).translate([300, 250])"], ["EckertII", "d3.geoEckert2().scale(400).translate([300, 250])"], ["EckertIII", "d3.geoEckert3().scale(525).translate([150, 125])"], ["EckertIV", "d3.geoEckert4().scale(525).translate([150, 125])"], ["EckertV", "d3.geoEckert5().scale(400)"], ["EckertVI", "d3.geoEckert6().scale(400)"], ["Eisenlohr", "d3.geoEisenlohr().scale(400)"], ["Gnomonic", "d3.geoGnomonic().scale(400)"], ["Gringorten", "d3.geoGringorten().scale(400)"], ["HEALPix", "d3.geoHealpix().scale(400)"], ["Homolosine", "d3.geoHomolosine().scale(400)"], ["InterruptedHomolosine", "d3.geoInterruptedHomolosine().scale(400)"], ["Loximuthal", "d3.geoLoximuthal().scale(400)"], ["Mercator", "d3.geoMercator().scale(375).translate([525, 350])"], ["NaturalEarth", "d3.geoNaturalEarth().scale(400).translate([375, 50])"], ["Orthographic", "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"], ["Peircequincuncial", "d3.geoPeirceQuincuncial().scale(400)"], ["Robinson", "d3.geoRobinson().scale(400)"], ["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"], ["Sinusoidal", "d3.geoSinusoidal().scale(400)"], ["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"]]);
+var available_projections = new Map([["Armadillo", "d3.geoArmadillo().scale(400)"], ["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().scale(700)"], ["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().scale(700)"], ["Baker", "d3.geoBaker().scale(400)"], ["Boggs", "d3.geoBoggs().scale(400)"], ["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"], ["Bonne", "d3.geoBonne().scale(400)"], ["Bromley", "d3.geoBromley().scale(400)"], ["Collignon", "d3.geoCollignon().scale(400)"], ["ConicConformal", "d3.geoConicConformal().scale(400).parallels([44, 49])"], ["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"], ["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"], ["CrasterParabolic", "d3.geoCraster().scale(400)"], ["EckertI", "d3.geoEckert1().scale(400).translate([300, 250])"], ["EckertII", "d3.geoEckert2().scale(400).translate([300, 250])"], ["EckertIII", "d3.geoEckert3().scale(525).translate([150, 125])"], ["EckertIV", "d3.geoEckert4().scale(525).translate([150, 125])"], ["EckertV", "d3.geoEckert5().scale(400)"], ["EckertVI", "d3.geoEckert6().scale(400)"], ["Eisenlohr", "d3.geoEisenlohr().scale(400)"], ["Gnomonic", "d3.geoGnomonic().scale(400)"], ["Gringorten", "d3.geoGringorten().scale(400)"], ["HEALPix", "d3.geoHealpix().scale(400)"], ["Homolosine", "d3.geoHomolosine().scale(400)"], ["InterruptedHomolosine", "d3.geoInterruptedHomolosine().scale(400)"], ["Loximuthal", "d3.geoLoximuthal().scale(400)"], ["Mercator", "d3.geoMercator().scale(375).translate([525, 350])"], ["NaturalEarth", "d3.geoNaturalEarth().scale(400).translate([375, 50])"], ["Orthographic", "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"], ["Peircequincuncial", "d3.geoPeirceQuincuncial().scale(400)"], ["Robinson", "d3.geoRobinson().scale(400)"], ["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"], ["Sinusoidal", "d3.geoSinusoidal().scale(400)"], ["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"], ["TransverseMercator", "d3.geoTransverseMercator().scale(400)"]]);
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
 		var prev_rotate = proj.rotate(),

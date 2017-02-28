@@ -34,7 +34,8 @@ const available_projections = new Map([
 	["Robinson", "d3.geoRobinson().scale(400)"],
 	["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"],
 	["Sinusoidal", "d3.geoSinusoidal().scale(400)"],
-	["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"]
+	["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"],
+	["TransverseMercator", "d3.geoTransverseMercator().scale(400)"]
 ]);
 
 const createBoxCustomProjection = function(){
