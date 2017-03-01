@@ -288,9 +288,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Valid the type of each field :
         self.validTypefield()
 
-        # Get a reference to the (not displayed) button to tweak the projection
-        btn_customization = driver.find_element_by_id('btn_customize_projection')
-
         # Open the section of the menu with the layer manager :
         self.open_menu_section(3)
 
@@ -298,9 +295,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("form_projection")
             ).select_by_value("InterruptedSinusoidal")
         time.sleep(2)
-
-        # Button to tweak projection is not displayed :
-        self.assertEqual(False, btn_customization.is_displayed())
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
@@ -319,9 +313,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("form_projection")
             ).select_by_value("Baker")
         time.sleep(2)
-
-        # Button to tweak projection is not displayed :
-        self.assertEqual(False, btn_customization.is_displayed())
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
@@ -366,9 +357,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("ConicEqualArea")
         time.sleep(2)
 
-        # Button to tweak projection is displayed :
-        self.assertEqual(True, btn_customization.is_displayed())
-
         parallels_1 = driver.execute_script(
             '''proj.parallels([22, 25]); return proj.parallels();''');
 
@@ -376,9 +364,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         Select(driver.find_element_by_id("form_projection")
             ).select_by_value("ConicEquidistant")
         time.sleep(2)
-
-        # Button to tweak projection is displayed :
-        self.assertEqual(True, btn_customization.is_displayed())
 
         # Value for parallels have been changed :
         parallels_2 = driver.execute_script(

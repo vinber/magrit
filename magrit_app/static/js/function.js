@@ -1760,6 +1760,7 @@ function render_categorical(layer, rendering_params){
         let fields = [].concat(getFieldsType('id', layer), rendering_params['rendered_field']);
         copy_layer(layer, rendering_params.new_name, "typo", fields);
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
+        current_layers[rendering_params.new_name].type = current_layers[layer].type;
         layer = rendering_params.new_name;
     }
 
@@ -1770,9 +1771,16 @@ function render_categorical(layer, rendering_params){
     layer_to_render
         .style("opacity", 1)
         .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k + "px");
-    layer_to_render.selectAll("path")
-        .style("fill", (d,i) => colorsByFeature[i])
-        .styles({'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000'});
+    if(current_layers[layer].type == "Line"){
+        layer_to_render
+            .selectAll("path")
+            .styles({'fill': 'transparent', 'stroke-opacity': 1})
+            .style("stroke", (d,i) => colorsByFeature[i]);
+    } else {
+        layer_to_render.selectAll("path")
+            .style("fill", (d,i) => colorsByFeature[i])
+            .styles({'fill-opacity': 0.9, 'stroke-opacity': 0.9, 'stroke': '#000'});
+    }
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = field;
     current_layers[layer].fill_color = {"class": rendering_params['colorByFeature']};
@@ -1792,6 +1800,7 @@ function render_choro(layer, rendering_params){
         //Assign the same key to the cloned layer so it could be used transparently on server side
         // after deletion of the reference layer if needed :
         current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
+        current_layers[rendering_params.new_name].type = current_layers[layer].type;
         layer = rendering_params.new_name;
     }
     let breaks = rendering_params["breaks"];
@@ -1804,10 +1813,17 @@ function render_choro(layer, rendering_params){
     layer_to_render
         .style("opacity", 1)
         .style("stroke-width", 0.75/d3.zoomTransform(svg_map).k, + "px");
-    layer_to_render
-        .selectAll("path")
-        .styles({'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000'})
-        .style("fill", (d,i) => rendering_params['colorsByFeature'][i] );
+    if(current_layers[layer].type == "Line"){
+        layer_to_render
+            .selectAll("path")
+            .styles({'fill': 'transparent', 'stroke-opacity': 1})
+            .style("stroke", (d,i) => rendering_params['colorsByFeature'][i] );
+    } else {
+        layer_to_render
+            .selectAll("path")
+            .styles({'fill-opacity': 1, 'stroke-opacity': 1, 'stroke': '#000'})
+            .style("fill", (d,i) => rendering_params['colorsByFeature'][i] );
+    }
     current_layers[layer].renderer = rendering_params['renderer'];
     current_layers[layer].rendered_field = rendering_params['rendered_field'];
     current_layers[layer].fill_color = {"class": rendering_params['colorsByFeature']};

@@ -1,6 +1,6 @@
 ## Magrit - Thematic cartography
 
-![png](magrit_app/static/img/logo_magrit2.png)  
+![png](magrit_app/static/img/logo_magrit2.png)  / [magrit.cnrs.fr](http://magrit.cnrs.fr)
 [![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)
 
 "Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
@@ -9,7 +9,7 @@ All usual cartographic representations as well as many cartographic methods ofte
 
 ### Result examples :
 
-<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/></p>
+<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/><img src="https://raw.githubusercontent.com/mthh/magrit/master/magrit_app/static/img/gallery/popdensity_africa.png" height="250"/></p>
 
 
 More examples are available in the [gallery](http://magrit.hypotheses.org/galerie).

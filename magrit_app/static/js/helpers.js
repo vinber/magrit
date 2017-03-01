@@ -464,9 +464,21 @@ function getAvailablesFunctionnalities(layer_name){
     let fields_stock = getFieldsType('stock', layer_name),
         fields_ratio = getFieldsType('ratio', layer_name),
         fields_categ = getFieldsType('category', layer_name),
-        func_stock = document.querySelectorAll('#button_smooth, #button_prop, #button_choroprop, #button_proptypo, #button_grid, #button_cartogram, #button_discont'),
-        func_ratio = document.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
-        func_categ = document.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+        section = document.getElementById('section2_pre');
+
+    if(current_layers[layer_name].type == "Line"){ // Layer type is Line
+        let elems = section.querySelectorAll('#button_grid, #button_discont, #button_links, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
+        for(let i = 0, len_i = elems.length; i < len_i; i++){
+            elems[i].style.filter = "grayscale(100%)";
+        }
+        var func_stock = section.querySelectorAll('#button_prop, #button_choroprop, #button_proptypo'),
+            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
+            func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
+    } else { // layer type is Point or Polygon :
+        var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_choroprop, #button_proptypo, #button_grid, #button_cartogram, #button_discont'),
+            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
+            func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+    }
     if(fields_stock.length === 0){
         Array.prototype.forEach.call(func_stock, d => d.style.filter = "grayscale(100%)");
     } else {

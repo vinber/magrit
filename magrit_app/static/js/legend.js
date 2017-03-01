@@ -59,7 +59,7 @@ function createLegend(layer, title){
     lgd_pos = getTranslateNewLegend();
 
     if(renderer.indexOf("PropSymbolsChoro") != -1){
-        el = createLegend_choro(layer, field2, title, field2, 0, undefined);
+        el = createLegend_choro(layer, field2, title, field2, 0);
         el2 = createLegend_symbol(layer, field, title, field);
 
     } else if (renderer.indexOf("PropSymbolsTypo") != -1){
@@ -299,13 +299,13 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
             return {x: x_text_pos, y: tmp_pos};
             })
         .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(d => round_value(d.value[1], rounding_precision));
+        .text(d => round_value(d.value[1], rounding_precision).toLocaleString());
 
     legend_root.insert('text').attr("id", "lgd_choro_min_val")
         .attr("x", x_text_pos)
         .attr("y", tmp_pos + boxgap)
         .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(round_value(ref_symbols_params[ref_symbols_params.length -1].value[0], rounding_precision));
+        .text(round_value(ref_symbols_params[ref_symbols_params.length -1].value[0], rounding_precision).toLocaleString());
 
     legend_root.call(drag_legend_func(legend_root));
 
@@ -459,7 +459,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                   };
                 })
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision));
+                .text(d => round_value(d.value, rounding_precision).toLocaleString());
 
         } else if(symbol_type === "rect"){
             legend_elems
@@ -486,7 +486,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                         return last_pos + (d.size * 0.6);
                         })
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision));
+                .text(d => round_value(d.value, rounding_precision).toLocaleString());
         }
     } else if (nested == "true"){
         if(symbol_type === "circle"){
@@ -503,7 +503,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
                 .attr("y", d => ypos + 45 + max_size * 2 - (max_size / 2) - d.size * 2)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision));
+                .text(d => round_value(d.value, rounding_precision).toLocaleString());
             last_pos = ypos + 30 + max_size + (max_size / 2);
         } else if(symbol_type === "rect"){
             legend_elems
@@ -518,7 +518,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("x", xpos + space_elem + max_size * 1.25)
                 .attr("y", d => ypos + 46 + max_size - d.size)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision));
+                .text(d => round_value(d.value, rounding_precision).toLocaleString());
             last_pos = ypos + 30 + max_size;
         }
     }
@@ -529,7 +529,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("x", xpos + space_elem)
                 .attr("y", last_pos + 1.75 * space_elem)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .html('< ' + current_layers[layer].break_val);
+                .html('< ' + current_layers[layer].break_val.toLocaleString());
         bottom_colors
                 .insert("rect").attr("id", "col1")
                 .attr("x", xpos + space_elem)
@@ -540,7 +540,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
                 .attr("x", xpos + 3 * space_elem)
                 .attr("y", last_pos + 1.75 * space_elem)
                 .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .html('> ' + current_layers[layer].break_val);
+                .html('> ' + current_layers[layer].break_val.toLocaleString());
         bottom_colors
                 .insert("rect").attr("id", "col2")
                 .attr("x", xpos + 3 * space_elem)
@@ -689,14 +689,14 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             return tmp_pos;
             })
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text( d => round_value(+d.value.split(' - ')[1], rounding_precision) );
+          .text( d => round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString() );
 
         legend_root
           .insert('text').attr("id", "lgd_choro_min_val")
           .attr("x", xpos + boxwidth * 2 + 10)
           .attr("y", tmp_pos + boxheight + boxgap)
           .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text(d => round_value(data_colors_label[data_colors_label.length -1].value.split(' - ')[0], rounding_precision) );
+          .text(d => round_value(data_colors_label[data_colors_label.length -1].value.split(' - ')[0], rounding_precision).toLocaleString() );
 
     }
     else
@@ -902,22 +902,22 @@ function createlegendEditBox(legend_id, layer_name){
                     if(legend_id === "legend_root"){
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let values = legend_boxes._groups[0][i].__data__.value.split(' - ');
-                            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float);
+                            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
                         }
                         let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
-                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
+                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
                     } else if (legend_id === "legend_root2") {
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value;
-                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float);
+                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
                         }
                     } else if (legend_id === "legend_root_links") {
                         for(let i = 0; i < legend_boxes._groups[0].length; i++){
                             let value = legend_boxes._groups[0][i].__data__.value[1];
-                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float);
+                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
                         }
                         let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
-                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float);
+                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
                     }
                 });
             e.append('span')

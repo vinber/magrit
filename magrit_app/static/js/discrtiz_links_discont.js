@@ -449,7 +449,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         document.removeEventListener('keydown', helper_esc_key_twbs);
         modal_box.close();
         container.remove();
-        reOpenParent('.styleBox');
+        let p = reOpenParent('.styleBox');
         if(!p) overlay_under_modal.hide();
     }
     let _onclose = () => {

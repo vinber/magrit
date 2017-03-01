@@ -189,7 +189,8 @@
             "Robinson": "Robinson",
             "InterruptedSinuMollweide": "Interrupted Sinu-Mollweide",
             "Sinusoidal": "Sinusoidal",
-            "InterruptedSinusoidal": "Interrupted sinusoidal"
+            "InterruptedSinusoidal": "Interrupted sinusoidal",
+            "TransverseMercator": "Transverse Mercator"
         },
         "stat_summary": {
             "population": "Population",

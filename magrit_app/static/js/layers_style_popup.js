@@ -3,6 +3,8 @@
 function handle_click_layer(layer_name){
     if(layer_name == "Graticule")
         createStyleBoxGraticule();
+    else if(current_layers[layer_name].type == "Line")
+        createStyleBox_Line(layer_name);
     else if(current_layers[layer_name].renderer
         && current_layers[layer_name].renderer.indexOf("PropSymbol") > -1)
         createStyleBox_ProbSymbol(layer_name);
@@ -443,6 +445,339 @@ function createStyleBoxGraticule(layer_name){
             });
 }
 
+function createStyleBox_Line(layer_name){
+    let existing_box = document.querySelector(".styleBox");
+    if(existing_box) existing_box.remove();
+    var rendering_params = null,
+        renderer = current_layers[layer_name].renderer,
+        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
+        selection = map.select(g_lyr_name).selectAll("path"),
+        opacity = selection.style('fill-opacity');
+
+    var lgd_to_change;
+
+    var fill_prev = cloneObj(current_layers[layer_name].fill_color),
+        prev_col_breaks;
+
+    if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
+        prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+
+
+    var stroke_prev = selection.style('stroke'),
+        border_opacity = selection.style('stroke-opacity'),
+        stroke_width = +current_layers[layer_name]['stroke-width-const'],
+        prev_min_display, prev_size, prev_breaks;
+
+    if(stroke_prev.startsWith("rgb"))
+        stroke_prev = rgb2hex(stroke_prev);
+
+    var table = [];
+    Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
+        table.push(d.__data__.properties);
+    });
+
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
+        .then(function(confirmed){
+            if(confirmed){
+                if(renderer != undefined
+                     && rendering_params != undefined && renderer != "Categorical"){
+                    current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
+                    let colors_breaks = [];
+                    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
+                        colors_breaks.push([
+                            [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                            rendering_params['colors'][i-1]
+                            ]);
+                    }
+                    current_layers[layer_name].colors_breaks = colors_breaks;
+                    current_layers[layer_name].rendered_field = rendering_params.field;
+                    current_layers[layer_name].options_disc = {
+                            schema: rendering_params.schema,
+                            colors: rendering_params.colors,
+                            no_data: rendering_params.no_data,
+                            type: rendering_params.type,
+                            breaks: rendering_params.breaks
+                          };
+                } else if (renderer == "Categorical"){
+                    current_layers[layer_name].color_map = rendering_params.color_map;
+                    current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
+                } else if (renderer == "DiscLayer"){
+                    selection.each(function(d){
+                        d.properties.prop_val = this.style.strokeWidth;
+                    });
+                } else if (renderer == "Links"){
+                    selection.each(function(d, i) {
+                        current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
+                    })
+                }
+                // Also change the legend if there is one displayed :
+                let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
+                let lgd = document.querySelector(
+                    [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
+                    );
+                if(lgd && (lgd_to_change || rendering_params)){
+                    let transform_param = lgd.getAttribute("transform"),
+                        lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+                        lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+                        rounding_precision = lgd.getAttribute("rounding_precision"),
+                        note = lgd.querySelector("#legend_bottom_note").innerHTML,
+                        boxgap = lgd.getAttribute("boxgap");
+
+                    if(_type_layer_links){
+                        lgd.remove();
+                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
+                    } else {
+                        let no_data_txt = document.getElementById("no_data_txt");
+                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+                        lgd.remove();
+                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
+                    }
+                    lgd = document.querySelector(
+                        [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
+                        );
+                    if(transform_param)
+                        lgd.setAttribute("transform", transform_param);
+                }
+                zoom_without_redraw();
+            } else {
+                // Reset to original values the rendering parameters if "no" is clicked
+                selection.style('fill-opacity', opacity)
+                         .style('stroke-opacity', border_opacity);
+                let zoom_scale = +d3.zoomTransform(map.node()).k;
+                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
+                current_layers[layer_name]['stroke-width-const'] = stroke_width;
+                let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+
+                if(current_layers[layer_name].renderer == "Links" && prev_min_display != undefined){
+                    current_layers[layer_name].min_display = prev_min_display;
+                    current_layers[layer_name].breaks = prev_breaks;
+                    selection.style('fill-opacity', 0)
+                             .style("stroke", fill_prev.single)
+                             .style("display", d => (+d.properties.fij > prev_min_display) ? null : "none")
+                             .style("stroke-opacity", border_opacity)
+                             .style("stroke-width", (d,i) => current_layers[layer_name].linksbyId[i][2]);
+                } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined){
+                    current_layers[layer_name].min_display = prev_min_display;
+                    current_layers[layer_name].size = prev_size;
+                    current_layers[layer_name].breaks = prev_breaks;
+                    let lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+                    selection.style('fill-opacity', 0)
+                             .style("stroke", fill_prev.single)
+                             .style("stroke-opacity", border_opacity)
+                             .style("display", (d,i) => +i <= lim ? null : "none" )
+                             .style('stroke-width', d => d.properties.prop_val);
+                } else {
+                    if(fill_meth == "single")
+                        selection.style("stroke", fill_prev.single)
+                                 .style("stroke-opacity", border_opacity);
+                    else if(fill_meth == "random")
+                        selection.style("stroke-opacity", border_opacity)
+                                 .style("stroke", () => Colors.name[Colors.random()]);
+                    else if(fill_meth == "class" && renderer == "Links")
+                        selection.style('stroke-opacity', (d,i) => current_layers[layer_name].linksbyId[i][0])
+                                 .style("stroke", stroke_prev);
+                }
+                if(current_layers[layer_name].colors_breaks)
+                    current_layers[layer_name].colors_breaks = prev_col_breaks;
+                current_layers[layer_name].fill_color = fill_prev;
+                zoom_without_redraw();
+            }
+    });
+
+    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+
+    if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
+        let c_section = popup.append('p').attr("class", "line_elem");
+        c_section.insert("span")
+            .html(i18next.t("app_page.layer_style_popup.color"));
+        c_section.insert('input')
+            .attrs({type: "color", value: stroke_prev})
+            .style("float", "right")
+            .on('change', function(){
+                lgd_to_change = true;
+                selection.style("stroke", this.value);
+                current_layers[layer_name].fill_color.single = this.value;
+            });
+    } else if (renderer == "Categorical"){
+        let rendered_field = current_layers[layer_name].rendered_field;
+
+        popup.insert('p').style("margin", "auto").html("")
+            .append("button")
+            .attr("class", "button_disc")
+            .styles({"font-size": "0.8em", "text-align": "center"})
+            .html(i18next.t("app_page.layer_style_popup.choose_colors"))
+            .on("click", function(){
+                let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
+                    .then(function(confirmed){
+                        if(confirmed){
+                            rendering_params = {
+                                    nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
+                                    renderer:"Categorical", rendered_field: rendered_field
+                                };
+                            selection.transition()
+                                .style('stroke', (d,i) => rendering_params.colorsByFeature[i]);
+                            lgd_to_change = true;
+                        }
+                    });
+            });
+    } else if (renderer == "Choropleth"){
+        popup.append('p').styles({margin: 'auto', 'text-align': 'center'})
+            .append("button")
+            .attr("class", "button_disc")
+            .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
+            .on("click", function(){
+                display_discretization(layer_name,
+                                       current_layers[layer_name].rendered_field,
+                                       current_layers[layer_name].colors_breaks.length,
+                                       current_layers[layer_name].options_disc)
+                   .then(function(confirmed){
+                       if(confirmed){
+                           rendering_params = {
+                               nb_class: confirmed[0],
+                               type: confirmed[1],
+                               breaks: confirmed[2],
+                               colors:confirmed[3],
+                               colorsByFeature: confirmed[4],
+                               schema: confirmed[5],
+                               no_data: confirmed[6],
+                              //  renderer:"Choropleth",
+                               field: current_layers[layer_name].rendered_field
+                           };
+                           selection.transition()
+                               .style("stroke", (d,i) => rendering_params.colorsByFeature[i]);
+                       }
+                   });
+           });
+    }
+
+    if(renderer == "Links"){
+        prev_min_display = current_layers[layer_name].min_display || 0;
+        prev_breaks = current_layers[layer_name].breaks.slice();
+        let max_val = 0;
+        selection.each(function(d){if(+d.properties.fij > max_val) max_val = d.properties.fij;})
+        let threshold_section = popup.append('p').attr("class", "line_elem");
+        threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
+        // The legend will be updated in order to start on the minimum value displayed instead of
+        //   using the minimum value of the serie (skipping unused class if necessary)
+        threshold_section.insert('input')
+            .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
+            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+            .on("change", function(){
+                lgd_to_change = true;
+                let val = +this.value;
+                popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                selection.style("display", d => (+d.properties.fij > val) ? null : "none");
+                current_layers[layer_name].min_display = val;
+            });
+        threshold_section.insert('label')
+            .attr("id", "larger_than")
+            .style("float", "right")
+            .html(["<i> ", prev_min_display, " </i>"].join(''));
+        popup.append('p').style('text-align', 'center')
+            .append("button")
+                .attr("class", "button_disc")
+                .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
+                .on("click", function(){
+                    display_discretization_links_discont(layer_name,
+                                                         current_layers[layer_name].rendered_field,
+                                                         current_layers[layer_name].breaks.length,
+                                                         "user_defined")
+                        .then(function(result){
+                            if(result){
+                                let serie = result[0],
+                                    sizes = result[1].map(ft => ft[1]),
+                                    links_byId = current_layers[layer_name].linksbyId;
+
+                                lgd_to_change = true;
+                                serie.setClassManually(result[2]);
+                                current_layers[layer_name].breaks = result[1];
+                                selection.style('fill-opacity', 0)
+                                         .style("stroke-width", (d,i) => sizes[serie.getClass(+links_byId[i][1])]);
+                            }
+                        });
+                });
+
+    } else if(renderer == "DiscLayer"){
+        prev_min_display = current_layers[layer_name].min_display || 0;
+        prev_size = current_layers[layer_name].size.slice();
+        prev_breaks = current_layers[layer_name].breaks.slice();
+        let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
+        let disc_part = popup.append("p").attr("class", "line_elem");
+        disc_part.append("span").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
+        disc_part.insert("input")
+            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
+            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
+            .on("change", function(){
+                lgd_to_change = true;
+                let val = +this.value;
+                let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
+                popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
+                selection.style("display", (d,i) => i <= lim ? null : "none" );
+                current_layers[layer_name].min_display = val;
+            });
+        disc_part.insert('label')
+            .attr("id", "larger_than")
+            .style("float", "right")
+            .html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
+        popup.append('p').style('text-align', 'center')
+            .append("button")
+            .attr("class", "button_disc")
+            .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
+            .on("click", function(){
+                display_discretization_links_discont(layer_name,
+                                                     "disc_value",
+                                                     current_layers[layer_name].breaks.length,
+                                                     "user_defined")
+                    .then(function(result){
+                        if(result){
+                            let serie = result[0],
+                                sizes = result[1].map(ft => ft[1]);
+
+                            lgd_to_change = true;
+                            serie.setClassManually(result[2]);
+                            current_layers[layer_name].breaks = result[1];
+                            current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+                            selection.style('fill-opacity', 0)
+                                    .style("stroke-width", (d,i) => sizes[serie.getClass(+d.properties.disc_value)]);
+                        }
+                    });
+            });
+    }
+
+    let opacity_section = popup.append('p').attr("class", "line_elem");
+    opacity_section.insert("span")
+        .html(i18next.t("app_page.layer_style_popup.opacity"));
+    opacity_section.insert('input')
+        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
+        .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
+        .on('change', function(){
+            opacity_section.select("#opacity_val_txt").html(" " + this.value);
+            selection.style('stroke-opacity', this.value);
+        });
+
+    opacity_section.append("span").attr("id", "opacity_val_txt")
+         .style("display", "inline").style("float", "right")
+         .html(" " + border_opacity);
+
+    if(renderer != "DiscLayer" && renderer != "Links"){
+        let width_section = popup.append('p');
+        width_section.append("span")
+            .html(i18next.t("app_page.layer_style_popup.width"));
+        width_section.insert('input')
+            .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
+            .styles({"width": "60px", "float": "right"})
+            .on('change', function(){
+                let val = +this.value;
+                let zoom_scale = +d3.zoomTransform(map.node()).k;
+                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+                current_layers[layer_name]['stroke-width-const'] = val;
+              });
+    }
+
+    make_generate_labels_section(popup, layer_name);
+}
+
 function createStyleBox(layer_name){
     let existing_box = document.querySelector(".styleBox");
     if(existing_box) existing_box.remove();
@@ -511,20 +846,9 @@ function createStyleBox(layer_name){
                 } else if (renderer == "Categorical"){
                     current_layers[layer_name].color_map = rendering_params.color_map;
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
-                } else if (renderer == "DiscLayer"){
-                    selection.each(function(d){
-                        d.properties.prop_val = this.style.strokeWidth;
-                    });
-                } else if (renderer == "Links"){
-                    selection.each(function(d, i) {
-                        current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
-                    })
                 }
-                // Also change the legend if there is one displayed :
-                let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
-                let lgd = document.querySelector(
-                    [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
-                    );
+
+                let lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                 if(lgd && (lgd_to_change || rendering_params)){
                     let transform_param = lgd.getAttribute("transform"),
                         lgd_title = lgd.querySelector("#legendtitle").innerHTML,
@@ -533,18 +857,11 @@ function createStyleBox(layer_name){
                         note = lgd.querySelector("#legend_bottom_note").innerHTML,
                         boxgap = lgd.getAttribute("boxgap");
 
-                    if(_type_layer_links){
-                        lgd.remove();
-                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
-                    } else {
-                        let no_data_txt = document.getElementById("no_data_txt");
-                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-                        lgd.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-                    }
-                    lgd = document.querySelector(
-                        [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
-                        );
+                    let no_data_txt = document.getElementById("no_data_txt");
+                    no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+                    lgd.remove();
+                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
+                    lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
                     if(transform_param)
                         lgd.setAttribute("transform", transform_param);
                 }
@@ -559,36 +876,6 @@ function createStyleBox(layer_name){
                 let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
                 if(type === "Point" && current_layers[layer_name].pointRadius) {
                     selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius))
-                } else if(type == "Line"){
-                    if(current_layers[layer_name].renderer == "Links" && prev_min_display != undefined){
-                        current_layers[layer_name].min_display = prev_min_display;
-                        current_layers[layer_name].breaks = prev_breaks;
-                        selection.style('fill-opacity', 0)
-                                 .style("stroke", fill_prev.single)
-                                 .style("display", d => (+d.properties.fij > prev_min_display) ? null : "none")
-                                 .style("stroke-opacity", border_opacity)
-                                 .style("stroke-width", (d,i) => current_layers[layer_name].linksbyId[i][2]);
-                    } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined){
-                        current_layers[layer_name].min_display = prev_min_display;
-                        current_layers[layer_name].size = prev_size;
-                        current_layers[layer_name].breaks = prev_breaks;
-                        let lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                        selection.style('fill-opacity', 0)
-                                 .style("stroke", fill_prev.single)
-                                 .style("stroke-opacity", border_opacity)
-                                 .style("display", (d,i) => +i <= lim ? null : "none" )
-                                 .style('stroke-width', d => d.properties.prop_val);
-                    } else {
-                        if(fill_meth == "single")
-                            selection.style("stroke", fill_prev.single)
-                                     .style("stroke-opacity", border_opacity);
-                        else if(fill_meth == "random")
-                            selection.style("stroke-opacity", border_opacity)
-                                     .style("stroke", () => Colors.name[Colors.random()]);
-                        else if(fill_meth == "class" && renderer == "Links")
-                            selection.style('stroke-opacity', (d,i) => current_layers[layer_name].linksbyId[i][0])
-                                     .style("stroke", stroke_prev);
-                    }
                 } else {
                     if(current_layers[layer_name].renderer == "Stewart"){
                         recolor_stewart(prev_palette.name, prev_palette.reversed);
@@ -644,264 +931,172 @@ function createStyleBox(layer_name){
             });
     }
 
-     if(type !== 'Line'){
-        if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
-            if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
-                let fields =  getFieldsType('category', null, fields_layer);
-                let fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-                [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
-                 [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
-                 [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function(d,i){
-                        fill_method.append("option").text(d[0]).attr("value", d[1])  });
-                popup.append('div').attrs({id: "fill_color_section"})
-                fill_method.on("change", function(){
-                    d3.select("#fill_color_section").html("").on("click", null);
-                    if (this.value == "single")
-                        make_single_color_menu(layer_name, fill_prev);
-                    else if (this.value == "categorical")
-                        make_categorical_color_menu(fields, layer_name, fill_prev);
-                    else if (this.value == "random")
-                        make_random_color(layer_name);
-                    });
-                setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
-            } else {
-                popup.append('div').attrs({id: "fill_color_section"})
-                make_single_color_menu(layer_name, fill_prev);
-            }
-        } else if (renderer == "Categorical"){
-            let rendered_field = current_layers[layer_name].rendered_field;
-
-            popup.insert('p').style("margin", "auto").html("")
-                .append("button")
-                .attr("class", "button_disc")
-                .styles({"font-size": "0.8em", "text-align": "center"})
-                .html(i18next.t("app_page.layer_style_popup.choose_colors"))
-                .on("click", function(){
-                    let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
-                    display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
-                        .then(function(confirmed){
-                            if(confirmed){
-                                rendering_params = {
-                                        nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
-                                        renderer:"Categorical", rendered_field: rendered_field
-                                    };
-                                selection.transition()
-                                    .style('fill', (d,i) => rendering_params.colorsByFeature[i]);
-                                lgd_to_change = true;
-                            }
-                        });
+    if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
+        if(current_layers[layer_name].targeted || current_layers[layer_name].is_result){
+            let fields =  getFieldsType('category', null, fields_layer);
+            let fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
+            [[i18next.t("app_page.layer_style_popup.single_color"), "single"],
+             [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"],
+             [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function(d,i){
+                    fill_method.append("option").text(d[0]).attr("value", d[1])  });
+            popup.append('div').attrs({id: "fill_color_section"})
+            fill_method.on("change", function(){
+                d3.select("#fill_color_section").html("").on("click", null);
+                if (this.value == "single")
+                    make_single_color_menu(layer_name, fill_prev);
+                else if (this.value == "categorical")
+                    make_categorical_color_menu(fields, layer_name, fill_prev);
+                else if (this.value == "random")
+                    make_random_color(layer_name);
                 });
-        } else if (renderer == "Choropleth"){
-            popup.append('p').styles({margin: 'auto', 'text-align': 'center'})
-                .append("button")
-                .attr("class", "button_disc")
-                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
-                .on("click", function(){
-                    display_discretization(layer_name,
-                                           current_layers[layer_name].rendered_field,
-                                           current_layers[layer_name].colors_breaks.length,
-                                          //  "quantiles",
-                                           current_layers[layer_name].options_disc)
-                       .then(function(confirmed){
-                           if(confirmed){
-                               rendering_params = {
-                                   nb_class: confirmed[0],
-                                   type: confirmed[1],
-                                   breaks: confirmed[2],
-                                   colors:confirmed[3],
-                                   colorsByFeature: confirmed[4],
-                                   schema: confirmed[5],
-                                   no_data: confirmed[6],
-                                  //  renderer:"Choropleth",
-                                   field: current_layers[layer_name].rendered_field
-                               };
-                               let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
-                               selection.transition()
-                                   .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
-                           }
-                       });
-               });
-
-        } else if (renderer == "Gridded"){
-            let field_to_discretize = "densitykm";
-            popup.append('p').style("margin", "auto").style("text-align", "center")
-                .append("button")
-                .attr("class", "button_disc")
-                .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
-                .on("click", function(){
-                    display_discretization(layer_name,
-                                           field_to_discretize,
-                                           current_layers[layer_name].colors_breaks.length,
-                                          //  "quantiles",
-                                           current_layers[layer_name].options_disc)
-                        .then(function(confirmed){
-                            if(confirmed){
-                                rendering_params = {
-                                    nb_class: confirmed[0],
-                                    type: confirmed[1],
-                                    breaks: confirmed[2],
-                                    colors:confirmed[3],
-                                    colorsByFeature: confirmed[4],
-                                    schema: confirmed[5],
-                                    no_data: confirmed[6],
-                                    renderer:"Choropleth",
-                                    field: field_to_discretize
-                                };
-                                let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
-                                selection.transition()
-                                    .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
-                            }
-                        });
-                });
-         } else if (renderer == "Stewart"){
-            let field_to_colorize = "min",
-                nb_ft = current_layers[layer_name].n_features;
-            var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-            rendering_params = {breaks: [].concat(current_layers[layer_name].colors_breaks)};
-
-            var recolor_stewart = function(coloramp_name, reversed){
-                let new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-                if(reversed) new_coloramp.reverse();
-                for(let i=0; i < nb_ft; ++i)
-                    rendering_params.breaks[i][1] = new_coloramp[i];
-                selection.transition().style("fill", (d,i) => new_coloramp[i] );
-                current_layers[layer_name].color_palette = {name: coloramp_name, reversed: reversed};
-            }
-
-            var color_palette_section = popup.insert("p").attr("class", "line_elem");
-            color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-            let seq_color_select = color_palette_section.insert("select")
-                                        .attr("id", "coloramp_params")
-                                        .style('float', 'right')
-                                        .on("change", function(){
-                                            recolor_stewart(this.value, false);
-                                         });
-
-            ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
-             'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(name => {
-                seq_color_select.append("option").text(name).attr("value", name);
-            });
-            seq_color_select.node().value = prev_palette.name;
-            popup.insert('p')
-                .attr('class', 'line_elem')
-                .styles({'text-align': 'center', 'margin': '0 !important'})
-                .insert("button")
-                .attrs({"class": "button_st3", "id": "reverse_colramp"})
-                .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
-                .on("click", function(){
-                    let pal_name = document.getElementById("coloramp_params").value;
-                    recolor_stewart(pal_name, true);
-                 });
+            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
+        } else {
+            popup.append('div').attrs({id: "fill_color_section"})
+            make_single_color_menu(layer_name, fill_prev);
         }
-        let fill_opacity_section = popup.append('p').attr("class", "line_elem");
-        fill_opacity_section.append("span")
-            .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
-        fill_opacity_section.insert('input')
-            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
-            .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
-            .on('change', function(){
-              selection.style('fill-opacity', this.value)
-              fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
-            });
-        fill_opacity_section.append("span")
-                        .style("float", "right")
-                        .attr("id", "fill_opacity_txt")
-                        .html((+opacity * 100) + "%");
-    } else if (type === "Line" && renderer == "Links"){
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        let max_val = 0;
-        selection.each(function(d){if(+d.properties.fij > max_val) max_val = d.properties.fij;})
-        let threshold_section = popup.append('p').attr("class", "line_elem");
-        threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
-        // The legend will be updated in order to start on the minimum value displayed instead of
-        //   using the minimum value of the serie (skipping unused class if necessary)
-        threshold_section.insert('input')
-            .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
-            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
-            .on("change", function(){
-                lgd_to_change = true;
-                let val = +this.value;
-                popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-                selection.style("display", d => (+d.properties.fij > val) ? null : "none");
-                current_layers[layer_name].min_display = val;
-            });
-        threshold_section.insert('label')
-            .attr("id", "larger_than")
-            .style("float", "right")
-            .html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append('p').style('text-align', 'center')
-            .append("button")
-                .attr("class", "button_disc")
-                .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
-                .on("click", function(){
-                    display_discretization_links_discont(layer_name,
-                                                         current_layers[layer_name].rendered_field,
-                                                         current_layers[layer_name].breaks.length,
-                                                         "user_defined")
-                        .then(function(result){
-                            if(result){
-                                let serie = result[0],
-                                    sizes = result[1].map(ft => ft[1]),
-                                    links_byId = current_layers[layer_name].linksbyId;
+    } else if (renderer == "Categorical"){
+        let rendered_field = current_layers[layer_name].rendered_field;
 
-                                lgd_to_change = true;
-                                serie.setClassManually(result[2]);
-                                current_layers[layer_name].breaks = result[1];
-                                selection.style('fill-opacity', 0)
-                                         .style("stroke-width", (d,i) => sizes[serie.getClass(+links_byId[i][1])]);
-                            }
-                        });
-                });
-     } else if (type === "Line" && renderer == "DiscLayer"){
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_size = current_layers[layer_name].size.slice();
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
-        let disc_part = popup.append("p").attr("class", "line_elem");
-        disc_part.append("span").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
-        disc_part.insert("input")
-            .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
-            .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
-            .on("change", function(){
-                lgd_to_change = true;
-                let val = +this.value;
-                let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-                popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
-                selection.style("display", (d,i) => i <= lim ? null : "none" );
-                current_layers[layer_name].min_display = val;
+        popup.insert('p').style("margin", "auto").html("")
+            .append("button")
+            .attr("class", "button_disc")
+            .styles({"font-size": "0.8em", "text-align": "center"})
+            .html(i18next.t("app_page.layer_style_popup.choose_colors"))
+            .on("click", function(){
+                let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
+                display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
+                    .then(function(confirmed){
+                        if(confirmed){
+                            rendering_params = {
+                                    nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
+                                    renderer:"Categorical", rendered_field: rendered_field
+                                };
+                            selection.transition()
+                                .style('fill', (d,i) => rendering_params.colorsByFeature[i]);
+                            lgd_to_change = true;
+                        }
+                    });
             });
-        disc_part.insert('label')
-            .attr("id", "larger_than")
-            .style("float", "right")
-            .html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
-        popup.append('p').style('text-align', 'center')
+    } else if (renderer == "Choropleth"){
+        popup.append('p').styles({margin: 'auto', 'text-align': 'center'})
             .append("button")
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
-                display_discretization_links_discont(layer_name,
-                                                     "disc_value",
-                                                     current_layers[layer_name].breaks.length,
-                                                     "user_defined")
-                    .then(function(result){
-                        if(result){
-                            let serie = result[0],
-                                sizes = result[1].map(ft => ft[1]);
+                display_discretization(layer_name,
+                                       current_layers[layer_name].rendered_field,
+                                       current_layers[layer_name].colors_breaks.length,
+                                      //  "quantiles",
+                                       current_layers[layer_name].options_disc)
+                   .then(function(confirmed){
+                       if(confirmed){
+                           rendering_params = {
+                               nb_class: confirmed[0],
+                               type: confirmed[1],
+                               breaks: confirmed[2],
+                               colors:confirmed[3],
+                               colorsByFeature: confirmed[4],
+                               schema: confirmed[5],
+                               no_data: confirmed[6],
+                              //  renderer:"Choropleth",
+                               field: current_layers[layer_name].rendered_field
+                           };
+                           let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                           selection.transition()
+                               .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
+                       }
+                   });
+           });
 
-                            lgd_to_change = true;
-                            serie.setClassManually(result[2]);
-                            current_layers[layer_name].breaks = result[1];
-                            current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                            selection.style('fill-opacity', 0)
-                                    .style("stroke-width", (d,i) => sizes[serie.getClass(+d.properties.disc_value)]);
+    } else if (renderer == "Gridded"){
+        let field_to_discretize = "densitykm";
+        popup.append('p').style("margin", "auto").style("text-align", "center")
+            .append("button")
+            .attr("class", "button_disc")
+            .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
+            .on("click", function(){
+                display_discretization(layer_name,
+                                       field_to_discretize,
+                                       current_layers[layer_name].colors_breaks.length,
+                                      //  "quantiles",
+                                       current_layers[layer_name].options_disc)
+                    .then(function(confirmed){
+                        if(confirmed){
+                            rendering_params = {
+                                nb_class: confirmed[0],
+                                type: confirmed[1],
+                                breaks: confirmed[2],
+                                colors:confirmed[3],
+                                colorsByFeature: confirmed[4],
+                                schema: confirmed[5],
+                                no_data: confirmed[6],
+                                renderer:"Choropleth",
+                                field: field_to_discretize
+                            };
+                            let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                            selection.transition()
+                                .style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                         }
                     });
             });
+     } else if (renderer == "Stewart"){
+        let field_to_colorize = "min",
+            nb_ft = current_layers[layer_name].n_features;
+        var prev_palette = cloneObj(current_layers[layer_name].color_palette);
+        rendering_params = {breaks: [].concat(current_layers[layer_name].colors_breaks)};
+
+        var recolor_stewart = function(coloramp_name, reversed){
+            let new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+            if(reversed) new_coloramp.reverse();
+            for(let i=0; i < nb_ft; ++i)
+                rendering_params.breaks[i][1] = new_coloramp[i];
+            selection.transition().style("fill", (d,i) => new_coloramp[i] );
+            current_layers[layer_name].color_palette = {name: coloramp_name, reversed: reversed};
+        }
+
+        var color_palette_section = popup.insert("p").attr("class", "line_elem");
+        color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
+        let seq_color_select = color_palette_section.insert("select")
+                                    .attr("id", "coloramp_params")
+                                    .style('float', 'right')
+                                    .on("change", function(){
+                                        recolor_stewart(this.value, false);
+                                     });
+
+        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
+         'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(name => {
+            seq_color_select.append("option").text(name).attr("value", name);
+        });
+        seq_color_select.node().value = prev_palette.name;
+        popup.insert('p')
+            .attr('class', 'line_elem')
+            .styles({'text-align': 'center', 'margin': '0 !important'})
+            .insert("button")
+            .attrs({"class": "button_st3", "id": "reverse_colramp"})
+            .html(i18next.t("app_page.layer_style_popup.reverse_palette"))
+            .on("click", function(){
+                let pal_name = document.getElementById("coloramp_params").value;
+                recolor_stewart(pal_name, true);
+             });
     }
+    let fill_opacity_section = popup.append('p').attr("class", "line_elem");
+    fill_opacity_section.append("span")
+        .html(i18next.t("app_page.layer_style_popup.fill_opacity"))
+    fill_opacity_section.insert('input')
+        .attrs({type: "range", min: 0, max: 1, step: 0.1, value: opacity})
+        .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
+        .on('change', function(){
+          selection.style('fill-opacity', this.value)
+          fill_opacity_section.select("#fill_opacity_txt").html((+this.value * 100) + "%")
+        });
+    fill_opacity_section.append("span")
+                    .style("float", "right")
+                    .attr("id", "fill_opacity_txt")
+                    .html((+opacity * 100) + "%");
+
     let c_section = popup.append('p').attr("class", "line_elem");
     c_section.insert("span")
-        .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.color") : i18next.t("app_page.layer_style_popup.border_color"));
+        .html(i18next.t("app_page.layer_style_popup.border_color"));
     c_section.insert('input')
         .attrs({type: "color", value: stroke_prev})
         .style("float", "right")
@@ -913,7 +1108,7 @@ function createStyleBox(layer_name){
 
     let opacity_section = popup.append('p').attr("class", "line_elem");
     opacity_section.insert("span")
-        .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.opacity") : i18next.t("app_page.layer_style_popup.border_opacity"));
+        .html(i18next.t("app_page.layer_style_popup.border_opacity"));
     opacity_section.insert('input')
         .attrs({type: "range", min: 0, max: 1, step: 0.1, value: border_opacity})
         .styles({"width": "58px", "vertical-align": "middle", "display": "inline", "float": "right"})
@@ -926,24 +1121,25 @@ function createStyleBox(layer_name){
          .style("display", "inline").style("float", "right")
          .html(" " + border_opacity);
 
-    if(renderer != "DiscLayer" && renderer != "Links"){
-        let width_section = popup.append('p');
-        width_section.append("span")
-            .html(type === 'Line' ? i18next.t("app_page.layer_style_popup.width") : i18next.t("app_page.layer_style_popup.border_width"));
-        width_section.insert('input')
-            .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
-            .styles({"width": "60px", "float": "right"})
-            .on('change', function(){
-                let val = +this.value;
-                let zoom_scale = +d3.zoomTransform(map.node()).k;
-                map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
-                current_layers[layer_name]['stroke-width-const'] = val;
-              });
-    }
+    let width_section = popup.append('p');
+    width_section.append("span")
+        .html(i18next.t("app_page.layer_style_popup.border_width"));
+    width_section.insert('input')
+        .attrs({type: "number", min: 0, step: 0.1, value: stroke_width})
+        .styles({"width": "60px", "float": "right"})
+        .on('change', function(){
+            let val = +this.value;
+            let zoom_scale = +d3.zoomTransform(map.node()).k;
+            map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
+            current_layers[layer_name]['stroke-width-const'] = val;
+          });
+    make_generate_labels_section(popup, layer_name);
+}
 
+function make_generate_labels_section(parent_node, layer_name){
     let _fields = get_fields_name(layer_name);
     if(_fields && _fields.length > 0){
-      let labels_section = popup.append("p");
+      let labels_section = parent_node.append("p");
       let input_fields = {};
       for(let i = 0; i < _fields.length; i++){
         input_fields[_fields[i]] = _fields[i];
@@ -1357,65 +1553,7 @@ function createStyleBox_ProbSymbol(layer_name){
             current_layers[layer_name].size[0] = f_val;
         });
 
-    let _fields = get_fields_name(layer_name);
-    if(_fields && _fields.length > 0){
-      let labels_section = popup.append("p");
-      let input_fields = {};
-      for(let i = 0; i < _fields.length; i++){
-        input_fields[_fields[i]] = _fields[i];
-      }
-      labels_section.append("span")
-          .attr("id", "generate_labels")
-          .styles({"cursor": "pointer", "margin-top": "15px"})
-          .html(i18next.t("app_page.layer_style_popup.generate_labels"))
-          .on("mouseover", function(){
-            this.style.fontWeight = "bold"
-          })
-          .on("mouseout", function(){
-            this.style.fontWeight = "";
-          })
-          .on("click", function(){
-            let fields =
-            swal({
-                title: "",
-                text: i18next.t("app_page.layer_style_popup.field_label"),
-                type: "question",
-                customClass: 'swal2_custom',
-                showCancelButton: true,
-                showCloseButton: false,
-                allowEscapeKey: false,
-                allowOutsideClick: false,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: i18next.t("app_page.common.confirm"),
-                input: 'select',
-                inputPlaceholder: i18next.t("app_page.common.field"),
-                inputOptions: input_fields,
-                inputValidator: function(value) {
-                    return new Promise(function(resolve, reject){
-                        if(_fields.indexOf(value) < 0){
-                            reject(i18next.t("app_page.common.no_value"));
-                        } else {
-                          let options_labels = {
-                            label_field: value,
-                            color: "#000",
-                            font: "Arial,Helvetica,sans-serif",
-                            ref_font_size: 12,
-                            uo_layer_name: ["Labels", value, layer_name].join('_'),
-                            symbol: type_symbol
-                          };
-                          render_label(layer_name, options_labels);
-                          resolve();
-                        }
-                    });
-                }
-              }).then( value => {
-                    console.log(value);
-                }, dismiss => {
-                    console.log(dismiss);
-                });
-          });
-    }
-
+    make_generate_labels_section(popup, layer_name);
 }
 
 function make_style_box_indiv_label(label_node){

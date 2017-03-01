@@ -190,7 +190,8 @@
             "Robinson": "Robinson",
             "InterruptedSinuMollweide": "Sinu-Mollweide interrompue",
             "Sinusoidal": "Sinusoïdale",
-            "InterruptedSinusoidal": "Sinusoïdale interrompue"
+            "InterruptedSinusoidal": "Sinusoïdale interrompue",
+            "TransverseMercator": "Transverse de Mercator"
         },
         "stat_summary": {
             "population": "Population",
