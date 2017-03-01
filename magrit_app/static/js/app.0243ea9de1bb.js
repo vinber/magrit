@@ -5366,6 +5366,117 @@ function getCentroids(ref_layer_selection) {
     return centroids;
 }
 
+function make_prop_line(rendering_params, geojson_line_layer) {
+    var layer = rendering_params.ref_layer_name,
+        field = rendering_params.field,
+        color_field = rendering_params.color_field,
+        t_field_name = 'prop_value',
+        nb_features = rendering_params.nb_features,
+        abs = Math.abs,
+        ref_size = rendering_params.ref_size,
+        ref_value = rendering_params.ref_value,
+        symbol_type = rendering_params.symbol,
+        layer_to_add = rendering_params.new_name,
+        zs = d3.zoomTransform(svg_map).k,
+        propSize = new PropSizer(ref_value, ref_size, symbol_type);
+
+    if (!geojson_line_layer) {
+        (function () {
+            var make_geojson_line_layer = function make_geojson_line_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: cloneObj(ft.geometry)
+                    };
+                    if (f_ix_len) {
+                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                        }
+                    }
+                    new_obj.properties[field] = value;
+                    new_obj.properties[t_field_name] = propSize.scale(value);
+                    new_obj.properties['color'] = get_color(value, i);
+                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                    result.push([value, new_obj]);
+                }
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
+            }
+
+            geojson_line_layer = make_geojson_line_layer();
+        })();
+    }
+
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
+    result_data[layer_to_add] = [];
+    map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('path').data(geojson_line_layer.features).enter().append('path').attr('d', path).styles(function (d) {
+        return { fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] };
+    });
+
+    current_layers[layer_to_add] = {
+        "n_features": nb_features,
+        "renderer": rendering_params.renderer || "PropSymbols",
+        "symbol": symbol_type,
+        "rendered_field": field,
+        "size": [ref_value, ref_size],
+        "stroke-width-const": 1,
+        "is_result": true,
+        "ref_layer_name": layer
+    };
+
+    if (rendering_params.fill_color.two != undefined) {
+        current_layers[layer_to_add]["fill_color"] = cloneObj(rendering_params.fill_color);
+    } else if (rendering_params.fill_color instanceof Array) {
+        current_layers[layer_to_add]["fill_color"] = { 'class': geojson_pt_layer.features.map(function (v) {
+                return v.properties.color;
+            }) };
+    } else {
+        current_layers[layer_to_add]["fill_color"] = { "single": rendering_params.fill_color };
+    }
+    if (rendering_params.break_val != undefined) {
+        current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
+    }
+    up_legends();
+    create_li_layer_elem(layer_to_add, nb_features, ["Line", "prop"], "result");
+    return;
+}
+
 function make_prop_symbols(rendering_params, geojson_pt_layer) {
     var layer = rendering_params.ref_layer_name,
         field = rendering_params.field,
@@ -5385,7 +5496,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             var make_geojson_pt_layer = function make_geojson_pt_layer() {
                 var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     result = [];
-                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
                     var ft = ref_layer_selection[i].__data__,
                         value = +ft.properties[field],
                         new_obj = {
@@ -6129,9 +6240,10 @@ function fillMenu_PropSymbol(layer) {
     d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_type' }).html(i18next.t("app_page.func_options.prop.symbol_type"));
     var symb_selec = d.insert('select').attrs({ 'class': 'params i18n', "id": "PropSymbol_symbol" });
 
-    [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
-        symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
-    });
+    // [['app_page.func_options.common.symbol_circle', 'circle'],
+    //  ['app_page.func_options.common.symbol_square', 'rect']
+    // ].forEach(function(symb){
+    //     symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});});
 
     var color_section = dialog_content.append('p').attr('class', 'params_section2');
     color_section.append("span").attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_color' }).html(i18next.t("app_page.func_options.prop.symbol_color"));
@@ -6170,6 +6282,16 @@ var fields_PropSymbol = {
             fill_color2 = section2.select('#PropSymbol_color2'),
             fill_color_opt = section2.select('#PropSymbol_break_val'),
             fill_color_text = section2.select('#PropSymbol_color_txt');
+
+        if (current_layers[layer].type == "Line") {
+            [['app_page.func_options.common.symbol_line', 'line'], ['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
+        } else {
+            [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
+        }
 
         fields.forEach(function (field) {
             field_selec.append("option").text(field).attr("value", field);
@@ -6220,7 +6342,7 @@ var fields_PropSymbol = {
                 rendering_params["break_val"] = +fill_color_opt.node().value;
                 rendering_params["fill_color"] = { "two": [fill_color.node().value, fill_color2.node().value] };
             }
-            make_prop_symbols(rendering_params);
+            if (current_layers[layer].type == "Line") make_prop_line(rendering_params);else make_prop_symbols(rendering_params);
             zoom_without_redraw();
             switch_accordion_section();
             handle_legend(new_layer_name);
@@ -6230,8 +6352,8 @@ var fields_PropSymbol = {
     },
 
     unfill: function unfill() {
-        var field_selec = document.getElementById("PropSymbol_field_1");
-        unfillSelectInput(field_selec);
+        unfillSelectInput(document.getElementById("PropSymbol_field_1"));
+        unfillSelectInput(document.getElementById('PropSymbol_symbol'));
         section2.selectAll(".params").attr("disabled", true);
     }
 };
@@ -7527,6 +7649,11 @@ var PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
         this.smax = fixed_size * fixed_size * pi;
         this.scale = function (val) {
             return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
+        };
+    } else if (type_symbol === "line") {
+        this.smax = fixed_size;
+        this.scale = function (val) {
+            return abs(val) * _this.smax / _this.fixed_value;
         };
     } else {
         this.smax = fixed_size * fixed_size;

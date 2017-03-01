@@ -145,6 +145,9 @@ var PropSizer = function(fixed_value, fixed_size, type_symbol){
   if(type_symbol === "circle"){
     this.smax = fixed_size * fixed_size * pi;
     this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value) / pi;
+  } else if (type_symbol === "line"){
+    this.smax = fixed_size
+    this.scale = val => abs(val) * this.smax / this.fixed_value;
   } else {
     this.smax = fixed_size * fixed_size
     this.scale = val => sqrt(abs(val) * this.smax / this.fixed_value);
