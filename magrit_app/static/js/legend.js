@@ -834,8 +834,8 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
 //       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name){
     function bind_selections(){
-        box_class = [layer_name, "_legend_popup"].join('');
-        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+        box_class = [layer_id, "_legend_popup"].join('');
+        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_id].join(''));
         title_content = legend_node.querySelector("#legendtitle");
         subtitle_content = legend_node.querySelector("#legendsubtitle");
         note_content = legend_node.querySelector("#legend_bottom_note");
@@ -843,7 +843,7 @@ function createlegendEditBox(legend_id, layer_name){
         legend_node_d3 = d3.select(legend_node);
         legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
     };
-
+    var layer_id = _app.layer_to_id.get(layer_name);
     var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
     var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {}, original_rect_fill_value;
 

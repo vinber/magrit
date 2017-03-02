@@ -151,7 +151,10 @@ function createStyleBoxTypoSymbols(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
+
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: rendered_field}),
@@ -276,7 +279,11 @@ function createStyleBoxLabel(layer_name){
                 restore_prev_settings();
             }
         });
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
+
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -358,7 +365,9 @@ function createStyleBoxGraticule(layer_name){
             if(confirmed){ null; } else { null; }
         });
 
-    let popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
     let color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -445,62 +454,38 @@ function createStyleBoxGraticule(layer_name){
             });
 }
 
-function redraw_legend_line_symbol(layer_name){
-    let lgd = document.querySelector(["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-    if(lgd){
-        let transform_param = lgd.getAttribute("transform"),
-            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-            rounding_precision = lgd.getAttribute("rounding_precision"),
-            note = lgd.querySelector("#legend_bottom_note").innerHTML,
-            boxgap = lgd.getAttribute("boxgap");
+function redraw_legend(type_legend, layer_name, field){
+  let [selector, func] = type_legend === "default" ? [["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
+                         type_legend === "line_class" ? [["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] :
+                         type_legend === "line_symbol" ? [["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined;
+  let lgd = document.querySelector(selector);
+  if(lgd){
+      let transform_param = lgd.getAttribute("transform"),
+          lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+          lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+          rounding_precision = lgd.getAttribute("rounding_precision"),
+          note = lgd.querySelector("#legend_bottom_note").innerHTML,
+          boxgap = lgd.getAttribute("boxgap");
+      let rect_fill_value = (lgd.getAttribute("visible_rect") == "true") ? {
+                color: lgd.querySelector("#under_rect").style.fill,
+                opacity: lgd.querySelector("#under_rect").style.fillOpacity
+            } : undefined;
 
-        lgd.remove();
-        createLegend_line_symbol(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
-        lgd = document.querySelector(["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-        if(transform_param)
-            lgd.setAttribute("transform", transform_param);
-    }
-}
+      if(type_legend == "default"){
+          let no_data_txt = lgd.querySelector("#no_data_txt");
+          no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
-function redraw_legend_root(layer_name, field){
-    let lgd = document.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-    if(lgd){
-        let transform_param = lgd.getAttribute("transform"),
-            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-            rounding_precision = lgd.getAttribute("rounding_precision"),
-            note = lgd.querySelector("#legend_bottom_note").innerHTML,
-            boxgap = lgd.getAttribute("boxgap");
-
-        let no_data_txt = document.getElementById("no_data_txt");
-        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-
-        lgd.remove();
-        createLegend_choro(layer_name, field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-        lgd = document.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-        if(transform_param)
-            lgd.setAttribute("transform", transform_param);
-    }
-}
-
-
-function redraw_legend_line_class(layer_name){
-    let lgd = document.querySelector(["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-    if(lgd){
-        let transform_param = lgd.getAttribute("transform"),
-            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-            rounding_precision = lgd.getAttribute("rounding_precision"),
-            note = lgd.querySelector("#legend_bottom_note").innerHTML,
-            boxgap = lgd.getAttribute("boxgap");
-
-        lgd.remove();
-        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
-        lgd = document.querySelector(["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-        if(transform_param)
-            lgd.setAttribute("transform", transform_param);
-    }
+          lgd.remove();
+          func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+      } else {
+          lgd.remove();
+          func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
+      }
+      lgd = document.querySelector(selector);
+      if(transform_param) {
+          lgd.setAttribute("transform", transform_param);
+      }
+  }
 }
 
 function createStyleBox_Line(layer_name){
@@ -565,27 +550,27 @@ function createStyleBox_Line(layer_name){
                             type: rendering_params.type,
                             breaks: rendering_params.breaks
                           };
-                    redraw_legend_root(layer_name, rendering_params.field);
+                    redraw_legend('default', layer_name, rendering_params.field);
                 } else if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
                     current_layers[layer_name].color_map = rendering_params.color_map;
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
-                    redraw_legend_root(layer_name, rendering_params.field);
+                    redraw_legend('default', layer_name, rendering_params.field);
                 } else if (renderer == "DiscLayer"){
                     selection.each(function(d){
                         d.properties.prop_val = this.style.strokeWidth;
                     });
                     // Also change the legend if there is one displayed :
-                    redraw_legend_line_class(layer_name);
+                    redraw_legend('line_class', layer_name);
                 } else if (renderer == "Links"){
                     selection.each(function(d, i) {
                         current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
                     });
                     // Also change the legend if there is one displayed :
-                    redraw_legend_line_class(layer_name);
+                    redraw_legend('line_class', layer_name);
                 }
 
                 if(renderer.startsWith('PropSymbols')){
-                    redraw_legend_line_symbol(layer_name);
+                    redraw_legend('line_symbol', layer_name);
                 }
 
                 zoom_without_redraw();
@@ -635,7 +620,9 @@ function createStyleBox_Line(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
         let color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field
@@ -931,7 +918,7 @@ function createStyleBox(layer_name){
                 }
 
                 if(lgd_to_change || rendering_params){
-                    redraw_legend_root(layer_name, rendering_params.field);
+                    redraw_legend('default', layer_name, rendering_params.field);
                 }
                 zoom_without_redraw();
             } else {
@@ -969,7 +956,9 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
 
     if(type === "Point"){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -1366,7 +1355,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     }
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
-                    redraw_legend_root(layer_name, rendering_params.field);
+                    redraw_legend('default', layer_name, rendering_params.field);
                 }
                 if(selection._groups[0][0].__data__.properties.color){
                     selection.each((d,i) => {
@@ -1412,7 +1401,9 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
+    var popup = d3.select(".styleBox")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body");
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),

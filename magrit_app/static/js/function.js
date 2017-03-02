@@ -675,6 +675,7 @@ var fields_PropSymbolChoro = {
             let rendering_params = self.rendering_params;
             if(rendering_params[field_color.node().value]){
                 let layer = Object.getOwnPropertyNames(user_data)[0],
+                    symbol_to_use = symb_selec.node().value,
                     nb_features = user_data[layer].length,
                     rd_params = {},
                     color_field = field_color.node().value,
@@ -687,13 +688,13 @@ var fields_PropSymbolChoro = {
                 rd_params.new_name = new_layer_name;
                 rd_params.nb_features = nb_features;
                 rd_params.ref_layer_name = layer;
-                rd_params.symbol = symb_selec.node().value;
+                rd_params.symbol = symbol_to_use;
                 rd_params.ref_value = +ref_value_field.node().value;
                 rd_params.ref_size = +ref_size.node().value;
                 rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
                 rd_params.color_field = color_field;
 
-                if(current_layers[layer].type == "Line")
+                if(symbol_to_use == "line")
                     make_prop_line(rd_params);
                 else
                     make_prop_symbols(rd_params);
@@ -2272,7 +2273,7 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
   rd_params.ref_size = +ref_size;
   rd_params.fill_color = rendering_params.colorByFeature;
 
-  if(current_layers[layer].type == "Line")
+  if(symb_selec === "line")
       make_prop_line(rd_params);
   else
       make_prop_symbols(rd_params);
@@ -2646,13 +2647,14 @@ var fields_PropSymbol = {
         ok_button.on("click", function(){
             let nb_features = user_data[layer].length,
                 field_to_render = field_selec.node().value,
+                symbol_to_use = symb_selec.node().value,
                 user_new_layer_name = uo_layer_name.node().value,
                 new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
                 rendering_params = { "field": field_to_render,
                                      "nb_features": nb_features,
                                      "new_name": new_layer_name,
                                      "ref_layer_name": layer,
-                                     "symbol": symb_selec.node().value,
+                                     "symbol": symbol_to_use,
                                      "ref_size": +ref_size.node().value,
                                      "ref_value": +ref_value_field.node().value,
                                      "fill_color": fill_color.node().value };
@@ -2660,7 +2662,7 @@ var fields_PropSymbol = {
                 rendering_params["break_val"] = +fill_color_opt.node().value;
                 rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
             }
-            if(current_layers[layer].type == "Line")
+            if(symbol_to_use == "line")
                 make_prop_line(rendering_params);
             else
                 make_prop_symbols(rendering_params);

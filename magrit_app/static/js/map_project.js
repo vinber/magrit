@@ -10,13 +10,17 @@ function get_map_template(){
 
     function get_legend_info(lgd_node){
         let type_lgd = lgd_node.id,
+            rect_fill_value = (lgd_node.getAttribute("visible_rect") == "true") ? {
+                                color: lgd_node.querySelector("#under_rect").style.fill,
+                                opacity: lgd_node.querySelector("#under_rect").style.fillOpacity
+                            } : undefined,
             result = {
                 type: type_lgd,
                 display: lgd_node.getAttribute('display'),
                 transform: lgd_node.getAttribute('transform'),
                 field: lgd_node.getAttribute('layer_field'),
                 rounding_precision: lgd_node.getAttribute('rounding_precision'),
-                visible_rect: lgd_node.getAttribute('visible_rect'),
+                rect_fill_value: rect_fill_value,
                 title: lgd_node.querySelector('#legendtitle').innerHTML,
                 subtitle: lgd_node.querySelector('#legendsubtitle').innerHTML,
                 bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML
@@ -855,13 +859,13 @@ function rehandle_legend(layer_name, properties){
     for(let i = 0; i < properties.length; i++){
         let prop = properties[i];
         if(prop.type == 'legend_root'){
-            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
+            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
         } else if(prop.type == 'legend_root_symbol') {
-            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision, prop.bottom_note);
+            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
         } else if(prop.type == 'legend_root_lines_class'){
-            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision, prop.bottom_note)
+            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
         } else if(prop.type == 'legend_root_lines_symbol'){
-            createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision, prop.bottom_note)
+            createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
         }
         let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);
