@@ -2624,11 +2624,13 @@ var display_discretization = function display_discretization(layer_name, field_n
         var central_color = col_div.insert('p').attr("class", "central_color");
         central_color.insert("input").attrs({ "type": "checkbox", "id": "central_color_chkbx" }).on("change", function () {
             redisplay.draw();
-            if (this.checked) col_div.select("#central_color_val").style("display", "");
+            if (this.checked) col_div.select("#central_color_val").style("display", "");else {
+                col_div.select('#central_color_val').style('display', 'none');
+            }
         });
         central_color.select("input").node().checked = true;
         central_color.insert("label").attr("for", "central_color_chkbx").html(i18next.t("disc_box.colored_central_class"));
-        central_color.insert("input").attrs({ type: "color", id: "central_color_val", value: "#e5e5e5" }).styles({ "margin": "0px 10px", "display": "none" }).on("change", redisplay.draw);
+        central_color.insert("input").attrs({ type: "color", id: "central_color_val", value: "#e5e5e5" }).style("margin", "0px 10px").on("change", redisplay.draw);
     };
 
     var make_box_histo_option = function make_box_histo_option() {
@@ -3070,6 +3072,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     } else if (options.schema.length == 1) {
         make_sequ_button();
         document.querySelector(".color_params").value = options.schema[0];
+        document.querySelector(".color_params").style.backgroundImage = 'url(/static/img/palettes/' + options.schema[0] + '.png)';
     } else if (options.schema.length > 1) {
         make_diverg_button();
         document.getElementById("button_diverging").checked = true;
@@ -3077,8 +3080,9 @@ var display_discretization = function display_discretization(layer_name, field_n
         setSelected(document.querySelector(".color_params_left"), options.schema[0]);
         // document.querySelector(".color_params_left").value = options.schema[0];
         if (options.schema.length > 2) {
-            setSelected(document.querySelector(".central_color_val"), options.schema[1]);
-            // document.getElementById("central_color_val").value = options.schema[1];
+            var e = document.getElementById('central_color_val');
+            e.style.display = '';
+            e.value = options.schema[1];
             tmp = 1;
             document.querySelector(".central_color").querySelector("input").checked = true;
         } else {
