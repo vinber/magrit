@@ -4141,10 +4141,6 @@ function fillMenu_PropSymbolChoro(layer) {
     d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' }).html(i18next.t("app_page.func_options.choroprop.symbol_type"));
     var symb_selec = d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
-    [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
-        symb_selec.append("option").text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
-    });
-
     var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' }).html(i18next.t("app_page.func_options.choroprop.field2"));
 
@@ -4193,6 +4189,18 @@ var fields_PropSymbolChoro = {
             ico_quantiles.style('border', null);
             ico_equal_interval.style('border', null);
         };
+
+        if (current_layers[layer].type == "Line") {
+            ref_size.attr('value', 10.0);
+            [['app_page.func_options.common.symbol_line', 'line'], ['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
+        } else {
+            ref_size.attr('value', 60.0);
+            [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
+        }
 
         var prepare_disc_quantiles = function prepare_disc_quantiles(field) {
             var _values = user_data[layer].map(function (v) {
@@ -4383,7 +4391,7 @@ var fields_PropSymbolChoro = {
                 rendered_field: selected_field, schema: ["BuGn"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', { count: nb_class }));
-            ok_button.attr("disabled", null);
+            ok_button.attr("disabled", null);PropSymbolsCh;
             img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
@@ -4435,7 +4443,7 @@ var fields_PropSymbolChoro = {
                 rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
                 rd_params.color_field = color_field;
 
-                make_prop_symbols(rd_params);
+                if (current_layers[_layer].type == "Line") make_prop_line(rd_params);else make_prop_symbols(rd_params);
 
                 var colors_breaks = [];
                 for (var i = rendering_params[color_field]['breaks'].length - 1; i > 0; --i) {
@@ -4465,16 +4473,9 @@ var fields_PropSymbolChoro = {
     },
 
     unfill: function unfill() {
-        var field_size = document.getElementById("PropSymbolChoro_field_1"),
-            field_color = document.getElementById("PropSymbolChoro_field_2");
-
-        for (var i = field_size.childElementCount - 1; i >= 0; i--) {
-            field_size.removeChild(field_size.children[i]);
-        }
-
-        for (var _i3 = field_color.childElementCount - 1; _i3 >= 0; _i3--) {
-            field_color.removeChild(field_color.children[_i3]);
-        }
+        unfillSelectInput(document.getElementById("PropSymbolChoro_field_1"));
+        unfillSelectInput(document.getElementById("PropSymbolChoro_field_2"));
+        unfillSelectInput(document.getElementById('PropSymbolChoro_symbol_type'));
         section2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
@@ -4986,12 +4987,9 @@ var fields_Stewart = {
     },
 
     unfill: function unfill() {
-        var field_selec = document.getElementById("stewart_field"),
-            field_selec2 = document.getElementById("stewart_field2"),
-            mask_selec = document.getElementById("stewart_mask");
-        unfillSelectInput(field_selec);
-        unfillSelectInput(field_selec2);
-        unfillSelectInput(mask_selec);
+        unfillSelectInput(document.getElementById("stewart_field"));
+        unfillSelectInput(document.getElementById("stewart_field2"));
+        unfillSelectInput(document.getElementById("stewart_mask"));
         d3.selectAll(".params").attr("disabled", true);
     }
 };
@@ -5225,10 +5223,10 @@ var fields_Anamorphose = {
                     var ref = d_val[0][1] / d_val[0][2];
                     d_val[0].push(1);
 
-                    for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
-                        var _val = d_val[_i4][1] / d_val[_i4][2];
+                    for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+                        var _val = d_val[_i3][1] / d_val[_i3][2];
                         var scale = sqrt(_val / ref);
-                        d_val[_i4].push(scale);
+                        d_val[_i3].push(scale);
                     }
                     d_val.sort(function (a, b) {
                         return a[0] - b[0];
@@ -5383,6 +5381,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
     if (!geojson_line_layer) {
         (function () {
             var make_geojson_line_layer = function make_geojson_line_layer() {
+                console.log(_app.layer_to_id.get(layer));console.log(layer);
                 var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
                     result = [];
                 for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
@@ -5457,13 +5456,14 @@ function make_prop_line(rendering_params, geojson_line_layer) {
         "size": [ref_value, ref_size],
         "stroke-width-const": 1,
         "is_result": true,
-        "ref_layer_name": layer
+        "ref_layer_name": layer,
+        "type": "Line"
     };
 
     if (rendering_params.fill_color.two != undefined) {
         current_layers[layer_to_add]["fill_color"] = cloneObj(rendering_params.fill_color);
     } else if (rendering_params.fill_color instanceof Array) {
-        current_layers[layer_to_add]["fill_color"] = { 'class': geojson_pt_layer.features.map(function (v) {
+        current_layers[layer_to_add]["fill_color"] = { 'class': geojson_line_layer.features.map(function (v) {
                 return v.properties.color;
             }) };
     } else {
@@ -5782,10 +5782,6 @@ function fillMenu_PropSymbolTypo(layer) {
     d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.symbol_type' }).html(i18next.t("app_page.func_options.proptypo.symbol_type"));
     var symb_selec = d.insert('select').attrs({ 'class': 'params', 'id': 'PropSymbolTypo_symbol_type' });
 
-    [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
-        symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
-    });
-
     var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2' }).html(i18next.t("app_page.func_options.proptypo.field2"));
     var field2_selec = e.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_2' });
@@ -5812,8 +5808,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()] });
         });
         col_map = new Map();
-        for (var _i5 = 0; _i5 < cats.length; _i5++) {
-            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
+        for (var _i4 = 0; _i4 < cats.length; _i4++) {
+            col_map.set(cats[_i4].name, [cats[_i4].color, cats[_i4].name, cats[_i4].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -5830,13 +5826,12 @@ var fields_PropSymbolTypo = {
         var self = this,
             fields_num = getFieldsType('stock', layer),
             fields_categ = getFieldsType('category', layer),
-
-        // fields_num = type_col(layer, "number"),
-        // fields_all = type_col(layer),
-        nb_features = user_data[layer].length,
+            nb_features = user_data[layer].length,
             field1_selec = section2.select("#PropSymbolTypo_field_1"),
             field2_selec = section2.select("#PropSymbolTypo_field_2"),
             ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
+            ref_size = section2.select("#PropSymbolTypo_ref_size"),
+            symb_selec = section2.select('#PropSymbolTypo_symbol_type'),
             uo_layer_name = section2.select('#PropSymbolTypo_output_name'),
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
@@ -5860,6 +5855,18 @@ var fields_PropSymbolTypo = {
         if (fields_categ.length == 0 || fields_num.length == 0) {
             display_error_num_field();
             return;
+        }
+
+        if (current_layers[layer].type == "Line") {
+            ref_size.attr('value', 10.0);
+            [['app_page.func_options.common.symbol_line', 'line'], ['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
+        } else {
+            ref_size.attr('value', 60.0);
+            [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
+            });
         }
 
         fields_num.forEach(function (field) {
@@ -5970,14 +5977,9 @@ var fields_PropSymbolTypo = {
     },
 
     unfill: function unfill() {
-        var field1_selec = document.getElementById("PropSymbolTypo_field_1"),
-            field2_selec = document.getElementById("PropSymbolTypo_field_2");
-        for (var i = field1_selec.childElementCount - 1; i >= 0; i--) {
-            field1_selec.removeChild(field1_selec.children[i]);
-        }
-        for (var _i6 = field2_selec.childElementCount - 1; _i6 >= 0; _i6--) {
-            field2_selec.removeChild(field2_selec.children[_i6]);
-        }
+        unfillSelectInput(document.getElementById("PropSymbolTypo_field_1"));
+        unfillSelectInput(document.getElementById("PropSymbolTypo_field_2"));
+        unfillSelectInput(document.getElementById("PropSymbolTypo_symbol_type"));
         section2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
@@ -6002,7 +6004,8 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
     rd_params.ref_size = +ref_size;
     rd_params.fill_color = rendering_params.colorByFeature;
 
-    make_prop_symbols(rd_params);
+    if (current_layers[layer].type == "Line") make_prop_line(rd_params);else make_prop_symbols(rd_params);
+
     Object.assign(current_layers[new_layer_name], {
         renderer: "PropSymbolsTypo",
         rendered_field: field1,
@@ -6284,10 +6287,12 @@ var fields_PropSymbol = {
             fill_color_text = section2.select('#PropSymbol_color_txt');
 
         if (current_layers[layer].type == "Line") {
+            ref_size.attr('value', 10.0);
             [['app_page.func_options.common.symbol_line', 'line'], ['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
                 symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
             });
         } else {
+            ref_size.attr('value', 60.0);
             [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
                 symb_selec.append("option").text(i18next.t(symb[0])).attrs({ "value": symb[1], 'data-i18n': '[text]' + symb[0] });
             });
@@ -6857,8 +6862,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i7 = 0; _i7 < nb_class; ++_i7) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i7], user_breaks[_i7 + 1]], sizes[_i7]]);
+        for (var _i5 = 0; _i5 < nb_class; ++_i5) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i5], user_breaks[_i5 + 1]], sizes[_i5]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });
@@ -8784,7 +8789,7 @@ function add_layer_topojson(text) {
     current_layers[lyr_name_to_add] = {
         "type": type,
         "n_features": nb_ft,
-        "stroke-width-const": 0.4,
+        "stroke-width-const": type === "Line" ? 1.5 : 0.4,
         "fill_color": { "single": random_color1 },
         "key_name": parsedJSON.key
     };
@@ -12310,6 +12315,7 @@ function createLegend(layer, title) {
     var renderer = current_layers[layer].renderer,
         field = current_layers[layer].rendered_field,
         field2 = current_layers[layer].rendered_field2,
+        type_layer = current_layers[layer].type,
         el,
         el2,
         lgd_pos,
@@ -12317,16 +12323,24 @@ function createLegend(layer, title) {
 
     lgd_pos = getTranslateNewLegend();
 
-    if (renderer.indexOf("PropSymbolsChoro") != -1) {
+    if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1 || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
+        el = createLegend_choro(layer, field, title, field, 0);
+    } else if (renderer.indexOf('Categorical') > -1) {
+        el = createLegend_choro(layer, field, title, field, 4);
+    } else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) {
+        el = createLegend_discont_links(layer, field, title, field);
+    } else if (renderer.indexOf("PropSymbolsChoro") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 0);
-        el2 = createLegend_symbol(layer, field, title, field);
+        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
     } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
         el = createLegend_choro(layer, field2, title, field2, 4);
-        el2 = createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) el = createLegend_symbol(layer, field, title, field);else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) el = createLegend_discont_links(layer, field, title, field);else if (renderer.indexOf("Choropleth") > -1) el = createLegend_choro(layer, field, title, field, 0);else if (renderer.indexOf('Categorical') > -1) el = createLegend_choro(layer, field, title, field, 4);else if (current_layers[layer].colors_breaks || current_layers[layer].color_map || current_layers[layer].symbols_map) el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
-    // else if (renderer.indexOf("Carto_doug") != -1)
-    //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
-    else swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+    } else if (renderer.indexOf("PropSymbols") != -1) {
+        el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+    } else {
+        swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    }
+
     if (el && lgd_pos && lgd_pos.x) {
         el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
     }
@@ -12748,6 +12762,79 @@ function createLegend_symbol(layer, field, title, subtitle) {
         last_pos = last_pos + 2.5 * space_elem;
     }
     legend_root.append("g").attr("class", "legend_feature").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+
+    legend_root.call(drag_legend_func(legend_root));
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+    legend_root.select('#legendtitle').text(title || "");
+    make_legend_context_menu(legend_root, layer);
+    return legend_root;
+}
+
+function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
+    var space_elem = 18,
+        boxgap = 12,
+        xpos = 30,
+        ypos = 30,
+        y_pos2 = ypos + space_elem,
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+
+    var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+        type_param = "strokeWidth";
+
+    var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+        if (d.style[type_param] != "0") return true;
+    }),
+        size_max = +non_empty[0].style[type_param],
+        size_min = +non_empty[non_empty.length - 1].style[type_param],
+        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+        diff_size = size_max - size_min,
+        diff_val = val_max - val_min,
+        val_interm1 = val_min + diff_val / 3,
+        val_interm2 = val_interm1 + diff_val / 3,
+        size_interm1 = size_min + diff_size / 3,
+        size_interm2 = size_interm1 + diff_size / 3,
+        ref_symbols_params = [{ size: size_max, value: val_max }, { size: size_interm2, value: val_interm2 }, { size: size_interm1, value: val_interm1 }, { size: size_min, value: val_min }];
+
+    if (rounding_precision == undefined) {
+        rounding_precision = get_lgd_display_precision(ref_symbols_params.map(function (d) {
+            return d.value;
+        }));
+    }
+
+    var legend_root = map.insert('g').attrs({ id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+
+    var rect_under_legend = legend_root.insert("rect");
+
+    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+
+    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+
+    var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
+        return "legend_feature lg legend_" + i;
+    });
+
+    var last_size = 0,
+        last_pos = y_pos2,
+        color = current_layers[layer].fill_color.single,
+        xrect = xpos + space_elem + size_max / 2;
+
+    legend_elems.append("rect").styles({ fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0 }).attrs(function (d) {
+        last_pos = boxgap + last_pos + last_size;
+        last_size = d.size;
+        return { x: xrect, y: last_pos, width: 45, height: d.size };
+    });
+
+    last_pos = y_pos2;last_size = 0;
+    var x_text_pos = xrect + 55;
+    legend_elems.append("text").attrs(function (d) {
+        last_pos = boxgap + last_pos + d.size;
+        return { x: x_text_pos, y: last_pos + 4 - d.size / 2 };
+    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(d.value, rounding_precision).toLocaleString();
+    });
+
+    legend_root.append("g").attr("class", "legend_feature").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
 
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);

@@ -471,6 +471,7 @@
                 "color": "Couleur",
                 "symbol_circle": "Cercle",
                 "symbol_square": "Carré",
+                "symbol_line": "Ligne",
                 "output": "Nom du résultat<br>",
                 "render": "Dessiner le résultat",
                 "discretization_choice": "Choix de la discrétisation"

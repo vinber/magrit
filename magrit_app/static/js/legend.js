@@ -54,41 +54,43 @@ function createLegend(layer, title){
     var renderer = current_layers[layer].renderer,
         field = current_layers[layer].rendered_field,
         field2 = current_layers[layer].rendered_field2,
+        type_layer = current_layers[layer].type,
         el, el2, lgd_pos, lgd_pos2;
 
     lgd_pos = getTranslateNewLegend();
 
-    if(renderer.indexOf("PropSymbolsChoro") != -1){
+    if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1
+              || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1){
+        el = createLegend_choro(layer, field, title, field, 0);
+
+    } else if (renderer.indexOf('Categorical') > -1){
+        el = createLegend_choro(layer, field, title, field, 4);
+
+    } else if (renderer.indexOf("Links") != -1
+            || renderer.indexOf("DiscLayer") != -1){
+        el = createLegend_discont_links(layer, field, title, field);
+
+    } else if(renderer.indexOf("PropSymbolsChoro") != -1){
         el = createLegend_choro(layer, field2, title, field2, 0);
-        el2 = createLegend_symbol(layer, field, title, field);
+        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                                    : createLegend_symbol(layer, field, title, field);
 
     } else if (renderer.indexOf("PropSymbolsTypo") != -1){
         el = createLegend_choro(layer, field2, title, field2, 4);
-        el2 = createLegend_symbol(layer, field, title, field);
+        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                                    : createLegend_symbol(layer, field, title, field);
+
     }
-    else if(renderer.indexOf("PropSymbols") != -1)
-        el = createLegend_symbol(layer, field, title, field);
-
-    else if (renderer.indexOf("Links") != -1
-            || renderer.indexOf("DiscLayer") != -1)
-        el = createLegend_discont_links(layer, field, title, field);
-
-    else if (renderer.indexOf("Choropleth") > -1)
-        el = createLegend_choro(layer, field, title, field, 0);
-
-    else if (renderer.indexOf('Categorical') > -1)
-        el = createLegend_choro(layer, field, title, field, 4);
-
-    else if (current_layers[layer].colors_breaks
-            || current_layers[layer].color_map || current_layers[layer].symbols_map)
-        el = createLegend_choro(layer, field, title, field, 0, undefined, 2);
-    // else if (renderer.indexOf("Carto_doug") != -1)
-    //     createLegend_nothing(layer, field, "Dougenik Cartogram", field);
-    else
+    else if(renderer.indexOf("PropSymbols") != -1) {
+        el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                                   : createLegend_symbol(layer, field, title, field);
+    } else {
         swal("Oops..",
              i18next.t("No legend available for this representation") + ".<br>"
              + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
              "warning");
+    }
+
     if(el && lgd_pos && lgd_pos.x){
         el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
     }
@@ -436,17 +438,17 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     if(nested == "false"){
         if(symbol_type === "circle"){
             legend_elems
-                  .append("circle")
-                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
-                  .attrs( (d, i) => {
-                      last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                      last_size = d.size;
-                      return {
-                        "cx": xpos + space_elem + boxgap + max_size / 2,
-                        "cy": last_pos,
-                        "r": d.size
-                      };
-                    });
+                .append("circle")
+                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+                .attrs( (d, i) => {
+                    last_pos = (i * boxgap) + d.size + last_pos + last_size;
+                    last_size = d.size;
+                    return {
+                      "cx": xpos + space_elem + boxgap + max_size / 2,
+                      "cy": last_pos,
+                      "r": d.size
+                    };
+                  });
 
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
@@ -463,18 +465,18 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
         } else if(symbol_type === "rect"){
             legend_elems
-                  .append("rect")
-                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
-                  .attrs( (d,i) => {
-                    last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
-                    last_size = d.size;
-                    return {
-                      "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
-                      "y": last_pos,
-                      "width": last_size,
-                      "height": last_size
-                    };
-                  });
+                .append("rect")
+                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+                .attrs( (d,i) => {
+                  last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+                  last_size = d.size;
+                  return {
+                    "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
+                    "y": last_pos,
+                    "width": last_size,
+                    "height": last_size
+                  };
+                });
 
             last_pos = y_pos2; last_size = 0;
             let x_text_pos = xpos + space_elem + max_size * 1.25;
@@ -491,13 +493,13 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     } else if (nested == "true"){
         if(symbol_type === "circle"){
             legend_elems
-                  .append("circle")
-                  .attrs(d => ({
-                    cx: xpos + space_elem + boxgap + max_size / 2,
-                    cy: ypos + 45 + max_size + (max_size / 2) - d.size,
-                    r: d.size
-                    }))
-                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
+                .append("circle")
+                .attrs(d => ({
+                  cx: xpos + space_elem + boxgap + max_size / 2,
+                  cy: ypos + 45 + max_size + (max_size / 2) - d.size,
+                  r: d.size
+                  }))
+                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
@@ -507,12 +509,12 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
             last_pos = ypos + 30 + max_size + (max_size / 2);
         } else if(symbol_type === "rect"){
             legend_elems
-                  .append("rect")
-                  .attrs(d => ({
-                      x: xpos + space_elem + boxgap,
-                      y: ypos + 45 + max_size - d.size,
-                      width: d.size, height: d.size}))
-                  .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
+                .append("rect")
+                .attrs(d => ({
+                    x: xpos + space_elem + boxgap,
+                    y: ypos + 45 + max_size - d.size,
+                    width: d.size, height: d.size}))
+                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
             last_pos = y_pos2; last_size = 0;
             legend_elems.append("text")
                 .attr("x", xpos + space_elem + max_size * 1.25)
@@ -561,6 +563,97 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     make_legend_context_menu(legend_root, layer);
     return legend_root;
 }
+
+function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
+    var space_elem = 18,
+        boxgap = 12,
+        xpos = 30,
+        ypos = 30,
+        y_pos2 =  ypos + space_elem,
+        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+
+    let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+        type_param = "strokeWidth";
+
+    let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d.style[type_param] != "0") return true }),
+        size_max = +non_empty[0].style[type_param],
+        size_min = +non_empty[non_empty.length - 1].style[type_param],
+        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+        diff_size = size_max - size_min,
+        diff_val = val_max - val_min,
+        val_interm1 = val_min + diff_val / 3,
+        val_interm2 = val_interm1 + diff_val / 3,
+        size_interm1 = size_min + diff_size / 3,
+        size_interm2 = size_interm1 + diff_size / 3,
+        ref_symbols_params = [
+            {size: size_max, value: val_max},
+            {size: size_interm2, value: val_interm2},
+            {size: size_interm1, value: val_interm1},
+            {size: size_min, value: val_min}
+        ];
+
+
+    if(rounding_precision == undefined){
+        rounding_precision = get_lgd_display_precision(ref_symbols_params.map(d => d.value));
+    }
+
+    var legend_root = map.insert('g')
+        .attrs({id: 'legend_root_links', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer})
+        .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'});
+
+    var rect_under_legend = legend_root.insert("rect");
+
+    legend_root.insert('text').attr("id","legendtitle")
+            .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
+            .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
+
+    legend_root.insert('text').attr("id","legendsubtitle")
+            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
+            .attrs({x: xpos + space_elem, y: ypos + 15});
+
+    var legend_elems = legend_root.selectAll('.legend')
+                                  .append("g")
+                                  .data(ref_symbols_params)
+                                  .enter().insert('g')
+                                  .attr('class', (d, i) => "legend_feature lg legend_" + i);
+
+    let last_size = 0,
+        last_pos = y_pos2,
+        color = current_layers[layer].fill_color.single,
+        xrect = xpos + space_elem + size_max / 2;
+
+    legend_elems
+        .append("rect")
+        .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
+        .attrs(d => {
+            last_pos = boxgap + last_pos + last_size;
+            last_size = d.size;
+            return {x: xrect, y: last_pos, width: 45, height: d.size};})
+
+    last_pos = y_pos2; last_size = 0;
+    let x_text_pos = xrect + 55;
+    legend_elems.append("text")
+        .attrs(d => {
+            last_pos = boxgap + last_pos + d.size;
+            return {x: x_text_pos, y: last_pos + 4 - d.size / 2};
+            })
+        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+        .text(d => round_value(d.value, rounding_precision).toLocaleString());
+
+    legend_root.append("g").attr("class", "legend_feature")
+        .insert("text").attr("id", "legend_bottom_note")
+        .attrs({x: xpos + space_elem, y: last_pos + space_elem})
+        .style("font", "11px 'Enriqueta', arial, serif")
+        .text(note_bottom != null ? note_bottom : '');
+
+    legend_root.call(drag_legend_func(legend_root));
+    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+    legend_root.select('#legendtitle').text(title || "");
+    make_legend_context_menu(legend_root, layer);
+    return legend_root;
+}
+
 
 const get_lgd_display_precision = function(breaks){
     // Set rounding precision to 0 if they are all integers :

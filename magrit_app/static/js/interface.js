@@ -863,7 +863,7 @@ function add_layer_topojson(text, options = {}){
     current_layers[lyr_name_to_add] = {
         "type": type,
         "n_features": nb_ft,
-        "stroke-width-const": 0.4,
+        "stroke-width-const": type === "Line" ? 1.5 : 0.4,
         "fill_color":  {"single": random_color1},
         "key_name": parsedJSON.key
         };

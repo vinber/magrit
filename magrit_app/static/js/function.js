@@ -428,12 +428,6 @@ function fillMenu_PropSymbolChoro(layer){
     var symb_selec = d.insert('select')
       .attrs({class: 'params i18n', id: 'PropSymbolChoro_symbol_type'});
 
-    [['app_page.func_options.common.symbol_circle', 'circle'],
-     ['app_page.func_options.common.symbol_square', 'rect']
-     ].forEach( symb => {
-        symb_selec.append("option").text(i18next.t(symb[0])).attrs({value: symb[1], 'data-i18n': '[text]' + symb[0]});
-    });
-
     var e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2'})
@@ -487,6 +481,24 @@ var fields_PropSymbolChoro = {
             ico_quantiles.style('border', null);
             ico_equal_interval.style('border', null);
         };
+
+        if(current_layers[layer].type == "Line"){
+            ref_size.attr('value', 10.0);
+            [['app_page.func_options.common.symbol_line', 'line'],
+             ['app_page.func_options.common.symbol_circle', 'circle'],
+             ['app_page.func_options.common.symbol_square', 'rect']
+            ].forEach(function(symb){
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+            });
+        } else {
+          ref_size.attr('value', 60.0);
+          [['app_page.func_options.common.symbol_circle', 'circle'],
+           ['app_page.func_options.common.symbol_square', 'rect']
+          ].forEach(function(symb){
+              symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+          });
+        }
+
 
         let prepare_disc_quantiles = (field) => {
             let _values = user_data[layer].map(v => v[field]),
@@ -620,7 +632,7 @@ var fields_PropSymbolChoro = {
                 rendered_field: selected_field, schema: ["BuGn"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
-            ok_button.attr("disabled", null);
+            ok_button.attr("disabled", null);PropSymbolsCh
             img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
@@ -680,7 +692,10 @@ var fields_PropSymbolChoro = {
                 rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
                 rd_params.color_field = color_field;
 
-                make_prop_symbols(rd_params);
+                if(current_layers[layer].type == "Line")
+                    make_prop_line(rd_params);
+                else
+                    make_prop_symbols(rd_params);
 
                 let colors_breaks = [];
                 for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i){
@@ -713,16 +728,9 @@ var fields_PropSymbolChoro = {
     },
 
     unfill: function(){
-        let field_size = document.getElementById("PropSymbolChoro_field_1"),
-            field_color = document.getElementById("PropSymbolChoro_field_2");
-
-        for(let i = field_size.childElementCount - 1; i >= 0; i--){
-            field_size.removeChild(field_size.children[i]);
-        }
-
-        for(let i = field_color.childElementCount - 1; i >= 0; i--){
-            field_color.removeChild(field_color.children[i]);
-        }
+        unfillSelectInput(document.getElementById("PropSymbolChoro_field_1"));
+        unfillSelectInput(document.getElementById("PropSymbolChoro_field_2"));
+        unfillSelectInput(document.getElementById('PropSymbolChoro_symbol_type'));
         section2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
@@ -1162,12 +1170,9 @@ var fields_Stewart = {
     },
 
     unfill: function(){
-        let field_selec = document.getElementById("stewart_field"),
-            field_selec2 = document.getElementById("stewart_field2"),
-            mask_selec = document.getElementById("stewart_mask");
-        unfillSelectInput(field_selec);
-        unfillSelectInput(field_selec2);
-        unfillSelectInput(mask_selec);
+        unfillSelectInput(document.getElementById("stewart_field"));
+        unfillSelectInput(document.getElementById("stewart_field2"));
+        unfillSelectInput(document.getElementById("stewart_mask"));
         d3.selectAll(".params").attr("disabled", true);
     }
 };
@@ -1613,6 +1618,7 @@ function make_prop_line(rendering_params, geojson_line_layer){
 
     if(!geojson_line_layer){
         function make_geojson_line_layer(){
+          console.log(_app.layer_to_id.get(layer)); console.log(layer)
           let ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
               result = [];
           for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
@@ -1682,12 +1688,13 @@ function make_prop_line(rendering_params, geojson_line_layer){
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
+        "type": "Line"
         };
 
     if(rendering_params.fill_color.two != undefined){
         current_layers[layer_to_add]["fill_color"] = cloneObj(rendering_params.fill_color);
     } else if (rendering_params.fill_color instanceof Array){
-        current_layers[layer_to_add]["fill_color"] = {'class': geojson_pt_layer.features.map(v => v.properties.color)};
+        current_layers[layer_to_add]["fill_color"] = {'class': geojson_line_layer.features.map(v => v.properties.color)};
     } else {
         current_layers[layer_to_add]["fill_color"] = {"single" : rendering_params.fill_color};
     }
@@ -2031,11 +2038,6 @@ function make_mini_summary(summary){
     let symb_selec = d.insert('select')
       .attrs({'class': 'params', 'id': 'PropSymbolTypo_symbol_type'});
 
-    [['app_page.func_options.common.symbol_circle', 'circle'],
-     ['app_page.func_options.common.symbol_square', 'rect']].forEach( symb => {
-        symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
-    });
-
     let e = dv2.append('p').attr('class', 'params_section2');
     e.append('span')
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2'})
@@ -2086,12 +2088,12 @@ var fields_PropSymbolTypo = {
         let self = this,
             fields_num = getFieldsType('stock', layer),
             fields_categ = getFieldsType('category', layer),
-            // fields_num = type_col(layer, "number"),
-            // fields_all = type_col(layer),
             nb_features = user_data[layer].length,
             field1_selec = section2.select("#PropSymbolTypo_field_1"),
             field2_selec = section2.select("#PropSymbolTypo_field_2"),
             ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
+            ref_size = section2.select("#PropSymbolTypo_ref_size"),
+            symb_selec = section2.select('#PropSymbolTypo_symbol_type'),
             uo_layer_name = section2.select('#PropSymbolTypo_output_name'),
             btn_typo_class = section2.select('#Typo_class'),
             ok_button = section2.select('#propTypo_yes');
@@ -2110,6 +2112,23 @@ var fields_PropSymbolTypo = {
         if(fields_categ.length == 0 || fields_num.length == 0){
             display_error_num_field();
             return;
+        }
+
+        if(current_layers[layer].type == "Line"){
+            ref_size.attr('value', 10.0);
+            [['app_page.func_options.common.symbol_line', 'line'],
+             ['app_page.func_options.common.symbol_circle', 'circle'],
+             ['app_page.func_options.common.symbol_square', 'rect']
+            ].forEach(function(symb){
+                symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+            });
+        } else {
+          ref_size.attr('value', 60.0);
+          [['app_page.func_options.common.symbol_circle', 'circle'],
+           ['app_page.func_options.common.symbol_square', 'rect']
+          ].forEach(function(symb){
+              symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
+          });
         }
 
         fields_num.forEach(field => {
@@ -2218,14 +2237,9 @@ var fields_PropSymbolTypo = {
     },
 
     unfill: function(){
-        let field1_selec = document.getElementById("PropSymbolTypo_field_1"),
-            field2_selec = document.getElementById("PropSymbolTypo_field_2");
-        for(let i = field1_selec.childElementCount - 1; i >= 0; i--){
-            field1_selec.removeChild(field1_selec.children[i]);
-        }
-        for(let i = field2_selec.childElementCount - 1; i >= 0; i--){
-            field2_selec.removeChild(field2_selec.children[i]);
-        }
+        unfillSelectInput(document.getElementById("PropSymbolTypo_field_1"));
+        unfillSelectInput(document.getElementById("PropSymbolTypo_field_2"));
+        unfillSelectInput(document.getElementById("PropSymbolTypo_symbol_type"));
         section2.selectAll(".params").attr("disabled", true);
     },
     rendering_params: {}
@@ -2253,7 +2267,11 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
   rd_params.ref_size = +ref_size;
   rd_params.fill_color = rendering_params.colorByFeature;
 
-  make_prop_symbols(rd_params);
+  if(current_layers[layer].type == "Line")
+      make_prop_line(rd_params);
+  else
+      make_prop_symbols(rd_params);
+
   Object.assign(current_layers[new_layer_name],{
       renderer: "PropSymbolsTypo",
       rendered_field: field1,
@@ -2574,6 +2592,7 @@ var fields_PropSymbol = {
             fill_color_text = section2.select('#PropSymbol_color_txt');
 
         if(current_layers[layer].type == "Line"){
+            ref_size.attr('value', 10.0);
             [['app_page.func_options.common.symbol_line', 'line'],
              ['app_page.func_options.common.symbol_circle', 'circle'],
              ['app_page.func_options.common.symbol_square', 'rect']
@@ -2581,6 +2600,7 @@ var fields_PropSymbol = {
                 symb_selec.append("option").text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': '[text]' + symb[0]});
             });
         } else {
+          ref_size.attr('value', 60.0);
           [['app_page.func_options.common.symbol_circle', 'circle'],
            ['app_page.func_options.common.symbol_square', 'rect']
           ].forEach(function(symb){

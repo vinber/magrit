@@ -478,6 +478,7 @@
                 "color": "Color ",
                 "symbol_circle": "Circle",
                 "symbol_square": "Square",
+                "symbol_line": "Line",
                 "output": "Output name<br>",
                 "render": "Render",
                 "discretization_choice": "Choose a discretization ..."
