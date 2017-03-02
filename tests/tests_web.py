@@ -216,7 +216,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
     #
     #     driver.find_element_by_id("FlowMap_yes").click()
     #     self.waitClickButtonSwal()
-    #     if not self.try_element_present(By.ID, "legend_root_links", 5):
+    #     if not self.try_element_present(By.ID, "legend_root_lines_class", 5):
     #         self.fail("Legend not displayed on links map")
 
     def test_gridded(self):
@@ -888,7 +888,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("Discont_output_name").send_keys('my_result_layer')
         driver.find_element_by_id("yes_Discont").click()
         time.sleep(1)  # Delay for the discontinuities to be computed
-        if not self.try_element_present(By.ID, "legend_root_links", 5):
+        if not self.try_element_present(By.ID, "legend_root_lines_class", 5):
             self.fail("Legend won't display")
 
         self._verif_legend_hide_show_button("my_result_layer")
@@ -926,7 +926,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         driver.find_element_by_id('propTypo_yes').click()
         time.sleep(1.5)
-        if not self.try_element_present(By.ID, "legend_root2", 5) \
+        if not self.try_element_present(By.ID, "legend_root_symbol", 5) \
                 or not self.try_element_present(By.ID, 'legend_root'):
             self.fail("Legend won't display on Prop Symbol Choro")
 
@@ -973,7 +973,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         driver.find_element_by_id('propChoro_yes').click()
         time.sleep(1.5)
-        if not self.try_element_present(By.ID, "legend_root2", 5) \
+        if not self.try_element_present(By.ID, "legend_root_symbol", 5) \
                 or not self.try_element_present(By.ID, 'legend_root'):
             self.fail("Legend won't display on Prop Symbol Choro")
 
@@ -1029,7 +1029,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver.find_element_by_id("PropSymbol_yes").click()
         time.sleep(1.5)
 
-        if not self.try_element_present(By.ID, "legend_root2", 5):
+        if not self.try_element_present(By.ID, "legend_root_symbol", 5):
             self.fail("Legend won't display")
         time.sleep(0.1)
 

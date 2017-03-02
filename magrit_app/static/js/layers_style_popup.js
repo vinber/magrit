@@ -428,7 +428,7 @@ function createStyleBoxGraticule(layer_name){
     let dasharray_choice = popup.append("p").attr("class", "line_elem");
     dasharray_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_dasharray"));
     dasharray_choice.append("input")
-            .attrs({type: "range", value: current_params.step, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
+            .attrs({type: "range", value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray"})
             .styles({"vertical-align": "middle", "width": "58px", "display": "inline", "float": "right"})
             .on("change", function(){
                 selection.style("stroke-dasharray", this.value);
@@ -436,13 +436,71 @@ function createStyleBoxGraticule(layer_name){
                 popup.select("#graticule_dasharray_txt").attr("value", this.value);
             });
     dasharray_choice.append("input")
-            .attrs({type: "number", value: current_params.step, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_dasharray_txt"})
+            .attrs({type: "number", value: current_params.dasharray, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_dasharray_txt"})
             .styles({width: "30px", "margin-left": "10px", "float": "right"})
             .on("change", function(){
                 let grat_range = document.getElementById("graticule_range_dasharray");
                 grat_range.value = +this.value;
                 grat_range.dispatchEvent(new MouseEvent("change"));
             });
+}
+
+function redraw_legend_line_symbol(layer_name){
+    let lgd = document.querySelector(["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+    if(lgd){
+        let transform_param = lgd.getAttribute("transform"),
+            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+            rounding_precision = lgd.getAttribute("rounding_precision"),
+            note = lgd.querySelector("#legend_bottom_note").innerHTML,
+            boxgap = lgd.getAttribute("boxgap");
+
+        lgd.remove();
+        createLegend_line_symbol(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
+        lgd = document.querySelector(["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+        if(transform_param)
+            lgd.setAttribute("transform", transform_param);
+    }
+}
+
+function redraw_legend_root(layer_name, field){
+    let lgd = document.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+    if(lgd){
+        let transform_param = lgd.getAttribute("transform"),
+            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+            rounding_precision = lgd.getAttribute("rounding_precision"),
+            note = lgd.querySelector("#legend_bottom_note").innerHTML,
+            boxgap = lgd.getAttribute("boxgap");
+
+        let no_data_txt = document.getElementById("no_data_txt");
+        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+
+        lgd.remove();
+        createLegend_choro(layer_name, field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
+        lgd = document.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+        if(transform_param)
+            lgd.setAttribute("transform", transform_param);
+    }
+}
+
+
+function redraw_legend_line_class(layer_name){
+    let lgd = document.querySelector(["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+    if(lgd){
+        let transform_param = lgd.getAttribute("transform"),
+            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
+            rounding_precision = lgd.getAttribute("rounding_precision"),
+            note = lgd.querySelector("#legend_bottom_note").innerHTML,
+            boxgap = lgd.getAttribute("boxgap");
+
+        lgd.remove();
+        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
+        lgd = document.querySelector(["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+        if(transform_param)
+            lgd.setAttribute("transform", transform_param);
+    }
 }
 
 function createStyleBox_Line(layer_name){
@@ -476,11 +534,20 @@ function createStyleBox_Line(layer_name){
         table.push(d.__data__.properties);
     });
 
+
+    let redraw_prop_val = function(prop_values){
+        let selec = selection._groups[0];
+        for(let i=0, len = prop_values.length; i < len; i++){
+            selec[i].style.strokeWidth = prop_values[i];
+        }
+    }
+
+
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){
                 if(renderer != undefined
-                     && rendering_params != undefined && renderer != "Categorical"){
+                     && rendering_params != undefined && renderer != "Categorical" && renderer != "PropSymbolsTypo"){
                     current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
                     let colors_breaks = [];
                     for(let i = rendering_params['breaks'].length-1; i > 0; --i){
@@ -498,47 +565,31 @@ function createStyleBox_Line(layer_name){
                             type: rendering_params.type,
                             breaks: rendering_params.breaks
                           };
-                } else if (renderer == "Categorical"){
+                    redraw_legend_root(layer_name, rendering_params.field);
+                } else if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
                     current_layers[layer_name].color_map = rendering_params.color_map;
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
+                    redraw_legend_root(layer_name, rendering_params.field);
                 } else if (renderer == "DiscLayer"){
                     selection.each(function(d){
                         d.properties.prop_val = this.style.strokeWidth;
                     });
+                    // Also change the legend if there is one displayed :
+                    redraw_legend_line_class(layer_name);
                 } else if (renderer == "Links"){
                     selection.each(function(d, i) {
                         current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
-                    })
+                    });
+                    // Also change the legend if there is one displayed :
+                    redraw_legend_line_class(layer_name);
                 }
-                // Also change the legend if there is one displayed :
-                let _type_layer_links = (renderer == "DiscLayer" || renderer == "Links")
-                let lgd = document.querySelector(
-                    [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
-                    );
-                if(lgd && (lgd_to_change || rendering_params)){
-                    let transform_param = lgd.getAttribute("transform"),
-                        lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-                        rounding_precision = lgd.getAttribute("rounding_precision"),
-                        note = lgd.querySelector("#legend_bottom_note").innerHTML,
-                        boxgap = lgd.getAttribute("boxgap");
 
-                    if(_type_layer_links){
-                        lgd.remove();
-                        createLegend_discont_links(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, undefined, rounding_precision, note);
-                    } else {
-                        let no_data_txt = document.getElementById("no_data_txt");
-                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-                        lgd.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-                    }
-                    lgd = document.querySelector(
-                        [_type_layer_links ? "#legend_root_links.lgdf_" : "#legend_root.lgdf_", layer_name].join('')
-                        );
-                    if(transform_param)
-                        lgd.setAttribute("transform", transform_param);
+                if(renderer.startsWith('PropSymbols')){
+                    redraw_legend_line_symbol(layer_name);
                 }
+
                 zoom_without_redraw();
+
             } else {
                 // Reset to original values the rendering parameters if "no" is clicked
                 selection.style('fill-opacity', opacity)
@@ -586,20 +637,9 @@ function createStyleBox_Line(layer_name){
 
     var popup = d3.select(".styleBox").select(".modal-body").style("width", "295px");
 
-    if(current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical"){
-        let c_section = popup.append('p').attr("class", "line_elem");
-        c_section.insert("span")
-            .html(i18next.t("app_page.layer_style_popup.color"));
-        c_section.insert('input')
-            .attrs({type: "color", value: stroke_prev})
-            .style("float", "right")
-            .on('change', function(){
-                lgd_to_change = true;
-                selection.style("stroke", this.value);
-                current_layers[layer_name].fill_color.single = this.value;
-            });
-    } else if (renderer == "Categorical"){
-        let rendered_field = current_layers[layer_name].rendered_field;
+    if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
+        let color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field
+                                                     : current_layers[layer_name].rendered_field2;
 
         popup.insert('p').style("margin", "auto").html("")
             .append("button")
@@ -607,13 +647,13 @@ function createStyleBox_Line(layer_name){
             .styles({"font-size": "0.8em", "text-align": "center"})
             .html(i18next.t("app_page.layer_style_popup.choose_colors"))
             .on("click", function(){
-                let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
-                display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
+                let [cats, _] = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map);
+                display_categorical_box(result_data[layer_name], layer_name, color_field, cats)
                     .then(function(confirmed){
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
-                                    renderer:"Categorical", rendered_field: rendered_field
+                                    renderer:"Categorical", rendered_field: color_field
                                 };
                             selection.transition()
                                 .style('stroke', (d,i) => rendering_params.colorsByFeature[i]);
@@ -621,7 +661,7 @@ function createStyleBox_Line(layer_name){
                         }
                     });
             });
-    } else if (renderer == "Choropleth"){
+    } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro"){
         popup.append('p').styles({margin: 'auto', 'text-align': 'center'})
             .append("button")
             .attr("class", "button_disc")
@@ -649,6 +689,18 @@ function createStyleBox_Line(layer_name){
                        }
                    });
            });
+    } else {
+          let c_section = popup.append('p').attr("class", "line_elem");
+          c_section.insert("span")
+              .html(i18next.t("app_page.layer_style_popup.color"));
+          c_section.insert('input')
+              .attrs({type: "color", value: stroke_prev})
+              .style("float", "right")
+              .on('change', function(){
+                  lgd_to_change = true;
+                  selection.style("stroke", this.value);
+                  current_layers[layer_name].fill_color.single = this.value;
+              });
     }
 
     if(renderer == "Links"){
@@ -760,7 +812,7 @@ function createStyleBox_Line(layer_name){
          .style("display", "inline").style("float", "right")
          .html(" " + border_opacity);
 
-    if(renderer != "DiscLayer" && renderer != "Links"){
+    if(renderer != "DiscLayer" && renderer != "Links" && !renderer.startsWith('PropSymbols')){
         let width_section = popup.append('p');
         width_section.append("span")
             .html(i18next.t("app_page.layer_style_popup.width"));
@@ -773,6 +825,36 @@ function createStyleBox_Line(layer_name){
                 map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
                 current_layers[layer_name]['stroke-width-const'] = val;
               });
+    } else if (renderer.startsWith('PropSymbols')){
+        let field_used = current_layers[layer_name].rendered_field;
+        let d_values = result_data[layer_name].map(f => +f[field_used]);
+        let prop_val_content = popup.append("p");
+        prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", {field: current_layers[layer_name].rendered_field}));
+        prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
+        prop_val_content.insert('input')
+            .styles({width: "60px", float: "right"})
+            .attrs({type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1]})
+            .on("change", function(){
+                let f_size = +this.value,
+                    prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
+                current_layers[layer_name].size[1] = f_size;
+                redraw_prop_val(prop_values);
+            });
+        prop_val_content.append("span")
+            .style("float", "right")
+            .html('(px)');
+
+        let prop_val_content2 = popup.append("p").attr("class", "line_elem");
+        prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
+        prop_val_content2.insert("input")
+            .styles({width: "100px", float: "right"})
+            .attrs({type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0]})
+            .on("change", function(){
+                let f_val = +this.value,
+                    prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
+                redraw_prop_val(prop_values);
+                current_layers[layer_name].size[0] = f_val;
+            });
     }
 
     make_generate_labels_section(popup, layer_name);
@@ -848,22 +930,8 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
                 }
 
-                let lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                if(lgd && (lgd_to_change || rendering_params)){
-                    let transform_param = lgd.getAttribute("transform"),
-                        lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-                        rounding_precision = lgd.getAttribute("rounding_precision"),
-                        note = lgd.querySelector("#legend_bottom_note").innerHTML,
-                        boxgap = lgd.getAttribute("boxgap");
-
-                    let no_data_txt = document.getElementById("no_data_txt");
-                    no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-                    lgd.remove();
-                    createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-                    lgd = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                    if(transform_param)
-                        lgd.setAttribute("transform", transform_param);
+                if(lgd_to_change || rendering_params){
+                    redraw_legend_root(layer_name, rendering_params.field);
                 }
                 zoom_without_redraw();
             } else {
@@ -1262,7 +1330,7 @@ function createStyleBox_ProbSymbol(layer_name){
         .then(function(confirmed){
             if(confirmed){
                 if(current_layers[layer_name].size != old_size){
-                    let lgd_prop_symb = document.querySelector(["#legend_root2.lgdf_", layer_name].join(''));
+                    let lgd_prop_symb = document.querySelector(["#legend_root_symbol.lgdf_", layer_name].join(''));
                     if(lgd_prop_symb){ redraw_legends_symbols(lgd_prop_symb); }
                     if(type_symbol === "circle") {
                         selection.each(function(d,i){
@@ -1298,23 +1366,7 @@ function createStyleBox_ProbSymbol(layer_name){
                     }
                     current_layers[layer_name].rendered_field2 = rendering_params.field;
                     // Also change the legend if there is one displayed :
-                    let lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                    if(lgd_choro){
-                        let transform_param = lgd_choro.getAttribute("transform"),
-                            lgd_title = lgd_choro.querySelector("#legendtitle").innerHTML,
-                            lgd_subtitle = lgd_choro.querySelector("#legendsubtitle").innerHTML,
-                            rounding_precision = lgd_choro.getAttribute("rounding_precision"),
-                            boxgap = lgd_choro.getAttribute("boxgap"),
-                            note = lgd_choro.querySelector("#legend_bottom_note").innerHTML;
-                        let no_data_txt = lgd_choro.querySelector("#no_data_txt");
-                        no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-
-                        lgd_choro.remove();
-                        createLegend_choro(layer_name, rendering_params.field, lgd_title, lgd_subtitle, boxgap, undefined, rounding_precision, no_data_txt, note);
-                        lgd_choro = document.querySelector(["#legend_root.lgdf_", layer_name].join(''));
-                        if(transform_param)
-                            lgd_choro.setAttribute("transform", transform_param);
-                    }
+                    redraw_legend_root(layer_name, rendering_params.field);
                 }
                 if(selection._groups[0][0].__data__.properties.color){
                     selection.each((d,i) => {

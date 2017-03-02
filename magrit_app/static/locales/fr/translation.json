@@ -453,7 +453,7 @@
             "symbol_fixed_size": "Taille du symbole fixée ",
             "on_value": "sur la valeur ...",
             "point_radius": "Taille du point<br>",
-            "graticule_steps": "Espacemment entre les lignes<br>",
+            "graticule_steps": "Espacement entre les lignes<br>",
             "graticule_dasharray": "Taille des tirets<br>",
             "generate_labels": "Génération de labels pour cette couche...",
             "field_label": "Sélection du champ à utiliser"

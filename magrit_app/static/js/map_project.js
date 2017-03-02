@@ -5,7 +5,7 @@ function get_map_template(){
         layers_style = [],
         layers = map.selectAll("g.layer"),
         map_title = document.getElementById('map_title'),
-        layout_features = document.querySelectorAll('.legend:not(.title):not(#legend_root2):not(#legend_root):not(#legend_root_links)'),
+        layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
         zoom_transform = d3.zoomTransform(svg_map);
 
     function get_legend_info(lgd_node){
@@ -25,7 +25,7 @@ function get_map_template(){
             result['box_gap'] = lgd_node.getAttribute('box_gap');
             let no_data = lgd_node.querySelector('#no_data_txt');
             if(no_data) result['no_data_txt'] = no_data.innerHTML;
-        } else if (type_lgd == 'legend_root2') {
+        } else if (type_lgd == 'legend_root_symbol') {
             result['nested_symbols'] = lgd_node.getAttribute('nested');
         }
         return result;
@@ -192,7 +192,7 @@ function get_map_template(){
             layer_style_i.fill_opacity = selection.style("fill-opacity");
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.topo_geom = String(current_layer_prop.key_name);
-        } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1){
+        } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line"){
             let type_symbol = current_layer_prop.symbol;
             selection = map.select("#" + layer_id).selectAll(type_symbol);
             let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
@@ -213,6 +213,28 @@ function get_map_template(){
             }
             if(current_layer_prop.break_val)
                 layer_style_i.break_val = current_layer_prop.break_val;
+        } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type == "Line"){
+            let type_symbol = current_layer_prop.symbol;
+            selection = map.select("#" + layer_id).selectAll('path');
+            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName('path'), function(d){ return d.__data__; });
+            layer_style_i.symbol = type_symbol;
+            layer_style_i.rendered_field = current_layer_prop.rendered_field;
+            if(current_layer_prop.rendered_field2)
+                layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
+            layer_style_i.renderer = current_layer_prop.renderer;
+            layer_style_i.size = current_layer_prop.size;
+            layer_style_i.fill_color = current_layer_prop.fill_color;
+            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+            layer_style_i.geo_line = {
+              type: "FeatureCollection",
+              features: features
+            };
+            if(current_layer_prop.renderer === "PropSymbolsTypo"){
+                layer_style_i.color_map = [...current_layer_prop.color_map];
+            }
+            if(current_layer_prop.break_val)
+                layer_style_i.break_val = current_layer_prop.break_val;
+
         } else if (current_layer_prop.renderer == "Stewart"
                     || current_layer_prop.renderer == "Gridded"
                     || current_layer_prop.renderer == "Choropleth"
@@ -527,13 +549,6 @@ function apply_user_preferences(json_pref){
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    if( current_proj_name.indexOf("Azimuthal") > -1 || current_proj_name.indexOf("Conic") > -1
-            || current_proj_name == "Orthographic" || current_proj_name == "Gnomonic"){
-        document.getElementById('btn_customize_projection').style.display = "";
-    } else {
-        document.getElementById('btn_customize_projection').style.display = "none";
-    }
-
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
     document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
@@ -682,14 +697,14 @@ function apply_user_preferences(json_pref){
               add_layout_feature(layer_name.toLowerCase(), options);
           // ... or this is a layer of proportionnals symbols :
           } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")){
-              let geojson_pt_layer = _layer.geo_pt;
+              let geojson_layer = _layer.symbol == 'line' ? _layer.geo_line : _layer.geo_pt;
               let rendering_params = {
                   new_name: layer_name,
                   field: _layer.rendered_field,
                   ref_value:  _layer.size[0],
                   ref_size: _layer.size[1],
                   symbol: _layer.symbol,
-                  nb_features: geojson_pt_layer.features.length,
+                  nb_features: geojson_layer.features.length,
                   ref_layer_name: _layer.ref_layer_name,
                   renderer: _layer.renderer,
               };
@@ -703,7 +718,12 @@ function apply_user_preferences(json_pref){
                   rendering_params.fill_color = _layer.fill_color;
                   rendering_params.break_val = _layer.break_val;
               }
-              make_prop_symbols(rendering_params, geojson_pt_layer);
+
+              if(_layer.symbol == 'line')
+                  make_prop_line(rendering_params, geojson_layer);
+              else
+                  make_prop_symbols(rendering_params, geojson_layer);
+
               if(_layer.renderer == "PropSymbolsTypo"){
                   current_layers[layer_name].color_map = new Map(_layer.color_map);
               }
@@ -836,10 +856,12 @@ function rehandle_legend(layer_name, properties){
         let prop = properties[i];
         if(prop.type == 'legend_root'){
             createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.visible_rect, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
-        } else if(prop.type == 'legend_root2') {
+        } else if(prop.type == 'legend_root_symbol') {
             createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.visible_rect, prop.rounding_precision, prop.bottom_note);
-        } else if(prop.type == 'legend_root_links'){
+        } else if(prop.type == 'legend_root_lines_class'){
             createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision, prop.bottom_note)
+        } else if(prop.type == 'legend_root_lines_symbol'){
+            createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.visible_rect, prop.rounding_precision, prop.bottom_note)
         }
         let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
         lgd.setAttribute('transform', prop.transform);

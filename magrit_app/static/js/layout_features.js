@@ -83,11 +83,10 @@ class UserArrow {
 
         this.arrow = this.svg_elem.append('g')
                 .style("cursor", "all-scroll")
-                .attrs({"class": "arrow legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
+                .attrs({"class": "arrow legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.arrow.insert("line")
-        		.attrs({"class":"legend_features",
-        			  "marker-end":"url(#arrow_head)",
+        		.attrs({"marker-end":"url(#arrow_head)",
         			  "x1": this.pt1[0], "y1": this.pt1[1],
         			  "x2":this.pt2[0], "y2": this.pt2[1]})
                 .styles({"stroke-width": this.lineWeight, stroke: "rgb(0, 0, 0)"});
@@ -1024,10 +1023,10 @@ class UserEllipse {
             ];
 
         this.ellipse = this.svg_elem.append('g')
-                .attrs({"class": "user_ellipse legend_features legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
+                .attrs({"class": "user_ellipse legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
         this.ellipse.insert("ellipse")
-            .attrs({"class": "legend_features", "rx": 30, "ry": 40,
+            .attrs({"rx": 30, "ry": 40,
         			      "cx": this.pt1[0], "cy": this.pt1[1]})
             .styles({"stroke-width": this.strokeWeight,
                       stroke: this.stroke_color, fill: "rgb(255, 255, 255)",

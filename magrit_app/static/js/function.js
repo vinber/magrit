@@ -86,7 +86,8 @@ function clean_menu_function(){
     }
     if(_app.current_functionnality && _app.current_functionnality.name){
         let previous_button = document.getElementById("button_" + _app.current_functionnality.name);
-        previous_button.style.filter = "invert(0%) saturate(100%)";
+        if(previous_button.style.filter !== "grayscale(100%)")
+            previous_button.style.filter = "invert(0%) saturate(100%)";
         previous_button.classList.remove('active');
         _app.current_functionnality = undefined;
     }
@@ -632,7 +633,7 @@ var fields_PropSymbolChoro = {
                 rendered_field: selected_field, schema: ["BuGn"]
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ", " + i18next.t('app_page.common.class', {count: nb_class}));
-            ok_button.attr("disabled", null);PropSymbolsCh
+            ok_button.attr("disabled", null);
             img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
@@ -1618,7 +1619,6 @@ function make_prop_line(rendering_params, geojson_line_layer){
 
     if(!geojson_line_layer){
         function make_geojson_line_layer(){
-          console.log(_app.layer_to_id.get(layer)); console.log(layer)
           let ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
               result = [];
           for(let i = 0, nb_features = ref_layer_selection.length; i < nb_features; ++i){
@@ -1668,16 +1668,20 @@ function make_prop_line(rendering_params, geojson_line_layer){
     let layer_id = encodeId(layer_to_add);
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
-    result_data[layer_to_add] = []
+    result_data[layer_to_add] = [];
     map.append("g")
-      .attr("id", layer_id)
-      .attr("class", "result_layer layer")
+      .attrs({id: layer_id, class: 'result_layer layer'})
+      .styles({'stroke-linecap': 'round', 'stroke-linejoin': 'round'})
       .selectAll('path')
       .data(geojson_line_layer.features)
       .enter()
       .append('path')
       .attr('d', path)
-      .styles( d => ({fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name]}));
+      .styles( d => {
+        result_data[layer_to_add].push(d.properties);
+        return {
+          fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name]}
+        });
 
     current_layers[layer_to_add] = {
         "n_features": nb_features,
@@ -1685,7 +1689,7 @@ function make_prop_line(rendering_params, geojson_line_layer){
         "symbol": symbol_type,
         "rendered_field": field,
         "size": [ref_value, ref_size],
-        "stroke-width-const": 1,
+        // "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
         "type": "Line"

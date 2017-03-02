@@ -1086,6 +1086,7 @@ function make_ico_choice(){
             .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
                     src: ['/static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
             .on("click", function(){
+                let fill_menu = true;
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
                     if(this.classList.contains('active')){
@@ -1095,10 +1096,6 @@ function make_ico_choice(){
                         clean_menu_function();
                     }
                 }
-
-                // Highlight the icon of the selected functionnality :
-                this.style.filter = "invert(100%) saturate(200%)";
-                this.classList.add('active');
 
                 document.getElementById('accordion2b').style.display = '';
 
@@ -1131,19 +1128,28 @@ function make_ico_choice(){
                 //     placement: "right"
                 // });
 
-                // Fill the field of the functionnality with the field
-                // of the targeted layer if already uploaded by the user :
-                if(_app.targeted_layer_added){
-                    let target_layer = Object.getOwnPropertyNames(user_data)[0];
-                    fields_handler.fill(target_layer);
-                }
+                // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
+                if(this.style.filter == "grayscale(100%)"){
 
-                // Specific case for flow/link functionnality as we are also
-                // filling the fields with data from the uploaded tabular file if any :
-                if(func_name == "flow" && joined_dataset){
-                    fields_handler.fill();
-                }
+                } else {
+                    this.classList.add('active');
+                    // Highlight the icon of the selected functionnality :
+                    this.style.filter = "invert(100%) saturate(200%)";
 
+                    // Fill the field of the functionnality with the field
+                    // of the targeted layer if already uploaded by the user :
+                    if(_app.targeted_layer_added){
+                        let target_layer = Object.getOwnPropertyNames(user_data)[0];
+                        fields_handler.fill(target_layer);
+                    }
+
+                    // Specific case for flow/link functionnality as we are also
+                    // filling the fields with data from the uploaded tabular file if any :
+                    if(func_name == "flow" && joined_dataset){
+                        fields_handler.fill();
+                    }
+
+                }
                 switch_accordion_section('btn_s2b');
             });
     }
@@ -1677,11 +1683,10 @@ function remove_ext_dataset_cleanup(){
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
-     let g_lyr_name = "#" + _app.layer_to_id.get(name);
-
+     let layer_id = _app.layer_to_id.get(name);
      // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
-        map.selectAll([".lgdf_", name].join('')).remove();
+        map.selectAll([".lgdf_", layer_id].join('')).remove();
         if(result_data.hasOwnProperty(name))
             delete result_data[name];
         if(current_layers[name].hasOwnProperty("key_name")
@@ -1689,9 +1694,8 @@ function remove_layer_cleanup(name){
            && current_layers[name].renderer.indexOf("Categorical") < 0)
             send_remove_server(name);
     }
-
     // Remove the layer from the map and from the layer manager :
-    map.select(g_lyr_name).remove();
+    map.select('#' + layer_id).remove();
     document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove()
 
     // Remove the layer from the "geo export" menu :
@@ -1834,7 +1838,7 @@ function zoom_without_redraw(){
 
 function redraw_legends_symbols(targeted_node){
     if(!targeted_node)
-        var legend_nodes = document.querySelectorAll("#legend_root2");
+        var legend_nodes = document.querySelectorAll("#legend_root_symbol");
     else
         var legend_nodes = [targeted_node];
 
@@ -1859,9 +1863,10 @@ function redraw_legends_symbols(targeted_node){
 
         legend_nodes[i].remove();
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
-        let new_lgd = document.querySelector(["#legend_root2.lgdf_", layer_id].join(''));
+        let new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
-        new_lgd.setAttribute("display", display_value);
+        if(display_value)
+            new_lgd.setAttribute("display", display_value);
         if(transform_param)
             new_lgd.setAttribute("transform", transform_param);
     }
@@ -2078,7 +2083,7 @@ function handle_title(txt){
         title.text(txt);
     } else {
         map.append("g")
-             .attrs({"class": "legend legend_feature title", "id": "map_title"})
+             .attrs({"class": "legend title", "id": "map_title"})
              .style("cursor", "pointer")
           .insert("text")
              .attrs({x: w/2, y: h/12,

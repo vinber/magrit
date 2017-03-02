@@ -471,11 +471,11 @@ function getAvailablesFunctionnalities(layer_name){
         for(let i = 0, len_i = elems.length; i < len_i; i++){
             elems[i].style.filter = "grayscale(100%)";
         }
-        var func_stock = section.querySelectorAll('#button_prop, #button_choroprop, #button_proptypo'),
+        var func_stock = section.querySelectorAll('#button_prop'),
             func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
             func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
     } else { // layer type is Point or Polygon :
-        var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_choroprop, #button_proptypo, #button_grid, #button_cartogram, #button_discont'),
+        var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont'),
             func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
             func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
     }

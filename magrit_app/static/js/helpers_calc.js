@@ -166,13 +166,19 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol){
 
     if(type_symbol == "circle"){
         let smax = fixed_size * fixed_size * pi;
+        let t = smax / fixed_value;
         for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value) / pi);
+            res.push(sqrt(abs(arr[i]) * t) / pi);
 
+    } else if (type_symbol == "line"){
+        let t = fixed_size / fixed_value;
+        for(let i=0; i < arr_len; ++i)
+            res.push(abs(arr[i]) * t);
     } else {
         let smax = fixed_size * fixed_size;
+        let t = smax / fixed_value;
         for(let i=0; i < arr_len; ++i)
-            res.push(sqrt(abs(arr[i]) * smax / fixed_value));
+            res.push(sqrt(abs(arr[i]) * t));
     }
     return res;
 }
@@ -443,7 +449,7 @@ function getMaximalAvailableRectangle(legend_nodes){
 }
 
 function getTranslateNewLegend(){
-    let legends = svg_map.querySelectorAll("#legend_root, #legend_root2, #legend_root_links");
+    let legends = svg_map.querySelectorAll('.legend_feature');
     if(legends.length == 0) {
       return [0, 0];
     } else {

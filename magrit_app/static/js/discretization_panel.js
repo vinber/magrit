@@ -827,6 +827,7 @@ function fetch_categorical_colors(){
 }
 
 function display_categorical_box(data_layer, layer_name, field, cats){
+  console.log(data_layer, layer_name, field, cats)
     var nb_features = current_layers[layer_name].n_features,
         nb_class = cats.length;
 
