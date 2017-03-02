@@ -5076,6 +5076,7 @@ function render_stewart() {
         current_layers[n_layer_name].colors_breaks = colors_breaks;
         current_layers[n_layer_name].rendered_field = field1_n;
         current_layers[n_layer_name].color_palette = { name: "Oranges", reversed: true };
+        current_layers[n_layer_name].options_disc = { breaks: [].concat(class_lim['max'][0], class_lim['min']).reverse() };
         map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").styles(function (d, i) {
             return { 'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0 };
         });
@@ -13015,7 +13016,7 @@ function createLegend_choro(layer, field, title, subtitle) {
             });
 
             legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", xpos + boxwidth * 2 + 10).attr("y", tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-                return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+                return round_value(+data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
             });
         })();
     } else legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {

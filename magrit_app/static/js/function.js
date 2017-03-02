@@ -1255,6 +1255,7 @@ function render_stewart(){
           current_layers[n_layer_name].colors_breaks = colors_breaks;
           current_layers[n_layer_name].rendered_field = field1_n;
           current_layers[n_layer_name].color_palette = {name: "Oranges", reversed: true};
+          current_layers[n_layer_name].options_disc = {breaks: [].concat(class_lim['max'][0], class_lim['min']).reverse()};
           map.select("#" + _app.layer_to_id.get(n_layer_name))
                   .selectAll("path")
                   .styles( (d,i) => ({'fill': col_pal[nb_class - 1 - i], 'fill_opacity': 1, 'stroke-opacity': 0}));
