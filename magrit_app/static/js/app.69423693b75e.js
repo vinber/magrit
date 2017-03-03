@@ -1733,24 +1733,26 @@ function handleClipPath(proj_name, main_layer) {
 }
 
 function change_projection(new_proj_name) {
+    // Disable the zoom by rectangle selection if the user is using it :
+    map.select('.brush').remove();
+
     // Only keep the first argument of the rotation parameter :
-    var prev_rotate = [proj.rotate()[0], 0, 0];
+    var prev_rotate = [proj.rotate()[0], 0, 0],
+        def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
-    proj = eval(available_projections.get(new_proj_name));
+    proj = d3[def_proj.name]();
+    if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);
+    if (def_proj.clipAngle) proj = proj.clipAngle(def_proj.clipAngle);
+
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Do the reprojection :
     proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    // // Allow to use more options than only the lambda axis on specific projection :
-    // if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
-    //         || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
-    //     document.getElementById('btn_customize_projection').style.display = "";
-    // } else {
-    //     document.getElementById('btn_customize_projection').style.display = "none";
-    // }
+    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -5469,7 +5471,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = [];
-    map.append("g").attrs({ id: layer_id, class: 'result_layer layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('path').data(geojson_line_layer.features).enter().append('path').attr('d', path).styles(function (d) {
+    map.insert("g", '.legend').attrs({ id: layer_id, class: 'result_layer layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('path').data(geojson_line_layer.features).enter().append('path').attr('d', path).styles(function (d) {
         result_data[layer_to_add].push(d.properties);
         return {
             fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] };
@@ -5499,7 +5501,6 @@ function make_prop_line(rendering_params, geojson_line_layer) {
     if (rendering_params.break_val != undefined) {
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
-    up_legends();
     create_li_layer_elem(layer_to_add, nb_features, ["Line", "prop"], "result");
     return;
 }
@@ -5606,7 +5607,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
     _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = [];
     if (symbol_type === 'circle') {
-        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
+        map.insert("g", '.legend').attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
             result_data[layer_to_add].push(d.properties);
             return {
                 'id': ['PropSymbol_', i, ' feature_', d.id].join(''),
@@ -5618,7 +5619,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
             return d.properties.color;
         }).style("stroke", "black").style("stroke-width", 1 / zs);
     } else if (symbol_type === "rect") {
-        map.append("g").attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
+        map.insert("g", '.legend').attr("id", layer_id).attr("class", "result_layer layer").selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
             var size = d.properties[t_field_name];
             result_data[layer_to_add].push(d.properties);
             return {
@@ -5656,7 +5657,6 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
     if (rendering_params.break_val != undefined) {
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
-    up_legends();
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
     return;
 }
@@ -6196,7 +6196,7 @@ var render_discont = function render_discont() {
         }).filter(function (d) {
             return d[1] !== undefined;
         });
-        var result_layer = map.append("g").attr("id", id_layer).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
+        var result_layer = map.insert("g", '.legend').attr("id", id_layer).styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).attr("class", "result_layer layer");
 
         result_data[new_layer_name] = [];
         var data_result = result_data[new_layer_name],
@@ -6240,7 +6240,6 @@ var render_discont = function render_discont() {
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
-        up_legends();
         zoom_without_redraw();
         switch_accordion_section();
         handle_legend(new_layer_name);
@@ -6531,7 +6530,7 @@ function render_TypoSymbols(rendering_params, new_name) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
+    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d) {
         var symb = rendering_params.symbols_map.get(d.properties.symbol_field),
             coords = path.centroid(d.geometry);
         return {
@@ -6561,7 +6560,6 @@ function render_TypoSymbols(rendering_params, new_name) {
         "ref_layer_name": layer_name
     };
     handle_legend(layer_to_add);
-    up_legends();
     zoom_without_redraw();
     switch_accordion_section();
 }
@@ -6957,7 +6955,7 @@ var render_label = function render_label(layer, rendering_params, options) {
             } }];
     };
 
-    map.append("g").attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
         var centroid = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
@@ -6987,7 +6985,6 @@ var render_label = function render_label(layer, rendering_params, options) {
         "default_size": font_size,
         "default_font": selected_font
     };
-    up_legends();
     zoom_without_redraw();
     return layer_to_add;
 };
@@ -7110,20 +7107,23 @@ function make_content_summary(serie) {
 }
 
 function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
-    var id_new_layer = encodeId(new_name);
-    var id_ref_layer = _app.layer_to_id.get(ref_layer);
+    var id_new_layer = encodeId(new_name),
+        id_ref_layer = _app.layer_to_id.get(ref_layer),
+        node_ref_layer = svg_map.querySelector("#" + id_ref_layer);
     _app.layer_to_id.set(new_name, id_new_layer);
     _app.id_to_layer.set(id_new_layer, new_name);
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#" + id_ref_layer).cloneNode(true));
+    svg_map.appendChild(node_ref_layer.cloneNode(true));
     svg_map.lastChild.setAttribute("id", id_new_layer);
-    svg_map.lastChild.setAttribute("class", "result_layer layer");
+    var node_new_layer = document.getElementById(id_new_layer);
+    svg_map.insertBefore(node_new_layer, svg_map.querySelector('.legend'));
+    node_new_layer.setAttribute("class", "result_layer layer");
     result_data[new_name] = [];
     current_layers[new_name] = { n_features: current_layers[ref_layer].n_features,
         type: current_layers[ref_layer].type,
         ref_layer_name: ref_layer };
     if (current_layers[ref_layer].pointRadius) current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
-    var selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
-    var selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
+    var selec_src = node_ref_layer.getElementsByTagName("path"),
+        selec_dest = node_new_layer.getElementsByTagName("path");
     if (!fields_to_copy) {
         for (var i = 0; i < selec_src.length; i++) {
             selec_dest[i].__data__ = selec_src[i].__data__;
@@ -7160,8 +7160,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
             result_data[new_name].push(selec_dest[_i].__data__.properties);
         }
     }
-    document.getElementById(id_new_layer).style.visibility = "";
-    up_legends();
+    node_new_layer.style.visibility = "";
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
@@ -8841,7 +8840,7 @@ function add_layer_topojson(text) {
 
     var path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
 
-    map.append("g").attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path_to_use, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
+    map.insert("g", '.legend').attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path_to_use, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
             if (field_names.length > 0) {
                 if (d.id != undefined && d.id != ix) {
@@ -8930,7 +8929,6 @@ function add_layer_topojson(text) {
     }
 
     layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-    up_legends();
     handleClipPath(current_proj_name);
     binds_layers_buttons(lyr_name_to_add);
     if (!skip_rescale) {
@@ -9065,7 +9063,7 @@ function add_layout_feature(selected_feature) {
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
         options.step = options.step || 10;
-        map.append("g").attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(d3.geoGraticule().step([options.step, options.step])).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
+        map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(d3.geoGraticule().step([options.step, options.step])).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
         current_layers["Graticule"] = {
             "type": "Line",
             "n_features": 1,
@@ -9077,7 +9075,6 @@ function add_layout_feature(selected_feature) {
         };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
-        up_legends();
         zoom_without_redraw();
     } else if (selected_feature == "scale") {
         if (!scaleBar.displayed) {
@@ -9300,7 +9297,7 @@ function add_simplified_land_layer() {
             "stroke-width-const": +options.stroke_width.slice(0, -2),
             "fill_color": { single: options.fill }
         };
-        map.append("g").attrs({ id: "World", class: "layer", "clip-path": "url(#clip)" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({ stroke: options.stroke, fill: options.fill,
+        map.insert("g", '.legend').attrs({ id: "World", class: "layer", "clip-path": "url(#clip)" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({ stroke: options.stroke, fill: options.fill,
             "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
         create_li_layer_elem("World", null, "Polygon", "sample");
         if (!options.skip_rescale) {
@@ -13886,7 +13883,6 @@ function apply_user_preferences(json_pref) {
                 }
             }
         }
-        up_legends();
     }
 
     var done = 0;
@@ -13904,7 +13900,9 @@ function apply_user_preferences(json_pref) {
 
     // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
-    proj = eval(available_projections.get(current_proj_name));
+    proj = d3[available_projections.get(current_proj_name).name]();
+    if (map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
+    if (map_config.projection_clipAngle) proj = proj.clipAngle(map_config.projection_clipAngle);
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
@@ -14486,7 +14484,7 @@ function make_style_box_indiv_symbol(symbol_node) {
 };
 "use strict";
 
-var available_projections = new Map([["Armadillo", "d3.geoArmadillo().scale(400)"], ["AzimuthalEquidistant", "d3.geoAzimuthalEquidistant().scale(700)"], ["AzimuthalEqualArea", "d3.geoAzimuthalEqualArea().scale(700)"], ["Baker", "d3.geoBaker().scale(400)"], ["Boggs", "d3.geoBoggs().scale(400)"], ["InterruptedBoggs", "d3.geoInterruptedBoggs().scale(400)"], ["Bonne", "d3.geoBonne().scale(400)"], ["Bromley", "d3.geoBromley().scale(400)"], ["Collignon", "d3.geoCollignon().scale(400)"], ["ConicConformal", "d3.geoConicConformal().scale(400).parallels([44, 49])"], ["ConicEqualArea", "d3.geoConicEqualArea().scale(400)"], ["ConicEquidistant", "d3.geoConicEquidistant().scale(400)"], ["CrasterParabolic", "d3.geoCraster().scale(400)"], ["EckertI", "d3.geoEckert1().scale(400).translate([300, 250])"], ["EckertII", "d3.geoEckert2().scale(400).translate([300, 250])"], ["EckertIII", "d3.geoEckert3().scale(525).translate([150, 125])"], ["EckertIV", "d3.geoEckert4().scale(525).translate([150, 125])"], ["EckertV", "d3.geoEckert5().scale(400)"], ["EckertVI", "d3.geoEckert6().scale(400)"], ["Eisenlohr", "d3.geoEisenlohr().scale(400)"], ["Gnomonic", "d3.geoGnomonic().scale(400)"], ["Gringorten", "d3.geoGringorten().scale(400)"], ["HEALPix", "d3.geoHealpix().scale(400)"], ["Homolosine", "d3.geoHomolosine().scale(400)"], ["InterruptedHomolosine", "d3.geoInterruptedHomolosine().scale(400)"], ["Loximuthal", "d3.geoLoximuthal().scale(400)"], ["Mercator", "d3.geoMercator().scale(375).translate([525, 350])"], ["NaturalEarth", "d3.geoNaturalEarth().scale(400).translate([375, 50])"], ["Orthographic", "d3.geoOrthographic().scale(475).translate([480, 480]).clipAngle(90)"], ["Peircequincuncial", "d3.geoPeirceQuincuncial().scale(400)"], ["Robinson", "d3.geoRobinson().scale(400)"], ["InterruptedSinuMollweide", "d3.geoInterruptedSinuMollweide().scale(400)"], ["Sinusoidal", "d3.geoSinusoidal().scale(400)"], ["InterruptedSinusoidal", "d3.geoInterruptedSinusoidal().scale(400)"], ["TransverseMercator", "d3.geoTransverseMercator().scale(400)"]]);
+var available_projections = new Map([["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }], ["ConicConformal", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistant", { 'name': 'geoConicEquidistant', 'scale': '400' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }]]);
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
 		var prev_rotate = proj.rotate(),
@@ -15324,6 +15322,7 @@ var handleZoomRect = function handleZoomRect() {
 };
 
 var makeZoomRect = function makeZoomRect() {
+    if (!proj.invert) return;
     function idled() {
         idleTimeout = null;
     };

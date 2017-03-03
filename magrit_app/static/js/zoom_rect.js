@@ -10,6 +10,7 @@ const handleZoomRect = function(){
 };
 
 const makeZoomRect = function(){
+    if(!proj.invert) return;
     function idled() { idleTimeout = null; };
     function brushended() {
       let s = d3.event.selection;

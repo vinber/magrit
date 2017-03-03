@@ -1671,7 +1671,7 @@ function make_prop_line(rendering_params, geojson_line_layer){
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = [];
-    map.append("g")
+    map.insert("g", '.legend')
       .attrs({id: layer_id, class: 'result_layer layer'})
       .styles({'stroke-linecap': 'round', 'stroke-linejoin': 'round'})
       .selectAll('path')
@@ -1707,7 +1707,6 @@ function make_prop_line(rendering_params, geojson_line_layer){
     if(rendering_params.break_val != undefined){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
-    up_legends();
     create_li_layer_elem(layer_to_add, nb_features, ["Line", "prop"], "result");
     return;
 }
@@ -1802,7 +1801,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
     _app.id_to_layer.set(layer_id, layer_to_add);
     result_data[layer_to_add] = []
     if(symbol_type === 'circle'){
-      map.append("g")
+      map.insert("g", '.legend')
         .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
@@ -1822,7 +1821,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         .style("stroke", "black")
         .style("stroke-width", 1 / zs);
     } else if(symbol_type === "rect"){
-      map.append("g")
+      map.insert("g", '.legend')
         .attr("id", layer_id)
         .attr("class", "result_layer layer")
         .selectAll('circle')
@@ -1866,7 +1865,6 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
     if(rendering_params.break_val != undefined){
         current_layers[layer_to_add]["break_val"] = rendering_params.break_val;
     }
-    up_legends();
     create_li_layer_elem(layer_to_add, nb_features, ["Point", "prop"], "result");
     return;
 }
@@ -2447,7 +2445,8 @@ var render_discont = function(){
         }
 
         breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
-        let result_layer = map.append("g").attr("id", id_layer)
+        let result_layer = map.insert("g", '.legend')
+                .attr("id", id_layer)
                 .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
                 .attr("class", "result_layer layer");
 
@@ -2492,7 +2491,6 @@ var render_discont = function(){
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
-        up_legends();
         zoom_without_redraw();
         switch_accordion_section();
         handle_legend(new_layer_name);
@@ -2824,7 +2822,8 @@ function render_TypoSymbols(rendering_params, new_name){
             {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
     ];
 
-    map.append("g").attrs({id: layer_id, class: "layer"})
+    map.insert("g", '.legend')
+        .attrs({id: layer_id, class: "layer"})
         .selectAll("image")
         .data(new_layer_data.features).enter()
         .insert("image")
@@ -2858,7 +2857,6 @@ function render_TypoSymbols(rendering_params, new_name){
         "ref_layer_name": layer_name,
         };
     handle_legend(layer_to_add);
-    up_legends();
     zoom_without_redraw();
     switch_accordion_section();
 }
@@ -3317,7 +3315,8 @@ var render_label = function(layer, rendering_params, options){
             {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
         ];
 
-    map.append("g").attrs({id: layer_id, class: "layer result_layer"})
+    map.insert("g", '.legend')
+        .attrs({id: layer_id, class: "layer result_layer"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
@@ -3352,7 +3351,6 @@ var render_label = function(layer, rendering_params, options){
         "default_size": font_size,
         "default_font": selected_font
         };
-    up_legends();
     zoom_without_redraw();
     return layer_to_add;
 }
