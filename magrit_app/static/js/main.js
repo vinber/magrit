@@ -2003,24 +2003,28 @@ function handleClipPath(proj_name, main_layer){
 }
 
 function change_projection(new_proj_name) {
+    // Disable the zoom by rectangle selection if the user is using it :
+    map.select('.brush').remove();
+
     // Only keep the first argument of the rotation parameter :
-    let prev_rotate = [proj.rotate()[0], 0, 0];
+    let prev_rotate = [proj.rotate()[0], 0, 0],
+        def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
-    proj = eval(available_projections.get(new_proj_name));
+    proj = d3[def_proj.name]()
+    if(def_proj.parallels)
+        proj = proj.parallels(def_proj.parallels);
+    if(def_proj.clipAngle)
+        proj = proj.clipAngle(def_proj.clipAngle);
+
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Do the reprojection :
     proj.translate(t).scale(s).rotate(prev_rotate);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
-    // // Allow to use more options than only the lambda axis on specific projection :
-    // if( new_proj_name.indexOf("Azimuthal") > -1 || new_proj_name.indexOf("Conic") > -1
-    //         || new_proj_name == "Orthographic" || new_proj_name == "Gnomonic"){
-    //     document.getElementById('btn_customize_projection').style.display = "";
-    // } else {
-    //     document.getElementById('btn_customize_projection').style.display = "none";
-    // }
+    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     let layer_name = Object.getOwnPropertyNames(user_data)[0];

@@ -519,7 +519,6 @@ function apply_user_preferences(json_pref){
                 }
             }
         }
-        up_legends();
     }
 
     var done = 0;
@@ -542,7 +541,11 @@ function apply_user_preferences(json_pref){
 
     // Set the variables/fields related to the projection :
     current_proj_name = map_config.projection;
-    proj = eval(available_projections.get(current_proj_name));
+    proj = d3[available_projections.get(current_proj_name).name]();
+    if(map_config.projection_parallels)
+        proj = proj.parallels(map_config.projection_parallels);
+    if(map_config.projection_clipAngle)
+        proj = proj.clipAngle(map_config.projection_clipAngle);
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);

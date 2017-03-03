@@ -880,7 +880,8 @@ function add_layer_topojson(text, options = {}){
 
     let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
 
-    map.append("g").attr("id", lyr_id)
+    map.insert("g", '.legend')
+        .attr("id", lyr_id)
         .attr("class", data_to_load ? "targeted_layer layer" : "layer")
         .styles({"stroke-linecap": "round", "stroke-linejoin": "round"})
         .selectAll(".subunit")
@@ -982,7 +983,6 @@ function add_layer_topojson(text, options = {}){
     }
 
     layers_listed.insertBefore(li, layers_listed.childNodes[0])
-    up_legends();
     handleClipPath(current_proj_name);
     binds_layers_buttons(lyr_name_to_add);
     if(!skip_rescale){
@@ -1133,12 +1133,13 @@ function add_layout_feature(selected_feature, options = {}){
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
         options.step = options.step || 10;
-        map.append("g").attrs({id: "Graticule", class: "layer"})
-                .styles({'stroke-width': options.stroke_width})
-                .append("path")
-                .datum(d3.geoGraticule().step([options.step, options.step]))
-                .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-                .styles({'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke});
+        map.insert("g", '.legend')
+            .attrs({id: "Graticule", class: "layer"})
+            .styles({'stroke-width': options.stroke_width})
+            .append("path")
+            .datum(d3.geoGraticule().step([options.step, options.step]))
+            .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
+            .styles({'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke});
         current_layers["Graticule"] = {
             "type": "Line",
             "n_features":1,
@@ -1149,7 +1150,6 @@ function add_layout_feature(selected_feature, options = {}){
             dasharray: options.stroke_dasharray,
             };
         create_li_layer_elem("Graticule", null, "Line", "sample");
-        up_legends();
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
         if(!(scaleBar.displayed)){
@@ -1379,7 +1379,7 @@ function add_simplified_land_layer(options = {}){
             "stroke-width-const": +options.stroke_width.slice(0,-2),
             "fill_color": {single: options.fill}
         };
-        map.append("g")
+        map.insert("g", '.legend')
             .attrs({id: "World", class: "layer", "clip-path": "url(#clip)"})
             .style("stroke-width", options.stroke_width)
             .selectAll('.subunit')

@@ -124,21 +124,24 @@ function make_content_summary(serie, precision=6){
 }
 
 function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
-    let id_new_layer = encodeId(new_name);
-    let id_ref_layer = _app.layer_to_id.get(ref_layer);
+    let id_new_layer = encodeId(new_name),
+        id_ref_layer = _app.layer_to_id.get(ref_layer),
+        node_ref_layer = svg_map.querySelector("#"+id_ref_layer);
     _app.layer_to_id.set(new_name, id_new_layer);
     _app.id_to_layer.set(id_new_layer, new_name);
-    svg_map.appendChild(document.getElementById("svg_map").querySelector("#"+id_ref_layer).cloneNode(true));
+    svg_map.appendChild(node_ref_layer.cloneNode(true));
     svg_map.lastChild.setAttribute("id", id_new_layer);
-    svg_map.lastChild.setAttribute("class", "result_layer layer");
+    let node_new_layer = document.getElementById(id_new_layer);
+    svg_map.insertBefore(node_new_layer, svg_map.querySelector('.legend'));
+    node_new_layer.setAttribute("class", "result_layer layer");
     result_data[new_name] = [];
     current_layers[new_name] = {n_features: current_layers[ref_layer].n_features,
                              type: current_layers[ref_layer].type,
                              ref_layer_name: ref_layer};
     if(current_layers[ref_layer].pointRadius)
         current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
-    let selec_src = document.getElementById(id_ref_layer).getElementsByTagName("path");
-    let selec_dest = document.getElementById(id_new_layer).getElementsByTagName("path");
+    let selec_src = node_ref_layer.getElementsByTagName("path"),
+        selec_dest = node_new_layer.getElementsByTagName("path");
     if(!fields_to_copy){
         for(let i = 0; i < selec_src.length; i++){
             selec_dest[i].__data__ = selec_src[i].__data__;
@@ -153,8 +156,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
             result_data[new_name].push(selec_dest[i].__data__.properties);
         }
     }
-    document.getElementById(id_new_layer).style.visibility = "";
-    up_legends();
+    node_new_layer.style.visibility = "";
     create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
