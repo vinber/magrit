@@ -186,38 +186,44 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self._verif_context_menu(
             driver.find_element_by_id("user_ellipse_0"), "user ellipse")
 
-    # def test_links(self):
-    #     driver = self.driver
-    #     driver.get(self.base_url)
-    #     self.clickWaitTransition("#sample_link")
-    #
-    #     Select(driver.find_element_by_css_selector("select.sample_target")
-    #         ).select_by_value("nuts2-2013-data")
-    #     driver.find_element_by_css_selector(".btn_ok").click()
-    #
-    #     self.waitClickButtonSwal()
-    #     # Valid the type of each field :
-    #     self.validTypefield()
-    #     time.sleep(1)
-    #     driver.find_element_by_id("data_ext").send_keys("/home/mz/code/magrit/magrit_app/static/data_sample/twincities.csv")
-    #     time.sleep(1)
-    #     self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
-    #     self.validTypefield()
-    #
-    #     self.open_menu_section(2)
-    #     self.clickWaitTransition("#button_flow")
-    #
-    #     Select(driver.find_element_by_id("FlowMap_field_i")
-    #         ).select_by_visible_text("i")
-    #     Select(driver.find_element_by_id("FlowMap_field_j")
-    #         ).select_by_visible_text("j")
-    #     Select(driver.find_element_by_id("FlowMap_field_fij")
-    #         ).select_by_visible_text("fij")
-    #
-    #     driver.find_element_by_id("FlowMap_yes").click()
-    #     self.waitClickButtonSwal()
-    #     if not self.try_element_present(By.ID, "legend_root_lines_class", 5):
-    #         self.fail("Legend not displayed on links map")
+    def test_links(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition("#sample_link")
+
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("world_countries_data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+
+        self.waitClickButtonSwal()
+        # Valid the type of each field :
+        self.validTypefield()
+        time.sleep(1)
+        with open('tests/load_links.js') as f:
+            script = f.read()
+        driver.execute_script(script)
+        time.sleep(1)
+        self.waitClickButtonSwal("button.swal2-cancel.swal2-styled")
+
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_flow")
+
+        Select(driver.find_element_by_id("FlowMap_field_i")
+            ).select_by_visible_text("i")
+        Select(driver.find_element_by_id("FlowMap_field_j")
+            ).select_by_visible_text("j")
+        Select(driver.find_element_by_id("FlowMap_field_fij")
+            ).select_by_visible_text("fij")
+
+        driver.find_element_by_id('FlowMap_output_name').clear()
+        driver.find_element_by_id('FlowMap_output_name').send_keys('result_layer')
+
+        driver.find_element_by_id("FlowMap_yes").click()
+        self.waitClickButtonSwal()
+        if not self.try_element_present(By.ID, "legend_root_lines_class", 5):
+            self.fail("Legend not displayed on links map")
+        self._verif_legend_hide_show_button('result_layer')
+        self._verif_export_result('result_layer')
 
     def test_gridded(self):
         driver = self.driver
