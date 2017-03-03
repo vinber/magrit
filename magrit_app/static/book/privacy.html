@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Les docs de Magrit</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="Documentation utilisateur de Magrit">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <base href="">
+
+        <link rel="stylesheet" href="book.css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Fetch JQuery from CDN but have a local fallback -->
+        <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script>
+            if (typeof jQuery == 'undefined') {
+                document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
+            }
+        </script>
+    </head>
+    <body class="light">
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
+            $('body').removeClass().addClass(theme);
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = localStorage.getItem('sidebar');
+            if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
+            else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
+        </script>
+
+        <div id="sidebar" class="sidebar">
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><a href="./privacy.html" class="active"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
+        </div>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar" class="menu-bar">
+                    <div class="left-buttons">
+                        <i id="sidebar-toggle" class="fa fa-bars"></i>
+                        <i id="theme-toggle" class="fa fa-paint-brush"></i>
+                    </div>
+
+                    <h1 class="menu-title">Les docs de Magrit</h1>
+
+                    <div class="right-buttons">
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                    </div>
+                </div>
+
+                <div id="content" class="content">
+                    <h3>Utilisation des cookies et respect de la vie privée</h3>
+<p>Plusieurs <em>cookies</em> et fonctionnalitées de <em>stockages temporaires</em>, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.</p>
+<h4>Quelques détails permettant de comprendre le chemin des données :</h4>
+<p>Lors de l'import d'une couche utilisateur, celle-ci est transformée et stockée temporairement (le temps d'une session utilisateur) en mémoire temporaire (via <a href="https://fr.wikipedia.org/wiki/Redis">redis</a>). C'est cette couche transformée qui est affichée dans le navigateur web.</p>
+<p>Lors du calcul d'une représentation générant une nouvelle géométrie (carte lissée, carroyage, discontinuité, cartogramme et liens), le résultat est également stocké en mémoire temporaire (redis) le temps de votre session.</p>
+<p>Ce stockage permet d'une part de lancer les calculs dès le choix des paramètres effectué par l'utilisateur (sans avoir à envoyer les géométries à nouveau) et d'autres part de proposer des exports dans des formats &quot;géographiques&quot; variés lorsque l'utilisateur le souhaite.
+Ces couches sont supprimées lors de la fermeture de la session par l'utilisateur.</p>
+<h4>Détails des cookies utilisés :</h4>
+<p>La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un <strong>cookie</strong>, dont la durée d'expiration est celle d'une <strong>session</strong>, contenant une clée échangée avec le serveur.</p>
+<p>Deux autres cookies sont utilisés et ne sont pas échangés avec le serveur :</p>
+<ul>
+<li>un cookie est utilisé pour se souvenir de la dernière langue utilisée par l'utilisateur (il est paramétré avec une durée d'expiration longue).</li>
+<li>un cookie est utilisé pour se souvenir de l'acceptation de l'usage des cookies par l'utilisateur (il est paramétré avec une durée d'expiration longue).</li>
+</ul>
+<h4>Autre fonctionnalité de stockage :</h4>
+<p>La fonctionnalité proposant de reprendre le projet en cours se base sur la capacité de &quot;stockage local&quot; (<em><a href="https://developer.mozilla.org/fr/docs/Web/API/Window/localStorage">localStorage</a></em>) des navigateurs web. Le projet en cours est donc intégralement stocké dans le navigateur de l'utilisateur et le serveur n'en a pas connaissance
+(de même qu'il n'a pas connaissance des fichiers-projets exportés par l'utilisateur).</p>
+<h5>Garanties supplémentaires</h5>
+<p>Il facilement possible de déployer une instance locale (sur votre réseau d'entreprise ou votre ordinateur personnel) afin de ne pas faire transiter les données vers notre instance. Des informations sont disponibles sur la <a href="http://github.com/riatelab/magrit">page Github du projet</a> et peuvent être complétées en contactant l'équipe via la page contact.</p>
+
+                </div>
+
+                <!-- Mobile navigation buttons -->
+                
+                    <a href="./datasets_fr.html" class="mobile-nav-chapters previous">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="misc/contributors.html" class="mobile-nav-chapters next">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+
+            </div>
+
+            
+                <a href="./datasets_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+            
+
+            
+                <a href="misc/contributors.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if ($(".fa").css("font-family") !== "FontAwesome") {
+                $('<link rel="stylesheet" type="text/css" href="_FontAwesome/css/font-awesome.css">').prependTo('head');
+            }
+        </script>
+
+        <!-- Livereload script (if served using the cli tool) -->
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+    </body>
+</html>
