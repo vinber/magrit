@@ -878,6 +878,7 @@ img.layout_ft_ico:hover {
     cursor: -webkit-grabbing;
 }
 
+<<<<<<< f5db5b0d845205e1e806b63ff3e5688ffecc22cf
 .styled-select {
    background: url(/static/img/arrow_select.png) no-repeat 100% 0;
    height: 29px;
@@ -950,4 +951,13 @@ label.disc_style::before {
   -webkit-transition: .25s all ease;
   -o-transition: .25s all ease;
   transition: .25s all ease;
+}
+
+.alertify-notifier .ajs-message.ajs-warning {
+    background: rgb(228, 144, 83) !important;
+}
+
+.alertify-notifier .ajs-message {
+    font: 13px Roboto !important;
+    padding: 12px !important;
 }
