@@ -1124,6 +1124,7 @@ function add_layout_feature(selected_feature, options = {}){
             .styles({fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke})
             .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
+        alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
         zoom_without_redraw();
         setSphereBottom();
     } else if (selected_feature == "graticule"){
@@ -1149,6 +1150,7 @@ function add_layout_feature(selected_feature, options = {}){
             dasharray: options.stroke_dasharray,
             };
         create_li_layer_elem("Graticule", null, "Line", "sample");
+        alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
         up_legends();
         zoom_without_redraw();
     } else if (selected_feature == "scale"){

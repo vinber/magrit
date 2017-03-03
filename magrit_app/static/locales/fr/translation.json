@@ -88,6 +88,12 @@
             "class": "{{count}} classe",
             "class_plural": "{{count}} classes"
         },
+        "notification":{
+            "success_sphere_added": "La sphère a bien été ajoutée!",
+            "success_graticule_added": "Le graticule a bien été ajouté!",
+            "warning_deactivation_scalebar": "Désactivation de l'échelle",
+            "warning_deactivation_prop_symbol_legend": "Désactivation de la légende des symboles proportionnels"
+        },
         "section1": {
             "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte",

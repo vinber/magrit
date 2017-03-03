@@ -87,6 +87,12 @@
             "resume_last": "Resume last project",
             "class": "{{count}} class"
         },
+        "notification":{
+            "success_sphere_added": "Success: sphere added!",
+            "success_graticule_added": "Success: graticule added!",
+            "warning_deactivation_scalebar": "Scale bar disabled",
+            "warning_deactivation_prop_symbol_legend": "Proportionnal symbols legend disabled"
+        },
         "section1": {
             "title": "Add your data",
             "add_geom": "Add a basemap",

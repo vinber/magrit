@@ -821,6 +821,9 @@ function setUpInterface(resume_project) {
         // remove it :
         window.localStorage.removeItem("magrit_project");
     }
+
+    // Set the properties for the notification zone :
+    alertify.set('notifier', 'position', 'bottom-left');
 }
 
 function encodeId(s) {
@@ -1560,6 +1563,7 @@ function zoom_without_redraw() {
             scaleBar.update();
         } else {
             scaleBar.remove();
+            alertify.notify(i18next.t('app_page.notification.warning_deactivation_scalebar'), 'warning', 5);
         }
     }
     if (window.legendRedrawTimeout) {
@@ -1576,6 +1580,11 @@ function zoom_without_redraw() {
 
 function redraw_legends_symbols(targeted_node) {
     if (!targeted_node) var legend_nodes = document.querySelectorAll("#legend_root_symbol");else var legend_nodes = [targeted_node];
+
+    if (legend_nodes.length < 1) return;
+
+    var hide = svg_map.__zoom.k > 4;
+    var hidden = [];
 
     for (var i = 0; i < legend_nodes.length; ++i) {
         var layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
@@ -1600,8 +1609,17 @@ function redraw_legends_symbols(targeted_node) {
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
         var new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
         new_lgd.style.visibility = visible;
-        if (display_value) new_lgd.setAttribute("display", display_value);
         if (transform_param) new_lgd.setAttribute("transform", transform_param);
+
+        if (display_value) {
+            new_lgd.setAttribute("display", display_value);
+            hidden.push(true);
+        } else if (hide) {
+            new_lgd.setAttribute("display", "none");
+        }
+    }
+    if (hide && !(hidden.length == legend_nodes.length)) {
+        alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
     }
 }
 
@@ -9037,6 +9055,7 @@ function add_layout_feature(selected_feature) {
         current_layers["Sphere"] = { "type": "Polygon", "n_features": 1, "stroke-width-const": +options.stroke_width.slice(0, -2), "fill_color": { single: options.fill } };
         map.append("g").attrs({ id: "Sphere", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum({ type: "Sphere" }).styles({ fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke }).attrs({ id: 'sphere', d: path, 'clip-path': 'url(#clip)' });
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
+        alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
         zoom_without_redraw();
         setSphereBottom();
     } else if (selected_feature == "graticule") {
@@ -9057,6 +9076,7 @@ function add_layout_feature(selected_feature) {
             dasharray: options.stroke_dasharray
         };
         create_li_layer_elem("Graticule", null, "Line", "sample");
+        alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
         up_legends();
         zoom_without_redraw();
     } else if (selected_feature == "scale") {

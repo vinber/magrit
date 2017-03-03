@@ -790,3 +790,12 @@ img.layout_ft_ico:hover {
     cursor: grabbing;
     cursor: -webkit-grabbing;
 }
+
+.alertify-notifier .ajs-message.ajs-warning {
+    background: rgb(228, 144, 83) !important;
+}
+
+.alertify-notifier .ajs-message {
+    font: 13px Roboto !important;
+    padding: 12px !important;
+}
