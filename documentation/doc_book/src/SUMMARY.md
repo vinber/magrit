@@ -20,6 +20,7 @@
 - [Habillage de la carte](./layout_fr.md)
 - [Export des données](./export_fr.md)
 - [Jeux de données](./datasets_fr.md)
+- [Respect de la vie privée](./privacy.md)
 
 -----------
 [Contributeurs](misc/contributors.md)

@@ -304,7 +304,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
           .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
           .classed("active", false);
 
-
       rug_plot = overlay_svg.append('g')
           .style('display', 'none');
       rug_plot.selectAll('.indiv')
