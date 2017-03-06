@@ -1,9 +1,10 @@
 ## Magrit - Thematic cartography
 
-![png](magrit_app/static/img/logo_magrit2.png)  / [magrit.cnrs.fr](http://magrit.cnrs.fr)
-[![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)
+[![png](magrit_app/static/img/logo_magrit2.png)](http://magrit.cnrs.fr)    
+[magrit.cnrs.fr](http://magrit.cnrs.fr)    
+[![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)  
 
-"Magrit" is an online mapping application developped by UMS RIATE (http://www.ums-riate.fr).  
+"Magrit" is an online mapping application developped by UMS RIATE (http://www.riate.cnrs.fr).  
 This tool allows to produce **high quality thematic maps**.   
 All usual cartographic representations as well as many cartographic methods often difficult to implement (*smoothing*, *grids*, *discontinuities*, *cartograms*) are available.      Magrit intends to cover the entire processing chain in a single environment, from geographical data to graphic editing.
 
