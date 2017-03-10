@@ -58,6 +58,11 @@ $ pip3.5 install -r requirements-dev.txt
 $ python3.5 setup.py build_ext --inplace
 ```
 
+##### Launching the redis service :
+```bash
+$ sudo service redis-server start
+```
+
 ##### Launching the server application :
 ```bash
 $ python3.5 magrit_app/app.py -p 9999
@@ -80,6 +85,7 @@ $ py.test tests/test.py
 #### Example 2 - Installing for developpement
 ##### Installation / compilation of the extensions :
 ```bash
+$ sudo service redis-server start
 $ git clone https://github.com/riatelab/magrit
 $ cd magrit
 $ virtualenv venv -p /usr/bin/python3.5

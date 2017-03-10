@@ -1270,7 +1270,7 @@ const available_fonts = [
     ['Roboto', 'Roboto'],
     ['Scope One', 'Scope One'],
     ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-    ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
+    ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
     ['Verdana', 'Verdana,Geneva,sans-serif']
     ];
 

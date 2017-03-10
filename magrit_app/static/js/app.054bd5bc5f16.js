@@ -1038,7 +1038,7 @@ var discretiz_geostats_switch = new Map([["jenks", "getJenks"], ["equal_interval
 ["quantiles", "getQuantile"], ["arithmetic_progression", "getArithmeticProgression"], ["Q6", "getBreaksQ6"], ["geometric_progression", "getGeometricProgression"]]);
 
 // Reference to the available fonts that the user could select :
-var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
+var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
 // with the style-fonts.css file as we are using their order to lookup for their definition
@@ -11567,6 +11567,7 @@ var Textbox = function () {
 
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
+        this.buffer = undefined;
         this.id = new_id_txt_annot;
         return this;
     }
@@ -11584,23 +11585,32 @@ var Textbox = function () {
             if (existing_box) existing_box.remove();
 
             var current_options = {
-                size: inner_p.style("font-size"),
+                size: inner_p.style("font-size").split('px')[0],
                 color: inner_p.style("color"),
                 content: unescape(inner_p.html()),
                 transform_rotate: this.text_annot.attr('transform'),
                 x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-                font: "",
                 font_weight: inner_p.style('font-weight'),
                 font_style: inner_p.style('font-style'),
-                text_decoration: inner_p.style('text-decoration')
+                text_decoration: inner_p.style('text-decoration'),
+                buffer: self.buffer != undefined ? cloneObj(self.buffer) : undefined,
+                text_shadow: inner_p.style('text-shadow'),
+                font_family: self.font_family
             };
             current_options.font_weight = current_options.font_weight == "400" || current_options.font_weight == "" ? '' : 'bold';
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
-                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
+                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size + 'px',
+                        'font-weight': current_options.font_weight, 'text-decoration': current_options.text_decoration,
+                        'font-style': current_options.font_style, 'text-shadow': current_options.text_shadow });
                     self.fontsize = current_options.size;
-                    // self.rotate = current_options.rotate;
+                    self.font_family = current_options.font_family;
                     self.text_annot.attr('transform', current_options.transform_rotate);
+                    self.buffer = current_options.buffer;
+                } else {
+                    if (!buffer_txt_chk.node().checked) {
+                        self.buffer = undefined;
+                    }
                 }
             });
             var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
@@ -11637,6 +11647,7 @@ var Textbox = function () {
             var options_font = box_content.append('p'),
                 font_select = options_font.insert("select").on("change", function () {
                 inner_p.style("font-family", this.value);
+                self.font_family = this.value;
             });
 
             available_fonts.forEach(function (font) {
@@ -11651,11 +11662,11 @@ var Textbox = function () {
                 inner_p.style("font-size", self.fontsize + "px");
             });
 
-            options_font.append("input").attrs({ type: "color", id: "font_color", value: current_options.color }).style('width', '60px').on("change", function () {
+            options_font.append("input").attrs({ type: "color", id: "font_color", value: rgb2hex(current_options.color) }).style('width', '60px').on("change", function () {
                 inner_p.style("color", this.value);
             });
 
-            var options_format = box_content.append('p'),
+            var options_format = box_content.append('p').style('text-align', 'center'),
                 btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
                 btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
                 btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
@@ -11663,11 +11674,47 @@ var Textbox = function () {
             var content_modif_zone = box_content.append("p");
             content_modif_zone.append("span").html(i18next.t("app_page.text_box_edit_box.content"));
             content_modif_zone.append("span").html("<br>");
-            var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
+            // let textarea = content_modif_zone.append("textarea")
+            content_modif_zone.append("textarea").attr("id", "annotation_content").styles({ "margin": "5px 0px 0px", "width": "100%" }).on("keyup", function () {
                 inner_p.html(this.value);
             });
-            textarea = textarea.node();
+            // textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
+
+            var buffer_text_zone = box_content.append('p');
+            var buffer_txt_chk = buffer_text_zone.append('input').attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null }).on('change', function () {
+                if (this.checked) {
+                    buffer_color.style('display', '');
+                    if (self.buffer == undefined) {
+                        self.buffer = { color: "#fff", size: 1 };
+                    } else {
+                        var color = self.buffer.color,
+                            size = self.buffer.size;
+                        inner_p.style('text-shadow', "-" + size + "px 0px 0px " + color + ", 0px " + size + "px 0px " + color + ", " + size + "px 0px 0px " + color + ", 0px -" + size + "px 0px " + color);
+                    }
+                } else {
+                    buffer_color.style('display', 'none');
+                    inner_p.style('text-shadow', 'none');
+                }
+            });
+
+            buffer_text_zone.append('label').attrs({ for: 'buffer_txt_chk' }).text(i18next.t('app_page.text_box_edit_box.buffer'));
+
+            var buffer_color = buffer_text_zone.append('input').style('float', 'right').style('display', current_options.buffer != undefined ? '' : 'none').attrs({ type: 'color', value: current_options.buffer != undefined ? current_options.buffer.color : "#fff" }).on('change', function () {
+                self.buffer.color = this.value;
+                var color = self.buffer.color,
+                    size = self.buffer.size;
+                inner_p.style('text-shadow', "-" + size + "px 0px 0px " + color + ", 0px " + size + "px 0px " + color + ", " + size + "px 0px 0px " + color + ", 0px -" + size + "px 0px " + color);
+            });
+            // buffer_text_zone2.append('input')
+            //     .attrs({type: 'number', class: 'without_spinner', value: current_options.buffer != undefined ? current_options.buffer.size : 1})
+            //     .on('change', function(){
+            //         self.buffer.size = +this.value;
+            //         let color = self.buffer.color, size = self.buffer.size;
+            //         let t = `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`;
+            //         inner_p.style('text-shadow', t);
+            //     });
+
             btn_bold.on('click', function () {
                 if (this.classList.contains('active')) {
                     this.classList.remove('active');
@@ -13844,11 +13891,13 @@ function apply_user_preferences(json_pref) {
             if (map_config.layout_features.text_annot) {
                 for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
                     var _ft3 = map_config.layout_features.text_annot[_i8];
-                    var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
-                    var inner_p = new_txt_bow.text_annot.select("p").node();
+                    var new_txt_box = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
+                    var inner_p = new_txt_box.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
                     inner_p.style = _ft3.style;
-                    new_txt_bow.text_annot.attr('transform', _ft3.transform);
+                    new_txt_box.text_annot.attr('transform', _ft3.transform);
+                    new_txt_box.fontsize = +_ft3.style.split('font-size: ')[1].split('px')[0];
+                    new_txt_box.font_family = _ft3.style.split('font-family: ')[1].split(';')[0];
                 }
             }
             if (map_config.layout_features.single_symbol) {

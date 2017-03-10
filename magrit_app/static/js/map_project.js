@@ -500,11 +500,13 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.text_annot){
                 for(let i = 0; i < map_config.layout_features.text_annot.length; i++) {
                     let ft = map_config.layout_features.text_annot[i];
-                    let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
-                    let inner_p = new_txt_bow.text_annot.select("p").node();
+                    let new_txt_box = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
+                    let inner_p = new_txt_box.text_annot.select("p").node();
                     inner_p.innerHTML = ft.content;
                     inner_p.style = ft.style;
-                    new_txt_bow.text_annot.attr('transform', ft.transform);
+                    new_txt_box.text_annot.attr('transform', ft.transform);
+                    new_txt_box.fontsize = +ft.style.split('font-size: ')[1].split('px')[0];
+                    new_txt_box.font_family = ft.style.split('font-family: ')[1].split(';')[0];
                 }
             }
             if(map_config.layout_features.single_symbol){
