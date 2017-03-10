@@ -107,9 +107,9 @@ function setUpInterface(resume_project) {
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
 
-    var proj_select = proj_options.append("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px" }).on("change", function () {
+    var proj_select = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "width": "calc(100% + 20px)" }).on("change", function () {
         current_proj_name = this.value;
         change_projection(this.value);
     });
@@ -140,7 +140,8 @@ function setUpInterface(resume_project) {
 
     proj_select.node().value = "NaturalEarth";
 
-    proj_options.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
+    var proj_options2 = proj_options.append("div");
+    proj_options2.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
         min: -180.0, max: 180.0, step: 0.1 }).styles({ width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
         'margin': "0 0 0 15px",
         "vertical-align": "text-top" }).on("input", function () {
@@ -148,7 +149,7 @@ function setUpInterface(resume_project) {
         document.getElementById("proj_center_value_txt").value = +this.value;
     });
 
-    proj_options.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
+    proj_options2.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
         min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "40px", "margin": "0 10px",
         "color": " white", "background-color": "#000",
         "vertical-align": "calc(20%)" }).on("change", function () {
@@ -164,9 +165,9 @@ function setUpInterface(resume_project) {
         handle_proj_center_button([this.value, null, null]);
         document.getElementById("form_projection_center").value = this.value;
     });
-    proj_options.append("span").style("vertical-align", "calc(20%)").html("°");
+    proj_options2.append("span").style("vertical-align", "calc(20%)").html("°");
 
-    proj_options.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
+    proj_options2.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -10005,7 +10006,7 @@ function createStyleBoxLabel(layer_name) {
     var label_sizes = popup.append("p").attr("class", "line_elem");
     label_sizes.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_size"));
     label_sizes.insert("span").style("float", "right").html(" px");
-    label_sizes.insert("input").style("float", "right").attr("type", "number").attr("value", +current_layers[layer_name].default_size.replace("px", "")).on("change", function () {
+    label_sizes.insert("input").styles({ "float": "right", "width": "70px" }).attr("type", "number").attr("value", +current_layers[layer_name].default_size.replace("px", "")).on("change", function () {
         var size = this.value + "px";
         current_layers[layer_name].default_size = size;
         selection.style("font-size", size);
@@ -10013,7 +10014,7 @@ function createStyleBoxLabel(layer_name) {
 
     var default_color = popup.insert("p").attr("class", "line_elem");
     default_color.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_color"));
-    default_color.insert("input").attrs({ "type": "color", "value": current_layers[layer_name].fill_color }).on("change", function () {
+    default_color.insert("input").style('float', 'right').attrs({ "type": "color", "value": current_layers[layer_name].fill_color }).on("change", function () {
         current_layers[layer_name].fill_color = this.value;
         selection.transition().style("fill", this.value);
     });
@@ -10598,7 +10599,7 @@ function createStyleBox(layer_name) {
         (function () {
             var rendered_field = current_layers[layer_name].rendered_field;
 
-            popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+            popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
                 var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
                     _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
                     cats = _prepare_categories_a4[0],
@@ -11113,7 +11114,7 @@ function make_style_box_indiv_label(label_node) {
     var existing_box = document.querySelector(".styleTextAnnotation");
     if (existing_box) existing_box.remove();
 
-    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv")).then(function (confirmed) {
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), { widthFitContent: true, draggable: true }).then(function (confirmed) {
         if (!confirmed) {
             label_node.style.fontsize = current_options.size;
             label_node.textContent = current_options.content;
@@ -11121,18 +11122,25 @@ function make_style_box_indiv_label(label_node) {
             label_node.style.fontFamily = current_options.font;
         }
     });
-    var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size")).append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0, -2) }).style("width", "70px").on("change", function () {
+    var box_content = d3.select(".styleTextAnnotation").select(".modal-content").style("width", "300px").select(".modal-body").insert('div');
+    var a = box_content.append("p").attr('class', 'line_elem');
+    a.insert('span').html(i18next.t("app_page.func_options.label.font_size"));
+    a.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0, -2) }).styles({ "width": "70px", "float": "right" }).on("change", function () {
         label_node.style.fontSize = this.value + "px";
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.content")).append("input").attrs({ "value": label_node.textContent, id: "label_content" }).on("keyup", function () {
+    var b = box_content.append("p").attr('class', 'line_elem');
+    b.insert('span').html(i18next.t("app_page.func_options.label.content"));
+    b.append("input").attrs({ "value": label_node.textContent, id: "label_content" }).styles({ "width": "70px", "float": "right" }).on("keyup", function () {
         label_node.textContent = this.value;
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.common.color")).append("input").attrs({ "type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color" }).on("change", function () {
+    var c = box_content.append("p").attr('class', 'line_elem');
+    c.insert('span').html(i18next.t("app_page.func_options.common.color"));
+    c.append("input").attrs({ "type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color" }).styles({ "width": "70px", "float": "right" }).on("change", function () {
         label_node.style.fill = this.value;
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"));
-    var selec_fonts = box_content.append("select").on("change", function () {
+    var d = box_content.append("p").attr('class', 'line_elem');
+    d.insert('span').html(i18next.t("app_page.func_options.label.font_type"));
+    var selec_fonts = d.append("select").style('float', 'right').on("change", function () {
         label_node.style.fontFamily = this.value;
     });
 

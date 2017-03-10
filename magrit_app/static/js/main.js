@@ -116,11 +116,13 @@ function setUpInterface(resume_project)
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
 
-    let proj_select = proj_options.append("select")
+    let proj_select = proj_options.append("div")
+            .attrs({class: 'styled-select'})
+            .insert("select")
             .attrs({class: 'i18n', 'id': 'form_projection'})
-            .styles({"align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px"})
+            .styles({"width": "calc(100% + 20px)"})
             .on("change", function(){
                 current_proj_name = this.value;
                 change_projection(this.value);
@@ -130,7 +132,9 @@ function setUpInterface(resume_project)
     }
     proj_select.node().value = "NaturalEarth";
 
-    proj_options.append("input")
+
+    let proj_options2 = proj_options.append("div");
+    proj_options2.append("input")
         .attrs({type: "range", id: "form_projection_center", value: 0.0,
                 min: -180.0, max: 180.0, step: 0.1})
         .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
@@ -141,7 +145,7 @@ function setUpInterface(resume_project)
             document.getElementById("proj_center_value_txt").value = +this.value;
         });
 
-    proj_options.append("input")
+    proj_options2.append("input")
         .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                 min: -180.0, max: 180.0, value: 0, step: "any"})
         .styles({width: "40px", "margin": "0 10px",
@@ -159,11 +163,11 @@ function setUpInterface(resume_project)
             handle_proj_center_button([this.value, null, null]);
             document.getElementById("form_projection_center").value = this.value;
         });
-    proj_options.append("span")
+    proj_options2.append("span")
         .style("vertical-align", "calc(20%)")
         .html("°");
 
-    proj_options.append('img')
+    proj_options2.append('img')
         .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
         .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px'})
         .on('click', createBoxCustomProjection);

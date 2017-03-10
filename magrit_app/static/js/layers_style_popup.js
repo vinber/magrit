@@ -319,7 +319,7 @@ function createStyleBoxLabel(layer_name){
             .style("float", "right")
             .html(" px");
     label_sizes.insert("input")
-            .style("float", "right")
+            .styles({"float": "right", "width": "70px"})
             .attr("type", "number")
             .attr("value", +current_layers[layer_name].default_size.replace("px", ""))
             .on("change", function(){
@@ -332,6 +332,7 @@ function createStyleBoxLabel(layer_name){
     default_color.append("span")
             .html(i18next.t("app_page.layer_style_popup.labels_default_color"));
     default_color.insert("input")
+            .style('float', 'right')
             .attrs({"type": "color", "value": current_layers[layer_name].fill_color})
             .on("change", function(){
                 current_layers[layer_name].fill_color = this.value;
@@ -1014,10 +1015,11 @@ function createStyleBox(layer_name){
     } else if (renderer == "Categorical"){
         let rendered_field = current_layers[layer_name].rendered_field;
 
-        popup.insert('p').style("margin", "auto").html("")
+        popup.insert('p')
+            .styles({"margin": "auto", "text-align": "center"})
+            .html("")
             .append("button")
             .attr("class", "button_disc")
-            .styles({"font-size": "0.8em", "text-align": "center"})
             .html(i18next.t("app_page.layer_style_popup.choose_colors"))
             .on("click", function(){
                 let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
@@ -1613,7 +1615,7 @@ function make_style_box_indiv_label(label_node){
     let existing_box = document.querySelector(".styleTextAnnotation");
     if(existing_box) existing_box.remove();
 
-    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), {widthFitContent: true, draggable: true})
         .then( confirmed => {
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
@@ -1622,26 +1624,35 @@ function make_style_box_indiv_label(label_node){
                 label_node.style.fontFamily = current_options.font;
             }
         });
-    let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-        .append("input")
+    var box_content = d3.select(".styleTextAnnotation")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body").insert('div');
+    let a = box_content.append("p").attr('class', 'line_elem');
+    a.insert('span').html(i18next.t("app_page.func_options.label.font_size"));
+    a.append("input")
         .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
-        .style("width", "70px")
+        .styles({"width": "70px", "float": "right"})
         .on("change", function(){
             label_node.style.fontSize = this.value + "px";
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.content"))
-        .append("input").attrs({"value": label_node.textContent, id: "label_content"})
+    let b = box_content.append("p").attr('class', 'line_elem');
+    b.insert('span').html(i18next.t("app_page.func_options.label.content"));
+    b.append("input").attrs({"value": label_node.textContent, id: "label_content"})
+        .styles({"width": "70px", "float": "right"})
         .on("keyup", function(){
             label_node.textContent = this.value;
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.common.color"))
-        .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+    let c = box_content.append("p").attr('class', 'line_elem');
+    c.insert('span').html(i18next.t("app_page.func_options.common.color"));
+    c.append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+        .styles({"width": "70px", "float": "right"})
         .on("change", function(){
             label_node.style.fill = this.value;
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
-    let selec_fonts = box_content.append("select")
+    let d = box_content.append("p").attr('class', 'line_elem');
+    d.insert('span').html(i18next.t("app_page.func_options.label.font_type"));
+    let selec_fonts = d.append("select")
+        .style('float', 'right')
         .on("change", function(){
             label_node.style.fontFamily = this.value;
         });
