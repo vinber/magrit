@@ -1016,7 +1016,8 @@ var _app = {
     targeted_layer_added: false,
     current_functionnality: undefined,
     layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    edit_state_to_cancel: []
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1583,7 +1584,7 @@ function redraw_legends_symbols(targeted_node) {
 
     if (legend_nodes.length < 1) return;
 
-    var hide = svg_map.__zoom.k > 4;
+    var hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
     var hidden = [];
 
     for (var i = 0; i < legend_nodes.length; ++i) {
@@ -8010,6 +8011,13 @@ function getTranslateNewLegend() {
         return max_rect;
     }
 }
+
+function remove_all_edit_state() {
+    for (var i = _app.edit_state_to_cancel.length - 1; i > -1; i--) {
+        var func = _app.edit_state_to_cancel.pop();
+        func();
+    }
+}
 "use strict";
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
@@ -9376,7 +9384,9 @@ function handleClickAddEllipse() {
         ellipse_id = "user_ellipse_" + ellipse_id;
     }
     document.body.style.cursor = "not-allowed";
+    var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair").on("click", function () {
+        msg.dismiss();
         start_point = [d3.event.layerX, d3.event.layerY];
         tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
         setTimeout(function () {
@@ -9390,7 +9400,9 @@ function handleClickAddEllipse() {
 
 function handleClickTextBox(text_box_id) {
     document.body.style.cursor = "not-allowed";
+    var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair").on("click", function () {
+        msg.dismiss();
         map.style("cursor", "").on("click", null);
         document.body.style.cursor = "";
         var text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
@@ -9440,15 +9452,19 @@ function handleClickAddArrow() {
         arrow_id = "arrow_" + arrow_id;
     }
     document.body.style.cursor = "not-allowed";
+    var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
     map.style("cursor", "crosshair").on("click", function () {
         if (!start_point) {
             start_point = [d3.event.layerX, d3.event.layerY];
             tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
+            msg.dismiss();
+            msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow2'), 'warning', 0);
         } else {
             end_point = [d3.event.layerX, d3.event.layerY];
             tmp_end_point = map.append("rect").attrs({ x: end_point[0] - 2, y: end_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
         }
         if (start_point && end_point) {
+            msg.dismiss();
             setTimeout(function () {
                 tmp_start_point.remove();
                 tmp_end_point.remove();
@@ -11314,13 +11330,17 @@ var UserArrow = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
+            remove_all_edit_state();
             var self = this,
                 line = self.arrow.node().querySelector("line"),
                 zoom_params = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
+            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
             // New behavior if the user click on the lock to move on the map :
             var cleanup_edit_state = function cleanup_edit_state() {
+                msg.dismiss();
                 self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
                 self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
                 map.select('#arrow_start_pt').remove();
@@ -11334,15 +11354,20 @@ var UserArrow = function () {
                     d3.event.stopPropagation();
                     self.handle_ctrl_pt();
                 });
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
                 // Restore the previous behiavor for the 'lock' button :
                 document.getElementById("hand_button").onclick = handle_click_hand;
             };
 
-            document.getElementById("hand_button").onclick = function () {
-                cleanup_edit_state();
+            _app.edit_state_to_cancel.push(cleanup_edit_state);
+
+            // Change the behavior of the 'lock' button :
+            document.getElementById('hand_button').onclick = function () {
+                remove_all_edit_state();
                 handle_click_hand();
             };
-
             // Desactive the ability to drag the arrow :
             self.arrow.on('.drag', null);
             // Desactive the ability to zoom/move on the map ;
@@ -11371,9 +11396,6 @@ var UserArrow = function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
                 cleanup_edit_state();
-                if (!map_locked) {
-                    handle_click_hand('unlock');
-                }
             });
         }
     }, {
@@ -12266,25 +12288,32 @@ var UserEllipse = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
+            remove_all_edit_state();
             var self = this,
                 ellipse_elem = self.ellipse.node().querySelector("ellipse"),
                 zoom_param = svg_map.__zoom,
                 map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
+            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
             var cleanup_edit_state = function cleanup_edit_state() {
                 map.selectAll('.ctrl_pt').remove();
+                msg.dismiss();
                 self.ellipse.call(self.drag_behavior);
                 self.ellipse.on('dblclick', function () {
                     d3.event.preventDefault();
                     d3.event.stopPropagation();
                     self.handle_ctrl_pt();
                 });
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
                 document.getElementById('hand_button').onclick = handle_click_hand;
             };
-
+            _app.edit_state_to_cancel.push(cleanup_edit_state);
             // Change the behavior of the 'lock' button :
             document.getElementById('hand_button').onclick = function () {
-                cleanup_edit_state();
+                remove_all_edit_state();
                 handle_click_hand();
             };
 
@@ -12312,9 +12341,6 @@ var UserEllipse = function () {
                 d3.event.stopPropagation();
                 d3.event.preventDefault();
                 cleanup_edit_state();
-                if (!map_locked) {
-                    handle_click_hand('unlock');
-                }
             });
         }
     }]);

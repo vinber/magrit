@@ -91,7 +91,11 @@
             "success_sphere_added": "Success: sphere added!",
             "success_graticule_added": "Success: graticule added!",
             "warning_deactivation_scalebar": "Scale bar disabled",
-            "warning_deactivation_prop_symbol_legend": "Proportionnal symbols legend disabled"
+            "warning_deactivation_prop_symbol_legend": "Proportionnal symbols legend disabled",
+            "instruction_click_map": "Please click on the map to add the element",
+            "instruction_click_map_arrow1": "Click on the map to locate the arrow start point",
+            "instruction_click_map_arrow2": "Click on the map to locate the arrow end point",
+            "instruction_modify_feature": "Please use the red dots to modify the feature"
         },
         "section1": {
             "title": "Add your data",

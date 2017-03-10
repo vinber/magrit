@@ -1207,7 +1207,8 @@ var _app = {
     targeted_layer_added: false,
     current_functionnality: undefined,
     layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    edit_state_to_cancel: []
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1847,7 +1848,7 @@ function redraw_legends_symbols(targeted_node){
 
     if(legend_nodes.length < 1) return;
 
-    let hide = svg_map.__zoom.k > 4;
+    let hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
     let hidden = [];
 
     for(let i=0; i<legend_nodes.length; ++i){

@@ -114,13 +114,17 @@ class UserArrow {
     }
 
     handle_ctrl_pt(){
+      remove_all_edit_state();
       let self = this,
           line = self.arrow.node().querySelector("line"),
           zoom_params = svg_map.__zoom,
           map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
+      let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
       // New behavior if the user click on the lock to move on the map :
       let cleanup_edit_state = () => {
+          msg.dismiss();
           self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
           self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
           map.select('#arrow_start_pt').remove();
@@ -134,15 +138,20 @@ class UserArrow {
               d3.event.stopPropagation();
               self.handle_ctrl_pt()
           });
+          if(!map_locked){
+              handle_click_hand('unlock');
+          }
           // Restore the previous behiavor for the 'lock' button :
           document.getElementById("hand_button").onclick = handle_click_hand;
       }
 
-      document.getElementById("hand_button").onclick = function(){
-          cleanup_edit_state();
+      _app.edit_state_to_cancel.push(cleanup_edit_state);
+
+      // Change the behavior of the 'lock' button :
+      document.getElementById('hand_button').onclick = function(){
+          remove_all_edit_state();
           handle_click_hand();
       };
-
       // Desactive the ability to drag the arrow :
       self.arrow.on('.drag', null);
       // Desactive the ability to zoom/move on the map ;
@@ -177,9 +186,6 @@ class UserArrow {
           d3.event.stopPropagation();
           d3.event.preventDefault();
           cleanup_edit_state();
-          if(!map_locked){
-              handle_click_hand('unlock');
-          }
       });
     }
 
@@ -1146,25 +1152,32 @@ class UserEllipse {
      }
 
     handle_ctrl_pt(){
+        remove_all_edit_state();
         let self = this,
             ellipse_elem = self.ellipse.node().querySelector("ellipse"),
             zoom_param = svg_map.__zoom,
             map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
 
+        let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
         let cleanup_edit_state = () => {
             map.selectAll('.ctrl_pt').remove();
+            msg.dismiss();
             self.ellipse.call(self.drag_behavior);
             self.ellipse.on('dblclick', () => {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
                 self.handle_ctrl_pt();
             });
+            if(!map_locked){
+                handle_click_hand('unlock');
+            }
             document.getElementById('hand_button').onclick = handle_click_hand;
         };
-
+        _app.edit_state_to_cancel.push(cleanup_edit_state);
         // Change the behavior of the 'lock' button :
         document.getElementById('hand_button').onclick = function(){
-            cleanup_edit_state();
+            remove_all_edit_state();
             handle_click_hand();
         };
 
@@ -1199,9 +1212,6 @@ class UserEllipse {
             d3.event.stopPropagation();
             d3.event.preventDefault();
             cleanup_edit_state();
-            if(!map_locked){
-                handle_click_hand('unlock');
-            }
         });
     }
  }
