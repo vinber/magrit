@@ -499,3 +499,11 @@ function getTranslateNewLegend(){
       return max_rect;
     }
 }
+
+
+function remove_all_edit_state(){
+    for(let i = _app.edit_state_to_cancel.length - 1; i > -1; i--){
+        let func = _app.edit_state_to_cancel.pop();
+        func();
+    }
+}

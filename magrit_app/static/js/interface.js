@@ -1471,8 +1471,10 @@ function handleClickAddEllipse(){
         ellipse_id = "user_ellipse_" + ellipse_id;
     }
     document.body.style.cursor = "not-allowed";
+    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair")
         .on("click", function(){
+            msg.dismiss();
             start_point = [d3.event.layerX, d3.event.layerY];
             tmp_start_point = map.append("rect")
                 .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
@@ -1488,8 +1490,10 @@ function handleClickAddEllipse(){
 
 function handleClickTextBox(text_box_id){
     document.body.style.cursor = "not-allowed";
+    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair")
         .on("click", function(){
+            msg.dismiss();
             map.style("cursor", "").on("click", null);
             document.body.style.cursor = "";
             let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
@@ -1537,6 +1541,7 @@ function handleClickAddArrow(){
         arrow_id = "arrow_" + arrow_id;
     }
     document.body.style.cursor = "not-allowed";
+    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
     map.style("cursor", "crosshair")
         .on("click", function(){
             if(!start_point){
@@ -1544,6 +1549,8 @@ function handleClickAddArrow(){
                 tmp_start_point = map.append("rect")
                     .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
                     .style("fill", "red");
+                msg.dismiss();
+                msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow2'), 'warning', 0);
             } else {
                 end_point = [d3.event.layerX, d3.event.layerY];
                 tmp_end_point = map.append("rect")
@@ -1551,6 +1558,7 @@ function handleClickAddArrow(){
                     .style("fill", "red");
             }
             if(start_point && end_point){
+                msg.dismiss();
                 setTimeout(function(){
                     tmp_start_point.remove();
                     tmp_end_point.remove();
