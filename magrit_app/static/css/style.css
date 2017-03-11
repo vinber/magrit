@@ -964,3 +964,7 @@ img.layout_ft_ico:hover {
    width: 340px;
    color: #fff;
 }
+
+#form_projection * {
+  background-color: black;
+}
