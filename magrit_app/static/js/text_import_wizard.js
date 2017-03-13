@@ -18,7 +18,6 @@ function createBoxTextImportWizard(file){
   	dialog.style.minWidth = '380px';
 
     let clean_up_box = function(){
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', fn_cb);

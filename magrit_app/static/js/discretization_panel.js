@@ -839,7 +839,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         deferred.resolve(
             [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -848,7 +847,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     let _onclose = () => {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -952,7 +950,6 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         _onclose = () => {
             deferred.resolve(false);
             document.removeEventListener('keydown', helper_esc_key_twbs);
-            modal_box.close();
             container.remove();
             let p = reOpenParent();
             if(!p) overlay_under_modal.hide();
@@ -963,7 +960,6 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
         deferred.resolve([nb_class, color_map, colorByFeature]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -986,10 +982,8 @@ function display_categorical_box(data_layer, layer_name, field, cats){
 
 function reOpenParent(css_selector){
     let parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox' );
-    if(parent_style_box){
-        parent_style_box.classList.add("in");
-        parent_style_box.setAttribute("aria-hidden", false);
-        parent_style_box.style.display = "block";
+    if(parent_style_box && parent_style_box.modal && parent_style_box.modal.show){
+        parent_style_box.modal.show();
         return true;
     } else {
         return false;

@@ -206,6 +206,7 @@ function add_field_table(table, layer_name, parent){
                             }
                         }
                         if(parent){
+                            parent.modal_box.show();
                             parent.display_table(layer_name);
                         }
                     }, function(error){
@@ -220,7 +221,8 @@ function add_field_table(table, layer_name, parent){
     var current_fields = Object.getOwnPropertyNames(table),
         fields_type = type_col(layer_name),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i), // Only allow letters (lower & upper cases), number and underscore in the field name
-        box_content = d3.select(".addFieldBox").select(".modal-body").append("div"),
+        container = document.querySelector(".twbs > .addFieldBox"),
+        box_content = d3.select(container).select(".modal-body").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 
@@ -347,6 +349,7 @@ var boxExplore2 = {
               .attrs({id: "add_field_button", class: "button_st3"})
               .html(i18next.t("app_page.explore_box.button_add_field"))
               .on('click', () => {
+                  this.modal_box.hide();
                   add_field_table(the_table, table_name, this);
                });
         }
@@ -409,7 +412,7 @@ var boxExplore2 = {
         this.nb_features = undefined;
         this.columns_names = undefined;
         this.tables = this.get_available_tables()
-        let modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
         let container = document.getElementById("browse_data_box");
         this.box_table = d3.select(container).select(".modal-body");
         this.top_buttons = this.box_table.append('p')
@@ -417,7 +420,6 @@ var boxExplore2 = {
 
         let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); },
             _onclose = () => {
-                modal_box.close();
                 container.remove();
                 overlay_under_modal.hide();
                 document.removeEventListener('keydown', fn_cb);

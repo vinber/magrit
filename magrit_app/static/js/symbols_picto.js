@@ -76,8 +76,10 @@ var display_box_symbol_typo = function(layer, field, categories){
                     display: "inline-block", "background-size": "32px 32px",
                     'vertical-align': 'middle'})
             .on("click", function(){
+                modal_box.hide();
                 box_choice_symbol(res_symbols, ".dialog")
                   .then(confirmed => {
+                    modal_box.show();
                     if(confirmed){
                         this.style.backgroundImage = confirmed;
                     }
@@ -101,32 +103,27 @@ var display_box_symbol_typo = function(layer, field, categories){
 
     let deferred = Q.defer(),
         container = document.getElementById("symbol_box"),
-        _onclose = () => {
-            deferred.resolve(false);
-            document.removeEventListener('keydown', helper_esc_key_twbs);
-            modal_box.close();
-            container.remove();
-            overlay_under_modal.hide();
-          }
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt){
-          evt = evt || window.event;
-          let isEscape = ("key" in evt) ? (evt.key == "Escape" || evt.key == "Esc") : (evt.keyCode == 27);
-          if (isEscape) {
-              evt.preventDefault();
-              _onclose();
-          }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+        fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
+
+    let clean_up_box = function(){
+        container.remove();
+        overlay_under_modal.hide();
+        document.removeEventListener('keydown', fn_cb);
+    };
+
+    let _onclose = () => {
+        deferred.resolve(false);
+        clean_up_box();
+    };
+
     container.querySelector(".btn_ok").onclick = function(){
         let symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
-        modal_box.close();
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-    }
+        clean_up_box();
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
     overlay_under_modal.display();
     return deferred.promise;
 };
@@ -216,7 +213,6 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
     let deferred = Q.defer();
     let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
     let clean_up_box = function(){
-        modal_box.close();
         container.remove();
         if(parent_css_selector) {
             reOpenParent(parent_css_selector);

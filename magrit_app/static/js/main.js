@@ -175,7 +175,7 @@ function setUpInterface(resume_project)
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', function(){
@@ -185,19 +185,19 @@ function setUpInterface(resume_project)
         });
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', load_map_template);
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
         .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
         .on('click', function(){
@@ -207,7 +207,7 @@ function setUpInterface(resume_project)
     const_options.append("button")
         .attrs({id: "help_btn", class: "const_buttons i18n",
                 "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-                "data-tooltip-position": "bottom"})
+                "data-placement": "bottom"})
         .styles({cursor: "pointer", background: "transparent"})
         .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
         .on("click", function(){
@@ -318,7 +318,7 @@ function setUpInterface(resume_project)
                         .attr("id","section1")
                         .attr("class", "i18n")
                         .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
-                        .attr("data-tooltip-position", "right");
+                        .attr("data-placement", "right");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
     accordion3.append("div").attrs({id: "section3"}),
@@ -391,7 +391,7 @@ function setUpInterface(resume_project)
     window.layer_list = section3.append("div")
         .attrs({ class: "i18n",
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-                "data-tooltip-position": "right"})
+                "data-placement": "right"})
         .append("ul").attrs({id: "sortable", class: "layer_list"});
 
     let dv3 = section3.append("div")
@@ -400,13 +400,13 @@ function setUpInterface(resume_project)
     dv3.append("img")
         .attrs({"src": "/static/img/b/addsample_t.png", class: 'i18n',
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
-                "data-tooltip-position": "right"})
+                "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
         .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
-                "data-tooltip-position": "right"})
+                "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 
@@ -909,7 +909,7 @@ function setUpInterface(resume_project)
         .append('p').style("margin", "auto")
             .insert("button")
             .attrs((d,i) => ({
-              "data-tooltip-position": d.tooltip_position,
+              "data-placement": d.tooltip_position,
               "class": d.class,
               "data-i18n": d.i18n,
               "id": d.id})
@@ -1017,7 +1017,6 @@ function bindTooltips(dataAttr="tooltip-title"){
             duration: 50,
             delay: 100,
             container: document.getElementById("twbs"),
-            placement: tooltips_elem[i].getAttribute("data-tooltip-position")
         });
     }
 }
@@ -1532,7 +1531,7 @@ function make_dialog_container(id_box, title, class_box){
                       +'<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>'
                       +'</div>'
         });
-        modal_box.open();
+        modal_box.show();
         return modal_box;
 }
 
@@ -1605,14 +1604,14 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                       +'<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>'
                       +'</div>'
         });
-        modal_box.open();
+        modal_box.show();
+        container.modal = modal_box;
         overlay_under_modal.display();
         let func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
         let clean_up_box = () => {
             document.removeEventListener('keydown', func_cb);
             existing.delete(new_id);
             overlay_under_modal.hide();
-            modal_box.close();
             container.remove();
         };
         let _onclose_false = () => {

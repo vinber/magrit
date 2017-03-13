@@ -349,7 +349,6 @@ function make_box_type_fields(layer_name){
         container = document.getElementById("box_type_fields");
 
     let clean_up_box = () => {
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', helper_esc_key_twbs);

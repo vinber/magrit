@@ -108,7 +108,6 @@ const createBoxCustomProjection = function(){
 	}
 
 	let clean_up_box = () => {
-			modal_box.close();
 			container.remove();
 			overlay_under_modal.hide();
 			document.removeEventListener('keydown', fn_cb);

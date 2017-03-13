@@ -151,9 +151,11 @@ function createStyleBoxTypoSymbols(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
 
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
@@ -280,9 +282,10 @@ function createStyleBoxLabel(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
@@ -366,9 +369,11 @@ function createStyleBoxGraticule(layer_name){
             if(confirmed){ null; } else { null; }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
     let color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -621,9 +626,10 @@ function createStyleBox_Line(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
         let color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field
@@ -655,11 +661,13 @@ function createStyleBox_Line(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        current_layers[layer_name].rendered_field,
                                        current_layers[layer_name].colors_breaks.length,
                                        current_layers[layer_name].options_disc)
                    .then(function(confirmed){
+                       container.modal.show();
                        if(confirmed){
                            rendering_params = {
                                nb_class: confirmed[0],
@@ -719,11 +727,13 @@ function createStyleBox_Line(layer_name){
                 .attr("class", "button_disc")
                 .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
                 .on("click", function(){
+                    container.modal.hide();
                     display_discretization_links_discont(layer_name,
                                                          current_layers[layer_name].rendered_field,
                                                          current_layers[layer_name].breaks.length,
                                                          "user_defined")
                         .then(function(result){
+                            container.modal.show();
                             if(result){
                                 let serie = result[0],
                                     sizes = result[1].map(ft => ft[1]),
@@ -765,11 +775,13 @@ function createStyleBox_Line(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization_links_discont(layer_name,
                                                      "disc_value",
                                                      current_layers[layer_name].breaks.length,
                                                      "user_defined")
                     .then(function(result){
+                        container.modal.show();
                         if(result){
                             let serie = result[0],
                                 sizes = result[1].map(ft => ft[1]);
@@ -957,9 +969,10 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     if(type === "Point"){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -1022,9 +1035,11 @@ function createStyleBox(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_colors"))
             .on("click", function(){
+                container.modal.hide();
                 let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
                 display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
                     .then(function(confirmed){
+                        container.modal.show();
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
@@ -1042,12 +1057,14 @@ function createStyleBox(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        current_layers[layer_name].rendered_field,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                    .then(function(confirmed){
+                       container.modal.show();
                        if(confirmed){
                            rendering_params = {
                                nb_class: confirmed[0],
@@ -1074,12 +1091,14 @@ function createStyleBox(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        field_to_discretize,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                     .then(function(confirmed){
+                        container.modal.show();
                         if(confirmed){
                             rendering_params = {
                                 nb_class: confirmed[0],
@@ -1403,9 +1422,11 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -1415,12 +1436,14 @@ function createStyleBox_ProbSymbol(layer_name){
         popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))
             .append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                   .then(function(confirmed){
+                    container.modal.show();
                     if(confirmed){
                         rendering_params = {
                           nb_class: confirmed[0],

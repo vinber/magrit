@@ -171,23 +171,23 @@ function setUpInterface(resume_project) {
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
         window.localStorage.removeItem("magrit_project");
         window.removeEventListener("beforeunload", beforeUnloadWindow);
         location.reload();
     });
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
         window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
     });
 
     const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
         "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+        "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
         if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
@@ -286,7 +286,7 @@ function setUpInterface(resume_project) {
         b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
         accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
 
-    window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-tooltip-position", "right");
+    window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
     window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
     accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
@@ -328,16 +328,16 @@ function setUpInterface(resume_project) {
 
     window.layer_list = section3.append("div").attrs({ class: "i18n",
         "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-        "data-tooltip-position": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
+        "data-placement": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
 
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
     dv3.append("img").attrs({ "src": "/static/img/b/addsample_t.png", class: 'i18n',
         "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
-        "data-tooltip-position": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
+        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
     dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
         "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
-        "data-tooltip-position": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
     var section4 = d3.select("#section4");
     var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
@@ -741,7 +741,7 @@ function setUpInterface(resume_project) {
 
     var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
         return {
-            "data-tooltip-position": d.tooltip_position,
+            "data-placement": d.tooltip_position,
             "class": d.class,
             "data-i18n": d.i18n,
             "id": d.id };
@@ -846,8 +846,7 @@ function bindTooltips() {
             animation: "slideNfade",
             duration: 50,
             delay: 100,
-            container: document.getElementById("twbs"),
-            placement: tooltips_elem[i].getAttribute("data-tooltip-position")
+            container: document.getElementById("twbs")
         });
     }
 }
@@ -1296,7 +1295,7 @@ function make_dialog_container(id_box, title, class_box) {
     var modal_box = new Modal(container, {
         content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + i18next.t("app_page.common.confirm") + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>' + '</div>'
     });
-    modal_box.open();
+    modal_box.show();
     return modal_box;
 }
 
@@ -1360,7 +1359,8 @@ var make_confirm_dialog2 = function (class_box, title, options) {
             keyboard: false,
             content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '<p>' + html_content + '</p>' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>' + '</div>'
         });
-        modal_box.open();
+        modal_box.show();
+        container.modal = modal_box;
         overlay_under_modal.display();
         var func_cb = function func_cb(evt) {
             helper_esc_key_twbs_cb(evt, _onclose_false);
@@ -1369,7 +1369,6 @@ var make_confirm_dialog2 = function (class_box, title, options) {
             document.removeEventListener('keydown', func_cb);
             existing.delete(new_id);
             overlay_under_modal.hide();
-            modal_box.close();
             container.remove();
         };
         var _onclose_false = function _onclose_false() {
@@ -3220,7 +3219,6 @@ var display_discretization = function display_discretization(layer_name, field_n
         }
         deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3229,7 +3227,6 @@ var display_discretization = function display_discretization(layer_name, field_n
     var _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3317,7 +3314,6 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3330,7 +3326,6 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3353,10 +3348,8 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 
 function reOpenParent(css_selector) {
     var parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
-    if (parent_style_box) {
-        parent_style_box.classList.add("in");
-        parent_style_box.setAttribute("aria-hidden", false);
-        parent_style_box.style.display = "block";
+    if (parent_style_box && parent_style_box.modal && parent_style_box.modal.show) {
+        parent_style_box.modal.show();
         return true;
     } else {
         return false;
@@ -3817,7 +3810,6 @@ var display_discretization_links_discont = function display_discretization_links
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent('.styleBox');
         if (!p) overlay_under_modal.hide();
@@ -3825,7 +3817,6 @@ var display_discretization_links_discont = function display_discretization_links
     var _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent('.styleBox');
         if (!p) overlay_under_modal.hide();
@@ -7413,7 +7404,6 @@ function make_box_type_fields(layer_name) {
         container = document.getElementById("box_type_fields");
 
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', helper_esc_key_twbs);
@@ -10008,7 +9998,8 @@ function createStyleBoxTypoSymbols(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
 
@@ -10116,7 +10107,8 @@ function createStyleBoxLabel(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
@@ -10175,7 +10167,9 @@ function createStyleBoxGraticule(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
+
     var color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input").style("float", "right").attrs({ type: "color", value: current_params.fill_color.single }).on("change", function () {
@@ -10389,7 +10383,8 @@ function createStyleBox_Line(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo") {
         (function () {
@@ -10417,7 +10412,9 @@ function createStyleBox_Line(layer_name) {
         })();
     } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, current_layers[layer_name].options_disc).then(function (confirmed) {
+                container.modal.show();
                 if (confirmed) {
                     rendering_params = {
                         nb_class: confirmed[0],
@@ -10469,7 +10466,9 @@ function createStyleBox_Line(layer_name) {
             });
             threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
             popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+                container.modal.hide();
                 display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                    container.modal.show();
                     if (result) {
                         (function () {
                             var serie = result[0],
@@ -10510,7 +10509,9 @@ function createStyleBox_Line(layer_name) {
         });
         disc_part.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
         popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                container.modal.show();
                 if (result) {
                     (function () {
                         var serie = result[0],
@@ -10680,7 +10681,8 @@ function createStyleBox(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (type === "Point") {
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -10728,12 +10730,15 @@ function createStyleBox(layer_name) {
             var rendered_field = current_layers[layer_name].rendered_field;
 
             popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                container.modal.hide();
+
                 var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
                     _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
                     cats = _prepare_categories_a4[0],
                     _ = _prepare_categories_a4[1];
 
                 display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
@@ -10749,9 +10754,11 @@ function createStyleBox(layer_name) {
         })();
     } else if (renderer == "Choropleth") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
             //  "quantiles",
             current_layers[layer_name].options_disc).then(function (confirmed) {
+                container.modal.show();
                 if (confirmed) {
                     rendering_params = {
                         nb_class: confirmed[0],
@@ -10775,9 +10782,11 @@ function createStyleBox(layer_name) {
         (function () {
             var field_to_discretize = "densitykm";
             popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
                 display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
                 //  "quantiles",
                 current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0],
@@ -11067,15 +11076,19 @@ function createStyleBox_ProbSymbol(layer_name) {
         zoom_without_redraw();
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
+
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
                 display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
                 //  "quantiles",
                 current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0],
@@ -14454,7 +14467,9 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         'vertical-align': 'middle' }).on("click", function () {
         var _this = this;
 
+        modal_box.hide();
         box_choice_symbol(res_symbols, ".dialog").then(function (confirmed) {
+            modal_box.show();
             if (confirmed) {
                 _this.style.backgroundImage = confirmed;
             }
@@ -14472,32 +14487,29 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
 
     var deferred = Q.defer(),
         container = document.getElementById("symbol_box"),
-        _onclose = function _onclose() {
-        deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
+        fn_cb = function fn_cb(evt) {
+        helper_esc_key_twbs_cb(evt, _onclose);
+    };
+
+    var clean_up_box = function clean_up_box() {
         container.remove();
         overlay_under_modal.hide();
+        document.removeEventListener('keydown', fn_cb);
     };
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.preventDefault();
-            _onclose();
-        }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+
+    var _onclose = function _onclose() {
+        deferred.resolve(false);
+        clean_up_box();
+    };
+
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
-        modal_box.close();
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        clean_up_box();
     };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
     overlay_under_modal.display();
     return deferred.promise;
 };
@@ -14565,7 +14577,6 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         helper_esc_key_twbs_cb(evt, _onclose);
     };
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         if (parent_css_selector) {
             reOpenParent(parent_css_selector);
@@ -14698,7 +14709,6 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		}
 
 		var clean_up_box = function clean_up_box() {
-				modal_box.close();
 				container.remove();
 				overlay_under_modal.hide();
 				document.removeEventListener('keydown', fn_cb);
@@ -14958,6 +14968,7 @@ function add_field_table(table, layer_name, parent) {
                     }
                 }
                 if (parent) {
+                    parent.modal_box.show();
                     parent.display_table(layer_name);
                 }
             }, function (error) {
@@ -14974,7 +14985,8 @@ function add_field_table(table, layer_name, parent) {
         fields_type = type_col(layer_name),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i),
         // Only allow letters (lower & upper cases), number and underscore in the field name
-    box_content = d3.select(".addFieldBox").select(".modal-body").append("div"),
+    container = document.querySelector(".twbs > .addFieldBox"),
+        box_content = d3.select(container).select(".modal-body").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 
@@ -15091,6 +15103,7 @@ var boxExplore2 = {
         // TODO : allow to add_field on all the layer instead of just targeted / result layers :
         if (this.tables.get(table_name)) {
             this.top_buttons.insert("button").attrs({ id: "add_field_button", class: "button_st3" }).html(i18next.t("app_page.explore_box.button_add_field")).on('click', function () {
+                _this.modal_box.hide();
                 add_field_table(the_table, table_name, _this);
             });
         }
@@ -15192,7 +15205,7 @@ var boxExplore2 = {
         this.nb_features = undefined;
         this.columns_names = undefined;
         this.tables = this.get_available_tables();
-        var modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
         var container = document.getElementById("browse_data_box");
         this.box_table = d3.select(container).select(".modal-body");
         this.top_buttons = this.box_table.append('p').styles({ "margin-left": "15px", "display": "inline", "font-size": "12px" });
@@ -15201,7 +15214,6 @@ var boxExplore2 = {
             helper_esc_key_twbs_cb(evt, _onclose);
         },
             _onclose = function _onclose() {
-            modal_box.close();
             container.remove();
             overlay_under_modal.hide();
             document.removeEventListener('keydown', fn_cb);
@@ -15237,7 +15249,6 @@ function createBoxTextImportWizard(file) {
     dialog.style.minWidth = '380px';
 
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', fn_cb);
