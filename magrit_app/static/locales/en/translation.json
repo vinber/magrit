@@ -33,6 +33,7 @@
             "error_invalid_map_project": "Invalid/corrupted project-file.",
             "error_invalid_empty": "The layer to load seems to be empty.",
             "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
+            "warning_not_adapted_classification": "The choosen classification method doesn't seems to fit the serie distribution.",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",

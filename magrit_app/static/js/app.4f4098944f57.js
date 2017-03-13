@@ -2546,6 +2546,10 @@ function getBreaks(values, type, nb_class) {
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         serie.setClassManually(breaks);
+    } else if (type == "S5") {
+        var _tmp = getBreaksS5(serie, serie.precision);
+        breaks = _tmp.breaks;
+        serie.setClassManually(breaks);
     } else {
         var _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
@@ -2774,11 +2778,53 @@ var display_discretization = function display_discretization(layer_name, field_n
                 breaks[0] = serie.min();
                 breaks[6] = serie.max();
                 serie.setClassManually(breaks);
-            } else if (type === "user_defined") {
-                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
-                nb_class = tmp.breaks.length - 1;
+            } else if (type === "S5") {
+                var tmp = getBreaksS5(serie, serie.precision);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
+                var should_warn = void 0;
+                var min = serie.min(),
+                    max = serie.max();
+                if (breaks[1] < min) {
+                    should_warn = true;
+                    breaks.shift();
+                    stock_class.shift();
+                    if (breaks[1] < min) {
+                        breaks.shift();
+                        stock_class.shift();
+                    }
+                } else if (breaks[4] > max) {
+                    should_warn = true;
+                    breaks.pop();
+                    stock_class.pop();
+                    if (breaks[3] > max) {
+                        breaks.pop();
+                        stock_class.pop();
+                    }
+                }
+                if (breaks[0] < min) breaks[0] = min;
+                if (breaks[breaks.length - 1] > max) breaks[breaks.length - 1] = max;
+                if (should_warn) {
+                    swal({ title: "",
+                        text: i18next.t("app_page.common.warning_not_adapted_classification"),
+                        type: "warning",
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#DD6B55"
+                    }).then(function (_) {
+                        return null;
+                    }, function (dismiss) {
+                        return null;
+                    });
+                }
+                serie.setClassManually(breaks);
+            } else if (type === "user_defined") {
+                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+                stock_class = tmp.stock_class;
+                breaks = tmp.breaks;
+
+                nb_class = tmp.breaks.length - 1;
+                txt_nb_class.node().value = +nb_class;
 
                 if (breaks[0] > serie.min()) breaks[0] = serie.min();
                 if (breaks[nb_class] < serie.max()) breaks[nb_class] = serie.max();
@@ -2942,9 +2988,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     }
 
     values = serie.sorted();
-    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"],
-    //     [i18next.t("app_page.common.std_dev"), "std_dev"],
-    [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
+    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"], [i18next.t("app_page.common.S5"), "S5"], [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
     if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
@@ -2957,6 +3001,10 @@ var display_discretization = function display_discretization(layer_name, field_n
             nb_class = 6;
             txt_nb_class.node().value = 6;
             document.getElementById("nb_class_range").value = 6;
+        } else if (type === "S5") {
+            nb_class = 5;
+            txt_nb_class.node().value = 5;
+            document.getElementById("nb_class_range").value = 5;
         }
         redisplay.compute();
         redisplay.draw();
@@ -2980,6 +3028,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         if (type === "Q6") {
             this.value = 6;
             txt_nb_class.node().value = 6;
+            return;
+        } else if (type === "S5") {
+            this.value = 5;
+            txt_nb_class.node().value = 5;
             return;
         }
         nb_class = +this.value;
@@ -3085,8 +3137,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         var old_nb_class = nb_class;
         user_break_list = document.getElementById("user_breaks_area").value;
         type = "user_defined";
-        nb_class = user_break_list.split('-').length - 1;
-        txt_nb_class.node().value = +nb_class;
+        // nb_class = user_break_list.split('-').length - 1;
+        // txt_nb_class.node().value = +nb_class;
         // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
         document.getElementById("nb_class_range").value = nb_class;
         redisplay.compute();
@@ -7781,6 +7833,50 @@ function getBreaksQ6(serie) {
             return round_value(val, precision);
         });
     }
+    return {
+        breaks: breaks,
+        stock_class: stock_class
+    };
+}
+
+function getBreaksS5(serie) {
+    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+    var min = serie.min(),
+        max = serie.max(),
+        mean = serie.mean(),
+        std_dev = serie.stddev(),
+        range = serie.max() - serie.min(),
+        range_left = mean - min,
+        range_right = max - mean;
+
+    var ref = Math.max(range_left, range_right);
+    var class_range = ref / 2.5;
+    // var breaks = [
+    //   [mean - (class_range * 2.5), mean - (class_range * 1.5)]
+    //   [mean - (class_range * 1.5), mean - (class_range * 0.5)],
+    //   [mean - (class_range * 0.5), mean + (class_range * 0.5)],
+    //   [mean + (class_range * 0.5), mean + (class_range * 1.5)],
+    //   [mean + (class_range * 1.5), mean + (class_range * 2.5)]
+    // ];
+    var breaks = [mean - class_range * 2.5, mean - class_range * 1.5, mean - class_range * 0.5, mean + class_range * 0.5, mean + class_range * 1.5, mean + class_range * 2.5];
+    var values = serie.sorted();
+    var stock_class = [0, 0, 0, 0, 0];
+    for (var i = 0, len_i = values.length; i < len_i; ++i) {
+        var val = values[i];
+        if (val <= breaks[1]) {
+            stock_class[0] = stock_class[0] + 1;
+        } else if (val <= breaks[2]) {
+            stock_class[1] = stock_class[1] + 1;
+        } else if (val <= breaks[3]) {
+            stock_class[2] = stock_class[2] + 1;
+        } else if (val <= breaks[4]) {
+            stock_class[3] = stock_class[3] + 1;
+        } else if (val <= breaks[5]) {
+            stock_class[4] = stock_class[4] + 1;
+        }
+    }
+
     return {
         breaks: breaks,
         stock_class: stock_class
