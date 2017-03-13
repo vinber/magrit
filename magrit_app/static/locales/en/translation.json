@@ -8,7 +8,7 @@
             "too_large_input": "Too large input file (should currently be under 16Mb)",
             "alert_upload1": "Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile",
             "alert_upload_shp": "All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload",
-            "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML detected)",
+            "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML/GML detected)",
             "layer_success": "Layer successfully added to the map",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
             "error_message": "Something wrong happened - Current operation has been aborted.",
@@ -205,8 +205,10 @@
             "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}} | Median : {{median}}<br> Std Deviation : {{stddev}}"
         },
         "tooltips": {
-            "section1": "Drop a GeoJSON, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
-            "section3": "Drop a layout GeoJSON, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
+            "section1": "Drop a GeoJSON, GML, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
+            "section3": "Drop a layout GeoJSON, GML, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
+            "section3_add_layout": "Add layout layer",
+            "section3_add_layout_sample": "Add sample layout layer",
             "load_project_file": "Load a project file",
             "save_file": "Save project as a file",
             "new_project": "Create a new empty project",

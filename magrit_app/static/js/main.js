@@ -321,10 +321,7 @@ function setUpInterface(resume_project)
                         .attr("data-tooltip-position", "right");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div")
-        .attrs({id: "section3", class: "i18n",
-                "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-                "data-tooltip-position": "right"}),
+    accordion3.append("div").attrs({id: "section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -392,17 +389,24 @@ function setUpInterface(resume_project)
     let section3 = d3.select("#section3");
 
     window.layer_list = section3.append("div")
-                             .append("ul").attrs({id: "sortable", class: "layer_list"});
+        .attrs({ class: "i18n",
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+                "data-tooltip-position": "right"})
+        .append("ul").attrs({id: "sortable", class: "layer_list"});
 
     let dv3 = section3.append("div")
-                    .style("padding-top", "10px").html('');
+        .style("padding-top", "10px").html('');
 
     dv3.append("img")
-        .attr("src", "/static/img/b/addsample_t.png")
+        .attrs({"src": "/static/img/b/addsample_t.png", class: 'i18n',
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+                "data-tooltip-position": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom'})
+        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+                "data-tooltip-position": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 
@@ -420,9 +424,7 @@ function setUpInterface(resume_project)
             .attrs({"id": "title", "class": "list_elem_section4 i18n",
                     "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
             .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
-            .on("keyup", function(){
-                handle_title(this.value);
-            });
+            .on("keyup", handle_title);
     e.append("span")
             .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
@@ -434,9 +436,7 @@ function setUpInterface(resume_project)
     f.append("input")
             .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
-            .on("change", function(){
-                handle_bg_color(this.value);
-            });
+            .on("change", handle_bg_color);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -619,7 +619,7 @@ function setUpInterface(resume_project)
         .html("°");
 
     g.append("input")
-        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner",
+        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
                 value: 0, min: 0, max: 360, step: "any"})
         .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
         .on("change", function(){
@@ -640,14 +640,14 @@ function setUpInterface(resume_project)
         });
 
       g.append("input")
-              .attrs({type: "range", id: "form_rotate", value: 0,
-                      min: 0, max: 360, step: 1})
-              .styles({width: "80px", margin: "0px 10px 9px 15px",
-                       float: "right", "vertical-align": "middle"})
-              .on("input", function(){
-                  rotate_global(this.value);
-                  document.getElementById("canvas_rotation_value_txt").value = this.value;
-              });
+          .attrs({type: "range", id: "form_rotate", value: 0,
+                  min: 0, max: 360, step: 1})
+          .styles({width: "80px", margin: "0px 10px 9px 15px",
+                   float: "right", "vertical-align": "middle"})
+          .on("input", function(){
+              rotate_global(this.value);
+              document.getElementById("canvas_rotation_value_txt").value = this.value;
+          });
 
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});

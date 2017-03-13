@@ -289,9 +289,7 @@ function setUpInterface(resume_project) {
     window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-tooltip-position", "right");
     window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div").attrs({ id: "section3", class: "i18n",
-        "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-        "data-tooltip-position": "right" }), accordion4.append("div").attr("id", "section4");
+    accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
     accordion5.append("div").attr("id", "section5");
 
     var dv1 = section1.append("div"),
@@ -328,12 +326,18 @@ function setUpInterface(resume_project) {
 
     var section3 = d3.select("#section3");
 
-    window.layer_list = section3.append("div").append("ul").attrs({ id: "sortable", class: "layer_list" });
+    window.layer_list = section3.append("div").attrs({ class: "i18n",
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+        "data-tooltip-position": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
 
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
-    dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom' }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+    dv3.append("img").attrs({ "src": "/static/img/b/addsample_t.png", class: 'i18n',
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+        "data-tooltip-position": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
+    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+        "data-tooltip-position": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
     var section4 = d3.select("#section4");
     var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
@@ -344,16 +348,12 @@ function setUpInterface(resume_project) {
 
     var e = dv4.append("li").styles({ margin: "1px", padding: "4px", "text-align": "center" });
     e.append("input").attrs({ "id": "title", "class": "list_elem_section4 i18n",
-        "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", function () {
-        handle_title(this.value);
-    });
+        "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", handle_title);
     e.append("span").styles({ display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub" }).html(sys_run_button.replace("submit", "Title properties")).on("click", handle_title_properties);
 
     var f = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     f.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.background_color");
-    f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", function () {
-        handle_bg_color(this.value);
-    });
+    f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", handle_bg_color);
 
     var a1 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     a1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_width");
@@ -502,7 +502,7 @@ function setUpInterface(resume_project) {
 
     g.append("span").style("float", "right").html("°");
 
-    g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner",
+    g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
         value: 0, min: 0, max: 360, step: "any" }).styles({ width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px" }).on("change", function () {
         var val = +this.value,
             old_value = document.getElementById("form_rotate").value;
