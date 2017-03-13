@@ -399,7 +399,8 @@
             "font_color": "Couleur de police :<br>",
             "font_family": "Famille de police :<br>",
             "xpos": "Position en X (% depuis de la gauche) :<br>",
-            "ypos": "Position en Y (% depuis le haut) :<br>"
+            "ypos": "Position en Y (% depuis le haut) :<br>",
+            "buffer": "Tampon autour du texte"
         },
         "symbol_typo_box": {
             "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",

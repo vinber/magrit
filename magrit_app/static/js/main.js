@@ -2130,7 +2130,9 @@ function handle_title_properties(){
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
         position_y: title.attr("y"),
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-        font_family: title.style("font-family")
+        font_family: title.style("font-family"),
+        stroke: title.style('stroke'),
+        stroke_width: title.style('stroke-width')
         };
     title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
 
@@ -2142,7 +2144,8 @@ function handle_title_properties(){
                     .styles({
                         "font-size": title_props.size, "fill": title_props.color,
                         "font-family": title_props.font_family, 'font-style': title_props.font_style,
-                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+                        'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
                         });
             });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
@@ -2205,7 +2208,50 @@ function handle_title_properties(){
           this.classList.add('active');
           title.style('text-decoration', 'underline');
       }
-  });
+    });
+
+    let hasBuffer = title_props.stroke !== "none";
+    let buffer_section1 = box_content.append("p");
+    let buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
+    box_content.append('p').style('clear', 'both');
+
+    buffer_section1.append('input')
+        .attrs({type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null})
+        .on('change', function(){
+            if(this.checked){
+                buffer_section2.style('display', '');
+                title.style('stroke', buffer_color.node().value)
+                    .style('stroke-width', buffer_width.node().value + 'px');
+                console.log(buffer_color.attr('value'), buffer_color.node().value);
+            } else {
+                buffer_section2.style('display', 'none');
+                title.style('stroke', 'none')
+                    .style('stroke-width', '1px');
+            }
+        });
+
+    buffer_section1.append('label')
+        .attrs({for: 'title_buffer_chkbox'})
+        .text(i18next.t('app_page.title_box.buffer'));
+
+    let buffer_color = buffer_section2.insert('input')
+        .style('float', 'left')
+        .attrs({type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff"})
+        .on('change', function(){
+            title.style('stroke', this.value);
+        });
+
+    buffer_section2.insert('span')
+        .style('float', 'right')
+        .html(' px');
+
+    let buffer_width = buffer_section2.insert('input')
+        .styles({'float': 'right', 'width': '60px'})
+        .attrs({type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1})
+        .on('change', function(){
+            title.style('stroke-width', this.value + 'px');
+        });
+
     return;
 }
 

@@ -406,7 +406,8 @@
             "font_color": "Font color :<br>",
             "font_family": "Font family :<br>",
             "xpos": "x position (% from the left side) :<br>",
-            "ypos": "y position (% from the top) :<br>"
+            "ypos": "y position (% from the top) :<br>",
+            "buffer": "Text buffer"
         },
         "symbol_typo_box": {
             "title": "Choose symbols for fields categories - {{ layer }} - {{ nb_features }} features",
