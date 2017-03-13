@@ -202,3 +202,24 @@ def repairCoordsPole(geojson):
             if(len(geom['coordinates']) > 2):
                 # interiors  = poly[1:]
                 on_geom(geom['coordinates'][1:])
+
+def multi_to_single(gdf, columns=None):
+    values = gdf[[i for i in gdf.columns if i != 'geometry']]
+    geom = gdf.geometry
+    geoms, attrs = [], []
+
+    for i in range(len(gdf)):
+        try:  # if hasattr(geom, '__len__'):
+            for single_geom in geom.iloc[i]:
+                geoms.append(single_geom)
+                attrs.append(values.iloc[i])
+        except:  # else:
+            geoms.append(geom.iloc[i])
+            attrs.append(values.iloc[i])
+
+    return GeoDataFrame(
+        attrs,
+        index=range(len(geoms)),
+        geometry=geoms,
+        columns=columns or [i for i in gdf.columns if i != 'geometry']
+        )

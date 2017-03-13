@@ -171,14 +171,19 @@ function display_error_num_field(){
 * as well as the "resolution" field in grid functionnality.
 *
 */
-var get_first_guess_span = function(){
+var get_first_guess_span = function(func_name){
     let bbox = _target_layer_file.bbox,
+        layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
         abs = Math.abs;
+    if(layer_name == "us_states" && func_name == "grid"){
+        return 500;
+    }
+    let const_mult = func_name == "grid" ? 0.08 : 0.04;
     let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
                                   [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
         height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
                                    [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
-        val = Math.max(width_km , height_km) * 0.05;
+        val = Math.max(width_km , height_km) * const_mult;
         return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 }
 
@@ -1160,7 +1165,7 @@ var fields_Stewart = {
                 field_selec.append("option").text(field).attr("value", field);
                 field_selec2.append("option").text(field).attr("value", field);
             });
-            document.getElementById("stewart_span").value = get_first_guess_span();
+            document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
             field_selec.on("change", function(){
                 document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
@@ -2938,7 +2943,7 @@ var fields_griddedMap = {
           )
         });
         output_name.attr('value', ["Gridded", layer].join('_'));
-        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
+        document.getElementById("Gridded_cellsize").value = get_first_guess_span('grid');
         section2.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){

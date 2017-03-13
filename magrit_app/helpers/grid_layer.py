@@ -9,7 +9,7 @@ from shapely.ops import cascaded_union
 import rtree
 import numpy as np
 import ujson as json
-from .geo import repairCoordsPole, TopologicalError
+from .geo import repairCoordsPole, TopologicalError, multi_to_single
 
 
 def idx_generator_func(bounds):
@@ -23,9 +23,9 @@ def make_index(bounds):
 
 
 def get_grid_layer(input_file, height, field_name, grid_shape="square"):
-    proj4_eck4 = ("+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 "
-                  "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-
+    proj_robinson = (
+            "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+            "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
     gdf = GeoDataFrame.from_file(input_file)
 
     if not gdf[field_name].dtype in (int, float):
@@ -36,14 +36,16 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
 
     mask = GeoSeries(
         cascaded_union(gdf.geometry.buffer(0)),
+#        cascaded_union(gdf.geometry),
         crs=gdf.crs
-        ).to_crs(crs=proj4_eck4).values[0]
+        ).to_crs(crs=proj_robinson).values[0]
+
     try:
         mask = mask.buffer(1).buffer(-1)
     except TopologicalError:
         mask = mask.buffer(0)
 
-    gdf.to_crs(crs=proj4_eck4, inplace=True)
+    gdf.to_crs(crs=proj_robinson, inplace=True)
 
     res_geoms = {
         "square": get_square_dens_grid2,
@@ -83,8 +85,12 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
     y_bottom_origin = ymin - height
 
     half_height = (height / 2)
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
+    idx_intersects = index.intersection
     array_values = gdf[field_name].values
 
     res = []
@@ -98,7 +104,7 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
             y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)
             y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)
 
-            idx_poly = list(index.intersection(
+            idx_poly = list(idx_intersects(
                 (x1, y1, x3, y3), objects='raw'))
             if idx_poly:
                 p = mask.intersection(Polygon([
@@ -107,7 +113,7 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
                         ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    areas_part = geoms[idx].intersection(p).area.values / geoms[idx].area.values
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
                     density = (array_values[idx] * areas_part).sum() / p.area
                     res.append((p, density))
     return res
@@ -164,8 +170,12 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
     y_bottom_origin = ymin - height
 
     half_height = (height / 2)
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
+    idx_intersects = index.intersection
     array_values = gdf[field_name].values
 
     xvertexlo = 0.288675134594813 * height
@@ -184,7 +194,7 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
             y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)	# mid
             y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)	# lo
 
-            idx_poly = list(index.intersection(
+            idx_poly = list(idx_intersects(
                 (x1, y1, x4, y3), objects='raw'))
             if idx_poly:
                 p = mask.intersection(Polygon([
@@ -193,8 +203,7 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
                     ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    intersected_geoms = geoms[idx]
-                    areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
                     density = (array_values[idx] * areas_part).sum() / p.area
                     res.append((p, density))
     return res
@@ -257,7 +266,10 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
     y_top_origin = ymax
     y_bottom_origin = ymax - height
 
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
     idx_intersects = index.intersection
     array_values = gdf[field_name].values
@@ -276,8 +288,8 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
                         ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    intersected_geoms = geoms[idx]
-                    areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
+#                    intersected_geoms = geoms[idx]
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
                     density = (array_values[idx] * areas_part).sum() / p.area
                     res.append((p, density))
 
@@ -287,6 +299,49 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
         x_right_origin = x_right_origin + height
 
     return res
+
+
+#def get_square_dens_grid2(gdf, height, field_name, mask):
+#    xmin, ymin, xmax, ymax = gdf.total_bounds
+#    rows = ceil((ymax-ymin) / height)
+#    cols = ceil((xmax-xmin) / height)
+#
+#    x_left_origin = xmin
+#    x_right_origin = xmin + height
+#    y_top_origin = ymax
+#    y_bottom_origin = ymax - height
+#
+#    area_values = gdf.geometry.area
+#    geoms = gdf.geometry
+#    index = make_index([g.bounds for g in geoms])
+#    idx_intersects = index.intersection
+#    array_values = gdf[field_name].values
+#
+#    res = []
+#    for countcols in range(cols):
+#        y_top = y_top_origin
+#        y_bottom = y_bottom_origin
+#        for countrows in range(rows):
+#            idx_poly = list(idx_intersects(
+#                (x_left_origin, y_bottom, x_right_origin, y_top), objects='raw'))
+#            if idx_poly:
+#                p = mask.intersection(Polygon([
+#                        (x_left_origin, y_top), (x_right_origin, y_top),
+#                        (x_right_origin, y_bottom), (x_left_origin, y_bottom)
+#                        ]))
+#                if p:
+#                    idx = geoms[idx_poly].intersects(p).index
+#                    intersected_geoms = geoms[idx]
+#                    areas_part = intersected_geoms.intersection(p).area.values / area_values[idx]
+#                    density = (array_values[idx] * areas_part).sum() / p.area
+#                    res.append((p, density))
+#
+#            y_top = y_top - height
+#            y_bottom = y_bottom - height
+#        x_left_origin = x_left_origin + height
+#        x_right_origin = x_right_origin + height
+#
+#    return res
 
 # def get_square_dens_grid(gdf, height, field_name):
 #     xmin, ymin, xmax, ymax = gdf.total_bounds
