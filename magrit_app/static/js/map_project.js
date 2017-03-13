@@ -426,10 +426,12 @@ function apply_user_preferences(json_pref){
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
             reproj_symbol_layer();
-            let desired_order = layers.map( i => i.layer_name);
-            reorder_elem_list_layer(desired_order);
-            desired_order.reverse();
-            reorder_layers(desired_order);
+            if(layers.length > 1){
+                let desired_order = layers.map( i => i.layer_name);
+                reorder_elem_list_layer(desired_order);
+                desired_order.reverse();
+                reorder_layers(desired_order);
+            }
             apply_layout_lgd_elem();
             if(map_config.canvas_rotation){
                 document.getElementById("form_rotate").value = map_config.canvas_rotation;

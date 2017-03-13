@@ -348,7 +348,9 @@ function setUpInterface(resume_project) {
 
     var e = dv4.append("li").styles({ margin: "1px", padding: "4px", "text-align": "center" });
     e.append("input").attrs({ "id": "title", "class": "list_elem_section4 i18n",
-        "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", handle_title);
+        "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", function () {
+        handle_title(this.value);
+    });
     e.append("span").styles({ display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub" }).html(sys_run_button.replace("submit", "Title properties")).on("click", handle_title_properties);
 
     var f = dv4.append("li").styles({ margin: "1px", padding: "4px" });
@@ -13964,12 +13966,14 @@ function apply_user_preferences(json_pref) {
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
             reproj_symbol_layer();
-            var desired_order = layers.map(function (i) {
-                return i.layer_name;
-            });
-            reorder_elem_list_layer(desired_order);
-            desired_order.reverse();
-            reorder_layers(desired_order);
+            if (layers.length > 1) {
+                var desired_order = layers.map(function (i) {
+                    return i.layer_name;
+                });
+                reorder_elem_list_layer(desired_order);
+                desired_order.reverse();
+                reorder_layers(desired_order);
+            }
             apply_layout_lgd_elem();
             if (map_config.canvas_rotation) {
                 document.getElementById("form_rotate").value = map_config.canvas_rotation;

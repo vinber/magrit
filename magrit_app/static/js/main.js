@@ -424,7 +424,7 @@ function setUpInterface(resume_project)
             .attrs({"id": "title", "class": "list_elem_section4 i18n",
                     "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
             .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
-            .on("keyup", handle_title);
+            .on("keyup", function(){ handle_title(this.value); });
     e.append("span")
             .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
