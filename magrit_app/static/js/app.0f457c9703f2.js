@@ -1557,13 +1557,13 @@ function zoom_without_redraw() {
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
     }
 
-    if (scaleBar.displayed) {
-        if (proj.invert) {
-            scaleBar.update();
-        } else {
-            scaleBar.remove();
-        }
-    }
+    // if(scaleBar.displayed){
+    //     if(proj.invert) {
+    //         scaleBar.update();
+    //     } else {
+    //         scaleBar.remove()
+    //     }
+    // }
     if (window.legendRedrawTimeout) {
         clearTimeout(legendRedrawTimeout);
     }
@@ -2989,7 +2989,9 @@ var display_discretization = function display_discretization(layer_name, field_n
     }
 
     values = serie.sorted();
-    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"], [i18next.t("app_page.common.S5"), "S5"], [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
+    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"],
+    //  [i18next.t("app_page.common.S5"), "S5"],
+    [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
     if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
@@ -4014,7 +4016,7 @@ var get_first_guess_span = function get_first_guess_span(func_name) {
         layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
         abs = Math.abs;
     if (layer_name == "us_states" && func_name == "grid") {
-        return 500;
+        return 650;
     }
     var const_mult = func_name == "grid" ? 0.08 : 0.04;
     var width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
@@ -5413,14 +5415,7 @@ function fillMenu_Anamorphose() {
     doug1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations' }).html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
     doug1.insert('input').attrs({ type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations" });
 
-    // Options for Olson mode :
-    var o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    // o2.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    // o2.insert('input')
-    //   .style("width", "60px")
-    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
+    // let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
 
     [['Dougenik & al. (1985)', 'dougenik'], ['Olson (2005)', 'olson']].forEach(function (fun_name) {
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
@@ -6721,7 +6716,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
             options["choosed_name"] = new_user_layer_name;
         }
-
+        var rendered_field = field_n + "_densitykm";
         var n_layer_name = add_layer_topojson(data, options);
         if (!n_layer_name) return;
         var res_data = result_data[n_layer_name],
@@ -6730,7 +6725,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
             d_values = [];
 
         for (var i = 0; i < nb_ft; i++) {
-            d_values.push(+res_data[i]["densitykm"]);
+            d_values.push(+res_data[i][rendered_field]);
         }
 
         current_layers[n_layer_name].renderer = "Gridded";
@@ -6743,7 +6738,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
             colors: disc_result[3],
             colorsByFeature: disc_result[4],
             renderer: "Gridded",
-            rendered_field: "densitykm"
+            rendered_field: rendered_field
         };
         render_choro(n_layer_name, rendering_params);
         handle_legend(n_layer_name);
@@ -9069,9 +9064,6 @@ function add_layer_topojson(text) {
 function get_bbox_layer_path(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    // if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
-    //     bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    // } else {
     map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
@@ -10787,7 +10779,7 @@ function createStyleBox(layer_name) {
         });
     } else if (renderer == "Gridded") {
         (function () {
-            var field_to_discretize = "densitykm";
+            var field_to_discretize = current_layers[layer_name].rendered_field;
             popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
                 container.modal.hide();
                 display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
@@ -13588,6 +13580,7 @@ function get_map_template() {
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
+    map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -13988,7 +13981,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 250);
+        }, layers.length > 1 ? 125 : 250);
     };
 
     function apply_layout_lgd_elem() {
@@ -14687,6 +14680,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var lambda_section = content.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
 		lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 				handle_proj_center_button([this.value, null, null]);
 				document.getElementById('form_projection_center').value = this.value;
 				document.getElementById('proj_center_value_txt').value = this.value;
@@ -14695,12 +14689,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var phi_section = content.append('p').style('clear', 'both');
 		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
 		phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 				handle_proj_center_button([null, this.value, null]);
 		});
 
 		var gamma_section = content.append('p').style('clear', 'both');
 		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
 		gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 				handle_proj_center_button([null, null, this.value]);
 		});
 
@@ -14710,9 +14706,11 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 						handle_parallels_change([this.value, null]);
 				});
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 						handle_parallels_change([null, this.value]);
 				});
 		}
@@ -14734,9 +14732,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		};
 		container.querySelector(".btn_cancel").onclick = _onclose_cancel;
 		container.querySelector("#xclose").onclick = _onclose_cancel;
-		container.querySelector(".btn_ok").onclick = function () {
-				clean_up_box();
-		};
+		container.querySelector(".btn_ok").onclick = clean_up_box;
 		document.addEventListener('keydown', fn_cb);
 		overlay_under_modal.display();
 };

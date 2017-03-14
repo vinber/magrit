@@ -176,7 +176,7 @@ var get_first_guess_span = function(func_name){
         layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
         abs = Math.abs;
     if(layer_name == "us_states" && func_name == "grid"){
-        return 500;
+        return 650;
     }
     let const_mult = func_name == "grid" ? 0.08 : 0.04;
     let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
@@ -1565,14 +1565,7 @@ function fillMenu_Anamorphose(){
     doug1.insert('input')
       .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"});
 
-    // Options for Olson mode :
-    let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    // o2.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    // o2.insert('input')
-    //   .style("width", "60px")
-    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
+    // let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
 
      [['Dougenik & al. (1985)', 'dougenik'],
       ['Olson (2005)', 'olson']].forEach(function(fun_name){
@@ -2982,7 +2975,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
           if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
               options["choosed_name"] = new_user_layer_name;
           }
-
+          let rendered_field = field_n + "_densitykm"
           let n_layer_name = add_layer_topojson(data, options);
           if(!n_layer_name)
               return;
@@ -2992,7 +2985,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
               d_values = [];
 
           for(let i=0; i < nb_ft; i++){
-              d_values.push(+res_data[i]["densitykm"])
+              d_values.push(+res_data[i][rendered_field])
           }
 
           current_layers[n_layer_name].renderer = "Gridded";
@@ -3005,7 +2998,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
                   colors: disc_result[3],
                   colorsByFeature: disc_result[4],
                   renderer: "Gridded",
-                  rendered_field: "densitykm",
+                  rendered_field: rendered_field,
                       };
           render_choro(n_layer_name, rendering_params);
           handle_legend(n_layer_name);

@@ -64,6 +64,10 @@ const createBoxCustomProjection = function(){
 			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50})
 			.on("input", function(){
+					if(this.value > 180)
+							this.value = 180;
+					else if (this.value < -180)
+							this.value = -180;
 					handle_proj_center_button([this.value, null, null]);
 					document.getElementById('form_projection_center').value = this.value;
 					document.getElementById('proj_center_value_txt').value = this.value;
@@ -77,7 +81,13 @@ const createBoxCustomProjection = function(){
 	phi_section.append('input')
 			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5})
-			.on("input", function(){ handle_proj_center_button([null, this.value, null]); });
+			.on("input", function(){
+					if(this.value > 180)
+							this.value = 180;
+					else if (this.value < -180)
+							this.value = -180;
+					handle_proj_center_button([null, this.value, null]);
+			});
 
 	let gamma_section = content.append('p')
 			.style('clear', 'both');
@@ -87,7 +97,13 @@ const createBoxCustomProjection = function(){
 	gamma_section.append('input')
 			.styles({'width': '60px', 'float': 'right'})
 			.attrs({type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5})
-			.on("input", function(){ handle_proj_center_button([null, null, this.value]); });
+			.on("input", function(){
+					if(this.value > 90)
+							this.value = 90;
+					else if (this.value < -90)
+							this.value = -90;
+					handle_proj_center_button([null, null, this.value]);
+			});
 
 	if(current_proj_name.indexOf('Conic') > -1){
 			prev_parallels = proj.parallels();
@@ -100,11 +116,23 @@ const createBoxCustomProjection = function(){
 			inputs.append('input')
 					.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
 					.attrs({type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5})
-					.on("input", function(){ handle_parallels_change([this.value, null]); });
+					.on("input", function(){
+							if(this.value > 90)
+									this.value = 90;
+							else if (this.value < -90)
+									this.value = -90;
+							handle_parallels_change([this.value, null]);
+					});
 			inputs.append('input')
 					.styles({width: '60px', display: 'inline', 'margin-left': '2px'})
 					.attrs({type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5})
-					.on("input", function(){ handle_parallels_change([null, this.value]); });
+					.on("input", function(){
+							if(this.value > 90)
+									this.value = 90;
+							else if (this.value < -90)
+									this.value = -90;
+							handle_parallels_change([null, this.value]);
+					});
 	}
 
 	let clean_up_box = () => {
@@ -122,7 +150,7 @@ const createBoxCustomProjection = function(){
       };
   container.querySelector(".btn_cancel").onclick = _onclose_cancel;
   container.querySelector("#xclose").onclick = _onclose_cancel;
-  container.querySelector(".btn_ok").onclick = function(){ clean_up_box(); };
+  container.querySelector(".btn_ok").onclick = clean_up_box;
   document.addEventListener('keydown', fn_cb);
   overlay_under_modal.display();
 };

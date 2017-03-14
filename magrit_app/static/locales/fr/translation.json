@@ -428,7 +428,7 @@
             "modify_symbols": "Modification des symbols",
             "reset_labels_location": "Remise à zéro de la localisation des labels",
             "redraw_labels": "Redéssiner les labels supprimés",
-            "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles appaortées! </i></b>",
+            "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles apportées! </i></b>",
             "labels_default_size": "Taille par défaut des labels",
             "labels_default_color": "Couleur par défaut des labels",
             "labels_default_font": "Police utilisée par défaut",
@@ -487,7 +487,7 @@
                 "divide_field": "Diviseur ",
                 "span": "Span ",
                 "beta": "Beta ",
-                "resolution": "Resolution (opt.) ",
+                "resolution": "Résolution (opt.) ",
                 "function": "Type de function ",
                 "func_exponential": "Exponentielle ",
                 "func_pareto": "Pareto ",
@@ -542,11 +542,7 @@
             "cartogram": {
                 "algo": " Algorithme à utiliser ",
                 "field": "Champ ",
-                "dougenik_iterations": "Nombre d'itérations",
-                "olson_scale_txt": "Dimensionner la taille de référence sur :",
-                "olson_scale_max_scale": "Modification maximum de la taille des entités ",
-                "olson_scale_max": "Valeur maximum (pas de chevauchement)",
-                "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
+                "dougenik_iterations": "Nombre d'itérations"
             },
             "discont": {
                 "field": "Champ à utiliser ",

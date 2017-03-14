@@ -40,6 +40,7 @@ function get_map_template(){
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
+    map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -441,7 +442,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 250);
+        }, layers.length > 1 ? 125 : 250);
     };
 
     function apply_layout_lgd_elem(){

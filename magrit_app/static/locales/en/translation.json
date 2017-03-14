@@ -61,6 +61,7 @@
             "equal_interval": "Equal interval",
             "quantiles": "Quantiles",
             "std_dev": "Standard deviation",
+            "S5": "S5",
             "Q6": "Q6",
             "arithmetic_progression": "Arithmetic progression",
             "jenks": "Jenks",
@@ -231,7 +232,7 @@
             "smooth": "Smoothed map (Stewart potentials)",
             "prop": "Proportionnal symbols",
             "choroprop": "Colored proportionnal symbols",
-            "proptypo": "Colored (by categorie) proportionnal symbols",
+            "proptypo": "Colored (by category) proportionnal symbols",
             "choro": "Choropleth map",
             "cartogram": "Cartogram map",
             "grid": "Gridded map",
@@ -267,7 +268,7 @@
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"
         },
         "sample_layer_box": {
-            "title": "Jeux de données d'exemple",
+            "title": "Sample dataset",
             "subtitle1": "Choose a layer to be rendered :",
             "target_layer": "<i>Target layer</i>",
             "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
@@ -547,11 +548,7 @@
             "cartogram": {
                 "algo": "Algorythm to use ",
                 "field": "Field ",
-                "dougenik_iterations": "N. iterations ",
-                "olson_scale_txt": "Scale reference size on :",
-                "olson_scale_max_scale": "Maximum size modification (%) ",
-                "olson_scale_max": "Max. value (prevent overlapping)",
-                "olson_scale_mean": "Mean value (may cause overlapping)"
+                "dougenik_iterations": "N. iterations "
             },
             "discont": {
                 "field": "Value field ",

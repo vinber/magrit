@@ -1819,13 +1819,13 @@ function zoom_without_redraw(){
           .attr("transform",  d3.event.transform + rot_val);
     }
 
-    if(scaleBar.displayed){
-        if(proj.invert) {
-            scaleBar.update();
-        } else {
-            scaleBar.remove()
-        }
-    }
+    // if(scaleBar.displayed){
+    //     if(proj.invert) {
+    //         scaleBar.update();
+    //     } else {
+    //         scaleBar.remove()
+    //     }
+    // }
     if(window.legendRedrawTimeout){
         clearTimeout(legendRedrawTimeout);
     }

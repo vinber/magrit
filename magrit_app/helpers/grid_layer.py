@@ -56,14 +56,15 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         # "hexagon2": get_hex_dens_grid
         }[grid_shape](gdf, height, field_name, mask)
 
-    n_field_name = "".join([field_name, "_density"])
+    n_field_name = "".join([field_name, "_densitykm"])
     grid = GeoDataFrame(
         index=range(len(res_geoms)),
-        data={n_field_name: [i[1] for i in res_geoms]},
+        data={'id': [i for i in range(len(res_geoms))],
+              n_field_name: [i[1] * 1000000 for i in res_geoms],
+              'total': [i[2] for i in res_geoms]},
         geometry=[i[0] for i in res_geoms],
         crs=gdf.crs
         )
-    grid["densitykm"] = grid[n_field_name] * 1000000
     grid = grid.to_crs({"init": "epsg:4326"})
 
     total_bounds = gdf.total_bounds
@@ -114,8 +115,9 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
                     areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
     return res
 
 # def get_diams_dens_grid(gdf, height, field_name):
@@ -204,8 +206,9 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
                     areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
     return res
 
 
@@ -290,8 +293,9 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
                     idx = geoms[idx_poly].intersects(p).index
 #                    intersected_geoms = geoms[idx]
                     areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
 
             y_top = y_top - height
             y_bottom = y_bottom - height
@@ -385,41 +389,36 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
 #
 #     return res
 
-if __name__ == "__main__":
-    import ujson as json
-    import timeit
-    import time
-    setup = '''from __main__ import get_grid_layer; f = "/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson"'''
-    cmd1 = '''result = get_grid_layer(f, 115000, "pop1999", "square")'''
-    cmd2 = '''result = get_grid_layer(f, 115000, "pop1999", "square2")'''
-
-    times = []
-    n = 5
-    print('Method 1 :')
-    for i in range(n):
-        t = time.time()
-        result1 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square")
-        with open('/tmp/result1.geojson', 'w') as f:
-            f.write(result1)
-        rt = time.time() - t
-        print("{:.3f}".format(rt))
-        times.append(rt)
-    print("Mean : {}".format(sum(times) / n))
-
-    print('Method 2 :')
-    times = []
-    n = 5
-    for i in range(n):
-        t = time.time()
-        result2 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square2")
-        with open('/tmp/result2.geojson', 'w') as f:
-            f.write(result2)
-        rt = time.time() - t
-        print("{:.3f}".format(rt))
-        times.append(rt)
-    print("Mean : {}".format(sum(times) / n))
-
-#     time.sleep(2)
-#     print("Test 1 :", timeit.timeit(cmd1, setup, number=5))
-#     time.sleep(2)
-#     print("Test 2 :", timeit.timeit(cmd2, setup, number=5))
+#if __name__ == "__main__":
+#    import ujson as json
+#    import timeit
+#    import time
+#    setup = '''from __main__ import get_grid_layer; f = "/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson"'''
+#    cmd1 = '''result = get_grid_layer(f, 115000, "pop1999", "square")'''
+#    cmd2 = '''result = get_grid_layer(f, 115000, "pop1999", "square2")'''
+#
+#    times = []
+#    n = 5
+#    print('Method 1 :')
+#    for i in range(n):
+#        t = time.time()
+#        result1 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square")
+#        with open('/tmp/result1.geojson', 'w') as f:
+#            f.write(result1)
+#        rt = time.time() - t
+#        print("{:.3f}".format(rt))
+#        times.append(rt)
+#    print("Mean : {}".format(sum(times) / n))
+#
+#    print('Method 2 :')
+#    times = []
+#    n = 5
+#    for i in range(n):
+#        t = time.time()
+#        result2 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square2")
+#        with open('/tmp/result2.geojson', 'w') as f:
+#            f.write(result2)
+#        rt = time.time() - t
+#        print("{:.3f}".format(rt))
+#        times.append(rt)
+#    print("Mean : {}".format(sum(times) / n))

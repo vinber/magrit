@@ -1085,7 +1085,7 @@ function createStyleBox(layer_name){
            });
 
     } else if (renderer == "Gridded"){
-        let field_to_discretize = "densitykm";
+        let field_to_discretize = current_layers[layer_name].rendered_field;
         popup.append('p').style("margin", "auto").style("text-align", "center")
             .append("button")
             .attr("class", "button_disc")

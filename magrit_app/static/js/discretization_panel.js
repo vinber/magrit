@@ -559,7 +559,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
-     [i18next.t("app_page.common.S5"), "S5"],
+    //  [i18next.t("app_page.common.S5"), "S5"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
      [i18next.t("app_page.common.jenks"), "jenks"]
