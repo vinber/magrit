@@ -40,6 +40,7 @@ function get_map_template(){
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
+    map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -426,10 +427,12 @@ function apply_user_preferences(json_pref){
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
             reproj_symbol_layer();
-            let desired_order = layers.map( i => i.layer_name);
-            reorder_elem_list_layer(desired_order);
-            desired_order.reverse();
-            reorder_layers(desired_order);
+            if(layers.length > 1){
+                let desired_order = layers.map( i => i.layer_name);
+                reorder_elem_list_layer(desired_order);
+                desired_order.reverse();
+                reorder_layers(desired_order);
+            }
             apply_layout_lgd_elem();
             if(map_config.canvas_rotation){
                 document.getElementById("form_rotate").value = map_config.canvas_rotation;
@@ -439,7 +442,7 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 250);
+        }, layers.length > 1 ? 125 : 250);
     };
 
     function apply_layout_lgd_elem(){
@@ -500,11 +503,13 @@ function apply_user_preferences(json_pref){
             if(map_config.layout_features.text_annot){
                 for(let i = 0; i < map_config.layout_features.text_annot.length; i++) {
                     let ft = map_config.layout_features.text_annot[i];
-                    let new_txt_bow = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
-                    let inner_p = new_txt_bow.text_annot.select("p").node();
+                    let new_txt_box = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
+                    let inner_p = new_txt_box.text_annot.select("p").node();
                     inner_p.innerHTML = ft.content;
                     inner_p.style = ft.style;
-                    new_txt_bow.text_annot.attr('transform', ft.transform);
+                    new_txt_box.text_annot.attr('transform', ft.transform);
+                    new_txt_box.fontsize = +ft.style.split('font-size: ')[1].split('px')[0];
+                    new_txt_box.font_family = ft.style.split('font-family: ')[1].split(';')[0];
                 }
             }
             if(map_config.layout_features.single_symbol){

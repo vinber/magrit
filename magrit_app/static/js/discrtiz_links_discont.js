@@ -447,7 +447,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent('.styleBox');
         if(!p) overlay_under_modal.hide();
@@ -455,7 +454,6 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     let _onclose = () => {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent('.styleBox');
         if(!p) overlay_under_modal.hide();

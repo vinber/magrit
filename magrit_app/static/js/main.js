@@ -116,11 +116,13 @@ function setUpInterface(resume_project)
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
 
-    let proj_select = proj_options.append("select")
+    let proj_select = proj_options.append("div")
+            .attrs({class: 'styled-select'})
+            .insert("select")
             .attrs({class: 'i18n', 'id': 'form_projection'})
-            .styles({"align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px"})
+            .styles({"width": "calc(100% + 20px)"})
             .on("change", function(){
                 current_proj_name = this.value;
                 change_projection(this.value);
@@ -130,7 +132,9 @@ function setUpInterface(resume_project)
     }
     proj_select.node().value = "NaturalEarth";
 
-    proj_options.append("input")
+
+    let proj_options2 = proj_options.append("div");
+    proj_options2.append("input")
         .attrs({type: "range", id: "form_projection_center", value: 0.0,
                 min: -180.0, max: 180.0, step: 0.1})
         .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
@@ -141,7 +145,7 @@ function setUpInterface(resume_project)
             document.getElementById("proj_center_value_txt").value = +this.value;
         });
 
-    proj_options.append("input")
+    proj_options2.append("input")
         .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
                 min: -180.0, max: 180.0, value: 0, step: "any"})
         .styles({width: "40px", "margin": "0 10px",
@@ -159,11 +163,11 @@ function setUpInterface(resume_project)
             handle_proj_center_button([this.value, null, null]);
             document.getElementById("form_projection_center").value = this.value;
         });
-    proj_options.append("span")
+    proj_options2.append("span")
         .style("vertical-align", "calc(20%)")
         .html("°");
 
-    proj_options.append('img')
+    proj_options2.append('img')
         .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
         .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px'})
         .on('click', createBoxCustomProjection);
@@ -171,7 +175,7 @@ function setUpInterface(resume_project)
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', function(){
@@ -181,19 +185,19 @@ function setUpInterface(resume_project)
         });
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', load_map_template);
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
         .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
     const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom'})
+        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
         .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
         .on('click', function(){
@@ -203,7 +207,7 @@ function setUpInterface(resume_project)
     const_options.append("button")
         .attrs({id: "help_btn", class: "const_buttons i18n",
                 "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-                "data-tooltip-position": "bottom"})
+                "data-placement": "bottom"})
         .styles({cursor: "pointer", background: "transparent"})
         .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
         .on("click", function(){
@@ -314,13 +318,10 @@ function setUpInterface(resume_project)
                         .attr("id","section1")
                         .attr("class", "i18n")
                         .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
-                        .attr("data-tooltip-position", "right");
+                        .attr("data-placement", "right");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div")
-        .attrs({id: "section3", class: "i18n",
-                "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-                "data-tooltip-position": "right"}),
+    accordion3.append("div").attrs({id: "section3"}),
     accordion4.append("div").attr("id","section4");
     accordion5.append("div").attr("id","section5");
 
@@ -388,17 +389,24 @@ function setUpInterface(resume_project)
     let section3 = d3.select("#section3");
 
     window.layer_list = section3.append("div")
-                             .append("ul").attrs({id: "sortable", class: "layer_list"});
+        .attrs({ class: "i18n",
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+                "data-placement": "right"})
+        .append("ul").attrs({id: "sortable", class: "layer_list"});
 
     let dv3 = section3.append("div")
-                    .style("padding-top", "10px").html('');
+        .style("padding-top", "10px").html('');
 
     dv3.append("img")
-        .attr("src", "/static/img/b/addsample_t.png")
+        .attrs({"src": "/static/img/b/addsample_t.png", class: 'i18n',
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+                "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom'})
+        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+                "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on("click", click_button_add_layer);
 
@@ -416,9 +424,7 @@ function setUpInterface(resume_project)
             .attrs({"id": "title", "class": "list_elem_section4 i18n",
                     "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
             .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
-            .on("keyup", function(){
-                handle_title(this.value);
-            });
+            .on("keyup", function(){ handle_title(this.value); });
     e.append("span")
             .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
             .html(sys_run_button.replace("submit", "Title properties"))
@@ -430,9 +436,7 @@ function setUpInterface(resume_project)
     f.append("input")
             .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
-            .on("change", function(){
-                handle_bg_color(this.value);
-            });
+            .on("change", handle_bg_color);
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
@@ -615,7 +619,7 @@ function setUpInterface(resume_project)
         .html("°");
 
     g.append("input")
-        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner",
+        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
                 value: 0, min: 0, max: 360, step: "any"})
         .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
         .on("change", function(){
@@ -636,14 +640,14 @@ function setUpInterface(resume_project)
         });
 
       g.append("input")
-              .attrs({type: "range", id: "form_rotate", value: 0,
-                      min: 0, max: 360, step: 1})
-              .styles({width: "80px", margin: "0px 10px 9px 15px",
-                       float: "right", "vertical-align": "middle"})
-              .on("input", function(){
-                  rotate_global(this.value);
-                  document.getElementById("canvas_rotation_value_txt").value = this.value;
-              });
+          .attrs({type: "range", id: "form_rotate", value: 0,
+                  min: 0, max: 360, step: 1})
+          .styles({width: "80px", margin: "0px 10px 9px 15px",
+                   float: "right", "vertical-align": "middle"})
+          .on("input", function(){
+              rotate_global(this.value);
+              document.getElementById("canvas_rotation_value_txt").value = this.value;
+          });
 
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});
@@ -905,7 +909,7 @@ function setUpInterface(resume_project)
         .append('p').style("margin", "auto")
             .insert("button")
             .attrs((d,i) => ({
-              "data-tooltip-position": d.tooltip_position,
+              "data-placement": d.tooltip_position,
               "class": d.class,
               "data-i18n": d.i18n,
               "id": d.id})
@@ -1015,7 +1019,6 @@ function bindTooltips(dataAttr="tooltip-title"){
             duration: 50,
             delay: 100,
             container: document.getElementById("twbs"),
-            placement: tooltips_elem[i].getAttribute("data-tooltip-position")
         });
     }
 }
@@ -1273,7 +1276,7 @@ const available_fonts = [
     ['Roboto', 'Roboto'],
     ['Scope One', 'Scope One'],
     ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-    ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'],
+    ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
     ['Verdana', 'Verdana,Geneva,sans-serif']
     ];
 
@@ -1531,7 +1534,7 @@ function make_dialog_container(id_box, title, class_box){
                       +'<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>'
                       +'</div>'
         });
-        modal_box.open();
+        modal_box.show();
         return modal_box;
 }
 
@@ -1604,14 +1607,14 @@ var make_confirm_dialog2 = (function(class_box, title, options){
                       +'<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>'
                       +'</div>'
         });
-        modal_box.open();
+        modal_box.show();
+        container.modal = modal_box;
         overlay_under_modal.display();
         let func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
         let clean_up_box = () => {
             document.removeEventListener('keydown', func_cb);
             existing.delete(new_id);
             overlay_under_modal.hide();
-            modal_box.close();
             container.remove();
         };
         let _onclose_false = () => {
@@ -1819,14 +1822,14 @@ function zoom_without_redraw(){
           .attr("transform",  d3.event.transform + rot_val);
     }
 
-    if(scaleBar.displayed){
-        if(proj.invert) {
-            scaleBar.update();
-        } else {
-            scaleBar.remove();
-            alertify.notify(i18next.t('app_page.notification.warning_deactivation_scalebar'), 'warning', 5);
-        }
-    }
+    // if(scaleBar.displayed){
+    //     if(proj.invert) {
+    //         scaleBar.update();
+    //     } else {
+    //         scaleBar.remove()
+    //     }
+    // }
+
     if(window.legendRedrawTimeout){
         clearTimeout(legendRedrawTimeout);
     }
@@ -2143,7 +2146,9 @@ function handle_title_properties(){
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
         position_y: title.attr("y"),
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-        font_family: title.style("font-family")
+        font_family: title.style("font-family"),
+        stroke: title.style('stroke'),
+        stroke_width: title.style('stroke-width')
         };
     title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
 
@@ -2155,7 +2160,8 @@ function handle_title_properties(){
                     .styles({
                         "font-size": title_props.size, "fill": title_props.color,
                         "font-family": title_props.font_family, 'font-style': title_props.font_style,
-                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+                        'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
                         });
             });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
@@ -2218,7 +2224,50 @@ function handle_title_properties(){
           this.classList.add('active');
           title.style('text-decoration', 'underline');
       }
-  });
+    });
+
+    let hasBuffer = title_props.stroke !== "none";
+    let buffer_section1 = box_content.append("p");
+    let buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
+    box_content.append('p').style('clear', 'both');
+
+    buffer_section1.append('input')
+        .attrs({type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null})
+        .on('change', function(){
+            if(this.checked){
+                buffer_section2.style('display', '');
+                title.style('stroke', buffer_color.node().value)
+                    .style('stroke-width', buffer_width.node().value + 'px');
+                console.log(buffer_color.attr('value'), buffer_color.node().value);
+            } else {
+                buffer_section2.style('display', 'none');
+                title.style('stroke', 'none')
+                    .style('stroke-width', '1px');
+            }
+        });
+
+    buffer_section1.append('label')
+        .attrs({for: 'title_buffer_chkbox'})
+        .text(i18next.t('app_page.title_box.buffer'));
+
+    let buffer_color = buffer_section2.insert('input')
+        .style('float', 'left')
+        .attrs({type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff"})
+        .on('change', function(){
+            title.style('stroke', this.value);
+        });
+
+    buffer_section2.insert('span')
+        .style('float', 'right')
+        .html(' px');
+
+    let buffer_width = buffer_section2.insert('input')
+        .styles({'float': 'right', 'width': '60px'})
+        .attrs({type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1})
+        .on('change', function(){
+            title.style('stroke-width', this.value + 'px');
+        });
+
     return;
 }
 

@@ -1,22 +1,16 @@
 # -*- coding: utf-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+#from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 from flaky import flaky
-from signal import SIGINT
-import psutil
+from functools import wraps
+from uuid import uuid4
 import unittest
 import time
-from contextlib import closing
-from functools import wraps
-from socket import socket, AF_INET, SOCK_STREAM
-from subprocess import PIPE
-from uuid import uuid4
 import os
-import sys
 try:
     import ujson as json
 except ImportError:
@@ -106,6 +100,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         driver = self.driver
         driver.get(self.base_url)
         self.open_menu_section(4)
+
+        # Test the title :
+        new_title = 'The new title!'
+        input_title = driver.find_element_by_id('title')
+        input_title.clear()
+        input_title.send_keys(new_title)
+        title_svg = driver.find_element_by_css_selector(
+            'g#map_title > text').text
+        self.assertEqual(new_title, title_svg)
 
         # Test the graticule :
         driver.find_element_by_id('btn_graticule').click()

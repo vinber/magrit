@@ -12,6 +12,10 @@ function getBreaks(values, type, nb_class){
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         serie.setClassManually(breaks);
+    } else if (type == "S5"){
+        let tmp = getBreaksS5(serie, serie.precision);
+        breaks = tmp.breaks;
+        serie.setClassManually(breaks);
     } else {
         let _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
@@ -335,11 +339,50 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 breaks[0] = serie.min();
                 breaks[6] = serie.max();
                 serie.setClassManually(breaks);
+            } else if(type === "S5"){
+                    var tmp = getBreaksS5(serie, serie.precision);
+                    stock_class = tmp.stock_class;
+                    breaks = tmp.breaks;
+                    let should_warn;
+                    let min = serie.min(), max = serie.max();
+                    if(breaks[1] < min){
+                        should_warn = true;
+                        breaks.shift()
+                        stock_class.shift();
+                        if(breaks[1] < min){
+                            breaks.shift()
+                            stock_class.shift();
+                        }
+                    } else if (breaks[4] > max){
+                        should_warn = true;
+                        breaks.pop()
+                        stock_class.pop();
+                        if(breaks[3] > max){
+                            breaks.pop()
+                            stock_class.pop();
+                        }
+                    }
+                    if(breaks[0] < min)
+                        breaks[0] = min;
+                    if(breaks[breaks.length - 1] > max)
+                        breaks[breaks.length - 1] = max;
+                    if(should_warn){
+                        swal({title: "",
+                              text: i18next.t("app_page.common.warning_not_adapted_classification"),
+                              type: "warning",
+                              showCancelButton: false,
+                              allowOutsideClick: false,
+                              confirmButtonColor: "#DD6B55"
+                            }).then(_ => null, dismiss => null);
+                    }
+                    serie.setClassManually(breaks);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
-                nb_class = tmp.breaks.length - 1;
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
+
+                nb_class = tmp.breaks.length - 1;
+                txt_nb_class.node().value = +nb_class;
 
                 if(breaks[0] > serie.min())
                     breaks[0] = serie.min();
@@ -516,7 +559,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     var available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
-//     [i18next.t("app_page.common.std_dev"), "std_dev"],
+    //  [i18next.t("app_page.common.S5"), "S5"],
      [i18next.t("app_page.common.Q6"), "Q6"],
      [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"],
      [i18next.t("app_page.common.jenks"), "jenks"]
@@ -537,6 +580,10 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 nb_class = 6;
                 txt_nb_class.node().value = 6;
                 document.getElementById("nb_class_range").value = 6;
+            } else if(type === "S5"){
+                nb_class = 5;
+                txt_nb_class.node().value = 5;
+                document.getElementById("nb_class_range").value = 5;
             }
             redisplay.compute();
             redisplay.draw();
@@ -570,6 +617,10 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             if(type === "Q6"){
                 this.value = 6;
                 txt_nb_class.node().value = 6;
+                return;
+            } else if (type === "S5"){
+                this.value = 5;
+                txt_nb_class.node().value = 5;
                 return;
             }
             nb_class = +this.value;
@@ -706,8 +757,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             let old_nb_class = nb_class;
             user_break_list = document.getElementById("user_breaks_area").value;
             type = "user_defined";
-            nb_class = user_break_list.split('-').length - 1;
-            txt_nb_class.node().value = +nb_class;
+            // nb_class = user_break_list.split('-').length - 1;
+            // txt_nb_class.node().value = +nb_class;
             // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
             document.getElementById("nb_class_range").value = nb_class;
             redisplay.compute();
@@ -788,7 +839,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         deferred.resolve(
             [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -797,7 +847,6 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     let _onclose = () => {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -901,7 +950,6 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         _onclose = () => {
             deferred.resolve(false);
             document.removeEventListener('keydown', helper_esc_key_twbs);
-            modal_box.close();
             container.remove();
             let p = reOpenParent();
             if(!p) overlay_under_modal.hide();
@@ -912,7 +960,6 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         let colorByFeature = data_layer.map( ft => color_map.get(ft[field])[0] );
         deferred.resolve([nb_class, color_map, colorByFeature]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         let p = reOpenParent();
         if(!p) overlay_under_modal.hide();
@@ -935,10 +982,8 @@ function display_categorical_box(data_layer, layer_name, field, cats){
 
 function reOpenParent(css_selector){
     let parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox' );
-    if(parent_style_box){
-        parent_style_box.classList.add("in");
-        parent_style_box.setAttribute("aria-hidden", false);
-        parent_style_box.style.display = "block";
+    if(parent_style_box && parent_style_box.modal && parent_style_box.modal.show){
+        parent_style_box.modal.show();
         return true;
     } else {
         return false;

@@ -9,7 +9,7 @@ from shapely.ops import cascaded_union
 import rtree
 import numpy as np
 import ujson as json
-from .geo import repairCoordsPole, TopologicalError
+from .geo import repairCoordsPole, TopologicalError, multi_to_single
 
 
 def idx_generator_func(bounds):
@@ -23,9 +23,9 @@ def make_index(bounds):
 
 
 def get_grid_layer(input_file, height, field_name, grid_shape="square"):
-    proj4_eck4 = ("+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 "
-                  "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-
+    proj_robinson = (
+            "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+            "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
     gdf = GeoDataFrame.from_file(input_file)
 
     if not gdf[field_name].dtype in (int, float):
@@ -36,14 +36,16 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
 
     mask = GeoSeries(
         cascaded_union(gdf.geometry.buffer(0)),
+#        cascaded_union(gdf.geometry),
         crs=gdf.crs
-        ).to_crs(crs=proj4_eck4).values[0]
+        ).to_crs(crs=proj_robinson).values[0]
+
     try:
         mask = mask.buffer(1).buffer(-1)
     except TopologicalError:
         mask = mask.buffer(0)
 
-    gdf.to_crs(crs=proj4_eck4, inplace=True)
+    gdf.to_crs(crs=proj_robinson, inplace=True)
 
     res_geoms = {
         "square": get_square_dens_grid2,
@@ -54,14 +56,15 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         # "hexagon2": get_hex_dens_grid
         }[grid_shape](gdf, height, field_name, mask)
 
-    n_field_name = "".join([field_name, "_density"])
+    n_field_name = "".join([field_name, "_densitykm"])
     grid = GeoDataFrame(
         index=range(len(res_geoms)),
-        data={n_field_name: [i[1] for i in res_geoms]},
+        data={'id': [i for i in range(len(res_geoms))],
+              n_field_name: [i[1] * 1000000 for i in res_geoms],
+              'total': [i[2] for i in res_geoms]},
         geometry=[i[0] for i in res_geoms],
         crs=gdf.crs
         )
-    grid["densitykm"] = grid[n_field_name] * 1000000
     grid = grid.to_crs({"init": "epsg:4326"})
 
     total_bounds = gdf.total_bounds
@@ -83,8 +86,12 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
     y_bottom_origin = ymin - height
 
     half_height = (height / 2)
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
+    idx_intersects = index.intersection
     array_values = gdf[field_name].values
 
     res = []
@@ -98,7 +105,7 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
             y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)
             y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)
 
-            idx_poly = list(index.intersection(
+            idx_poly = list(idx_intersects(
                 (x1, y1, x3, y3), objects='raw'))
             if idx_poly:
                 p = mask.intersection(Polygon([
@@ -107,9 +114,10 @@ def get_diams_dens_grid2(gdf, height, field_name, mask):
                         ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    areas_part = geoms[idx].intersection(p).area.values / geoms[idx].area.values
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
     return res
 
 # def get_diams_dens_grid(gdf, height, field_name):
@@ -164,8 +172,12 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
     y_bottom_origin = ymin - height
 
     half_height = (height / 2)
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
+    idx_intersects = index.intersection
     array_values = gdf[field_name].values
 
     xvertexlo = 0.288675134594813 * height
@@ -184,7 +196,7 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
             y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)	# mid
             y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)	# lo
 
-            idx_poly = list(index.intersection(
+            idx_poly = list(idx_intersects(
                 (x1, y1, x4, y3), objects='raw'))
             if idx_poly:
                 p = mask.intersection(Polygon([
@@ -193,10 +205,10 @@ def get_hex_dens_grid2(gdf, height, field_name, mask):
                     ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    intersected_geoms = geoms[idx]
-                    areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
     return res
 
 
@@ -257,7 +269,10 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
     y_top_origin = ymax
     y_bottom_origin = ymax - height
 
+    gdf['area_values'] = gdf.geometry.area
+    gdf = multi_to_single(gdf)
     geoms = gdf.geometry
+    area_values = gdf['area_values'].values
     index = make_index([g.bounds for g in geoms])
     idx_intersects = index.intersection
     array_values = gdf[field_name].values
@@ -276,10 +291,11 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
                         ]))
                 if p:
                     idx = geoms[idx_poly].intersects(p).index
-                    intersected_geoms = geoms[idx]
-                    areas_part = intersected_geoms.intersection(p).area.values / intersected_geoms.area.values
-                    density = (array_values[idx] * areas_part).sum() / p.area
-                    res.append((p, density))
+#                    intersected_geoms = geoms[idx]
+                    areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
+                    _sum = (array_values[idx] * areas_part).sum()
+                    density = _sum / p.area
+                    res.append((p, density, _sum))
 
             y_top = y_top - height
             y_bottom = y_bottom - height
@@ -287,6 +303,49 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
         x_right_origin = x_right_origin + height
 
     return res
+
+
+#def get_square_dens_grid2(gdf, height, field_name, mask):
+#    xmin, ymin, xmax, ymax = gdf.total_bounds
+#    rows = ceil((ymax-ymin) / height)
+#    cols = ceil((xmax-xmin) / height)
+#
+#    x_left_origin = xmin
+#    x_right_origin = xmin + height
+#    y_top_origin = ymax
+#    y_bottom_origin = ymax - height
+#
+#    area_values = gdf.geometry.area
+#    geoms = gdf.geometry
+#    index = make_index([g.bounds for g in geoms])
+#    idx_intersects = index.intersection
+#    array_values = gdf[field_name].values
+#
+#    res = []
+#    for countcols in range(cols):
+#        y_top = y_top_origin
+#        y_bottom = y_bottom_origin
+#        for countrows in range(rows):
+#            idx_poly = list(idx_intersects(
+#                (x_left_origin, y_bottom, x_right_origin, y_top), objects='raw'))
+#            if idx_poly:
+#                p = mask.intersection(Polygon([
+#                        (x_left_origin, y_top), (x_right_origin, y_top),
+#                        (x_right_origin, y_bottom), (x_left_origin, y_bottom)
+#                        ]))
+#                if p:
+#                    idx = geoms[idx_poly].intersects(p).index
+#                    intersected_geoms = geoms[idx]
+#                    areas_part = intersected_geoms.intersection(p).area.values / area_values[idx]
+#                    density = (array_values[idx] * areas_part).sum() / p.area
+#                    res.append((p, density))
+#
+#            y_top = y_top - height
+#            y_bottom = y_bottom - height
+#        x_left_origin = x_left_origin + height
+#        x_right_origin = x_right_origin + height
+#
+#    return res
 
 # def get_square_dens_grid(gdf, height, field_name):
 #     xmin, ymin, xmax, ymax = gdf.total_bounds
@@ -330,41 +389,36 @@ def get_square_dens_grid2(gdf, height, field_name, mask):
 #
 #     return res
 
-if __name__ == "__main__":
-    import ujson as json
-    import timeit
-    import time
-    setup = '''from __main__ import get_grid_layer; f = "/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson"'''
-    cmd1 = '''result = get_grid_layer(f, 115000, "pop1999", "square")'''
-    cmd2 = '''result = get_grid_layer(f, 115000, "pop1999", "square2")'''
-
-    times = []
-    n = 5
-    print('Method 1 :')
-    for i in range(n):
-        t = time.time()
-        result1 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square")
-        with open('/tmp/result1.geojson', 'w') as f:
-            f.write(result1)
-        rt = time.time() - t
-        print("{:.3f}".format(rt))
-        times.append(rt)
-    print("Mean : {}".format(sum(times) / n))
-
-    print('Method 2 :')
-    times = []
-    n = 5
-    for i in range(n):
-        t = time.time()
-        result2 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square2")
-        with open('/tmp/result2.geojson', 'w') as f:
-            f.write(result2)
-        rt = time.time() - t
-        print("{:.3f}".format(rt))
-        times.append(rt)
-    print("Mean : {}".format(sum(times) / n))
-
-#     time.sleep(2)
-#     print("Test 1 :", timeit.timeit(cmd1, setup, number=5))
-#     time.sleep(2)
-#     print("Test 2 :", timeit.timeit(cmd2, setup, number=5))
+#if __name__ == "__main__":
+#    import ujson as json
+#    import timeit
+#    import time
+#    setup = '''from __main__ import get_grid_layer; f = "/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson"'''
+#    cmd1 = '''result = get_grid_layer(f, 115000, "pop1999", "square")'''
+#    cmd2 = '''result = get_grid_layer(f, 115000, "pop1999", "square2")'''
+#
+#    times = []
+#    n = 5
+#    print('Method 1 :')
+#    for i in range(n):
+#        t = time.time()
+#        result1 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square")
+#        with open('/tmp/result1.geojson', 'w') as f:
+#            f.write(result1)
+#        rt = time.time() - t
+#        print("{:.3f}".format(rt))
+#        times.append(rt)
+#    print("Mean : {}".format(sum(times) / n))
+#
+#    print('Method 2 :')
+#    times = []
+#    n = 5
+#    for i in range(n):
+#        t = time.time()
+#        result2 = get_grid_layer("/home/mz/dev/magrit/magrit_app/static/data_sample/nuts3_data.geojson", 115000, "pop1999", "square2")
+#        with open('/tmp/result2.geojson', 'w') as f:
+#            f.write(result2)
+#        rt = time.time() - t
+#        print("{:.3f}".format(rt))
+#        times.append(rt)
+#    print("Mean : {}".format(sum(times) / n))

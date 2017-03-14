@@ -8,7 +8,7 @@
             "too_large_input": "Fichier d'entrée trop volumineux (16Mo maximum)",
             "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
-            "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML détecté).",
+            "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML/GML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
             "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
@@ -33,6 +33,7 @@
             "error_invalid_map_project": "Fichier-projet corrompu/invalide.",
             "error_invalid_empty": "La couche à charger ne contient pas de données.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
+            "warning_not_adapted_classification": "La discrétisation choisie ne semble pas adaptée à la forme de la distribution!",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -61,6 +62,7 @@
             "quantiles": "Quantiles",
             "std_dev": "Écart-type",
             "Q6": "Q6",
+            "S5": "S5",
             "arithmetic_progression": "Progression arithmétique",
             "jenks": "Jenks",
             "geometric_progression": "Progression géométrique",
@@ -215,8 +217,10 @@
             "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}} | Médianne : {{median}}<br>Écart-type : {{stddev}}"
         },
         "tooltips": {
-            "section1": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "section3": "Faites glissez un fichier GeoJSON, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "section1": "Faites glissez un fichier GeoJSON, GML, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "section3": "Faites glissez un fichier GeoJSON, GML, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
+            "section3_add_layout": "Ajout d'un fond de carte d'habillage",
+            "section3_add_layout_sample": "Ajout d'un fond de carte d'habillage d'exemple",
             "load_project_file": "Chargement d'un fichier projet",
             "save_file": "Sauvegarde d'un fichier-projet",
             "new_project": "Création d'un nouveau projet",
@@ -381,7 +385,8 @@
             "default_font": "Police par défault ",
             "content": "Contenu ",
             "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées.",
-            "rotation": "Rotation"
+            "rotation": "Rotation",
+            "buffer": "Tampon autour du texte"
         },
         "arrow_edit_box": {
             "title": "Options de la flèche",
@@ -408,7 +413,8 @@
             "font_color": "Couleur de police :<br>",
             "font_family": "Famille de police :<br>",
             "xpos": "Position en X (% depuis de la gauche) :<br>",
-            "ypos": "Position en Y (% depuis le haut) :<br>"
+            "ypos": "Position en Y (% depuis le haut) :<br>",
+            "buffer": "Tampon autour du texte"
         },
         "symbol_typo_box": {
             "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
@@ -432,7 +438,7 @@
             "modify_symbols": "Modification des symbols",
             "reset_labels_location": "Remise à zéro de la localisation des labels",
             "redraw_labels": "Redéssiner les labels supprimés",
-            "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles appaortées! </i></b>",
+            "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles apportées! </i></b>",
             "labels_default_size": "Taille par défaut des labels",
             "labels_default_color": "Couleur par défaut des labels",
             "labels_default_font": "Police utilisée par défaut",
@@ -491,7 +497,7 @@
                 "divide_field": "Diviseur ",
                 "span": "Span ",
                 "beta": "Beta ",
-                "resolution": "Resolution (opt.) ",
+                "resolution": "Résolution (opt.) ",
                 "function": "Type de function ",
                 "func_exponential": "Exponentielle ",
                 "func_pareto": "Pareto ",
@@ -546,11 +552,7 @@
             "cartogram": {
                 "algo": " Algorithme à utiliser ",
                 "field": "Champ ",
-                "dougenik_iterations": "Nombre d'itérations",
-                "olson_scale_txt": "Dimensionner la taille de référence sur :",
-                "olson_scale_max_scale": "Modification maximum de la taille des entités ",
-                "olson_scale_max": "Valeur maximum (pas de chevauchement)",
-                "olson_scale_mean": "Valeur moyenne (risque de chevauchement)"
+                "dougenik_iterations": "Nombre d'itérations"
             },
             "discont": {
                 "field": "Champ à utiliser ",

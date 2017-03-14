@@ -399,6 +399,7 @@ class Textbox {
 
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
+        this.buffer = undefined;
         this.id = new_id_txt_annot;
         return this;
     }
@@ -411,15 +412,17 @@ class Textbox {
         if(existing_box) existing_box.remove();
 
         let current_options = {
-            size: inner_p.style("font-size"),
+            size: inner_p.style("font-size").split('px')[0],
             color: inner_p.style("color"),
             content: unescape(inner_p.html()),
             transform_rotate: this.text_annot.attr('transform'),
             x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-            font: "",
             font_weight: inner_p.style('font-weight'),
             font_style: inner_p.style('font-style'),
-            text_decoration: inner_p.style('text-decoration')
+            text_decoration: inner_p.style('text-decoration'),
+            buffer: self.buffer != undefined ? cloneObj(self.buffer) : undefined,
+            text_shadow: inner_p.style('text-shadow'),
+            font_family: self.font_family
         };
         current_options.font_weight = (current_options.font_weight == "400" || current_options.font_weight == "") ? '' : 'bold';
         make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), {widthFitContent: true})
@@ -427,10 +430,17 @@ class Textbox {
                 if(!confirmed){
                     self.text_annot.select('p')
                         .text(current_options.content)
-                        .styles({'color': current_options.color, 'font-size': current_options.size});
+                        .styles({'color': current_options.color, 'font-size': current_options.size + 'px',
+                                 'font-weight': current_options.font_weight, 'text-decoration': current_options.text_decoration,
+                                 'font-style': current_options.font_style, 'text-shadow': current_options.text_shadow});
                     self.fontsize = current_options.size;
-                    // self.rotate = current_options.rotate;
+                    self.font_family = current_options.font_family;
                     self.text_annot.attr('transform', current_options.transform_rotate);
+                    self.buffer = current_options.buffer;
+                } else {
+                    if(!buffer_txt_chk.node().checked){
+                        self.buffer = undefined;
+                    }
                 }
             });
         let box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
@@ -473,7 +483,11 @@ class Textbox {
             });
 
         let options_font = box_content.append('p'),
-            font_select = options_font.insert("select").on("change", function(){ inner_p.style("font-family", this.value); });
+            font_select = options_font.insert("select")
+                  .on("change", function(){
+                      inner_p.style("font-family", this.value);
+                      self.font_family = this.value;
+                   });
 
         available_fonts.forEach(function(font){
             font_select.append("option").text(font[0]).attr("value", font[1])
@@ -489,13 +503,13 @@ class Textbox {
             });
 
         options_font.append("input")
-            .attrs({type: "color", id: "font_color", value: current_options.color})
+            .attrs({type: "color", id: "font_color", value: rgb2hex(current_options.color)})
             .style('width', '60px')
             .on("change", function(){
                 inner_p.style("color", this.value);
             });
 
-        let options_format = box_content.append('p'),
+        let options_format = box_content.append('p').style('text-align', 'center'),
             btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
             btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
             btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
@@ -505,14 +519,56 @@ class Textbox {
                 .html(i18next.t("app_page.text_box_edit_box.content"));
         content_modif_zone.append("span")
                 .html("<br>");
-        let textarea = content_modif_zone.append("textarea")
+        // let textarea = content_modif_zone.append("textarea")
+        content_modif_zone.append("textarea")
                 .attr("id", "annotation_content")
-                .style("margin", "5px 0px 0px")
+                .styles({"margin": "5px 0px 0px", "width": "100%"})
                 .on("keyup", function(){
                     inner_p.html(this.value)
                 });
-        textarea = textarea.node();
+        // textarea = textarea.node();
         document.getElementById("annotation_content").value = current_options.content;
+
+        let buffer_text_zone = box_content.append('p');
+        let buffer_txt_chk = buffer_text_zone.append('input')
+            .attrs({type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null})
+            .on('change', function(){
+                if(this.checked){
+                    buffer_color.style('display', '');
+                    if(self.buffer == undefined){
+                        self.buffer = {color: "#fff", size: 1};
+                    } else {
+                      let color = self.buffer.color, size = self.buffer.size;
+                      inner_p.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
+                    }
+                } else {
+                    buffer_color.style('display', 'none');
+                    inner_p.style('text-shadow', 'none');
+                }
+            });
+
+        buffer_text_zone.append('label')
+            .attrs({for: 'buffer_txt_chk'})
+            .text(i18next.t('app_page.text_box_edit_box.buffer'));
+
+        let buffer_color = buffer_text_zone.append('input')
+            .style('float', 'right')
+            .style('display', current_options.buffer != undefined ? '' : 'none')
+            .attrs({type: 'color', value: current_options.buffer != undefined ? current_options.buffer.color : "#fff"})
+            .on('change', function(){
+                self.buffer.color = this.value;
+                let color = self.buffer.color, size = self.buffer.size;
+                inner_p.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
+            });
+        // buffer_text_zone2.append('input')
+        //     .attrs({type: 'number', class: 'without_spinner', value: current_options.buffer != undefined ? current_options.buffer.size : 1})
+        //     .on('change', function(){
+        //         self.buffer.size = +this.value;
+        //         let color = self.buffer.color, size = self.buffer.size;
+        //         let t = `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`;
+        //         inner_p.style('text-shadow', t);
+        //     });
+
         btn_bold.on('click', function(){
             if(this.classList.contains('active')){
                 this.classList.remove('active');

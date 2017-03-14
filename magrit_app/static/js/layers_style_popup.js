@@ -151,9 +151,11 @@ function createStyleBoxTypoSymbols(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
 
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
@@ -280,9 +282,10 @@ function createStyleBoxLabel(layer_name){
             }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
@@ -319,7 +322,7 @@ function createStyleBoxLabel(layer_name){
             .style("float", "right")
             .html(" px");
     label_sizes.insert("input")
-            .style("float", "right")
+            .styles({"float": "right", "width": "70px"})
             .attr("type", "number")
             .attr("value", +current_layers[layer_name].default_size.replace("px", ""))
             .on("change", function(){
@@ -332,6 +335,7 @@ function createStyleBoxLabel(layer_name){
     default_color.append("span")
             .html(i18next.t("app_page.layer_style_popup.labels_default_color"));
     default_color.insert("input")
+            .style('float', 'right')
             .attrs({"type": "color", "value": current_layers[layer_name].fill_color})
             .on("change", function(){
                 current_layers[layer_name].fill_color = this.value;
@@ -365,9 +369,11 @@ function createStyleBoxGraticule(layer_name){
             if(confirmed){ null; } else { null; }
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
     let color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input")
@@ -620,9 +626,10 @@ function createStyleBox_Line(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
         let color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field
@@ -654,11 +661,13 @@ function createStyleBox_Line(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        current_layers[layer_name].rendered_field,
                                        current_layers[layer_name].colors_breaks.length,
                                        current_layers[layer_name].options_disc)
                    .then(function(confirmed){
+                       container.modal.show();
                        if(confirmed){
                            rendering_params = {
                                nb_class: confirmed[0],
@@ -718,11 +727,13 @@ function createStyleBox_Line(layer_name){
                 .attr("class", "button_disc")
                 .html(i18next.t("app_page.layer_style_popup.modify_size_class"))
                 .on("click", function(){
+                    container.modal.hide();
                     display_discretization_links_discont(layer_name,
                                                          current_layers[layer_name].rendered_field,
                                                          current_layers[layer_name].breaks.length,
                                                          "user_defined")
                         .then(function(result){
+                            container.modal.show();
                             if(result){
                                 let serie = result[0],
                                     sizes = result[1].map(ft => ft[1]),
@@ -764,11 +775,13 @@ function createStyleBox_Line(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization_links_discont(layer_name,
                                                      "disc_value",
                                                      current_layers[layer_name].breaks.length,
                                                      "user_defined")
                     .then(function(result){
+                        container.modal.show();
                         if(result){
                             let serie = result[0],
                                 sizes = result[1].map(ft => ft[1]);
@@ -956,9 +969,10 @@ function createStyleBox(layer_name){
             }
     });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
 
     if(type === "Point"){
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -1014,15 +1028,18 @@ function createStyleBox(layer_name){
     } else if (renderer == "Categorical"){
         let rendered_field = current_layers[layer_name].rendered_field;
 
-        popup.insert('p').style("margin", "auto").html("")
+        popup.insert('p')
+            .styles({"margin": "auto", "text-align": "center"})
+            .html("")
             .append("button")
             .attr("class", "button_disc")
-            .styles({"font-size": "0.8em", "text-align": "center"})
             .html(i18next.t("app_page.layer_style_popup.choose_colors"))
             .on("click", function(){
+                container.modal.hide();
                 let [cats, _] = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map);
                 display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
                     .then(function(confirmed){
+                        container.modal.show();
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
@@ -1040,12 +1057,14 @@ function createStyleBox(layer_name){
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        current_layers[layer_name].rendered_field,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                    .then(function(confirmed){
+                       container.modal.show();
                        if(confirmed){
                            rendering_params = {
                                nb_class: confirmed[0],
@@ -1066,18 +1085,20 @@ function createStyleBox(layer_name){
            });
 
     } else if (renderer == "Gridded"){
-        let field_to_discretize = "densitykm";
+        let field_to_discretize = current_layers[layer_name].rendered_field;
         popup.append('p').style("margin", "auto").style("text-align", "center")
             .append("button")
             .attr("class", "button_disc")
             .html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        field_to_discretize,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                     .then(function(confirmed){
+                        container.modal.show();
                         if(confirmed){
                             rendering_params = {
                                 nb_class: confirmed[0],
@@ -1401,9 +1422,11 @@ function createStyleBox_ProbSymbol(layer_name){
             zoom_without_redraw();
         });
 
-    var popup = d3.select(".styleBox")
-                    .select(".modal-content").style("width", "300px")
-                    .select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container)
+        .select(".modal-content").style("width", "300px")
+        .select(".modal-body");
+
     popup.append("p")
             .styles({"text-align": "center", "color": "grey"})
             .html([i18next.t("app_page.layer_style_popup.rendered_field", {field: current_layers[layer_name].rendered_field}),
@@ -1413,12 +1436,14 @@ function createStyleBox_ProbSymbol(layer_name){
         popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", {field: field_color}))
             .append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization"))
             .on("click", function(){
+                container.modal.hide();
                 display_discretization(layer_name,
                                        field_color,
                                        current_layers[layer_name].colors_breaks.length,
                                       //  "quantiles",
                                        current_layers[layer_name].options_disc)
                   .then(function(confirmed){
+                    container.modal.show();
                     if(confirmed){
                         rendering_params = {
                           nb_class: confirmed[0],
@@ -1613,7 +1638,7 @@ function make_style_box_indiv_label(label_node){
     let existing_box = document.querySelector(".styleTextAnnotation");
     if(existing_box) existing_box.remove();
 
-    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"))
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), {widthFitContent: true, draggable: true})
         .then( confirmed => {
             if(!confirmed){
                 label_node.style.fontsize = current_options.size;
@@ -1622,26 +1647,35 @@ function make_style_box_indiv_label(label_node){
                 label_node.style.fontFamily = current_options.font;
             }
         });
-    let box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size"))
-        .append("input")
+    var box_content = d3.select(".styleTextAnnotation")
+                    .select(".modal-content").style("width", "300px")
+                    .select(".modal-body").insert('div');
+    let a = box_content.append("p").attr('class', 'line_elem');
+    a.insert('span').html(i18next.t("app_page.func_options.label.font_size"));
+    a.append("input")
         .attrs({type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0,-2)})
-        .style("width", "70px")
+        .styles({"width": "70px", "float": "right"})
         .on("change", function(){
             label_node.style.fontSize = this.value + "px";
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.content"))
-        .append("input").attrs({"value": label_node.textContent, id: "label_content"})
+    let b = box_content.append("p").attr('class', 'line_elem');
+    b.insert('span').html(i18next.t("app_page.func_options.label.content"));
+    b.append("input").attrs({"value": label_node.textContent, id: "label_content"})
+        .styles({"width": "70px", "float": "right"})
         .on("keyup", function(){
             label_node.textContent = this.value;
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.common.color"))
-        .append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+    let c = box_content.append("p").attr('class', 'line_elem');
+    c.insert('span').html(i18next.t("app_page.func_options.common.color"));
+    c.append("input").attrs({"type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color"})
+        .styles({"width": "70px", "float": "right"})
         .on("change", function(){
             label_node.style.fill = this.value;
         });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"))
-    let selec_fonts = box_content.append("select")
+    let d = box_content.append("p").attr('class', 'line_elem');
+    d.insert('span').html(i18next.t("app_page.func_options.label.font_type"));
+    let selec_fonts = d.append("select")
+        .style('float', 'right')
         .on("change", function(){
             label_node.style.fontFamily = this.value;
         });

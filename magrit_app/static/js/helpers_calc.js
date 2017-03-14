@@ -223,6 +223,55 @@ function getBreaksQ6(serie, precision=null){
         };
 }
 
+function getBreaksS5(serie, precision=null){
+    let min = serie.min(),
+        max = serie.max(),
+        mean = serie.mean(),
+        std_dev = serie.stddev(),
+        range = serie.max() - serie.min(),
+        range_left = mean - min,
+        range_right = max - mean;
+
+    let ref = Math.max(range_left, range_right);
+    let class_range = ref / 2.5;
+    // var breaks = [
+    //   [mean - (class_range * 2.5), mean - (class_range * 1.5)]
+    //   [mean - (class_range * 1.5), mean - (class_range * 0.5)],
+    //   [mean - (class_range * 0.5), mean + (class_range * 0.5)],
+    //   [mean + (class_range * 0.5), mean + (class_range * 1.5)],
+    //   [mean + (class_range * 1.5), mean + (class_range * 2.5)]
+    // ];
+    var breaks = [
+      mean - (class_range * 2.5),
+      mean - (class_range * 1.5),
+      mean - (class_range * 0.5),
+      mean + (class_range * 0.5),
+      mean + (class_range * 1.5),
+      mean + (class_range * 2.5)
+    ];
+    let values = serie.sorted();
+    let stock_class = [0,0,0,0,0];
+    for(let i=0, len_i = values.length; i < len_i; ++i){
+        let val = values[i];
+        if(val <= breaks[1]){
+          stock_class[0] = stock_class[0] + 1;
+        } else if (val <= breaks[2]){
+          stock_class[1] = stock_class[1] + 1;
+        } else if (val <= breaks[3]){
+          stock_class[2] = stock_class[2] + 1;
+        } else if (val <= breaks[4]){
+          stock_class[3] = stock_class[3] + 1;
+        } else if (val <= breaks[5]){
+          stock_class[4] = stock_class[4] + 1;
+        }
+    }
+
+    return {
+        breaks: breaks,
+        stock_class: stock_class
+    }
+}
+
 function getBinsCount(_values, bins=16){
     _values = _values.filter(a => a).sort((a,b) => a-b);
     let nb_ft = _values.length,

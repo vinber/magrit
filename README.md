@@ -28,17 +28,26 @@ However it is very likely that it can work with little change on other UNIX-like
 In addition, an explanation is provided below for an installation via Docker, which can make a deployement possible for other OS users (notably [Windows](https://docs.docker.com/docker-for-windows/), [FreeBSD](https://wiki.freebsd.org/Docker) or [MacOSX](https://docs.docker.com/docker-for-mac/))
 
 #### Installation of the required libraries (for Example 1 & 2):
-(Ubuntu 16.04)
+(Using *Ubuntu 16.04*)  
+* **Packages provided by `apt`:**
 ```
-# apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base python3.5 python3.5-dev nodejs python3-pip \
-  gdal-bin libgdal-dev libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
+$ sudo apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base python3.5 python3.5-dev nodejs python3-pip \
+        libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev git wget libxslt1-dev libxml2 libxml2-dev
 ```
 
-Other tools are/might be needed:
-- `topojson` (required by the application - installation via `npm -g install topojson`)
-- `babel-cli` (only for developpement - installation via `npm -g install babel-cli`)
-- `git` (only for developpement/contributing/etc. - installation via `apt-get install git`)
+* **Manual installation of GDAL >= 2.1.0 :**
+```
+$ cd /tmp && wget http://download.osgeo.org/gdal/2.1.3/gdal-2.1.3.tar.gz && tar -xzf gdal-2.1.3.tar.gz && cd gdal-2.1.3
+$ ./configure
+$ make -s -j 4
+$ sudo make install
+```
+
+* Other tools are/might be needed:
+  - **`topojson`** (**required** by the application - installation via `npm -g install topojson`)
+  - `babel-cli` (only for developpement - installation via `npm -g install babel-cli`)
+  - `git` (only for developpement/contributing/etc. - installation via `apt-get install git`)
 
 #### Example 1 - Installing for developpement with no virtual-environnement :
 ##### Installation / compilation of the extensions :
@@ -49,6 +58,11 @@ $ pip3.5 install -r requirements-dev.txt
 $ python3.5 setup.py build_ext --inplace
 ```
 
+##### Launching the redis service :
+```bash
+$ sudo service redis-server start
+```
+
 ##### Launching the server application :
 ```bash
 $ python3.5 magrit_app/app.py -p 9999
@@ -57,7 +71,7 @@ INFO:magrit.main:serving on('0.0.0.0', 9999)
 ....
 ```
 
-##### Recompiling JS/css files after a change :
+##### Recompiling js/css files after a change :
 ##### (note that it can take a while when called the first time as it is going to fetch a few dependencies)
 ```bash
 $ ./misc/jsbuild/build.py
@@ -71,6 +85,7 @@ $ py.test tests/test.py
 #### Example 2 - Installing for developpement
 ##### Installation / compilation of the extensions :
 ```bash
+$ sudo service redis-server start
 $ git clone https://github.com/riatelab/magrit
 $ cd magrit
 $ virtualenv venv -p /usr/bin/python3.5

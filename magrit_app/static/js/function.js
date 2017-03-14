@@ -171,14 +171,19 @@ function display_error_num_field(){
 * as well as the "resolution" field in grid functionnality.
 *
 */
-var get_first_guess_span = function(){
+var get_first_guess_span = function(func_name){
     let bbox = _target_layer_file.bbox,
+        layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
         abs = Math.abs;
+    if(layer_name == "us_states" && func_name == "grid"){
+        return 650;
+    }
+    let const_mult = func_name == "grid" ? 0.08 : 0.04;
     let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
                                   [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
         height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
                                    [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
-        val = Math.max(width_km , height_km) * 0.05;
+        val = Math.max(width_km , height_km) * const_mult;
         return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 }
 
@@ -1160,7 +1165,7 @@ var fields_Stewart = {
                 field_selec.append("option").text(field).attr("value", field);
                 field_selec2.append("option").text(field).attr("value", field);
             });
-            document.getElementById("stewart_span").value = get_first_guess_span();
+            document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
             field_selec.on("change", function(){
                 document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
@@ -1560,14 +1565,7 @@ function fillMenu_Anamorphose(){
     doug1.insert('input')
       .attrs({type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations"});
 
-    // Options for Olson mode :
-    let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    // o2.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    // o2.insert('input')
-    //   .style("width", "60px")
-    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
+    // let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
 
      [['Dougenik & al. (1985)', 'dougenik'],
       ['Olson (2005)', 'olson']].forEach(function(fun_name){
@@ -2938,7 +2936,7 @@ var fields_griddedMap = {
           )
         });
         output_name.attr('value', ["Gridded", layer].join('_'));
-        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
+        document.getElementById("Gridded_cellsize").value = get_first_guess_span('grid');
         section2.selectAll(".params").attr("disabled", null);
     },
     unfill: function(){
@@ -2977,7 +2975,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
           if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
               options["choosed_name"] = new_user_layer_name;
           }
-
+          let rendered_field = field_n + "_densitykm"
           let n_layer_name = add_layer_topojson(data, options);
           if(!n_layer_name)
               return;
@@ -2987,7 +2985,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
               d_values = [];
 
           for(let i=0; i < nb_ft; i++){
-              d_values.push(+res_data[i]["densitykm"])
+              d_values.push(+res_data[i][rendered_field])
           }
 
           current_layers[n_layer_name].renderer = "Gridded";
@@ -3000,7 +2998,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
                   colors: disc_result[3],
                   colorsByFeature: disc_result[4],
                   renderer: "Gridded",
-                  rendered_field: "densitykm",
+                  rendered_field: rendered_field,
                       };
           render_choro(n_layer_name, rendering_params);
           handle_legend(n_layer_name);

@@ -107,9 +107,9 @@ function setUpInterface(resume_project) {
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline");
+    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
 
-    var proj_select = proj_options.append("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "align": "center", "color": " white", "background-color": "#000", "border": "none", "max-width": "350px" }).on("change", function () {
+    var proj_select = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "width": "calc(100% + 20px)" }).on("change", function () {
         current_proj_name = this.value;
         change_projection(this.value);
     });
@@ -140,7 +140,8 @@ function setUpInterface(resume_project) {
 
     proj_select.node().value = "NaturalEarth";
 
-    proj_options.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
+    var proj_options2 = proj_options.append("div");
+    proj_options2.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
         min: -180.0, max: 180.0, step: 0.1 }).styles({ width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
         'margin': "0 0 0 15px",
         "vertical-align": "text-top" }).on("input", function () {
@@ -148,7 +149,7 @@ function setUpInterface(resume_project) {
         document.getElementById("proj_center_value_txt").value = +this.value;
     });
 
-    proj_options.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
+    proj_options2.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
         min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "40px", "margin": "0 10px",
         "color": " white", "background-color": "#000",
         "vertical-align": "calc(20%)" }).on("change", function () {
@@ -164,29 +165,29 @@ function setUpInterface(resume_project) {
         handle_proj_center_button([this.value, null, null]);
         document.getElementById("form_projection_center").value = this.value;
     });
-    proj_options.append("span").style("vertical-align", "calc(20%)").html("°");
+    proj_options2.append("span").style("vertical-align", "calc(20%)").html("°");
 
-    proj_options.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
+    proj_options2.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
         window.localStorage.removeItem("magrit_project");
         window.removeEventListener("beforeunload", beforeUnloadWindow);
         location.reload();
     });
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-tooltip-position': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
         window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
     });
 
     const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
         "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-tooltip-position": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+        "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
         if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
@@ -285,12 +286,10 @@ function setUpInterface(resume_project) {
         b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
         accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
 
-    window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-tooltip-position", "right");
+    window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
     window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div").attrs({ id: "section3", class: "i18n",
-        "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-        "data-tooltip-position": "right" }), accordion4.append("div").attr("id", "section4");
+    accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
     accordion5.append("div").attr("id", "section5");
 
     var dv1 = section1.append("div"),
@@ -327,12 +326,18 @@ function setUpInterface(resume_project) {
 
     var section3 = d3.select("#section3");
 
-    window.layer_list = section3.append("div").append("ul").attrs({ id: "sortable", class: "layer_list" });
+    window.layer_list = section3.append("div").attrs({ class: "i18n",
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+        "data-placement": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
 
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
-    dv3.append("img").attr("src", "/static/img/b/addsample_t.png").styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom' }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+    dv3.append("img").attrs({ "src": "/static/img/b/addsample_t.png", class: 'i18n',
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
+    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
     var section4 = d3.select("#section4");
     var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
@@ -350,9 +355,7 @@ function setUpInterface(resume_project) {
 
     var f = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     f.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.background_color");
-    f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", function () {
-        handle_bg_color(this.value);
-    });
+    f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", handle_bg_color);
 
     var a1 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     a1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_width");
@@ -501,7 +504,7 @@ function setUpInterface(resume_project) {
 
     g.append("span").style("float", "right").html("°");
 
-    g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner",
+    g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
         value: 0, min: 0, max: 360, step: "any" }).styles({ width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px" }).on("change", function () {
         var val = +this.value,
             old_value = document.getElementById("form_rotate").value;
@@ -740,7 +743,7 @@ function setUpInterface(resume_project) {
 
     var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
         return {
-            "data-tooltip-position": d.tooltip_position,
+            "data-placement": d.tooltip_position,
             "class": d.class,
             "data-i18n": d.i18n,
             "id": d.id };
@@ -848,8 +851,7 @@ function bindTooltips() {
             animation: "slideNfade",
             duration: 50,
             delay: 100,
-            container: document.getElementById("twbs"),
-            placement: tooltips_elem[i].getAttribute("data-tooltip-position")
+            container: document.getElementById("twbs")
         });
     }
 }
@@ -1042,7 +1044,7 @@ var discretiz_geostats_switch = new Map([["jenks", "getJenks"], ["equal_interval
 ["quantiles", "getQuantile"], ["arithmetic_progression", "getArithmeticProgression"], ["Q6", "getBreaksQ6"], ["geometric_progression", "getGeometricProgression"]]);
 
 // Reference to the available fonts that the user could select :
-var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS, elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
+var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
 // with the style-fonts.css file as we are using their order to lookup for their definition
@@ -1299,7 +1301,7 @@ function make_dialog_container(id_box, title, class_box) {
     var modal_box = new Modal(container, {
         content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + i18next.t("app_page.common.confirm") + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>' + '</div>'
     });
-    modal_box.open();
+    modal_box.show();
     return modal_box;
 }
 
@@ -1363,7 +1365,8 @@ var make_confirm_dialog2 = function (class_box, title, options) {
             keyboard: false,
             content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '<p>' + html_content + '</p>' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>' + '</div>'
         });
-        modal_box.open();
+        modal_box.show();
+        container.modal = modal_box;
         overlay_under_modal.display();
         var func_cb = function func_cb(evt) {
             helper_esc_key_twbs_cb(evt, _onclose_false);
@@ -1372,7 +1375,6 @@ var make_confirm_dialog2 = function (class_box, title, options) {
             document.removeEventListener('keydown', func_cb);
             existing.delete(new_id);
             overlay_under_modal.hide();
-            modal_box.close();
             container.remove();
         };
         var _onclose_false = function _onclose_false() {
@@ -1559,14 +1561,14 @@ function zoom_without_redraw() {
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
     }
 
-    if (scaleBar.displayed) {
-        if (proj.invert) {
-            scaleBar.update();
-        } else {
-            scaleBar.remove();
-            alertify.notify(i18next.t('app_page.notification.warning_deactivation_scalebar'), 'warning', 5);
-        }
-    }
+    // if(scaleBar.displayed){
+    //     if(proj.invert) {
+    //         scaleBar.update();
+    //     } else {
+    //         scaleBar.remove()
+    //     }
+    // }
+
     if (window.legendRedrawTimeout) {
         clearTimeout(legendRedrawTimeout);
     }
@@ -1853,7 +1855,9 @@ function handle_title_properties() {
         position_x_pct: round_value(+title.attr("x") / w * 100, 1),
         position_y: title.attr("y"),
         position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-        font_family: title.style("font-family")
+        font_family: title.style("font-family"),
+        stroke: title.style('stroke'),
+        stroke_width: title.style('stroke-width')
     };
     title_props.font_weight = title_props.font_weight == "400" || title_props.font_weight == "" ? "" : "bold";
 
@@ -1862,7 +1866,8 @@ function handle_title_properties() {
         if (!confirmed) title.attrs({ x: title_props.position_x, y: title_props.position_y }).styles({
             "font-size": title_props.size, "fill": title_props.color,
             "font-family": title_props.font_family, 'font-style': title_props.font_style,
-            'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight
+            'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+            'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
         });
     });
     var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
@@ -1921,6 +1926,35 @@ function handle_title_properties() {
             title.style('text-decoration', 'underline');
         }
     });
+
+    var hasBuffer = title_props.stroke !== "none";
+    var buffer_section1 = box_content.append("p");
+    var buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
+    box_content.append('p').style('clear', 'both');
+
+    buffer_section1.append('input').attrs({ type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null }).on('change', function () {
+        if (this.checked) {
+            buffer_section2.style('display', '');
+            title.style('stroke', buffer_color.node().value).style('stroke-width', buffer_width.node().value + 'px');
+            console.log(buffer_color.attr('value'), buffer_color.node().value);
+        } else {
+            buffer_section2.style('display', 'none');
+            title.style('stroke', 'none').style('stroke-width', '1px');
+        }
+    });
+
+    buffer_section1.append('label').attrs({ for: 'title_buffer_chkbox' }).text(i18next.t('app_page.title_box.buffer'));
+
+    var buffer_color = buffer_section2.insert('input').style('float', 'left').attrs({ type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff" }).on('change', function () {
+        title.style('stroke', this.value);
+    });
+
+    buffer_section2.insert('span').style('float', 'right').html(' px');
+
+    var buffer_width = buffer_section2.insert('input').styles({ 'float': 'right', 'width': '60px' }).attrs({ type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1 }).on('change', function () {
+        title.style('stroke-width', this.value + 'px');
+    });
+
     return;
 }
 
@@ -2532,6 +2566,10 @@ function getBreaks(values, type, nb_class) {
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         serie.setClassManually(breaks);
+    } else if (type == "S5") {
+        var _tmp = getBreaksS5(serie, serie.precision);
+        breaks = _tmp.breaks;
+        serie.setClassManually(breaks);
     } else {
         var _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
@@ -2760,11 +2798,53 @@ var display_discretization = function display_discretization(layer_name, field_n
                 breaks[0] = serie.min();
                 breaks[6] = serie.max();
                 serie.setClassManually(breaks);
-            } else if (type === "user_defined") {
-                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
-                nb_class = tmp.breaks.length - 1;
+            } else if (type === "S5") {
+                var tmp = getBreaksS5(serie, serie.precision);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
+                var should_warn = void 0;
+                var min = serie.min(),
+                    max = serie.max();
+                if (breaks[1] < min) {
+                    should_warn = true;
+                    breaks.shift();
+                    stock_class.shift();
+                    if (breaks[1] < min) {
+                        breaks.shift();
+                        stock_class.shift();
+                    }
+                } else if (breaks[4] > max) {
+                    should_warn = true;
+                    breaks.pop();
+                    stock_class.pop();
+                    if (breaks[3] > max) {
+                        breaks.pop();
+                        stock_class.pop();
+                    }
+                }
+                if (breaks[0] < min) breaks[0] = min;
+                if (breaks[breaks.length - 1] > max) breaks[breaks.length - 1] = max;
+                if (should_warn) {
+                    swal({ title: "",
+                        text: i18next.t("app_page.common.warning_not_adapted_classification"),
+                        type: "warning",
+                        showCancelButton: false,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#DD6B55"
+                    }).then(function (_) {
+                        return null;
+                    }, function (dismiss) {
+                        return null;
+                    });
+                }
+                serie.setClassManually(breaks);
+            } else if (type === "user_defined") {
+                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+                stock_class = tmp.stock_class;
+                breaks = tmp.breaks;
+
+                nb_class = tmp.breaks.length - 1;
+                txt_nb_class.node().value = +nb_class;
 
                 if (breaks[0] > serie.min()) breaks[0] = serie.min();
                 if (breaks[nb_class] < serie.max()) breaks[nb_class] = serie.max();
@@ -2929,7 +3009,7 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     values = serie.sorted();
     var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"],
-    //     [i18next.t("app_page.common.std_dev"), "std_dev"],
+    //  [i18next.t("app_page.common.S5"), "S5"],
     [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
     if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
@@ -2943,6 +3023,10 @@ var display_discretization = function display_discretization(layer_name, field_n
             nb_class = 6;
             txt_nb_class.node().value = 6;
             document.getElementById("nb_class_range").value = 6;
+        } else if (type === "S5") {
+            nb_class = 5;
+            txt_nb_class.node().value = 5;
+            document.getElementById("nb_class_range").value = 5;
         }
         redisplay.compute();
         redisplay.draw();
@@ -2966,6 +3050,10 @@ var display_discretization = function display_discretization(layer_name, field_n
         if (type === "Q6") {
             this.value = 6;
             txt_nb_class.node().value = 6;
+            return;
+        } else if (type === "S5") {
+            this.value = 5;
+            txt_nb_class.node().value = 5;
             return;
         }
         nb_class = +this.value;
@@ -3071,8 +3159,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         var old_nb_class = nb_class;
         user_break_list = document.getElementById("user_breaks_area").value;
         type = "user_defined";
-        nb_class = user_break_list.split('-').length - 1;
-        txt_nb_class.node().value = +nb_class;
+        // nb_class = user_break_list.split('-').length - 1;
+        // txt_nb_class.node().value = +nb_class;
         // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
         document.getElementById("nb_class_range").value = nb_class;
         redisplay.compute();
@@ -3154,7 +3242,6 @@ var display_discretization = function display_discretization(layer_name, field_n
         }
         deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3163,7 +3250,6 @@ var display_discretization = function display_discretization(layer_name, field_n
     var _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3251,7 +3337,6 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3264,7 +3349,6 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         });
         deferred.resolve([nb_class, color_map, colorByFeature]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent();
         if (!p) overlay_under_modal.hide();
@@ -3287,10 +3371,8 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 
 function reOpenParent(css_selector) {
     var parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
-    if (parent_style_box) {
-        parent_style_box.classList.add("in");
-        parent_style_box.setAttribute("aria-hidden", false);
-        parent_style_box.style.display = "block";
+    if (parent_style_box && parent_style_box.modal && parent_style_box.modal.show) {
+        parent_style_box.modal.show();
         return true;
     } else {
         return false;
@@ -3751,7 +3833,6 @@ var display_discretization_links_discont = function display_discretization_links
         breaks[nb_class] = serie.max();
         deferred.resolve([serie, breaks_info, breaks]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent('.styleBox');
         if (!p) overlay_under_modal.hide();
@@ -3759,7 +3840,6 @@ var display_discretization_links_discont = function display_discretization_links
     var _onclose = function _onclose() {
         deferred.resolve(false);
         document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
         container.remove();
         var p = reOpenParent('.styleBox');
         if (!p) overlay_under_modal.hide();
@@ -3950,12 +4030,17 @@ function display_error_num_field() {
 * as well as the "resolution" field in grid functionnality.
 *
 */
-var get_first_guess_span = function get_first_guess_span() {
+var get_first_guess_span = function get_first_guess_span(func_name) {
     var bbox = _target_layer_file.bbox,
+        layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
         abs = Math.abs;
+    if (layer_name == "us_states" && func_name == "grid") {
+        return 650;
+    }
+    var const_mult = func_name == "grid" ? 0.08 : 0.04;
     var width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
         height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
-        val = Math.max(width_km, height_km) * 0.05;
+        val = Math.max(width_km, height_km) * const_mult;
     return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 };
 
@@ -5001,7 +5086,7 @@ var fields_Stewart = {
                     field_selec.append("option").text(field).attr("value", field);
                     field_selec2.append("option").text(field).attr("value", field);
                 });
-                document.getElementById("stewart_span").value = get_first_guess_span();
+                document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
                 field_selec.on("change", function () {
                     document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
@@ -5349,14 +5434,7 @@ function fillMenu_Anamorphose() {
     doug1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations' }).html(i18next.t("app_page.func_options.cartogram.dougenik_iterations"));
     doug1.insert('input').attrs({ type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: "Anamorph_dougenik_iterations" });
 
-    // Options for Olson mode :
-    var o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
-    // o2.append('span')
-    //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.olson_scale_max_scale'})
-    //   .html(i18next.t("app_page.func_options.cartogram.olson_scale_max_scale"));
-    // o2.insert('input')
-    //   .style("width", "60px")
-    //   .attrs({type: 'number', class: 'params', id: "Anamorph_opt2", value: 100, min: 0, max: 100, step: 10});
+    // let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
 
     [['Dougenik & al. (1985)', 'dougenik'], ['Olson (2005)', 'olson']].forEach(function (fun_name) {
         algo_selec.append("option").text(fun_name[0]).attr("value", fun_name[1]);
@@ -6620,7 +6698,7 @@ var fields_griddedMap = {
             render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value);
         });
         output_name.attr('value', ["Gridded", layer].join('_'));
-        document.getElementById("Gridded_cellsize").value = get_first_guess_span();
+        document.getElementById("Gridded_cellsize").value = get_first_guess_span('grid');
         section2.selectAll(".params").attr("disabled", null);
     },
     unfill: function unfill() {
@@ -6657,7 +6735,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
             options["choosed_name"] = new_user_layer_name;
         }
-
+        var rendered_field = field_n + "_densitykm";
         var n_layer_name = add_layer_topojson(data, options);
         if (!n_layer_name) return;
         var res_data = result_data[n_layer_name],
@@ -6666,7 +6744,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
             d_values = [];
 
         for (var i = 0; i < nb_ft; i++) {
-            d_values.push(+res_data[i]["densitykm"]);
+            d_values.push(+res_data[i][rendered_field]);
         }
 
         current_layers[n_layer_name].renderer = "Gridded";
@@ -6679,7 +6757,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
             colors: disc_result[3],
             colorsByFeature: disc_result[4],
             renderer: "Gridded",
-            rendered_field: "densitykm"
+            rendered_field: rendered_field
         };
         render_choro(n_layer_name, rendering_params);
         handle_legend(n_layer_name);
@@ -7347,7 +7425,6 @@ function make_box_type_fields(layer_name) {
         container = document.getElementById("box_type_fields");
 
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', helper_esc_key_twbs);
@@ -7767,6 +7844,50 @@ function getBreaksQ6(serie) {
             return round_value(val, precision);
         });
     }
+    return {
+        breaks: breaks,
+        stock_class: stock_class
+    };
+}
+
+function getBreaksS5(serie) {
+    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+
+    var min = serie.min(),
+        max = serie.max(),
+        mean = serie.mean(),
+        std_dev = serie.stddev(),
+        range = serie.max() - serie.min(),
+        range_left = mean - min,
+        range_right = max - mean;
+
+    var ref = Math.max(range_left, range_right);
+    var class_range = ref / 2.5;
+    // var breaks = [
+    //   [mean - (class_range * 2.5), mean - (class_range * 1.5)]
+    //   [mean - (class_range * 1.5), mean - (class_range * 0.5)],
+    //   [mean - (class_range * 0.5), mean + (class_range * 0.5)],
+    //   [mean + (class_range * 0.5), mean + (class_range * 1.5)],
+    //   [mean + (class_range * 1.5), mean + (class_range * 2.5)]
+    // ];
+    var breaks = [mean - class_range * 2.5, mean - class_range * 1.5, mean - class_range * 0.5, mean + class_range * 0.5, mean + class_range * 1.5, mean + class_range * 2.5];
+    var values = serie.sorted();
+    var stock_class = [0, 0, 0, 0, 0];
+    for (var i = 0, len_i = values.length; i < len_i; ++i) {
+        var val = values[i];
+        if (val <= breaks[1]) {
+            stock_class[0] = stock_class[0] + 1;
+        } else if (val <= breaks[2]) {
+            stock_class[1] = stock_class[1] + 1;
+        } else if (val <= breaks[3]) {
+            stock_class[2] = stock_class[2] + 1;
+        } else if (val <= breaks[4]) {
+            stock_class[3] = stock_class[3] + 1;
+        } else if (val <= breaks[5]) {
+            stock_class[4] = stock_class[4] + 1;
+        }
+    }
+
     return {
         breaks: breaks,
         stock_class: stock_class
@@ -8969,9 +9090,6 @@ function add_layer_topojson(text) {
 function get_bbox_layer_path(name) {
     var symbol = current_layers[name].symbol || "path",
         bbox_layer_path = undefined;
-    // if(current_proj_name == "ConicConformal" && (name == "World" || name == "Sphere" || name == "Graticule")){
-    //     bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    // } else {
     map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
         var bbox_path = path.bounds(d);
         if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
@@ -9915,7 +10033,8 @@ function createStyleBoxTypoSymbols(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
 
@@ -10023,7 +10142,8 @@ function createStyleBoxLabel(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_loc").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.reset_labels_location")).on("click", function () {
@@ -10041,7 +10161,7 @@ function createStyleBoxLabel(layer_name) {
     var label_sizes = popup.append("p").attr("class", "line_elem");
     label_sizes.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_size"));
     label_sizes.insert("span").style("float", "right").html(" px");
-    label_sizes.insert("input").style("float", "right").attr("type", "number").attr("value", +current_layers[layer_name].default_size.replace("px", "")).on("change", function () {
+    label_sizes.insert("input").styles({ "float": "right", "width": "70px" }).attr("type", "number").attr("value", +current_layers[layer_name].default_size.replace("px", "")).on("change", function () {
         var size = this.value + "px";
         current_layers[layer_name].default_size = size;
         selection.style("font-size", size);
@@ -10049,7 +10169,7 @@ function createStyleBoxLabel(layer_name) {
 
     var default_color = popup.insert("p").attr("class", "line_elem");
     default_color.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_color"));
-    default_color.insert("input").attrs({ "type": "color", "value": current_layers[layer_name].fill_color }).on("change", function () {
+    default_color.insert("input").style('float', 'right').attrs({ "type": "color", "value": current_layers[layer_name].fill_color }).on("change", function () {
         current_layers[layer_name].fill_color = this.value;
         selection.transition().style("fill", this.value);
     });
@@ -10082,7 +10202,9 @@ function createStyleBoxGraticule(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
+
     var color_choice = popup.append("p").attr("class", "line_elem");
     color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
     color_choice.append("input").style("float", "right").attrs({ type: "color", value: current_params.fill_color.single }).on("change", function () {
@@ -10296,7 +10418,8 @@ function createStyleBox_Line(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo") {
         (function () {
@@ -10324,7 +10447,9 @@ function createStyleBox_Line(layer_name) {
         })();
     } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, current_layers[layer_name].options_disc).then(function (confirmed) {
+                container.modal.show();
                 if (confirmed) {
                     rendering_params = {
                         nb_class: confirmed[0],
@@ -10376,7 +10501,9 @@ function createStyleBox_Line(layer_name) {
             });
             threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
             popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+                container.modal.hide();
                 display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                    container.modal.show();
                     if (result) {
                         (function () {
                             var serie = result[0],
@@ -10417,7 +10544,9 @@ function createStyleBox_Line(layer_name) {
         });
         disc_part.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
         popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                container.modal.show();
                 if (result) {
                     (function () {
                         var serie = result[0],
@@ -10587,7 +10716,8 @@ function createStyleBox(layer_name) {
         }
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (type === "Point") {
         var current_pt_size = current_layers[layer_name].pointRadius;
@@ -10634,13 +10764,16 @@ function createStyleBox(layer_name) {
         (function () {
             var rendered_field = current_layers[layer_name].rendered_field;
 
-            popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+            popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                container.modal.hide();
+
                 var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
                     _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
                     cats = _prepare_categories_a4[0],
                     _ = _prepare_categories_a4[1];
 
                 display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
@@ -10656,9 +10789,11 @@ function createStyleBox(layer_name) {
         })();
     } else if (renderer == "Choropleth") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+            container.modal.hide();
             display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
             //  "quantiles",
             current_layers[layer_name].options_disc).then(function (confirmed) {
+                container.modal.show();
                 if (confirmed) {
                     rendering_params = {
                         nb_class: confirmed[0],
@@ -10680,11 +10815,13 @@ function createStyleBox(layer_name) {
         });
     } else if (renderer == "Gridded") {
         (function () {
-            var field_to_discretize = "densitykm";
+            var field_to_discretize = current_layers[layer_name].rendered_field;
             popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
                 display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
                 //  "quantiles",
                 current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0],
@@ -10974,15 +11111,19 @@ function createStyleBox_ProbSymbol(layer_name) {
         zoom_without_redraw();
     });
 
-    var popup = d3.select(".styleBox").select(".modal-content").style("width", "300px").select(".modal-body");
+    var container = document.querySelector(".twbs > .styleBox");
+    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
+
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
         (function () {
             var field_color = current_layers[layer_name].rendered_field2;
             popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
                 display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
                 //  "quantiles",
                 current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0],
@@ -11149,7 +11290,7 @@ function make_style_box_indiv_label(label_node) {
     var existing_box = document.querySelector(".styleTextAnnotation");
     if (existing_box) existing_box.remove();
 
-    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv")).then(function (confirmed) {
+    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), { widthFitContent: true, draggable: true }).then(function (confirmed) {
         if (!confirmed) {
             label_node.style.fontsize = current_options.size;
             label_node.textContent = current_options.content;
@@ -11157,18 +11298,25 @@ function make_style_box_indiv_label(label_node) {
             label_node.style.fontFamily = current_options.font;
         }
     });
-    var box_content = d3.select(".styleTextAnnotation").select(".modal-body").insert("div");
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_size")).append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0, -2) }).style("width", "70px").on("change", function () {
+    var box_content = d3.select(".styleTextAnnotation").select(".modal-content").style("width", "300px").select(".modal-body").insert('div');
+    var a = box_content.append("p").attr('class', 'line_elem');
+    a.insert('span').html(i18next.t("app_page.func_options.label.font_size"));
+    a.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0, -2) }).styles({ "width": "70px", "float": "right" }).on("change", function () {
         label_node.style.fontSize = this.value + "px";
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.content")).append("input").attrs({ "value": label_node.textContent, id: "label_content" }).on("keyup", function () {
+    var b = box_content.append("p").attr('class', 'line_elem');
+    b.insert('span').html(i18next.t("app_page.func_options.label.content"));
+    b.append("input").attrs({ "value": label_node.textContent, id: "label_content" }).styles({ "width": "70px", "float": "right" }).on("keyup", function () {
         label_node.textContent = this.value;
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.common.color")).append("input").attrs({ "type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color" }).on("change", function () {
+    var c = box_content.append("p").attr('class', 'line_elem');
+    c.insert('span').html(i18next.t("app_page.func_options.common.color"));
+    c.append("input").attrs({ "type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color" }).styles({ "width": "70px", "float": "right" }).on("change", function () {
         label_node.style.fill = this.value;
     });
-    box_content.append("p").html(i18next.t("app_page.func_options.label.font_type"));
-    var selec_fonts = box_content.append("select").on("change", function () {
+    var d = box_content.append("p").attr('class', 'line_elem');
+    d.insert('span').html(i18next.t("app_page.func_options.label.font_type"));
+    var selec_fonts = d.append("select").style('float', 'right').on("change", function () {
         label_node.style.fontFamily = this.value;
     });
 
@@ -11609,6 +11757,7 @@ var Textbox = function () {
 
         this.text_annot = frgn_obj;
         this.font_family = 'Verdana,Geneva,sans-serif';
+        this.buffer = undefined;
         this.id = new_id_txt_annot;
         return this;
     }
@@ -11626,23 +11775,32 @@ var Textbox = function () {
             if (existing_box) existing_box.remove();
 
             var current_options = {
-                size: inner_p.style("font-size"),
+                size: inner_p.style("font-size").split('px')[0],
                 color: inner_p.style("color"),
                 content: unescape(inner_p.html()),
                 transform_rotate: this.text_annot.attr('transform'),
                 x: this.text_annot.attr('x'), y: this.text_annot.attr('y'),
-                font: "",
                 font_weight: inner_p.style('font-weight'),
                 font_style: inner_p.style('font-style'),
-                text_decoration: inner_p.style('text-decoration')
+                text_decoration: inner_p.style('text-decoration'),
+                buffer: self.buffer != undefined ? cloneObj(self.buffer) : undefined,
+                text_shadow: inner_p.style('text-shadow'),
+                font_family: self.font_family
             };
             current_options.font_weight = current_options.font_weight == "400" || current_options.font_weight == "" ? '' : 'bold';
             make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.text_box_edit_box.title"), { widthFitContent: true }).then(function (confirmed) {
                 if (!confirmed) {
-                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size });
+                    self.text_annot.select('p').text(current_options.content).styles({ 'color': current_options.color, 'font-size': current_options.size + 'px',
+                        'font-weight': current_options.font_weight, 'text-decoration': current_options.text_decoration,
+                        'font-style': current_options.font_style, 'text-shadow': current_options.text_shadow });
                     self.fontsize = current_options.size;
-                    // self.rotate = current_options.rotate;
+                    self.font_family = current_options.font_family;
                     self.text_annot.attr('transform', current_options.transform_rotate);
+                    self.buffer = current_options.buffer;
+                } else {
+                    if (!buffer_txt_chk.node().checked) {
+                        self.buffer = undefined;
+                    }
                 }
             });
             var box_content = d3.select(".styleTextAnnotation").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleTextAnnotation");
@@ -11679,6 +11837,7 @@ var Textbox = function () {
             var options_font = box_content.append('p'),
                 font_select = options_font.insert("select").on("change", function () {
                 inner_p.style("font-family", this.value);
+                self.font_family = this.value;
             });
 
             available_fonts.forEach(function (font) {
@@ -11693,11 +11852,11 @@ var Textbox = function () {
                 inner_p.style("font-size", self.fontsize + "px");
             });
 
-            options_font.append("input").attrs({ type: "color", id: "font_color", value: current_options.color }).style('width', '60px').on("change", function () {
+            options_font.append("input").attrs({ type: "color", id: "font_color", value: rgb2hex(current_options.color) }).style('width', '60px').on("change", function () {
                 inner_p.style("color", this.value);
             });
 
-            var options_format = box_content.append('p'),
+            var options_format = box_content.append('p').style('text-align', 'center'),
                 btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
                 btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
                 btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
@@ -11705,11 +11864,47 @@ var Textbox = function () {
             var content_modif_zone = box_content.append("p");
             content_modif_zone.append("span").html(i18next.t("app_page.text_box_edit_box.content"));
             content_modif_zone.append("span").html("<br>");
-            var textarea = content_modif_zone.append("textarea").attr("id", "annotation_content").style("margin", "5px 0px 0px").on("keyup", function () {
+            // let textarea = content_modif_zone.append("textarea")
+            content_modif_zone.append("textarea").attr("id", "annotation_content").styles({ "margin": "5px 0px 0px", "width": "100%" }).on("keyup", function () {
                 inner_p.html(this.value);
             });
-            textarea = textarea.node();
+            // textarea = textarea.node();
             document.getElementById("annotation_content").value = current_options.content;
+
+            var buffer_text_zone = box_content.append('p');
+            var buffer_txt_chk = buffer_text_zone.append('input').attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null }).on('change', function () {
+                if (this.checked) {
+                    buffer_color.style('display', '');
+                    if (self.buffer == undefined) {
+                        self.buffer = { color: "#fff", size: 1 };
+                    } else {
+                        var color = self.buffer.color,
+                            size = self.buffer.size;
+                        inner_p.style('text-shadow', "-" + size + "px 0px 0px " + color + ", 0px " + size + "px 0px " + color + ", " + size + "px 0px 0px " + color + ", 0px -" + size + "px 0px " + color);
+                    }
+                } else {
+                    buffer_color.style('display', 'none');
+                    inner_p.style('text-shadow', 'none');
+                }
+            });
+
+            buffer_text_zone.append('label').attrs({ for: 'buffer_txt_chk' }).text(i18next.t('app_page.text_box_edit_box.buffer'));
+
+            var buffer_color = buffer_text_zone.append('input').style('float', 'right').style('display', current_options.buffer != undefined ? '' : 'none').attrs({ type: 'color', value: current_options.buffer != undefined ? current_options.buffer.color : "#fff" }).on('change', function () {
+                self.buffer.color = this.value;
+                var color = self.buffer.color,
+                    size = self.buffer.size;
+                inner_p.style('text-shadow', "-" + size + "px 0px 0px " + color + ", 0px " + size + "px 0px " + color + ", " + size + "px 0px 0px " + color + ", 0px -" + size + "px 0px " + color);
+            });
+            // buffer_text_zone2.append('input')
+            //     .attrs({type: 'number', class: 'without_spinner', value: current_options.buffer != undefined ? current_options.buffer.size : 1})
+            //     .on('change', function(){
+            //         self.buffer.size = +this.value;
+            //         let color = self.buffer.color, size = self.buffer.size;
+            //         let t = `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`;
+            //         inner_p.style('text-shadow', t);
+            //     });
+
             btn_bold.on('click', function () {
                 if (this.classList.contains('active')) {
                     this.classList.remove('active');
@@ -13431,6 +13626,7 @@ function get_map_template() {
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
+    map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -13814,12 +14010,14 @@ function apply_user_preferences(json_pref) {
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
             reproj_symbol_layer();
-            var desired_order = layers.map(function (i) {
-                return i.layer_name;
-            });
-            reorder_elem_list_layer(desired_order);
-            desired_order.reverse();
-            reorder_layers(desired_order);
+            if (layers.length > 1) {
+                var desired_order = layers.map(function (i) {
+                    return i.layer_name;
+                });
+                reorder_elem_list_layer(desired_order);
+                desired_order.reverse();
+                reorder_layers(desired_order);
+            }
             apply_layout_lgd_elem();
             if (map_config.canvas_rotation) {
                 document.getElementById("form_rotate").value = map_config.canvas_rotation;
@@ -13829,7 +14027,7 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
-        }, 250);
+        }, layers.length > 1 ? 125 : 250);
     };
 
     function apply_layout_lgd_elem() {
@@ -13890,11 +14088,13 @@ function apply_user_preferences(json_pref) {
             if (map_config.layout_features.text_annot) {
                 for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
                     var _ft3 = map_config.layout_features.text_annot[_i8];
-                    var new_txt_bow = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
-                    var inner_p = new_txt_bow.text_annot.select("p").node();
+                    var new_txt_box = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
+                    var inner_p = new_txt_box.text_annot.select("p").node();
                     inner_p.innerHTML = _ft3.content;
                     inner_p.style = _ft3.style;
-                    new_txt_bow.text_annot.attr('transform', _ft3.transform);
+                    new_txt_box.text_annot.attr('transform', _ft3.transform);
+                    new_txt_box.fontsize = +_ft3.style.split('font-size: ')[1].split('px')[0];
+                    new_txt_box.font_family = _ft3.style.split('font-family: ')[1].split(';')[0];
                 }
             }
             if (map_config.layout_features.single_symbol) {
@@ -14315,7 +14515,9 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
         'vertical-align': 'middle' }).on("click", function () {
         var _this = this;
 
+        modal_box.hide();
         box_choice_symbol(res_symbols, ".dialog").then(function (confirmed) {
+            modal_box.show();
             if (confirmed) {
                 _this.style.backgroundImage = confirmed;
             }
@@ -14333,32 +14535,29 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
 
     var deferred = Q.defer(),
         container = document.getElementById("symbol_box"),
-        _onclose = function _onclose() {
-        deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        modal_box.close();
+        fn_cb = function fn_cb(evt) {
+        helper_esc_key_twbs_cb(evt, _onclose);
+    };
+
+    var clean_up_box = function clean_up_box() {
         container.remove();
         overlay_under_modal.hide();
+        document.removeEventListener('keydown', fn_cb);
     };
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.preventDefault();
-            _onclose();
-        }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
+
+    var _onclose = function _onclose() {
+        deferred.resolve(false);
+        clean_up_box();
+    };
+
     container.querySelector(".btn_ok").onclick = function () {
         var symbol_map = fetch_symbol_categories();
         deferred.resolve([nb_class, symbol_map]);
-        modal_box.close();
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+        clean_up_box();
     };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
     overlay_under_modal.display();
     return deferred.promise;
 };
@@ -14426,7 +14625,6 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         helper_esc_key_twbs_cb(evt, _onclose);
     };
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         if (parent_css_selector) {
             reOpenParent(parent_css_selector);
@@ -14528,6 +14726,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var lambda_section = content.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
 		lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 				handle_proj_center_button([this.value, null, null]);
 				document.getElementById('form_projection_center').value = this.value;
 				document.getElementById('proj_center_value_txt').value = this.value;
@@ -14536,12 +14735,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var phi_section = content.append('p').style('clear', 'both');
 		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
 		phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 				handle_proj_center_button([null, this.value, null]);
 		});
 
 		var gamma_section = content.append('p').style('clear', 'both');
 		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
 		gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 				handle_proj_center_button([null, null, this.value]);
 		});
 
@@ -14551,15 +14752,16 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 						handle_parallels_change([this.value, null]);
 				});
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 						handle_parallels_change([null, this.value]);
 				});
 		}
 
 		var clean_up_box = function clean_up_box() {
-				modal_box.close();
 				container.remove();
 				overlay_under_modal.hide();
 				document.removeEventListener('keydown', fn_cb);
@@ -14576,9 +14778,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		};
 		container.querySelector(".btn_cancel").onclick = _onclose_cancel;
 		container.querySelector("#xclose").onclick = _onclose_cancel;
-		container.querySelector(".btn_ok").onclick = function () {
-				clean_up_box();
-		};
+		container.querySelector(".btn_ok").onclick = clean_up_box;
 		document.addEventListener('keydown', fn_cb);
 		overlay_under_modal.display();
 };
@@ -14819,6 +15019,7 @@ function add_field_table(table, layer_name, parent) {
                     }
                 }
                 if (parent) {
+                    parent.modal_box.show();
                     parent.display_table(layer_name);
                 }
             }, function (error) {
@@ -14835,7 +15036,8 @@ function add_field_table(table, layer_name, parent) {
         fields_type = type_col(layer_name),
         regexp_name = new RegExp(/^[a-z0-9_]+$/i),
         // Only allow letters (lower & upper cases), number and underscore in the field name
-    box_content = d3.select(".addFieldBox").select(".modal-body").append("div"),
+    container = document.querySelector(".twbs > .addFieldBox"),
+        box_content = d3.select(container).select(".modal-body").append("div"),
         div1 = box_content.append("div").attr("id", "field_div1"),
         div2 = box_content.append("div").attr("id", "field_div2");
 
@@ -14952,6 +15154,7 @@ var boxExplore2 = {
         // TODO : allow to add_field on all the layer instead of just targeted / result layers :
         if (this.tables.get(table_name)) {
             this.top_buttons.insert("button").attrs({ id: "add_field_button", class: "button_st3" }).html(i18next.t("app_page.explore_box.button_add_field")).on('click', function () {
+                _this.modal_box.hide();
                 add_field_table(the_table, table_name, _this);
             });
         }
@@ -15053,7 +15256,7 @@ var boxExplore2 = {
         this.nb_features = undefined;
         this.columns_names = undefined;
         this.tables = this.get_available_tables();
-        var modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+        this.modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
         var container = document.getElementById("browse_data_box");
         this.box_table = d3.select(container).select(".modal-body");
         this.top_buttons = this.box_table.append('p').styles({ "margin-left": "15px", "display": "inline", "font-size": "12px" });
@@ -15062,7 +15265,6 @@ var boxExplore2 = {
             helper_esc_key_twbs_cb(evt, _onclose);
         },
             _onclose = function _onclose() {
-            modal_box.close();
             container.remove();
             overlay_under_modal.hide();
             document.removeEventListener('keydown', fn_cb);
@@ -15098,7 +15300,6 @@ function createBoxTextImportWizard(file) {
     dialog.style.minWidth = '380px';
 
     var clean_up_box = function clean_up_box() {
-        modal_box.close();
         container.remove();
         overlay_under_modal.hide();
         document.removeEventListener('keydown', fn_cb);
