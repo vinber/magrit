@@ -121,13 +121,10 @@ async def ogr_to_geojson(filepath, to_latlong=True):
     return stdout
 
 
-async def geojson_to_topojson(
-        filepath, quantization="--no-quantization", remove=False):
+async def geojson_to_topojson(filepath, remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["geo2topo", "--spherical", quantization, "--bbox",
-                     "-p", "--", filepath],
-                    stdout=PIPE, stderr=PIPE)
+    process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     if remove:
         os.remove(filepath)
@@ -135,8 +132,7 @@ async def geojson_to_topojson(
 
 
 async def store_non_quantized(filepath, f_name, redis_conn):
-    process = Popen(["geo2topo", "--spherical", "--no-quantization", "--bbox",
-                     "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
+    process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     result = stdout.decode()
     os.remove(filepath)
@@ -216,7 +212,7 @@ async def cache_input_topojson(request):
             f_path = '/tmp/' + fp_name + ".geojson"
             with open(f_path, 'wb') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, "-q 1e5")
+            result = await geojson_to_topojson(f_path)
             result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
@@ -348,7 +344,7 @@ async def convert(request):
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'wb') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, "-q 1e5")
+        result = await geojson_to_topojson(filepath2)
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             store_non_quantized(
@@ -393,7 +389,7 @@ async def convert(request):
                 '.shp', '.geojson')
             with open(filepath2, 'wb') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, "-q 1e5")
+            result = await geojson_to_topojson(filepath2)
             if len(result) == 0:
                 return web.Response(
                     text='{"Error": "Error converting input file"}')
@@ -423,7 +419,7 @@ async def convert(request):
             os.remove(filepath.replace('gml', 'gfs'))
         with open(filepath, 'wb') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e5")
+        result = await geojson_to_topojson(filepath)
         if len(result) == 0:
             return web.Response(
                 text='{"Error": "Error converting input file"}')
@@ -1012,7 +1008,7 @@ async def convert_csv_geo(request):
     filepath = "/tmp/"+ f_name +".geojson"
     with open(filepath, 'wb') as f:
         f.write(res.encode())
-    result = await geojson_to_topojson(filepath, "-q 1e5")
+    result = await geojson_to_topojson(filepath)
 
     if len(result) == 0:
         return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))

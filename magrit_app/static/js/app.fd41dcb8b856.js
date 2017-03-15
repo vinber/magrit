@@ -91,7 +91,7 @@ function setUpInterface(resume_project) {
     };
 
     var bg_drop = document.createElement('div');
-    bg_drop.className = "overlay_drop";
+    // bg_drop.className = "overlay_drop";
     bg_drop.id = 'overlay_drop';
     bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
     var inner_div = document.createElement("div");
@@ -1139,16 +1139,15 @@ function binds_layers_buttons(layer_name) {
 function displayInfoOnMove() {
     var info_features = d3.select("#info_features");
     if (info_features.classed("active")) {
-        d3.select(".info_button").style('box-shadow', null);
         map.selectAll(".layer").selectAll("path").on("mouseover", null);
         map.selectAll(".layer").selectAll("circle").on("mouseover", null);
         map.selectAll(".layer").selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
-        info_features.node().innerHTML = "";
-        info_features.style("display", "none");
+        info_features.style("display", "none").html("");
         svg_map.style.cursor = "";
     } else {
         var _ret5 = function () {
+            map.select('.brush').remove();
             var layers = svg_map.getElementsByClassName("layer"),
                 nb_layer = layers.length,
                 top_visible_layer = null;
@@ -1168,37 +1167,22 @@ function displayInfoOnMove() {
             }
 
             var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
-                symbol = current_layers[top_visible_layer].symbol;
+                symbol = current_layers[top_visible_layer].symbol || "path";
 
-            d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
-            if (symbol) {
-                var ref_layer_name = current_layers[top_visible_layer].ref_layer_name;
-                map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
-                    var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-                    var properties = result_data[top_visible_layer][i];
-                    Object.getOwnPropertyNames(properties).forEach(function (el, i) {
-                        txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
-                    });
-                    txt_info.push("</p>");
-                    info_features.node().innerHTML = txt_info.join('');
-                    info_features.style("display", null);
+            map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
+                var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+                var properties = result_data[top_visible_layer] ? [top_visible_layer][i] : d.properties;
+                Object.getOwnPropertyNames(properties).forEach(function (el) {
+                    txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
                 });
-            } else {
-                symbol = "path";
-                map.select(id_top_layer).selectAll("path").on("mouseover", function (d, i) {
-                    var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-                    Object.getOwnPropertyNames(d.properties).forEach(function (el, i) {
-                        txt_info.push("<br><b>" + el + "</b> : " + d.properties[el]);
-                    });
-                    txt_info.push("</p>");
-                    info_features.node().innerHTML = txt_info.join('');
-                    info_features.style("display", null);
-                });
-            }
-            map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
-                info_features.node().innerHTML = "";
-                info_features.style("display", "none");
+                txt_info.push("</p>");
+                info_features.style("display", null).html(txt_info.join(''));
             });
+
+            map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
+                info_features.style("display", "none").html("");
+            });
+
             info_features.classed("active", true);
             svg_map.style.cursor = "help";
         }();
@@ -8379,8 +8363,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
 *
 */
 function prepare_drop_section() {
-    var timeout;
-    Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (elem) {
+    Array.prototype.forEach.call(document.querySelectorAll("#map,#overlay_drop"), function (elem) {
+        var timeout;
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();e.stopPropagation();
             if (document.body.classList.contains("no-drop")) return;
@@ -8389,11 +8373,11 @@ function prepare_drop_section() {
 
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();e.stopPropagation();
-            if (document.body.classList.contains("no-drop")) return;
+            // if(document.body.classList.contains("no-drop"))
+            //     return;
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = setTimeout(function () {
-                    e.preventDefault();e.stopPropagation();
                     document.getElementById("overlay_drop").style.display = "none";
                     timeout = null;
                 }, 2500);
@@ -8425,7 +8409,7 @@ function prepare_drop_section() {
             overlay_drop.style.display = "";
             var files = e.dataTransfer.files;
             if (files.length == 1 && (files[0].name.indexOf(".shp") > -1 || files[0].name.indexOf(".shx") > -1 || files[0].name.indexOf(".dbf") > -1 || files[0].name.indexOf(".prj") > -1)) {
-                Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (_elem) {
+                Array.prototype.forEach.call(document.querySelectorAll("#map,#overlay_drop"), function (_elem) {
                     _elem.removeEventListener('drop', _drop_func);
                 });
                 handleOneByOneShp(files);
@@ -9494,7 +9478,7 @@ function handleClickTextBox(text_box_id) {
         var text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
         setTimeout(function (_) {
             text_box.editStyle();
-        }, 350);
+        }, 250);
     });
 }
 
@@ -9550,7 +9534,7 @@ function handleClickAddArrow() {
             setTimeout(function () {
                 tmp_start_point.remove();
                 tmp_end_point.remove();
-            }, 1000);
+            }, 750);
             map.style("cursor", "").on("click", null);
             document.body.style.cursor = "";
             new UserArrow(arrow_id, start_point, end_point, svg_map);

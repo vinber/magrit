@@ -367,7 +367,8 @@ function make_underlying_rect(legend_root, under_rect, fill){
     }
 }
 
-function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value, rounding_precision, note_bottom){
+function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value, rounding_precision, note_bottom, parent){
+    parent = parent || map;
     var space_elem = 18,
         boxgap = 4,
         xpos = 30,
@@ -380,7 +381,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined)
                         ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = map.insert('g')
+    var legend_root = parent.insert('g')
         .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
         .attrs({id: 'legend_root_symbol', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
                 nested: nested, rounding_precision: rounding_precision, layer_field: field});
@@ -397,27 +398,37 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
     let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
-        sqrt = Math.sqrt;
-
-    let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
-        size_max = +non_empty[0].getAttribute(type_param),
-        size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-        nb_decimals = get_nb_decimals(val_max),
-        diff_size = sqrt(size_max) - sqrt(size_min),
-        diff_val = val_max - val_min,
-        val_interm1 = val_min + diff_val / 3,
-        val_interm2 = val_interm1 + diff_val / 3,
-        size_interm1 = sqrt(size_min) + diff_size / 3,
-        size_interm2 = size_interm1 + diff_size / 3,
+        sqrt = Math.sqrt,
         z_scale = +d3.zoomTransform(map.node()).k,
+        ref_symbols_params;
+
+    if(!current_layers[layer].size_legend_symbol){
+        let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
+            size_max = +non_empty[0].getAttribute(type_param),
+            size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+            val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+            val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+            diff_size = sqrt(size_max) - sqrt(size_min),
+            diff_val = val_max - val_min,
+            val_interm1 = val_min + diff_val / 3,
+            val_interm2 = val_interm1 + diff_val / 3,
+            size_interm1 = sqrt(size_min) + diff_size / 3,
+            size_interm2 = size_interm1 + diff_size / 3,
+            current_layers[layer].size_legend_symbol = [
+                   {size: size_max, value: val_max},
+                   {size: Math.pow(size_interm2, 2), value: val_interm2},
+                   {size: Math.pow(size_interm1, 2), value: val_interm1},
+                   {size: size_min, value: val_min}
+            ];
+    } else {
+        let t = current_layers[layer].size_legend_symbol;
         ref_symbols_params = [
-            {size: size_max * z_scale, value: val_max.toFixed(nb_decimals)},
-            {size: Math.pow(size_interm2, 2) * z_scale, value: val_interm2.toFixed(nb_decimals)},
-            {size: Math.pow(size_interm1, 2) * z_scale, value: val_interm1.toFixed(nb_decimals)},
-            {size: size_min * z_scale, value: val_min.toFixed(nb_decimals)}
+          {size: t[0].size * z_scale, value: t.value},
+          {size: t[1].size * z_scale, value: t.value},
+          {size: t[2].size * z_scale, value: t[2].value},
+          {size: t[3].size * z_scale, value: t[3].value}
         ];
+    }
 
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
@@ -559,7 +570,8 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
+    if(parent == map)
+        make_legend_context_menu(legend_root, layer);
     return legend_root;
 }
 
@@ -830,6 +842,88 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     return legend_root;
 }
 
+function display_box_value_symbol(layer_name, legend_id){
+      let symbol_type = current_layers[layer_name].symbol,
+          ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
+          type_param = symbol_type === 'circle' ? 'r' : 'width',
+          non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
+          size_max = +non_empty[0].getAttribute(type_param),
+          size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+          val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+          val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+          diff_size = sqrt(size_max) - sqrt(size_min),
+          diff_val = val_max - val_min,
+          val_interm1 = val_min + diff_val / 3,
+          val_interm2 = val_interm1 + diff_val / 3,
+          size_interm1 = sqrt(size_min) + diff_size / 3,
+          size_interm2 = size_interm1 + diff_size / 3,
+          z_scale = +d3.zoomTransform(map.node()).k;
+
+    let getDefaultValues = () => {
+
+    };
+    let redraw_sample_legend = (values, parent) => {
+
+    };
+    let legend_root = legend_id;
+
+    make_confirm_dialog2("legend_symbol_values_box", i18next.t("app_page.legend_symbol_values_box.title"))
+        .then(confirmed => Promise.resolve(confirmed));
+
+    let box_body = d3.select('.legend_symbol_values_box')
+        .select('.modal-content').style('width', '300px')
+        .select('.modal-body');
+    box_body.append('p').style('text-align', 'center')
+        .insert('h3').html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
+
+    let values_to_use = current_layers[layer].size_legend_symbol.map(t => t.size * z_scale);
+
+    let svg_zone = box_body.append('svg');
+    let a = box_body.append('p');
+    let b = box_body.append('p');
+    let c = box_body.append('p');
+    let d = box_body.append('p');
+
+    let val1 = a.insert('input')
+        .attrs({class: "without_spinner", type: 'number', max: val_max})
+        .on('change', function(){
+            let val = +this.value;
+            val2.attr('max', val);
+        });
+    let val2 = b.insert('input')
+        .attrs({class: "without_spinner", type: 'number'})
+        .on('change', function(){
+            let val = +this.value;
+            val1.attr('min', val);
+            val3.attr('max', val);
+        });
+    let val3 = c.insert('input')
+        .attrs({class: "without_spinner", type: 'number'})
+        .on('change', function(){
+            let val = +this.value;
+            val2.attr('min', val);
+            val4.attr('max', val);
+        });
+    let val4 = d.insert('input')
+        .attrs({class: "without_spinner", type: 'number', min: 0})
+        .on('change', function(){
+            let val = +this.value;
+            val2.attr('min', val);
+            val4.attr('max', val);
+        });
+
+    let button_reset = box_body.append('p')
+        .styles({'text-align': 'center'})
+        .insert('span')
+        .attrs({class: 'button_st3'})
+        .html(i18next.t('app_page.legend_symbol_values_box.reset'))
+        .on('click', function(){
+            values_to_use = getDefaultValues();
+            redraw_sample_legend(values);
+        });
+
+}
+
 // Todo : find a better organization for the options in this box
 //       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name){
@@ -1069,10 +1163,26 @@ function createlegendEditBox(legend_id, layer_name){
                     if(transform_param)
                         svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
                 });
-      gap_section.append('label')
-          .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
-          .html(i18next.t("app_page.legend_style_box.nested_symbols"));
+        gap_section.append('label')
+            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
+            .html(i18next.t("app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = current_state;
+        let choice_break_value_section1 = box_body.insert('p');
+        choice_break_value_section1.append('span')
+            .styles({cursor: 'pointer'})
+            .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+            .on('change', function(){
+                display_box_value_symbol(layer_name, legend_id).then(confirmed => {
+                    if(confirmed){
+                        current_layers[layer_name].size_legend_symbol = confirmed;
+                    }
+                });
+            });
+        let choice_break_value_section2 = box_body.insert('p').style('display', 'none');
+        choice_break_value_section.append('span')
+            .attrs({})
+            .styles({cursor: 'pointer'})
+
     }
 
 // Todo : Reactivate this functionnality :
