@@ -1540,7 +1540,9 @@ function zoom_without_redraw() {
         }).attr("transform", d3.event.transform + rot_val);
         map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
     }
-
+    if (scaleBar.displayed) {
+        scaleBar.update();
+    }
     // if(scaleBar.displayed){
     //     if(proj.invert) {
     //         scaleBar.update();
