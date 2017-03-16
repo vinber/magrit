@@ -1391,13 +1391,13 @@ function displayInfoOnMove(){
         map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
             let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
                             i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-            let properties = result_data[top_visible_layer] ? [top_visible_layer][i] : d.properties;
+            let properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
             Object.getOwnPropertyNames(properties).forEach(el => {
                 txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
             });
             txt_info.push("</p>");
             info_features.style("display", null).html(txt_info.join(''));
-            });
+        });
 
         map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
                 info_features.style("display", "none").html("");

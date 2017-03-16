@@ -91,7 +91,7 @@ function setUpInterface(resume_project) {
     };
 
     var bg_drop = document.createElement('div');
-    // bg_drop.className = "overlay_drop";
+    bg_drop.className = "overlay_drop";
     bg_drop.id = 'overlay_drop';
     bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
     var inner_div = document.createElement("div");
@@ -1171,7 +1171,7 @@ function displayInfoOnMove() {
 
             map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
                 var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-                var properties = result_data[top_visible_layer] ? [top_visible_layer][i] : d.properties;
+                var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
                 Object.getOwnPropertyNames(properties).forEach(function (el) {
                     txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
                 });
@@ -7725,15 +7725,24 @@ var PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
         this.scale = function (val) {
             return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
         };
+        this.get_value = function (size) {
+            return Math.pow(size * pi, 2) / _this.smax * _this.fixed_value;
+        };
     } else if (type_symbol === "line") {
         this.smax = fixed_size;
         this.scale = function (val) {
             return abs(val) * _this.smax / _this.fixed_value;
         };
+        this.get_value = function (size) {
+            return size / _this.smax * _this.fixed_value;
+        };
     } else {
         this.smax = fixed_size * fixed_size;
         this.scale = function (val) {
             return sqrt(abs(val) * _this.smax / _this.fixed_value);
+        };
+        this.get_value = function (size) {
+            return Math.pow(size, 2) / _this.smax * _this.fixed_value;
         };
     }
 };
@@ -8363,8 +8372,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
 *
 */
 function prepare_drop_section() {
-    Array.prototype.forEach.call(document.querySelectorAll("#map,#overlay_drop"), function (elem) {
-        var timeout;
+    var timeout;
+    Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (elem) {
         elem.addEventListener("dragenter", function (e) {
             e.preventDefault();e.stopPropagation();
             if (document.body.classList.contains("no-drop")) return;
@@ -8373,11 +8382,11 @@ function prepare_drop_section() {
 
         elem.addEventListener("dragover", function (e) {
             e.preventDefault();e.stopPropagation();
-            // if(document.body.classList.contains("no-drop"))
-            //     return;
+            if (document.body.classList.contains("no-drop")) return;
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = setTimeout(function () {
+                    e.preventDefault();e.stopPropagation();
                     document.getElementById("overlay_drop").style.display = "none";
                     timeout = null;
                 }, 2500);
@@ -8409,7 +8418,7 @@ function prepare_drop_section() {
             overlay_drop.style.display = "";
             var files = e.dataTransfer.files;
             if (files.length == 1 && (files[0].name.indexOf(".shp") > -1 || files[0].name.indexOf(".shx") > -1 || files[0].name.indexOf(".dbf") > -1 || files[0].name.indexOf(".prj") > -1)) {
-                Array.prototype.forEach.call(document.querySelectorAll("#map,#overlay_drop"), function (_elem) {
+                Array.prototype.forEach.call(document.querySelectorAll("#map,.overlay_drop"), function (_elem) {
                     _elem.removeEventListener('drop', _drop_func);
                 });
                 handleOneByOneShp(files);
@@ -9478,7 +9487,7 @@ function handleClickTextBox(text_box_id) {
         var text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
         setTimeout(function (_) {
             text_box.editStyle();
-        }, 250);
+        }, 350);
     });
 }
 
@@ -9534,7 +9543,7 @@ function handleClickAddArrow() {
             setTimeout(function () {
                 tmp_start_point.remove();
                 tmp_end_point.remove();
-            }, 750);
+            }, 1000);
             map.style("cursor", "").on("click", null);
             document.body.style.cursor = "";
             new UserArrow(arrow_id, start_point, end_point, svg_map);
@@ -10379,7 +10388,9 @@ function createStyleBox_Line(layer_name) {
                     cats = _prepare_categories_a2[0],
                     _ = _prepare_categories_a2[1];
 
+                container.modal.hide();
                 display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
@@ -11131,7 +11142,9 @@ function createStyleBox_ProbSymbol(layer_name) {
                     cats = _prepare_categories_a6[0],
                     _ = _prepare_categories_a6[1];
 
+                container.modal.hide();
                 display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
+                    container.modal.show();
                     if (confirmed) {
                         rendering_params = {
                             nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
@@ -12845,7 +12858,9 @@ function createLegend_symbol(layer, field, title, subtitle) {
     var rect_fill_value = arguments[5];
     var rounding_precision = arguments[6];
     var note_bottom = arguments[7];
+    var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
 
+    var parent = options.parent || window.map;
     var space_elem = 18,
         boxgap = 4,
         xpos = 30,
@@ -12857,7 +12872,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
     var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root_symbol', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
+    var legend_root = parent.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root_symbol', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
         nested: nested, rounding_precision: rounding_precision, layer_field: field });
 
     var rect_under_legend = legend_root.insert("rect");
@@ -12866,24 +12881,31 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
     var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
         type_param = symbol_type === 'circle' ? 'r' : 'width',
-        sqrt = Math.sqrt;
-
-    var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
-        if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
-    }),
-        size_max = +non_empty[0].getAttribute(type_param),
-        size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-        nb_decimals = get_nb_decimals(val_max),
-        diff_size = sqrt(size_max) - sqrt(size_min),
-        diff_val = val_max - val_min,
-        val_interm1 = val_min + diff_val / 3,
-        val_interm2 = val_interm1 + diff_val / 3,
-        size_interm1 = sqrt(size_min) + diff_size / 3,
-        size_interm2 = size_interm1 + diff_size / 3,
         z_scale = +d3.zoomTransform(map.node()).k,
-        ref_symbols_params = [{ size: size_max * z_scale, value: val_max.toFixed(nb_decimals) }, { size: Math.pow(size_interm2, 2) * z_scale, value: val_interm2.toFixed(nb_decimals) }, { size: Math.pow(size_interm1, 2) * z_scale, value: val_interm1.toFixed(nb_decimals) }, { size: size_min * z_scale, value: val_min.toFixed(nb_decimals) }];
+        _current_layers$layer = _slicedToArray(current_layers[layer].size, 2),
+        ref_value = _current_layers$layer[0],
+        ref_size = _current_layers$layer[1],
+        propSize = new PropSizer(ref_value, ref_size, symbol_type);
+
+
+    if (!current_layers[layer].size_legend_symbol) {
+        var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+            if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
+        }),
+            size_max = +non_empty[0].getAttribute(type_param),
+            size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+            sqrt = Math.sqrt,
+            val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+            val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+            r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
+            diff_size = sqrt(size_max) - sqrt(size_min),
+            size_interm1 = sqrt(size_min) + diff_size / 3,
+            size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
+        size_interm1 = Math.pow(size_interm1, 2);
+        current_layers[layer].size_legend_symbol = [{ value: val_max }, { value: round_value(propSize.get_value(size_interm2), r) }, { value: round_value(propSize.get_value(size_interm1), r) }, { value: val_min }];
+    }
+    var t = current_layers[layer].size_legend_symbol;
+    var ref_symbols_params = [{ size: propSize.scale(t[0].value) * z_scale, value: t[0].value }, { size: propSize.scale(t[1].value) * z_scale, value: t[1].value }, { size: propSize.scale(t[2].value) * z_scale, value: t[2].value }, { size: propSize.scale(t[3].value) * z_scale, value: t[3].value }];
 
     var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
         return "lg legend_" + i;
@@ -12989,7 +13011,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
     legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
+    if (parent == map) make_legend_context_menu(legend_root, layer);
     return legend_root;
 }
 
@@ -13209,6 +13231,109 @@ function createLegend_choro(layer, field, title, subtitle) {
     return legend_root;
 }
 
+function display_box_value_symbol(layer_name) {
+    var symbol_type = current_layers[layer_name].symbol,
+        field = current_layers[layer_name].rendered_field,
+        ref_symbols = document.getElementById(_app.layer_to_id.get(layer_name)).getElementsByTagName(symbol_type),
+        type_param = symbol_type === 'circle' ? 'r' : 'width',
+        non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+        if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
+    }),
+        val_max = Math.abs(+non_empty[0].__data__.properties[field]);
+
+    var redraw_sample_legend = function () {
+        var legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+        var rendered_field = current_layers[layer_name].rendered_field;
+        var nested = legend_node.getAttribute("nested");
+        var rounding_precision = legend_node.getAttribute("rounding_precision");
+        var lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+            note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+        return function (values) {
+            if (values) {
+                current_layers[layer_name].size_legend_symbol = values.sort(function (a, b) {
+                    return b.value - a.value;
+                });
+                val1.node().value = values[0].value;
+                val2.node().value = values[1].value;
+                val3.node().value = values[2].value;
+                val4.node().value = values[3].value;
+            }
+            sample_svg.selectAll('g').remove();
+            createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
+            sample_svg.select('g').select('#under_rect').remove();
+        };
+    }();
+
+    var prom = make_confirm_dialog2("legend_symbol_values_box", layer_name + " - " + i18next.t("app_page.legend_symbol_values_box.title")).then(function (confirmed) {
+        current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
+        return Promise.resolve(confirmed);
+    });
+
+    var box_body = d3.select('.legend_symbol_values_box').select('.modal-content').style('width', '400px').select('.modal-body');
+    box_body.append('p').style('text-align', 'center').insert('h3');
+    // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
+    var sample_svg = box_body.append('div').attr('id', 'sample_svg').style('float', 'left').append('svg').attrs({ width: 200, height: 300, id: 'svg_sample_legend' });
+
+    var values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(function (f) {
+        return cloneObj(f);
+    })),
+        original_values = [].concat(values_to_use);
+
+    var _current_layers$layer2 = _slicedToArray(current_layers[layer_name].size, 2),
+        ref_value = _current_layers$layer2[0],
+        ref_size = _current_layers$layer2[1];
+
+    var propSize = new PropSizer(ref_value, ref_size, symbol_type);
+
+    var input_zone = box_body.append('div').styles({ 'float': 'right', 'top': '100px', right: '20px', position: 'relative' });
+    var a = input_zone.append('p');
+    var b = input_zone.append('p');
+    var c = input_zone.append('p');
+    var d = input_zone.append('p');
+
+    var val1 = a.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: val_max }).on('change', function () {
+        var val = +this.value;
+        if (isNaN(val)) return;
+        values_to_use[0] = { size: propSize.scale(val), value: val };
+        val2.attr('max', val);
+        redraw_sample_legend(values_to_use);
+    });
+    var val2 = b.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[0].value, min: values_to_use[2] }).on('change', function () {
+        var val = +this.value;
+        if (isNaN(val)) return;
+        values_to_use[1] = { size: propSize.scale(val), value: val };
+        val1.attr('min', val);
+        val3.attr('max', val);
+        redraw_sample_legend(values_to_use);
+    });
+    var val3 = c.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[1].value, min: values_to_use[3].value }).on('change', function () {
+        var val = +this.value;
+        if (isNaN(val)) return;
+        values_to_use[2] = { size: propSize.scale(val), value: val };
+        val2.attr('min', val);
+        val4.attr('max', val);
+        redraw_sample_legend(values_to_use);
+    });
+    var val4 = d.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', min: 0, max: values_to_use[2].value }).on('change', function () {
+        var val = +this.value;
+        if (isNaN(val)) return;
+        values_to_use[3] = { size: propSize.scale(val), value: val };
+        val3.attr('min', val);
+        redraw_sample_legend(values_to_use);
+    });
+    box_body.append('div').styles({ 'clear': 'both', 'text-align': 'center' }).append('p').styles({ 'text-align': 'center' }).insert('span').attrs({ class: 'button_st3' }).html(i18next.t('app_page.legend_symbol_values_box.reset')).on('click', function () {
+        current_layers[layer_name].size_legend_symbol = undefined;
+        redraw_sample_legend();
+    });
+    val1.node().value = values_to_use[0].value;
+    val2.node().value = values_to_use[1].value;
+    val3.node().value = values_to_use[2].value;
+    val4.node().value = values_to_use[3].value;
+    redraw_sample_legend();
+    return prom;
+}
+
 // Todo : find a better organization for the options in this box
 //       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name) {
@@ -13264,9 +13389,9 @@ function createlegendEditBox(legend_id, layer_name) {
         make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
         bind_selections();
     });
-    document.getElementsByClassName(box_class)[0].querySelector('.modal-dialog').style.width = '375px';
-    var box_body = d3.select([".", box_class].join('')).select(".modal-body"),
-        current_nb_dec;
+    var container = document.getElementsByClassName(box_class)[0];
+    var box_body = d3.select(container).select('.modal-dialog').style('width', '375px').select(".modal-body");
+    var current_nb_dec;
 
     box_body.append('p').style('text-align', 'center').insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
 
@@ -13399,6 +13524,20 @@ function createlegendEditBox(legend_id, layer_name) {
 
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root_symbol") {
+        // let choice_break_value_section1 = box_body.insert('p');
+        // choice_break_value_section1.append('span')
+        //     .styles({cursor: 'pointer'})
+        //     .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+        //     .on('click', function(){
+        //         container.modal.hide();
+        //         display_box_value_symbol(layer_name).then(confirmed => {
+        //             container.modal.show();
+        //             if(confirmed){
+        //                 redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+        //             }
+        //         });
+        //     });
+
         var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         var _gap_section = box_body.insert("p");
         _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
@@ -13419,7 +13558,6 @@ function createlegendEditBox(legend_id, layer_name) {
         _gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t("app_page.legend_style_box.nested_symbols"));
         document.getElementById("style_lgd").checked = _current_state;
     }
-
     // Todo : Reactivate this functionnality :
     //    box_body.insert("p").html("Display features count ")
     //            .insert("input").attr("type", "checkbox")
