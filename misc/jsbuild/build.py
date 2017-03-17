@@ -10,10 +10,7 @@ from uuid import uuid4
 from shutil import copy
 from subprocess import Popen, PIPE
 
-def build_js_file(use_minified):
-    copy('.babelrc', '../../magrit_app/static/js')
-    os.chdir('../../magrit_app/static/js')
-
+def build_js_file(use_minified, _id):
     p = Popen(['babel',
                'main.js',
                'colors_helpers.js',
@@ -43,7 +40,6 @@ def build_js_file(use_minified):
     for f_path in previous_files:
         os.remove(f_path)
 
-    _id = uuid4().hex[10:22]
     with open('app.{}.js'.format(_id), 'wb') as f:
         f.write(r[0])
 
@@ -61,20 +57,29 @@ def build_js_file(use_minified):
 
     with open('../../templates/modules.html', 'r') as f:
         lines = f.readlines()
-    ix = [ix for ix, ln in enumerate(lines) if 'src="/static/js/app.' in ln][0]
-    lines[ix] = '  \t<script  src="/static/js/{}"></script>\n'.format(name)
+    ixs = [ix for ix, ln in enumerate(lines) if 'src="/static/js/app.' in ln or 'static/css/style.' in ln]
+    lines[ixs[0]] = '\t<link href="static/css/style.{}.min.css" rel="stylesheet"  type="text/css">\n'.format(_id)
+    lines[ixs[1]] = '\t<script  src="/static/js/{}"></script>\n'.format(name)
     with open('../../templates/modules.html', 'w') as f:
         f.writelines(lines)
     os.remove('.babelrc')
     print('OK')
     return name
 
-def build_css_file():
-    with open('../../magrit_app/static/css/style.css', 'r') as f:
+def build_css_file(_id):
+    with open('../css/style.css', 'r') as f:
         css = f.read()
     try:
         comp = csscompressor.compress(css)
-        with open('../../magrit_app/static/css/style.min.css', 'w') as f:
+        try:
+            previous_stylesheet = [i for i in os.listdir('../css') if 'style.' in i and '.min.css' in i]
+            for f_path in previous_stylesheet:
+                os.remove('../css/' + f_path)
+        except Exception as err:
+            print('Error while removing previous css files :')
+            print(err)
+        with open('../css/style.{}.min.css'
+                  .format(_id), 'w') as f:
             f.write(comp)
     except Exception as err:
         print('Error while compressing css files :')
@@ -100,8 +105,11 @@ if __name__ == "__main__":
     use_minified = True if len(sys.argv) > 1 and '-m' in sys.argv[1] else False
     if not is_node_modules_present():
         install_package_js()
-    build_css_file()
-    name = build_js_file(use_minified)
+    copy('.babelrc', '../../magrit_app/static/js')
+    os.chdir('../../magrit_app/static/js')
+    _id = uuid4().hex[10:22]
+    build_css_file(_id)
+    name = build_js_file(use_minified, _id)
     if 'VIRTUAL_ENV' in os.environ:
         try:
             import magrit_app
