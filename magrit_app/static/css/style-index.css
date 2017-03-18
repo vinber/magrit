@@ -21,10 +21,11 @@ body, html {
 }
 
 .intro-section {
-    height: 100%;
-    padding-top: 55px;
+    //height: 100%;
+    padding-top: 50px;
     text-align: center;
     background: #fff;
+    padding-bottom: 115px;
 }
 
 .navbar-default {
