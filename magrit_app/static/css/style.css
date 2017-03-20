@@ -912,3 +912,11 @@ img.layout_ft_ico:hover {
 #form_projection * {
   background-color: black;
 }
+
+#_m_free_draw_layer > path {
+    fill: none;
+    stroke: #000;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}

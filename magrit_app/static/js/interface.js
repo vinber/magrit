@@ -1498,6 +1498,37 @@ function handleClickTextBox(text_box_id){
         });
 }
 
+function handleFreeDraw(){
+    var line_gen = d3.line(d3.curveBasis);
+    var draw_layer = map.select('#_m_free_draw_layer');
+    if(!draw_layer.node()){
+        draw_layer = map.append('g').attrs({id: "_m_free_draw_layer"});
+    } else {
+        // up the draw_layer ?
+    }
+    var draw_rect = draw_layer.append('rect')
+        .attrs({fill: 'transparent', height: h, width: w, x: 0, y:0});
+    draw_layer.call(d3.drag()
+        .container(function(){ return this; })
+        .subject(_ =>  [[d3.event.x, d3.event.y], [d3.event.x, d3.event.y]])
+        .on('start', _ => {
+            handle_click_hand('lock');
+            let d = d3.event.subject,
+                active_line = draw_layer.append('path').datum(d),
+                x0 = d3.event.x,
+                y0 = d3.event.y;
+            d3.event.on('drag', function(){
+                var x1 = d3.event.x,
+                    y1 = d3.event.y,
+                    dx = x1 - x0,
+                    dy = y1 - y0;
+                if(dx * dx + dy * dy > 100) d.push([x0 = x1, y0 = y1]);
+                else d[d.length -1] = [x1, y1];
+                active_line.attr('d', line_gen)
+            });
+        }));
+}
+
 function handleClickAddArrow(){
     let getId = () => {
         let arrows = document.getElementsByClassName("arrow");

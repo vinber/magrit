@@ -5,7 +5,7 @@ class UserArrow {
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
         this.id = id;
-        this.lineWeight = 4;
+        this.stroke_width = 4;
         this.color = "rgb(0, 0, 0)";
 
         if(!untransformed){
@@ -89,7 +89,7 @@ class UserArrow {
         		.attrs({"marker-end":"url(#arrow_head)",
         			  "x1": this.pt1[0], "y1": this.pt1[1],
         			  "x2":this.pt2[0], "y2": this.pt2[1]})
-                .styles({"stroke-width": this.lineWeight, stroke: "rgb(0, 0, 0)"});
+                .styles({"stroke-width": this.stroke_width, stroke: "rgb(0, 0, 0)"});
 
         this.arrow.call(this.drag_behavior);
 
@@ -219,7 +219,7 @@ class UserArrow {
             .then(function(confirmed){
                 if(confirmed) {
                     // Store shorcut of useful values :
-                    self.lineWeight = line.style.strokeWidth;
+                    self.stroke_width = line.style.strokeWidth;
                     self.color = line.style.stroke;
                     self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
                     self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
@@ -231,7 +231,7 @@ class UserArrow {
                     line.y2.baseVal.value = current_options.pt2[1];
                     self.pt1 = current_options.pt1.slice();
                     self.pt2 = current_options.pt2.slice();
-                    line.style.strokeWidth = self.lineWeight;
+                    line.style.strokeWidth = self.stroke_width;
                     line.style.stroke = self.color;
                 }
                 map.select('#arrow_start_pt').remove();
@@ -244,16 +244,16 @@ class UserArrow {
         s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.insert("span").styles({'float': 'right', 'width': '13px'}).html("px");
         s1.insert("input")
-            .attrs({id: "arrow_weight_text", class: "without_spinner", value: self.lineWeight, min: 0, max: 34, step: 0.1,})
+            .attrs({id: "arrow_weight_text", class: "without_spinner", value: self.stroke_width, min: 0, max: 34, step: 0.1,})
             .styles({width: "30px", "margin-left": "10px", 'float': 'right'})
             .on("input", function(){
-                let elem = document.getElementById("arrow_lineWeight");
+                let elem = document.getElementById("arrow_stroke_width");
                 elem.value = this.value;
                 elem.dispatchEvent(new Event('change'));
             });
 
         s1.append("input")
-            .attrs({type: "range", id: "arrow_lineWeight", min: 0, max: 34, step: 0.1, value: self.lineWeight})
+            .attrs({type: "range", id: "arrow_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width})
             .styles({width: "80px", "vertical-align": "middle", 'float': 'right'})
             .on("change", function(){
                 line.style.strokeWidth = this.value;
@@ -290,18 +290,6 @@ class Textbox {
         this.x = position[0];
         this.y = position[1];
         this.fontsize = 14;
-
-        // function end_edit_action(){
-        //     inner_ft.attr("contentEditable", "false");
-        //     inner_ft.style("background-color", "transparent");
-        //     inner_ft.style("border", "");
-        //     // Recompute the size of the p inside the foreignObj
-        //     let inner_bbox = inner_p.getBoundingClientRect();
-        //     foreign_obj.setAttributeNS(null, "width", [inner_bbox.width + 2, "px"].join('')); // +2px are for the border
-        //     foreign_obj.setAttributeNS(null, "height", [inner_bbox.height + 2, "px"].join(''));
-        //     d3.select("body").classed("noselect", false);
-        //     state = null;
-        // };
 
         var current_timeout;
         let context_menu = new ContextMenu(),
@@ -560,14 +548,6 @@ class Textbox {
                 let color = self.buffer.color, size = self.buffer.size;
                 inner_p.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
             });
-        // buffer_text_zone2.append('input')
-        //     .attrs({type: 'number', class: 'without_spinner', value: current_options.buffer != undefined ? current_options.buffer.size : 1})
-        //     .on('change', function(){
-        //         self.buffer.size = +this.value;
-        //         let color = self.buffer.color, size = self.buffer.size;
-        //         let t = `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`;
-        //         inner_p.style('text-shadow', t);
-        //     });
 
         btn_bold.on('click', function(){
             if(this.classList.contains('active')){
@@ -1022,18 +1002,172 @@ var northArrow = {
                 self.svg_node.attr("transform", "rotate(" + [rotate_value, self.x_center, self.y_center] + ")");
                 document.getElementById("txt_rotate_n_arrow").value = rotate_value;
             });
-
     },
     displayed: false
 }
 
+class UserRectangle {
+    constructor(id, origin_pt, parent=undefined, untransformed=false){
+        this.parent = parent || svg_map;
+        this.svg_elem = d3.select(this.parent);
+        this.id = id;
+        this.stroke_width = 4;
+        this.stroke_color = "rgb(0, 0, 0)";
+        this.fill_color = 'none';
+        this.fill_opacity = 1;
+
+        if(!untransformed){
+            let zoom_param = svg_map.__zoom;
+            this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+        } else {
+            this.pt1 = origin_pt;
+        }
+
+        this.drag_behavior = d3.drag()
+             .subject(function() {
+                    let t = d3.select(this.querySelector("rect"));
+                    return {
+                        x: +t.attr("x"), y: +t.attr("y"),
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                    };
+              })
+            .on("start", () => {
+                d3.event.sourceEvent.stopPropagation();
+                handle_click_hand("lock");
+              })
+            .on("end", () => {
+                if(d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+              })
+            .on("drag", function(){
+                d3.event.sourceEvent.preventDefault();
+                let _t = this.querySelector("rect"),
+                    subject = d3.event.subject,
+                    tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
+                    ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
+                self.pt1 = [+subject.x + tx, +subject.y + ty];
+                _t.x.baseVal.value = self.pt1[0];
+                _t.y.baseVal.value = self.pt1[1];
+              });
+    }
+
+    up_element(){
+        up_legend(this.rectangle.node());
+    }
+
+    down_element(){
+        down_legend(this.rectangle.node());
+    }
+
+    draw(){
+        let context_menu = new ContextMenu(),
+            getItems = () =>  [
+                {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
+                {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+                {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.rectangle.remove(); }}
+            ];
+
+        this.rectangle = this.svg_elem.append('g')
+                .attrs({"class": "user_rectangle legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
+
+        this.rectangle.insert("rect")
+            .attrs({"x": this.pt1[0], "y": this.pt1[1],
+                    "height": 40, "width": 30})
+            .styles({"stroke-width": this.stroke_width,
+                      stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                      "fill-opacity": 0});
+
+        this.rectangle
+            .on("contextmenu", () => {
+                context_menu.showMenu(d3.event, document.body, getItems());
+            })
+            .on('dblclick', () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                // this.handle_ctrl_pt();
+            })
+            .call(this.drag_behavior);
+    }
+
+    editStyle(){
+        let self = this,
+            rectangle_elem = self.rectangle.node().querySelector("rect"),
+            zoom_param = svg_map.__zoom,
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+            current_options = { pt1: this.pt1.slice() };
+        if(!map_locked) handle_click_hand('lock');
+        make_confirm_dialog2("styleBoxRectangle", i18next.t("app_page.rectangle_edit_box.title"), {widthFitContent: true})
+            .then(function(confirmed){
+                if(confirmed) {
+                    // Store shorcut of useful values :
+                    self.stroke_width = rectangle_elem.style.strokeWidth;
+                    self.stroke_color = rectangle_elem.style.stroke;
+                    self.fill_color = rectangle_elem.style.fill;
+                    self.fill_opacity = rectangle_elem.style.fillOpacity;
+                } else {
+                    //Rollback on initials parameters :
+                    self.pt1 = current_options.pt1.slice();
+                    rectangle_elem.style.strokeWidth = self.stroke_width;
+                    rectangle_elem.style.stroke = self.stroke_color;
+                    rectangle_elem.style.fill = self.fill_color;
+                    rectangle_elem.style.fillOpacity = self.fill_opacity;
+                }
+                if(!map_locked) handle_click_hand('unlock');
+            });
+        let box_content = d3.select(".styleBoxRectangle").select(".modal-body").insert("div").attr("id", "styleBoxRectangle");
+        let s1 = box_content.append("p");
+        s1.append("p")
+            .style("margin", "auto")
+            .html(i18next.t("app_page.rectangle_edit_box.stroke_width"));
+        s1.append("input")
+            .attrs({type: "range", id: "rectangle_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width})
+            .styles({width: "80px", "vertical-align": "middle"})
+            .on("change", function(){
+                rectangle_elem.style.strokeWidth = this.value;
+                txt_line_weight.html(this.value + "px");
+            });
+        let txt_line_weight = s1.append("span").html(self.stroke_width + " px");
+
+        let s2 = box_content.append("p").style("margin", "auto");
+        s2.append("p")
+            .style("margin", "auto")
+            .html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
+        s2.append("input")
+            .attrs({type: "color", id: "rectangle_strokeColor", value: self.stroke_color})
+            .on("change", function(){
+                rectangle_elem.style.stroke = this.value;
+            });
+
+        let s3 = box_content.append('p').style('margin', 'auto');
+        s3.append('p')
+            .style('margin', 'auto')
+            .html(i18next.t('app_page.rectangle_edit_box.fill_color'));
+        s3.append('input')
+            .attrs({type: 'color', id: 'rectangle_fillColor', value: self.fill_color})
+            .on('change', function(){
+                rectangle_elem.style.fill = this.value;
+            });
+
+        let s4 = box_content.append('p').style('margin', 'auto');
+        s4.append('p')
+            .style('margin', 'auto')
+            .html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
+        s4.append('input')
+            .attrs({type: 'range', value: self.fill_opacity, min: 0, max: 1, step: 0.1})
+            .styles({width: '55px', 'vertical-align': 'middle', display: 'inline'})
+            .on('change', function(){
+                rectangle_elem.style.fillOpacity = +this.value;
+            });
+    }
+
+}
 
 class UserEllipse {
     constructor(id, origin_pt, parent=undefined, untransformed=false){
         this.parent = parent || svg_map;
         this.svg_elem = d3.select(this.parent);
         this.id = id;
-        this.strokeWeight = 4;
+        this.stroke_width = 4;
         this.stroke_color = "rgb(0, 0, 0)";
 
         if(!untransformed){
@@ -1090,20 +1224,20 @@ class UserEllipse {
         this.ellipse.insert("ellipse")
             .attrs({"rx": 30, "ry": 40,
         			      "cx": this.pt1[0], "cy": this.pt1[1]})
-            .styles({"stroke-width": this.strokeWeight,
+            .styles({"stroke-width": this.stroke_width,
                       stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
                       "fill-opacity": 0});
 
-        this.ellipse.call(this.drag_behavior);
-
-        this.ellipse.on("contextmenu", () => {
-            context_menu.showMenu(d3.event, document.body, getItems());
-        });
-        this.ellipse.on('dblclick', () => {
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
-            this.handle_ctrl_pt();
-        });
+        this.ellipse
+            .on("contextmenu", () => {
+                context_menu.showMenu(d3.event, document.body, getItems());
+            })
+            .on('dblclick', () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                this.handle_ctrl_pt();
+            })
+            .call(this.drag_behavior);
     }
 
     up_element(){
@@ -1115,8 +1249,8 @@ class UserEllipse {
     }
 
     calcAngle(){
-        let ellipse_elem = this.ellipse.node().querySelector("ellipse");
-        let dx = ellipse_elem.rx.baseVal.value - this.pt1[0],
+        let ellipse_elem = this.ellipse.node().querySelector("ellipse"),
+            dx = ellipse_elem.rx.baseVal.value - this.pt1[0],
             dy = ellipse_elem.ry.baseVal.value - this.pt1[1];
         return Math.atan2(dy, dx) * (180 / Math.PI);
     }
@@ -1146,12 +1280,12 @@ class UserEllipse {
                 map.selectAll(".ctrl_pt").remove();
                 if(confirmed) {
                     // Store shorcut of useful values :
-                    self.strokeWeight = ellipse_elem.style.strokeWidth;
+                    self.stroke_width = ellipse_elem.style.strokeWidth;
                     self.stroke_color = ellipse_elem.style.stroke;
                 } else {
                     //Rollback on initials parameters :
                     self.pt1 = current_options.pt1.slice();
-                    ellipse_elem.style.strokeWidth = self.strokeWeight;
+                    ellipse_elem.style.strokeWidth = self.stroke_width;
                     ellipse_elem.style.stroke = self.stroke_color;
                 }
                 if(!map_locked) handle_click_hand('unlock');
@@ -1162,13 +1296,13 @@ class UserEllipse {
             .style("margin", "auto")
             .html(i18next.t("app_page.ellipse_edit_box.stroke_width"));
         s1.append("input")
-            .attrs({type: "range", id: "ellipse_strokeWeight", min: 0, max: 34, step: 0.1, value: self.strokeWeight})
+            .attrs({type: "range", id: "ellipse_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width})
             .styles({width: "80px", "vertical-align": "middle"})
             .on("change", function(){
                 ellipse_elem.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-        let txt_line_weight = s1.append("span").html(self.strokeWeight + " px");
+        let txt_line_weight = s1.append("span").html(self.stroke_width + " px");
 
         let s2 = box_content.append("p").style("margin", "auto");
         s2.append("p")
