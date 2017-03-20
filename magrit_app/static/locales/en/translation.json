@@ -362,6 +362,10 @@
             "under_rectangle": "Display a box under the legend",
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
         },
+        "legend_symbol_values_box": {
+            "reset": "Reset to default values",
+            "title": "Symbol legend customization"
+        },
         "help_box": {
             "title": "About",
             "tooltip_btn": "Help / About",

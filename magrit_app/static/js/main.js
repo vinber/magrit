@@ -1364,15 +1364,14 @@ function binds_layers_buttons(layer_name){
 function displayInfoOnMove(){
     var info_features = d3.select("#info_features");
     if(info_features.classed("active")){
-        d3.select(".info_button").style('box-shadow', null);
         map.selectAll(".layer").selectAll("path").on("mouseover", null);
         map.selectAll(".layer").selectAll("circle").on("mouseover", null);
         map.selectAll(".layer").selectAll("rect").on("mouseover", null);
         info_features.classed("active", false);
-        info_features.node().innerHTML = "";
-        info_features.style("display", "none");
+        info_features.style("display", "none").html("");
         svg_map.style.cursor = "";
     } else {
+        map.select('.brush').remove();
         let layers = svg_map.getElementsByClassName("layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
@@ -1390,39 +1389,23 @@ function displayInfoOnMove(){
         }
 
         let id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
-            symbol = current_layers[top_visible_layer].symbol;
+            symbol = current_layers[top_visible_layer].symbol || "path";
 
-        d3.select(".info_button").style('box-shadow', 'inset 2px 2px 1px black');
-        if(symbol){
-            let ref_layer_name = current_layers[top_visible_layer].ref_layer_name;
-            map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-                let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
-                                i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-                let properties = result_data[top_visible_layer][i];
-                Object.getOwnPropertyNames(properties).forEach(function(el, i){
-                    txt_info.push("<br><b>"+el+"</b> : "+properties[el]);
-                    });
-                txt_info.push("</p>");
-                info_features.node().innerHTML = txt_info.join('');
-                info_features.style("display", null);
-                });
-        } else {
-            symbol = "path"
-            map.select(id_top_layer).selectAll("path").on("mouseover", function(d,i){
-                let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
-                                i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-                Object.getOwnPropertyNames(d.properties).forEach(function(el, i){
-                    txt_info.push("<br><b>"+el+"</b> : "+d.properties[el]);
-                    });
-                txt_info.push("</p>");
-                info_features.node().innerHTML = txt_info.join('');
-                info_features.style("display", null);
-                });
-        }
-        map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
-                info_features.node().innerHTML = "";
-                info_features.style("display", "none");
+        map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
+            let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
+                            i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+            let properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+            Object.getOwnPropertyNames(properties).forEach(el => {
+                txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
+            });
+            txt_info.push("</p>");
+            info_features.style("display", null).html(txt_info.join(''));
         });
+
+        map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
+                info_features.style("display", "none").html("");
+        });
+
         info_features.classed("active", true);
         svg_map.style.cursor="help";
     }
@@ -1821,7 +1804,7 @@ function zoom_without_redraw(){
           .duration(50)
           .attr("transform",  d3.event.transform + rot_val);
     }
-
+    if(scaleBar.displayed){ scaleBar.update(); }
     // if(scaleBar.displayed){
     //     if(proj.invert) {
     //         scaleBar.update();

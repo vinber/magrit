@@ -642,8 +642,10 @@ function createStyleBox_Line(layer_name){
             .html(i18next.t("app_page.layer_style_popup.choose_colors"))
             .on("click", function(){
                 let [cats, _] = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map);
+                container.modal.hide();
                 display_categorical_box(result_data[layer_name], layer_name, color_field, cats)
                     .then(function(confirmed){
+                        container.modal.show();
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
@@ -1502,8 +1504,10 @@ function createStyleBox_ProbSymbol(layer_name){
           .attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors"))
           .on("click", function(){
             let [cats, _] = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map);
+            container.modal.hide();
             display_categorical_box(result_data[layer_name], layer_name, field_color, cats)
                 .then(function(confirmed){
+                    container.modal.show();
                     if(confirmed){
                         rendering_params = {
                                 nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],

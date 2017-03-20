@@ -442,6 +442,8 @@ function apply_user_preferences(json_pref){
             let a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
+            let targeted_layer = Object.getOwnPropertyNames(user_data)[0];
+            if(targeted_layer) getAvailablesFunctionnalities(targeted_layer);
         }, layers.length > 1 ? 125 : 250);
     };
 

@@ -40,6 +40,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from pyexcel import get_book
+# from topojson_client import quantize as topojson_quantize
 
 # Web related stuff :
 import jinja2
@@ -121,22 +122,20 @@ async def ogr_to_geojson(filepath, to_latlong=True):
     return stdout
 
 
-async def geojson_to_topojson(
-        filepath, quantization="--no-quantization", remove=False):
+async def geojson_to_topojson(filepath, layer_name, remove=False):
     # Todo : Rewrite using asyncio.subprocess methods
     # Todo : Use topojson python port if possible to avoid writing a temp. file
-    process = Popen(["geo2topo", "--spherical", quantization, "--bbox",
-                     "-p", "--", filepath],
-                    stdout=PIPE, stderr=PIPE)
+    process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     if remove:
         os.remove(filepath)
-    return stdout.decode()
-
+    topo = json.loads(stdout.decode())
+    # topo = topojson_quantize(json.loads(stdout.decode()), 1e6)
+    topo['objects'][layer_name] = topo['objects'].pop(list(topo['objects'].keys())[0])
+    return json.dumps(topo)
 
 async def store_non_quantized(filepath, f_name, redis_conn):
-    process = Popen(["geo2topo", "--spherical", "--no-quantization", "--bbox",
-                     "-p", "--", filepath], stdout=PIPE, stderr=PIPE)
+    process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
     result = stdout.decode()
     os.remove(filepath)
@@ -216,8 +215,8 @@ async def cache_input_topojson(request):
             f_path = '/tmp/' + fp_name + ".geojson"
             with open(f_path, 'wb') as f:
                 f.write(res)
-            result = await geojson_to_topojson(f_path, "-q 1e5")
-            result = result.replace(''.join([user_id, '_']), '')
+            result = await geojson_to_topojson(f_path, name)
+            # result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
                     f_path, f_nameNQ, request.app['redis_conn']))
@@ -307,6 +306,7 @@ async def convert(request):
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
+        layer_name = shp_path.replace(''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
         hashed_input = mmh3_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
@@ -315,6 +315,7 @@ async def convert(request):
         try:
             field = posted_data.get('file[]')
             name = field[1]
+            layer_name = name.split('.')[0]
             data = field[2].read()
             datatype = field[3]
             print(datatype)
@@ -348,7 +349,7 @@ async def convert(request):
         filepath2 = '/tmp/' + name.replace('.shp', '.geojson')
         with open(filepath2, 'wb') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath2, "-q 1e5")
+        result = await geojson_to_topojson(filepath2, layer_name)
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             store_non_quantized(
@@ -393,7 +394,7 @@ async def convert(request):
                 '.shp', '.geojson')
             with open(filepath2, 'wb') as f:
                 f.write(res)
-            result = await geojson_to_topojson(filepath2, "-q 1e5")
+            result = await geojson_to_topojson(filepath2, layer_name)
             if len(result) == 0:
                 return web.Response(
                     text='{"Error": "Error converting input file"}')
@@ -423,7 +424,7 @@ async def convert(request):
             os.remove(filepath.replace('gml', 'gfs'))
         with open(filepath, 'wb') as f:
             f.write(res)
-        result = await geojson_to_topojson(filepath, "-q 1e5")
+        result = await geojson_to_topojson(filepath, layer_name)
         if len(result) == 0:
             return web.Response(
                 text='{"Error": "Error converting input file"}')
@@ -513,9 +514,9 @@ async def carto_doug(posted_data, user_id, app):
 
     os.remove(tmp_path)
     savefile(tmp_path, result)
-    res = await geojson_to_topojson(tmp_path, remove=True)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
-    res = res.replace(tmp_part, new_name)
+    res = await geojson_to_topojson(tmp_path, new_name, remove=True)
+    # res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -590,10 +591,9 @@ async def links_map(posted_data, user_id, app):
 
     tmp_part = get_name()
     tmp_name = ''.join(['/tmp/', tmp_part, '.geojson'])
-    savefile(tmp_name, result_geojson)
-    res = await geojson_to_topojson(tmp_name, remove=True)
     new_name = ''.join(["Links_", n_field_name])
-    res = res.replace(tmp_part, new_name)
+    savefile(tmp_name, result_geojson)
+    res = await geojson_to_topojson(tmp_name, new_name, remove=True)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -642,15 +642,14 @@ async def carto_gridded(posted_data, user_id, app):
         return json.dumps({"Error": "geometry_error"})
 
     savefile(filenames['src_layer'], result_geojson.encode())
-    res = await geojson_to_topojson(filenames['src_layer'], remove=True)
+    new_name = '_'.join(['Gridded',
+                         str(posted_data["cellsize"]),
+                         n_field_name])
+    res = await geojson_to_topojson(filenames['src_layer'], new_name, remove=True)
 
     app['logger'].info(
         '{} - Gridded_on_py - {:.4f}'.format(user_id, st-time.time()))
 
-    new_name = '_'.join(['Gridded',
-                         str(posted_data["cellsize"]),
-                         n_field_name])
-    res = res.replace(tmp_part, new_name)
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -686,10 +685,8 @@ async def compute_olson(posted_data, user_id, app):
     tmp_part = get_name()
     f_name = "".join(["/tmp/", tmp_part, ".geojson"])
     savefile(f_name, json.dumps(ref_layer_geojson).encode())
-    res = await geojson_to_topojson(f_name, remove=True)
-    new_name = "_".join(["Olson_carto",
-                        str(posted_data["field_name"])])
-    res = res.replace(tmp_part, new_name)
+    new_name = "_".join(["Olson_carto", str(posted_data["field_name"])])
+    res = await geojson_to_topojson(f_name, new_name, remove=True)
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -715,8 +712,7 @@ async def receiv_layer(request):
     filepath = "".join(['/tmp/', tmp_part, '.geojson'])
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(data)
-    res = await geojson_to_topojson(filepath)
-    res = res.replace(tmp_part, layer_name)
+    res = await geojson_to_topojson(filepath, layer_name)
     asyncio.ensure_future(
         request.app['redis_conn'].set(f_nameNQ, res, pexpire=86400000))
     return web.Response(text=''.join(['{"key":', str(h_val), '}']))
@@ -815,10 +811,8 @@ async def call_stewart(posted_data, user_id, app):
     if filenames['mask_layer']:
         os.remove(filenames['mask_layer'])
     savefile(filenames['point_layer'], res)
-    res = await geojson_to_topojson(filenames['point_layer'], remove=True)
-
     new_name = '_'.join(['StewartPot', n_field_name1])
-    res = res.replace(tmp_part, new_name)
+    res = await geojson_to_topojson(filenames['point_layer'], new_name, remove=True)
     hash_val = str(mmh3_hash(res))
 
     asyncio.ensure_future(
@@ -1012,12 +1006,10 @@ async def convert_csv_geo(request):
     filepath = "/tmp/"+ f_name +".geojson"
     with open(filepath, 'wb') as f:
         f.write(res.encode())
-    result = await geojson_to_topojson(filepath, "-q 1e5")
+    result = await geojson_to_topojson(filepath, file_name)
 
     if len(result) == 0:
         return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))
-
-    result = result.replace(f_name, file_name)
 
     asyncio.ensure_future(
         store_non_quantized(

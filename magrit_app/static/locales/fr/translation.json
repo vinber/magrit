@@ -355,6 +355,10 @@
             "under_rectangle": "Afficher un rectangle sous la légende",
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
         },
+        "legend_symbol_values_box": {
+            "reset": "Remise à zéro des valeurs",
+            "title": "Personnalisation des valeurs des symboles"
+        },
         "help_box": {
             "title": "À propos",
             "tooltip_btn": "Aide / À propos",

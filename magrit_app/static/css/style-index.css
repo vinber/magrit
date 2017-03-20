@@ -1,7 +1,7 @@
 body, html {
     width: 100%;
     height: 100%;
-    font-size: 11.5px;
+    font-size: 12px;
 }
 
 @font-face {
@@ -21,10 +21,11 @@ body, html {
 }
 
 .intro-section {
-    height: 100%;
-    padding-top: 55px;
+    //height: 100%;
+    padding-top: 50px;
     text-align: center;
     background: #fff;
+    padding-bottom: 115px;
 }
 
 .navbar-default {
