@@ -7505,15 +7505,24 @@ function getAvailablesFunctionnalities(layer_name) {
 
     if (current_layers[layer_name].type == "Line") {
         // Layer type is Line
-        var elems = section.querySelectorAll('#button_grid, #button_discont, #button_links, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
+        var elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
         for (var i = 0, len_i = elems.length; i < len_i; i++) {
             elems[i].style.filter = "grayscale(100%)";
         }
         var func_stock = section.querySelectorAll('#button_prop'),
             func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
             func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
+    } else if (current_layers[layer_name].type == "Point") {
+        // layer type is Point
+        var _elems = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
+        for (var _i2 = 0, _len_i = _elems.length; _i2 < _len_i; _i2++) {
+            _elems[_i2].style.filter = "grayscale(100%)";
+        }
+        var func_stock = section.querySelectorAll('#button_smooth, #button_prop'),
+            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
+            func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
     } else {
-        // layer type is Point or Polygon :
+        // Layer type is Polygon
         var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont'),
             func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
             func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
@@ -14105,6 +14114,8 @@ function apply_user_preferences(json_pref) {
             var a = document.getElementById("overlay");
             a.style.display = "none";
             a.querySelector("button").style.display = "";
+            var targeted_layer = Object.getOwnPropertyNames(user_data)[0];
+            if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
         }, layers.length > 1 ? 125 : 250);
     };
 
