@@ -108,7 +108,7 @@ function get_map_template(){
                 if(!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
                 let line = ft.childNodes[0];
                 map_config.layout_features.arrow.push({
-                    lineWeight: line.style.strokeWidth,
+                    stroke_width: line.style.strokeWidth,
                     stroke: line.style.stroke,
                     pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
                     pt2: [line.x2.baseVal.value, line.y2.baseVal.value],

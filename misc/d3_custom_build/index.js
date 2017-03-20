@@ -14,6 +14,11 @@ export {
 } from "d3-request";
 
 export {
+  line,
+  curveBasis
+} from "d3-shape";
+
+export {
   polygonArea,
   polygonCentroid,
   polygonHull,

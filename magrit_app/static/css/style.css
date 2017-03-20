@@ -905,6 +905,7 @@ img.layout_ft_ico:hover {
   background-color: black;
 }
 
+<<<<<<< 12e430d3c8dc95895889b9ebadf65fe6d2cb43b2
 input[type="radio"].disc_style {
   position: absolute;
   opacity: 0;
@@ -961,3 +962,12 @@ label.disc_style::before {
     font: 13px Roboto !important;
     padding: 12px !important;
 }
+
+#_m_free_draw_layer > path {
+    fill: none;
+    stroke: #000;
+    stroke-width: 3px;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+}
+
