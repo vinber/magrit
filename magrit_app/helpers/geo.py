@@ -29,7 +29,7 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
     gdf.set_index(join_field, inplace=True, drop=False)
     gdf.geometry = _compute_centroids(gdf.geometry)
     csv_table = pd_read_json(csv_table)
-    csv_table = csv_table[csv_table["i"].isin(gdf.index) & csv_table["j"].isin(gdf.index)]
+    csv_table = csv_table[csv_table[field_i].isin(gdf.index) & csv_table[field_j].isin(gdf.index)]
     geoms_loc = gdf.geometry.loc
     ft_template_start = \
         '''{"type":"Feature","geometry":{"type":"LineString","coordinates":['''
@@ -43,7 +43,7 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
                 ft_template_start,
                 '''[{0},{1}],[{2},{3}]'''.format(*pts),
                 ''']},"properties":{"''',
-                '''i":"{0}","j":"{1}","fij":"{2}"'''.format(id_i, id_j, fij),
+                '''{0}":"{1}","{2}":"{3}","{4}":"{5}"'''.format(field_i, id_i, field_j, id_j, field_fij, fij),
                 '''}}'''
                 ])
             )
