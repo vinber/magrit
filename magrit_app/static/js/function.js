@@ -3277,7 +3277,7 @@ var render_label = function(layer, rendering_params, options){
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer){
-        let type_ft_ref = rendering_params.symbol || "path";
+        let type_ft_ref = current_layers[layer].symbol || "path";
         let ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
 
         nb_ft = ref_selection.length;
