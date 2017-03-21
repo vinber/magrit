@@ -436,7 +436,9 @@ function setUpInterface(resume_project)
     f.append("input")
             .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
             .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
-            .on("change", handle_bg_color);
+            .on("change", function(){
+                handle_bg_color(this.value);
+            });
 
     let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
     a1.append("p").attr("class", "list_elem_section4 i18n")
