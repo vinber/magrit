@@ -9,7 +9,7 @@ Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou 
 
 
 - **Intervalles égaux**  
-Cette méthode, parfois également appelées "amplitudes égale", permet de créer des classes qui possèdent toutes la même étendue.
+Cette méthode, parfois également appelées "amplitudes égales", permet de créer des classes qui possèdent toutes la même étendue.
 
 
 - **Quantiles**  
@@ -25,7 +25,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 
 
 - Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de saisir manuellement les bornes de classes.
-  
+
 
 Le panneau principal de la boite de dialogue permettant de choisir un type de discrétisation ainsi que les palettes de couleurs représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
 

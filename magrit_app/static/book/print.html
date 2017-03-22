@@ -153,7 +153,7 @@ Exemple: Code INSEE de la commune, Code ISO2 d'un pays.</p>
 <p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
 La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.</p>
 <p style="text-align: center;">
-<img src="img/win_prc_fr.png" alt="Changer la projection"/>
+<img src="img/win_prc2_fr.png" alt="Changer la projection"/>
 </p>
 <p>Le choix d'une projection est accompagné du choix de son centrage.
 Celui-ci est par défaut sur la longitude 0°.</p>
@@ -163,6 +163,7 @@ Celui-ci est par défaut sur la longitude 0°.</p>
 <li>la conservation locale des angles (ces projections conservent les formes et sont dites <strong>conformes</strong>, c'est par exemple le cas de la <em>projection Mercator</em>)</li>
 <li>la représentation du globe sous une forme interrompue (<em>projection HEALPix</em> et <em>projection de Goode</em> par exemple)</li>
 </ul>
+<p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/><br></p>
 <p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.<br />
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé &quot;graticule&quot; et est disponible dans la section &quot;ajout d'éléments d'habillage&quot;). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
 Il est également possible (et conseillé lors de l'utilisation des projections dites &quot;interrompues&quot;) d'ajouter une couche d'informations représentant les limites du globe selon le découpage appliqué par la projection.</p>
@@ -175,17 +176,16 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 </blockquote>
 <h4>Exemple d'utilisation des graticules et du fond de l'emprise du globe avec des représentations originales :</h4>
 <p style="text-align: center;">
-<img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 420px;"/></br>
+<img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 400px;"/></br>
 projection Loximuthal</br></br>
-<img src="img/proj_healpix.png" alt="proj_healpix" style="width: 420px;"/></br>
+<img src="img/proj_healpix.png" alt="proj_healpix" style="width: 400px;"/></br>
 projection HEALPix</br></br>
-<img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 420px;"/></br>
+<img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 400px;"/></br>
 projection Interrupted Homolosine</br></br>
-<img src="img/proj_peirce.png" alt="proj_peirce" style="width: 420px;"/></br>
+<img src="img/proj_peirce.png" alt="proj_peirce" style="width: 400px;"/></br>
 projection Peirce</br></br>
-<img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 420px;"/></br>
-projection Eisenlohr</br>
-</p>
+<img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
+projection Eisenlohr</br></p>
 <h1>Choix de la représentation</h1>
 <p>Le choix d'un type de représentation est l'élément qui guide le processus de création d'une carte. Ce choix s'effectue en fonction du type des données à représenter (données de stocks, de ratios ou qualitatives) et du type de fond de carte utilisé (points, polygones, etc.).</p>
 <p style="text-align: center;">
@@ -406,6 +406,19 @@ Ce type de carte requiert généralement d'effectuer une sélection après le pr
 <p style="text-align: center;">
 <img src="img/flows.png" alt="link_map" style="width: 480px;"/>
 </p>
+<h4>Informations sur le format des données attendues :</h4>
+<p>La table de données à joindre doit être dans un format supporté par l'application (format .csv, .xls/.xlsx ou .ods). Cette table doit contenir au minimum 3 colonnes : les identifiants des entités d'origine, les identifiants des entités de destination, les valeurs correspondants à l'intensité du phénomène mesuré. La première ligne de cette table est à réserver au nom de colonne; chacune des lignes suivantes décrit un lien, entre un couple de lieu, à créer sur la carte.<br />
+Ainsi, les premières lignes d'une table décrivant des liens entre pays européens pourraient être écrites :</p>
+<table><thead><tr><td> Origine       </td><td> Destination   </td><td> Valeur  </td></tr></thead>
+<tr><td> BE            </td><td> LUX           </td><td> 12    </td></tr>
+<tr><td> BE            </td><td> FR            </td><td> 8     </td></tr>
+<tr><td> BE            </td><td> DE            </td><td> 10    </td></tr>
+<tr><td> LUX           </td><td> DE            </td><td> 6     </td></tr>
+<tr><td> LUX           </td><td> FR            </td><td> 3     </td></tr>
+</table>
+<p>Une table d'exemple de ce type peut être téléchargée ci-dessous; elle permet la réalisation d'une carte de lien lorsqu'elle est utilisé avec le fond des pays européens.</p>
+<p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/links.csv">Table d'exemple</a></p>
+<p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/nuts0.geojson">Fond de carte des pays européens</a></p>
 <h1>Carte qualitative (pictogrammes)</h1>
 <p>Ce type de représentation permet de faire figurer des symboles en fonction des valeurs prises par l'attribut de la couche de données.</p>
 <blockquote>
@@ -425,7 +438,7 @@ Ce type de carte requiert généralement d'effectuer une sélection après le pr
 <hr />
 <ul>
 <li><strong>Intervalles égaux</strong><br />
-Cette méthode, parfois également appelées &quot;amplitudes égale&quot;, permet de créer des classes qui possèdent toutes la même étendue.</li>
+Cette méthode, parfois également appelées &quot;amplitudes égales&quot;, permet de créer des classes qui possèdent toutes la même étendue.</li>
 </ul>
 <ul>
 <li><strong>Quantiles</strong><br />
@@ -446,7 +459,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 <p>Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et <em>essaim d'abeilles</em>).</p>
 <p>Vous pouvez consulter l'article <a href="http://mappemonde.mgm.fr/119geov1/">Géovisualisation des discrétisations : une petite application pédagogique</a>, dans la revue <em>MappeMonde</em> n°119, qui met en avant l'importance du choix d'une discrétisation adaptée en cartographie.</p>
 <h1>Habillage de la carte</h1>
-<p>Magrit propose une série d'éléments nécessaire à l'habillage de la carte :</p>
+<p>Magrit propose une série d'éléments nécessaires à l'habillage de la carte :</p>
 <p style="text-align: center;">
 <img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
 </p>

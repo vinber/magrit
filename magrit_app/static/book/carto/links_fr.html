@@ -85,6 +85,19 @@ Ce type de carte requiert généralement d'effectuer une sélection après le pr
 <p style="text-align: center;">
 <img src="img/flows.png" alt="link_map" style="width: 480px;"/>
 </p>
+<h4>Informations sur le format des données attendues :</h4>
+<p>La table de données à joindre doit être dans un format supporté par l'application (format .csv, .xls/.xlsx ou .ods). Cette table doit contenir au minimum 3 colonnes : les identifiants des entités d'origine, les identifiants des entités de destination, les valeurs correspondants à l'intensité du phénomène mesuré. La première ligne de cette table est à réserver au nom de colonne; chacune des lignes suivantes décrit un lien, entre un couple de lieu, à créer sur la carte.<br />
+Ainsi, les premières lignes d'une table décrivant des liens entre pays européens pourraient être écrites :</p>
+<table><thead><tr><td> Origine       </td><td> Destination   </td><td> Valeur  </td></tr></thead>
+<tr><td> BE            </td><td> LUX           </td><td> 12    </td></tr>
+<tr><td> BE            </td><td> FR            </td><td> 8     </td></tr>
+<tr><td> BE            </td><td> DE            </td><td> 10    </td></tr>
+<tr><td> LUX           </td><td> DE            </td><td> 6     </td></tr>
+<tr><td> LUX           </td><td> FR            </td><td> 3     </td></tr>
+</table>
+<p>Une table d'exemple de ce type peut être téléchargée ci-dessous; elle permet la réalisation d'une carte de lien lorsqu'elle est utilisé avec le fond des pays européens.</p>
+<p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/links.csv">Table d'exemple</a></p>
+<p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/nuts0.geojson">Fond de carte des pays européens</a></p>
 
                 </div>
 

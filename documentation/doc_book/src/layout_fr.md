@@ -1,7 +1,7 @@
 # Habillage de la carte
 
 
-Magrit propose une série d'éléments nécessaire à l'habillage de la carte :
+Magrit propose une série d'éléments nécessaires à l'habillage de la carte :
 <p style="text-align: center;">
 <img src="img/win_hab_fr.png" alt="Dialogue d'habillage"/>
 </p>
