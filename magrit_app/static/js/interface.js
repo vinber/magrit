@@ -1020,25 +1020,26 @@ function add_layer_topojson(text, options = {}){
 *  @param {string} name - The name of layer
 */
 function get_bbox_layer_path(name){
-    var symbol = current_layers[name].symbol || "path",
-        bbox_layer_path = undefined;
-        map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function(d, i){
-            let bbox_path = path.bounds(d);
-            if(!bbox_layer_path)
-                bbox_layer_path = bbox_path;
-            else {
-                bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-                bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-                bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-                bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-            }
-        });
-        if(current_proj_name == "ConicConformal"){
-            let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-            let bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-            let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
-            if(s2 < s1) bbox_layer_path = bbox_layer_path2;
-        }
+    var bbox_layer_path = [[Infinity, Infinity], [-Infinity, -Infinity]],
+        selec = svg_map.querySelector("#" + _app.layer_to_id.get(name)).childNodes;
+    for(let i = 0, len_i = selec.length; i < len_i; i++){
+        let bbox_path = path.bounds(selec[i].__data__);
+        bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+        bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+        bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+        bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+    }
+    if(current_proj_name == "ConicConformal"){
+        let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+        let bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+        let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+        if(s2 < s1) bbox_layer_path = bbox_layer_path2;
+    } else if (current_proj_name == "Armadillo"){
+        let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+        let bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
+        let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+        if(s2 < s1) bbox_layer_path = bbox_layer_path2;
+    }
     // }
     return bbox_layer_path;
 }
@@ -1051,6 +1052,7 @@ function get_bbox_layer_path(name){
 */
 function scale_to_lyr(name){
     let bbox_layer_path = get_bbox_layer_path(name);
+    if(!bbox_layer_path) return;
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     t = [0, 0];
     proj.scale(s).translate(t);

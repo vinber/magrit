@@ -814,7 +814,7 @@ function createStyleBox_Line(layer_name){
          .style("display", "inline").style("float", "right")
          .html(" " + border_opacity);
 
-    if(renderer != "DiscLayer" && renderer != "Links" && !renderer.startsWith('PropSymbols')){
+    if(!renderer || (!renderer.startsWith('PropSymbols') && renderer != "DiscLayer" && renderer != "Links")){
         let width_section = popup.append('p');
         width_section.append("span")
             .html(i18next.t("app_page.layer_style_popup.width"));

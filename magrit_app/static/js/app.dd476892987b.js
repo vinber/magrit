@@ -9068,22 +9068,25 @@ function add_layer_topojson(text) {
 *  @param {string} name - The name of layer
 */
 function get_bbox_layer_path(name) {
-    var symbol = current_layers[name].symbol || "path",
-        bbox_layer_path = undefined;
-    map.select("#" + _app.layer_to_id.get(name)).selectAll(symbol).each(function (d, i) {
-        var bbox_path = path.bounds(d);
-        if (!bbox_layer_path) bbox_layer_path = bbox_path;else {
-            bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
-            bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
-            bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
-            bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
-        }
-    });
+    var bbox_layer_path = [[Infinity, Infinity], [-Infinity, -Infinity]],
+        selec = svg_map.querySelector("#" + _app.layer_to_id.get(name)).childNodes;
+    for (var i = 0, len_i = selec.length; i < len_i; i++) {
+        var bbox_path = path.bounds(selec[i].__data__);
+        bbox_layer_path[0][0] = bbox_path[0][0] < bbox_layer_path[0][0] ? bbox_path[0][0] : bbox_layer_path[0][0];
+        bbox_layer_path[0][1] = bbox_path[0][1] < bbox_layer_path[0][1] ? bbox_path[0][1] : bbox_layer_path[0][1];
+        bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
+        bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
+    }
     if (current_proj_name == "ConicConformal") {
         var s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
         var bbox_layer_path2 = path.bounds({ "type": "MultiPoint", "coordinates": [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
         var s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
         if (s2 < s1) bbox_layer_path = bbox_layer_path2;
+    } else if (current_proj_name == "Armadillo") {
+        var _s = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+        var _bbox_layer_path = path.bounds({ "type": "MultiPoint", "coordinates": [[-69.3, -35.0], [20.9, -35.0], [147.2, -35.0], [175.0, 75.0], [-175.0, 75.0]] });
+        var _s2 = Math.max((_bbox_layer_path[1][0] - _bbox_layer_path[0][0]) / w, (_bbox_layer_path[1][1] - _bbox_layer_path[0][1]) / h);
+        if (_s2 < _s) bbox_layer_path = _bbox_layer_path;
     }
     // }
     return bbox_layer_path;
@@ -9097,6 +9100,7 @@ function get_bbox_layer_path(name) {
 */
 function scale_to_lyr(name) {
     var bbox_layer_path = get_bbox_layer_path(name);
+    if (!bbox_layer_path) return;
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     t = [0, 0];
     proj.scale(s).translate(t);
@@ -10548,7 +10552,7 @@ function createStyleBox_Line(layer_name) {
 
     opacity_section.append("span").attr("id", "opacity_val_txt").style("display", "inline").style("float", "right").html(" " + border_opacity);
 
-    if (renderer != "DiscLayer" && renderer != "Links" && !renderer.startsWith('PropSymbols')) {
+    if (!renderer || !renderer.startsWith('PropSymbols') && renderer != "DiscLayer" && renderer != "Links") {
         var width_section = popup.append('p');
         width_section.append("span").html(i18next.t("app_page.layer_style_popup.width"));
         width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ "width": "60px", "float": "right" }).on('change', function () {
@@ -13916,9 +13920,10 @@ function get_map_template() {
                 layer_style_i.fill_color = current_layer_prop.fill_color;
                 layer_style_i.rendered_field = current_layer_prop.rendered_field;
                 layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-                var color_by_id = [];
+                var color_by_id = [],
+                    params = current_layer_prop.type == "Line" ? "stroke" : "fill";
                 selection.each(function () {
-                    color_by_id.push(rgb2hex(this.style.fill));
+                    color_by_id.push(rgb2hex(this.style[params]));
                 });
                 layer_style_i.color_by_id = color_by_id;
                 if (current_layer_prop.renderer == "Stewart") {
@@ -14098,6 +14103,7 @@ function apply_user_preferences(json_pref) {
             proj.scale(s).translate(t).rotate(map_config.projection_rotation);
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
+            handleClipPath(current_proj_name);
             reproj_symbol_layer();
             if (layers.length > 1) {
                 var desired_order = layers.map(function (i) {
@@ -14293,7 +14299,7 @@ function apply_user_preferences(json_pref) {
                 if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
                 if (_layer.renderer) {
                     if (_layer.renderer == "Choropleth" || _layer.renderer == "Stewart" || _layer.renderer == "Gridded") {
-                        layer_selec.selectAll("path").style("fill", function (d, j) {
+                        layer_selec.selectAll("path").style(current_layer_prop.type != "Line" ? "fill" : "stroke", function (d, j) {
                             return _layer.color_by_id[j];
                         });
                     } else if (_layer.renderer == "Links") {
@@ -14336,13 +14342,14 @@ function apply_user_preferences(json_pref) {
                 }
 
                 if (_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer") {
-                    layer_selec.selectAll('path').style("fill", _layer.fill_color.single);
+                    layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", _layer.fill_color.single);
                 } else if (_layer.fill_color && _layer.fill_color.random) {
-                    layer_selec.selectAll('path').style("fill", function () {
+                    layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", function () {
                         return Colors.names[Colors.random()];
                     });
                 }
-                layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
+                layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity,
+                    'stroke-opacity': stroke_opacity });
                 if (_layer.visible == 'hidden') {
                     handle_active_layer(layer_name);
                 }

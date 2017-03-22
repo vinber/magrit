@@ -252,9 +252,9 @@ function get_map_template(){
             layer_style_i.fill_color = current_layer_prop.fill_color;
             layer_style_i.rendered_field = current_layer_prop.rendered_field;
             layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-            let color_by_id = [];
+            let color_by_id = [], params = current_layer_prop.type == "Line" ? "stroke" : "fill";
             selection.each(function(){
-                color_by_id.push(rgb2hex(this.style.fill));
+                color_by_id.push(rgb2hex(this.style[params]));
             });
             layer_style_i.color_by_id = color_by_id;
             if(current_layer_prop.renderer == "Stewart"){
@@ -426,6 +426,7 @@ function apply_user_preferences(json_pref){
             proj.scale(s).translate(t).rotate(map_config.projection_rotation);
             path = d3.geoPath().projection(proj).pointRadius(4);
             map.selectAll(".layer").selectAll("path").attr("d", path);
+            handleClipPath(current_proj_name);
             reproj_symbol_layer();
             if(layers.length > 1){
                 let desired_order = layers.map( i => i.layer_name);
@@ -632,10 +633,10 @@ function apply_user_preferences(json_pref){
                     current_layer_prop.fill_color = _layer.fill_color;
                 if(_layer.renderer){
                     if(_layer.renderer == "Choropleth"
-                        || _layer.renderer == "Stewart"
-                        || _layer.renderer == "Gridded"){
+                            || _layer.renderer == "Stewart"
+                            || _layer.renderer == "Gridded"){
                         layer_selec.selectAll("path")
-                                .style("fill", (d,j) => _layer.color_by_id[j])
+                            .style(current_layer_prop.type != "Line" ? "fill" : "stroke", (d,j) => _layer.color_by_id[j])
                     } else if (_layer.renderer == "Links"){
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
@@ -672,16 +673,17 @@ function apply_user_preferences(json_pref){
                 }
 
                 if(_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer"){
-                  layer_selec
-                      .selectAll('path')
-                      .style("fill", _layer.fill_color.single);
+                    layer_selec
+                        .selectAll('path')
+                        .style(current_layer_prop.type != "Line" ? "fill" : "stroke", _layer.fill_color.single);
                 } else if(_layer.fill_color && _layer.fill_color.random) {
-                      layer_selec
-                          .selectAll('path')
-                          .style("fill", () => Colors.names[Colors.random()]);
+                    layer_selec
+                        .selectAll('path')
+                        .style(current_layer_prop.type != "Line" ? "fill" : "stroke", () => Colors.names[Colors.random()]);
                 }
                 layer_selec.selectAll('path')
-                    .styles({'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
+                    .styles({'fill-opacity':fill_opacity,
+                             'stroke-opacity': stroke_opacity});
                 if(_layer.visible == 'hidden'){
                     handle_active_layer(layer_name);
                 }
