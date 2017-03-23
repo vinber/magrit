@@ -251,6 +251,26 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             });
     }
 
+    var update_axis = function(group){
+        group.call(d3.axisBottom()
+          .scale(x)
+          .tickFormat(formatCount));
+    };
+
+    var update_overlay_elements = function(){
+        let x_mean = x(serie.mean()),
+            x_med = x(serie.median()),
+            x_std_left = x(serie.mean() - serie.stddev()),
+            x_std_right = x(serie.mean() + serie.stddev());
+        line_mean.transition().attrs({x1: x_mean, x2: x_mean});
+        txt_mean.transition().attr('x', x_mean);
+        line_median.transition().attrs({x1: x_med, x2: x_med});
+        txt_median.transition().attr('x', x_med);
+        line_std_left.transition().attrs({x1: x_std_left, x2: x_std_left});
+        line_std_right.transition().attrs({x1: x_std_right, x2: x_std_right});
+        rug_plot.selectAll('.indiv').attrs(d => ({x1: x(d.value), x2: x(d.value)}));
+    };
+
     var make_overlay_elements = function(){
 
       let mean_val = serie.mean(),
@@ -462,15 +482,16 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             for(let i=0, len = bins.length; i<len; ++i)
                 bins[i].color = color_array[i];
 
-            var x = d3.scaleLinear()
-                        .domain([serie.min(), serie.max()])
-                        .range([0, svg_w]);
+            x.domain([breaks[0], breaks[breaks.length - 1]]);
+            y.domain([0, d3.max(bins.map(d => d.height + d.height /3))]);
 
-            var y = d3.scaleLinear()
-                .range([svg_h, 0]);
+            svg_histo.select('.x_axis').transition().call(update_axis)
+            update_overlay_elements();
 
-            x.domain([0, d3.max(bins.map(d => d.offset + d.width))]);
-            y.domain([0, d3.max(bins.map(d => d.height + (d.height / 5)))]);
+            var xx = d3.scaleLinear()
+                .range([0, svg_w])
+                .domain([0, d3.max(bins.map(d => d.offset + d.width))]);
+
 
             var bar = svg_histo.selectAll(".bar")
                 .data(bins)
@@ -478,8 +499,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 .append("rect")
                 .attrs( (d,i) => ({
                   "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
-                  "x": x(d.offset), "y": y(d.height) - margin.bottom,
-                  "width": x(d.width), "height": svg_h - y(d.height)
+                  "x": xx(d.offset), "y": y(d.height) - margin.bottom,
+                  "width": xx(d.width), "height": svg_h - y(d.height)
                 }))
                 .styles(d => ({
                   "opacity": 0.95,
@@ -498,7 +519,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
               .enter().append("text")
                 .attrs( (d,i) => ({
                   "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
-                  "dy": ".75em", "x": x(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
+                  "dy": ".75em", "x": xx(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
                 }))
                 .styles({"color": "black", "cursor": "default", "display": "none"})
                 .text(d => formatCount(d.val));
@@ -696,12 +717,14 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .domain([serie.min(), serie.max()])
         .range([0, svg_w]);
 
+    var y = d3.scaleLinear()
+        .range([svg_h, 0]);
+
     var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
-        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot;
+        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot, x;
 
     make_overlay_elements();
 
-    // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g")
         .attr("class", "x_axis")
         .attr("transform", "translate(0," + height + ")")

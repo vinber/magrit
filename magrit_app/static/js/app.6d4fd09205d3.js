@@ -234,8 +234,8 @@ function setUpInterface(resume_project) {
         if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
             (function () {
                 var current_lang = i18next.language;
-                var other_lang = current_lang == "en" ? "fr" : "en";
-                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_lang, "callback": change_lang }];
+                var other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_langs[0], "callback": change_lang }, { "name": other_langs[1], "callback": change_lang }];
                 var menu = document.createElement("div");
                 menu.style.top = "40px";
                 menu.style.right = "0px";
@@ -883,7 +883,6 @@ function change_lang() {
         return;
     } else {
         docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-        var other_lang = new_lang == "fr" ? "en" : "fr";
         i18next.changeLanguage(new_lang, function () {
             localize(".i18n");
             bindTooltips();
@@ -973,7 +972,7 @@ function make_ico_choice() {
 var w = Math.round(window.innerWidth - 361),
     h = window.innerHeight - 55;
 
-var existing_lang = ["en", "fr"];
+var existing_lang = ["en", "es", "fr"];
 
 var proj = d3.geoNaturalEarth().scale(1).translate([0, 0]);
 
@@ -2724,6 +2723,26 @@ var display_discretization = function display_discretization(layer_name, field_n
         });
     };
 
+    var update_axis = function update_axis(group) {
+        group.call(d3.axisBottom().scale(x).tickFormat(formatCount));
+    };
+
+    var update_overlay_elements = function update_overlay_elements() {
+        var x_mean = x(serie.mean()),
+            x_med = x(serie.median()),
+            x_std_left = x(serie.mean() - serie.stddev()),
+            x_std_right = x(serie.mean() + serie.stddev());
+        line_mean.transition().attrs({ x1: x_mean, x2: x_mean });
+        txt_mean.transition().attr('x', x_mean);
+        line_median.transition().attrs({ x1: x_med, x2: x_med });
+        txt_median.transition().attr('x', x_med);
+        line_std_left.transition().attrs({ x1: x_std_left, x2: x_std_left });
+        line_std_right.transition().attrs({ x1: x_std_right, x2: x_std_right });
+        rug_plot.selectAll('.indiv').attrs(function (d) {
+            return { x1: x(d.value), x2: x(d.value) };
+        });
+    };
+
     var make_overlay_elements = function make_overlay_elements() {
 
         var mean_val = serie.mean(),
@@ -2888,22 +2907,23 @@ var display_discretization = function display_discretization(layer_name, field_n
             }
             for (var i = 0, len = bins.length; i < len; ++i) {
                 bins[i].color = color_array[i];
-            }var x = d3.scaleLinear().domain([serie.min(), serie.max()]).range([0, svg_w]);
-
-            var y = d3.scaleLinear().range([svg_h, 0]);
-
-            x.domain([0, d3.max(bins.map(function (d) {
-                return d.offset + d.width;
-            }))]);
+            }x.domain([breaks[0], breaks[breaks.length - 1]]);
             y.domain([0, d3.max(bins.map(function (d) {
-                return d.height + d.height / 5;
+                return d.height + d.height / 3;
+            }))]);
+
+            svg_histo.select('.x_axis').transition().call(update_axis);
+            update_overlay_elements();
+
+            var xx = d3.scaleLinear().range([0, svg_w]).domain([0, d3.max(bins.map(function (d) {
+                return d.offset + d.width;
             }))]);
 
             var bar = svg_histo.selectAll(".bar").data(bins).enter().append("rect").attrs(function (d, i) {
                 return {
                     "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
-                    "x": x(d.offset), "y": y(d.height) - margin.bottom,
-                    "width": x(d.width), "height": svg_h - y(d.height)
+                    "x": xx(d.offset), "y": y(d.height) - margin.bottom,
+                    "width": xx(d.width), "height": svg_h - y(d.height)
                 };
             }).styles(function (d) {
                 return {
@@ -2920,7 +2940,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             svg_histo.selectAll(".txt_bar").data(bins).enter().append("text").attrs(function (d, i) {
                 return {
                     "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
-                    "dy": ".75em", "x": x(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
+                    "dy": ".75em", "x": xx(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
                 };
             }).styles({ "color": "black", "cursor": "default", "display": "none" }).text(function (d) {
                 return formatCount(d.val);
@@ -3090,6 +3110,8 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var x = d3.scaleLinear().domain([serie.min(), serie.max()]).range([0, svg_w]);
 
+    var y = d3.scaleLinear().range([svg_h, 0]);
+
     var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
         line_mean,
         line_std_right,
@@ -3097,11 +3119,11 @@ var display_discretization = function display_discretization(layer_name, field_n
         line_median,
         txt_median,
         txt_mean,
-        rug_plot;
+        rug_plot,
+        x;
 
     make_overlay_elements();
 
-    // As the x axis and the mean didn't change, they can be drawn only once :
     svg_histo.append("g").attr("class", "x_axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x).tickFormat(formatCount));
 
     var b_accordion_colors = newBox.append("button").attrs({ "class": "accordion_disc active", "id": "btn_acc_disc_color" }).style("padding", "0 6px").html(i18next.t("disc_box.title_color_scheme")),

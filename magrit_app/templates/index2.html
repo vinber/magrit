@@ -39,9 +39,10 @@
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
                         <span class="caret"></span>
                     </button>
-                    <ul class="dropdown-menu" role="menu">
-                        <li><a id="lang1"></a></li>
-                        <li><a id="lang2"></a></li>
+                    <ul style="background: black;" class="dropdown-menu" role="menu">
+                        <li><a style="color: greenyellow;" id="lang1"></a></li>
+                        <li><a style="color: greenyellow;" id="lang2"></a></li>
+                        <li><a style="color: greenyellow;" id="lang3"></a></li>
                     </ul>
                 </div>
             <div class="btn-group" style="float:right;margin:15px 15px 0 15px;";>
@@ -250,17 +251,27 @@ function handle_change_lang(){
     if(this.id == "lang1" && i18next.language == this.innerHTML){
         return;
     }
-    let lang = this.innerHTML,
-        old_lang = document.getElementById("lang_current").innerHTML;
-    change_lang(lang, old_lang);
+    let lang = this.innerHTML;
+    change_lang(lang);
 }
 
+// // Actually change the content of the page :
+// function change_lang(new_lang, old_lang){
+//     docCookies.setItem("user_lang", new_lang, 31536e3, "/");
+//     i18next.changeLanguage(new_lang, () => { localize(".i18n");});
+//     document.getElementById("lang_current").innerHTML = new_lang;
+//     document.getElementById("lang2").innerHTML = old_lang;
+//     document.getElementById("lang1").innerHTML = new_lang;
+// }
+
 // Actually change the content of the page :
-function change_lang(new_lang, old_lang){
+function change_lang(new_lang){
     docCookies.setItem("user_lang", new_lang, 31536e3, "/");
     i18next.changeLanguage(new_lang, () => { localize(".i18n");});
+    let other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
     document.getElementById("lang_current").innerHTML = new_lang;
-    document.getElementById("lang2").innerHTML = old_lang;
+    document.getElementById("lang3").innerHTML = other_langs[0];
+    document.getElementById("lang2").innerHTML = other_langs[1];
     document.getElementById("lang1").innerHTML = new_lang;
 }
 
@@ -295,19 +306,23 @@ function handle_div_cookie(){
 
 function prepare_lang_buttons(){
     let current_lang =  i18next.language,
-        other_lang = current_lang == "en" ? "fr" : "en";
+        other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+
     document.getElementById("lang_current").innerHTML = current_lang;
     let button_lang1 = document.getElementById("lang1");
     button_lang1.innerHTML = current_lang;
     button_lang1.onclick = handle_change_lang;
     let button_lang2 = document.getElementById("lang2");
-    button_lang2.innerHTML = other_lang;
+    button_lang2.innerHTML = other_langs[0];
     button_lang2.onclick = handle_change_lang;
+    let button_lang3 = document.getElementById("lang3");
+    button_lang3.innerHTML = other_langs[1];
+    button_lang3.onclick = handle_change_lang;
 }
 
 //i18n initialization :
 (function(){
-    var existing_lang = ["en", "fr"];
+    var existing_lang = ["en", "es", "fr"];
     let lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)

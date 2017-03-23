@@ -254,51 +254,52 @@ function setUpInterface(resume_project)
                      dismissValue => { null; });
         });
 
-    const_options.append("button")
-        .attrs({id: "current_app_lang", class: "const_buttons"})
-        .styles({color: "white", cursor: 'pointer',
-                 "font-size": "14px", "vertical-align": "super",
-                 background: "transparent", "font-weight": "bold"})
-        .html(i18next.language)
-        .on("click", function(){
-            if(document.getElementById("menu_lang"))
-                document.getElementById("menu_lang").remove();
-            else {
-                let current_lang = i18next.language;
-                let other_lang = current_lang == "en" ? "fr" : "en"
-                let actions = [
-                    {"name": current_lang, "callback": change_lang},
-                    {"name": other_lang, "callback": change_lang}
-                    ];
-                let menu = document.createElement("div");
-                menu.style.top = "40px";
-                menu.style.right = "0px";
-                menu.className = "context-menu";
-                menu.id = "menu_lang";
-                menu.style.minWidth = "30px";
-                menu.style.width = "50px";
-                menu.style.background = "#000";
-                let list_elems = document.createElement("ul");
-                menu.appendChild(list_elems);
-                for (let i = 0; i < actions.length; i++) {
-                    let item = document.createElement("li"),
-                        name = document.createElement("span");
-                    list_elems.appendChild(item);
-                    item.setAttribute("data-index", i);
-                    item.style.textAlign = "right";
-                    item.style.paddingRight = "16px";
-                    name.className = "context-menu-item-name";
-                    name.style.color = "white";
-                    name.textContent = actions[i].name;
-                    item.appendChild(name);
-                    item.onclick = () => {
-                        actions[i].callback();
-                        menu.remove();
-                    };
+        const_options.append("button")
+            .attrs({id: "current_app_lang", class: "const_buttons"})
+            .styles({color: "white", cursor: 'pointer',
+                     "font-size": "14px", "vertical-align": "super",
+                     background: "transparent", "font-weight": "bold"})
+            .html(i18next.language)
+            .on("click", function(){
+                if(document.getElementById("menu_lang"))
+                    document.getElementById("menu_lang").remove();
+                else {
+                    let current_lang = i18next.language;
+                    let other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+                    let actions = [
+                        {"name": current_lang, "callback": change_lang},
+                        {"name": other_langs[0], "callback": change_lang},
+                        {"name": other_langs[1], "callback": change_lang}
+                        ];
+                    let menu = document.createElement("div");
+                    menu.style.top = "40px";
+                    menu.style.right = "0px";
+                    menu.className = "context-menu";
+                    menu.id = "menu_lang";
+                    menu.style.minWidth = "30px";
+                    menu.style.width = "50px";
+                    menu.style.background = "#000";
+                    let list_elems = document.createElement("ul");
+                    menu.appendChild(list_elems);
+                    for (let i = 0; i < actions.length; i++) {
+                        let item = document.createElement("li"),
+                            name = document.createElement("span");
+                        list_elems.appendChild(item);
+                        item.setAttribute("data-index", i);
+                        item.style.textAlign = "right";
+                        item.style.paddingRight = "16px";
+                        name.className = "context-menu-item-name";
+                        name.style.color = "white";
+                        name.textContent = actions[i].name;
+                        item.appendChild(name);
+                        item.onclick = () => {
+                            actions[i].callback();
+                            menu.remove();
+                        };
+                    }
+                    document.querySelector("body").appendChild(menu);
                 }
-                document.querySelector("body").appendChild(menu);
-            }
-        });
+            });
 
     let menu = d3.select("#menu"),
         b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
@@ -1052,7 +1053,6 @@ function change_lang(){
         return;
     } else {
         docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-        let other_lang = new_lang == "fr" ? "en" : "fr";
         i18next.changeLanguage(new_lang, () => {
             localize(".i18n");
             bindTooltips();
@@ -1163,7 +1163,7 @@ function make_ico_choice(){
 var w = Math.round(window.innerWidth - 361),
     h = window.innerHeight - 55;
 
-var existing_lang = ["en", "fr"];
+var existing_lang = ["en", "es", "fr"];
 
 var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
 
