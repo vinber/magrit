@@ -1071,7 +1071,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.click_element_with_retry(".btn_ok")
         time.sleep(0.5)
         labels = driver.find_element_by_id(
-            "Labels_id_my_result_layer"
+            "Labels_LIBCOM_my_result_layer"
             ).find_elements_by_css_selector("text")
         self.assertIsInstance(labels, list)
         self.assertGreater(len(labels), 0)
