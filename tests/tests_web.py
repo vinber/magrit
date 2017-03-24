@@ -197,7 +197,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         svg_map = driver.find_element_by_id('svg_map')
         self.assertEqual(
-            'rgba(202, 51, 51, 1)',
+            'rgba(218, 41, 41, 1)',
             svg_map.value_of_css_property('background-color'))
 
     def test_links(self):
