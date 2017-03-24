@@ -189,6 +189,17 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self._verif_context_menu(
             driver.find_element_by_id("user_ellipse_0"), "user ellipse")
 
+        # Test the map background color :
+        driver.execute_script(
+            """document.getElementById('bg_color').value = '#da2929';
+            document.getElementById('bg_color').dispatchEvent(new Event('change'));"""
+            )
+
+        svg_map = driver.find_element_by_id('svg_map')
+        self.assertEqual(
+            'rgba(202, 51, 51, 1)',
+            svg_map.value_of_css_property('background-color'))
+
     def test_links(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -217,6 +228,9 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_visible_text("j")
         Select(driver.find_element_by_id("FlowMap_field_fij")
             ).select_by_visible_text("fij")
+
+        Select(driver.find_element_by_id("FlowMap_field_join")
+            ).select_by_visible_text("ISO2")
 
         driver.find_element_by_id('FlowMap_output_name').clear()
         driver.find_element_by_id('FlowMap_output_name').send_keys('result_layer')
@@ -999,7 +1013,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             '''a = document.querySelector('.layer_list').childNodes.length; return a;''')
         self.assertEqual(nb_layer_t2, 2)
 
-
     def test_propSymbols(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -1044,18 +1057,24 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         self._verif_legend_hide_show_button('my_result_layer')
 
-        # driver.find_element_by_css_selector(
-        #     "img.style_target_layer").click()
-        # driver.find_element_by_css_selector(
-        #     "#fill_color_section > input[type=\"number\"]").clear()
-        # driver.find_element_by_css_selector(
-        #     "#fill_color_section > input[type=\"number\"]").send_keys("100000")
-        # driver.find_element_by_xpath("(//input[@value='145535'])[2]").clear()
-        # driver.find_element_by_xpath("(//input[@value='145535'])[2]").send_keys("15535")
-        # driver.find_element_by_css_selector(
-        #     ".styleBox").find_elements_by_css_selector(
-        #     ".btn_ok")[0].click()
-        # driver.find_element_by_id("legend_button").click()
+        # Test that labels are correctly generated from a layer of prop symbols :
+        self.open_menu_section(3)
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.my_result_layer > div > .style_target_layer"))
+        time.sleep(0.5)
+        self.clickWaitTransition("#generate_labels")
+        Select(driver.find_element_by_css_selector("select.swal2-select")
+            ).select_by_value("LIBCOM")
+        self.waitClickButtonSwal()
+        time.sleep(1)
+        self.click_element_with_retry(".btn_ok")
+        time.sleep(0.5)
+        labels = driver.find_element_by_id(
+            "Labels_id_my_result_layer"
+            ).find_elements_by_css_selector("text")
+        self.assertIsInstance(labels, list)
+        self.assertGreater(len(labels), 0)
 
     def _verif_legend_hide_show_button(self, layer_name):
         driver = self.driver
