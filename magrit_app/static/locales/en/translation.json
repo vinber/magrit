@@ -66,6 +66,7 @@
             "arithmetic_progression": "Arithmetic progression",
             "jenks": "Jenks",
             "geometric_progression": "Geometric progression",
+            "stddev_f": "Standard deviation",
             "user_defined": "User defined",
             "up_element": "Up element",
             "down_element": "Down element",
@@ -611,7 +612,10 @@
         "colored_central_class": "colored central class",
         "color_palette": "Color palette ",
         "break_on": "Break on ",
-        "switch_ref_histo": "Switch representation"
+        "switch_ref_histo": "Switch representation",
+        "stddev_share_txt": "Standard deviation share",
+        "stddev_center_mean": "Mean as class center",
+        "stddev_bound_mean": "Mean as class bound"
     },
     "index":{
         "title": "Magrit - Thematic cartography",

@@ -554,7 +554,8 @@ function createStyleBox_Line(layer_name){
                             colors: rendering_params.colors,
                             no_data: rendering_params.no_data,
                             type: rendering_params.type,
-                            breaks: rendering_params.breaks
+                            breaks: rendering_params.breaks,
+                            extra_options: rendering_params.extra_options
                           };
                     redraw_legend('default', layer_name, rendering_params.field);
                 } else if (renderer == "Categorical" || renderer == "PropSymbolsTypo"){
@@ -680,7 +681,8 @@ function createStyleBox_Line(layer_name){
                                schema: confirmed[5],
                                no_data: confirmed[6],
                               //  renderer:"Choropleth",
-                               field: current_layers[layer_name].rendered_field
+                               field: current_layers[layer_name].rendered_field,
+                               extra_options: confirmed[7]
                            };
                            selection.transition()
                                .style("stroke", (d,i) => rendering_params.colorsByFeature[i]);
@@ -922,7 +924,8 @@ function createStyleBox(layer_name){
                             colors: rendering_params.colors,
                             no_data: rendering_params.no_data,
                             type: rendering_params.type,
-                            breaks: rendering_params.breaks
+                            breaks: rendering_params.breaks,
+                            extra_options: rendering_params.extra_options
                           };
                 } else if (renderer == "Stewart"){
                     current_layers[layer_name].colors_breaks = rendering_params.breaks;
@@ -1077,7 +1080,8 @@ function createStyleBox(layer_name){
                                schema: confirmed[5],
                                no_data: confirmed[6],
                               //  renderer:"Choropleth",
-                               field: current_layers[layer_name].rendered_field
+                               field: current_layers[layer_name].rendered_field,
+                               extra_options: confirmed[7]
                            };
                            let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
                            selection.transition()
@@ -1111,7 +1115,8 @@ function createStyleBox(layer_name){
                                 schema: confirmed[5],
                                 no_data: confirmed[6],
                                 renderer:"Choropleth",
-                                field: field_to_discretize
+                                field: field_to_discretize,
+                                extra_options: confirmed[7]
                             };
                             let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
                             selection.transition()
@@ -1369,7 +1374,8 @@ function createStyleBox_ProbSymbol(layer_name){
                                 colors: rendering_params.colors,
                                 no_data: rendering_params.no_data,
                                 type: rendering_params.type,
-                                breaks: rendering_params.breaks
+                                breaks: rendering_params.breaks,
+                                extra_options: rendering_params.extra_options
                               };
 
                     } else if (type_method == "PropSymbolsTypo"){
@@ -1456,7 +1462,8 @@ function createStyleBox_ProbSymbol(layer_name){
                           schema: confirmed[5],
                           no_data: confirmed[6],
                           renderer:"PropSymbolsChoro",
-                          field: field_color
+                          field: field_color,
+                          extra_options: confirmed[7]
                           };
                         selection.style("fill", (d,i) => rendering_params.colorsByFeature[i]);
                     }

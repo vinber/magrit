@@ -655,13 +655,16 @@ var fields_PropSymbolChoro = {
                                                         colors: self.rendering_params[selected_field].colors,
                                                         no_data: self.rendering_params[selected_field].no_data,
                                                         type: self.rendering_params[selected_field].type,
-                                                        breaks: self.rendering_params[selected_field].breaks});
+                                                        breaks: self.rendering_params[selected_field].breaks,
+                                                        extra_options: self.rendering_params[selected_field].extra_options});
             else
                 conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, {type: "quantiles"});
 
             conf_disc_box.then(function(confirmed){
                 if(confirmed){
-                    // ok_button.attr("disabled", null);
+                    img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+                    choro_mini_choice_disc.html(
+                        i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', {count: confirmed[0]}));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
@@ -669,7 +672,8 @@ var fields_PropSymbolChoro = {
                         schema: confirmed[5], no_data: confirmed[6],
                         breaks: confirmed[2], colors: confirmed[3],
                         colorsByFeature: confirmed[4],
-                        renderer: "PropSymbolsChoro"
+                        renderer: "PropSymbolsChoro",
+                        extra_options: confirmed[7]
                         };
                 } else
                     return;
@@ -716,7 +720,8 @@ var fields_PropSymbolChoro = {
                                     colors: rendering_params[color_field].colors,
                                     no_data: rendering_params[color_field].no_data,
                                     type: rendering_params[color_field].type,
-                                    breaks: rendering_params[color_field].breaks}
+                                    breaks: rendering_params[color_field].breaks,
+                                    extra_options: rendering_params[color_field].extra_options}
 
                 Object.assign(current_layers[new_layer_name],{
                     renderer: "PropSymbolsChoro",
@@ -1074,7 +1079,8 @@ var fields_Choropleth = {
                                                         colors: self.rendering_params[selected_field].colors,
                                                         type: self.rendering_params[selected_field].type,
                                                         no_data: self.rendering_params[selected_field].no_data,
-                                                        breaks: self.rendering_params[selected_field].breaks});
+                                                        breaks: self.rendering_params[selected_field].breaks,
+                                                        extra_options: self.rendering_params[selected_field].extra_options});
 
             } else {
                 conf_disc_box = display_discretization(layer,
@@ -1095,7 +1101,8 @@ var fields_Choropleth = {
                             breaks: confirmed[2], colors: confirmed[3],
                             schema: confirmed[5], no_data: confirmed[6],
                             colorsByFeature: confirmed[4], renderer:"Choropleth",
-                            rendered_field: selected_field, new_name: ""
+                            rendered_field: selected_field, new_name: "",
+                            extra_options: confirmed[7]
                         };
                 }
             });
@@ -1920,7 +1927,8 @@ function render_choro(layer, rendering_params){
                         colors: rendering_params.colors,
                         no_data: rendering_params.no_data,
                         type: rendering_params.type,
-                        breaks: breaks}
+                        breaks: breaks,
+                        extra_options: rendering_params.extra_options}
     var layer_to_render = map.select("#"+_app.layer_to_id.get(layer));
     layer_to_render
         .style("opacity", 1)

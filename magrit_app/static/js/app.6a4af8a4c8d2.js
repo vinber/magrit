@@ -2534,10 +2534,6 @@ function getBreaks(values, type, nb_class) {
         breaks[0] = serie.min();
         breaks[nb_class] = serie.max();
         serie.setClassManually(breaks);
-    } else if (type == "S5") {
-        var _tmp = getBreaksS5(serie, serie.precision);
-        breaks = _tmp.breaks;
-        serie.setClassManually(breaks);
     } else {
         var _func = discretiz_geostats_switch.get(type);
         breaks = serie[_func](nb_class);
@@ -2629,7 +2625,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         col_div.insert('p').attr("class", "central_class").html(i18next.t("disc_box.break_on")).insert("input").attrs({
             type: "number", class: "central_class", id: "centr_class",
             min: 1, max: nb_class - 1, step: 1, value: Math.round(nb_class / 2)
-        }).style("width", "40px").on("change", function () {
+        }).style("width", "50px").on("change", function (_) {
             redisplay.draw();
         });
 
@@ -2723,6 +2719,12 @@ var display_discretization = function display_discretization(layer_name, field_n
         });
     };
 
+    var update_nb_class = function update_nb_class(value) {
+        txt_nb_class.node().value = value;
+        document.getElementById("nb_class_range").value = value;
+        nb_class = value;
+    };
+
     var update_axis = function update_axis(group) {
         group.call(d3.axisBottom().scale(x).tickFormat(formatCount));
     };
@@ -2781,58 +2783,27 @@ var display_discretization = function display_discretization(layer_name, field_n
 
             if (type === "Q6") {
                 var tmp = getBreaksQ6(values, serie.precision);
-                stock_class = tmp.stock_class;
+                // stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
                 breaks[0] = serie.min();
                 breaks[6] = serie.max();
                 serie.setClassManually(breaks);
-            } else if (type === "S5") {
-                var tmp = getBreaksS5(serie, serie.precision);
-                stock_class = tmp.stock_class;
+                serie.doCount();
+                stock_class = Array.prototype.slice.call(serie.counter);
+            } else if (type === "stddev_f") {
+                var tmp = getBreaksStdDev(serie, std_dev_params.share, std_dev_params.role_mean, serie.precision);
+                update_nb_class(nb_class = tmp.nb_class);
                 breaks = tmp.breaks;
-                var should_warn = void 0;
-                var min = serie.min(),
-                    max = serie.max();
-                if (breaks[1] < min) {
-                    should_warn = true;
-                    breaks.shift();
-                    stock_class.shift();
-                    if (breaks[1] < min) {
-                        breaks.shift();
-                        stock_class.shift();
-                    }
-                } else if (breaks[4] > max) {
-                    should_warn = true;
-                    breaks.pop();
-                    stock_class.pop();
-                    if (breaks[3] > max) {
-                        breaks.pop();
-                        stock_class.pop();
-                    }
-                }
-                if (breaks[0] < min) breaks[0] = min;
-                if (breaks[breaks.length - 1] > max) breaks[breaks.length - 1] = max;
-                if (should_warn) {
-                    swal({ title: "",
-                        text: i18next.t("app_page.common.warning_not_adapted_classification"),
-                        type: "warning",
-                        showCancelButton: false,
-                        allowOutsideClick: false,
-                        confirmButtonColor: "#DD6B55"
-                    }).then(function (_) {
-                        return null;
-                    }, function (dismiss) {
-                        return null;
-                    });
-                }
-                serie.setClassManually(breaks);
+                serie.setClassManually(tmp.breaks);
+                serie.doCount();
+                stock_class = Array.prototype.slice.call(serie.counter);
             } else if (type === "user_defined") {
                 var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
                 stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
 
                 nb_class = tmp.breaks.length - 1;
-                txt_nb_class.node().value = +nb_class;
+                update_nb_class(nb_class);
 
                 if (breaks[0] > serie.min()) breaks[0] = serie.min();
                 if (breaks[nb_class] < serie.max()) breaks[nb_class] = serie.max();
@@ -2990,16 +2961,15 @@ var display_discretization = function display_discretization(layer_name, field_n
         stock_class = [],
         bins = [],
         user_break_list = null,
-        max_nb_class = 20 < nb_values ? 20 : nb_values;
+        max_nb_class = 20 < nb_values ? 20 : nb_values,
+        std_dev_params = options.extra_options && options.extra_options.role_mean != undefined ? options.extra_options : { role_mean: 'center', share: 1 };
 
     if (serie.variance() == 0 && serie.stddev() == 0) {
         var serie = new geostats(values);
     }
 
     values = serie.sorted();
-    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"],
-    //  [i18next.t("app_page.common.S5"), "S5"],
-    [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
+    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"], [i18next.t("app_page.common.stddev_f"), "stddev_f"], [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
     if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
@@ -3008,14 +2978,17 @@ var display_discretization = function display_discretization(layer_name, field_n
     var formatCount = d3.format(precision_axis);
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").insert("select").attr("class", "params").on("change", function () {
         type = this.value;
+        if (type === "stddev_f") {
+            input_section_stddev.style('display', '');
+            document.getElementById("nb_class_range").disabled = 'disabled';
+            txt_nb_class.style('disabled', 'disabled');
+        } else {
+            input_section_stddev.style('display', 'none');
+            document.getElementById("nb_class_range").disabled = false;
+            txt_nb_class.style('disabled', false);
+        }
         if (type === "Q6") {
-            nb_class = 6;
-            txt_nb_class.node().value = 6;
-            document.getElementById("nb_class_range").value = 6;
-        } else if (type === "S5") {
-            nb_class = 5;
-            txt_nb_class.node().value = 5;
-            document.getElementById("nb_class_range").value = 5;
+            update_nb_class(6);
         }
         redisplay.compute();
         redisplay.draw();
@@ -3025,6 +2998,29 @@ var display_discretization = function display_discretization(layer_name, field_n
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
+    var input_section_stddev = d3.select('#discretization_panel').insert('p').styles({ 'display': type === 'stddev_f' ? '' : 'none',
+        'margin': 'auto' });
+    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt'));
+    input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '60px', 'margin-left': '10px' }).on('change', function () {
+        var val = this.value;
+        if (val == 0 || val * serie.stddev() > serie.max() - serie.min()) {
+            // If the new value is too big :
+            this.value = std_dev_params.share;
+            return;
+        }
+        std_dev_params.share = val;
+        redisplay.compute();
+        redisplay.draw();
+    });
+
+    [[i18next.t("disc_box.stddev_center_mean"), "center"], [i18next.t("disc_box.stddev_bound_mean"), "bound"]].forEach(function (el) {
+        input_section_stddev.insert('p').style('margin', 'auto').insert("label").style('margin', '0 !important').html(el[0]).insert('input').attrs({ type: "radio", name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
+            std_dev_params.role_mean = this.value;
+            redisplay.compute();
+            redisplay.draw();
+        });
+    });
+    document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
     var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
         var a = disc_nb_class.node();
         a.value = this.value;
@@ -3037,12 +3033,9 @@ var display_discretization = function display_discretization(layer_name, field_n
         type = discretization.node().value;
         var old_nb_class = nb_class;
         if (type === "Q6") {
-            this.value = 6;
-            txt_nb_class.node().value = 6;
-            return;
-        } else if (type === "S5") {
-            this.value = 5;
-            txt_nb_class.node().value = 5;
+            update_nb_class(6);
+        } else if (type === "stddev_f") {
+            update_nb_class(nb_class);
             return;
         }
         nb_class = +this.value;
@@ -3153,7 +3146,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         // nb_class = user_break_list.split('-').length - 1;
         // txt_nb_class.node().value = +nb_class;
         // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
-        document.getElementById("nb_class_range").value = nb_class;
+        // document.getElementById("nb_class_range").value = nb_class;
         redisplay.compute();
         redisplay.draw();
     });
@@ -3231,7 +3224,7 @@ var display_discretization = function display_discretization(layer_name, field_n
             }
             col_schema.push(document.querySelector(".color_params_right").value);
         }
-        deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color]);
+        deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color, type === 'stddev_f' ? std_dev_params : undefined]);
         document.removeEventListener('keydown', helper_esc_key_twbs);
         container.remove();
         var p = reOpenParent();
@@ -4507,11 +4500,13 @@ var fields_PropSymbolChoro = {
                 colors: self.rendering_params[selected_field].colors,
                 no_data: self.rendering_params[selected_field].no_data,
                 type: self.rendering_params[selected_field].type,
-                breaks: self.rendering_params[selected_field].breaks });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
+                breaks: self.rendering_params[selected_field].breaks,
+                extra_options: self.rendering_params[selected_field].extra_options });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
 
             conf_disc_box.then(function (confirmed) {
                 if (confirmed) {
-                    // ok_button.attr("disabled", null);
+                    img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+                    choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ", " + i18next.t('app_page.common.class', { count: confirmed[0] }));
                     uncolor_icons();
                     color_disc_icons(confirmed[1]);
                     self.rendering_params[selected_field] = {
@@ -4519,7 +4514,8 @@ var fields_PropSymbolChoro = {
                         schema: confirmed[5], no_data: confirmed[6],
                         breaks: confirmed[2], colors: confirmed[3],
                         colorsByFeature: confirmed[4],
-                        renderer: "PropSymbolsChoro"
+                        renderer: "PropSymbolsChoro",
+                        extra_options: confirmed[7]
                     };
                 } else return;
             });
@@ -4558,7 +4554,8 @@ var fields_PropSymbolChoro = {
                     colors: rendering_params[color_field].colors,
                     no_data: rendering_params[color_field].no_data,
                     type: rendering_params[color_field].type,
-                    breaks: rendering_params[color_field].breaks };
+                    breaks: rendering_params[color_field].breaks,
+                    extra_options: rendering_params[color_field].extra_options };
 
                 Object.assign(current_layers[new_layer_name], {
                     renderer: "PropSymbolsChoro",
@@ -4970,7 +4967,8 @@ var fields_Choropleth = {
                     colors: self.rendering_params[selected_field].colors,
                     type: self.rendering_params[selected_field].type,
                     no_data: self.rendering_params[selected_field].no_data,
-                    breaks: self.rendering_params[selected_field].breaks });
+                    breaks: self.rendering_params[selected_field].breaks,
+                    extra_options: self.rendering_params[selected_field].extra_options });
             } else {
                 conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: "quantiles" });
             }
@@ -4986,7 +4984,8 @@ var fields_Choropleth = {
                         breaks: confirmed[2], colors: confirmed[3],
                         schema: confirmed[5], no_data: confirmed[6],
                         colorsByFeature: confirmed[4], renderer: "Choropleth",
-                        rendered_field: selected_field, new_name: ""
+                        rendered_field: selected_field, new_name: "",
+                        extra_options: confirmed[7]
                     };
                 }
             });
@@ -5781,7 +5780,8 @@ function render_choro(layer, rendering_params) {
         colors: rendering_params.colors,
         no_data: rendering_params.no_data,
         type: rendering_params.type,
-        breaks: breaks };
+        breaks: breaks,
+        extra_options: rendering_params.extra_options };
     var layer_to_render = map.select("#" + _app.layer_to_id.get(layer));
     layer_to_render.style("opacity", 1).style("stroke-width", 0.75 / d3.zoomTransform(svg_map).k, +"px");
     if (current_layers[layer].type == "Line") {
@@ -7859,47 +7859,47 @@ function getBreaksQ6(serie) {
     };
 }
 
-function getBreaksS5(serie) {
-    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+function getBreaksStdDev(serie, share) {
+    var mean_position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'center';
+    var precision = arguments[3];
 
     var min = serie.min(),
         max = serie.max(),
         mean = serie.mean(),
         std_dev = serie.stddev(),
-        range = serie.max() - serie.min(),
-        range_left = mean - min,
-        range_right = max - mean;
+        class_size = std_dev * share,
+        breaks = mean_position == 'center' ? [mean - class_size / 2, mean + class_size / 2] : [mean - class_size, mean, mean + class_size];
 
-    var ref = Math.max(range_left, range_right);
-    var class_range = ref / 2.5;
-    // var breaks = [
-    //   [mean - (class_range * 2.5), mean - (class_range * 1.5)]
-    //   [mean - (class_range * 1.5), mean - (class_range * 0.5)],
-    //   [mean - (class_range * 0.5), mean + (class_range * 0.5)],
-    //   [mean + (class_range * 0.5), mean + (class_range * 1.5)],
-    //   [mean + (class_range * 1.5), mean + (class_range * 2.5)]
-    // ];
-    var breaks = [mean - class_range * 2.5, mean - class_range * 1.5, mean - class_range * 0.5, mean + class_range * 0.5, mean + class_range * 1.5, mean + class_range * 2.5];
-    var values = serie.sorted();
-    var stock_class = [0, 0, 0, 0, 0];
-    for (var i = 0, len_i = values.length; i < len_i; ++i) {
-        var val = values[i];
-        if (val <= breaks[1]) {
-            stock_class[0] = stock_class[0] + 1;
-        } else if (val <= breaks[2]) {
-            stock_class[1] = stock_class[1] + 1;
-        } else if (val <= breaks[3]) {
-            stock_class[2] = stock_class[2] + 1;
-        } else if (val <= breaks[4]) {
-            stock_class[3] = stock_class[3] + 1;
-        } else if (val <= breaks[5]) {
-            stock_class[4] = stock_class[4] + 1;
+    precision = precision || serie.precision;
+
+    // let v = breaks[0];
+    while (breaks[0] > min) {
+        breaks.unshift(breaks[0] - class_size);
+        // v = breaks[0];
+    }
+    // v = breaks[breaks.length - 1];
+    while (breaks[breaks.length - 1] < max) {
+        breaks.push(breaks[breaks.length - 1] + class_size);
+    }
+    var nb_class = breaks.length - 1;
+    if (breaks[0] < min) {
+        if (breaks[1] < min) {
+            console.log("This shouldn't happen (min)");
         }
+        breaks[0] = min;
     }
 
+    if (breaks[nb_class] > max) {
+        if (breaks[nb_class - 1] > max) {
+            console.log("This shouldn't happen (max)");
+        }
+        breaks[nb_class] = max;
+    }
     return {
-        breaks: breaks,
-        stock_class: stock_class
+        nb_class: nb_class,
+        breaks: breaks.map(function (v) {
+            return round_value(v, precision);
+        })
     };
 }
 
@@ -10347,7 +10347,8 @@ function createStyleBox_Line(layer_name) {
                     colors: rendering_params.colors,
                     no_data: rendering_params.no_data,
                     type: rendering_params.type,
-                    breaks: rendering_params.breaks
+                    breaks: rendering_params.breaks,
+                    extra_options: rendering_params.extra_options
                 };
                 redraw_legend('default', layer_name, rendering_params.field);
             } else if (renderer == "Categorical" || renderer == "PropSymbolsTypo") {
@@ -10458,7 +10459,8 @@ function createStyleBox_Line(layer_name) {
                         schema: confirmed[5],
                         no_data: confirmed[6],
                         //  renderer:"Choropleth",
-                        field: current_layers[layer_name].rendered_field
+                        field: current_layers[layer_name].rendered_field,
+                        extra_options: confirmed[7]
                     };
                     selection.transition().style("stroke", function (d, i) {
                         return rendering_params.colorsByFeature[i];
@@ -10666,7 +10668,8 @@ function createStyleBox(layer_name) {
                     colors: rendering_params.colors,
                     no_data: rendering_params.no_data,
                     type: rendering_params.type,
-                    breaks: rendering_params.breaks
+                    breaks: rendering_params.breaks,
+                    extra_options: rendering_params.extra_options
                 };
             } else if (renderer == "Stewart") {
                 current_layers[layer_name].colors_breaks = rendering_params.breaks;
@@ -10802,7 +10805,8 @@ function createStyleBox(layer_name) {
                         schema: confirmed[5],
                         no_data: confirmed[6],
                         //  renderer:"Choropleth",
-                        field: current_layers[layer_name].rendered_field
+                        field: current_layers[layer_name].rendered_field,
+                        extra_options: confirmed[7]
                     };
                     var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
                     selection.transition().style("fill", function (d, i) {
@@ -10830,7 +10834,8 @@ function createStyleBox(layer_name) {
                             schema: confirmed[5],
                             no_data: confirmed[6],
                             renderer: "Choropleth",
-                            field: field_to_discretize
+                            field: field_to_discretize,
+                            extra_options: confirmed[7]
                         };
                         var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
                         selection.transition().style("fill", function (d, i) {
@@ -11059,7 +11064,8 @@ function createStyleBox_ProbSymbol(layer_name) {
                         colors: rendering_params.colors,
                         no_data: rendering_params.no_data,
                         type: rendering_params.type,
-                        breaks: rendering_params.breaks
+                        breaks: rendering_params.breaks,
+                        extra_options: rendering_params.extra_options
                     };
                 } else if (type_method == "PropSymbolsTypo") {
                     current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
@@ -11132,7 +11138,8 @@ function createStyleBox_ProbSymbol(layer_name) {
                             schema: confirmed[5],
                             no_data: confirmed[6],
                             renderer: "PropSymbolsChoro",
-                            field: field_color
+                            field: field_color,
+                            extra_options: confirmed[7]
                         };
                         selection.style("fill", function (d, i) {
                             return rendering_params.colorsByFeature[i];

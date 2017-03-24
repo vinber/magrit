@@ -66,6 +66,7 @@
             "arithmetic_progression": "Progression arithmétique",
             "jenks": "Jenks",
             "geometric_progression": "Progression géométrique",
+            "stddev_f": "Écart-type",
             "user_defined": "Personnalisé",
             "up_element": "Vers le haut",
             "down_element": "Vers le bas",
@@ -605,7 +606,10 @@
         "colored_central_class": "classe centrale colorée",
         "color_palette": "Palette de couleur ",
         "break_on": "Rupture de couleur à la classe ",
-        "switch_ref_histo": "Autre représentation"
+        "switch_ref_histo": "Autre représentation",
+        "stddev_share_txt": "Part de l'écart-type",
+        "stddev_center_mean": "Moyenne comme centre de classe",
+        "stddev_bound_mean": "Moyenne comme limite de classe"
     },
     "index":{
         "title": "Magrit - Cartographie thématique",
