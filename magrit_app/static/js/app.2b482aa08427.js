@@ -4303,6 +4303,9 @@ var fields_PropSymbolChoro = {
                 return v[field];
             }),
                 n_class = getOptNbClass(_values.length);
+            render_mini_chart_serie(_values.map(function (v) {
+                return +v;
+            }), document.getElementById("container_sparkline_propsymbolchoro"));
 
             var _discretize_to_colors = discretize_to_colors(_values, "quantiles", n_class),
                 _discretize_to_colors2 = _slicedToArray(_discretize_to_colors, 6),
@@ -4785,6 +4788,9 @@ var fields_Choropleth = {
                 return v[field];
             }),
                 n_class = getOptNbClass(_values.length);
+            render_mini_chart_serie(_values.map(function (v) {
+                return +v;
+            }), document.getElementById("container_sparkline_choro"));
 
             var _discretize_to_colors11 = discretize_to_colors(_values, "quantiles", n_class),
                 _discretize_to_colors12 = _slicedToArray(_discretize_to_colors11, 6),

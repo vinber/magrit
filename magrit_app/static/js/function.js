@@ -509,6 +509,7 @@ var fields_PropSymbolChoro = {
         let prepare_disc_quantiles = (field) => {
             let _values = user_data[layer].map(v => v[field]),
                 n_class = getOptNbClass(_values.length);
+            render_mini_chart_serie(_values.map(v => +v), document.getElementById("container_sparkline_propsymbolchoro"));
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
             self.rendering_params[field] = {
                 nb_class: nb_class, type: 'quantiles', colors: color_array,
@@ -948,6 +949,7 @@ var fields_Choropleth = {
         let prepare_disc_quantiles = (field) => {
             let _values = user_data[layer].map(v => v[field]),
                 n_class = getOptNbClass(_values.length);
+            render_mini_chart_serie(_values.map(v => +v), document.getElementById("container_sparkline_choro"));
             let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, "quantiles", n_class);
             self.rendering_params[field] = {
                 nb_class: nb_class, type: 'quantiles', colors: color_array,
