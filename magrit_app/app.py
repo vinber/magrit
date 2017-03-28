@@ -46,18 +46,17 @@ from pyexcel import get_book
 import jinja2
 import aiohttp_jinja2
 from aioredis import create_pool, create_reconnecting_redis
-from aiohttp import web, MultiDict
+from aiohttp import web
 from aiohttp_session import get_session, session_middleware, redis_storage
-
+from multidict import MultiDict
 try:
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from helpers.cy_misc import (
-        get_name, join_field_topojson, get_borders_to_geojson)
+    from helpers.cy_misc import get_name, join_field_topojson
     from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
+        reproj_convert_layer_kml, reproj_convert_layer,
         check_projection, olson_transform,
         make_geojson_links, repairCoordsPole, TopologicalError)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
@@ -67,12 +66,11 @@ try:
 except:
     from .helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from .helpers.cy_misc import (
-        get_name, join_field_topojson, get_borders_to_geojson)
+    from .helpers.cy_misc import get_name, join_field_topojson
     from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer, reproj_layer,
+        reproj_convert_layer_kml, reproj_convert_layer,
         check_projection, olson_transform,
         make_geojson_links, repairCoordsPole, TopologicalError)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
@@ -829,6 +827,7 @@ async def call_stewart(posted_data, user_id, app):
         json.dumps(breaks)
         ])
 
+
 async def geo_compute(request):
     s_t = time.time()
     function = request.match_info['function']
@@ -919,7 +918,7 @@ async def handler_exists_layer2(request):
                             "Content-Type": "application/octet-stream",
                             "Content-Disposition": ''.join(
                                 ["attachment; filename=", layer_name, ".zip"]),
-                            "Content-length": len(b64_zip)}))
+                            "Content-length": str(len(b64_zip))}))
                 else:
                     return web.Response(text=raw_data.decode())
         except Exception as err:
