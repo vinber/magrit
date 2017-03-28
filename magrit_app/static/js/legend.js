@@ -174,11 +174,13 @@ var drag_legend_func = function(legend_group){
        .subject(function() {
               var t = d3.select(this),
                   prev_translate = t.attr("transform");
+              let snap_lines = get_coords_snap_lines(this.parentElement.id);
               prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
               return {
                   x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
                   map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                  map_offset: get_map_xy0()
+                  map_offset: get_map_xy0(),
+                  snap_lines: snap_lines
               };
           })
       .on("start", () => {
@@ -186,10 +188,11 @@ var drag_legend_func = function(legend_group){
           d3.event.sourceEvent.preventDefault();
           handle_click_hand("lock");
         })
-      .on("end", () => {
+      .on("end", function(){
           if(d3.event.subject && !d3.event.subject.map_locked)
             handle_click_hand("unlock");
           legend_group.style("cursor", "grab");
+          pos_lgds_elem.set(legend_group.attr('id'), legend_group.node().getBoundingClientRect())
         })
       .on("drag", () => {
           let prev_value = legend_group.attr("transform");

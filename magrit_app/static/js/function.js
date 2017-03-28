@@ -3329,11 +3329,11 @@ var render_label = function(layer, rendering_params, options){
         .data(new_layer_data).enter()
         .insert("text")
         .attrs( (d,i) => {
-          let centroid = path.centroid(d.geometry);
+          let pt = proj(d.geometry);
           return {
             "id": "Feature_" + i,
-            "x": centroid[0],
-            "y": centroid[1],
+            "x": pt[0],
+            "y": pt[1],
             "alignment-baseline": "middle",
             "text-anchor": "middle"
             };
@@ -3354,6 +3354,88 @@ var render_label = function(layer, rendering_params, options){
         "symbol": "text",
         "fill_color" : txt_color,
         "rendered_field": label_field,
+        "is_result": true,
+        "ref_layer_name": layer,
+        "default_size": font_size,
+        "default_font": selected_font
+        };
+    zoom_without_redraw();
+    return layer_to_add;
+}
+
+var render_label_graticule = function(layer, rendering_params, options){
+    let txt_color = rendering_params.color;
+    let selected_font = rendering_params.font;
+    let font_size = rendering_params.ref_font_size + "px"
+    let new_layer_data = [];
+    let layer_to_add = check_layer_name("Labels_Graticule");
+    let layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
+    let nb_ft;
+    if(options && options.data){
+        new_layer_data = options.data;
+        nb_ft = new_layer_data.length;
+    } else if (layer){
+        let lines = d3.geoGraticule().step([current_layers['Graticule'].step, current_layers['Graticule'].step]).lines();
+        nb_ft = lines.length;
+        for(let i=0; i<nb_ft; i++){
+            let txt, geometry;
+            let line = lines[i];
+            if(line.coordinates[0][0] == line.coordinates[1][0]){
+                txt = line.coordinates[0][0];
+                geometry = {type: "Point", coordinates: line.coordinates[0]};
+            } else if (line.coordinates[0][1] == line.coordinates[1][1]){
+                txt = line.coordinates[0][1];
+                geometry = {type: "Point", coordinates: line.coordinates[0]};
+            }
+            if(txt){
+              new_layer_data.push({
+                  id: i,
+                  type: "Feature",
+                  properties: {label: txt},
+                  geometry: geometry
+              });
+            }
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
+        }
+    }
+    var context_menu = new ContextMenu(),
+        getItems = (self_parent) =>  [
+            {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_label(self_parent); }},
+            {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
+        ];
+
+    map.insert("g", '.legend')
+        .attrs({id: layer_id, class: "layer result_layer"})
+        .selectAll("text")
+        .data(new_layer_data).enter()
+        .insert("text")
+        .attrs( (d,i) => {
+          let pt = proj(d.geometry.coordinates);
+          return {
+            "id": "Feature_" + i,
+            "x": pt[0],
+            "y": pt[1],
+            "alignment-baseline": "middle",
+            "text-anchor": "middle"
+            };
+        })
+        .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
+        .text(d => d.properties.label)
+        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .on("mouseout", function(){ this.style.cursor = "initial";})
+        .on("dblclick contextmenu", function(){
+            context_menu.showMenu(d3.event,
+                                  document.querySelector("body"),
+                                  getItems(this)); })
+        .call(drag_elem_geo);
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
+    current_layers[layer_to_add] = {
+        "n_features": new_layer_data.length,
+        "renderer": "Label",
+        "symbol": "text",
+        "fill_color" : txt_color,
         "is_result": true,
         "ref_layer_name": layer,
         "default_size": font_size,

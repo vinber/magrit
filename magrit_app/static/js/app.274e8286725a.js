@@ -1000,7 +1000,8 @@ var user_data = new Object(),
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map");
+    map_div = d3.select("#map"),
+    pos_lgds_elem = new Map();
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attrs({ 'id': 'svg_map', 'width': w, 'height': h }).style("position", "absolute").on("contextmenu", function (event) {
@@ -7032,11 +7033,11 @@ var render_label = function render_label(layer, rendering_params, options) {
     };
 
     map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var centroid = path.centroid(d.geometry);
+        var pt = proj(d.geometry);
         return {
             "id": "Feature_" + i,
-            "x": centroid[0],
-            "y": centroid[1],
+            "x": pt[0],
+            "y": pt[1],
             "alignment-baseline": "middle",
             "text-anchor": "middle"
         };
@@ -7056,6 +7057,86 @@ var render_label = function render_label(layer, rendering_params, options) {
         "symbol": "text",
         "fill_color": txt_color,
         "rendered_field": label_field,
+        "is_result": true,
+        "ref_layer_name": layer,
+        "default_size": font_size,
+        "default_font": selected_font
+    };
+    zoom_without_redraw();
+    return layer_to_add;
+};
+
+var render_label_graticule = function render_label_graticule(layer, rendering_params, options) {
+    var txt_color = rendering_params.color;
+    var selected_font = rendering_params.font;
+    var font_size = rendering_params.ref_font_size + "px";
+    var new_layer_data = [];
+    var layer_to_add = check_layer_name("Labels_Graticule");
+    var layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
+    var nb_ft = void 0;
+    if (options && options.data) {
+        new_layer_data = options.data;
+        nb_ft = new_layer_data.length;
+    } else if (layer) {
+        var lines = d3.geoGraticule().step([current_layers['Graticule'].step, current_layers['Graticule'].step]).lines();
+        nb_ft = lines.length;
+        for (var i = 0; i < nb_ft; i++) {
+            var txt = void 0,
+                geometry = void 0;
+            var line = lines[i];
+            if (line.coordinates[0][0] == line.coordinates[1][0]) {
+                txt = line.coordinates[0][0];
+                geometry = { type: "Point", coordinates: line.coordinates[0] };
+            } else if (line.coordinates[0][1] == line.coordinates[1][1]) {
+                txt = line.coordinates[0][1];
+                geometry = { type: "Point", coordinates: line.coordinates[0] };
+            }
+            if (txt) {
+                new_layer_data.push({
+                    id: i,
+                    type: "Feature",
+                    properties: { label: txt },
+                    geometry: geometry
+                });
+            }
+            // new_layer_data.push({label: ft.properties[label_field], coords: d3.geoCentroid(ft.geometry)});
+        }
+    }
+    var context_menu = new ContextMenu(),
+        getItems = function getItems(self_parent) {
+        return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
+                make_style_box_indiv_label(self_parent);
+            } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
+                self_parent.style.display = "none";
+            } }];
+    };
+
+    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+        var pt = proj(d.geometry.coordinates);
+        return {
+            "id": "Feature_" + i,
+            "x": pt[0],
+            "y": pt[1],
+            "alignment-baseline": "middle",
+            "text-anchor": "middle"
+        };
+    }).styles({ "font-size": font_size, "font-family": selected_font, fill: txt_color }).text(function (d) {
+        return d.properties.label;
+    }).on("mouseover", function () {
+        this.style.cursor = "pointer";
+    }).on("mouseout", function () {
+        this.style.cursor = "initial";
+    }).on("dblclick contextmenu", function () {
+        context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+    }).call(drag_elem_geo);
+    create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
+    current_layers[layer_to_add] = {
+        "n_features": new_layer_data.length,
+        "renderer": "Label",
+        "symbol": "text",
+        "fill_color": txt_color,
         "is_result": true,
         "ref_layer_name": layer,
         "default_size": font_size,
@@ -10263,6 +10344,7 @@ function createStyleBoxGraticule(layer_name) {
         grat_range.value = +this.value;
         grat_range.dispatchEvent(new MouseEvent("change"));
     });
+    make_generate_labels_section(popup, "Graticule");
 }
 
 function redraw_legend(type_legend, layer_name, field) {
@@ -10928,8 +11010,8 @@ function createStyleBox(layer_name) {
 }
 
 function make_generate_labels_section(parent_node, layer_name) {
-    var _fields = get_fields_name(layer_name);
-    if (_fields && _fields.length > 0) {
+    var _fields = get_fields_name(layer_name) || [];
+    if (_fields && _fields.length > 0 || layer_name == "Graticule") {
         (function () {
             var labels_section = parent_node.append("p");
             var input_fields = {};
@@ -10941,42 +11023,52 @@ function make_generate_labels_section(parent_node, layer_name) {
             }).on("mouseout", function () {
                 this.style.fontWeight = "";
             }).on("click", function () {
-                var fields = swal({
-                    title: "",
-                    text: i18next.t("app_page.layer_style_popup.field_label"),
-                    type: "question",
-                    customClass: 'swal2_custom',
-                    showCancelButton: true,
-                    showCloseButton: false,
-                    allowEscapeKey: false,
-                    allowOutsideClick: false,
-                    confirmButtonColor: "#DD6B55",
-                    confirmButtonText: i18next.t("app_page.common.confirm"),
-                    input: 'select',
-                    inputPlaceholder: i18next.t("app_page.common.field"),
-                    inputOptions: input_fields,
-                    inputValidator: function inputValidator(value) {
-                        return new Promise(function (resolve, reject) {
-                            if (_fields.indexOf(value) < 0) {
-                                reject(i18next.t("app_page.common.no_value"));
-                            } else {
-                                var options_labels = {
-                                    label_field: value,
-                                    color: "#000",
-                                    font: "Arial,Helvetica,sans-serif",
-                                    ref_font_size: 12,
-                                    uo_layer_name: ["Labels", value, layer_name].join('_')
-                                };
-                                render_label(layer_name, options_labels);
-                                resolve();
-                            }
-                        });
-                    }
-                }).then(function (value) {
-                    console.log(value);
-                }, function (dismiss) {
-                    console.log(dismiss);
-                });
+                if (layer_name == "Graticule") {
+                    var options_labels = {
+                        color: "#000",
+                        font: "Arial,Helvetica,sans-serif",
+                        ref_font_size: 12,
+                        uo_layer_name: ["Labels", layer_name].join('_')
+                    };
+                    render_label_graticule(layer_name, options_labels);
+                } else {
+                    swal({
+                        title: "",
+                        text: i18next.t("app_page.layer_style_popup.field_label"),
+                        type: "question",
+                        customClass: 'swal2_custom',
+                        showCancelButton: true,
+                        showCloseButton: false,
+                        allowEscapeKey: false,
+                        allowOutsideClick: false,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: i18next.t("app_page.common.confirm"),
+                        input: 'select',
+                        inputPlaceholder: i18next.t("app_page.common.field"),
+                        inputOptions: input_fields,
+                        inputValidator: function inputValidator(value) {
+                            return new Promise(function (resolve, reject) {
+                                if (_fields.indexOf(value) < 0) {
+                                    reject(i18next.t("app_page.common.no_value"));
+                                } else {
+                                    var _options_labels = {
+                                        label_field: value,
+                                        color: "#000",
+                                        font: "Arial,Helvetica,sans-serif",
+                                        ref_font_size: 12,
+                                        uo_layer_name: ["Labels", value, layer_name].join('_')
+                                    };
+                                    render_label(layer_name, _options_labels);
+                                    resolve();
+                                }
+                            });
+                        }
+                    }).then(function (value) {
+                        console.log(value);
+                    }, function (dismiss) {
+                        console.log(dismiss);
+                    });
+                }
             });
         })();
     }
@@ -11398,18 +11490,21 @@ var UserArrow = function () {
         }
         var self = this;
         this.drag_behavior = d3.drag().subject(function () {
+            var snap_lines = get_coords_snap_lines(this.id);
             var t = d3.select(this.querySelector("line"));
             return { x: +t.attr("x2") - +t.attr("x1"),
                 y: +t.attr("y2") - +t.attr("y1"),
                 x1: t.attr("x1"), x2: t.attr("x2"),
                 y1: t.attr("y1"), y2: t.attr("y2"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
+            pos_lgds_elem.set(this.id, this.querySelector('line').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("line"),
@@ -11418,6 +11513,46 @@ var UserArrow = function () {
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
             self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
             self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
+            var snap_lines_x = subject.snap_lines.x,
+                snap_lines_y = subject.snap_lines.y;
+            for (var i = 0; i < subject.snap_lines.x.length; i++) {
+                if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                    })();
+                }
+                if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                    })();
+                }
+            }
             _t.x1.baseVal.value = self.pt1[0];
             _t.x2.baseVal.value = self.pt2[0];
             _t.y1.baseVal.value = self.pt1[1];
@@ -11688,22 +11823,72 @@ var Textbox = function () {
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement);
+            var snap_lines = get_coords_snap_lines(this.parentElement.id);
             return {
                 x: t.attr("x"), y: t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+            pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
         }).on("drag", function () {
+            var _this3 = this;
+
             d3.event.sourceEvent.preventDefault();
             d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
             // let x = +d3.event.x,
             //     y = +d3.event.y,
             //     t = d3.select(this.parentElement);
             // t.attrs({x: x, y: y});
+            var bbox = this.getBoundingClientRect();
+            var xmin = this.parentElement.x.baseVal.value,
+                xmax = xmin + bbox.width,
+                ymin = this.parentElement.y.baseVal.value,
+                ymax = ymin + bbox.height;
+            var snap_lines_x = d3.event.subject.snap_lines.x,
+                snap_lines_y = d3.event.subject.snap_lines.y;
+            for (var i = 0; i < snap_lines_x.length; i++) {
+                if (Math.abs(snap_lines_x[i] - xmin) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        _this3.parentElement.x.baseVal.value = snap_lines_x[i];
+                    })();
+                }
+                if (Math.abs(snap_lines_x[i] - xmax) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        _this3.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - ymin) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        _this3.parentElement.y.baseVal.value = snap_lines_y[i];
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - ymax) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        _this3.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                    })();
+                }
+            }
         });
 
         var foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -11772,7 +11957,7 @@ var Textbox = function () {
     _createClass(Textbox, [{
         key: "editStyle",
         value: function editStyle() {
-            var _this3 = this;
+            var _this4 = this;
 
             var map_xy0 = get_map_xy0();
             var self = this,
@@ -11851,7 +12036,7 @@ var Textbox = function () {
                 font_select.append("option").text(font[0]).attr("value", font[1]);
             });
             font_select.node().selectedIndex = available_fonts.map(function (d) {
-                return d[1] == _this3.font_family ? "1" : "0";
+                return d[1] == _this4.font_family ? "1" : "0";
             }).indexOf("1");
 
             options_font.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize }).style('width', '60px').on("change", function () {
@@ -11964,7 +12149,7 @@ var Textbox = function () {
 
 var scaleBar = {
     create: function create() {
-        var _this4 = this;
+        var _this5 = this;
 
         if (!proj.invert) {
             swal({ title: "",
@@ -11996,9 +12181,9 @@ var scaleBar = {
 
         var getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                    _this4.editStyle();
+                    _this5.editStyle();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                    _this4.remove();
+                    _this5.remove();
                 } }];
         };
 
@@ -12168,7 +12353,7 @@ var scaleBar = {
 
 var northArrow = {
     display: function display() {
-        var _this5 = this;
+        var _this6 = this;
 
         var x_pos = w - 100,
             y_pos = h - 100,
@@ -12183,6 +12368,7 @@ var northArrow = {
 
         this.drag_behavior = d3.drag().subject(function () {
             var t = d3.select(this.querySelector("image"));
+            var snap_lines = get_coords_snap_lines(this.id);
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
@@ -12193,6 +12379,7 @@ var northArrow = {
             handle_click_hand("lock"); // zoom.on("zoom", null);
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
+            pos_lgds_elem.set(this.id, this.querySelector("image").getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var t1 = this.querySelector("image"),
@@ -12211,13 +12398,13 @@ var northArrow = {
 
         var getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.options"), "action": function action() {
-                    _this5.editStyle();
+                    _this6.editStyle();
                 } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                    _this5.up_element();
+                    _this6.up_element();
                 } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                    _this5.down_element();
+                    _this6.down_element();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                    _this5.remove();
+                    _this6.remove();
                 } }];
         };
 
@@ -12340,6 +12527,7 @@ var UserEllipse = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
+            pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("ellipse"),
@@ -12358,18 +12546,18 @@ var UserEllipse = function () {
     _createClass(UserEllipse, [{
         key: "draw",
         value: function draw() {
-            var _this6 = this;
+            var _this7 = this;
 
             var context_menu = new ContextMenu(),
                 getItems = function getItems() {
                 return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                        _this6.editStyle();
+                        _this7.editStyle();
                     } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                        _this6.up_element();
+                        _this7.up_element();
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                        _this6.down_element();
+                        _this7.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this6.ellipse.remove();
+                        _this7.ellipse.remove();
                     } }];
             };
 
@@ -12388,7 +12576,7 @@ var UserEllipse = function () {
             this.ellipse.on('dblclick', function () {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
-                _this6.handle_ctrl_pt();
+                _this7.handle_ctrl_pt();
             });
         }
     }, {
@@ -12545,6 +12733,20 @@ var UserEllipse = function () {
 
     return UserEllipse;
 }();
+
+var get_coords_snap_lines = function get_coords_snap_lines(ref_id) {
+    var snap_lines = { x: [], y: [] };
+    var xy_map = get_map_xy0();
+    pos_lgds_elem.forEach(function (v, k) {
+        if (k != ref_id) {
+            snap_lines.y.push(v.bottom - xy_map.y);
+            snap_lines.y.push(v.top - xy_map.y);
+            snap_lines.x.push(v.left - xy_map.x);
+            snap_lines.x.push(v.right - xy_map.x);
+        }
+    });
+    return snap_lines;
+};
 "use strict";
 /**
 * Function called on clicking on the legend button of each layer
@@ -12708,13 +12910,15 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
         var t = d3.select(this),
             prev_translate = t.attr("transform");
+        var snap_lines = get_coords_snap_lines(this.parentElement.id);
         prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
         return {
             x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
             map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-            map_offset: get_map_xy0()
+            map_offset: get_map_xy0(),
+            snap_lines: snap_lines
         };
     }).on("start", function () {
         d3.event.sourceEvent.stopPropagation();
@@ -12723,6 +12927,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }).on("end", function () {
         if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         legend_group.style("cursor", "grab");
+        pos_lgds_elem.set(legend_group.attr('id'), legend_group.node().getBoundingClientRect());
     }).on("drag", function () {
         var prev_value = legend_group.attr("transform");
         prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {

@@ -1191,7 +1191,8 @@ var user_data = new Object(),
     current_layers = new Object(),
     dataset_name = undefined,
     canvas_rotation_value = undefined,
-    map_div = d3.select("#map");
+    map_div = d3.select("#map"),
+    pos_lgds_elem = new Map();
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
