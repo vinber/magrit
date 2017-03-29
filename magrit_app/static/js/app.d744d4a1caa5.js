@@ -12933,7 +12933,9 @@ var drag_legend_func = function drag_legend_func(legend_group) {
         prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
-        legend_group.attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')').style("cursor", "grabbing");
+        var new_value = [d3.event.x, d3.event.y];
+
+        legend_group.attr('transform', 'translate(' + new_value + ')').style("cursor", "grabbing");
 
         var bbox_elem = legend_group.node().getBoundingClientRect(),
             map_offset = d3.event.subject.map_offset,
@@ -12941,11 +12943,61 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = d3.event.y,
             change = void 0;
 
-        if (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w) {
+        var xmin = bbox_elem.left,
+            xmax = bbox_elem.right,
+            ymin = bbox_elem.top,
+            ymax = bbox_elem.bottom;
+
+        var snap_lines_x = d3.event.subject.snap_lines.x,
+            snap_lines_y = d3.event.subject.snap_lines.y;
+        for (var i = 0; i < snap_lines_x.length; i++) {
+            if (Math.abs(snap_lines_x[i] - xmin) < 10) {
+                (function () {
+                    var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                    setTimeout(function () {
+                        l.remove();
+                    }, 1000);
+                    val_x = snap_lines_x[i];
+                    change = true;
+                })();
+            }
+            if (Math.abs(snap_lines_x[i] - xmax) < 10) {
+                (function () {
+                    var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                    setTimeout(function () {
+                        l.remove();
+                    }, 1000);
+                    val_x = snap_lines_x[i] - bbox_elem.width;
+                    change = true;
+                })();
+            }
+            if (Math.abs(snap_lines_y[i] - ymin) < 10) {
+                (function () {
+                    var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                    setTimeout(function () {
+                        l.remove();
+                    }, 1000);
+                    val_y = snap_lines_y[i];
+                    change = true;
+                })();
+            }
+            if (Math.abs(snap_lines_y[i] - ymax) < 10) {
+                (function () {
+                    var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                    setTimeout(function () {
+                        l.remove();
+                    }, 1000);
+                    val_y = snap_lines_y[i] - bbox_elem.height;
+                    change = true;
+                })();
+            }
+        }
+
+        if (bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)) {
             val_x = prev_value[0];
             change = true;
         }
-        if (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h) {
+        if (bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)) {
             val_y = prev_value[1];
             change = true;
         }
