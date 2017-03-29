@@ -878,7 +878,19 @@ img.layout_ft_ico:hover {
     cursor: -webkit-grabbing;
 }
 
+<<<<<<< HEAD
 <<<<<<< f5db5b0d845205e1e806b63ff3e5688ffecc22cf
+=======
+.alertify-notifier .ajs-message.ajs-warning {
+    background: rgb(228, 144, 83) !important;
+}
+
+.alertify-notifier .ajs-message {
+    font: 13px Roboto !important;
+    padding: 12px !important;
+}
+
+>>>>>>> 3b700beb68b6aa4dfb6f257ea8b86db33653e4c1
 .styled-select {
    background: url(/static/img/arrow_select.png) no-repeat 100% 0;
    height: 29px;
@@ -905,6 +917,7 @@ img.layout_ft_ico:hover {
   background-color: black;
 }
 
+<<<<<<< HEAD
 <<<<<<< 12e430d3c8dc95895889b9ebadf65fe6d2cb43b2
 input[type="radio"].disc_style {
   position: absolute;

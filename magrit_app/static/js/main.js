@@ -1815,6 +1815,7 @@ function zoom_without_redraw(){
     //         scaleBar.remove()
     //     }
     // }
+
     if(window.legendRedrawTimeout){
         clearTimeout(legendRedrawTimeout);
     }
