@@ -878,9 +878,6 @@ img.layout_ft_ico:hover {
     cursor: -webkit-grabbing;
 }
 
-<<<<<<< HEAD
-<<<<<<< f5db5b0d845205e1e806b63ff3e5688ffecc22cf
-=======
 .alertify-notifier .ajs-message.ajs-warning {
     background: rgb(228, 144, 83) !important;
 }
@@ -890,7 +887,6 @@ img.layout_ft_ico:hover {
     padding: 12px !important;
 }
 
->>>>>>> 3b700beb68b6aa4dfb6f257ea8b86db33653e4c1
 .styled-select {
    background: url(/static/img/arrow_select.png) no-repeat 100% 0;
    height: 29px;
@@ -983,4 +979,3 @@ label.disc_style::before {
     stroke-linejoin: round;
     stroke-linecap: round;
 }
-
