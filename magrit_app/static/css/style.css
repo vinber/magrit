@@ -903,3 +903,51 @@ img.layout_ft_ico:hover {
 #form_projection * {
   background-color: black;
 }
+
+input[type="radio"].disc_style {
+  position: absolute;
+  opacity: 0;
+}
+label.disc_style {
+  position: relative;
+  display: inline-block;
+  margin-right: 10px;
+  margin-bottom: 10px;
+  padding-left: 30px;
+  padding-right: 10px;
+  line-height: 28px;
+  cursor: pointer;
+}
+label.disc_style::before {
+  content: " ";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #595959;
+  border-radius: 4px;
+}
+input[type="radio"].disc_style + label::before {
+  border-radius: 18px;
+}
+/* Checked */
+input[type="radio"].disc_style:checked + label {
+  padding-left: 10px;
+  color: #fff;
+}
+input[type="radio"].disc_style:checked + label::before {
+  top: 4px;
+  width: 100%;
+  height: 85%;
+  background: #595959;
+}
+
+/* Transition */
+label.disc_style,
+label.disc_style::before {
+  -webkit-transition: .25s all ease;
+  -o-transition: .25s all ease;
+  transition: .25s all ease;
+}

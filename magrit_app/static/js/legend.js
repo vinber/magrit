@@ -173,14 +173,15 @@ var drag_legend_func = function(legend_group){
     return d3.drag()
        .subject(function() {
               var t = d3.select(this),
-                  prev_translate = t.attr("transform");
-              let snap_lines = get_coords_snap_lines(this.parentElement.id);
+                  prev_translate = t.attr("transform"),
+                  snap_lines = get_coords_snap_lines(this.id);
               prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
               return {
                   x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
                   map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
                   map_offset: get_map_xy0(),
-                  snap_lines: snap_lines
+                  snap_lines: snap_lines,
+                  offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
               };
           })
       .on("start", () => {
@@ -192,7 +193,7 @@ var drag_legend_func = function(legend_group){
           if(d3.event.subject && !d3.event.subject.map_locked)
             handle_click_hand("unlock");
           legend_group.style("cursor", "grab");
-          pos_lgds_elem.set(legend_group.attr('id'), legend_group.node().getBoundingClientRect())
+          pos_lgds_elem.set(legend_group.attr('id') + legend_group.attr('class'), legend_group.node().getBoundingClientRect())
         })
       .on("drag", () => {
           let prev_value = legend_group.attr("transform");
@@ -206,10 +207,11 @@ var drag_legend_func = function(legend_group){
               map_offset = d3.event.subject.map_offset,
               val_x = d3.event.x, val_y = d3.event.y, change;
 
-          let xmin = bbox_elem.left,
-              xmax = bbox_elem.right,
-              ymin = bbox_elem.top,
-              ymax = bbox_elem.bottom;
+          let xy0 = get_map_xy0(),
+              xmin = bbox_elem.left - xy0.x,
+              xmax = bbox_elem.right - xy0.x,
+              ymin = bbox_elem.top - xy0.y,
+              ymax = bbox_elem.bottom - xy0.y;
 
           let snap_lines_x = d3.event.subject.snap_lines.x,
               snap_lines_y = d3.event.subject.snap_lines.y;
@@ -218,28 +220,28 @@ var drag_legend_func = function(legend_group){
                 let l = map.append('line')
                     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
                 setTimeout(function(){ l.remove(); }, 1000);
-                val_x = snap_lines_x[i];
+                val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
                 change = true;
               }
               if(Math.abs(snap_lines_x[i] - xmax) < 10){
                 let l = map.append('line')
                     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
                 setTimeout(function(){ l.remove(); }, 1000);
-                val_x = snap_lines_x[i] - bbox_elem.width;
+                val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
                 change = true;
               }
               if(Math.abs(snap_lines_y[i] - ymin) < 10){
                 let l = map.append('line')
                     .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
                 setTimeout(function(){ l.remove(); }, 1000);
-                val_y = snap_lines_y[i];
+                val_y = snap_lines_y[i] - d3.event.subject.offset[1];
                 change = true;
               }
               if(Math.abs(snap_lines_y[i] - ymax) < 10){
                 let l = map.append('line')
                       .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
                 setTimeout(function(){ l.remove(); }, 1000);
-                val_y = snap_lines_y[i] - bbox_elem.height;
+                val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
                 change = true;
               }
           }

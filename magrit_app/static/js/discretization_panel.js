@@ -597,10 +597,10 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .styles({'display': type === 'stddev_f' ? '' : 'none',
                  'margin': 'auto'});
     input_section_stddev.insert('span')
-        .html(i18next.t('disc_box.stddev_share_txt'));
+        .html(i18next.t('disc_box.stddev_share_txt1'));
     input_section_stddev.insert('input')
         .attrs({type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share})
-        .styles({'width': '60px', 'margin-left': '10px'})
+        .styles({'width': '45px', 'margin-left': '10px', 'margin-right': '10px'})
         .on('change', function(){
             let val = this.value;
             if(val == 0 || (val * serie.stddev()) > (serie.max() - serie.min())){
@@ -612,18 +612,24 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             redisplay.compute();
             redisplay.draw();
         });
-
+    input_section_stddev.insert('span')
+        .html(i18next.t('disc_box.stddev_share_txt2'));
+    let std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
+    std_dev_mean_choice.insert('p')
+        .html(i18next.t('disc_box.stddev_role_mean'));
     [[i18next.t("disc_box.stddev_center_mean"), "center"],
-     [i18next.t("disc_box.stddev_bound_mean"), "bound"]].forEach( el => {
-        input_section_stddev.insert('p').style('margin', 'auto')
-            .insert("label").style('margin', '0 !important').html(el[0])
+     [i18next.t("disc_box.stddev_break_mean"), "bound"]].forEach( el => {
+        std_dev_mean_choice
             .insert('input')
-            .attrs({type: "radio", name: "role_mean", value: el[1], id: "button_stddev_"+el[1]})
+            .attrs({type: "radio", class: 'disc_style', name: "role_mean", value: el[1], id: "button_stddev_"+el[1]})
              .on("change", function(){
                 std_dev_params.role_mean = this.value;
                 redisplay.compute();
                 redisplay.draw();
               });
+        std_dev_mean_choice
+            .insert("label")
+            .attrs({'class': 'disc_style', 'for': "button_stddev_"+el[1]}).html(el[0]);
         });
     document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
     var txt_nb_class = d3.select("#discretization_panel").append("input")

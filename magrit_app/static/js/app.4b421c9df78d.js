@@ -3001,8 +3001,8 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var input_section_stddev = d3.select('#discretization_panel').insert('p').styles({ 'display': type === 'stddev_f' ? '' : 'none',
         'margin': 'auto' });
-    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt'));
-    input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '60px', 'margin-left': '10px' }).on('change', function () {
+    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
+    input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
         var val = this.value;
         if (val == 0 || val * serie.stddev() > serie.max() - serie.min()) {
             // If the new value is too big :
@@ -3013,13 +3013,16 @@ var display_discretization = function display_discretization(layer_name, field_n
         redisplay.compute();
         redisplay.draw();
     });
-
-    [[i18next.t("disc_box.stddev_center_mean"), "center"], [i18next.t("disc_box.stddev_bound_mean"), "bound"]].forEach(function (el) {
-        input_section_stddev.insert('p').style('margin', 'auto').insert("label").style('margin', '0 !important').html(el[0]).insert('input').attrs({ type: "radio", name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
+    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt2'));
+    var std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
+    std_dev_mean_choice.insert('p').html(i18next.t('disc_box.stddev_role_mean'));
+    [[i18next.t("disc_box.stddev_center_mean"), "center"], [i18next.t("disc_box.stddev_break_mean"), "bound"]].forEach(function (el) {
+        std_dev_mean_choice.insert('input').attrs({ type: "radio", class: 'disc_style', name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
             std_dev_params.role_mean = this.value;
             redisplay.compute();
             redisplay.draw();
         });
+        std_dev_mean_choice.insert("label").attrs({ 'class': 'disc_style', 'for': "button_stddev_" + el[1] }).html(el[0]);
     });
     document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
     var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
@@ -11490,7 +11493,7 @@ var UserArrow = function () {
         }
         var self = this;
         this.drag_behavior = d3.drag().subject(function () {
-            var snap_lines = get_coords_snap_lines(this.id);
+            var snap_lines = get_coords_snap_lines(this.id, this.className);
             var t = d3.select(this.querySelector("line"));
             return { x: +t.attr("x2") - +t.attr("x1"),
                 y: +t.attr("y2") - +t.attr("y1"),
@@ -11504,10 +11507,11 @@ var UserArrow = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id, this.querySelector('line').getBoundingClientRect());
+            pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("line"),
+                arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
                 subject = d3.event.subject,
                 tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
@@ -11531,7 +11535,8 @@ var UserArrow = function () {
                         setTimeout(function () {
                             l.remove();
                         }, 1000);
-                        self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                        if (self.pt2[0] < self.pt1[0]) arrow_head_size = -arrow_head_size;
+                        self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
                     })();
                 }
                 if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
@@ -11549,7 +11554,8 @@ var UserArrow = function () {
                         setTimeout(function () {
                             l.remove();
                         }, 1000);
-                        self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                        if (self.pt2[1] < self.pt1[1]) arrow_head_size = -arrow_head_size;
+                        self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
                     })();
                 }
             }
@@ -11823,7 +11829,7 @@ var Textbox = function () {
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement);
-            var snap_lines = get_coords_snap_lines(this.parentElement.id);
+            var snap_lines = get_coords_snap_lines(this.parentElement.id, this.parentElement.className);
             return {
                 x: t.attr("x"), y: t.attr("y"),
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
@@ -11834,22 +11840,19 @@ var Textbox = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
-            pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
+            pos_lgds_elem.set(this.parentElement.id + this.parentElement.className, this.getBoundingClientRect());
         }).on("drag", function () {
             var _this3 = this;
 
             d3.event.sourceEvent.preventDefault();
             d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
-            // let x = +d3.event.x,
-            //     y = +d3.event.y,
-            //     t = d3.select(this.parentElement);
-            // t.attrs({x: x, y: y});
-            var bbox = this.getBoundingClientRect();
-            var xmin = this.parentElement.x.baseVal.value,
+
+            var bbox = this.getBoundingClientRect(),
+                xmin = this.parentElement.x.baseVal.value,
                 xmax = xmin + bbox.width,
                 ymin = this.parentElement.y.baseVal.value,
-                ymax = ymin + bbox.height;
-            var snap_lines_x = d3.event.subject.snap_lines.x,
+                ymax = ymin + bbox.height,
+                snap_lines_x = d3.event.subject.snap_lines.x,
                 snap_lines_y = d3.event.subject.snap_lines.y;
             for (var i = 0; i < snap_lines_x.length; i++) {
                 if (Math.abs(snap_lines_x[i] - xmin) < 10) {
@@ -12188,7 +12191,7 @@ var scaleBar = {
         };
 
         var scale_context_menu = new ContextMenu();
-        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5 }).styles({ "fill": "green", "fill-opacity": 0 });
+        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5, id: "under_rect" }).styles({ "fill": "green", "fill-opacity": 0 });
         scale_gp.insert("rect").attr("id", "rect_scale").attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style("fill", "black");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale").attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ "font": "11px 'Enriqueta', arial, serif",
             "text-anchor": "middle" }).text(this.dist_txt + " km");
@@ -12359,7 +12362,7 @@ var northArrow = {
             y_pos = h - 100,
             self = this;
 
-        var arrow_gp = map.append("g").attr("id", "north_arrow").attr("class", "legend").attr("scale", 1).attr("rotate", null).style("cursor", "all-scroll");
+        var arrow_gp = map.append("g").attrs({ id: 'north_arrow', class: 'legend', scale: 1, rotate: null }).style('cursor', 'all-scroll');
 
         this.svg_node = arrow_gp;
         this.displayed = true;
@@ -12368,7 +12371,7 @@ var northArrow = {
 
         this.drag_behavior = d3.drag().subject(function () {
             var t = d3.select(this.querySelector("image"));
-            var snap_lines = get_coords_snap_lines(this.id);
+            var snap_lines = get_coords_snap_lines(this.id, this.className);
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
@@ -12379,7 +12382,7 @@ var northArrow = {
             handle_click_hand("lock"); // zoom.on("zoom", null);
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id, this.querySelector("image").getBoundingClientRect());
+            pos_lgds_elem.set(this.id + this.className, this.querySelector("image").getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var t1 = this.querySelector("image"),
@@ -12413,7 +12416,7 @@ var northArrow = {
         var bbox = document.getElementById("north_arrow").getBoundingClientRect(),
             xy0_map = get_map_xy0();
 
-        this.under_rect = arrow_gp.append("g").insert("rect").style("fill", "green").style("fill-opacity", 0).attr("x", bbox.left - xy0_map.x).attr("y", bbox.top - xy0_map.y).attr("height", bbox.height).attr("width", bbox.width);
+        this.under_rect = arrow_gp.append("g").insert("rect").styles({ fill: 'green', 'fill-opacity': 0 }).attrs({ x: bbox.left - xy0_map.x, y: bbox.top - xy0_map.y, height: bbox.height, width: bbox.width });
 
         this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
         this.y_center = bbox.top - xy0_map.y + bbox.height / 2;
@@ -12527,7 +12530,7 @@ var UserEllipse = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
+            pos_lgds_elem.set(this.id + this.className, this.querySelector('ellipse').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("ellipse"),
@@ -12734,11 +12737,11 @@ var UserEllipse = function () {
     return UserEllipse;
 }();
 
-var get_coords_snap_lines = function get_coords_snap_lines(ref_id) {
+var get_coords_snap_lines = function get_coords_snap_lines(ref_id, ref_class) {
     var snap_lines = { x: [], y: [] };
     var xy_map = get_map_xy0();
     pos_lgds_elem.forEach(function (v, k) {
-        if (k != ref_id) {
+        if (k != ref_id + ref_class) {
             snap_lines.y.push(v.bottom - xy_map.y);
             snap_lines.y.push(v.top - xy_map.y);
             snap_lines.x.push(v.left - xy_map.x);
@@ -12909,8 +12912,8 @@ function make_legend_context_menu(legend_node, layer) {
 var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
         var t = d3.select(this),
-            prev_translate = t.attr("transform");
-        var snap_lines = get_coords_snap_lines(this.parentElement.id);
+            prev_translate = t.attr("transform"),
+            snap_lines = get_coords_snap_lines(this.id);
         prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
@@ -12918,7 +12921,8 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
             map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
             map_offset: get_map_xy0(),
-            snap_lines: snap_lines
+            snap_lines: snap_lines,
+            offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
         };
     }).on("start", function () {
         d3.event.sourceEvent.stopPropagation();
@@ -12927,7 +12931,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }).on("end", function () {
         if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         legend_group.style("cursor", "grab");
-        pos_lgds_elem.set(legend_group.attr('id'), legend_group.node().getBoundingClientRect());
+        pos_lgds_elem.set(legend_group.attr('id') + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
     }).on("drag", function () {
         var prev_value = legend_group.attr("transform");
         prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
@@ -12943,10 +12947,11 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = d3.event.y,
             change = void 0;
 
-        var xmin = bbox_elem.left,
-            xmax = bbox_elem.right,
-            ymin = bbox_elem.top,
-            ymax = bbox_elem.bottom;
+        var xy0 = get_map_xy0(),
+            xmin = bbox_elem.left - xy0.x,
+            xmax = bbox_elem.right - xy0.x,
+            ymin = bbox_elem.top - xy0.y,
+            ymax = bbox_elem.bottom - xy0.y;
 
         var snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
@@ -12957,7 +12962,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                     setTimeout(function () {
                         l.remove();
                     }, 1000);
-                    val_x = snap_lines_x[i];
+                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
                     change = true;
                 })();
             }
@@ -12967,7 +12972,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                     setTimeout(function () {
                         l.remove();
                     }, 1000);
-                    val_x = snap_lines_x[i] - bbox_elem.width;
+                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
                     change = true;
                 })();
             }
@@ -12977,7 +12982,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                     setTimeout(function () {
                         l.remove();
                     }, 1000);
-                    val_y = snap_lines_y[i];
+                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
                     change = true;
                 })();
             }
@@ -12987,7 +12992,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                     setTimeout(function () {
                         l.remove();
                     }, 1000);
-                    val_y = snap_lines_y[i] - bbox_elem.height;
+                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
                     change = true;
                 })();
             }

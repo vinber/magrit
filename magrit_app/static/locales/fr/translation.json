@@ -607,9 +607,11 @@
         "color_palette": "Palette de couleur ",
         "break_on": "Rupture de couleur à la classe ",
         "switch_ref_histo": "Autre représentation",
-        "stddev_share_txt": "Part de l'écart-type",
-        "stddev_center_mean": "Moyenne comme centre de classe",
-        "stddev_bound_mean": "Moyenne comme limite de classe"
+        "stddev_share_txt1": "Amplitude :",
+        "stddev_share_txt2": "écart-type",
+        "stddev_role_mean": "Role de la moyenne :",
+        "stddev_center_mean": "centre de classe",
+        "stddev_break_mean": "borne de classe"
     },
     "index":{
         "title": "Magrit - Cartographie thématique",

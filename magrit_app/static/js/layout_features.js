@@ -19,7 +19,7 @@ class UserArrow {
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
-                    let snap_lines = get_coords_snap_lines(this.id);
+                    let snap_lines = get_coords_snap_lines(this.id, this.className);
                     let t = d3.select(this.querySelector("line"));
                     return { x: +t.attr("x2") - +t.attr("x1"),
                              y: +t.attr("y2") - +t.attr("y1"),
@@ -36,11 +36,12 @@ class UserArrow {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id, this.querySelector('line').getBoundingClientRect());
+                pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 let _t = this.querySelector("line"),
+                    arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
                     subject = d3.event.subject,
                     tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
                     ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
@@ -59,7 +60,9 @@ class UserArrow {
                       let l = map.append('line')
                           .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
                       setTimeout(function(){ l.remove(); }, 1000);
-                      self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                      if(self.pt2[0] < self.pt1[0])
+                          arrow_head_size = -arrow_head_size;
+                      self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
                     }
                     if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
                       let l = map.append('line')
@@ -71,7 +74,9 @@ class UserArrow {
                       let l = map.append('line')
                             .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
                       setTimeout(function(){ l.remove(); }, 1000);
-                      self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                      if(self.pt2[1] < self.pt1[1])
+                          arrow_head_size = -arrow_head_size;
+                      self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
                     }
                 }
                 _t.x1.baseVal.value = self.pt1[0];
@@ -340,7 +345,7 @@ class Textbox {
         let drag_txt_annot = d3.drag()
              .subject(function() {
                     var t = d3.select(this.parentElement);
-                    let snap_lines = get_coords_snap_lines(this.parentElement.id);
+                    let snap_lines = get_coords_snap_lines(this.parentElement.id, this.parentElement.className);
                     return {
                         x: t.attr("x"), y: t.attr("y"),
                         map_locked: map_div.select("#hand_button").classed("locked") ? true : false
@@ -354,21 +359,18 @@ class Textbox {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");
-                pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
+                pos_lgds_elem.set(this.parentElement.id + this.parentElement.className, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 d3.select(this.parentElement).attrs({x: +d3.event.x, y: +d3.event.y});
-                // let x = +d3.event.x,
-                //     y = +d3.event.y,
-                //     t = d3.select(this.parentElement);
-                // t.attrs({x: x, y: y});
-                let bbox = this.getBoundingClientRect();
-                let xmin = this.parentElement.x.baseVal.value,
+
+                let bbox = this.getBoundingClientRect(),
+                    xmin = this.parentElement.x.baseVal.value,
                     xmax = xmin + bbox.width,
                     ymin = this.parentElement.y.baseVal.value,
-                    ymax = ymin + bbox.height;
-                let snap_lines_x = d3.event.subject.snap_lines.x,
+                    ymax = ymin + bbox.height,
+                    snap_lines_x = d3.event.subject.snap_lines.x,
                     snap_lines_y = d3.event.subject.snap_lines.y;
                 for(let i = 0; i < snap_lines_x.length; i++){
                     if(Math.abs(snap_lines_x[i] - xmin) < 10){
@@ -708,7 +710,7 @@ var scaleBar = {
 
         let scale_context_menu = new ContextMenu();
         this.under_rect = scale_gp.insert("rect")
-            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5})
+            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5, id: "under_rect"})
             .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: this.bar_size})
@@ -915,11 +917,8 @@ var northArrow = {
             self = this;
 
         let arrow_gp = map.append("g")
-                        .attr("id", "north_arrow")
-                        .attr("class", "legend")
-                        .attr("scale", 1)
-                        .attr("rotate", null)
-                        .style("cursor", "all-scroll");
+            .attrs({id: 'north_arrow', class: 'legend', scale: 1, rotate: null})
+            .style('cursor', 'all-scroll');
 
         this.svg_node = arrow_gp;
         this.displayed = true;
@@ -934,7 +933,7 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    let snap_lines = get_coords_snap_lines(this.id);
+                    let snap_lines = get_coords_snap_lines(this.id, this.className);
                     return {
                         x: +t.attr("x"),
                         y: +t.attr("y"),
@@ -948,7 +947,7 @@ var northArrow = {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id, this.querySelector("image").getBoundingClientRect());
+                pos_lgds_elem.set(this.id + this.className, this.querySelector("image").getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -981,12 +980,8 @@ var northArrow = {
 
         this.under_rect = arrow_gp.append("g")
             .insert("rect")
-                .style("fill", "green")
-                .style("fill-opacity", 0)
-                .attr("x", bbox.left - xy0_map.x)
-                .attr("y", bbox.top - xy0_map.y)
-                .attr("height", bbox.height)
-                .attr("width", bbox.width);
+            .styles({fill: 'green', 'fill-opacity': 0})
+            .attrs({x: bbox.left - xy0_map.x, y: bbox.top - xy0_map.y, height: bbox.height, width: bbox.width});
 
         this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
         this.y_center = bbox.top - xy0_map.y + bbox.height / 2
@@ -1123,8 +1118,7 @@ class UserEllipse {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
-
+                pos_lgds_elem.set(this.id + this.className, this.querySelector('ellipse').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1334,11 +1328,11 @@ class UserEllipse {
     }
  }
 
-const get_coords_snap_lines = function(ref_id){
+const get_coords_snap_lines = function(ref_id, ref_class){
     let snap_lines = {x: [], y: []};
     let xy_map = get_map_xy0();
     pos_lgds_elem.forEach((v,k) => {
-        if(k != ref_id){
+        if(k != ref_id + ref_class){
             snap_lines.y.push(v.bottom - xy_map.y);
             snap_lines.y.push(v.top - xy_map.y);
             snap_lines.x.push(v.left - xy_map.x);
