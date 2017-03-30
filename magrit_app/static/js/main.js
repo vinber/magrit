@@ -601,7 +601,7 @@ function setUpInterface(resume_project)
             .attr("data-i18n", "[html]app_page.section4.resize_fit");
     d2.append("button")
             .styles({margin: 0, padding: 0})
-            .attrs({id: "resize_fit", type: "number", "value": h,
+            .attrs({id: "resize_fit",
                     class: "m_elem_right list_elem_section4 button_st4 i18n",
                     'data-i18n': '[html]app_page.common.ok'})
             .on('click', function(){
@@ -652,6 +652,14 @@ function setUpInterface(resume_project)
               document.getElementById("canvas_rotation_value_txt").value = this.value;
           });
 
+    let g2 = dv4.append('li').styles({margin: '1px', padding: '4px'});
+    g2.append('p').attr('class', 'list_elem_section4 i18n')
+        .attr('data-i18n', '[html]app_page.section4.autoalign_features');
+    g2.append('input')
+        .styles({margin: 0, padding: 0})
+        .attrs({id: "autoalign_features", type: "checkbox",
+                class: "m_elem_right list_elem_section4 i18n"});
+
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});
     _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
@@ -663,6 +671,7 @@ function setUpInterface(resume_project)
     _i.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
     _i.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
     _i.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
+    _i.insert('span').insert('img').attrs({id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
 
     let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")

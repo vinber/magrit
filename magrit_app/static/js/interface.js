@@ -1177,6 +1177,8 @@ function add_layout_feature(selected_feature, options = {}){
         handleClickAddArrow();
     } else if (selected_feature == "ellipse"){
         handleClickAddEllipse();
+      } else if (selected_feature == "rectangle"){
+        handleClickAddRectangle();
     } else if (selected_feature == "symbol"){
         if(!window.default_symbols){
             window.default_symbols = [];
@@ -1433,43 +1435,81 @@ function get_map_xy0(){
     return {x: bbox.left, y: bbox.top}
 }
 
-function handleClickAddEllipse(){
-    let getId = () => {
-        let ellipses = document.getElementsByClassName("user_ellipse");
-        if(!ellipses){
-            return 0;
-        } else if (ellipses.length > 30){
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
-            return null;
+const getIdLayoutFeature = (type) => {
+    if(type == "ellipse"){
+        var class_name = 'user_ellipse',
+            id_prefix = 'user_ellipse_',
+            error_name = 'error_max_ellipses';
+    } else if (type == 'rectangle'){
+        var class_name = 'user_rectangle',
+            id_prefix = 'user_rectangle_',
+            error_name = 'error_max_rectangles';
+    } else if (type == 'arrow'){
+        var class_name = 'arrow',
+            id_prefix = 'arrow_',
+            error_name = 'error_max_arrows';
+    }
+    let features = document.getElementsByClassName(class_name);
+    if(!features){
+        return 0;
+    } else if (features.length > 30){
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common." + error_name), "error").catch(swal.noop);
+        return null;
+    } else {
+        let ids = [];
+        for(let i=0; i<features.length; i++){
+            ids.push(+features[i].id.split(id_prefix)[1])
+        }
+        if(ids.indexOf(features.length) == -1){
+            return features.length;
         } else {
-            let ids = [];
-            for(let i=0; i<ellipses.length; i++){
-                ids.push(+ellipses[i].id.split("user_ellipse_")[1])
-            }
-            if(ids.indexOf(ellipses.length) == -1){
-                return ellipses.length;
-            } else {
-                for(let i=0; i<ellipses.length; i++){
-                    if(ids.indexOf(i) == -1){
-                        return i;
-                    }
+            for(let i=0; i<features.length; i++){
+                if(ids.indexOf(i) == -1){
+                    return i;
                 }
             }
-            return null;
         }
         return null;
-    };
+    }
+    return null;
+};
+
+
+function handleClickAddRectangle(){
+  let start_point,
+      tmp_start_point,
+      rectangle_id = getIdLayoutFeature('rectangle');
+      if(rectangle_id === null){
+          return;
+      }
+      rectangle_id = "user_rectangle_" + rectangle_id;
+      document.body.style.cursor = "not-allowed";
+      let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+      map.style("cursor", "crosshair")
+          .on("click", function(){
+              msg.dismiss();
+              start_point = [d3.event.layerX, d3.event.layerY];
+              tmp_start_point = map.append("rect")
+                  .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
+                  .style("fill", "red");
+              setTimeout(function(){
+                  tmp_start_point.remove();
+              }, 1000);
+              map.style("cursor", "").on("click", null);
+              document.body.style.cursor = "";
+              new UserRectangle(rectangle_id, start_point, svg_map);
+          });
+  }
+
+function handleClickAddEllipse(){
 
     let start_point,
         tmp_start_point,
-        ellipse_id = getId();
-
+        ellipse_id = getIdLayoutFeature('ellispe');
     if(ellipse_id === null){
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error").catch(swal.noop);
         return;
-    } else {
-        ellipse_id = "user_ellipse_" + ellipse_id;
     }
+    ellipse_id = "user_ellipse_" + ellipse_id;
     document.body.style.cursor = "not-allowed";
     let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair")
@@ -1501,75 +1541,46 @@ function handleClickTextBox(text_box_id){
         });
 }
 
-function handleFreeDraw(){
-    var line_gen = d3.line(d3.curveBasis);
-    var draw_layer = map.select('#_m_free_draw_layer');
-    if(!draw_layer.node()){
-        draw_layer = map.append('g').attrs({id: "_m_free_draw_layer"});
-    } else {
-        // up the draw_layer ?
-    }
-    var draw_rect = draw_layer.append('rect')
-        .attrs({fill: 'transparent', height: h, width: w, x: 0, y:0});
-    draw_layer.call(d3.drag()
-        .container(function(){ return this; })
-        .subject(_ =>  [[d3.event.x, d3.event.y], [d3.event.x, d3.event.y]])
-        .on('start', _ => {
-            handle_click_hand('lock');
-            let d = d3.event.subject,
-                active_line = draw_layer.append('path').datum(d),
-                x0 = d3.event.x,
-                y0 = d3.event.y;
-            d3.event.on('drag', function(){
-                var x1 = d3.event.x,
-                    y1 = d3.event.y,
-                    dx = x1 - x0,
-                    dy = y1 - y0;
-                if(dx * dx + dy * dy > 100) d.push([x0 = x1, y0 = y1]);
-                else d[d.length -1] = [x1, y1];
-                active_line.attr('d', line_gen)
-            });
-        }));
-}
+// function handleFreeDraw(){
+//     var line_gen = d3.line(d3.curveBasis);
+//     var draw_layer = map.select('#_m_free_draw_layer');
+//     if(!draw_layer.node()){
+//         draw_layer = map.append('g').attrs({id: "_m_free_draw_layer"});
+//     } else {
+//         // up the draw_layer ?
+//     }
+//     var draw_rect = draw_layer.append('rect')
+//         .attrs({fill: 'transparent', height: h, width: w, x: 0, y:0});
+//     draw_layer.call(d3.drag()
+//         .container(function(){ return this; })
+//         .subject(_ =>  [[d3.event.x, d3.event.y], [d3.event.x, d3.event.y]])
+//         .on('start', _ => {
+//             handle_click_hand('lock');
+//             let d = d3.event.subject,
+//                 active_line = draw_layer.append('path').datum(d),
+//                 x0 = d3.event.x,
+//                 y0 = d3.event.y;
+//             d3.event.on('drag', function(){
+//                 var x1 = d3.event.x,
+//                     y1 = d3.event.y,
+//                     dx = x1 - x0,
+//                     dy = y1 - y0;
+//                 if(dx * dx + dy * dy > 100) d.push([x0 = x1, y0 = y1]);
+//                 else d[d.length -1] = [x1, y1];
+//                 active_line.attr('d', line_gen)
+//             });
+//         }));
+// }
 
 function handleClickAddArrow(){
-    let getId = () => {
-        let arrows = document.getElementsByClassName("arrow");
-        if(!arrows){
-            return 0;
-        } else if (arrows.length > 30){
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
-            return null;
-        } else {
-            let ids = [];
-            for(let i=0; i<arrows.length; i++){
-                ids.push(+arrows[i].id.split("arrow_")[1])
-            }
-            if(ids.indexOf(arrows.length) == -1){
-                return arrows.length;
-            } else {
-                for(let i=0; i<arrows.length; i++){
-                    if(ids.indexOf(i) == -1){
-                        return i;
-                    }
-                }
-            }
-            return null;
-        }
-        return null;
-    };
-
     let start_point,
         tmp_start_point,
         end_point,
         tmp_end_point,
-        arrow_id = getId();
+        arrow_id = getIdLayoutFeature('arrow');
 
     if(arrow_id === null){
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", {msg: ""}), "error").catch(swal.noop);
         return;
-    } else {
-        arrow_id = "arrow_" + arrow_id;
     }
     document.body.style.cursor = "not-allowed";
     let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);

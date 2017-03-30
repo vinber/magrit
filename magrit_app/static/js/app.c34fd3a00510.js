@@ -490,7 +490,7 @@ function setUpInterface(resume_project) {
 
     var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit", type: "number", "value": h,
+    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit",
         class: "m_elem_right list_elem_section4 button_st4 i18n",
         'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
         document.getElementById('btn_s4').click();
@@ -532,6 +532,11 @@ function setUpInterface(resume_project) {
         document.getElementById("canvas_rotation_value_txt").value = this.value;
     });
 
+    var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+    g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
+    g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: "autoalign_features", type: "checkbox",
+        class: "m_elem_right list_elem_section4 i18n" });
+
     var _i = dv4.append('li').styles({ 'text-align': 'center' });
     _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
     _i.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
@@ -558,6 +563,9 @@ function setUpInterface(resume_project) {
     });
     _i.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
         return add_layout_feature('text_annot');
+    });
+    _i.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
+        return add_layout_feature('rectangle');
     });
 
     var section5b = d3.select("#section5");
@@ -9351,6 +9359,8 @@ function add_layout_feature(selected_feature) {
         handleClickAddArrow();
     } else if (selected_feature == "ellipse") {
         handleClickAddEllipse();
+    } else if (selected_feature == "rectangle") {
+        handleClickAddRectangle();
     } else if (selected_feature == "symbol") {
         if (!window.default_symbols) {
             window.default_symbols = [];
@@ -9587,43 +9597,77 @@ function get_map_xy0() {
     return { x: bbox.left, y: bbox.top };
 }
 
-function handleClickAddEllipse() {
-    var getId = function getId() {
-        var ellipses = document.getElementsByClassName("user_ellipse");
-        if (!ellipses) {
-            return 0;
-        } else if (ellipses.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
-            return null;
+var getIdLayoutFeature = function getIdLayoutFeature(type) {
+    if (type == "ellipse") {
+        var class_name = 'user_ellipse',
+            id_prefix = 'user_ellipse_',
+            error_name = 'error_max_ellipses';
+    } else if (type == 'rectangle') {
+        var class_name = 'user_rectangle',
+            id_prefix = 'user_rectangle_',
+            error_name = 'error_max_rectangles';
+    } else if (type == 'arrow') {
+        var class_name = 'arrow',
+            id_prefix = 'arrow_',
+            error_name = 'error_max_arrows';
+    }
+    var features = document.getElementsByClassName(class_name);
+    if (!features) {
+        return 0;
+    } else if (features.length > 30) {
+        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common." + error_name), "error").catch(swal.noop);
+        return null;
+    } else {
+        var ids = [];
+        for (var i = 0; i < features.length; i++) {
+            ids.push(+features[i].id.split(id_prefix)[1]);
+        }
+        if (ids.indexOf(features.length) == -1) {
+            return features.length;
         } else {
-            var ids = [];
-            for (var i = 0; i < ellipses.length; i++) {
-                ids.push(+ellipses[i].id.split("user_ellipse_")[1]);
-            }
-            if (ids.indexOf(ellipses.length) == -1) {
-                return ellipses.length;
-            } else {
-                for (var _i2 = 0; _i2 < ellipses.length; _i2++) {
-                    if (ids.indexOf(_i2) == -1) {
-                        return _i2;
-                    }
+            for (var _i2 = 0; _i2 < features.length; _i2++) {
+                if (ids.indexOf(_i2) == -1) {
+                    return _i2;
                 }
             }
-            return null;
         }
         return null;
-    };
+    }
+    return null;
+};
+
+function handleClickAddRectangle() {
+    var start_point = void 0,
+        tmp_start_point = void 0,
+        rectangle_id = getIdLayoutFeature('rectangle');
+    if (rectangle_id === null) {
+        return;
+    }
+    rectangle_id = "user_rectangle_" + rectangle_id;
+    document.body.style.cursor = "not-allowed";
+    var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    map.style("cursor", "crosshair").on("click", function () {
+        msg.dismiss();
+        start_point = [d3.event.layerX, d3.event.layerY];
+        tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
+        setTimeout(function () {
+            tmp_start_point.remove();
+        }, 1000);
+        map.style("cursor", "").on("click", null);
+        document.body.style.cursor = "";
+        new UserRectangle(rectangle_id, start_point, svg_map);
+    });
+}
+
+function handleClickAddEllipse() {
 
     var start_point = void 0,
         tmp_start_point = void 0,
-        ellipse_id = getId();
-
+        ellipse_id = getIdLayoutFeature('ellispe');
     if (ellipse_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
-    } else {
-        ellipse_id = "user_ellipse_" + ellipse_id;
     }
+    ellipse_id = "user_ellipse_" + ellipse_id;
     document.body.style.cursor = "not-allowed";
     var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
     map.style("cursor", "crosshair").on("click", function () {
@@ -9653,74 +9697,46 @@ function handleClickTextBox(text_box_id) {
     });
 }
 
-function handleFreeDraw() {
-    var line_gen = d3.line(d3.curveBasis);
-    var draw_layer = map.select('#_m_free_draw_layer');
-    if (!draw_layer.node()) {
-        draw_layer = map.append('g').attrs({ id: "_m_free_draw_layer" });
-    } else {
-        // up the draw_layer ?
-    }
-    var draw_rect = draw_layer.append('rect').attrs({ fill: 'transparent', height: h, width: w, x: 0, y: 0 });
-    draw_layer.call(d3.drag().container(function () {
-        return this;
-    }).subject(function (_) {
-        return [[d3.event.x, d3.event.y], [d3.event.x, d3.event.y]];
-    }).on('start', function (_) {
-        handle_click_hand('lock');
-        var d = d3.event.subject,
-            active_line = draw_layer.append('path').datum(d),
-            x0 = d3.event.x,
-            y0 = d3.event.y;
-        d3.event.on('drag', function () {
-            var x1 = d3.event.x,
-                y1 = d3.event.y,
-                dx = x1 - x0,
-                dy = y1 - y0;
-            if (dx * dx + dy * dy > 100) d.push([x0 = x1, y0 = y1]);else d[d.length - 1] = [x1, y1];
-            active_line.attr('d', line_gen);
-        });
-    }));
-}
+// function handleFreeDraw(){
+//     var line_gen = d3.line(d3.curveBasis);
+//     var draw_layer = map.select('#_m_free_draw_layer');
+//     if(!draw_layer.node()){
+//         draw_layer = map.append('g').attrs({id: "_m_free_draw_layer"});
+//     } else {
+//         // up the draw_layer ?
+//     }
+//     var draw_rect = draw_layer.append('rect')
+//         .attrs({fill: 'transparent', height: h, width: w, x: 0, y:0});
+//     draw_layer.call(d3.drag()
+//         .container(function(){ return this; })
+//         .subject(_ =>  [[d3.event.x, d3.event.y], [d3.event.x, d3.event.y]])
+//         .on('start', _ => {
+//             handle_click_hand('lock');
+//             let d = d3.event.subject,
+//                 active_line = draw_layer.append('path').datum(d),
+//                 x0 = d3.event.x,
+//                 y0 = d3.event.y;
+//             d3.event.on('drag', function(){
+//                 var x1 = d3.event.x,
+//                     y1 = d3.event.y,
+//                     dx = x1 - x0,
+//                     dy = y1 - y0;
+//                 if(dx * dx + dy * dy > 100) d.push([x0 = x1, y0 = y1]);
+//                 else d[d.length -1] = [x1, y1];
+//                 active_line.attr('d', line_gen)
+//             });
+//         }));
+// }
 
 function handleClickAddArrow() {
-    var getId = function getId() {
-        var arrows = document.getElementsByClassName("arrow");
-        if (!arrows) {
-            return 0;
-        } else if (arrows.length > 30) {
-            swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_max_arrows"), "error").catch(swal.noop);
-            return null;
-        } else {
-            var ids = [];
-            for (var i = 0; i < arrows.length; i++) {
-                ids.push(+arrows[i].id.split("arrow_")[1]);
-            }
-            if (ids.indexOf(arrows.length) == -1) {
-                return arrows.length;
-            } else {
-                for (var _i3 = 0; _i3 < arrows.length; _i3++) {
-                    if (ids.indexOf(_i3) == -1) {
-                        return _i3;
-                    }
-                }
-            }
-            return null;
-        }
-        return null;
-    };
-
     var start_point = void 0,
         tmp_start_point = void 0,
         end_point = void 0,
         tmp_end_point = void 0,
-        arrow_id = getId();
+        arrow_id = getIdLayoutFeature('arrow');
 
     if (arrow_id === null) {
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common.error_message", { msg: "" }), "error").catch(swal.noop);
         return;
-    } else {
-        arrow_id = "arrow_" + arrow_id;
     }
     document.body.style.cursor = "not-allowed";
     var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
@@ -12244,7 +12260,7 @@ var scaleBar = {
         };
 
         var scale_context_menu = new ContextMenu();
-        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5, id: "under_rect" }).styles({ "fill": "green", "fill-opacity": 0 });
+        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 7.5, y: y_pos - 20, height: 30, width: this.bar_size + 15, id: "under_rect" }).styles({ "fill": "green", "fill-opacity": 0 });
         scale_gp.insert("rect").attr("id", "rect_scale").attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style("fill", "black");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale").attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ "font": "11px 'Enriqueta', arial, serif",
             "text-anchor": "middle" }).text(this.dist_txt + " km");
@@ -12309,7 +12325,7 @@ var scaleBar = {
         this.Scale.select("#text_limit_sup_scale").attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
-        this.under_rect.attr("width", new_size + 5);
+        this.under_rect.attr("width", new_size + 15);
         var err = this.getDist();
         if (err) {
             this.remove();
@@ -12435,7 +12451,7 @@ var northArrow = {
             handle_click_hand("lock"); // zoom.on("zoom", null);
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id + this.className, this.querySelector("image").getBoundingClientRect());
+            pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var t1 = this.querySelector("image"),
@@ -12446,8 +12462,8 @@ var northArrow = {
             if (tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim) return;
             t1.x.baseVal.value = tx;
             t1.y.baseVal.value = ty;
-            t2.x.baseVal.value = tx;
-            t2.y.baseVal.value = ty;
+            t2.x.baseVal.value = tx - 7.5;
+            t2.y.baseVal.value = ty - 7.5;
             self.x_center = tx + dim;
             self.y_center = ty + dim;
         });
@@ -12469,7 +12485,7 @@ var northArrow = {
         var bbox = document.getElementById("north_arrow").getBoundingClientRect(),
             xy0_map = get_map_xy0();
 
-        this.under_rect = arrow_gp.append("g").insert("rect").styles({ fill: 'green', 'fill-opacity': 0 }).attrs({ x: bbox.left - xy0_map.x, y: bbox.top - xy0_map.y, height: bbox.height, width: bbox.width });
+        this.under_rect = arrow_gp.append("g").insert("rect").styles({ fill: 'green', 'fill-opacity': 0 }).attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
 
         this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
         this.y_center = bbox.top - xy0_map.y + bbox.height / 2;
@@ -12584,6 +12600,7 @@ var UserRectangle = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+            pos_lgds_elem.set(this.id + this.className, this.querySelector('rect').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("rect"),
@@ -12594,6 +12611,7 @@ var UserRectangle = function () {
             _t.x.baseVal.value = self.pt1[0];
             _t.y.baseVal.value = self.pt1[1];
         });
+        this.draw();
     }
 
     _createClass(UserRectangle, [{
@@ -12636,8 +12654,70 @@ var UserRectangle = function () {
             }).on('dblclick', function () {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
-                // this.handle_ctrl_pt();
+                _this7.handle_ctrl_pt();
             }).call(this.drag_behavior);
+        }
+    }, {
+        key: "handle_ctrl_pt",
+        value: function handle_ctrl_pt() {
+            remove_all_edit_state();
+            var self = this,
+                rectangle_elem = self.rectangle.node().querySelector("rect"),
+                zoom_param = svg_map.__zoom,
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+            var center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2];
+
+            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
+            var cleanup_edit_state = function cleanup_edit_state() {
+                map.selectAll('.ctrl_pt').remove();
+                msg.dismiss();
+                self.rectangle.call(self.drag_behavior);
+                self.rectangle.on('dblclick', function () {
+                    d3.event.preventDefault();
+                    d3.event.stopPropagation();
+                    self.handle_ctrl_pt();
+                });
+                if (!map_locked) {
+                    handle_click_hand('unlock');
+                }
+                document.getElementById('hand_button').onclick = handle_click_hand;
+            };
+            _app.edit_state_to_cancel.push(cleanup_edit_state);
+            // Change the behavior of the 'lock' button :
+            document.getElementById('hand_button').onclick = function () {
+                remove_all_edit_state();
+                handle_click_hand();
+            };
+
+            // Desactive the ability to drag the rectangle :
+            self.rectangle.on('.drag', null);
+            // Desactive the ability to zoom/move on the map ;
+            handle_click_hand('lock');
+
+            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4).attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
+                var dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+                d3.select(this).attr("y", d3.event.y - 4);
+                rectangle_elem.height.baseVal.value = dist * 2;
+                self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
+            }));
+
+            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+                x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
+                y: center_pt[1] * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on("drag", function () {
+                var dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+                d3.select(this).attr("x", d3.event.x - 4);
+                rectangle_elem.width.baseVal.value = dist * 2;
+                self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
+                console.log(self.pt1);console.log(rectangle_elem.x.baseVal.value);
+            }));
+
+            self.rectangle.on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
         }
     }, {
         key: "editStyle",
@@ -12915,7 +12995,6 @@ var UserEllipse = function () {
                 var t = d3.select(this);
                 t.attr("x", d3.event.x - 4);
                 var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
-                // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
                 ellipse_elem.rx.baseVal.value = dist;
             }));
             var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',

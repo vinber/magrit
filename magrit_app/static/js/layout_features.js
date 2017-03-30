@@ -696,7 +696,7 @@ var scaleBar = {
 
         let scale_context_menu = new ContextMenu();
         this.under_rect = scale_gp.insert("rect")
-            .attrs({x: x_pos - 2.5, y: y_pos - 20, height: 30, width: this.bar_size + 5, id: "under_rect"})
+            .attrs({x: x_pos - 7.5, y: y_pos - 20, height: 30, width: this.bar_size + 15, id: "under_rect"})
             .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: this.bar_size})
@@ -773,7 +773,7 @@ var scaleBar = {
                   .attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
-        this.under_rect.attr("width", new_size + 5);
+        this.under_rect.attr("width", new_size + 15);
         let err = this.getDist();
         if(err){
             this.remove();
@@ -933,7 +933,7 @@ var northArrow = {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id + this.className, this.querySelector("image").getBoundingClientRect());
+                pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -946,8 +946,8 @@ var northArrow = {
                   return;
                 t1.x.baseVal.value = tx;
                 t1.y.baseVal.value = ty;
-                t2.x.baseVal.value = tx;
-                t2.y.baseVal.value = ty;
+                t2.x.baseVal.value = tx - 7.5;
+                t2.y.baseVal.value = ty - 7.5;
                 self.x_center = tx + dim;
                 self.y_center = ty + dim;
               });
@@ -967,7 +967,7 @@ var northArrow = {
         this.under_rect = arrow_gp.append("g")
             .insert("rect")
             .styles({fill: 'green', 'fill-opacity': 0})
-            .attrs({x: bbox.left - xy0_map.x, y: bbox.top - xy0_map.y, height: bbox.height, width: bbox.width});
+            .attrs({x: bbox.left -7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15});
 
         this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
         this.y_center = bbox.top - xy0_map.y + bbox.height / 2
@@ -1100,8 +1100,10 @@ class UserRectangle {
                 d3.event.sourceEvent.stopPropagation();
                 handle_click_hand("lock");
               })
-            .on("end", () => {
-                if(d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+            .on("end", function(){
+                if(d3.event.subject && !d3.event.subject.map_locked)
+                    handle_click_hand("unlock");
+                pos_lgds_elem.set(this.id + this.className, this.querySelector('rect').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1113,6 +1115,7 @@ class UserRectangle {
                 _t.x.baseVal.value = self.pt1[0];
                 _t.y.baseVal.value = self.pt1[1];
               });
+        this.draw();
     }
 
     up_element(){
@@ -1149,9 +1152,76 @@ class UserRectangle {
             .on('dblclick', () => {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
-                // this.handle_ctrl_pt();
+                this.handle_ctrl_pt();
             })
             .call(this.drag_behavior);
+    }
+    handle_ctrl_pt(){
+        remove_all_edit_state();
+        let self = this,
+            rectangle_elem = self.rectangle.node().querySelector("rect"),
+            zoom_param = svg_map.__zoom,
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
+
+        let center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2];
+
+        let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
+        let cleanup_edit_state = () => {
+            map.selectAll('.ctrl_pt').remove();
+            msg.dismiss();
+            self.rectangle.call(self.drag_behavior);
+            self.rectangle.on('dblclick', () => {
+                d3.event.preventDefault();
+                d3.event.stopPropagation();
+                self.handle_ctrl_pt();
+            });
+            if(!map_locked){
+                handle_click_hand('unlock');
+            }
+            document.getElementById('hand_button').onclick = handle_click_hand;
+        };
+        _app.edit_state_to_cancel.push(cleanup_edit_state);
+        // Change the behavior of the 'lock' button :
+        document.getElementById('hand_button').onclick = function(){
+            remove_all_edit_state();
+            handle_click_hand();
+        };
+
+        // Desactive the ability to drag the rectangle :
+        self.rectangle.on('.drag', null);
+        // Desactive the ability to zoom/move on the map ;
+        handle_click_hand('lock');
+
+        let tmp_start_point = map.append("rect")
+            .attr("class", "ctrl_pt").attr('id', 'pt1')
+            .attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4)
+            .attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2)  * zoom_param.k + zoom_param.y - 4)
+            .attr("height", 8).attr("width", 8)
+            .call(d3.drag().on("drag", function(){
+                let dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+                d3.select(this).attr("y", d3.event.y - 4);
+                rectangle_elem.height.baseVal.value = dist * 2;
+                self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
+            }));
+
+        let tmp_end_point = map.append("rect")
+            .attrs({class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+                    x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
+                    y: center_pt[1] * zoom_param.k + zoom_param.y - 4})
+            .call(d3.drag().on("drag", function(){
+                let dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+                d3.select(this).attr("x", d3.event.x - 4);
+                rectangle_elem.width.baseVal.value = dist * 2;
+                self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
+                console.log(self.pt1); console.log(rectangle_elem.x.baseVal.value);
+            }));
+
+        self.rectangle.on('dblclick', function(){
+            d3.event.stopPropagation();
+            d3.event.preventDefault();
+            cleanup_edit_state();
+        });
     }
 
     editStyle(){
@@ -1224,7 +1294,6 @@ class UserRectangle {
                 rectangle_elem.style.fillOpacity = +this.value;
             });
     }
-
 }
 
 class UserEllipse {
@@ -1451,7 +1520,6 @@ class UserEllipse {
                 let t = d3.select(this);
                 t.attr("x", d3.event.x - 4);
                 let dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
-                // let dist = self.pt1[0] - (d3.event.x / zoom_param.k - zoom_param.x);
                 ellipse_elem.rx.baseVal.value = dist;
             }));
         let tmp_end_point = map.append("rect")

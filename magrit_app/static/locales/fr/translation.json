@@ -19,6 +19,8 @@
             "error_interrupted_projection_scalebar": "L'échelle ne peut actuellement pas être affichée pour les projection \"interrompues\".",
             "error_existing_north_arrow": "Seule une flêche nord peut être ajoutée - Remplacer celle existante par une nouvelle ?",
             "error_max_arrows": "Maximum atteint - Seules 30 flèches peuvent être crées par cette fonctionalité.",
+            "error_max_rectangles": "Maximum atteint - Seules 30 rectangles peuvent être crées par cette fonctionalité.",
+            "error_max_ellipses": "Maximum atteint - Seules 30 ellipses peuvent être crées par cette fonctionalité.",
             "error_max_text_annot": "Le nombre maximum d'annotations de texte a été atteint.",
             "error_no_title": "Aucun titre à mettre en forme",
             "error_no_visible": "Erreur : pas de couche visible trouvée!",
@@ -264,7 +266,8 @@
             "arrow": "Flèche",
             "symbol": "Insertion d'un symbole",
             "ellipse": "Ellipse",
-            "free_draw": "Dessin libre"
+            "free_draw": "Dessin libre",
+            "rectangle": "Rectangle"
         },
         "layout_layer_box": {
             "title": "Couches d'habillage",
@@ -375,6 +378,13 @@
             "title": "Options de la fleche d'orientation",
             "size": "Taille ",
             "rotation": "Rotation "
+        },
+        "rectangle_edit_box":{
+            "title": "Option du rectangle",
+            "stroke_width": "Épaisseur de la bordure",
+            "stroke_color": "Couleur de la bordure",
+            "fill_color": "Couelur du remplissage",
+            "fill_opacity": "Opacité du remplissage"
         },
         "scale_bar_edit_box": {
             "title": "Options de l'échelle",

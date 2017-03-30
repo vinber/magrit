@@ -18,7 +18,9 @@
             "error_existing_scalebar": "Only one scale bar can be added - Replace the existing by a new one ?",
             "error_interrupted_projection_scalebar": "The scale bar isn't currently available for 'interrupted' projection",
             "error_existing_north_arrow": "Only one north arrow can be added - Replace the existing by a new one ?",
-            "error_max_arrows": "Maximum number of arrows reached - Only 30 arrows can be created in this functionnality",
+            "error_max_arrows": "Maximum reached - Only 30 arrows can be created in this functionnality",
+            "error_max_rectangles": "Maximum reached - Only 30 rectangles can be created in this functionnality",
+            "error_max_ellipses": "Maximum reached - Only 30 ellipses can be created in this functionnality",
             "error_max_text_annot": "Maximum number of text annotations has been reached",
             "error_no_title": "No title to style",
             "error_no_visible": "Error : no visible layer found",
@@ -131,6 +133,7 @@
             "resize_fit": "Resize map on screen size",
             "background_color": "Background color ",
             "canvas_rotation": "Canvas rotation ",
+            "autoalign_features": "Auto-align features (experimental)",
             "layout_features": "<b>Add layout features:</b>"
         },
         "section5b": {
@@ -263,7 +266,8 @@
             "arrow": "Customizable arrow",
             "symbol": "Single symbol",
             "ellipse": "Ellipse",
-            "free_draw": "Free drawing"
+            "free_draw": "Free drawing",
+            "rectangle": "Rectangle"
         },
         "layout_layer_box": {
             "title": "Layout layers",
@@ -382,6 +386,13 @@
             "title": "North arrow options",
             "size": "Arrow size ",
             "rotation": "Arrow rotation "
+        },
+        "rectangle_edit_box":{
+            "title": "Rectangle options",
+            "stroke_width": "Stroke width",
+            "stroke_color": "Stroke color",
+            "fill_color": "Fill color",
+            "fill_opacity": "Fill opacity"
         },
         "scale_bar_edit_box": {
             "title": "Scale bar options",
