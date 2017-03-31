@@ -19,7 +19,7 @@ class UserArrow {
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
-                    let snap_lines = get_coords_snap_lines(this.id, this.className);
+                    let snap_lines = get_coords_snap_lines(this.id + this.className);
                     let t = d3.select(this.querySelector("line"));
                     return { x: +t.attr("x2") - +t.attr("x1"),
                              y: +t.attr("y2") - +t.attr("y1"),
@@ -47,36 +47,38 @@ class UserArrow {
                     ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
                 self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
-                let snap_lines_x = subject.snap_lines.x,
-                    snap_lines_y = subject.snap_lines.y;
-                for(let i = 0; i < subject.snap_lines.x.length; i++){
-                    if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                    }
-                    if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      if(self.pt2[0] < self.pt1[0])
-                          arrow_head_size = -arrow_head_size;
-                      self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
-                    }
-                    if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                    }
-                    if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                      let l = map.append('line')
-                            .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      if(self.pt2[1] < self.pt1[1])
-                          arrow_head_size = -arrow_head_size;
-                      self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+                if(_app.autoalign_features){
+                    let snap_lines_x = subject.snap_lines.x,
+                        snap_lines_y = subject.snap_lines.y;
+                    for(let i = 0; i < subject.snap_lines.x.length; i++){
+                        if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                        }
+                        if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          if(self.pt2[0] < self.pt1[0])
+                              arrow_head_size = -arrow_head_size;
+                          self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
+                        }
+                        if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                        }
+                        if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          if(self.pt2[1] < self.pt1[1])
+                              arrow_head_size = -arrow_head_size;
+                          self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+                        }
                     }
                 }
                 _t.x1.baseVal.value = self.pt1[0];
@@ -114,7 +116,7 @@ class UserArrow {
                 {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
                 {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
                 {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
-                {"name": i18next.t("app_page.common.delete"), "action": () => { this.arrow.remove(); }}
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
             ];
 
         this.arrow = this.svg_elem.append('g')
@@ -139,6 +141,11 @@ class UserArrow {
             d3.event.stopPropagation();
             this.handle_ctrl_pt()
         });
+    }
+
+    remove(){
+        pos_lgds_elem.delete(this.arrow.attr('id'));
+        this.arrow.remove();
     }
 
     up_element(){
@@ -333,13 +340,13 @@ class Textbox {
                 {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
                 {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
                 {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
-                {"name": i18next.t("app_page.common.delete"), "action": () => { this.text_annot.remove(); }}
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
             ];
 
         let drag_txt_annot = d3.drag()
              .subject(function() {
                     var t = d3.select(this.parentElement);
-                    let snap_lines = get_coords_snap_lines(this.parentElement.id, this.parentElement.className);
+                    let snap_lines = get_coords_snap_lines(this.parentElement.id);
                     return {
                         x: t.attr("x"), y: t.attr("y"),
                         map_locked: map_div.select("#hand_button").classed("locked") ? true : false
@@ -353,46 +360,47 @@ class Textbox {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");
-                pos_lgds_elem.set(this.parentElement.id + this.parentElement.className, this.getBoundingClientRect());
+                pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
                 d3.select(this.parentElement).attrs({x: +d3.event.x, y: +d3.event.y});
 
-                let bbox = this.getBoundingClientRect(),
-                    xmin = this.parentElement.x.baseVal.value,
-                    xmax = xmin + bbox.width,
-                    ymin = this.parentElement.y.baseVal.value,
-                    ymax = ymin + bbox.height,
-                    snap_lines_x = d3.event.subject.snap_lines.x,
-                    snap_lines_y = d3.event.subject.snap_lines.y;
-                for(let i = 0; i < snap_lines_x.length; i++){
-                    if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      this.parentElement.x.baseVal.value = snap_lines_x[i];
-                    }
-                    if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      this.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
-                    }
-                    if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                      let l = map.append('line')
-                          .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      this.parentElement.y.baseVal.value = snap_lines_y[i];
-                    }
-                    if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                      let l = map.append('line')
-                            .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                      setTimeout(function(){ l.remove(); }, 1000);
-                      this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                if(_app.autoalign_features){
+                    let bbox = this.getBoundingClientRect(),
+                        xmin = this.parentElement.x.baseVal.value,
+                        xmax = xmin + bbox.width,
+                        ymin = this.parentElement.y.baseVal.value,
+                        ymax = ymin + bbox.height,
+                        snap_lines_x = d3.event.subject.snap_lines.x,
+                        snap_lines_y = d3.event.subject.snap_lines.y;
+                    for(let i = 0; i < snap_lines_x.length; i++){
+                        if(Math.abs(snap_lines_x[i] - xmin) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          this.parentElement.x.baseVal.value = snap_lines_x[i];
+                        }
+                        if(Math.abs(snap_lines_x[i] - xmax) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          this.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
+                        }
+                        if(Math.abs(snap_lines_y[i] - ymin) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          this.parentElement.y.baseVal.value = snap_lines_y[i];
+                        }
+                        if(Math.abs(snap_lines_y[i] - ymax) < 10){
+                          let l = map.append('line')
+                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                        }
                     }
                 }
-
             });
 
         let foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
@@ -459,8 +467,15 @@ class Textbox {
         this.font_family = 'Verdana,Geneva,sans-serif';
         this.buffer = undefined;
         this.id = new_id_txt_annot;
+        pos_lgds_elem.set(this.id, foreign_obj.getBoundingClientRect());
         return this;
     }
+
+    remove(){
+        pos_lgds_elem.delete(this.text_annot.attr('id'));
+        this.text_annot.remove();
+    }
+
     editStyle(){
         let map_xy0 = get_map_xy0();
         let self = this,
@@ -736,6 +751,7 @@ var scaleBar = {
             this.precision = (t && t.length > 1) ? t[1].length : ("" + this.dist).length;
             this.resize(this.dist);
         }
+        pos_lgds_elem.set(scale_gp.attr('id') + ' ' + scale_gp.attr('class'), scale_gp.node().getBoundingClientRect());
     },
     getDist: function(){
         let x_pos = w / 2,
@@ -797,6 +813,7 @@ var scaleBar = {
         }
     },
     remove: function(){
+        pos_lgds_elem.delete(this.Scale.attr('id') + ' ' + this.Scale.attr('class'));
         this.Scale.remove();
         this.Scale = null;
         this.displayed = false;
@@ -919,11 +936,12 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    let snap_lines = get_coords_snap_lines(this.id, this.className);
+                    let snap_lines = get_coords_snap_lines(this.id);
                     return {
                         x: +t.attr("x"),
                         y: +t.attr("y"),
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                        snap_lines: snap_lines
                     };
               })
             .on("start", () => {
@@ -933,7 +951,7 @@ var northArrow = {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+                pos_lgds_elem.set(this.id, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -944,6 +962,41 @@ var northArrow = {
                     dim = t2.width.baseVal.value / 2;
                 if(tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim)
                   return;
+                if(_app.autoalign_features){
+                    let bbox = this.getBoundingClientRect(),
+                        xmin = t2.x.baseVal.value,
+                        xmax = xmin + bbox.width,
+                        ymin = t2.y.baseVal.value,
+                        ymax = ymin + bbox.height,
+                        snap_lines_x = d3.event.subject.snap_lines.x,
+                        snap_lines_y = d3.event.subject.snap_lines.y;
+                    for(let i = 0; i < snap_lines_x.length; i++){
+                        if(Math.abs(snap_lines_x[i] - xmin) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          tx = snap_lines_x[i];
+                        }
+                        if(Math.abs(snap_lines_x[i] - xmax) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          tx = snap_lines_x[i] - bbox.width;
+                        }
+                        if(Math.abs(snap_lines_y[i] - ymin) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          ty = snap_lines_y[i];
+                        }
+                        if(Math.abs(snap_lines_y[i] - ymax) < 10){
+                          let l = map.append('line')
+                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          ty = snap_lines_y[i] - bbox.height;
+                        }
+                    }
+                }
                 t1.x.baseVal.value = tx;
                 t1.y.baseVal.value = ty;
                 t2.x.baseVal.value = tx - 7.5;
@@ -994,6 +1047,7 @@ var northArrow = {
             down_legend(this.svg_node.node());
     },
     remove: function(){
+        pos_lgds_elem.delete(this.svg_node.attr('id'));
         this.svg_node.remove();
         this.displayed = false;
     },
@@ -1103,7 +1157,7 @@ class UserRectangle {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");
-                pos_lgds_elem.set(this.id + this.className, this.querySelector('rect').getBoundingClientRect());
+                pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1132,13 +1186,13 @@ class UserRectangle {
                 {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
                 {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
                 {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
-                {"name": i18next.t("app_page.common.delete"), "action": () => { this.rectangle.remove(); }}
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
             ];
 
         this.rectangle = this.svg_elem.append('g')
                 .attrs({"class": "user_rectangle legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
-        this.rectangle.insert("rect")
+        let r = this.rectangle.insert("rect")
             .attrs({"x": this.pt1[0], "y": this.pt1[1],
                     "height": 40, "width": 30})
             .styles({"stroke-width": this.stroke_width,
@@ -1155,6 +1209,12 @@ class UserRectangle {
                 this.handle_ctrl_pt();
             })
             .call(this.drag_behavior);
+        pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
+
+    }
+    remove(){
+        pos_lgds_elem.delete(this.rectangle.attr('id'));
+        this.rectangle.remove();
     }
     handle_ctrl_pt(){
         remove_all_edit_state();
@@ -1214,7 +1274,6 @@ class UserRectangle {
                 d3.select(this).attr("x", d3.event.x - 4);
                 rectangle_elem.width.baseVal.value = dist * 2;
                 self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
-                console.log(self.pt1); console.log(rectangle_elem.x.baseVal.value);
             }));
 
         self.rectangle.on('dblclick', function(){
@@ -1327,7 +1386,7 @@ class UserEllipse {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id + this.className, this.querySelector('ellipse').getBoundingClientRect());
+                pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1350,13 +1409,13 @@ class UserEllipse {
                 {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle(); }},
                 {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
                 {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
-                {"name": i18next.t("app_page.common.delete"), "action": () => { this.ellipse.remove(); }}
+                {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
             ];
 
         this.ellipse = this.svg_elem.append('g')
                 .attrs({"class": "user_ellipse legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString()});
 
-        this.ellipse.insert("ellipse")
+        let e = this.ellipse.insert("ellipse")
             .attrs({"rx": 30, "ry": 40,
         			      "cx": this.pt1[0], "cy": this.pt1[1]})
             .styles({"stroke-width": this.stroke_width,
@@ -1373,6 +1432,13 @@ class UserEllipse {
                 this.handle_ctrl_pt();
             })
             .call(this.drag_behavior);
+        pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
+
+    }
+
+    remove(){
+        pos_lgds_elem.delete(this.ellipse.attr('id'));
+        this.ellipse.remove();
     }
 
     up_element(){
@@ -1540,11 +1606,11 @@ class UserEllipse {
     }
  }
 
-const get_coords_snap_lines = function(ref_id, ref_class){
+const get_coords_snap_lines = function(uid){
     let snap_lines = {x: [], y: []};
     let xy_map = get_map_xy0();
     pos_lgds_elem.forEach((v,k) => {
-        if(k != ref_id + ref_class){
+        if(k != uid){
             snap_lines.y.push(v.bottom - xy_map.y);
             snap_lines.y.push(v.top - xy_map.y);
             snap_lines.x.push(v.left - xy_map.x);

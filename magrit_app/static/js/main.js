@@ -658,7 +658,10 @@ function setUpInterface(resume_project)
     g2.append('input')
         .styles({margin: 0, padding: 0})
         .attrs({id: "autoalign_features", type: "checkbox",
-                class: "m_elem_right list_elem_section4 i18n"});
+                class: "m_elem_right list_elem_section4 i18n"})
+        .on('change', function(){
+            _app.autoalign_features = this.checked ? true : false;
+        });
 
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});

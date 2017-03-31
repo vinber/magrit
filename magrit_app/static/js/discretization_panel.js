@@ -616,12 +616,13 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .html(i18next.t('disc_box.stddev_share_txt2'));
     let std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
     std_dev_mean_choice.insert('p')
+        .style('margin', 'auto')
         .html(i18next.t('disc_box.stddev_role_mean'));
     [[i18next.t("disc_box.stddev_center_mean"), "center"],
      [i18next.t("disc_box.stddev_break_mean"), "bound"]].forEach( el => {
         std_dev_mean_choice
             .insert('input')
-            .attrs({type: "radio", class: 'disc_style', name: "role_mean", value: el[1], id: "button_stddev_"+el[1]})
+            .attrs({type: "radio", name: "role_mean", value: el[1], id: "button_stddev_"+el[1]})
              .on("change", function(){
                 std_dev_params.role_mean = this.value;
                 redisplay.compute();
@@ -629,7 +630,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
               });
         std_dev_mean_choice
             .insert("label")
-            .attrs({'class': 'disc_style', 'for': "button_stddev_"+el[1]}).html(el[0]);
+            .style('font-weight', '400')
+            .attrs({'for': "button_stddev_"+el[1]}).html(el[0]);
         });
     document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
     var txt_nb_class = d3.select("#discretization_panel").append("input")

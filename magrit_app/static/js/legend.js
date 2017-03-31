@@ -89,11 +89,13 @@ function createLegend(layer, title){
              i18next.t("No legend available for this representation") + ".<br>"
              + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
              "warning");
+        return;
     }
 
     if(el && lgd_pos && lgd_pos.x){
         el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
     }
+    pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect())
     if(el2){
         let lgd_pos2 = getTranslateNewLegend(),
             prev_bbox = el.node().getBoundingClientRect(),
@@ -106,6 +108,7 @@ function createLegend(layer, title){
         } else if(dim_w < w){
             el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
         }
+        pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect())
     }
 }
 
@@ -174,7 +177,7 @@ var drag_legend_func = function(legend_group){
        .subject(function() {
               var t = d3.select(this),
                   prev_translate = t.attr("transform"),
-                  snap_lines = get_coords_snap_lines(this.id);
+                  snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
               prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
               return {
                   x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
@@ -193,7 +196,7 @@ var drag_legend_func = function(legend_group){
           if(d3.event.subject && !d3.event.subject.map_locked)
             handle_click_hand("unlock");
           legend_group.style("cursor", "grab");
-          pos_lgds_elem.set(legend_group.attr('id') + legend_group.attr('class'), legend_group.node().getBoundingClientRect())
+          pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
         })
       .on("drag", () => {
           let prev_value = legend_group.attr("transform");
@@ -207,42 +210,44 @@ var drag_legend_func = function(legend_group){
               map_offset = d3.event.subject.map_offset,
               val_x = d3.event.x, val_y = d3.event.y, change;
 
-          let xy0 = get_map_xy0(),
-              xmin = bbox_elem.left - xy0.x,
-              xmax = bbox_elem.right - xy0.x,
-              ymin = bbox_elem.top - xy0.y,
-              ymax = bbox_elem.bottom - xy0.y;
+          if(_app.autoalign_features){
+              let xy0 = get_map_xy0(),
+                  xmin = bbox_elem.left - xy0.x,
+                  xmax = bbox_elem.right - xy0.x,
+                  ymin = bbox_elem.top - xy0.y,
+                  ymax = bbox_elem.bottom - xy0.y;
 
-          let snap_lines_x = d3.event.subject.snap_lines.x,
-              snap_lines_y = d3.event.subject.snap_lines.y;
-          for(let i = 0; i < snap_lines_x.length; i++){
-              if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                let l = map.append('line')
-                    .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                setTimeout(function(){ l.remove(); }, 1000);
-                val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
-                change = true;
-              }
-              if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                let l = map.append('line')
-                    .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                setTimeout(function(){ l.remove(); }, 1000);
-                val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
-                change = true;
-              }
-              if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                let l = map.append('line')
-                    .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                setTimeout(function(){ l.remove(); }, 1000);
-                val_y = snap_lines_y[i] - d3.event.subject.offset[1];
-                change = true;
-              }
-              if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                let l = map.append('line')
-                      .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                setTimeout(function(){ l.remove(); }, 1000);
-                val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
-                change = true;
+              let snap_lines_x = d3.event.subject.snap_lines.x,
+                  snap_lines_y = d3.event.subject.snap_lines.y;
+              for(let i = 0; i < snap_lines_x.length; i++){
+                  if(Math.abs(snap_lines_x[i] - xmin) < 10){
+                    let l = map.append('line')
+                        .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                    setTimeout(function(){ l.remove(); }, 1000);
+                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
+                    change = true;
+                  }
+                  if(Math.abs(snap_lines_x[i] - xmax) < 10){
+                    let l = map.append('line')
+                        .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                    setTimeout(function(){ l.remove(); }, 1000);
+                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
+                    change = true;
+                  }
+                  if(Math.abs(snap_lines_y[i] - ymin) < 10){
+                    let l = map.append('line')
+                        .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                    setTimeout(function(){ l.remove(); }, 1000);
+                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
+                    change = true;
+                  }
+                  if(Math.abs(snap_lines_y[i] - ymax) < 10){
+                    let l = map.append('line')
+                          .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                    setTimeout(function(){ l.remove(); }, 1000);
+                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
+                    change = true;
+                  }
               }
           }
 

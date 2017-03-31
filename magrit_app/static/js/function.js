@@ -242,7 +242,7 @@ function make_layer_name_button(parent, id, margin_top){
 function make_discretization_icons(discr_section){
     let subsection1 = discr_section.append('p');
     subsection1.insert('span')
-      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n'})
       .html(i18next.t("app_page.func_options.common.discretization_choice"));
     let subsection2 = discr_section.append('p');
     subsection2.append('img')
@@ -904,7 +904,7 @@ function fillMenu_Choropleth(){
 
     var field_selec_section = dv2.append('p').attr('class', 'params_section2');
     field_selec_section.insert("span")
-      .attrs({class: "i18n", "data-i18n": "[html]app_age.func_options.common.field"})
+      .attrs({class: "i18n", "data-i18n": "[html]app_page.func_options.common.field"})
       .html(i18next.t("app_page.func_options.common.field"));
 
    field_selec_section.insert('select')

@@ -535,7 +535,9 @@ function setUpInterface(resume_project) {
     var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
     g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
     g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: "autoalign_features", type: "checkbox",
-        class: "m_elem_right list_elem_section4 i18n" });
+        class: "m_elem_right list_elem_section4 i18n" }).on('change', function () {
+        _app.autoalign_features = this.checked ? true : false;
+    });
 
     var _i = dv4.append('li').styles({ 'text-align': 'center' });
     _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
@@ -3042,14 +3044,14 @@ var display_discretization = function display_discretization(layer_name, field_n
     });
     input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt2'));
     var std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
-    std_dev_mean_choice.insert('p').html(i18next.t('disc_box.stddev_role_mean'));
+    std_dev_mean_choice.insert('p').style('margin', 'auto').html(i18next.t('disc_box.stddev_role_mean'));
     [[i18next.t("disc_box.stddev_center_mean"), "center"], [i18next.t("disc_box.stddev_break_mean"), "bound"]].forEach(function (el) {
-        std_dev_mean_choice.insert('input').attrs({ type: "radio", class: 'disc_style', name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
+        std_dev_mean_choice.insert('input').attrs({ type: "radio", name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
             std_dev_params.role_mean = this.value;
             redisplay.compute();
             redisplay.draw();
         });
-        std_dev_mean_choice.insert("label").attrs({ 'class': 'disc_style', 'for': "button_stddev_" + el[1] }).html(el[0]);
+        std_dev_mean_choice.insert("label").style('font-weight', '400').attrs({ 'for': "button_stddev_" + el[1] }).html(el[0]);
     });
     document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
     var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
@@ -4104,7 +4106,7 @@ function make_layer_name_button(parent, id, margin_top) {
 
 function make_discretization_icons(discr_section) {
     var subsection1 = discr_section.append('p');
-    subsection1.insert('span').attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice' }).html(i18next.t("app_page.func_options.common.discretization_choice"));
+    subsection1.insert('span').attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' }).html(i18next.t("app_page.func_options.common.discretization_choice"));
     var subsection2 = discr_section.append('p');
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6' });
     subsection2.append('img').styles({ 'margin': '0 7.5px', 'cursor': 'pointer' }).attrs({ 'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks' });
@@ -4775,7 +4777,7 @@ function fillMenu_Choropleth() {
     var dv2 = make_template_functionnality(section2);
 
     var field_selec_section = dv2.append('p').attr('class', 'params_section2');
-    field_selec_section.insert("span").attrs({ class: "i18n", "data-i18n": "[html]app_age.func_options.common.field" }).html(i18next.t("app_page.func_options.common.field"));
+    field_selec_section.insert("span").attrs({ class: "i18n", "data-i18n": "[html]app_page.func_options.common.field" }).html(i18next.t("app_page.func_options.common.field"));
 
     field_selec_section.insert('select').attrs({ id: 'choro_field1', class: 'params' });
 
@@ -7635,6 +7637,9 @@ function make_box_type_fields(layer_name) {
         }
     }
     overlay_under_modal.display();
+    setTimeout(function (_) {
+        container.querySelector('button.btn_ok').focus();
+    }, 400);
     return deferred.promise;
 };
 
@@ -9529,11 +9534,14 @@ function add_sample_layer() {
     t_layer_selec.on("change", function () {
         selec = this.value;
     });
-
-    if (_app.targeted_layer_added) {
-        title_tgt_layer.style("color", "grey").html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
-        t_layer_selec.node().disabled = true;
-    }
+    setTimeout(function (_) {
+        document.querySelector('select.sample_target').focus();
+    }, 500);
+    // if(_app.targeted_layer_added){
+    //     title_tgt_layer.style("color", "grey")
+    //             .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
+    //     t_layer_selec.node().disabled = true;
+    // }
 }
 
 function add_simplified_land_layer() {
@@ -11576,7 +11584,7 @@ var UserArrow = function () {
         }
         var self = this;
         this.drag_behavior = d3.drag().subject(function () {
-            var snap_lines = get_coords_snap_lines(this.id, this.className);
+            var snap_lines = get_coords_snap_lines(this.id + this.className);
             var t = d3.select(this.querySelector("line"));
             return { x: +t.attr("x2") - +t.attr("x1"),
                 y: +t.attr("y2") - +t.attr("y1"),
@@ -11600,46 +11608,48 @@ var UserArrow = function () {
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
             self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
             self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
-            var snap_lines_x = subject.snap_lines.x,
-                snap_lines_y = subject.snap_lines.y;
-            for (var i = 0; i < subject.snap_lines.x.length; i++) {
-                if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                    })();
-                }
-                if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        if (self.pt2[0] < self.pt1[0]) arrow_head_size = -arrow_head_size;
-                        self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
-                    })();
-                }
-                if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                    })();
-                }
-                if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        if (self.pt2[1] < self.pt1[1]) arrow_head_size = -arrow_head_size;
-                        self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
-                    })();
+            if (_app.autoalign_features) {
+                var snap_lines_x = subject.snap_lines.x,
+                    snap_lines_y = subject.snap_lines.y;
+                for (var i = 0; i < subject.snap_lines.x.length; i++) {
+                    if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            if (self.pt2[0] < self.pt1[0]) arrow_head_size = -arrow_head_size;
+                            self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            if (self.pt2[1] < self.pt1[1]) arrow_head_size = -arrow_head_size;
+                            self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+                        })();
+                    }
                 }
             }
             _t.x1.baseVal.value = self.pt1[0];
@@ -11681,7 +11691,7 @@ var UserArrow = function () {
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
                         _this.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this.arrow.remove();
+                        _this.remove();
                     } }];
             };
 
@@ -11701,6 +11711,12 @@ var UserArrow = function () {
                 d3.event.stopPropagation();
                 _this.handle_ctrl_pt();
             });
+        }
+    }, {
+        key: "remove",
+        value: function remove() {
+            pos_lgds_elem.delete(this.arrow.attr('id'));
+            this.arrow.remove();
         }
     }, {
         key: "up_element",
@@ -11900,13 +11916,13 @@ var Textbox = function () {
                 } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
                     _this2.down_element();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                    _this2.text_annot.remove();
+                    _this2.remove();
                 } }];
         };
 
         var drag_txt_annot = d3.drag().subject(function () {
             var t = d3.select(this.parentElement);
-            var snap_lines = get_coords_snap_lines(this.parentElement.id, this.parentElement.className);
+            var snap_lines = get_coords_snap_lines(this.parentElement.id);
             return {
                 x: t.attr("x"), y: t.attr("y"),
                 map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
@@ -11917,56 +11933,58 @@ var Textbox = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
-            pos_lgds_elem.set(this.parentElement.id + this.parentElement.className, this.getBoundingClientRect());
+            pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
         }).on("drag", function () {
             var _this3 = this;
 
             d3.event.sourceEvent.preventDefault();
             d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
 
-            var bbox = this.getBoundingClientRect(),
-                xmin = this.parentElement.x.baseVal.value,
-                xmax = xmin + bbox.width,
-                ymin = this.parentElement.y.baseVal.value,
-                ymax = ymin + bbox.height,
-                snap_lines_x = d3.event.subject.snap_lines.x,
-                snap_lines_y = d3.event.subject.snap_lines.y;
-            for (var i = 0; i < snap_lines_x.length; i++) {
-                if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        _this3.parentElement.x.baseVal.value = snap_lines_x[i];
-                    })();
-                }
-                if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        _this3.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
-                    })();
-                }
-                if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        _this3.parentElement.y.baseVal.value = snap_lines_y[i];
-                    })();
-                }
-                if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        _this3.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
-                    })();
+            if (_app.autoalign_features) {
+                var bbox = this.getBoundingClientRect(),
+                    xmin = this.parentElement.x.baseVal.value,
+                    xmax = xmin + bbox.width,
+                    ymin = this.parentElement.y.baseVal.value,
+                    ymax = ymin + bbox.height,
+                    snap_lines_x = d3.event.subject.snap_lines.x,
+                    snap_lines_y = d3.event.subject.snap_lines.y;
+                for (var i = 0; i < snap_lines_x.length; i++) {
+                    if (Math.abs(snap_lines_x[i] - xmin) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            _this3.parentElement.x.baseVal.value = snap_lines_x[i];
+                        })();
+                    }
+                    if (Math.abs(snap_lines_x[i] - xmax) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            _this3.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - ymin) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            _this3.parentElement.y.baseVal.value = snap_lines_y[i];
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - ymax) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            _this3.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                        })();
+                    }
                 }
             }
         });
@@ -12031,10 +12049,17 @@ var Textbox = function () {
         this.font_family = 'Verdana,Geneva,sans-serif';
         this.buffer = undefined;
         this.id = new_id_txt_annot;
+        pos_lgds_elem.set(this.id, foreign_obj.getBoundingClientRect());
         return this;
     }
 
     _createClass(Textbox, [{
+        key: "remove",
+        value: function remove() {
+            pos_lgds_elem.delete(this.text_annot.attr('id'));
+            this.text_annot.remove();
+        }
+    }, {
         key: "editStyle",
         value: function editStyle() {
             var _this4 = this;
@@ -12293,6 +12318,7 @@ var scaleBar = {
             this.precision = t && t.length > 1 ? t[1].length : ("" + this.dist).length;
             this.resize(this.dist);
         }
+        pos_lgds_elem.set(scale_gp.attr('id') + ' ' + scale_gp.attr('class'), scale_gp.node().getBoundingClientRect());
     },
     getDist: function getDist() {
         var x_pos = w / 2,
@@ -12348,6 +12374,7 @@ var scaleBar = {
         }
     },
     remove: function remove() {
+        pos_lgds_elem.delete(this.Scale.attr('id') + ' ' + this.Scale.attr('class'));
         this.Scale.remove();
         this.Scale = null;
         this.displayed = false;
@@ -12440,18 +12467,19 @@ var northArrow = {
 
         this.drag_behavior = d3.drag().subject(function () {
             var t = d3.select(this.querySelector("image"));
-            var snap_lines = get_coords_snap_lines(this.id, this.className);
+            var snap_lines = get_coords_snap_lines(this.id);
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock"); // zoom.on("zoom", null);
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+            pos_lgds_elem.set(this.id, this.getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var t1 = this.querySelector("image"),
@@ -12460,6 +12488,53 @@ var northArrow = {
                 ty = +d3.event.y,
                 dim = t2.width.baseVal.value / 2;
             if (tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim) return;
+            if (_app.autoalign_features) {
+                var _bbox = this.getBoundingClientRect(),
+                    xmin = t2.x.baseVal.value,
+                    xmax = xmin + _bbox.width,
+                    ymin = t2.y.baseVal.value,
+                    ymax = ymin + _bbox.height,
+                    snap_lines_x = d3.event.subject.snap_lines.x,
+                    snap_lines_y = d3.event.subject.snap_lines.y;
+                for (var i = 0; i < snap_lines_x.length; i++) {
+                    if (Math.abs(snap_lines_x[i] - xmin) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            tx = snap_lines_x[i];
+                        })();
+                    }
+                    if (Math.abs(snap_lines_x[i] - xmax) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            tx = snap_lines_x[i] - _bbox.width;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - ymin) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            ty = snap_lines_y[i];
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - ymax) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            ty = snap_lines_y[i] - _bbox.height;
+                        })();
+                    }
+                }
+            }
             t1.x.baseVal.value = tx;
             t1.y.baseVal.value = ty;
             t2.x.baseVal.value = tx - 7.5;
@@ -12508,6 +12583,7 @@ var northArrow = {
         down_legend(this.svg_node.node());
     },
     remove: function remove() {
+        pos_lgds_elem.delete(this.svg_node.attr('id'));
         this.svg_node.remove();
         this.displayed = false;
     },
@@ -12600,7 +12676,7 @@ var UserRectangle = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
-            pos_lgds_elem.set(this.id + this.className, this.querySelector('rect').getBoundingClientRect());
+            pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("rect"),
@@ -12638,13 +12714,13 @@ var UserRectangle = function () {
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
                         _this7.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this7.rectangle.remove();
+                        _this7.remove();
                     } }];
             };
 
             this.rectangle = this.svg_elem.append('g').attrs({ "class": "user_rectangle legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString() });
 
-            this.rectangle.insert("rect").attrs({ "x": this.pt1[0], "y": this.pt1[1],
+            var r = this.rectangle.insert("rect").attrs({ "x": this.pt1[0], "y": this.pt1[1],
                 "height": 40, "width": 30 }).styles({ "stroke-width": this.stroke_width,
                 stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
                 "fill-opacity": 0 });
@@ -12656,6 +12732,13 @@ var UserRectangle = function () {
                 d3.event.stopPropagation();
                 _this7.handle_ctrl_pt();
             }).call(this.drag_behavior);
+            pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
+        }
+    }, {
+        key: "remove",
+        value: function remove() {
+            pos_lgds_elem.delete(this.rectangle.attr('id'));
+            this.rectangle.remove();
         }
     }, {
         key: "handle_ctrl_pt",
@@ -12710,7 +12793,6 @@ var UserRectangle = function () {
                 d3.select(this).attr("x", d3.event.x - 4);
                 rectangle_elem.width.baseVal.value = dist * 2;
                 self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
-                console.log(self.pt1);console.log(rectangle_elem.x.baseVal.value);
             }));
 
             self.rectangle.on('dblclick', function () {
@@ -12809,7 +12891,7 @@ var UserEllipse = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id + this.className, this.querySelector('ellipse').getBoundingClientRect());
+            pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("ellipse"),
@@ -12839,13 +12921,13 @@ var UserEllipse = function () {
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
                         _this8.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this8.ellipse.remove();
+                        _this8.remove();
                     } }];
             };
 
             this.ellipse = this.svg_elem.append('g').attrs({ "class": "user_ellipse legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString() });
 
-            this.ellipse.insert("ellipse").attrs({ "rx": 30, "ry": 40,
+            var e = this.ellipse.insert("ellipse").attrs({ "rx": 30, "ry": 40,
                 "cx": this.pt1[0], "cy": this.pt1[1] }).styles({ "stroke-width": this.stroke_width,
                 stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
                 "fill-opacity": 0 });
@@ -12857,6 +12939,13 @@ var UserEllipse = function () {
                 d3.event.stopPropagation();
                 _this8.handle_ctrl_pt();
             }).call(this.drag_behavior);
+            pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
+        }
+    }, {
+        key: "remove",
+        value: function remove() {
+            pos_lgds_elem.delete(this.ellipse.attr('id'));
+            this.ellipse.remove();
         }
     }, {
         key: "up_element",
@@ -13016,11 +13105,11 @@ var UserEllipse = function () {
     return UserEllipse;
 }();
 
-var get_coords_snap_lines = function get_coords_snap_lines(ref_id, ref_class) {
+var get_coords_snap_lines = function get_coords_snap_lines(uid) {
     var snap_lines = { x: [], y: [] };
     var xy_map = get_map_xy0();
     pos_lgds_elem.forEach(function (v, k) {
-        if (k != ref_id + ref_class) {
+        if (k != uid) {
             snap_lines.y.push(v.bottom - xy_map.y);
             snap_lines.y.push(v.top - xy_map.y);
             snap_lines.x.push(v.left - xy_map.x);
@@ -13112,11 +13201,13 @@ function createLegend(layer, title) {
         el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
     } else {
         swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+        return;
     }
 
     if (el && lgd_pos && lgd_pos.x) {
         el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
     }
+    pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect());
     if (el2) {
         var _lgd_pos = getTranslateNewLegend(),
             prev_bbox = el.node().getBoundingClientRect(),
@@ -13129,6 +13220,7 @@ function createLegend(layer, title) {
         } else if (dim_w < w) {
             el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
         }
+        pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect());
     }
 }
 
@@ -13192,7 +13284,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
         var t = d3.select(this),
             prev_translate = t.attr("transform"),
-            snap_lines = get_coords_snap_lines(this.id);
+            snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
         prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
@@ -13210,7 +13302,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }).on("end", function () {
         if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         legend_group.style("cursor", "grab");
-        pos_lgds_elem.set(legend_group.attr('id') + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
+        pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
     }).on("drag", function () {
         var prev_value = legend_group.attr("transform");
         prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
@@ -13226,54 +13318,56 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = d3.event.y,
             change = void 0;
 
-        var xy0 = get_map_xy0(),
-            xmin = bbox_elem.left - xy0.x,
-            xmax = bbox_elem.right - xy0.x,
-            ymin = bbox_elem.top - xy0.y,
-            ymax = bbox_elem.bottom - xy0.y;
+        if (_app.autoalign_features) {
+            var xy0 = get_map_xy0(),
+                xmin = bbox_elem.left - xy0.x,
+                xmax = bbox_elem.right - xy0.x,
+                ymin = bbox_elem.top - xy0.y,
+                ymax = bbox_elem.bottom - xy0.y;
 
-        var snap_lines_x = d3.event.subject.snap_lines.x,
-            snap_lines_y = d3.event.subject.snap_lines.y;
-        for (var i = 0; i < snap_lines_x.length; i++) {
-            if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                (function () {
-                    var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                    setTimeout(function () {
-                        l.remove();
-                    }, 1000);
-                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
-                    change = true;
-                })();
-            }
-            if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                (function () {
-                    var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                    setTimeout(function () {
-                        l.remove();
-                    }, 1000);
-                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
-                    change = true;
-                })();
-            }
-            if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                (function () {
-                    var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                    setTimeout(function () {
-                        l.remove();
-                    }, 1000);
-                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
-                    change = true;
-                })();
-            }
-            if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                (function () {
-                    var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                    setTimeout(function () {
-                        l.remove();
-                    }, 1000);
-                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
-                    change = true;
-                })();
+            var snap_lines_x = d3.event.subject.snap_lines.x,
+                snap_lines_y = d3.event.subject.snap_lines.y;
+            for (var i = 0; i < snap_lines_x.length; i++) {
+                if (Math.abs(snap_lines_x[i] - xmin) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
+                        change = true;
+                    })();
+                }
+                if (Math.abs(snap_lines_x[i] - xmax) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
+                        change = true;
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - ymin) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        val_y = snap_lines_y[i] - d3.event.subject.offset[1];
+                        change = true;
+                    })();
+                }
+                if (Math.abs(snap_lines_y[i] - ymax) < 10) {
+                    (function () {
+                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                        setTimeout(function () {
+                            l.remove();
+                        }, 1000);
+                        val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
+                        change = true;
+                    })();
+                }
             }
         }
 
