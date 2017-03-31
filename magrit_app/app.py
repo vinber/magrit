@@ -316,7 +316,6 @@ async def convert(request):
             layer_name = name.split('.')[0]
             data = field[2].read()
             datatype = field[3]
-            print(datatype)
             hashed_input = mmh3_hash(data)
             filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
@@ -1062,7 +1061,7 @@ async def convert_tabular(request):
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.oasis.opendocument.spreadsheet")
 
-    _, name, data, datatype = posted_data.get('file[]')
+    _, name, data, datatype, _ = posted_data.get('file[]')
 
     if datatype in allowed_datatypes:
         name, extension = name.split('.')

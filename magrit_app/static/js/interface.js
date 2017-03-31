@@ -1357,12 +1357,12 @@ function add_sample_layer(){
     var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
     target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
     t_layer_selec.on("change", function(){selec = this.value;});
-
-    if(_app.targeted_layer_added){
-        title_tgt_layer.style("color", "grey")
-                .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
-        t_layer_selec.node().disabled = true;
-    }
+    setTimeout(_ => { document.querySelector('select.sample_target').focus(); }, 500);
+    // if(_app.targeted_layer_added){
+    //     title_tgt_layer.style("color", "grey")
+    //             .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
+    //     t_layer_selec.node().disabled = true;
+    // }
 }
 
 function add_simplified_land_layer(options = {}){

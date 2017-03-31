@@ -458,6 +458,7 @@ function make_box_type_fields(layer_name){
         }
     }
     overlay_under_modal.display();
+    setTimeout(_ => { container.querySelector('button.btn_ok').focus(); }, 400);
     return deferred.promise;
 };
 
