@@ -1069,7 +1069,10 @@ async def convert_tabular(request):
         name, extension = name.split('.')
         book = get_book(file_content=data.read(), file_type=extension)
         sheet_names = book.sheet_names()
-        result = book[sheet_names[0]].csv
+        csv = book[sheet_names[0]].csv
+        # replace spaces in variable names
+        firstrowlength = csv.find('\n')
+        result = csv[0:firstrowlength].replace(' ','_')+csv[firstrowlength:]
         message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(sheet_names) > 1 else None
     else:
         result = "Unknown tabular file format"
