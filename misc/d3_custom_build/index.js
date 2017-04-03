@@ -206,6 +206,7 @@ export {
   geoInterruptedHomolosine,
   geoLoximuthal,
   geoNaturalEarth,
+  geoNaturalEarth2,
   geoPeirceQuincuncial,
   geoRobinson,
   geoInterruptedSinuMollweide,

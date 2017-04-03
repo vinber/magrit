@@ -8932,7 +8932,8 @@ var zoom = function() {
       else if (g.touch1 && g.touch1[2] === t.identifier) delete g.touch1;
     }
     if (g.touch1 && !g.touch0) g.touch0 = g.touch1, delete g.touch1;
-    if (!g.touch0) g.end();
+    if (g.touch0) g.touch0[1] = this.__zoom.invert(g.touch0[0]);
+    else g.end();
   }
 
   zoom.filter = function(_) {
@@ -14208,6 +14209,33 @@ var naturalEarth = function() {
       .scale(175.295);
 };
 
+function naturalEarth2Raw(lambda, phi) {
+  var phi2 = phi * phi, phi4 = phi2 * phi2, phi6 = phi2 * phi4;
+  return [
+    lambda * (0.84719 - 0.13063 * phi2 + phi6 * phi6 * (-0.04515 + 0.05494 * phi2 - 0.02326 * phi4 + 0.00331 * phi6)),
+    phi * (1.01183 + phi4 * phi4 * (-0.02625 + 0.01926 * phi2 - 0.00396 * phi4))
+  ];
+}
+
+naturalEarth2Raw.invert = function(x, y) {
+  var phi = y, i = 25, delta, phi2, phi4, phi6;
+  do {
+    phi2 = phi * phi; phi4 = phi2 * phi2;
+    phi -= delta = ((phi * (1.01183 + phi4 * phi4 * (-0.02625 + 0.01926 * phi2 - 0.00396 * phi4))) - y) /
+      (1.01183 + phi4 * phi4 * ((9 * -0.02625) + (11 * 0.01926) * phi2 + (13 * -0.00396) * phi4));
+  } while (abs$2(delta) > epsilon2$2 && --i > 0);
+  phi2 = phi * phi; phi4 = phi2 * phi2; phi6 = phi2 * phi4;
+  return [
+    x / (0.84719 - 0.13063 * phi2 + phi6 * phi6 * (-0.04515 + 0.05494 * phi2 - 0.02326 * phi4 + 0.00331 * phi6)),
+    phi
+  ];
+};
+
+var naturalEarth2 = function() {
+  return projection(naturalEarth2Raw)
+      .scale(175.295);
+};
+
 // Based on Java implementation by Bojan Savric.
 // https://github.com/OSUCartography/JMapProjLib/blob/master/src/com/jhlabs/map/proj/PattersonProjection.java
 
@@ -14739,35 +14767,38 @@ var y0e = y0$5 + epsilon$5;
 var y1$1 = 90;
 var y1e = y1$1 - epsilon$5;
 
+function nonempty(coordinates) {
+  return coordinates.length > 0;
+}
+
 function quantize$3(x) {
   return Math.floor(x * epsilonInverse) / epsilonInverse;
 }
 
 function normalizePoint(y) {
-  return y === y0$5 || y === y1$1
-      ? [0, y] // pole
-      : [x0$5, quantize$3(y)]; // antimeridian
+  return y === y0$5 || y === y1$1 ? [0, y] : [x0$5, quantize$3(y)]; // pole or antimeridian?
 }
 
 function clampPoint(p) {
-  if (p[0] <= x0e) p[0] = x0$5;
-  else if (p[0] >= x1e) p[0] = x1$1;
-  if (p[1] <= y0e) p[1] = y0$5;
-  else if (p[1] >= y1e) p[1] = y1$1;
+  var x = p[0], y = p[1], clamped = false;
+  if (x <= x0e) x = x0$5, clamped = true;
+  else if (x >= x1e) x = x1$1, clamped = true;
+  if (y <= y0e) y = y0$5, clamped = true;
+  else if (y >= y1e) y = y1$1, clamped = true;
+  return clamped ? [x, y] : p;
 }
 
 function clampPoints(points) {
-  points.forEach(clampPoint);
+  return points.map(clampPoint);
 }
 
 // For each ring, detect where it crosses the antimeridian or pole.
-function extractFragments(polygon, fragments) {
-  for (var j = 0, m = polygon.length; j < m; ++j) {
-    var ring = polygon[j];
-    ring.polygon = polygon;
+function extractFragments(rings, polygon, fragments) {
+  for (var j = 0, m = rings.length; j < m; ++j) {
+    var ring = rings[j].slice();
 
     // By default, assume that this ring doesn’t need any stitching.
-    fragments.push(ring);
+    fragments.push({index: -1, polygon: polygon, ring: ring});
 
     for (var i = 0, n = ring.length; i < n; ++i) {
       var point = ring[i],
@@ -14776,7 +14807,7 @@ function extractFragments(polygon, fragments) {
 
       // If this is an antimeridian or polar point…
       if (x <= x0e || x >= x1e || y <= y0e || y >= y1e) {
-        clampPoint(point);
+        ring[i] = clampPoint(point);
 
         // Advance through any antimeridian or polar points…
         for (var k = i + 1; k < n; ++k) {
@@ -14795,9 +14826,8 @@ function extractFragments(polygon, fragments) {
         // cut the current fragment so that it ends at the current point.
         // The current point is also normalized for later joining.
         if (i) {
-          var fragmentBefore = ring.slice(0, i + 1);
-          fragmentBefore.polygon = polygon;
-          fragmentBefore[fragmentBefore.length - 1] = normalizePoint(y);
+          var fragmentBefore = {index: -1, polygon: polygon, ring: ring.slice(0, i + 1)};
+          fragmentBefore.ring[fragmentBefore.ring.length - 1] = normalizePoint(y);
           fragments[fragments.length - 1] = fragmentBefore;
         }
 
@@ -14810,19 +14840,16 @@ function extractFragments(polygon, fragments) {
         if (k >= n) break;
 
         // Otherwise, add the remaining ring fragment and continue.
-        fragments.push(ring = ring.slice(k - 1));
+        fragments.push({index: -1, polygon: polygon, ring: ring = ring.slice(k - 1)});
         ring[0] = normalizePoint(ring[0][1]);
-        ring.polygon = polygon;
         i = -1;
         n = ring.length;
       }
     }
   }
-  polygon.length = 0;
 }
 
 // Now stitch the fragments back together into rings.
-// TODO remove empty polygons.
 function stitchFragments(fragments) {
   var i, n = fragments.length;
 
@@ -14838,12 +14865,12 @@ function stitchFragments(fragments) {
   // For each fragment…
   for (i = 0; i < n; ++i) {
     fragment = fragments[i];
-    start = fragment[0];
-    end = fragment[fragment.length - 1];
+    start = fragment.ring[0];
+    end = fragment.ring[fragment.ring.length - 1];
 
     // If this fragment is closed, add it as a standalone ring.
     if (start[0] === end[0] && start[1] === end[1]) {
-      fragment.polygon.push(fragment);
+      fragment.polygon.push(fragment.ring);
       fragments[i] = null;
       continue;
     }
@@ -14856,8 +14883,8 @@ function stitchFragments(fragments) {
   for (i = 0; i < n; ++i) {
     fragment = fragments[i];
     if (fragment) {
-      start = fragment[0];
-      end = fragment[fragment.length - 1];
+      start = fragment.ring[0];
+      end = fragment.ring[fragment.ring.length - 1];
       startFragment = fragmentByEnd[start];
       endFragment = fragmentByStart[end];
 
@@ -14866,77 +14893,66 @@ function stitchFragments(fragments) {
 
       // If this fragment is closed, add it as a standalone ring.
       if (start[0] === end[0] && start[1] === end[1]) {
-        fragment.polygon.push(fragment);
+        fragment.polygon.push(fragment.ring);
         continue;
       }
 
       if (startFragment) {
         delete fragmentByEnd[start];
-        delete fragmentByStart[startFragment[0]];
-        startFragment.pop(); // drop the shared coordinate
+        delete fragmentByStart[startFragment.ring[0]];
+        startFragment.ring.pop(); // drop the shared coordinate
         fragments[startFragment.index] = null;
-        fragment = startFragment.concat(fragment);
-        fragment.polygon = startFragment.polygon;
+        fragment = {index: -1, polygon: startFragment.polygon, ring: startFragment.ring.concat(fragment.ring)};
 
         if (startFragment === endFragment) {
           // Connect both ends to this single fragment to create a ring.
-          fragment.polygon.push(fragment);
+          fragment.polygon.push(fragment.ring);
         } else {
           fragment.index = n++;
-          fragments.push(fragmentByStart[fragment[0]] = fragmentByEnd[fragment[fragment.length - 1]] = fragment);
+          fragments.push(fragmentByStart[fragment.ring[0]] = fragmentByEnd[fragment.ring[fragment.ring.length - 1]] = fragment);
         }
       } else if (endFragment) {
         delete fragmentByStart[end];
-        delete fragmentByEnd[endFragment[endFragment.length - 1]];
-        fragment.pop(); // drop the shared coordinate
-        fragment = fragment.concat(endFragment);
-        fragment.polygon = endFragment.polygon;
-        fragment.index = n++;
+        delete fragmentByEnd[endFragment.ring[endFragment.ring.length - 1]];
+        fragment.ring.pop(); // drop the shared coordinate
+        fragment = {index: n++, polygon: endFragment.polygon, ring: fragment.ring.concat(endFragment.ring)};
         fragments[endFragment.index] = null;
-        fragments.push(fragmentByStart[fragment[0]] = fragmentByEnd[fragment[fragment.length - 1]] = fragment);
+        fragments.push(fragmentByStart[fragment.ring[0]] = fragmentByEnd[fragment.ring[fragment.ring.length - 1]] = fragment);
       } else {
-        fragment.push(fragment[0]); // close ring
-        fragment.polygon.push(fragment);
+        fragment.ring.push(fragment.ring[0]); // close ring
+        fragment.polygon.push(fragment.ring);
       }
     }
   }
 }
 
-function stitchGeometry(o) {
-  if (!o) return;
-  var fragments, i, n;
-
-  switch (o.type) {
-    case "GeometryCollection": {
-      o.geometries.forEach(stitchGeometry);
-      return;
-    }
-    case "Point": {
-      clampPoint(o.coordinates);
-      break;
-    }
-    case "MultiPoint":
-    case "LineString": {
-      clampPoints(o.coordinates);
-      break;
-    }
-    case "MultiLineString": {
-      o.coordinates.forEach(clampPoints);
-      break;
-    }
+function stitchGeometry(input) {
+  if (input == null) return input;
+  var output, fragments, i, n;
+  switch (input.type) {
+    case "GeometryCollection": output = {type: "GeometryCollection", geometries: input.geometries.map(stitchGeometry)}; break;
+    case "Point": output = {type: "Point", coordinates: clampPoint(input.coordinates)}; break;
+    case "MultiPoint": case "LineString": output = {type: input.type, coordinates: clampPoints(input.coordinates)}; break;
+    case "MultiLineString": output = {type: "MultiLineString", coordinates: input.coordinates.map(clampPoints)}; break;
     case "Polygon": {
-      extractFragments(o.coordinates, fragments = []);
+      var polygon = [];
+      extractFragments(input.coordinates, polygon, fragments = []);
+      stitchFragments(fragments);
+      output = {type: "Polygon", coordinates: polygon};
       break;
     }
     case "MultiPolygon": {
-      fragments = [], i = -1, n = o.coordinates.length;
-      while (++i < n) extractFragments(o.coordinates[i], fragments);
+      fragments = [], i = -1, n = input.coordinates.length;
+      var polygons = new Array(n);
+      while (++i < n) extractFragments(input.coordinates[i], polygons[i] = [], fragments);
+      stitchFragments(fragments);
+      output = {type: "MultiPolygon", coordinates: polygons.filter(nonempty)};
       break;
     }
-    default: return;
+    default: return input;
   }
-
-  stitchFragments(fragments);
+  if (input.bbox != null) output.bbox = input.bbox;
+  return output;
 }
 
 // Compute the origin as the midpoint of the two reference points.
@@ -15100,6 +15116,7 @@ exports.geoHomolosine = homolosine;
 exports.geoInterruptedHomolosine = homolosine$1;
 exports.geoLoximuthal = loximuthal;
 exports.geoNaturalEarth = naturalEarth;
+exports.geoNaturalEarth2 = naturalEarth2;
 exports.geoPeirceQuincuncial = peirce;
 exports.geoRobinson = robinson;
 exports.geoInterruptedSinuMollweide = sinuMollweide$1;
