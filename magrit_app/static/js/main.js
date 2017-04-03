@@ -132,44 +132,43 @@ function setUpInterface(resume_project)
     }
     proj_select.node().value = "NaturalEarth";
 
-
     let proj_options2 = proj_options.append("div");
-    proj_options2.append("input")
-        .attrs({type: "range", id: "form_projection_center", value: 0.0,
-                min: -180.0, max: 180.0, step: 0.1})
-        .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
-                 'margin': "0 0 0 15px",
-                 "vertical-align": "text-top"})
-        .on("input", function(){
-            handle_proj_center_button([this.value, null, null]);
-            document.getElementById("proj_center_value_txt").value = +this.value;
-        });
-
-    proj_options2.append("input")
-        .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
-                min: -180.0, max: 180.0, value: 0, step: "any"})
-        .styles({width: "40px", "margin": "0 10px",
-                 "color": " white", "background-color": "#000",
-                 "vertical-align": "calc(20%)"})
-        .on("change", function(){
-            let val = +this.value,
-                old_value = +document.getElementById('form_projection_center').value;
-            if(this.value.length == 0 || val > 180 || val < -180){
-                this.value = old_value;
-                return;
-            } else { // Should remove trailing zeros (right/left) if any :
-                this.value = +this.value;
-            }
-            handle_proj_center_button([this.value, null, null]);
-            document.getElementById("form_projection_center").value = this.value;
-        });
-    proj_options2.append("span")
-        .style("vertical-align", "calc(20%)")
-        .html("°");
+    // proj_options2.append("input")
+    //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
+    //             min: -180.0, max: 180.0, step: 0.1})
+    //     .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
+    //              'margin': "0 0 0 15px",
+    //              "vertical-align": "text-top"})
+    //     .on("input", function(){
+    //         handle_proj_center_button([this.value, null, null]);
+    //         document.getElementById("proj_center_value_txt").value = +this.value;
+    //     });
+    //
+    // proj_options2.append("input")
+    //     .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
+    //             min: -180.0, max: 180.0, value: 0, step: "any"})
+    //     .styles({width: "40px", "margin": "0 10px",
+    //              "color": " white", "background-color": "#000",
+    //              "vertical-align": "calc(20%)"})
+    //     .on("change", function(){
+    //         let val = +this.value,
+    //             old_value = +document.getElementById('form_projection_center').value;
+    //         if(this.value.length == 0 || val > 180 || val < -180){
+    //             this.value = old_value;
+    //             return;
+    //         } else { // Should remove trailing zeros (right/left) if any :
+    //             this.value = +this.value;
+    //         }
+    //         handle_proj_center_button([this.value, null, null]);
+    //         document.getElementById("form_projection_center").value = this.value;
+    //     });
+    // proj_options2.append("span")
+    //     .style("vertical-align", "calc(20%)")
+    //     .html("°");
 
     proj_options2.append('img')
         .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
-        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px'})
+        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
         .on('click', createBoxCustomProjection);
 
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
@@ -2025,20 +2024,27 @@ function change_projection(new_proj_name) {
     map.select('.brush').remove();
 
     // Only keep the first argument of the rotation parameter :
-    let prev_rotate = [proj.rotate()[0], 0, 0],
+    let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0],
         def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
     proj = d3[def_proj.name]()
     if(def_proj.parallels)
         proj = proj.parallels(def_proj.parallels);
+    else if (def_proj.parallel)
+        proj = proj.parallel(def_proj.parallel);
     if(def_proj.clipAngle)
         proj = proj.clipAngle(def_proj.clipAngle);
+    if(def_proj.rotate)
+        prev_rotate = def_proj.rotate;
 
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Do the reprojection :
-    proj.translate(t).scale(s).rotate(prev_rotate);
+    proj.translate(t).scale(s);
+    if(proj.rotate)
+        proj.rotate(prev_rotate);
+
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
@@ -2059,6 +2065,45 @@ function change_projection(new_proj_name) {
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);
+}
+
+function change_projection_4(_proj) {
+    // Disable the zoom by rectangle selection if the user is using it :
+    map.select('.brush').remove();
+
+    // Only keep the first argument of the rotation parameter :
+    let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0];
+
+    // Create the custom d3 projection using proj 4 forward and inverse functions:
+    var projRaw = function(lambda, phi) {
+    	return _proj.forward([lambda, phi].map(radiansToDegrees));
+    };
+    projRaw.invert = function(x, y) {
+    	return _proj.inverse([x, y]).map(degreesToRadians);
+    };
+    proj = d3.geoProjection(projRaw);
+    path = d3.geoPath().projection(proj).pointRadius(4);
+
+    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+
+    // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+    let layer_name = Object.getOwnPropertyNames(user_data)[0];
+    if(!layer_name){
+      let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
+      layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
+    }
+    let rv = fitLayer(layer_name);
+    s = rv[0];
+    t = rv[1];
+    if(isNaN(s) || isNaN(t[0]) || isNaN(t[1])){
+        s = 100; t = [0, 0];
+        console.log('Error');
+        return;
+    }
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    center_map(layer_name);
+    zoom_without_redraw();
 }
 
 

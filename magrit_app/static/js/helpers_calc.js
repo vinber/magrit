@@ -507,3 +507,10 @@ function remove_all_edit_state(){
         func();
     }
 }
+
+const pidegrad = 0.017453292519943295;
+const piraddeg = 57.29577951308232;
+const degreesToRadians = function(degrees) { return degrees * pidegrad; }
+const radiansToDegrees = function(radians) { return radians * piraddeg; }
+// const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
+// const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }

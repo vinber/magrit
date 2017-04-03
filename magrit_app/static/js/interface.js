@@ -1076,6 +1076,14 @@ function center_map(name){
     _zoom.y = zoom_translate[1];
 };
 
+function fitLayer(layer_name) {
+  proj.scale(1).translate([0,0])
+  var b = get_bbox_layer_path(layer_name),
+      s = .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h),
+      t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
+  proj.scale(s).translate(t);
+  return [s, t];
+}
 
 function setSphereBottom(){
     let layers_list = document.querySelector(".layer_list");

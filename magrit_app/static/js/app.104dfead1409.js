@@ -141,33 +141,40 @@ function setUpInterface(resume_project) {
     proj_select.node().value = "NaturalEarth";
 
     var proj_options2 = proj_options.append("div");
-    proj_options2.append("input").attrs({ type: "range", id: "form_projection_center", value: 0.0,
-        min: -180.0, max: 180.0, step: 0.1 }).styles({ width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
-        'margin': "0 0 0 15px",
-        "vertical-align": "text-top" }).on("input", function () {
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("proj_center_value_txt").value = +this.value;
-    });
+    // proj_options2.append("input")
+    //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
+    //             min: -180.0, max: 180.0, step: 0.1})
+    //     .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
+    //              'margin': "0 0 0 15px",
+    //              "vertical-align": "text-top"})
+    //     .on("input", function(){
+    //         handle_proj_center_button([this.value, null, null]);
+    //         document.getElementById("proj_center_value_txt").value = +this.value;
+    //     });
+    //
+    // proj_options2.append("input")
+    //     .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
+    //             min: -180.0, max: 180.0, value: 0, step: "any"})
+    //     .styles({width: "40px", "margin": "0 10px",
+    //              "color": " white", "background-color": "#000",
+    //              "vertical-align": "calc(20%)"})
+    //     .on("change", function(){
+    //         let val = +this.value,
+    //             old_value = +document.getElementById('form_projection_center').value;
+    //         if(this.value.length == 0 || val > 180 || val < -180){
+    //             this.value = old_value;
+    //             return;
+    //         } else { // Should remove trailing zeros (right/left) if any :
+    //             this.value = +this.value;
+    //         }
+    //         handle_proj_center_button([this.value, null, null]);
+    //         document.getElementById("form_projection_center").value = this.value;
+    //     });
+    // proj_options2.append("span")
+    //     .style("vertical-align", "calc(20%)")
+    //     .html("°");
 
-    proj_options2.append("input").attrs({ type: "number", class: "without_spinner", id: "proj_center_value_txt",
-        min: -180.0, max: 180.0, value: 0, step: "any" }).styles({ width: "40px", "margin": "0 10px",
-        "color": " white", "background-color": "#000",
-        "vertical-align": "calc(20%)" }).on("change", function () {
-        var val = +this.value,
-            old_value = +document.getElementById('form_projection_center').value;
-        if (this.value.length == 0 || val > 180 || val < -180) {
-            this.value = old_value;
-            return;
-        } else {
-            // Should remove trailing zeros (right/left) if any :
-            this.value = +this.value;
-        }
-        handle_proj_center_button([this.value, null, null]);
-        document.getElementById("form_projection_center").value = this.value;
-    });
-    proj_options2.append("span").style("vertical-align", "calc(20%)").html("°");
-
-    proj_options2.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
+    proj_options2.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -731,9 +738,9 @@ function setUpInterface(resume_project) {
         } else if (type_export === "geo") {
             var layer_name = document.getElementById('layer_to_export').value,
                 type = document.getElementById('datatype_to_use').value,
-                _proj = document.getElementById('projection_to_use').value,
+                _proj2 = document.getElementById('projection_to_use').value,
                 proj4value = document.getElementById('proj4str').value;
-            export_layer_geo(layer_name, type, _proj, proj4value);
+            export_layer_geo(layer_name, type, _proj2, proj4value);
             //make_export_layer_box()
         } else if (type_export === "png") {
             var _type_export = document.getElementById("select_png_format").value,
@@ -1738,18 +1745,21 @@ function change_projection(new_proj_name) {
     map.select('.brush').remove();
 
     // Only keep the first argument of the rotation parameter :
-    var prev_rotate = [proj.rotate()[0], 0, 0],
+    var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0],
         def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
     proj = d3[def_proj.name]();
-    if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);
+    if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);else if (def_proj.parallel) proj = proj.parallel(def_proj.parallel);
     if (def_proj.clipAngle) proj = proj.clipAngle(def_proj.clipAngle);
+    if (def_proj.rotate) prev_rotate = def_proj.rotate;
 
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Do the reprojection :
-    proj.translate(t).scale(s).rotate(prev_rotate);
+    proj.translate(t).scale(s);
+    if (proj.rotate) proj.rotate(prev_rotate);
+
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
     // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
@@ -1772,6 +1782,47 @@ function change_projection(new_proj_name) {
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);
+}
+
+function change_projection_4(_proj) {
+    // Disable the zoom by rectangle selection if the user is using it :
+    map.select('.brush').remove();
+
+    // Only keep the first argument of the rotation parameter :
+    var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
+
+    // Create the custom d3 projection using proj 4 forward and inverse functions:
+    var projRaw = function projRaw(lambda, phi) {
+        return _proj.forward([lambda, phi].map(radiansToDegrees));
+    };
+    projRaw.invert = function (x, y) {
+        return _proj.inverse([x, y]).map(degreesToRadians);
+    };
+    proj = d3.geoProjection(projRaw);
+    path = d3.geoPath().projection(proj).pointRadius(4);
+
+    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+
+    // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+    var layer_name = Object.getOwnPropertyNames(user_data)[0];
+    if (!layer_name) {
+        var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
+            return f.style.visibility != "hidden";
+        });
+        layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+    }
+    var rv = fitLayer(layer_name);
+    s = rv[0];
+    t = rv[1];
+    if (isNaN(s) || isNaN(t[0]) || isNaN(t[1])) {
+        s = 100;t = [0, 0];
+        console.log('Error');
+        return;
+    }
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    center_map(layer_name);
+    zoom_without_redraw();
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
@@ -8270,6 +8321,17 @@ function remove_all_edit_state() {
         func();
     }
 }
+
+var pidegrad = 0.017453292519943295;
+var piraddeg = 57.29577951308232;
+var degreesToRadians = function degreesToRadians(degrees) {
+    return degrees * pidegrad;
+};
+var radiansToDegrees = function radiansToDegrees(radians) {
+    return radians * piraddeg;
+};
+// const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
+// const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
 "use strict";
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
@@ -9274,6 +9336,15 @@ function center_map(name) {
     _zoom.x = zoom_translate[0];
     _zoom.y = zoom_translate[1];
 };
+
+function fitLayer(layer_name) {
+    proj.scale(1).translate([0, 0]);
+    var b = get_bbox_layer_path(layer_name),
+        s = .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h),
+        t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
+    proj.scale(s).translate(t);
+    return [s, t];
+}
 
 function setSphereBottom() {
     var layers_list = document.querySelector(".layer_list");
@@ -15476,11 +15547,71 @@ function make_style_box_indiv_symbol(symbol_node) {
 };
 "use strict";
 
-var available_projections = new Map([["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }], ["ConicConformal", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistant", { 'name': 'geoConicEquidistant', 'scale': '400' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }]]);
+var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }], ["Cassini", { "name": 'geoEquirectangular', 'scale': '400', 'rotate': [0, 0, 90] }], ["ConicConformal", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistant", { 'name': 'geoConicEquidistant', 'scale': '400' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45 }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45 }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["Miller", { 'name': 'geoMiller', 'scale': '375' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90 }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400' }]]);
+
+var createBoxProj4 = function createBoxProj4() {
+		var modal_box = make_dialog_container("box_projection_input", i18next.t("app_page.section5.title"), "dialog");
+		var container = document.getElementById("box_projection_input"),
+		    dialog = container.querySelector('.modal-dialog');
+
+		var content = d3.select(container).select(".modal-body").attr('id', 'box_proj4');
+
+		dialog.style.width = undefined;
+		dialog.style.maxWidth = '500px';
+		dialog.style.minWidth = '400px';
+
+		var input_section = content.append('p');
+		input_section.append('span').style('float', 'left').html("Enter a proj4 string");
+		input_section.append('input').styles({ 'width': '90%' }).attrs({ id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" }).on("input", function () {
+				null;
+				var proj_str = this.value;
+				if (proj_str.length < 4 || !proj_str.split(' ').every(function (f) {
+						return f[0] == '+';
+				})) {
+						container.querySelector('.btn_ok').disabled = 'disabled';
+				} else {
+						container.querySelector('.btn_ok').disabled = false;
+				}
+		});
+
+		var clean_up_box = function clean_up_box() {
+				container.remove();
+				overlay_under_modal.hide();
+				document.removeEventListener('keydown', fn_cb);
+		};
+		var fn_cb = function fn_cb(evt) {
+				helper_esc_key_twbs_cb(evt, clean_up_box);
+		};
+		var _onclose_valid = function _onclose_valid() {
+				var proj_str = document.getElementById('input_proj_string').value;
+				if (proj_str.length < 4 || !proj_str.split(' ').every(function (f) {
+						return f[0] == '+';
+				})) {
+						return;
+				} else {
+						var _p = void 0;
+						try {
+								_p = proj4(proj_str);
+						} catch (e) {
+								return;
+						}
+						change_projection_4(_p);
+				}
+		};
+		container.querySelector(".btn_cancel").onclick = clean_up_box;
+		container.querySelector("#xclose").onclick = clean_up_box;
+		container.querySelector(".btn_ok").onclick = _onclose_valid;
+		document.addEventListener('keydown', fn_cb);
+		overlay_under_modal.display();
+};
+
+"+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
-		var prev_rotate = proj.rotate(),
-		    prev_parallels = void 0;
+		var prev_rotate = proj.rotate ? proj.rotate() : undefined,
+		    prev_parallels = proj.parallels ? proj.parallels() : undefined,
+		    prev_parallel = proj.parallel ? proj.parallel() : undefined;
+
 		var modal_box = make_dialog_container("box_projection_customization", i18next.t("app_page.section5.title"), "dialog");
 		var container = document.getElementById("box_projection_customization"),
 		    dialog = container.querySelector('.modal-dialog');
@@ -15491,31 +15622,31 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		dialog.style.maxWidth = '400px';
 		dialog.style.minWidth = '250px';
 
-		var lambda_section = content.append('p');
-		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
-		lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
-				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-				handle_proj_center_button([this.value, null, null]);
-				document.getElementById('form_projection_center').value = this.value;
-				document.getElementById('proj_center_value_txt').value = this.value;
-		});
+		if (prev_rotate) {
+				var lambda_section = content.append('p');
+				lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
+				lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
+						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
+						handle_proj_center_button([this.value, null, null]);
+						document.getElementById('form_projection_center').value = this.value;
+						document.getElementById('proj_center_value_txt').value = this.value;
+				});
 
-		var phi_section = content.append('p').style('clear', 'both');
-		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
-		phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
-				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-				handle_proj_center_button([null, this.value, null]);
-		});
+				var phi_section = content.append('p').style('clear', 'both');
+				phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
+				phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
+						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
+						handle_proj_center_button([null, this.value, null]);
+				});
 
-		var gamma_section = content.append('p').style('clear', 'both');
-		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
-		gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
-				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-				handle_proj_center_button([null, null, this.value]);
-		});
-
-		if (current_proj_name.indexOf('Conic') > -1) {
-				prev_parallels = proj.parallels();
+				var gamma_section = content.append('p').style('clear', 'both');
+				gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
+				gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+						handle_proj_center_button([null, null, this.value]);
+				});
+		}
+		if (prev_parallels) {
 				var parallels_section = content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
 				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
@@ -15526,6 +15657,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
 						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 						handle_parallels_change([null, this.value]);
+				});
+		} else if (prev_parallel) {
+				var parallel_section = content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
+				parallel_section.append('span').html(i18next.t('app_page.section5.parallel'));
+				var _inputs = parallel_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
+				_inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallel, min: -90, max: 90, step: 0.5 }).on("input", function () {
+						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+						handle_parallel_change(this.value);
 				});
 		}
 
@@ -15539,9 +15678,13 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		};
 		var _onclose_cancel = function _onclose_cancel() {
 				clean_up_box();
-				handle_proj_center_button(prev_rotate);
-				if (prev_parallels != undefined) {
+				if (prev_rotate) {
+						handle_proj_center_button(prev_rotate);
+				}
+				if (prev_parallels) {
 						handle_parallels_change(prev_parallels);
+				} else if (prev_parallel) {
+						handle_parallel_change(prev_parallel);
 				}
 		};
 		container.querySelector(".btn_cancel").onclick = _onclose_cancel;
@@ -15573,6 +15716,12 @@ function handle_parallels_change(parallels) {
 				return val ? val : current_values[i];
 		});
 		proj.parallels(parallels);
+		map.selectAll(".layer").selectAll("path").attr("d", path);
+		reproj_symbol_layer();
+}
+
+function handle_parallel_change(parallel) {
+		proj.parallels(parallel);
 		map.selectAll(".layer").selectAll("path").attr("d", path);
 		reproj_symbol_layer();
 }

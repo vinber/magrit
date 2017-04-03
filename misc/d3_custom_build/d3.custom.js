@@ -12483,6 +12483,44 @@ function airyRaw(beta) {
   return forward;
 }
 
+function aitoffRaw(x, y) {
+  var cosy = cos$2(y), sincia = sinci(acos$2(cosy * cos$2(x /= 2)));
+  return [2 * cosy * sin$2(x) * sincia, sin$2(y) * sincia];
+}
+
+// Abort if [x, y] is not within an ellipse centered at [0, 0] with
+// semi-major axis pi and semi-minor axis pi/2.
+aitoffRaw.invert = function(x, y) {
+  if (x * x + 4 * y * y > pi$4 * pi$4 + epsilon$4) return;
+  var x1 = x, y1 = y, i = 25;
+  do {
+    var sinx = sin$2(x1),
+        sinx_2 = sin$2(x1 / 2),
+        cosx_2 = cos$2(x1 / 2),
+        siny = sin$2(y1),
+        cosy = cos$2(y1),
+        sin_2y = sin$2(2 * y1),
+        sin2y = siny * siny,
+        cos2y = cosy * cosy,
+        sin2x_2 = sinx_2 * sinx_2,
+        c = 1 - cos2y * cosx_2 * cosx_2,
+        e = c ? acos$2(cosy * cosx_2) * sqrt$3(f = 1 / c) : f = 0,
+        f,
+        fx = 2 * e * cosy * sinx_2 - x,
+        fy = e * siny - y,
+        dxdx = f * (cos2y * sin2x_2 + e * cosy * cosx_2 * sin2y),
+        dxdy = f * (0.5 * sinx * sin_2y - e * 2 * siny * sinx_2),
+        dydx = f * 0.25 * (sin_2y * sinx_2 - e * siny * cos2y * sinx),
+        dydy = f * (sin2y * cosx_2 + e * sin2x_2 * cosy),
+        z = dxdy * dydx - dydy * dxdx;
+    if (!z) break;
+    var dx = (fy * dxdy - fx * dydy) / z,
+        dy = (fx * dydx - fy * dxdx) / z;
+    x1 -= dx, y1 -= dy;
+  } while ((abs$2(dx) > epsilon$4 || abs$2(dy) > epsilon$4) && --i > 0);
+  return [x1, y1];
+};
+
 function armadilloRaw(phi0) {
   var sinPhi0 = sin$2(phi0),
       cosPhi0 = cos$2(phi0),
@@ -12674,6 +12712,11 @@ function mollweideBromleyRaw(cx, cy, cp) {
 
 var mollweideRaw = mollweideBromleyRaw(sqrt2 / halfPi$3, sqrt2, pi$4);
 
+var mollweide = function() {
+  return projection(mollweideRaw)
+      .scale(169.529);
+};
+
 var k$1 = 2.00276;
 var w = 1.11072;
 
@@ -12766,6 +12809,19 @@ function bottomleyRaw(sinPsi) {
 
   return forward;
 }
+
+var bottomley = function() {
+  var sinPsi = 0.5,
+      m = projectionMutator(bottomleyRaw),
+      p = m(sinPsi);
+
+  p.fraction = function(_) {
+    return arguments.length ? m(sinPsi = +_) : sinPsi;
+  };
+
+  return p
+      .scale(158.837);
+};
 
 var bromleyRaw = mollweideBromleyRaw(1, 4 / pi$4, pi$4);
 
@@ -12911,6 +12967,31 @@ function cylindricalEqualAreaRaw$1(phi0) {
 
   return forward;
 }
+
+var cylindricalEqualArea = function() {
+  return parallel1(cylindricalEqualAreaRaw$1)
+      .parallel(38.58) // acos(sqrt(width / height / pi)) * radians
+      .scale(195.044); // width / (sqrt(width / height / pi) * 2 * pi)
+};
+
+function cylindricalStereographicRaw(phi0) {
+  var cosPhi0 = cos$2(phi0);
+
+  function forward(lambda, phi) {
+    return [lambda * cosPhi0, (1 + cosPhi0) * tan$1(phi / 2)];
+  }
+
+  forward.invert = function(x, y) {
+    return [x / cosPhi0, atan$1(y / (1 + cosPhi0)) * 2];
+  };
+
+  return forward;
+}
+
+var cylindricalStereographic = function() {
+  return parallel1(cylindricalStereographicRaw)
+      .scale(124.75);
+};
 
 function eckert1Raw(lambda, phi) {
   var alpha = sqrt$3(8 / (3 * pi$4));
@@ -13851,6 +13932,13 @@ sinuMollweideRaw.invert = function(x, y) {
       : sinusoidalRaw.invert(x, y);
 };
 
+var sinuMollweide = function() {
+  return projection(sinuMollweideRaw)
+      .rotate([-20, -55])
+      .scale(164.263)
+      .center([0, -5.4036]);
+};
+
 function homolosineRaw(lambda, phi) {
   return abs$2(phi) > sinuMollweidePhi
       ? (lambda = mollweideRaw(lambda, phi), lambda[1] -= phi > 0 ? sinuMollweideY : -sinuMollweideY, lambda)
@@ -14119,6 +14207,19 @@ var loximuthal = function() {
       .scale(158.837);
 };
 
+function millerRaw(lambda, phi) {
+  return [lambda, 1.25 * log$2(tan$1(quarterPi$1 + 0.4 * phi))];
+}
+
+millerRaw.invert = function(x, y) {
+  return [x, 2.5 * atan$1(exp$1(0.8 * y)) - 0.625 * pi$4];
+};
+
+var miller = function() {
+  return projection(millerRaw)
+      .scale(108.318);
+};
+
 function modifiedStereographicRaw(C) {
   var m = C.length - 1;
 
@@ -14181,6 +14282,37 @@ function modifiedStereographicRaw(C) {
   };
 
   return forward;
+}
+
+var miller$1 = [[0.9245, 0], [0, 0], [0.01943, 0]];
+
+
+
+
+
+
+
+function modifiedStereographicMiller() {
+  return modifiedStereographic(miller$1, [-20, -18])
+      .scale(209.091)
+      .center([20, 16.7214])
+      .clipAngle(82);
+}
+
+
+
+function modifiedStereographic(coefficients, rotate) {
+  var p = projection(modifiedStereographicRaw(coefficients)).rotate(rotate).clipAngle(90),
+      r = rotation(rotate),
+      center = p.center;
+
+  delete p.rotate;
+
+  p.center = function(_) {
+    return arguments.length ? center(r(_)) : r.invert(center());
+  };
+
+  return p;
 }
 
 function naturalEarthRaw(lambda, phi) {
@@ -14248,6 +14380,65 @@ var pattersonC2 = 5 * pattersonK2;
 var pattersonC3 = 7 * pattersonK3;
 var pattersonC4 = 9 * pattersonK4;
 var pattersonYmax = 1.790857183;
+
+function pattersonRaw(lambda, phi) {
+  var phi2 = phi * phi;
+  return [
+    lambda,
+    phi * (pattersonK1 + phi2 * phi2 * (pattersonK2 + phi2 * (pattersonK3 + pattersonK4 * phi2)))
+  ];
+}
+
+pattersonRaw.invert = function(x, y) {
+  if (y > pattersonYmax) y = pattersonYmax;
+  else if (y < -pattersonYmax) y = -pattersonYmax;
+  var yc = y, delta;
+
+  do { // Newton-Raphson
+    var y2 = yc * yc;
+    yc -= delta = ((yc * (pattersonK1 + y2 * y2 * (pattersonK2 + y2 * (pattersonK3 + pattersonK4 * y2)))) - y) / (pattersonC1 + y2 * y2 * (pattersonC2 + y2 * (pattersonC3 + pattersonC4 * y2)));
+  } while (abs$2(delta) > epsilon$4);
+
+  return [x, yc];
+};
+
+var patterson = function() {
+  return projection(pattersonRaw)
+      .scale(139.319);
+};
+
+function polyconicRaw(lambda, phi) {
+  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  var tanPhi = tan$1(phi),
+      k = lambda * sin$2(phi);
+  return [
+    sin$2(k) / tanPhi,
+    phi + (1 - cos$2(k)) / tanPhi
+  ];
+}
+
+polyconicRaw.invert = function(x, y) {
+  if (abs$2(y) < epsilon$4) return [x, 0];
+  var k = x * x + y * y,
+      phi = y * 0.5,
+      i = 10, delta;
+  do {
+    var tanPhi = tan$1(phi),
+        secPhi = 1 / cos$2(phi),
+        j = k - 2 * y * phi + phi * phi;
+    phi -= delta = (tanPhi * j + 2 * (phi - y)) / (2 + j * secPhi * secPhi + 2 * (phi - y) * tanPhi);
+  } while (abs$2(delta) > epsilon$4 && --i > 0);
+  tanPhi = tan$1(phi);
+  return [
+    (abs$2(y) < abs$2(phi + 1 / tanPhi) ? asin$2(x * tanPhi) : sign$2(x) * (acos$2(abs$2(x * tanPhi)) + halfPi$3)) / sin$2(phi),
+    phi
+  ];
+};
+
+var polyconic = function() {
+  return projection(polyconicRaw)
+      .scale(103.74);
+};
 
 // Note: 6-element arrays are used to denote the 3x3 affine transform matrix:
 // [a, b, c,
@@ -14617,6 +14808,11 @@ var quincuncial = function(project) {
       .clipAngle(180 - 1e-3);
 };
 
+var gringorten$1 = function() {
+  return quincuncial(gringortenRaw)
+      .scale(176.423);
+};
+
 var peirce = function() {
   return quincuncial(guyouRaw)
       .scale(111.48);
@@ -14961,10 +15157,216 @@ function stitchGeometry(input) {
 
 // TODO clip to ellipse
 
+function vanDerGrintenRaw(lambda, phi) {
+  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  var sinTheta = abs$2(phi / halfPi$3),
+      theta = asin$2(sinTheta);
+  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
+  var cosTheta = cos$2(theta),
+      A = abs$2(pi$4 / lambda - lambda / pi$4) / 2,
+      A2 = A * A,
+      G = cosTheta / (sinTheta + cosTheta - 1),
+      P = G * (2 / sinTheta - 1),
+      P2 = P * P,
+      P2_A2 = P2 + A2,
+      G_P2 = G - P2,
+      Q = A2 + G;
+  return [
+    sign$2(lambda) * pi$4 * (A * G_P2 + sqrt$3(A2 * G_P2 * G_P2 - P2_A2 * (G * G - P2))) / P2_A2,
+    sign$2(phi) * pi$4 * (P * Q - A * sqrt$3((A2 + 1) * P2_A2 - Q * Q)) / P2_A2
+  ];
+}
+
+vanDerGrintenRaw.invert = function(x, y) {
+  if (abs$2(y) < epsilon$4) return [x, 0];
+  if (abs$2(x) < epsilon$4) return [0, halfPi$3 * sin$2(2 * atan$1(y / pi$4))];
+  var x2 = (x /= pi$4) * x,
+      y2 = (y /= pi$4) * y,
+      x2_y2 = x2 + y2,
+      z = x2_y2 * x2_y2,
+      c1 = -abs$2(y) * (1 + x2_y2),
+      c2 = c1 - 2 * y2 + x2,
+      c3 = -2 * c1 + 1 + 2 * y2 + z,
+      d = y2 / c3 + (2 * c2 * c2 * c2 / (c3 * c3 * c3) - 9 * c1 * c2 / (c3 * c3)) / 27,
+      a1 = (c1 - c2 * c2 / (3 * c3)) / c3,
+      m1 = 2 * sqrt$3(-a1 / 3),
+      theta1 = acos$2(3 * d / (a1 * m1)) / 3;
+  return [
+    pi$4 * (x2_y2 - 1 + sqrt$3(1 + 2 * (x2 - y2) + z)) / (2 * x),
+    sign$2(y) * pi$4 * (-m1 * cos$2(theta1 + pi$4 / 3) - c2 / (3 * c3))
+  ];
+};
+
+var vanDerGrinten = function() {
+  return projection(vanDerGrintenRaw)
+      .scale(79.4183);
+};
+
+function vanDerGrinten2Raw(lambda, phi) {
+  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  var sinTheta = abs$2(phi / halfPi$3),
+      theta = asin$2(sinTheta);
+  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
+  var cosTheta = cos$2(theta),
+      A = abs$2(pi$4 / lambda - lambda / pi$4) / 2,
+      A2 = A * A,
+      x1 = cosTheta * (sqrt$3(1 + A2) - A * cosTheta) / (1 + A2 * sinTheta * sinTheta);
+  return [
+    sign$2(lambda) * pi$4 * x1,
+    sign$2(phi) * pi$4 * sqrt$3(1 - x1 * (2 * A + x1))
+  ];
+}
+
+vanDerGrinten2Raw.invert = function(x, y) {
+  if (!x) return [0, halfPi$3 * sin$2(2 * atan$1(y / pi$4))];
+  var x1 = abs$2(x / pi$4),
+      A = (1 - x1 * x1 - (y /= pi$4) * y) / (2 * x1),
+      A2 = A * A,
+      B = sqrt$3(A2 + 1);
+  return [
+    sign$2(x) * pi$4 * (B - A),
+    sign$2(y) * halfPi$3 * sin$2(2 * atan2$2(sqrt$3((1 - 2 * A * x1) * (A + B) - x1), sqrt$3(B + A + x1)))
+  ];
+};
+
+var vanDerGrinten2 = function() {
+  return projection(vanDerGrinten2Raw)
+      .scale(79.4183);
+};
+
+function vanDerGrinten3Raw(lambda, phi) {
+  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  var sinTheta = phi / halfPi$3,
+      theta = asin$2(sinTheta);
+  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, pi$4 * tan$1(theta / 2)];
+  var A = (pi$4 / lambda - lambda / pi$4) / 2,
+      y1 = sinTheta / (1 + cos$2(theta));
+  return [
+    pi$4 * (sign$2(lambda) * sqrt$3(A * A + 1 - y1 * y1) - A),
+    pi$4 * y1
+  ];
+}
+
+vanDerGrinten3Raw.invert = function(x, y) {
+  if (!y) return [x, 0];
+  var y1 = y / pi$4,
+      A = (pi$4 * pi$4 * (1 - y1 * y1) - x * x) / (2 * pi$4 * x);
+  return [
+    x ? pi$4 * (sign$2(x) * sqrt$3(A * A + 1) - A) : 0,
+    halfPi$3 * sin$2(2 * atan$1(y1))
+  ];
+};
+
+var vanDerGrinten3 = function() {
+  return projection(vanDerGrinten3Raw)
+        .scale(79.4183);
+};
+
+function vanDerGrinten4Raw(lambda, phi) {
+  if (!phi) return [lambda, 0];
+  var phi0 = abs$2(phi);
+  if (!lambda || phi0 === halfPi$3) return [0, phi];
+  var B = phi0 / halfPi$3,
+      B2 = B * B,
+      C = (8 * B - B2 * (B2 + 2) - 5) / (2 * B2 * (B - 1)),
+      C2 = C * C,
+      BC = B * C,
+      B_C2 = B2 + C2 + 2 * BC,
+      B_3C = B + 3 * C,
+      lambda0 = lambda / halfPi$3,
+      lambda1 = lambda0 + 1 / lambda0,
+      D = sign$2(abs$2(lambda) - halfPi$3) * sqrt$3(lambda1 * lambda1 - 4),
+      D2 = D * D,
+      F = B_C2 * (B2 + C2 * D2 - 1) + (1 - B2) * (B2 * (B_3C * B_3C + 4 * C2) + 12 * BC * C2 + 4 * C2 * C2),
+      x1 = (D * (B_C2 + C2 - 1) + 2 * sqrt$3(F)) / (4 * B_C2 + D2);
+  return [
+    sign$2(lambda) * halfPi$3 * x1,
+    sign$2(phi) * halfPi$3 * sqrt$3(1 + D * abs$2(x1) - x1 * x1)
+  ];
+}
+
+vanDerGrinten4Raw.invert = function(x, y) {
+  var delta;
+  if (!x || !y) return [x, y];
+  y /= pi$4;
+  var x1 = sign$2(x) * x / halfPi$3,
+      D = (x1 * x1 - 1 + 4 * y * y) / abs$2(x1),
+      D2 = D * D,
+      B = 2 * y,
+      i = 50;
+  do {
+    var B2 = B * B,
+        C = (8 * B - B2 * (B2 + 2) - 5) / (2 * B2 * (B - 1)),
+        C_ = (3 * B - B2 * B - 10) / (2 * B2 * B),
+        C2 = C * C,
+        BC = B * C,
+        B_C = B + C,
+        B_C2 = B_C * B_C,
+        B_3C = B + 3 * C,
+        F = B_C2 * (B2 + C2 * D2 - 1) + (1 - B2) * (B2 * (B_3C * B_3C + 4 * C2) + C2 * (12 * BC + 4 * C2)),
+        F_ = -2 * B_C * (4 * BC * C2 + (1 - 4 * B2 + 3 * B2 * B2) * (1 + C_) + C2 * (-6 + 14 * B2 - D2 + (-8 + 8 * B2 - 2 * D2) * C_) + BC * (-8 + 12 * B2 + (-10 + 10 * B2 - D2) * C_)),
+        sqrtF = sqrt$3(F),
+        f = D * (B_C2 + C2 - 1) + 2 * sqrtF - x1 * (4 * B_C2 + D2),
+        f_ = D * (2 * C * C_ + 2 * B_C * (1 + C_)) + F_ / sqrtF - 8 * B_C * (D * (-1 + C2 + B_C2) + 2 * sqrtF) * (1 + C_) / (D2 + 4 * B_C2);
+    B -= delta = f / f_;
+  } while (delta > epsilon$4 && --i > 0);
+  return [
+    sign$2(x) * (sqrt$3(D * D + 4) + D) * pi$4 / 4,
+    halfPi$3 * B
+  ];
+};
+
+var vanDerGrinten4 = function() {
+  return projection(vanDerGrinten4Raw)
+      .scale(127.16);
+};
+
 var A$1 = 4 * pi$4 + 3 * sqrt$3(3);
 var B$1 = 2 * sqrt$3(2 * pi$4 * sqrt$3(3) / A$1);
 
 var wagner4Raw = mollweideBromleyRaw(B$1 * sqrt$3(3) / pi$4, B$1, A$1 / 6);
+
+function winkel3Raw(lambda, phi) {
+  var coordinates = aitoffRaw(lambda, phi);
+  return [
+    (coordinates[0] + lambda / halfPi$3) / 2,
+    (coordinates[1] + phi) / 2
+  ];
+}
+
+winkel3Raw.invert = function(x, y) {
+  var lambda = x, phi = y, i = 25;
+  do {
+    var cosphi = cos$2(phi),
+        sinphi = sin$2(phi),
+        sin_2phi = sin$2(2 * phi),
+        sin2phi = sinphi * sinphi,
+        cos2phi = cosphi * cosphi,
+        sinlambda = sin$2(lambda),
+        coslambda_2 = cos$2(lambda / 2),
+        sinlambda_2 = sin$2(lambda / 2),
+        sin2lambda_2 = sinlambda_2 * sinlambda_2,
+        C = 1 - cos2phi * coslambda_2 * coslambda_2,
+        E = C ? acos$2(cosphi * coslambda_2) * sqrt$3(F = 1 / C) : F = 0,
+        F,
+        fx = 0.5 * (2 * E * cosphi * sinlambda_2 + lambda / halfPi$3) - x,
+        fy = 0.5 * (E * sinphi + phi) - y,
+        dxdlambda = 0.5 * F * (cos2phi * sin2lambda_2 + E * cosphi * coslambda_2 * sin2phi) + 0.5 / halfPi$3,
+        dxdphi = F * (sinlambda * sin_2phi / 4 - E * sinphi * sinlambda_2),
+        dydlambda = 0.125 * F * (sin_2phi * sinlambda_2 - E * sinphi * cos2phi * sinlambda),
+        dydphi = 0.5 * F * (sin2phi * coslambda_2 + E * sin2lambda_2 * cosphi) + 0.5,
+        denominator = dxdphi * dydlambda - dydphi * dxdlambda,
+        dlambda = (fy * dxdphi - fx * dydphi) / denominator,
+        dphi = (fx * dydlambda - fy * dxdlambda) / denominator;
+    lambda -= dlambda, phi -= dphi;
+  } while ((abs$2(dlambda) > epsilon$4 || abs$2(dphi) > epsilon$4) && --i > 0);
+  return [lambda, phi];
+};
+
+var winkel3 = function() {
+  return projection(winkel3Raw)
+      .scale(158.837);
+};
 
 exports.select = select;
 exports.selection = selection;
@@ -15100,9 +15502,14 @@ exports.geoBaker = baker;
 exports.geoBoggs = boggs;
 exports.geoInterruptedBoggs = boggs$1;
 exports.geoBonne = bonne;
+exports.geoBottomley = bottomley;
 exports.geoBromley = bromley;
 exports.geoCollignon = collignon;
 exports.geoCraster = craster;
+exports.geoCylindricalEqualArea = cylindricalEqualArea;
+exports.geoCylindricalEqualAreaRaw = cylindricalEqualAreaRaw$1;
+exports.geoCylindricalStereographic = cylindricalStereographic;
+exports.geoCylindricalStereographicRaw = cylindricalStereographicRaw;
 exports.geoEckert1 = eckert1;
 exports.geoEckert2 = eckert2;
 exports.geoEckert3 = eckert3;
@@ -15111,17 +15518,29 @@ exports.geoEckert5 = eckert5;
 exports.geoEckert6 = eckert6;
 exports.geoEisenlohr = eisenlohr;
 exports.geoGringorten = gringorten;
+exports.geoGringortenQuincuncial = gringorten$1;
 exports.geoHealpix = healpix;
 exports.geoHomolosine = homolosine;
 exports.geoInterruptedHomolosine = homolosine$1;
 exports.geoLoximuthal = loximuthal;
 exports.geoNaturalEarth = naturalEarth;
 exports.geoNaturalEarth2 = naturalEarth2;
+exports.geoMiller = miller;
+exports.geoModifiedStereographicMiller = modifiedStereographicMiller;
+exports.geoMollweide = mollweide;
+exports.geoPatterson = patterson;
 exports.geoPeirceQuincuncial = peirce;
+exports.geoPolyconic = polyconic;
 exports.geoRobinson = robinson;
 exports.geoInterruptedSinuMollweide = sinuMollweide$1;
+exports.geoSinuMollweide = sinuMollweide;
 exports.geoSinusoidal = sinusoidal;
 exports.geoInterruptedSinusoidal = sinusoidal$1;
+exports.geoVanDerGrinten = vanDerGrinten;
+exports.geoVanDerGrinten2 = vanDerGrinten2;
+exports.geoVanDerGrinten3 = vanDerGrinten3;
+exports.geoVanDerGrinten4 = vanDerGrinten4;
+exports.geoWinkel3 = winkel3;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
