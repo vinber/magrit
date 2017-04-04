@@ -108,39 +108,44 @@ function setUpInterface(resume_project) {
     document.body.appendChild(bg_drop);
 
     var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
-
-    var proj_select = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection' }).styles({ "width": "calc(100% + 20px)" }).on("change", function () {
-        current_proj_name = this.value;
-        change_projection(this.value);
-    });
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-        for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var proj_name = _step.value;
-
-            proj_select.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
+    // let proj_select = proj_options.append("div")
+    //         .attrs({class: 'styled-select'})
+    //         .insert("select")
+    //         .attrs({class: 'i18n', 'id': 'form_projection'})
+    //         .styles({"width": "calc(100% + 20px)"})
+    //         .on("change", function(){
+    //             current_proj_name = this.value;
+    //             change_projection(this.value);
+    //         });
+    // for(let proj_name of available_projections.keys()){
+    //     proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
+    // }
+    // proj_select.node().value = "NaturalEarth";
+    // proj_options.append("div").style('clear', 'both').style('width', '120px');
+    var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
+        var previous_value = 'NaturalEarth2';
+        return function () {
+            var val = this.value;
+            if (val == 'more') {
+                this.value = previous_value;
+                createBoxCustomProjection();
+            } else if (val == 'proj4') {
+                this.value = previous_value;
+                createBoxProj4();
+            } else {
+                previous_value = val;
+                current_proj_name = val;
+                change_projection(current_proj_name);
             }
-        } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
-            }
-        }
+        };
+    }());
+    for (var i = 0; i < shortListContent.length; i++) {
+        var option = shortListContent[i];
+        proj_select2.append('option').attrs({ class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option }).text(i18next.t('app_page.projection_name.' + option));
     }
+    proj_select2.node().value = "NaturalEarth2";
 
-    proj_select.node().value = "NaturalEarth";
-
-    var proj_options2 = proj_options.append("div");
+    // let proj_options2 = proj_options.append("div");
     // proj_options2.append("input")
     //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
     //             min: -180.0, max: 180.0, step: 0.1})
@@ -173,8 +178,10 @@ function setUpInterface(resume_project) {
     // proj_options2.append("span")
     //     .style("vertical-align", "calc(20%)")
     //     .html("°");
-
-    proj_options2.append('img').attrs({ 'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png' }).styles({ 'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px' }).on('click', createBoxCustomProjection);
+    // proj_options2.append('img')
+    //     .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
+    //     .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
+    //     .on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -254,25 +261,25 @@ function setUpInterface(resume_project) {
                 var list_elems = document.createElement("ul");
                 menu.appendChild(list_elems);
 
-                var _loop = function _loop(i) {
+                var _loop = function _loop(_i2) {
                     var item = document.createElement("li"),
                         name = document.createElement("span");
                     list_elems.appendChild(item);
-                    item.setAttribute("data-index", i);
+                    item.setAttribute("data-index", _i2);
                     item.style.textAlign = "right";
                     item.style.paddingRight = "16px";
                     name.className = "context-menu-item-name";
                     name.style.color = "white";
-                    name.textContent = actions[i].name;
+                    name.textContent = actions[_i2].name;
                     item.appendChild(name);
                     item.onclick = function () {
-                        actions[i].callback();
+                        actions[_i2].callback();
                         menu.remove();
                     };
                 };
 
-                for (var i = 0; i < actions.length; i++) {
-                    _loop(i);
+                for (var _i2 = 0; _i2 < actions.length; _i2++) {
+                    _loop(_i2);
                 }
                 document.querySelector("body").appendChild(menu);
             })();
@@ -799,14 +806,14 @@ function setUpInterface(resume_project) {
                 actual_order = [],
                 layers = svg_map.getElementsByClassName("layer");
 
-            for (var i = 0, len_i = a.target.childNodes.length; i < len_i; i++) {
-                var n = a.target.childNodes[i].getAttribute("layer_name");
-                desired_order[i] = _app.layer_to_id.get(n);
-                actual_order[i] = layers[i].id;
+            for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
+                var n = a.target.childNodes[_i3].getAttribute("layer_name");
+                desired_order[_i3] = _app.layer_to_id.get(n);
+                actual_order[_i3] = layers[_i3].id;
             }
-            for (var _i2 = 0, len = desired_order.length; _i2 < len; _i2++) {
-                var lyr1 = document.getElementById(desired_order[_i2]),
-                    lyr2 = document.getElementById(desired_order[_i2 + 1]) || document.getElementById(desired_order[_i2]);
+            for (var _i4 = 0, len = desired_order.length; _i4 < len; _i4++) {
+                var lyr1 = document.getElementById(desired_order[_i4]),
+                    lyr2 = document.getElementById(desired_order[_i4 + 1]) || document.getElementById(desired_order[_i4]);
                 svg_map.insertBefore(lyr2, lyr1);
             }
             if (at_end) displayInfoOnMove();
@@ -1548,20 +1555,22 @@ function handle_click_hand(behavior) {
 
 function zoom_without_redraw() {
     var rot_val = canvas_rotation_value || "";
-    var transform;
+    var transform, t_val;
     if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
         transform = d3.zoomTransform(svg_map);
+        t_val = transform.toString() + rot_val;
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
             var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / transform.k + "px";
-        }).attr("transform", transform.toString() + rot_val);
-        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", transform.toString() + rot_val);
+        }).attr("transform", t_val);
+        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
     } else {
+        t_val = d3.event.transform + rot_val;
         map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
             var lyr_name = _app.id_to_layer.get(this.id);
             return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k + "px";
-        }).attr("transform", d3.event.transform + rot_val);
-        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", d3.event.transform + rot_val);
+        }).attr("transform", t_val);
+        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
     }
     if (scaleBar.displayed) {
         scaleBar.update();
@@ -1579,11 +1588,14 @@ function zoom_without_redraw() {
     }
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
     var zoom_params = svg_map.__zoom;
-    var zoom_k_scale = proj.scale() * zoom_params.k;
+    // let zoom_k_scale = proj.scale() * zoom_params.k;
     document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
     document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(zoom_k_scale, 2);
-    document.getElementById('form_projection').querySelector('option[value="ConicConformal"]').disabled = zoom_k_scale > 200 && (window._target_layer_file != undefined || result_data.length > 1) ? '' : 'disabled';
+    document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
+    // let a = document.getElementById('form_projection'),
+    //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+    // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
+    // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
 };
 
 function redraw_legends_symbols(targeted_node) {
@@ -1720,8 +1732,8 @@ function handleClipPath(proj_name, main_layer) {
         var outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
         // proj.fitSize([w, h], outline);
-        proj.scale(s).translate(t);
-        path.projection(proj);
+        // proj.scale(s).translate(t)
+        // path.projection(proj);
 
         defs.append("path").attr("id", "extent").attr("d", path(outline));
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#extent");
@@ -1741,6 +1753,8 @@ function handleClipPath(proj_name, main_layer) {
 }
 
 function change_projection(new_proj_name) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -1755,6 +1769,8 @@ function change_projection(new_proj_name) {
     if (def_proj.rotate) prev_rotate = def_proj.rotate;
 
     path = d3.geoPath().projection(proj).pointRadius(4);
+
+    if (def_proj.bounds) scale_to_bbox(def_proj.bounds);
 
     // Do the reprojection :
     proj.translate(t).scale(s);
@@ -1773,12 +1789,16 @@ function change_projection(new_proj_name) {
         });
         layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
     }
-    if (layer_name) {
-        scale_to_lyr(layer_name);
-        center_map(layer_name);
-        zoom_without_redraw();
+    if (def_proj.bounds) {
+        scale_to_bbox(def_proj.bounds);
     } else {
-        reproj_symbol_layer();
+        if (layer_name) {
+            scale_to_lyr(layer_name);
+            center_map(layer_name);
+            zoom_without_redraw();
+        } else {
+            reproj_symbol_layer();
+        }
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);
@@ -7800,6 +7820,8 @@ var helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
 * @return {Number} min
 */
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 function min_fast(arr) {
     var min = arr[0];
     for (var i = 1, len_i = arr.length; i < len_i; ++i) {
@@ -7966,20 +7988,20 @@ function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol) {
 
     if (type_symbol == "circle") {
         var smax = fixed_size * fixed_size * pi;
-        var t = smax / fixed_value;
+        var _t = smax / fixed_value;
         for (var i = 0; i < arr_len; ++i) {
-            res.push(sqrt(abs(arr[i]) * t) / pi);
+            res.push(sqrt(abs(arr[i]) * _t) / pi);
         }
     } else if (type_symbol == "line") {
-        var _t = fixed_size / fixed_value;
+        var _t2 = fixed_size / fixed_value;
         for (var _i = 0; _i < arr_len; ++_i) {
-            res.push(abs(arr[_i]) * _t);
+            res.push(abs(arr[_i]) * _t2);
         }
     } else {
         var _smax = fixed_size * fixed_size;
-        var _t2 = _smax / fixed_value;
+        var _t3 = _smax / fixed_value;
         for (var _i2 = 0; _i2 < arr_len; ++_i2) {
-            res.push(sqrt(abs(arr[_i2]) * _t2));
+            res.push(sqrt(abs(arr[_i2]) * _t3));
         }
     }
     return res;
@@ -8332,6 +8354,34 @@ var radiansToDegrees = function radiansToDegrees(radians) {
 };
 // const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
 // const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
+
+function scale_to_bbox(bbox) {
+    var _bbox = _slicedToArray(bbox, 4),
+        xmin = _bbox[0],
+        ymin = _bbox[1],
+        xmax = _bbox[2],
+        ymax = _bbox[3];
+
+    var feature = {
+        type: "Feature", properties: {}, id: 0,
+        geometry: { type: "LineString",
+            coordinates: [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax], [xmin, ymin]]
+        }
+    };
+    var bbox_path = path.bounds(feature);
+    s = 0.95 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / w, (bbox_path[1][1] - bbox_path[0][1]) / h) * proj.scale();
+    t = [0, 0];
+    proj.scale(s).translate(t);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+    var zoom_scale = 1;
+    var zoom_translate = [(w - zoom_scale * (bbox_path[1][0] + bbox_path[0][0])) / 2, (h - zoom_scale * (bbox_path[1][1] + bbox_path[0][1])) / 2];
+    var _zoom = svg_map.__zoom;
+    _zoom.k = zoom_scale;
+    _zoom.x = zoom_translate[0];
+    _zoom.y = zoom_translate[1];
+    zoom_without_redraw();
+}
 "use strict";
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
@@ -14461,6 +14511,7 @@ function get_map_template() {
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
     map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
+    map_config.projection_parallel = proj.parallel != undefined ? proj.parallel() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -14966,12 +15017,13 @@ function apply_user_preferences(json_pref) {
     current_proj_name = map_config.projection;
     proj = d3[available_projections.get(current_proj_name).name]();
     if (map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
+    if (map_config.projection_parallel) proj = proj.parallel(map_config.projection_parallel);
     if (map_config.projection_clipAngle) proj = proj.clipAngle(map_config.projection_clipAngle);
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-    document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
-    document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    // document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
+    // document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
     document.getElementById('form_projection').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
@@ -15547,7 +15599,11 @@ function make_style_box_indiv_symbol(symbol_node) {
 };
 "use strict";
 
-var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }], ["Cassini", { "name": 'geoEquirectangular', 'scale': '400', 'rotate': [0, 0, 90] }], ["ConicConformal", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistant", { 'name': 'geoConicEquidistant', 'scale': '400' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45 }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45 }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["Miller", { 'name': 'geoMiller', 'scale': '375' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90 }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400' }]]);
+var shortListContent = ['AzimuthalEqualAreaEurope', 'ConicConformalFrance', 'HEALPix', 'Mercator', 'NaturalEarth2', 'Robinson', 'TransverseMercator', 'WinkelTriple', 'more', 'proj4'];
+
+var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["AzimuthalEqualAreaEurope", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', rotate: [-10, -52, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500] }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Berhmann", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30 }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }],
+// ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
+["ConicConformalTangent", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44] }], ["ConicConformalSec", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicConformalFrance", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], bounds: [-10.6700, 34.5000, 31.5500, 71.0500] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistantDeslisle", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45] }], ["ConicEquidistantTangent", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40] }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45 }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45 }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["HoboDyer", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5 }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["Miller", { 'name': 'geoMiller', 'scale': '375' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90 }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400' }]]);
 
 var createBoxProj4 = function createBoxProj4() {
 		var modal_box = make_dialog_container("box_projection_input", i18next.t("app_page.section5.title"), "dialog");
@@ -15608,7 +15664,8 @@ var createBoxProj4 = function createBoxProj4() {
 "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
-		var prev_rotate = proj.rotate ? proj.rotate() : undefined,
+		var current_projection = current_proj_name,
+		    prev_rotate = proj.rotate ? proj.rotate() : undefined,
 		    prev_parallels = proj.parallels ? proj.parallels() : undefined,
 		    prev_parallel = proj.parallel ? proj.parallel() : undefined;
 
@@ -15619,27 +15676,66 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var content = d3.select(container).select(".modal-body").attr('id', 'box_projection');
 
 		dialog.style.width = undefined;
-		dialog.style.maxWidth = '400px';
-		dialog.style.minWidth = '250px';
+		dialog.style.maxWidth = '700px';
+		dialog.style.minWidth = '400px';
+
+		var choice_proj = content.append("button").attrs({ "class": "accordion_proj active", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.choice_projection")),
+		    accordion_choice_projs = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style("width", "98%"),
+		    choice_proj_content = accordion_choice_projs.append("div").attr("id", "color_div").style("text-align", "center");
+
+		var display_select_proj = choice_proj_content.append('p').append('select').attr('id', 'select_proj').attr('size', 10);
+
+		var _iteratorNormalCompletion = true;
+		var _didIteratorError = false;
+		var _iteratorError = undefined;
+
+		try {
+				for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+						var proj_name = _step.value;
+
+						display_select_proj.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
+				}
+		} catch (err) {
+				_didIteratorError = true;
+				_iteratorError = err;
+		} finally {
+				try {
+						if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
+						}
+				} finally {
+						if (_didIteratorError) {
+								throw _iteratorError;
+						}
+				}
+		}
+
+		choice_proj_content.append('button').styles({ margin: '0 0 5px 0', padding: '5px' }).attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
+				current_proj_name = document.getElementById('select_proj').value;
+				document.getElementById('form_projection2').value = current_proj_name;
+				change_projection(current_proj_name);
+		});
+
+		var choice_options = content.append("button").attrs({ "class": "accordion_proj active", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.projection_options")),
+		    accordion_choice_options = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style("width", "98%"),
+		    options_proj_content = accordion_choice_options.append("div").attr("id", "color_div").style("text-align", "center");
 
 		if (prev_rotate) {
-				var lambda_section = content.append('p');
+				var lambda_section = options_proj_content.append('p');
 				lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
 				lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
 						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 						handle_proj_center_button([this.value, null, null]);
-						document.getElementById('form_projection_center').value = this.value;
-						document.getElementById('proj_center_value_txt').value = this.value;
 				});
 
-				var phi_section = content.append('p').style('clear', 'both');
+				var phi_section = options_proj_content.append('p').style('clear', 'both');
 				phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
 				phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
 						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
 						handle_proj_center_button([null, this.value, null]);
 				});
 
-				var gamma_section = content.append('p').style('clear', 'both');
+				var gamma_section = options_proj_content.append('p').style('clear', 'both');
 				gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
 				gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
 						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
@@ -15647,7 +15743,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				});
 		}
 		if (prev_parallels) {
-				var parallels_section = content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
+				var parallels_section = options_proj_content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
 				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
 				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
@@ -15659,7 +15755,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						handle_parallels_change([null, this.value]);
 				});
 		} else if (prev_parallel) {
-				var parallel_section = content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
+				var parallel_section = options_proj_content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
 				parallel_section.append('span').html(i18next.t('app_page.section5.parallel'));
 				var _inputs = parallel_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
 				_inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallel, min: -90, max: 90, step: 0.5 }).on("input", function () {
@@ -15667,7 +15763,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						handle_parallel_change(this.value);
 				});
 		}
-
+		accordionize(".accordion_proj", container);
 		var clean_up_box = function clean_up_box() {
 				container.remove();
 				overlay_under_modal.hide();

@@ -13207,6 +13207,55 @@ function gilbertInvert(point) {
   return [point[0] * 2, 2 * atan$1(sin$2(point[1] * radians$1)) * degrees$2];
 }
 
+var gilbert = function(projectionType) {
+  if (projectionType == null) projectionType = geoOrthographic;
+  var projection = projectionType(),
+      equirectangular = geoEquirectangular().scale(degrees$2).precision(0).clipAngle(null).translate([0, 0]); // antimeridian cutting
+
+  function gilbert(point) {
+    return projection(gilbertForward(point));
+  }
+
+  if (projection.invert) gilbert.invert = function(point) {
+    return gilbertInvert(projection.invert(point));
+  };
+
+  gilbert.stream = function(stream) {
+    var s1 = projection.stream(stream), s0 = equirectangular.stream({
+      point: function(lambda, phi) { s1.point(lambda / 2, asin$2(tan$1(-phi / 2 * radians$1)) * degrees$2); },
+      lineStart: function() { s1.lineStart(); },
+      lineEnd: function() { s1.lineEnd(); },
+      polygonStart: function() { s1.polygonStart(); },
+      polygonEnd: function() { s1.polygonEnd(); }
+    });
+    s0.sphere = s1.sphere;
+    return s0;
+  };
+
+  function property(name) {
+    gilbert[name] = function(_) {
+      return arguments.length ? (projection[name](_), gilbert) : projection[name]();
+    };
+  }
+
+  gilbert.rotate = function(_) {
+    return arguments.length ? (equirectangular.rotate(_), gilbert) : equirectangular.rotate();
+  };
+
+  gilbert.center = function(_) {
+    return arguments.length ? (projection.center(gilbertForward(_)), gilbert) : gilbertInvert(projection.center());
+  };
+
+  property("clipAngle");
+  property("clipExtent");
+  property("scale");
+  property("translate");
+  property("precision");
+
+  return gilbert
+      .scale(249.5);
+};
+
 function gingeryRaw(rho, n) {
   var k = 2 * pi$4 / n,
       rho2 = rho * rho;
@@ -15517,6 +15566,7 @@ exports.geoEckert4 = eckert4;
 exports.geoEckert5 = eckert5;
 exports.geoEckert6 = eckert6;
 exports.geoEisenlohr = eisenlohr;
+exports.geoGilbert = gilbert;
 exports.geoGringorten = gringorten;
 exports.geoGringortenQuincuncial = gringorten$1;
 exports.geoHealpix = healpix;

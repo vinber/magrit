@@ -619,7 +619,7 @@ p.params_section2 > span {
   text-decoration: none;
 }
 
-button.accordion, button.accordion_disc {
+button.accordion, button.accordion_disc, button.accordion_proj  {
     background-color: #595959;
     color: #fff;
     cursor: pointer;
@@ -634,7 +634,7 @@ button.accordion, button.accordion_disc {
     margin: 1px;
 }
 
-button.accordion:after, button.accordion_disc:after {
+button.accordion:after, button.accordion_disc:after, button.accordion_projc:after {
     content: '\02795';
     font-size: 13px;
     color: #777;
@@ -642,7 +642,7 @@ button.accordion:after, button.accordion_disc:after {
     margin-left: 5px;
 }
 
-button.accordion.active:after, button.accordion_disc.active:after {
+button.accordion.active:after, button.accordion_disc.active:after, button.accordion_proj.active:after {
     content: "\2796";
 }
 

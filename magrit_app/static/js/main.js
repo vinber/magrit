@@ -117,22 +117,49 @@ function setUpInterface(resume_project)
     document.body.appendChild(bg_drop);
 
     let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
-
-    let proj_select = proj_options.append("div")
+    // let proj_select = proj_options.append("div")
+    //         .attrs({class: 'styled-select'})
+    //         .insert("select")
+    //         .attrs({class: 'i18n', 'id': 'form_projection'})
+    //         .styles({"width": "calc(100% + 20px)"})
+    //         .on("change", function(){
+    //             current_proj_name = this.value;
+    //             change_projection(this.value);
+    //         });
+    // for(let proj_name of available_projections.keys()){
+    //     proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
+    // }
+    // proj_select.node().value = "NaturalEarth";
+    // proj_options.append("div").style('clear', 'both').style('width', '120px');
+    let proj_select2 = proj_options.append("div")
             .attrs({class: 'styled-select'})
             .insert("select")
-            .attrs({class: 'i18n', 'id': 'form_projection'})
+            .attrs({class: 'i18n', 'id': 'form_projection2'})
             .styles({"width": "calc(100% + 20px)"})
-            .on("change", function(){
-                current_proj_name = this.value;
-                change_projection(this.value);
-            });
-    for(let proj_name of available_projections.keys()){
-        proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
+            .on('change', function(){
+                  let previous_value = 'NaturalEarth2';
+                  return function(){
+                      let val = this.value;
+                      if(val == 'more'){
+                          this.value = previous_value;
+                          createBoxCustomProjection();
+                      } else if (val == 'proj4'){
+                          this.value = previous_value;
+                          createBoxProj4();
+                      } else {
+                          previous_value = val;
+                          current_proj_name = val;
+                          change_projection(current_proj_name);
+                      }
+                  };
+            }());
+    for(let i=0; i < shortListContent.length; i++){
+        let option = shortListContent[i];
+        proj_select2.append('option').attrs({class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option}).text(i18next.t('app_page.projection_name.' + option));
     }
-    proj_select.node().value = "NaturalEarth";
+    proj_select2.node().value = "NaturalEarth2";
 
-    let proj_options2 = proj_options.append("div");
+    // let proj_options2 = proj_options.append("div");
     // proj_options2.append("input")
     //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
     //             min: -180.0, max: 180.0, step: 0.1})
@@ -165,11 +192,10 @@ function setUpInterface(resume_project)
     // proj_options2.append("span")
     //     .style("vertical-align", "calc(20%)")
     //     .html("°");
-
-    proj_options2.append('img')
-        .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
-        .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
-        .on('click', createBoxCustomProjection);
+    // proj_options2.append('img')
+    //     .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
+    //     .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
+    //     .on('click', createBoxCustomProjection);
 
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -1785,9 +1811,10 @@ function handle_click_hand(behavior){
 
 function zoom_without_redraw(){
     var rot_val = canvas_rotation_value || "";
-    var transform;
+    var transform, t_val;
     if(!d3.event || !d3.event.transform || !d3.event.sourceEvent){
         transform = d3.zoomTransform(svg_map);
+        t_val = transform.toString() + rot_val;
         map.selectAll(".layer")
           .transition()
           .duration(50)
@@ -1797,12 +1824,13 @@ function zoom_without_redraw(){
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
             })
-          .attr("transform", transform.toString() + rot_val);
+          .attr("transform", t_val);
         map.selectAll(".scalable-legend")
           .transition()
           .duration(50)
-          .attr("transform", transform.toString() + rot_val);
+          .attr("transform", t_val);
     } else {
+        t_val = d3.event.transform + rot_val;
         map.selectAll(".layer")
           .transition()
           .duration(50)
@@ -1812,11 +1840,11 @@ function zoom_without_redraw(){
                         ? this.style.strokeWidth
                         : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
             })
-          .attr("transform", d3.event.transform + rot_val);
+          .attr("transform", t_val);
         map.selectAll(".scalable-legend")
           .transition()
           .duration(50)
-          .attr("transform",  d3.event.transform + rot_val);
+          .attr("transform", t_val);
     }
     if(scaleBar.displayed){ scaleBar.update(); }
     // if(scaleBar.displayed){
@@ -1832,12 +1860,14 @@ function zoom_without_redraw(){
     }
     window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
     let zoom_params = svg_map.__zoom;
-    let zoom_k_scale = proj.scale() * zoom_params.k;
+    // let zoom_k_scale = proj.scale() * zoom_params.k;
     document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
     document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(zoom_k_scale, 2);
-    document.getElementById('form_projection')
-        .querySelector('option[value="ConicConformal"]').disabled = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+    document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
+    // let a = document.getElementById('form_projection'),
+    //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+    // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
+    // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
 };
 
 function redraw_legends_symbols(targeted_node){
@@ -1990,8 +2020,8 @@ function handleClipPath(proj_name, main_layer){
         let outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
         // proj.fitSize([w, h], outline);
-        proj.scale(s).translate(t)
-        path.projection(proj);
+        // proj.scale(s).translate(t)
+        // path.projection(proj);
 
         defs.append("path")
             .attr("id", "extent")
@@ -2019,7 +2049,7 @@ function handleClipPath(proj_name, main_layer){
     }
 }
 
-function change_projection(new_proj_name) {
+function change_projection(new_proj_name, options={}) {
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -2040,6 +2070,9 @@ function change_projection(new_proj_name) {
 
     path = d3.geoPath().projection(proj).pointRadius(4);
 
+    if(def_proj.bounds)
+        scale_to_bbox(def_proj.bounds);
+
     // Do the reprojection :
     proj.translate(t).scale(s);
     if(proj.rotate)
@@ -2056,12 +2089,16 @@ function change_projection(new_proj_name) {
       let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
       layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
-    if(layer_name){
-      scale_to_lyr(layer_name);
-      center_map(layer_name);
-      zoom_without_redraw();
+    if(def_proj.bounds){
+        scale_to_bbox(def_proj.bounds);
     } else {
-      reproj_symbol_layer();
+        if(layer_name){
+          scale_to_lyr(layer_name);
+          center_map(layer_name);
+          zoom_without_redraw();
+        } else {
+          reproj_symbol_layer();
+        }
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);

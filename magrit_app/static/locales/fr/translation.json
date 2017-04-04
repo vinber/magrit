@@ -274,6 +274,11 @@
             "typo": "Carte qualitative",
             "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
         },
+        "projection_box":{
+            "choice_projection": "Choix d'une projection",
+            "ok_reproject": "Reprojeter !",
+            "projection_options": "Options de la projection"
+        },
         "layout_features_box": {
             "title": "Élements d'habillage",
             "subtitle": "Élement à ajouter",

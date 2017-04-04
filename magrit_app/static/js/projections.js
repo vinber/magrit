@@ -1,20 +1,38 @@
 "use strict";
 
+const shortListContent = [
+		'AzimuthalEqualAreaEurope',
+		'ConicConformalFrance',
+		'HEALPix',
+		'Mercator',
+		'NaturalEarth2',
+		'Robinson',
+		'TransverseMercator',
+		'WinkelTriple',
+		'more',
+		'proj4'
+];
+
 const available_projections = new Map([
 	['Albers', {'name': 'geoAlbers', 'scale': '400'}],
 	["Armadillo", {'name': 'geoArmadillo', 'scale': '400'}],
 	["AzimuthalEquidistant", {'name': 'geoAzimuthalEquidistant' ,'scale': '700'}],
 	["AzimuthalEqualArea", {'name': 'geoAzimuthalEqualArea' ,'scale': '700'}],
+	["AzimuthalEqualAreaEurope", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', rotate: [-10,-52,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500]}],
 	["Baker", {'name': 'geoBaker', 'scale': '400'}],
+	["Berhmann", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30}],
 	["Boggs", {'name': 'geoBoggs', 'scale': '400'}],
 	["InterruptedBoggs", {'name': 'geoInterruptedBoggs', 'scale': '400'}],
 	["Bonne", {'name': 'geoBonne', 'scale': '400'}],
 	["Bromley", {'name': 'geoBromley', 'scale': '400'}],
 	["Collignon", {'name': 'geoCollignon', 'scale': '400'}],
-	["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
-	["ConicConformal", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49]}],
+	// ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
+	["ConicConformalTangent", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44]}],
+	["ConicConformalSec", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49]}],
+	["ConicConformalFrance", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], bounds: [-10.6700, 34.5000, 31.5500, 71.0500]}],
 	["ConicEqualArea", {'name': 'geoConicEqualArea', 'scale': '400'}],
-	["ConicEquidistant", {'name': 'geoConicEquidistant', 'scale': '400'}],
+	["ConicEquidistantDeslisle", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45]}],
+	["ConicEquidistantTangent", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40]}],
 	["CrasterParabolic", {'name': 'geoCraster', 'scale': '400'}],
 	["Equirectangular", {'name': 'geoEquirectangular', 'scale': '400'}],
 	["CylindricalEqualArea", {'name': 'geoCylindricalEqualArea', 'scale': '400'}],
@@ -33,6 +51,7 @@ const available_projections = new Map([
 	["Gringorten", {'name': 'geoGringorten', 'scale': '400'}],
 	['GringortenQuincuncial', {'name': 'geoGringortenQuincuncial', 'scale': '400'}],
 	["HEALPix", {'name': 'geoHealpix', 'scale': '400'}],
+	["HoboDyer", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5}],
 	["Homolosine", {'name': 'geoHomolosine', 'scale': '400'}],
 	["InterruptedHomolosine", {'name': 'geoInterruptedHomolosine', 'scale': '400'}],
 	["Loximuthal", {'name': 'geoLoximuthal', 'scale': '400'}],
@@ -120,7 +139,8 @@ const createBoxProj4 = function(){
 "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"
 
 const createBoxCustomProjection = function(){
-	let prev_rotate = proj.rotate ? proj.rotate() : undefined,
+	let current_projection = current_proj_name,
+			prev_rotate = proj.rotate ? proj.rotate() : undefined,
 			prev_parallels = proj.parallels ? proj.parallels() : undefined,
 			prev_parallel = proj.parallel ? proj.parallel() : undefined;
 
@@ -136,11 +156,52 @@ const createBoxCustomProjection = function(){
 			.attr('id', 'box_projection');
 
 	dialog.style.width = undefined;
-	dialog.style.maxWidth = '400px';
-	dialog.style.minWidth = '250px';
+	dialog.style.maxWidth = '700px';
+	dialog.style.minWidth = '400px';
+
+	var choice_proj = content.append("button")
+					.attrs({"class": "accordion_proj active", "id": "btn_choice_proj"})
+					.style("padding", "0 6px")
+					.html(i18next.t("app_page.projection_box.choice_projection")),
+			accordion_choice_projs = content.append("div")
+					.attrs({"class": "panel show", "id": "accordion_choice_projection"})
+					.style("width", "98%"),
+			choice_proj_content =  accordion_choice_projs.append("div")
+					.attr("id", "color_div")
+					.style("text-align", "center");
+
+	var display_select_proj = choice_proj_content.append('p')
+			.append('select')
+			.attr('id', 'select_proj')
+  		.attr('size', 10);
+
+	for(let proj_name of available_projections.keys()){
+      display_select_proj.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
+  }
+
+	choice_proj_content.append('button')
+			.styles({margin: '0 0 5px 0', padding: '5px'})
+			.attrs({id: 'btn_valid_reproj', class: 'button_st4 i18n'})
+			.html(i18next.t('app_page.projection_box.ok_reproject'))
+			.on('click', function(){
+					current_proj_name = document.getElementById('select_proj').value;
+					document.getElementById('form_projection2').value = current_proj_name;
+					change_projection(current_proj_name);
+			});
+
+	var choice_options = content.append("button")
+					.attrs({"class": "accordion_proj active", "id": "btn_choice_proj"})
+					.style("padding", "0 6px")
+					.html(i18next.t("app_page.projection_box.projection_options")),
+			accordion_choice_options = content.append("div")
+					.attrs({"class": "panel show", "id": "accordion_choice_projection"})
+					.style("width", "98%"),
+			options_proj_content =  accordion_choice_options.append("div")
+					.attr("id", "color_div")
+					.style("text-align", "center");
 
 	if(prev_rotate){
-			let lambda_section = content.append('p');
+			let lambda_section = options_proj_content.append('p');
 			lambda_section.append('span')
 					.style('float', 'left')
 					.html(i18next.t('app_page.section5.projection_center_lambda'));
@@ -153,11 +214,9 @@ const createBoxCustomProjection = function(){
 							else if (this.value < -180)
 									this.value = -180;
 							handle_proj_center_button([this.value, null, null]);
-							document.getElementById('form_projection_center').value = this.value;
-							document.getElementById('proj_center_value_txt').value = this.value;
 					});
 
-			let phi_section = content.append('p')
+			let phi_section = options_proj_content.append('p')
 					.style('clear', 'both');
 			phi_section.append('span')
 					.style('float', 'left')
@@ -173,7 +232,7 @@ const createBoxCustomProjection = function(){
 							handle_proj_center_button([null, this.value, null]);
 					});
 
-			let gamma_section = content.append('p')
+			let gamma_section = options_proj_content.append('p')
 					.style('clear', 'both');
 			gamma_section.append('span')
 					.style('float', 'left')
@@ -190,7 +249,7 @@ const createBoxCustomProjection = function(){
 					});
 	}
 	if(prev_parallels){
-			let parallels_section = content.append('p')
+			let parallels_section = options_proj_content.append('p')
 					.styles({'text-align': 'center', 'clear': 'both'});
 			parallels_section.append('span')
 					.html(i18next.t('app_page.section5.parallels'));
@@ -217,7 +276,7 @@ const createBoxCustomProjection = function(){
 							handle_parallels_change([null, this.value]);
 					});
 	} else if(prev_parallel){
-			let parallel_section = content.append('p')
+			let parallel_section = options_proj_content.append('p')
 					.styles({'text-align': 'center', 'clear': 'both'});
 			parallel_section.append('span')
 					.html(i18next.t('app_page.section5.parallel'));
@@ -234,7 +293,7 @@ const createBoxCustomProjection = function(){
 							handle_parallel_change(this.value);
 					});
 	}
-
+	accordionize(".accordion_proj", container);
 	let clean_up_box = () => {
 			container.remove();
 			overlay_under_modal.hide();

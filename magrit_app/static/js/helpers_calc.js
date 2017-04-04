@@ -514,3 +514,27 @@ const degreesToRadians = function(degrees) { return degrees * pidegrad; }
 const radiansToDegrees = function(radians) { return radians * piraddeg; }
 // const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
 // const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
+
+function scale_to_bbox(bbox){
+	let [xmin, ymin, xmax, ymax] = bbox;
+	let feature = {
+  		type: "Feature", properties: {}, id: 0,
+  		geometry: {type: "LineString",
+  					 		 coordinates: [
+  						 		 [xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax], [xmin, ymin]]
+  							 }
+  		};
+  let bbox_path = path.bounds(feature);
+  s = 0.95 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / w, (bbox_path[1][1] - bbox_path[0][1]) / h) * proj.scale();
+  t = [0, 0];
+  proj.scale(s).translate(t);
+  map.selectAll(".layer").selectAll("path").attr("d", path);
+  reproj_symbol_layer();
+  let zoom_scale = 1;
+  let zoom_translate = [(w - zoom_scale * (bbox_path[1][0] + bbox_path[0][0])) / 2, (h - zoom_scale * (bbox_path[1][1] + bbox_path[0][1])) / 2];
+  let _zoom = svg_map.__zoom;
+  _zoom.k = zoom_scale;
+  _zoom.x = zoom_translate[0];
+  _zoom.y = zoom_translate[1];
+  zoom_without_redraw();
+}

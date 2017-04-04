@@ -274,6 +274,11 @@
             "typo": "Categorical map",
             "typosymbol": "Pictogram map"
         },
+        "projection_box":{
+            "choice_projection": "Choose a projection",
+            "ok_reproject": "Reproject!",
+            "projection_options": "Projection options"
+        },
         "layout_features_box": {
             "title": "Layout features",
             "subtitle": "Feature to add",

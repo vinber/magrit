@@ -41,6 +41,7 @@ function get_map_template(){
     map_config.projection_center = proj.center();
     map_config.projection_rotation = proj.rotate();
     map_config.projection_parallels = proj.parallels != undefined ? proj.parallels() : undefined;
+    map_config.projection_parallel = proj.parallel != undefined ? proj.parallel() : undefined;
     map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
     map_config.zoom_scale = zoom_transform.k;
     map_config.div_width = +w;
@@ -552,13 +553,15 @@ function apply_user_preferences(json_pref){
     proj = d3[available_projections.get(current_proj_name).name]();
     if(map_config.projection_parallels)
         proj = proj.parallels(map_config.projection_parallels);
+    if(map_config.projection_parallel)
+        proj = proj.parallel(map_config.projection_parallel);
     if(map_config.projection_clipAngle)
         proj = proj.clipAngle(map_config.projection_clipAngle);
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-    document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
-    document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
+    // document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
+    // document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
     document.getElementById('form_projection').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
