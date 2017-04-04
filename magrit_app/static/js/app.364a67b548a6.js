@@ -107,21 +107,8 @@ function setUpInterface(resume_project) {
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
-    // let proj_select = proj_options.append("div")
-    //         .attrs({class: 'styled-select'})
-    //         .insert("select")
-    //         .attrs({class: 'i18n', 'id': 'form_projection'})
-    //         .styles({"width": "calc(100% + 20px)"})
-    //         .on("change", function(){
-    //             current_proj_name = this.value;
-    //             change_projection(this.value);
-    //         });
-    // for(let proj_name of available_projections.keys()){
-    //     proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
-    // }
-    // proj_select.node().value = "NaturalEarth";
-    // proj_options.append("div").style('clear', 'both').style('width', '120px');
+    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
+
     var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
         var previous_value = 'NaturalEarth2';
         return function () {
@@ -129,14 +116,17 @@ function setUpInterface(resume_project) {
             if (val == 'more') {
                 this.value = previous_value;
                 createBoxCustomProjection();
+                return;
             } else if (val == 'proj4') {
                 this.value = previous_value;
                 createBoxProj4();
-            } else {
-                previous_value = val;
-                current_proj_name = val;
-                change_projection(current_proj_name);
+                return;
+            } else if (val == 'last_projection') {
+                val = this.querySelector('[value="last_projection"]').name;
             }
+            previous_value = val;
+            current_proj_name = val;
+            change_projection(current_proj_name);
         };
     }());
     for (var i = 0; i < shortListContent.length; i++) {
@@ -144,44 +134,6 @@ function setUpInterface(resume_project) {
         proj_select2.append('option').attrs({ class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option }).text(i18next.t('app_page.projection_name.' + option));
     }
     proj_select2.node().value = "NaturalEarth2";
-
-    // let proj_options2 = proj_options.append("div");
-    // proj_options2.append("input")
-    //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
-    //             min: -180.0, max: 180.0, step: 0.1})
-    //     .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
-    //              'margin': "0 0 0 15px",
-    //              "vertical-align": "text-top"})
-    //     .on("input", function(){
-    //         handle_proj_center_button([this.value, null, null]);
-    //         document.getElementById("proj_center_value_txt").value = +this.value;
-    //     });
-    //
-    // proj_options2.append("input")
-    //     .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
-    //             min: -180.0, max: 180.0, value: 0, step: "any"})
-    //     .styles({width: "40px", "margin": "0 10px",
-    //              "color": " white", "background-color": "#000",
-    //              "vertical-align": "calc(20%)"})
-    //     .on("change", function(){
-    //         let val = +this.value,
-    //             old_value = +document.getElementById('form_projection_center').value;
-    //         if(this.value.length == 0 || val > 180 || val < -180){
-    //             this.value = old_value;
-    //             return;
-    //         } else { // Should remove trailing zeros (right/left) if any :
-    //             this.value = +this.value;
-    //         }
-    //         handle_proj_center_button([this.value, null, null]);
-    //         document.getElementById("form_projection_center").value = this.value;
-    //     });
-    // proj_options2.append("span")
-    //     .style("vertical-align", "calc(20%)")
-    //     .html("°");
-    // proj_options2.append('img')
-    //     .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
-    //     .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
-    //     .on('click', createBoxCustomProjection);
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -1704,7 +1656,10 @@ function isInterrupted(proj_name) {
     return proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1;
 }
 
-function handleClipPath(proj_name, main_layer) {
+function handleClipPath() {
+    var proj_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+    var main_layer = arguments[1];
+
     proj_name = proj_name.toLowerCase();
     var defs_sphere = defs.node().querySelector("#sphere"),
         defs_extent = defs.node().querySelector("#extent"),
@@ -1753,8 +1708,6 @@ function handleClipPath(proj_name, main_layer) {
 }
 
 function change_projection(new_proj_name) {
-    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -1843,6 +1796,9 @@ function change_projection_4(_proj) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
     center_map(layer_name);
     zoom_without_redraw();
+
+    // Remove the existing clip path if any :
+    handleClipPath();
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
@@ -9926,6 +9882,19 @@ function accordionize() {
         };
     }
 }
+
+function accordionize2() {
+    var css_selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : ".accordion";
+    var parent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : document;
+
+    var acc = parent.querySelectorAll(css_selector);
+    for (var i = 0; i < acc.length; i++) {
+        acc[i].onclick = function () {
+            this.classList.toggle("active");
+            this.nextElementSibling.classList.toggle("show");
+        };
+    }
+}
 "use strict";
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -15025,7 +14994,7 @@ function apply_user_preferences(json_pref) {
     // document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     // document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
-    document.getElementById('form_projection').value = current_proj_name;
+    document.getElementById('form_projection2').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
@@ -15640,6 +15609,7 @@ var createBoxProj4 = function createBoxProj4() {
 		};
 		var _onclose_valid = function _onclose_valid() {
 				var proj_str = document.getElementById('input_proj_string').value;
+				clean_up_box();
 				if (proj_str.length < 4 || !proj_str.split(' ').every(function (f) {
 						return f[0] == '+';
 				})) {
@@ -15661,10 +15631,58 @@ var createBoxProj4 = function createBoxProj4() {
 		overlay_under_modal.display();
 };
 
-"+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs";
+function addLastProjectionSelect(proj_name) {
+		var proj_select = document.getElementById('form_projection2');
+		if (shortListContent.indexOf(proj_name) > -1) {
+				proj_select.value = proj_name;
+		} else if (proj_select.options.length == 10) {
+				var prev_elem = proj_select.querySelector("[value='more']"),
+				    new_option = document.createElement('option');
+				new_option.className = 'i18n';
+				new_option.value = 'last_projection';
+				new_option.name = proj_name;
+				new_option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
+				new_option.innerHTML = i18next.t('app_page.projection_name.' + proj_name);
+				proj_select.insertBefore(new_option, prev_elem);
+				proj_select.value = 'last_projection';
+		} else {
+				var option = proj_select.querySelector("[value='last_projection']");
+				option.name = proj_name;
+				option.innerHTML = i18next.t('app_page.projection_name.' + proj_name);
+				option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
+				proj_select.value = 'last_projection';
+		}
+}
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
-		var current_projection = current_proj_name,
+		function updateProjOptions() {
+				if (proj.rotate) {
+						rotate_section.style('display', '');
+						var param_rotate = proj.rotate();
+						lambda_input.node().value = param_rotate[0];
+						phi_input.node().value = param_rotate[1];
+						gamma_input.node().value = param_rotate[2];
+				} else {
+						rotate_section.style('display', 'none');
+				}
+				if (proj.parallels) {
+						var param_parallels = proj.parallels();
+						parallels_section.style('display', '');
+						parallel_section.style('display', 'none');
+						sp1_input.node().value = param_parallels[0];
+						sp2_input.node().value = param_parallels[1];
+				} else if (proj.parallel) {
+						parallels_section.style('display', 'none');
+						parallel_section.style('display', '');
+						sp_input.node().value = proj.parallel();
+				} else {
+						parallels_section.style('display', 'none');
+						parallel_section.style('display', 'none');
+				}
+		}
+		var prev_projection = current_proj_name,
+		    prev_translate = [].concat(t),
+		    prev_scale = s,
 		    prev_rotate = proj.rotate ? proj.rotate() : undefined,
 		    prev_parallels = proj.parallels ? proj.parallels() : undefined,
 		    prev_parallel = proj.parallel ? proj.parallel() : undefined;
@@ -15675,15 +15693,36 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 
 		var content = d3.select(container).select(".modal-body").attr('id', 'box_projection');
 
-		dialog.style.width = undefined;
-		dialog.style.maxWidth = '700px';
-		dialog.style.minWidth = '400px';
+		dialog.style.width = '700px';
 
 		var choice_proj = content.append("button").attrs({ "class": "accordion_proj active", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.choice_projection")),
-		    accordion_choice_projs = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style("width", "98%"),
-		    choice_proj_content = accordion_choice_projs.append("div").attr("id", "color_div").style("text-align", "center");
+		    accordion_choice_projs = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style('padding', '10px').style("width", "98%"),
+		    choice_proj_content = accordion_choice_projs.append("div").attr("id", "choice_proj_content").style("text-align", "center");
 
-		var display_select_proj = choice_proj_content.append('p').append('select').attr('id', 'select_proj').attr('size', 10);
+		var column1 = choice_proj_content.append('div').styles({ float: 'left', width: '52%' });
+		var column2 = choice_proj_content.append('div').styles({ float: 'left', width: '52%' });
+		var column3 = choice_proj_content.append('div').styles({ float: 'left', display: 'contents', width: '45%' });
+		choice_proj_content.append('div').style('clear', 'both');
+
+		var filtersection1 = column1.append('div').attr('class', 'switch-field');
+		filtersection1.append('div').attrs({ class: 'switch-title' }).html(i18next.t('app_page.projection_box.filter_nature'));
+		['any', 'other', 'cone', 'cylindre', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach(function (v, i) {
+				var _id = 'switch_proj1_elem_' + i;
+				filtersection1.append('input').attrs({ type: 'radio', id: _id, name: 'switch_proj1', value: v });
+				filtersection1.append('label').attr('for', _id).html(i18next.t('app_page.projection_box.' + v));
+		});
+
+		var filtersection2 = column2.append('div').attr('class', 'switch-field');
+		filtersection2.append('div').attrs({ class: 'switch-title' }).html(i18next.t('app_page.projection_box.filter_prop'));
+		['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach(function (v, i) {
+				var _id = 'switch_proj2_elem_' + i;
+				filtersection2.append('input').attrs({ type: 'radio', id: _id, name: 'switch_proj2', value: v });
+				filtersection2.append('label').attr('for', _id).html(i18next.t('app_page.projection_box.' + v));
+		});
+
+		var display_select_proj = column3.append('select')
+		// .style('margin', '20px 7.5px 0 0')
+		.attr('id', 'select_proj').attr('size', 18);
 
 		var _iteratorNormalCompletion = true;
 		var _didIteratorError = false;
@@ -15710,60 +15749,64 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				}
 		}
 
-		choice_proj_content.append('button').styles({ margin: '0 0 5px 0', padding: '5px' }).attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
+		column3.append('button').style('margin', '5px 0 5px 0')
+		// .styles({margin: '5px 0 5px 0', padding: '5px', float: 'right'})
+		.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
 				current_proj_name = document.getElementById('select_proj').value;
-				document.getElementById('form_projection2').value = current_proj_name;
+				addLastProjectionSelect(current_proj_name);
 				change_projection(current_proj_name);
+				updateProjOptions();
 		});
 
-		var choice_options = content.append("button").attrs({ "class": "accordion_proj active", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.projection_options")),
-		    accordion_choice_options = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style("width", "98%"),
-		    options_proj_content = accordion_choice_options.append("div").attr("id", "color_div").style("text-align", "center");
+		var choice_options = content.append("button").attrs({ "class": "accordion_proj", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.projection_options")),
+		    accordion_choice_options = content.append("div").attrs({ "class": "panel", "id": "accordion_choice_projection" }).style('padding', '10px').style("width", "98%"),
+		    options_proj_content = accordion_choice_options.append("div").attr("id", "options_proj_content").style('width', '60%').style('transform', 'translateX(45%)');
 
-		if (prev_rotate) {
-				var lambda_section = options_proj_content.append('p');
-				lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
-				lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[0], min: -180, max: 180, step: 0.50 }).on("input", function () {
-						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-						handle_proj_center_button([this.value, null, null]);
-				});
+		// if(prev_rotate){
+		var rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
+		var lambda_section = rotate_section.append('p');
+		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
+		var lambda_input = lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
+				handle_proj_center_button([this.value, null, null]);
+		});
 
-				var phi_section = options_proj_content.append('p').style('clear', 'both');
-				phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
-				phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[1], min: -180, max: 180, step: 0.5 }).on("input", function () {
-						if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-						handle_proj_center_button([null, this.value, null]);
-				});
+		var phi_section = rotate_section.append('p').style('clear', 'both');
+		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
+		var phi_input = phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 }).on("input", function () {
+				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
+				handle_proj_center_button([null, this.value, null]);
+		});
 
-				var gamma_section = options_proj_content.append('p').style('clear', 'both');
-				gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
-				gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate[2], min: -90, max: 90, step: 0.5 }).on("input", function () {
-						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-						handle_proj_center_button([null, null, this.value]);
-				});
-		}
-		if (prev_parallels) {
-				var parallels_section = options_proj_content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
-				parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
-				var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
-				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels[0], min: -90, max: 90, step: 0.5 }).on("input", function () {
-						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-						handle_parallels_change([this.value, null]);
-				});
-				inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels[1], min: -90, max: 90, step: 0.5 }).on("input", function () {
-						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-						handle_parallels_change([null, this.value]);
-				});
-		} else if (prev_parallel) {
-				var parallel_section = options_proj_content.append('p').styles({ 'text-align': 'center', 'clear': 'both' });
-				parallel_section.append('span').html(i18next.t('app_page.section5.parallel'));
-				var _inputs = parallel_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
-				_inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallel, min: -90, max: 90, step: 0.5 }).on("input", function () {
-						if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-						handle_parallel_change(this.value);
-				});
-		}
-		accordionize(".accordion_proj", container);
+		var gamma_section = rotate_section.append('p').style('clear', 'both');
+		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
+		var gamma_input = gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+				handle_proj_center_button([null, null, this.value]);
+		});
+		// }
+		// if(prev_parallels){
+		var parallels_section = options_proj_content.append('div').styles({ 'text-align': 'center', 'clear': 'both' }).style('display', prev_parallels ? '' : 'none');
+		parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
+		var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
+		var sp1_input = inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+				handle_parallels_change([this.value, null]);
+		});
+		var sp2_input = inputs.append('input').styles({ width: '60px', display: 'inline', 'margin-left': '2px' }).attrs({ type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+				handle_parallels_change([null, this.value]);
+		});
+		// } else if(prev_parallel){
+		var parallel_section = options_proj_content.append('div').styles({ 'text-align': 'center', 'clear': 'both' }).style('display', prev_parallel ? '' : 'none');
+		parallel_section.append('span').html(i18next.t('app_page.section5.parallel'));
+
+		var sp_input = parallel_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' }).append('input').styles({ width: '60px', display: 'inline', 'margin-right': '2px' }).attrs({ type: 'number', value: prev_parallel || 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
+				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
+				handle_parallel_change(this.value);
+		});
+		// }
+		accordionize2(".accordion_proj", container);
 		var clean_up_box = function clean_up_box() {
 				container.remove();
 				overlay_under_modal.hide();
@@ -15774,6 +15817,12 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		};
 		var _onclose_cancel = function _onclose_cancel() {
 				clean_up_box();
+				if (prev_projection != "proj4") {
+						current_proj_name = prev_projection;
+						s = prev_scale;
+						t = prev_translate.slice();
+						change_projection(current_proj_name);
+				} else if (prev_projection == "proj4") {}
 				if (prev_rotate) {
 						handle_proj_center_button(prev_rotate);
 				}
@@ -15817,7 +15866,7 @@ function handle_parallels_change(parallels) {
 }
 
 function handle_parallel_change(parallel) {
-		proj.parallels(parallel);
+		proj.parallel(parallel);
 		map.selectAll(".layer").selectAll("path").attr("d", path);
 		reproj_symbol_layer();
 }

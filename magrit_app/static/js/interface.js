@@ -1653,3 +1653,13 @@ function accordionize(css_selector=".accordion", parent){
       }
     }
 }
+
+function accordionize2(css_selector=".accordion", parent=document){
+    let acc = parent.querySelectorAll(css_selector);
+    for (let i = 0; i < acc.length; i++) {
+        acc[i].onclick = function(){
+            this.classList.toggle("active");
+            this.nextElementSibling.classList.toggle("show");
+        }
+    }
+}

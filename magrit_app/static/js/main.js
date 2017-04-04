@@ -116,86 +116,38 @@ function setUpInterface(resume_project)
     bg_drop.appendChild(inner_div);
     document.body.appendChild(bg_drop);
 
-    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");;
-    // let proj_select = proj_options.append("div")
-    //         .attrs({class: 'styled-select'})
-    //         .insert("select")
-    //         .attrs({class: 'i18n', 'id': 'form_projection'})
-    //         .styles({"width": "calc(100% + 20px)"})
-    //         .on("change", function(){
-    //             current_proj_name = this.value;
-    //             change_projection(this.value);
-    //         });
-    // for(let proj_name of available_projections.keys()){
-    //     proj_select.append('option').attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name}).text(i18next.t('app_page.projection_name.' + proj_name));
-    // }
-    // proj_select.node().value = "NaturalEarth";
-    // proj_options.append("div").style('clear', 'both').style('width', '120px');
+    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
+
     let proj_select2 = proj_options.append("div")
-            .attrs({class: 'styled-select'})
-            .insert("select")
-            .attrs({class: 'i18n', 'id': 'form_projection2'})
-            .styles({"width": "calc(100% + 20px)"})
-            .on('change', function(){
-                  let previous_value = 'NaturalEarth2';
-                  return function(){
-                      let val = this.value;
-                      if(val == 'more'){
-                          this.value = previous_value;
-                          createBoxCustomProjection();
-                      } else if (val == 'proj4'){
-                          this.value = previous_value;
-                          createBoxProj4();
-                      } else {
-                          previous_value = val;
-                          current_proj_name = val;
-                          change_projection(current_proj_name);
-                      }
-                  };
-            }());
+        .attrs({class: 'styled-select'})
+        .insert("select")
+        .attrs({class: 'i18n', 'id': 'form_projection2'})
+        .styles({"width": "calc(100% + 20px)"})
+        .on('change', function(){
+              let previous_value = 'NaturalEarth2';
+              return function(){
+                  let val = this.value;
+                  if(val == 'more'){
+                      this.value = previous_value;
+                      createBoxCustomProjection();
+                      return;
+                  } else if (val == 'proj4'){
+                      this.value = previous_value;
+                      createBoxProj4();
+                      return;
+                  }  else if (val == 'last_projection'){
+                      val = this.querySelector('[value="last_projection"]').name;
+                  }
+                  previous_value = val;
+                  current_proj_name = val;
+                  change_projection(current_proj_name);
+              };
+        }());
     for(let i=0; i < shortListContent.length; i++){
         let option = shortListContent[i];
         proj_select2.append('option').attrs({class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option}).text(i18next.t('app_page.projection_name.' + option));
     }
     proj_select2.node().value = "NaturalEarth2";
-
-    // let proj_options2 = proj_options.append("div");
-    // proj_options2.append("input")
-    //     .attrs({type: "range", id: "form_projection_center", value: 0.0,
-    //             min: -180.0, max: 180.0, step: 0.1})
-    //     .styles({width: window.innerWidth && window.innerWidth > 1024 ? "120px" : '60px',
-    //              'margin': "0 0 0 15px",
-    //              "vertical-align": "text-top"})
-    //     .on("input", function(){
-    //         handle_proj_center_button([this.value, null, null]);
-    //         document.getElementById("proj_center_value_txt").value = +this.value;
-    //     });
-    //
-    // proj_options2.append("input")
-    //     .attrs({type: "number", class: "without_spinner", id: "proj_center_value_txt",
-    //             min: -180.0, max: 180.0, value: 0, step: "any"})
-    //     .styles({width: "40px", "margin": "0 10px",
-    //              "color": " white", "background-color": "#000",
-    //              "vertical-align": "calc(20%)"})
-    //     .on("change", function(){
-    //         let val = +this.value,
-    //             old_value = +document.getElementById('form_projection_center').value;
-    //         if(this.value.length == 0 || val > 180 || val < -180){
-    //             this.value = old_value;
-    //             return;
-    //         } else { // Should remove trailing zeros (right/left) if any :
-    //             this.value = +this.value;
-    //         }
-    //         handle_proj_center_button([this.value, null, null]);
-    //         document.getElementById("form_projection_center").value = this.value;
-    //     });
-    // proj_options2.append("span")
-    //     .style("vertical-align", "calc(20%)")
-    //     .html("°");
-    // proj_options2.append('img')
-    //     .attrs({'id': 'btn_customize_projection', 'src': '/static/img/High-contrast-system-run.png'})
-    //     .styles({'vertical-align': 'calc(-15%)', 'margin-right': '5px', 'margin-left': '15px', 'width': '20px', 'height': '20px'})
-    //     .on('click', createBoxCustomProjection);
 
     let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
@@ -1991,7 +1943,7 @@ function isInterrupted(proj_name){
             || proj_name.indexOf("healpix") > -1);
 }
 
-function handleClipPath(proj_name, main_layer){
+function handleClipPath(proj_name='', main_layer){
     proj_name = proj_name.toLowerCase();
     let defs_sphere = defs.node().querySelector("#sphere"),
         defs_extent = defs.node().querySelector("#extent"),
@@ -2049,7 +2001,7 @@ function handleClipPath(proj_name, main_layer){
     }
 }
 
-function change_projection(new_proj_name, options={}) {
+function change_projection(new_proj_name) {
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -2141,6 +2093,9 @@ function change_projection_4(_proj) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
     center_map(layer_name);
     zoom_without_redraw();
+
+    // Remove the existing clip path if any :
+    handleClipPath();
 }
 
 

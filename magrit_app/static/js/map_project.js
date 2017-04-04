@@ -563,7 +563,7 @@ function apply_user_preferences(json_pref){
     // document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
     // document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
-    document.getElementById('form_projection').value = current_proj_name;
+    document.getElementById('form_projection2').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
 
