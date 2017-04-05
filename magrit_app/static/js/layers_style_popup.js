@@ -458,6 +458,45 @@ function createStyleBoxGraticule(layer_name){
                 grat_range.value = +this.value;
                 grat_range.dispatchEvent(new MouseEvent("change"));
             });
+
+    let clip_extent_section = popup.append('p').attr('class', 'line_elem');
+    clip_extent_section.append('input')
+        .attrs({type: 'checkbox', id: 'clip_graticule', checked: current_params['clip'] ? true : null})
+        .on('change', function(){
+            let next_layer = selection_strokeW.node().nextSibling,
+                step_val = +document.getElementById("graticule_step_txt").value,
+                dasharray_val = +document.getElementById("graticule_dasharray_txt").value,
+                graticule = d3.geoGraticule().step([step_val, step_val]);
+            map.select("#Graticule").remove();
+            if(this.checked){
+                let bbox_layer = _target_layer_file.bbox,
+                    extent_grat = [
+                    		[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10],
+                    		[Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
+
+                if(extent_grat[0] < -180) extent_grat[0] = -180;
+                if(extent_grat[1] < -90) extent_grat[1] = -90;
+                if(extent_grat[2] > 180) extent_grat[2] = 180;
+                if(extent_grat[3] > 90) extent_grat[3] = 90;
+                graticule = graticule.extent(extent_grat);
+                current_layers['Graticule'].clip = true;
+            } else {
+                current_layers['Graticule'].clip = false;
+            }
+            map.append("g").attrs({id: "Graticule", class: "layer"})
+                 .append("path")
+                 .datum(graticule)
+                 .attrs({class: "graticule", d: path, "clip-path": "url(#clip)"})
+                 .styles({fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val});
+            zoom_without_redraw();
+            selection = map.select("#Graticule").selectAll("path");
+            selection_strokeW = map.select("#Graticule");
+            svg_map.insertBefore(selection_strokeW.node(), next_layer);
+        });
+    clip_extent_section.append('label')
+        .attrs({for: 'clip_graticule'})
+        .html(i18next.t('app_page.layer_style_popup.graticule_clip'));
+
     make_generate_labels_section(popup, "Graticule");
 }
 

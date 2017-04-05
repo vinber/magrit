@@ -28,6 +28,7 @@ def build_js_file(use_minified, _id):
                'map_project.js',
                'symbols_picto.js',
                'projections.js',
+               'projection_others.js',
                'tables.js',
                'text_import_wizard.js',
                'zoom_rect.js'], stderr=PIPE, stdout=PIPE)

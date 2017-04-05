@@ -854,6 +854,11 @@ function add_layer_topojson(text, options = {}){
         return;
     }
 
+    if(_app.first_layer){
+        remove_layer_cleanup('World');
+        delete _app.first_layer;
+    }
+
     let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
     if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
@@ -1141,11 +1146,19 @@ function add_layout_feature(selected_feature, options = {}){
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
         options.step = options.step || 10;
+        let graticule = d3.geoGraticule().step([options.step, options.step]);
+        if(options.extent){
+            let bbox_layer = _target_layer_file.bbox,
+                extent = [
+              		[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10],
+              		[Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
+            graticule = graticule.extent(extent);
+        }
         map.insert("g", '.legend')
             .attrs({id: "Graticule", class: "layer"})
             .styles({'stroke-width': options.stroke_width})
             .append("path")
-            .datum(d3.geoGraticule().step([options.step, options.step]))
+            .datum(graticule)
             .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
             .styles({'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke});
         current_layers["Graticule"] = {

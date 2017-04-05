@@ -39,7 +39,7 @@ Function.prototype.memoize = function () {
 * as they are gonna be frequently used
 *
 */
-function setUpInterface(resume_project) {
+function setUpInterface() {
     // Only ask for confirmation before leaving page if things have been done
     // (layer added, etc..)
     window.addEventListener("beforeunload", beforeUnloadWindow);
@@ -124,9 +124,15 @@ function setUpInterface(resume_project) {
             } else if (val == 'last_projection') {
                 val = this.querySelector('[value="last_projection"]').name;
             }
-            previous_value = val;
-            current_proj_name = val;
-            change_projection(current_proj_name);
+            if (val == 'def_proj4') {
+                previous_value = val;
+                current_proj_name = val;
+                change_projection_4(proj4(_app.last_projection));
+            } else {
+                previous_value = val;
+                current_proj_name = val;
+                change_projection(current_proj_name);
+            }
         };
     }());
     for (var i = 0; i < shortListContent.length; i++) {
@@ -780,9 +786,7 @@ function setUpInterface(resume_project) {
 
     // Check if there is a project to reload in the localStorage :
     var last_project = window.localStorage.getItem("magrit_project");
-    if (resume_project === true && last_project) {
-        apply_user_preferences(json_params);
-    } else if (last_project && last_project.length && last_project.length > 0) {
+    if (last_project && last_project.length && last_project.length > 0) {
         swal({ title: "",
             // text: i18next.t("app_page.common.resume_last_project"),
             allowOutsideClick: false,
@@ -793,14 +797,17 @@ function setUpInterface(resume_project) {
             confirmButtonText: i18next.t("app_page.common.new_project"),
             cancelButtonText: i18next.t("app_page.common.resume_last")
         }).then(function () {
-            null;
+            // If we don't want to resume from the last project, we can
+            // remove it :
+            window.localStorage.removeItem("magrit_project");
+            // Indicate that that no layer have been added for now :*
+            _app.first_layer = true;
         }, function (dismiss) {
             apply_user_preferences(last_project);
         });
     } else {
-        // If we don't want to resume from the last project, we can
-        // remove it :
-        window.localStorage.removeItem("magrit_project");
+        // Indicate that that no layer have been added for now :*
+        _app.first_layer = true;
     }
 
     // Set the properties for the notification zone :
@@ -1030,16 +1037,10 @@ var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 
 var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
 (function () {
-    var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0],
-        resume_project = undefined;
-
+    var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
     document.querySelector("noscript").remove();
 
     if (window.location.search) {
-        var old_url = window.location.search;
-        if (old_url.indexOf("?resume") > -1) {
-            resume_project = true;
-        }
         if (typeof history.replaceState != "undefined") {
             // replaceState should avoid creating a new entry on the history
             var obj = { Page: window.location.search, Url: window.location.pathname };
@@ -1058,7 +1059,7 @@ var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 
     }, function (err, t) {
         if (err) throw err;else {
             window.localize = locI18next.init(i18next);
-            setUpInterface(resume_project);
+            setUpInterface();
             localize(".i18n");
             bindTooltips();
         }
@@ -1414,6 +1415,7 @@ function remove_ext_dataset_cleanup() {
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name) {
+    if (!current_layers[name]) return;
     var layer_id = _app.layer_to_id.get(name);
     // Making some clean-up regarding the result layer :
     if (current_layers[name].is_result) {
@@ -1695,13 +1697,15 @@ function handleClipPath() {
 
         map.selectAll(".layer").attr("clip-path", "url(#clip)");
 
-        map.selectAll('.layer').selectAll('path').attr('d', path);
-
-        reproj_symbol_layer();
-        if (main_layer) {
-            center_map(main_layer);
-            zoom_without_redraw();
-        }
+        // map.selectAll('.layer')
+        //     .selectAll('path')
+        //     .attr('d', path);
+        //
+        // reproj_symbol_layer();
+        // if(main_layer){
+        //   center_map(main_layer);
+        //   zoom_without_redraw();
+        // }
     } else {
         map.selectAll(".layer").attr("clip-path", null);
     }
@@ -1716,6 +1720,7 @@ function change_projection(new_proj_name) {
         def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
+    // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
     proj = d3[def_proj.name]();
     if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);else if (def_proj.parallel) proj = proj.parallel(def_proj.parallel);
     if (def_proj.clipAngle) proj = proj.clipAngle(def_proj.clipAngle);
@@ -1723,10 +1728,8 @@ function change_projection(new_proj_name) {
 
     path = d3.geoPath().projection(proj).pointRadius(4);
 
-    if (def_proj.bounds) scale_to_bbox(def_proj.bounds);
+    if (def_proj.bounds) scale_to_bbox(def_proj.bounds);else proj.translate(t).scale(s);
 
-    // Do the reprojection :
-    proj.translate(t).scale(s);
     if (proj.rotate) proj.rotate(prev_rotate);
 
     map.selectAll(".layer").selectAll("path").attr("d", path);
@@ -1758,6 +1761,7 @@ function change_projection(new_proj_name) {
 }
 
 function change_projection_4(_proj) {
+    remove_layer_cleanup('Sphere');
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -1785,15 +1789,20 @@ function change_projection_4(_proj) {
         });
         layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
     }
-    var rv = fitLayer(layer_name);
-    s = rv[0];
-    t = rv[1];
+    if (!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule") {
+        scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+    } else {
+        var rv = fitLayer(layer_name);
+        s = rv[0];
+        t = rv[1];
+    }
     if (isNaN(s) || isNaN(t[0]) || isNaN(t[1])) {
         s = 100;t = [0, 0];
         console.log('Error');
         return;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
     center_map(layer_name);
     zoom_without_redraw();
 
@@ -9144,6 +9153,11 @@ function add_layer_topojson(text) {
         return;
     }
 
+    if (_app.first_layer) {
+        remove_layer_cleanup('World');
+        delete _app.first_layer;
+    }
+
     var field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
     if (topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';else if (topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';else if (topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
@@ -9401,7 +9415,13 @@ function add_layout_feature(selected_feature) {
         options.stroke_opacity = options.stroke_opacity || 1;
         options.stroke_dasharray = options.stroke_dasharray || 5;
         options.step = options.step || 10;
-        map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(d3.geoGraticule().step([options.step, options.step])).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
+        var graticule = d3.geoGraticule().step([options.step, options.step]);
+        if (options.extent) {
+            var bbox_layer = _target_layer_file.bbox,
+                extent = [[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10], [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
+            graticule = graticule.extent(extent);
+        }
+        map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(graticule).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
         current_layers["Graticule"] = {
             "type": "Line",
             "n_features": 1,
@@ -10528,6 +10548,35 @@ function createStyleBoxGraticule(layer_name) {
         grat_range.value = +this.value;
         grat_range.dispatchEvent(new MouseEvent("change"));
     });
+
+    var clip_extent_section = popup.append('p').attr('class', 'line_elem');
+    clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['clip'] ? true : null }).on('change', function () {
+        var next_layer = selection_strokeW.node().nextSibling,
+            step_val = +document.getElementById("graticule_step_txt").value,
+            dasharray_val = +document.getElementById("graticule_dasharray_txt").value,
+            graticule = d3.geoGraticule().step([step_val, step_val]);
+        map.select("#Graticule").remove();
+        if (this.checked) {
+            var bbox_layer = _target_layer_file.bbox,
+                extent_grat = [[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10], [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
+
+            if (extent_grat[0] < -180) extent_grat[0] = -180;
+            if (extent_grat[1] < -90) extent_grat[1] = -90;
+            if (extent_grat[2] > 180) extent_grat[2] = 180;
+            if (extent_grat[3] > 90) extent_grat[3] = 90;
+            graticule = graticule.extent(extent_grat);
+            current_layers['Graticule'].clip = true;
+        } else {
+            current_layers['Graticule'].clip = false;
+        }
+        map.append("g").attrs({ id: "Graticule", class: "layer" }).append("path").datum(graticule).attrs({ class: "graticule", d: path, "clip-path": "url(#clip)" }).styles({ fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val });
+        zoom_without_redraw();
+        selection = map.select("#Graticule").selectAll("path");
+        selection_strokeW = map.select("#Graticule");
+        svg_map.insertBefore(selection_strokeW.node(), next_layer);
+    });
+    clip_extent_section.append('label').attrs({ for: 'clip_graticule' }).html(i18next.t('app_page.layer_style_popup.graticule_clip'));
+
     make_generate_labels_section(popup, "Graticule");
 }
 
@@ -15570,9 +15619,9 @@ function make_style_box_indiv_symbol(symbol_node) {
 
 var shortListContent = ['AzimuthalEqualAreaEurope', 'ConicConformalFrance', 'HEALPix', 'Mercator', 'NaturalEarth2', 'Robinson', 'TransverseMercator', 'WinkelTriple', 'more', 'proj4'];
 
-var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700' }], ["AzimuthalEqualAreaEurope", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', rotate: [-10, -52, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500] }], ["Baker", { 'name': 'geoBaker', 'scale': '400' }], ["Berhmann", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30 }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400' }],
+var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400', param_ex: 'cone', param_in: 'equalarea' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400', param_in: 'other', param_ex: 'aphylactic' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700', param_in: 'plan', param_ex: 'equidistant' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', param_in: 'plan', param_ex: 'equalarea' }], ["AzimuthalEqualAreaEurope", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', rotate: [-10, -52, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'plan', param_ex: 'equalarea' }], ["Baker", { 'name': 'geoBaker', 'scale': '400', param_in: 'other', param_ex: 'aphylactic' }], ["Berhmann", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400', param_in: 'pseudocone', param_ex: 'equalarea' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }],
 // ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
-["ConicConformalTangent", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44] }], ["ConicConformalSec", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49] }], ["ConicConformalFrance", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], bounds: [-10.6700, 34.5000, 31.5500, 71.0500] }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400' }], ["ConicEquidistantDeslisle", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45] }], ["ConicEquidistantTangent", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40] }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45 }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45 }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400' }], ["HoboDyer", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5 }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375' }], ["Miller", { 'name': 'geoMiller', 'scale': '375' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90 }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90 }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400' }]]);
+["ConicConformalTangent", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalSec", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalFrance", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], rotate: [0, 0, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'cone', param_ex: 'conformal' }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400', param_in: 'cone', param_ex: 'equalarea' }], ["ConicEquidistantDeslisle", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45], param_in: 'cone', param_ex: 'equidistant' }], ["ConicEquidistantTangent", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40], param_in: 'cone', param_ex: 'equidistant' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400', param_in: 'cylindrical', param_ex: 'equidistant' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400', param_in: 'cylindrical', param_ex: 'equalarea' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'equalarea' }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'aphylactic' }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '', param_in: 'other', param_ex: 'aphylactic' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400', param_in: 'plan', param_ex: 'aphylactic' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['Hatano', { 'name': 'geoHatano', 'scale': '200', param_in: 'other', param_ex: 'equalarea' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["HoboDyer", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375', param_in: 'cylindrical', param_ex: 'conformal' }], ["Miller", { 'name': 'geoMiller', 'scale': '375', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375', param_in: 'plan', param_ex: 'conformal' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90, param_in: 'plan', param_ex: 'aphylactic' }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400', param_in: 'pseudocone', param_ex: 'aphylactic' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400', param_in: 'cylindrical', param_ex: 'conformal' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90, param_in: 'pseudocone', param_ex: 'equalarea' }], ["Winkel1", { 'name': 'geoWinkel1', 'scale': '200', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic' }]]);
 
 var createBoxProj4 = function createBoxProj4() {
 		var modal_box = make_dialog_container("box_projection_input", i18next.t("app_page.section5.title"), "dialog");
@@ -15622,6 +15671,8 @@ var createBoxProj4 = function createBoxProj4() {
 								return;
 						}
 						change_projection_4(_p);
+						_app.last_projection = proj_str;
+						addLastProjectionSelect('def_proj4');
 				}
 		};
 		container.querySelector(".btn_cancel").onclick = clean_up_box;
@@ -15655,6 +15706,60 @@ function addLastProjectionSelect(proj_name) {
 }
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
+		function updateSelect(filter_in, filter_ex) {
+				display_select_proj.selectAll('option').remove();
+				if (!filter_in && !filter_ex) {
+						var _iteratorNormalCompletion = true;
+						var _didIteratorError = false;
+						var _iteratorError = undefined;
+
+						try {
+								for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+										var proj_name = _step.value;
+
+										display_select_proj.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
+								}
+						} catch (err) {
+								_didIteratorError = true;
+								_iteratorError = err;
+						} finally {
+								try {
+										if (!_iteratorNormalCompletion && _iterator.return) {
+												_iterator.return();
+										}
+								} finally {
+										if (_didIteratorError) {
+												throw _iteratorError;
+										}
+								}
+						}
+				} else if (!filter_ex) {
+						available_projections.forEach(function (v, k) {
+								if (v.param_in == filter_in) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+						});
+				} else if (!filter_in) {
+						available_projections.forEach(function (v, k) {
+								if (v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+						});
+				} else {
+						available_projections.forEach(function (v, k) {
+								if (v.param_in == filter_in && v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+						});
+				}
+		};
+		function onClickFilter() {
+				var filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), function (f) {
+						return f.checked;
+				})[0];
+				filter1_val = filter1_val == undefined ? undefined : filter1_val.value;
+				if (filter1_val == 'any') filter1_val = undefined;
+				var filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), function (f) {
+						return f.checked;
+				})[0];
+				filter2_val = filter2_val == undefined ? undefined : filter2_val.value;
+				if (filter2_val == 'any') filter2_val = undefined;
+				updateSelect(filter1_val, filter2_val);
+		};
 		function updateProjOptions() {
 				if (proj.rotate) {
 						rotate_section.style('display', '');
@@ -15679,7 +15784,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						parallels_section.style('display', 'none');
 						parallel_section.style('display', 'none');
 				}
-		}
+		};
 		var prev_projection = current_proj_name,
 		    prev_translate = [].concat(t),
 		    prev_scale = s,
@@ -15704,50 +15809,31 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var column3 = choice_proj_content.append('div').styles({ float: 'left', display: 'contents', width: '45%' });
 		choice_proj_content.append('div').style('clear', 'both');
 
-		var filtersection1 = column1.append('div').attr('class', 'switch-field');
+		var filtersection1 = column1.append('div').attr('class', 'switch-field f1');
 		filtersection1.append('div').attrs({ class: 'switch-title' }).html(i18next.t('app_page.projection_box.filter_nature'));
 		['any', 'other', 'cone', 'cylindre', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach(function (v, i) {
 				var _id = 'switch_proj1_elem_' + i;
-				filtersection1.append('input').attrs({ type: 'radio', id: _id, name: 'switch_proj1', value: v });
+				filtersection1.append('input').attrs({ type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v });
 				filtersection1.append('label').attr('for', _id).html(i18next.t('app_page.projection_box.' + v));
 		});
 
-		var filtersection2 = column2.append('div').attr('class', 'switch-field');
+		var filtersection2 = column2.append('div').attr('class', 'switch-field f2');
 		filtersection2.append('div').attrs({ class: 'switch-title' }).html(i18next.t('app_page.projection_box.filter_prop'));
 		['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach(function (v, i) {
 				var _id = 'switch_proj2_elem_' + i;
-				filtersection2.append('input').attrs({ type: 'radio', id: _id, name: 'switch_proj2', value: v });
+				filtersection2.append('input').attrs({ type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v });
 				filtersection2.append('label').attr('for', _id).html(i18next.t('app_page.projection_box.' + v));
+		});
+
+		Array.prototype.forEach.call(document.querySelectorAll('.filter1,.filter2'), function (el) {
+				el.onclick = onClickFilter;
 		});
 
 		var display_select_proj = column3.append('select')
 		// .style('margin', '20px 7.5px 0 0')
 		.attr('id', 'select_proj').attr('size', 18);
 
-		var _iteratorNormalCompletion = true;
-		var _didIteratorError = false;
-		var _iteratorError = undefined;
-
-		try {
-				for (var _iterator = available_projections.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-						var proj_name = _step.value;
-
-						display_select_proj.append('option').attrs({ class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name }).text(i18next.t('app_page.projection_name.' + proj_name));
-				}
-		} catch (err) {
-				_didIteratorError = true;
-				_iteratorError = err;
-		} finally {
-				try {
-						if (!_iteratorNormalCompletion && _iterator.return) {
-								_iterator.return();
-						}
-				} finally {
-						if (_didIteratorError) {
-								throw _iteratorError;
-						}
-				}
-		}
+		updateSelect(null, null);
 
 		column3.append('button').style('margin', '5px 0 5px 0')
 		// .styles({margin: '5px 0 5px 0', padding: '5px', float: 'right'})
@@ -15870,6 +15956,91 @@ function handle_parallel_change(parallel) {
 		map.selectAll(".layer").selectAll("path").attr("d", path);
 		reproj_symbol_layer();
 }
+"use strict";
+
+var sin = Math.sin,
+    asin = Math.asin,
+    abs = Math.abs,
+    cos = Math.cos;
+
+var NITER = 20,
+    EPS = 1e-7,
+    ONETOL = 1.000001,
+    CN = 2.67595,
+    CS = 2.43763,
+    RCN = 0.37369906014686373063,
+    RCS = 0.41023453108141924738,
+    FYCN = 1.75859,
+    FYCS = 1.93052,
+    RYCN = 0.56863737426006061674,
+    RYCS = 0.51799515156538134803,
+    FXC = 0.85,
+    RXC = 1.17647058823529411764,
+    M_HALFPI = Math.PI / 2;
+
+function hatanoRaw(lambda, phi) {
+    var th1, c, i;
+    c = sin(phi) * (phi < 0 ? CS : CN);
+    for (i = NITER; i; --i) {
+        phi -= th1 = (phi + sin(phi) - c) / (1 + cos(phi));
+        if (abs(th1) < EPS) break;
+    }
+    return [FXC * lambda * cos(phi *= 0.5), sin(phi) * (phi < 0 ? FYCS : FYCN)];
+}
+
+hatanoRaw.invert = function (x, y) {
+    var th = y * (y < 0 ? RYCS : RYCN);
+    if (abs(th) > 1) {
+        if (abs(th) > ONETOL) {
+            console.log('Error');
+            return;
+        } else {
+            th = th > 0 ? M_HALFPI : -M_HALFPI;
+        }
+    } else {
+        th = asin(th);
+    }
+    x = RXC * x / cos(th);
+    th += th;
+    y = (th + sin(th)) * (y < 0 ? RCS : RCN);
+    if (abs(y) > 1) {
+        if (abs(y) > ONETOL) {
+            console.log('Error');
+            return;
+        } else {
+            y = y > 0 ? M_HALFPI : -M_HALFPI;
+        }
+    } else {
+        y = asin(y);
+    }
+    return [x, y];
+};
+
+function winkel1Raw(lat_truescale) {
+    var cosphi1 = cos(lat_truescale);
+
+    function forward(lambda, phi) {
+        var x = lambda,
+            y = phi;
+        return [0.5 * x * (cosphi1 + cos(phi)), y];
+    }
+
+    forward.invert = function (x, y) {
+        var lambda = x,
+            phi = y;
+        return [2 * lambda / (cosphi1 + cos(phi)), phi];
+    };
+
+    return forward;
+}
+
+d3.geoWinkel1 = function () {
+    return d3.geoProjection(winkel1Raw(45)).scale(200);
+};
+
+d3.geoHatano = function () {
+    return d3.geoProjection(hatanoRaw).scale(200);
+};
 "use strict";
 
 /**

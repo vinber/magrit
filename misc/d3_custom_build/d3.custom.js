@@ -13778,6 +13778,20 @@ hammerQuarticAuthalicRaw.invert = function(x, y) {
   ];
 };
 
+var hammer = function() {
+  var B = 2,
+      m = projectionMutator(hammerRaw),
+      p = m(B);
+
+  p.coefficient = function(_) {
+    if (!arguments.length) return B;
+    return m(B = +_);
+  };
+
+  return p
+    .scale(169.529);
+};
+
 function hammerRetroazimuthalRaw(phi0) {
   var sinPhi0 = sin$2(phi0),
       cosPhi0 = cos$2(phi0),
@@ -15569,6 +15583,8 @@ exports.geoEisenlohr = eisenlohr;
 exports.geoGilbert = gilbert;
 exports.geoGringorten = gringorten;
 exports.geoGringortenQuincuncial = gringorten$1;
+exports.geoHammer = hammer;
+exports.geoHammerRaw = hammerRaw;
 exports.geoHealpix = healpix;
 exports.geoHomolosine = homolosine;
 exports.geoInterruptedHomolosine = homolosine$1;

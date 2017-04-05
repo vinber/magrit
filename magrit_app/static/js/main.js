@@ -35,7 +35,7 @@ Function.prototype.memoize = function() {
 * as they are gonna be frequently used
 *
 */
-function setUpInterface(resume_project)
+function setUpInterface()
 {
     // Only ask for confirmation before leaving page if things have been done
     // (layer added, etc..)
@@ -138,9 +138,15 @@ function setUpInterface(resume_project)
                   }  else if (val == 'last_projection'){
                       val = this.querySelector('[value="last_projection"]').name;
                   }
-                  previous_value = val;
-                  current_proj_name = val;
-                  change_projection(current_proj_name);
+                  if(val == 'def_proj4'){
+                      previous_value = val;
+                      current_proj_name = val;
+                      change_projection_4(proj4(_app.last_projection));
+                  } else {
+                      previous_value = val;
+                      current_proj_name = val;
+                      change_projection(current_proj_name);
+                  }
               };
         }());
     for(let i=0; i < shortListContent.length; i++){
@@ -963,9 +969,7 @@ function setUpInterface(resume_project)
 
     // Check if there is a project to reload in the localStorage :
     let last_project = window.localStorage.getItem("magrit_project");
-    if(resume_project === true && last_project){
-        apply_user_preferences(json_params);
-    } else if (last_project && last_project.length && last_project.length > 0) {
+    if (last_project && last_project.length && last_project.length > 0) {
         swal({title: "",
               // text: i18next.t("app_page.common.resume_last_project"),
               allowOutsideClick: false,
@@ -976,14 +980,17 @@ function setUpInterface(resume_project)
               confirmButtonText: i18next.t("app_page.common.new_project"),
               cancelButtonText: i18next.t("app_page.common.resume_last"),
             }).then(() => {
-                null;
+                // If we don't want to resume from the last project, we can
+                // remove it :
+                window.localStorage.removeItem("magrit_project");
+                // Indicate that that no layer have been added for now :*
+                _app.first_layer = true;
              }, dismiss => {
                apply_user_preferences(last_project);
              })
     } else {
-        // If we don't want to resume from the last project, we can
-        // remove it :
-        window.localStorage.removeItem("magrit_project");
+        // Indicate that that no layer have been added for now :*
+        _app.first_layer = true;
     }
 
     // Set the properties for the notification zone :
@@ -1278,16 +1285,10 @@ const available_fonts = [
 const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
 (function(){
-    let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0],
-        resume_project = undefined;
-
+    let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
     document.querySelector("noscript").remove();
 
     if(window.location.search){
-        let old_url = window.location.search;
-        if(old_url.indexOf("?resume") > -1){
-            resume_project = true;
-        }
         if (typeof (history.replaceState) != "undefined") {
             // replaceState should avoid creating a new entry on the history
             var obj = {Page: window.location.search, Url: window.location.pathname};
@@ -1309,7 +1310,7 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
             throw err;
         else {
             window.localize = locI18next.init(i18next);
-            setUpInterface(resume_project);
+            setUpInterface();
             localize(".i18n");
             bindTooltips();
         }
@@ -1664,8 +1665,9 @@ function remove_ext_dataset_cleanup(){
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
-     let layer_id = _app.layer_to_id.get(name);
-     // Making some clean-up regarding the result layer :
+    if(!current_layers[name]) return;
+    let layer_id = _app.layer_to_id.get(name);
+    // Making some clean-up regarding the result layer :
     if(current_layers[name].is_result){
         map.selectAll([".lgdf_", layer_id].join('')).remove();
         if(result_data.hasOwnProperty(name))
@@ -1986,15 +1988,15 @@ function handleClipPath(proj_name='', main_layer){
         map.selectAll(".layer")
             .attr("clip-path", "url(#clip)");
 
-        map.selectAll('.layer')
-            .selectAll('path')
-            .attr('d', path);
-
-        reproj_symbol_layer();
-        if(main_layer){
-          center_map(main_layer);
-          zoom_without_redraw();
-        }
+        // map.selectAll('.layer')
+        //     .selectAll('path')
+        //     .attr('d', path);
+        //
+        // reproj_symbol_layer();
+        // if(main_layer){
+        //   center_map(main_layer);
+        //   zoom_without_redraw();
+        // }
     } else {
         map.selectAll(".layer")
                 .attr("clip-path", null);
@@ -2010,7 +2012,8 @@ function change_projection(new_proj_name) {
         def_proj = available_projections.get(new_proj_name);
 
     // Update global variables:
-    proj = d3[def_proj.name]()
+    // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
+    proj = d3[def_proj.name]();
     if(def_proj.parallels)
         proj = proj.parallels(def_proj.parallels);
     else if (def_proj.parallel)
@@ -2024,9 +2027,9 @@ function change_projection(new_proj_name) {
 
     if(def_proj.bounds)
         scale_to_bbox(def_proj.bounds);
+    else
+        proj.translate(t).scale(s);
 
-    // Do the reprojection :
-    proj.translate(t).scale(s);
     if(proj.rotate)
         proj.rotate(prev_rotate);
 
@@ -2057,6 +2060,7 @@ function change_projection(new_proj_name) {
 }
 
 function change_projection_4(_proj) {
+    remove_layer_cleanup('Sphere');
     // Disable the zoom by rectangle selection if the user is using it :
     map.select('.brush').remove();
 
@@ -2082,15 +2086,20 @@ function change_projection_4(_proj) {
       let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
       layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
-    let rv = fitLayer(layer_name);
-    s = rv[0];
-    t = rv[1];
+    if(!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule"){
+        scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+    } else {
+        let rv = fitLayer(layer_name);
+        s = rv[0];
+        t = rv[1];
+    }
     if(isNaN(s) || isNaN(t[0]) || isNaN(t[1])){
         s = 100; t = [0, 0];
         console.log('Error');
         return;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
     center_map(layer_name);
     zoom_without_redraw();
 

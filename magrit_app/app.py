@@ -125,12 +125,13 @@ async def geojson_to_topojson(filepath, layer_name, remove=False):
     # Todo : Use topojson python port if possible to avoid writing a temp. file
     process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
     stdout, _ = process.communicate()
+    stdout = stdout.decode()
     if remove:
         os.remove(filepath)
-    topo = json.loads(stdout.decode())
-    # topo = topojson_quantize(json.loads(stdout.decode()), 1e6)
-    topo['objects'][layer_name] = topo['objects'].pop(list(topo['objects'].keys())[0])
-    return json.dumps(topo)
+    return ''.join([
+        stdout[:31], layer_name, stdout[31 + stdout[31:].find('"'):]
+    ])
+
 
 async def store_non_quantized(filepath, f_name, redis_conn):
     process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
@@ -214,7 +215,6 @@ async def cache_input_topojson(request):
             with open(f_path, 'wb') as f:
                 f.write(res)
             result = await geojson_to_topojson(f_path, name)
-            # result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 store_non_quantized(
                     f_path, f_nameNQ, request.app['redis_conn']))

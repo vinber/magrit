@@ -193,7 +193,7 @@
             "ConicEquidistantTangent": "Conique équidistante à cône tangent",
             "CrasterParabolic": "Parabolique de Craster",
             "CylindricalEqualArea": "Cylindrique équivalente",
-            "CylindricalStereographic": "Cylindrique Stereographique",
+            "CylindricalStereographic": "Cylindrique Stéréographique",
             "EckertI": "Eckert I",
             "EckertII": "Eckert II",
             "EckertIII": "Eckert III",
@@ -208,6 +208,7 @@
             "Gnomonic": "Gnomonique",
             "Gringorten": "Gringorten",
             "GringortenQuincuncial": "Gringorten Quinconcial",
+            "Hatano": "Hatano asymétrique",
             "HEALPix": "HEALPix",
             "HoboDyer": "Hobo-Dyer",
             "Homolosine": "Homolosine de Goode (non-interrompue)",
@@ -231,9 +232,11 @@
             "InterruptedSinusoidal": "Sinusoïdale interrompue",
             "TransverseMercator": "Transverse de Mercator",
             "Werner": "Werner",
+            "Winkel1": "Winkel I",
             "WinkelTriple": "Winkel Tripel",
             "more": "Plus d'options ...",
-            "proj4": "Saisie d'un code EPSG/Proj.4 ..."
+            "proj4": "Saisie d'un code EPSG/Proj.4 ...",
+            "def_proj4": "Projection définie par l'utilsateur {{value}}"
         },
         "stat_summary": {
             "population": "Population",
@@ -532,6 +535,7 @@
             "point_radius": "Taille du point<br>",
             "graticule_steps": "Espacement entre les lignes<br>",
             "graticule_dasharray": "Taille des tirets<br>",
+            "graticule_clip": "Limiter la taille du graticule à l'emprise de la couche de référence",
             "generate_labels": "Génération de labels pour cette couche...",
             "field_label": "Sélection du champ à utiliser"
         },

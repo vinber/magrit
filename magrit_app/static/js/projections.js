@@ -14,66 +14,68 @@ const shortListContent = [
 ];
 
 const available_projections = new Map([
-	['Albers', {'name': 'geoAlbers', 'scale': '400'}],
-	["Armadillo", {'name': 'geoArmadillo', 'scale': '400'}],
-	["AzimuthalEquidistant", {'name': 'geoAzimuthalEquidistant' ,'scale': '700'}],
-	["AzimuthalEqualArea", {'name': 'geoAzimuthalEqualArea' ,'scale': '700'}],
-	["AzimuthalEqualAreaEurope", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', rotate: [-10,-52,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500]}],
-	["Baker", {'name': 'geoBaker', 'scale': '400'}],
-	["Berhmann", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30}],
-	["Boggs", {'name': 'geoBoggs', 'scale': '400'}],
-	["InterruptedBoggs", {'name': 'geoInterruptedBoggs', 'scale': '400'}],
-	["Bonne", {'name': 'geoBonne', 'scale': '400'}],
-	["Bromley", {'name': 'geoBromley', 'scale': '400'}],
-	["Collignon", {'name': 'geoCollignon', 'scale': '400'}],
+	['Albers', {'name': 'geoAlbers', 'scale': '400', param_ex: 'cone', param_in:'equalarea'}],
+	["Armadillo", {'name': 'geoArmadillo', 'scale': '400', param_in: 'other', param_ex: 'aphylactic'}],
+	["AzimuthalEquidistant", {'name': 'geoAzimuthalEquidistant' ,'scale': '700', param_in: 'plan', param_ex: 'equidistant'}],
+	["AzimuthalEqualArea", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', param_in: 'plan', param_ex: 'equalarea'}],
+	["AzimuthalEqualAreaEurope", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', rotate: [-10,-52,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'plan', param_ex: 'equalarea'}],
+	["Baker", {'name': 'geoBaker', 'scale': '400', param_in: 'other', param_ex: 'aphylactic'}],
+	["Berhmann", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30, param_in: 'cylindrical', param_ex: 'equalarea'}],
+	["Boggs", {'name': 'geoBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["InterruptedBoggs", {'name': 'geoInterruptedBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Bonne", {'name': 'geoBonne', 'scale': '400', param_in: 'pseudocone', param_ex: 'equalarea'}],
+	["Bromley", {'name': 'geoBromley', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Collignon", {'name': 'geoCollignon', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
 	// ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
-	["ConicConformalTangent", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44]}],
-	["ConicConformalSec", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49]}],
-	["ConicConformalFrance", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], bounds: [-10.6700, 34.5000, 31.5500, 71.0500]}],
-	["ConicEqualArea", {'name': 'geoConicEqualArea', 'scale': '400'}],
-	["ConicEquidistantDeslisle", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45]}],
-	["ConicEquidistantTangent", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40]}],
-	["CrasterParabolic", {'name': 'geoCraster', 'scale': '400'}],
-	["Equirectangular", {'name': 'geoEquirectangular', 'scale': '400'}],
-	["CylindricalEqualArea", {'name': 'geoCylindricalEqualArea', 'scale': '400'}],
-	["CylindricalStereographic", {'name': 'geoCylindricalStereographic', 'scale': '400'}],
-	["EckertI", {'name': 'geoEckert1', 'scale': '400'}],
-	["EckertII", {'name': 'geoEckert2', 'scale': '400'}],
-	["EckertIII", {'name': 'geoEckert3', 'scale': '525'}],
-	["EckertIV", {'name': 'geoEckert4', 'scale': '525'}],
-	["EckertV", {'name': 'geoEckert5', 'scale': '400'}],
-	["EckertVI", {'name': 'geoEckert6', 'scale': '400'}],
-	["Eisenlohr", {'name': 'geoEisenlohr', 'scale': '400'}],
-	['GallPeters', {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45}],
-	['GallStereographic', {'name': 'geoCylindricalStereographic', scale: '400', parallel: 45}],
-	['Gilbert', {'name': 'geoGilbert', scale: '400', type: ''}],
-	["Gnomonic", {'name': 'geoGnomonic', 'scale': '400'}],
-	["Gringorten", {'name': 'geoGringorten', 'scale': '400'}],
-	['GringortenQuincuncial', {'name': 'geoGringortenQuincuncial', 'scale': '400'}],
-	["HEALPix", {'name': 'geoHealpix', 'scale': '400'}],
-	["HoboDyer", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5}],
-	["Homolosine", {'name': 'geoHomolosine', 'scale': '400'}],
-	["InterruptedHomolosine", {'name': 'geoInterruptedHomolosine', 'scale': '400'}],
-	["Loximuthal", {'name': 'geoLoximuthal', 'scale': '400'}],
-	["Mercator",  {'name': 'geoMercator', 'scale': '375'}],
-	["Miller",  {'name': 'geoMiller', 'scale': '375'}],
-	["MillerOblatedStereographic",  {'name': 'geoModifiedStereographicMiller', 'scale': '375'}],
-	["Mollweide", {'name': 'geoMollweide', 'scale': '400'}],
-	["NaturalEarth", {'name': 'geoNaturalEarth', 'scale': '400'}],
-	["NaturalEarth2", {'name': 'geoNaturalEarth2', 'scale': '400'}],
-	["Orthographic",  {'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90}],
-	["Patterson", {'name': 'geoPatterson', 'scale': '400'}],
-	["Polyconic", {'name': 'geoPolyconic', 'scale': '400'}],
-	["Peircequincuncial", {'name': 'geoPeirceQuincuncial', 'scale':'400'}],
-	["Robinson", {'name': 'geoRobinson', 'scale' :'400'}],
-	["SinuMollweide", {'name': 'geoSinuMollweide', 'scale': '400'}],
-	["InterruptedSinuMollweide", {'name': 'geoInterruptedSinuMollweide', 'scale': '400'}],
-	["Sinusoidal", {'name': 'geoSinusoidal', 'scale': '400'}],
-	["InterruptedSinusoidal", {'name': 'geoInterruptedSinusoidal', 'scale': '400'}],
-	['Stereographic', {'name': 'geoStereographic', 'scale': '400'}],
-	["TransverseMercator", {'name': 'geoTransverseMercator', 'scale': '400'}],
-	['Werner', {'name': 'geoBonne', scale: '400', parallel: 90}],
-	["WinkelTriple", {'name': 'geoWinkel3', 'scale': '400'}]
+	["ConicConformalTangent", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44], param_in: 'cone', param_ex: 'conformal'}],
+	["ConicConformalSec", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], param_in: 'cone', param_ex: 'conformal'}],
+	["ConicConformalFrance", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], rotate: [0,0,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'cone', param_ex: 'conformal'}],
+	["ConicEqualArea", {'name': 'geoConicEqualArea', 'scale': '400', param_in: 'cone', param_ex: 'equalarea'}],
+	["ConicEquidistantDeslisle", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45], param_in: 'cone', param_ex: 'equidistant'}],
+	["ConicEquidistantTangent", {'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40], param_in: 'cone', param_ex: 'equidistant'}],
+	["CrasterParabolic", {'name': 'geoCraster', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Equirectangular", {'name': 'geoEquirectangular', 'scale': '400', param_in: 'cylindrical', param_ex: 'equidistant'}],
+	["CylindricalEqualArea", {'name': 'geoCylindricalEqualArea', 'scale': '400', param_in: 'cylindrical', param_ex: 'equalarea'}],
+	["CylindricalStereographic", {'name': 'geoCylindricalStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic'}],
+	["EckertI", {'name': 'geoEckert1', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["EckertII", {'name': 'geoEckert2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["EckertIII", {'name': 'geoEckert3', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["EckertIV", {'name': 'geoEckert4', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["EckertV", {'name': 'geoEckert5', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["EckertVI", {'name': 'geoEckert6', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Eisenlohr", {'name': 'geoEisenlohr', 'scale': '400', param_in: 'other', param_ex: 'conformal'}],
+	['GallPeters', {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'equalarea'}],
+	['GallStereographic', {'name': 'geoCylindricalStereographic', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'aphylactic'}],
+	['Gilbert', {'name': 'geoGilbert', scale: '400', type: '', param_in: 'other', param_ex: 'aphylactic'}],
+	["Gnomonic", {'name': 'geoGnomonic', 'scale': '400', param_in: 'plan', param_ex: 'aphylactic'}],
+	["Gringorten", {'name': 'geoGringorten', 'scale': '400', param_in: 'other', param_ex: 'equalarea'}],
+	['GringortenQuincuncial', {'name': 'geoGringortenQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'equalarea'}],
+	['Hatano', {'name': 'geoHatano', 'scale': '200', param_in: 'other', param_ex: 'equalarea'}],
+	["HEALPix", {'name': 'geoHealpix', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["HoboDyer", {'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5, param_in: 'cylindrical', param_ex: 'equalarea'}],
+	["Homolosine", {'name': 'geoHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["InterruptedHomolosine", {'name': 'geoInterruptedHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Loximuthal", {'name': 'geoLoximuthal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["Mercator",  {'name': 'geoMercator', 'scale': '375', param_in: 'cylindrical', param_ex: 'conformal'}],
+	["Miller",  {'name': 'geoMiller', 'scale': '375', param_in: 'cylindrical', param_ex: 'aphylactic'}],
+	["MillerOblatedStereographic",  {'name': 'geoModifiedStereographicMiller', 'scale': '375', param_in: 'plan', param_ex: 'conformal'}],
+	["Mollweide", {'name': 'geoMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["NaturalEarth", {'name': 'geoNaturalEarth', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["NaturalEarth2", {'name': 'geoNaturalEarth2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["Orthographic",  {'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90, param_in: 'plan', param_ex: 'aphylactic'}],
+	["Patterson", {'name': 'geoPatterson', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic'}],
+	["Polyconic", {'name': 'geoPolyconic', 'scale': '400', param_in: 'pseudocone', param_ex: 'aphylactic'}],
+	["Peircequincuncial", {'name': 'geoPeirceQuincuncial', 'scale':'400', param_in: 'other', param_ex: 'conformal'}],
+	["Robinson", {'name': 'geoRobinson', 'scale' :'400', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["SinuMollweide", {'name': 'geoSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["InterruptedSinuMollweide", {'name': 'geoInterruptedSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["Sinusoidal", {'name': 'geoSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	["InterruptedSinusoidal", {'name': 'geoInterruptedSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
+	['Stereographic', {'name': 'geoStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic'}],
+	["TransverseMercator", {'name': 'geoTransverseMercator', 'scale': '400', param_in: 'cylindrical', param_ex: 'conformal'}],
+	['Werner', {'name': 'geoBonne', scale: '400', parallel: 90, param_in: 'pseudocone', param_ex: 'equalarea'}],
+	["Winkel1", {'name': 'geoWinkel1', 'scale': '200', param_in: 'pseudocylindre', param_ex: 'aphylactic'}],
+	["WinkelTriple", {'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic'}]
 ]);
 
 const createBoxProj4 = function(){
@@ -128,6 +130,8 @@ const createBoxProj4 = function(){
 						return;
 					}
 					change_projection_4(_p);
+					_app.last_projection = proj_str;
+					addLastProjectionSelect('def_proj4');
 			}
 	};
   container.querySelector(".btn_cancel").onclick = clean_up_box;
@@ -161,6 +165,46 @@ function addLastProjectionSelect(proj_name){
 }
 
 const createBoxCustomProjection = function(){
+	function updateSelect(filter_in, filter_ex){
+			display_select_proj.selectAll('option').remove();
+			if(!filter_in && !filter_ex){
+				for(let proj_name of available_projections.keys()){
+			      display_select_proj.append('option')
+								.attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name})
+								.text(i18next.t('app_page.projection_name.' + proj_name));
+			  }
+			} else if (!filter_ex){
+					available_projections.forEach((v,k) => {
+							if(v.param_in == filter_in)
+									display_select_proj.append('option')
+											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+											.text(i18next.t('app_page.projection_name.' + k));
+					});
+			} else if (!filter_in){
+					available_projections.forEach((v,k) => {
+							if(v.param_ex == filter_ex)
+									display_select_proj.append('option')
+											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+											.text(i18next.t('app_page.projection_name.' + k));
+					});
+			} else {
+					available_projections.forEach((v,k) => {
+							if(v.param_in == filter_in && v.param_ex == filter_ex)
+									display_select_proj.append('option')
+											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+											.text(i18next.t('app_page.projection_name.' + k));
+					});
+			}
+	};
+	function onClickFilter(){
+			let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
+			filter1_val = filter1_val == undefined ? undefined : filter1_val.value;
+			if(filter1_val == 'any') filter1_val = undefined;
+			let filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), f => f.checked)[0];
+			filter2_val = filter2_val == undefined ? undefined : filter2_val.value;
+			if(filter2_val == 'any') filter2_val = undefined;
+			updateSelect(filter1_val, filter2_val);
+	};
 	function updateProjOptions(){
 			if(proj.rotate){
 					rotate_section.style('display', '');
@@ -185,7 +229,7 @@ const createBoxCustomProjection = function(){
 					parallels_section.style('display', 'none');
 					parallel_section.style('display', 'none');
 			}
-	}
+	};
 	let prev_projection = current_proj_name,
 			prev_translate = [].concat(t),
 			prev_scale = s,
@@ -227,42 +271,40 @@ const createBoxCustomProjection = function(){
 	choice_proj_content.append('div')
 			.style('clear', 'both');
 
-	var filtersection1 = column1.append('div').attr('class', 'switch-field');
+	var filtersection1 = column1.append('div').attr('class', 'switch-field f1');
 	filtersection1.append('div')
 			.attrs({class: 'switch-title'})
 			.html(i18next.t('app_page.projection_box.filter_nature'));
 	['any', 'other', 'cone', 'cylindre', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
 			let _id = 'switch_proj1_elem_' + i;
 			filtersection1.append('input')
-					.attrs({type: 'radio', id: _id, name: 'switch_proj1', value: v});
+					.attrs({type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v});
 			filtersection1.append('label')
 					.attr('for', _id)
 					.html(i18next.t('app_page.projection_box.' + v));
 	});
 
-	var filtersection2 = column2.append('div').attr('class', 'switch-field');
+	var filtersection2 = column2.append('div').attr('class', 'switch-field f2');
 	filtersection2.append('div')
 			.attrs({class: 'switch-title'})
 			.html(i18next.t('app_page.projection_box.filter_prop'));
 	['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach((v, i) => {
 			let _id = 'switch_proj2_elem_' + i;
 			filtersection2.append('input')
-					.attrs({type: 'radio', id: _id, name: 'switch_proj2', value: v});
+					.attrs({type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v});
 			filtersection2.append('label')
 					.attr('for', _id)
 					.html(i18next.t('app_page.projection_box.' + v));
 	});
+
+	Array.prototype.forEach.call(document.querySelectorAll('.filter1,.filter2'), el => { el.onclick = onClickFilter; });
 
 	var display_select_proj = column3.append('select')
 			// .style('margin', '20px 7.5px 0 0')
 			.attr('id', 'select_proj')
   		.attr('size', 18);
 
-	for(let proj_name of available_projections.keys()){
-      display_select_proj.append('option')
-					.attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name})
-					.text(i18next.t('app_page.projection_name.' + proj_name));
-  }
+	updateSelect(null, null);
 
 	column3.append('button')
 			.style('margin', '5px 0 5px 0')

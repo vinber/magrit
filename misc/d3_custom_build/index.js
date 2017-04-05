@@ -208,6 +208,8 @@ export {
   geoGilbert,
   geoGringorten,
   geoGringortenQuincuncial,
+  geoHammer,
+  geoHammerRaw,
   geoHealpix,
   geoHomolosine,
   geoInterruptedHomolosine,
