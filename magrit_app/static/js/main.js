@@ -1562,7 +1562,7 @@ var make_confirm_dialog2 = (function(class_box, title, options){
         document.getElementById("twbs").appendChild(container);
 
         container = document.getElementById("myModal_" + new_id);
-        let deferred = Q.defer();
+        let deferred = Promise.pending();
         let html_content = options.html_content || "";
         let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
         let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");

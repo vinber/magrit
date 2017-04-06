@@ -293,7 +293,7 @@ async def convert(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis, request.app['app_users'])
-
+    proj_info = None
     # If a shapefile is provided as multiple files
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and "file[]" not in posted_data:
@@ -353,6 +353,8 @@ async def convert(request):
                 filepath2, f_nameNQ, request.app['redis_conn']))
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_nameQ, result, pexpire=86400000))
+        with open(filepath2.replace('.geojson', '.prj'), 'r') as f:
+            proj_info = f.read()
         [os.remove(_file) for _file in list_files]
 
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
@@ -375,6 +377,8 @@ async def convert(request):
                         slots['shx'] = f
                     elif 'dbf' in ext:
                         slots['dbf'] = f
+                    elif 'cpg' in ext:
+                        slots['cpg'] = f
                 assert(all(v != None for v in slots.values()))
                 assert(all(name == names[0] for name in names))
                 assert(4 <= len(list_files) < 8)
@@ -386,6 +390,8 @@ async def convert(request):
             os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
             res = await ogr_to_geojson(slots['shp'], to_latlong=True)
+            with open(slots['prj'], 'r') as f:
+                proj_info = f.read()
             filepath2 = slots['shp'].replace(
                 "{}{}/".format(user_id, hashed_input), "").replace(
                 '.shp', '.geojson')
@@ -402,7 +408,7 @@ async def convert(request):
             asyncio.ensure_future(
                 store_non_quantized(
                     filepath2, f_nameNQ, request.app['redis_conn']))
-        [os.remove(dir_path + file) for file in os.listdir(dir_path)]
+        [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
         os.removedirs(dir_path)
 
     elif ('octet-stream' in datatype or 'text/json' in datatype \
@@ -441,7 +447,7 @@ async def convert(request):
         '{} - Converted, stored in redis and sent back to client'
         .format(user_id))
     return web.Response(text=''.join(
-        ['{"key":', str(hashed_input), ',"file":', result, '}']
+        ['{"key":', str(hashed_input), ',"file":', result, ',"proj":', json.dumps(proj_info), '}']
         ))
 
 

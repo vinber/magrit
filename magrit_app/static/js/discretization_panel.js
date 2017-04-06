@@ -846,7 +846,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     redisplay.compute();
     redisplay.draw(options.colors);
 
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function(){
@@ -985,7 +985,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
 
     new Sortable(document.getElementById("sortable_typo_name"));
 
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("categorical_box"),
         _onclose = () => {
             deferred.resolve(false);

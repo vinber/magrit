@@ -10,6 +10,7 @@
             "alert_upload_shp": "All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload",
             "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML/GML detected)",
             "layer_success": "Layer successfully added to the map",
+            "layer_success_and_proj": "Layer successfully added to the map! Use projection informations provided with the layer ?",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
             "error_message": "Something wrong happened - Current operation has been aborted.",
             "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",

@@ -439,7 +439,7 @@ var display_discretization_links_discont = function(layer_name, field_name, nb_c
     redisplay.compute();
     redisplay.draw();
 
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = () => {

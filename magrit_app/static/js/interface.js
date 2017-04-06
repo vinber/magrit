@@ -832,7 +832,8 @@ function add_layer_topojson(text, options = {}){
     var type = "",
         topoObj = parsedJSON.file,
         data_to_load = false,
-        layers_names = Object.getOwnPropertyNames(topoObj.objects);
+        layers_names = Object.getOwnPropertyNames(topoObj.objects),
+        _proj;
 
     if(layers_names.length > 1){
         swal("", i18next.t("app_page.common.warning_multiple_layers"), "warning");
@@ -857,6 +858,9 @@ function add_layer_topojson(text, options = {}){
     if(_app.first_layer){
         remove_layer_cleanup('World');
         delete _app.first_layer;
+        if(parsedJSON.proj){
+            try { _proj = proj4(parsedJSON.proj) } catch (e){ _proj = undefined; console.log(e); }
+        }
     }
 
     let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -998,22 +1002,47 @@ function add_layer_topojson(text, options = {}){
         if(fields_type != undefined){
             current_layers[lyr_name_to_add].fields_type = fields_type;
         }
-        swal({title: "",
-              text: i18next.t("app_page.common.layer_success"),
-              allowOutsideClick: true,
-              allowEscapeKey: true,
-              type: "success"
-            }).then(() => {
-                if(target_layer_on_add && joined_dataset.length > 0)
-                    ask_join_now(lyr_name_to_add);
-                else if (target_layer_on_add)
-                    make_box_type_fields(lyr_name_to_add);
-            }, dismiss => {
-                if(target_layer_on_add && joined_dataset.length > 0)
-                    ask_join_now(lyr_name_to_add);
-                else if (target_layer_on_add)
-                    make_box_type_fields(lyr_name_to_add);
-            });
+        if(_proj == undefined){
+            swal({title: "",
+                  text: i18next.t("app_page.common.layer_success"),
+                  allowOutsideClick: true,
+                  allowEscapeKey: true,
+                  type: "success"
+                }).then(() => {
+                    if(target_layer_on_add && joined_dataset.length > 0)
+                        ask_join_now(lyr_name_to_add);
+                    else if (target_layer_on_add)
+                        make_box_type_fields(lyr_name_to_add);
+                }, dismiss => {
+                    if(target_layer_on_add && joined_dataset.length > 0)
+                        ask_join_now(lyr_name_to_add);
+                    else if (target_layer_on_add)
+                        make_box_type_fields(lyr_name_to_add);
+                });
+        } else {
+          swal({title: "",
+                text: i18next.t("app_page.common.layer_success_and_proj"),
+                showCancelButton: true,
+                showCloseButton: false,
+                allowEscapeKey: true,
+                allowOutsideClick: true,
+                type: "success"
+              }).then(() => {
+                  change_projection_4(_proj);
+                  _app.last_projection = parsedJSON.proj;
+        					addLastProjectionSelect('def_proj4');
+                  if(target_layer_on_add && joined_dataset.length > 0)
+                      ask_join_now(lyr_name_to_add);
+                  else if (target_layer_on_add)
+                      make_box_type_fields(lyr_name_to_add);
+              }, dismiss => {
+                  if(target_layer_on_add && joined_dataset.length > 0)
+                      ask_join_now(lyr_name_to_add);
+                  else if (target_layer_on_add)
+                      make_box_type_fields(lyr_name_to_add);
+              });
+
+        }
     }
     return lyr_name_to_add;
 };
@@ -1153,6 +1182,7 @@ function add_layout_feature(selected_feature, options = {}){
               		[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10],
               		[Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
             graticule = graticule.extent(extent);
+            current_layers['Graticule'].extent = extent;
         }
         map.insert("g", '.legend')
             .attrs({id: "Graticule", class: "layer"})
@@ -1637,7 +1667,7 @@ function prepare_available_symbols(){
     return xhrequest('GET', '/static/json/list_symbols.json', null)
             .then( list_res => {
                list_res = JSON.parse(list_res);
-               return Q.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
+               return Promise.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
                         default_symbols.push([list_res[i], symbols[i]]);

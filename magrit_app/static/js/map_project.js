@@ -105,6 +105,14 @@ function get_map_template(){
                     stroke_width: ellps.style.strokeWidth,
                     id: ft.id
                 });
+            } else if (ft.classList.contains('user_rectangle')){
+                if(!map_config.layout_features.user_rectangle) map_config.layout_features.user_rectangle = [];
+                let rect = ft.childNodes[0];
+                map_config.layout_features.user_rectangle.push({
+                    x: rect.getAttribute('x'), y: rect.getAttribute('y'),
+                    width: rect.getAttribute('width'), height: rect.getAttribute('height'),
+                    style: rect.getAttribute('style'), id: ft.id
+                });
             } else if(ft.classList.contains('arrow')){
                 if(!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
                 let line = ft.childNodes[0];
@@ -327,7 +335,7 @@ function get_map_template(){
         layer_style_i.fill_opacity = selection.style("fill-opacity");
     }
 
-    return Q.all(layers_style.map( obj => {return (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null}))
+    return Promise.all(layers_style.map( obj => {return (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null}))
         .then(function(result){
             for(let i = 0; i < layers_style.length; i++){
                     if(result[i]){
@@ -502,6 +510,16 @@ function apply_user_preferences(json_pref){
                     ellps_node.setAttribute('ry', ft.ry);
                     ellps_node.style.stroke = ft.stroke;
                     ellps_node.style.strokeWidth = ft.stroke_width;
+                }
+            }
+            if(map_config.layout_features.user_rectangle){
+                for(let i = 0; i < map_config.layout_features.user_rectangle.length; i++){
+                    let ft = map_config.layout_features.user_rectangle[i],
+                        rect = new UserRectangle(ft.id, [ft.x, ft.y], svg_map, true),
+                        rect_node = rect.rectangle.node().querySelector('rect');
+                    rect_node.setAttribute('height', ft.height);
+                    rect_node.setAttribute('width', ft.width);
+                    rect_node.setAttribute('style', ft.style);
                 }
             }
             if(map_config.layout_features.text_annot){

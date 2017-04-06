@@ -10,7 +10,7 @@ function createBoxTextImportWizard(file){
 
     let box_content = d3.select("#box_text_import_wizard").select(".modal-body");
     let a = new TextImportWizard(box_content.node(), file);
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("box_text_import_wizard"),
         dialog = container.querySelector('.modal-dialog');
     dialog.style.width = undefined;

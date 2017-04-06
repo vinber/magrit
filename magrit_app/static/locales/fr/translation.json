@@ -10,6 +10,7 @@
             "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML/GML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
+            "layer_success_and_proj": "Résultat ajouté à la carte! Souhaitez-vous utiliser les informations de projections contenues dans le fichier ?",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
             "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
             "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",

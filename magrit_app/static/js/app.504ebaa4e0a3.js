@@ -1319,7 +1319,7 @@ var make_confirm_dialog2 = function (class_box, title, options) {
         document.getElementById("twbs").appendChild(container);
 
         container = document.getElementById("myModal_" + new_id);
-        var deferred = Q.defer();
+        var deferred = Promise.pending();
         var html_content = options.html_content || "";
         var text_ok = options.text_ok || i18next.t("app_page.common.confirm");
         var text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
@@ -3261,7 +3261,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     redisplay.compute();
     redisplay.draw(options.colors);
 
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function () {
@@ -3385,7 +3385,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
 
     new Sortable(document.getElementById("sortable_typo_name"));
 
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("categorical_box"),
         _onclose = function _onclose() {
         deferred.resolve(false);
@@ -3878,7 +3878,7 @@ var display_discretization_links_discont = function display_discretization_links
     redisplay.compute();
     redisplay.draw();
 
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("discretiz_charts");
 
     container.querySelector(".btn_ok").onclick = function () {
@@ -7101,7 +7101,7 @@ var render_label = function render_label(layer, rendering_params, options) {
     };
 
     map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var pt = proj(d.geometry);
+        var pt = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
             "x": pt[0],
@@ -7138,6 +7138,8 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
     var txt_color = rendering_params.color;
     var selected_font = rendering_params.font;
     var font_size = rendering_params.ref_font_size + "px";
+    var position_lat = rendering_params.position_lat || 'bottom';
+    var position_lon = rendering_params.position_lat || 'left';
     var new_layer_data = [];
     var layer_to_add = check_layer_name("Labels_Graticule");
     var layer_id = encodeId(layer_to_add);
@@ -7148,20 +7150,21 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
     } else if (layer) {
-        var lines = d3.geoGraticule().step([current_layers['Graticule'].step, current_layers['Graticule'].step]).lines();
-        nb_ft = lines.length;
+        var grat = d3.geoGraticule().step([current_layers['Graticule'].step, current_layers['Graticule'].step]);
+        grat = current_layers['Graticule'].extent ? grat.extent(current_layers['Graticule'].extent).lines() : grat.lines();
+        nb_ft = grat.length;
         for (var i = 0; i < nb_ft; i++) {
             var txt = void 0,
                 geometry = void 0;
-            var line = lines[i];
+            var line = grat[i];
             if (line.coordinates[0][0] == line.coordinates[1][0]) {
                 txt = line.coordinates[0][0];
-                geometry = { type: "Point", coordinates: line.coordinates[0] };
+                geometry = position_lat == 'right' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
             } else if (line.coordinates[0][1] == line.coordinates[1][1]) {
                 txt = line.coordinates[0][1];
-                geometry = { type: "Point", coordinates: line.coordinates[0] };
+                geometry = position_lon == 'right' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
             }
-            if (txt) {
+            if (txt != undefined) {
                 new_layer_data.push({
                     id: i,
                     type: "Feature",
@@ -7182,7 +7185,7 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
     };
 
     map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var pt = proj(d.geometry.coordinates);
+        var pt = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
             "x": pt[0],
@@ -7567,7 +7570,7 @@ function make_box_type_fields(layer_name) {
     }),
         ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("box_type_fields");
 
     var clean_up_box = function clean_up_box() {
@@ -9131,7 +9134,8 @@ function add_layer_topojson(text) {
     var type = "",
         topoObj = parsedJSON.file,
         data_to_load = false,
-        layers_names = Object.getOwnPropertyNames(topoObj.objects);
+        layers_names = Object.getOwnPropertyNames(topoObj.objects),
+        _proj;
 
     if (layers_names.length > 1) {
         swal("", i18next.t("app_page.common.warning_multiple_layers"), "warning");
@@ -9156,6 +9160,13 @@ function add_layer_topojson(text) {
     if (_app.first_layer) {
         remove_layer_cleanup('World');
         delete _app.first_layer;
+        if (parsedJSON.proj) {
+            try {
+                _proj = proj4(parsedJSON.proj);
+            } catch (e) {
+                _proj = undefined;console.log(e);
+            }
+        }
     }
 
     var field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
@@ -9281,16 +9292,34 @@ function add_layer_topojson(text) {
         if (fields_type != undefined) {
             current_layers[lyr_name_to_add].fields_type = fields_type;
         }
-        swal({ title: "",
-            text: i18next.t("app_page.common.layer_success"),
-            allowOutsideClick: true,
-            allowEscapeKey: true,
-            type: "success"
-        }).then(function () {
-            if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
-        }, function (dismiss) {
-            if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
-        });
+        if (_proj == undefined) {
+            swal({ title: "",
+                text: i18next.t("app_page.common.layer_success"),
+                allowOutsideClick: true,
+                allowEscapeKey: true,
+                type: "success"
+            }).then(function () {
+                if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
+            }, function (dismiss) {
+                if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
+            });
+        } else {
+            swal({ title: "",
+                text: i18next.t("app_page.common.layer_success_and_proj"),
+                showCancelButton: true,
+                showCloseButton: false,
+                allowEscapeKey: true,
+                allowOutsideClick: true,
+                type: "success"
+            }).then(function () {
+                change_projection_4(_proj);
+                _app.last_projection = parsedJSON.proj;
+                addLastProjectionSelect('def_proj4');
+                if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
+            }, function (dismiss) {
+                if (target_layer_on_add && joined_dataset.length > 0) ask_join_now(lyr_name_to_add);else if (target_layer_on_add) make_box_type_fields(lyr_name_to_add);
+            });
+        }
     }
     return lyr_name_to_add;
 };
@@ -9420,6 +9449,7 @@ function add_layout_feature(selected_feature) {
             var bbox_layer = _target_layer_file.bbox,
                 extent = [[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10], [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
             graticule = graticule.extent(extent);
+            current_layers['Graticule'].extent = extent;
         }
         map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(graticule).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
         current_layers["Graticule"] = {
@@ -9871,7 +9901,7 @@ function handleClickAddArrow() {
 function prepare_available_symbols() {
     return xhrequest('GET', '/static/json/list_symbols.json', null).then(function (list_res) {
         list_res = JSON.parse(list_res);
-        return Q.all(list_res.map(function (name) {
+        return Promise.all(list_res.map(function (name) {
             return xhrequest('GET', "/static/img/svg_symbols/" + name, null);
         })).then(function (symbols) {
             for (var i = 0; i < list_res.length; i++) {
@@ -10550,7 +10580,7 @@ function createStyleBoxGraticule(layer_name) {
     });
 
     var clip_extent_section = popup.append('p').attr('class', 'line_elem');
-    clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['clip'] ? true : null }).on('change', function () {
+    clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null }).on('change', function () {
         var next_layer = selection_strokeW.node().nextSibling,
             step_val = +document.getElementById("graticule_step_txt").value,
             dasharray_val = +document.getElementById("graticule_dasharray_txt").value,
@@ -10565,9 +10595,9 @@ function createStyleBoxGraticule(layer_name) {
             if (extent_grat[2] > 180) extent_grat[2] = 180;
             if (extent_grat[3] > 90) extent_grat[3] = 90;
             graticule = graticule.extent(extent_grat);
-            current_layers['Graticule'].clip = true;
+            current_layers['Graticule'].extent = extent_grat;
         } else {
-            current_layers['Graticule'].clip = false;
+            current_layers['Graticule'].extent = undefined;
         }
         map.append("g").attrs({ id: "Graticule", class: "layer" }).append("path").datum(graticule).attrs({ class: "graticule", d: path, "clip-path": "url(#clip)" }).styles({ fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val });
         zoom_without_redraw();
@@ -10577,7 +10607,7 @@ function createStyleBoxGraticule(layer_name) {
     });
     clip_extent_section.append('label').attrs({ for: 'clip_graticule' }).html(i18next.t('app_page.layer_style_popup.graticule_clip'));
 
-    make_generate_labels_section(popup, "Graticule");
+    make_generate_labels_graticule_section(popup);
 }
 
 function redraw_legend(type_legend, layer_name, field) {
@@ -11242,9 +11272,54 @@ function createStyleBox(layer_name) {
     make_generate_labels_section(popup, layer_name);
 }
 
+function make_generate_labels_graticule_section(parent_node) {
+    var labels_section = parent_node.append("p");
+    labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
+        this.style.fontWeight = "bold";
+    }).on("mouseout", function () {
+        this.style.fontWeight = "";
+    }).on("click", function () {
+        // swal({
+        //     title: "",
+        //     text: i18next.t("app_page.layer_style_popup.position_label_graticule"),
+        //     type: "question",
+        //     customClass: 'swal2_custom',
+        //     showCancelButton: true,
+        //     showCloseButton: false,
+        //     allowEscapeKey: false,
+        //     allowOutsideClick: false,
+        //     confirmButtonColor: "#DD6B55",
+        //     confirmButtonText: i18next.t("app_page.common.confirm"),
+        //     input: 'select',
+        //     inputPlaceholder: i18next.t("app_page.common.field"),
+        //     inputOptions: input_fields,
+        //     inputValidator: function(value) {
+        //         return new Promise(function(resolve, reject){
+        //             if(_fields.indexOf(value) < 0){
+        //                 reject(i18next.t("app_page.common.no_value"));
+        //             } else {
+        var options_labels = {
+            color: "#000",
+            font: "Arial,Helvetica,sans-serif",
+            ref_font_size: 12,
+            uo_layer_name: ["Labels", layer_name].join('_')
+        };
+        render_label_graticule(layer_name, options_labels);
+        //             resolve();
+        //           }
+        //       });
+        //   }
+        // }).then( value => {
+        //       console.log(value);
+        //   }, dismiss => {
+        //       console.log(dismiss);
+        // });
+    });
+}
+
 function make_generate_labels_section(parent_node, layer_name) {
     var _fields = get_fields_name(layer_name) || [];
-    if (_fields && _fields.length > 0 || layer_name == "Graticule") {
+    if (_fields && _fields.length > 0) {
         (function () {
             var labels_section = parent_node.append("p");
             var input_fields = {};
@@ -12755,8 +12830,9 @@ var northArrow = {
             var new_size = +this.value;
             self.arrow_img.attr("width", new_size);
             self.arrow_img.attr("height", new_size);
-            self.under_rect.attr("width", new_size);
-            self.under_rect.attr("height", new_size);
+            var bbox = self.arrow_img.node().getBoundingClientRect(),
+                xy0_map = get_map_xy0();
+            self.attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
             self.x_center = x_pos + new_size / 2;
             self.y_center = y_pos + new_size / 2;
             document.getElementById("txt_size_n_arrow").value = new_size;
@@ -12827,6 +12903,7 @@ var UserRectangle = function () {
             _t.y.baseVal.value = self.pt1[1];
         });
         this.draw();
+        return this;
     }
 
     _createClass(UserRectangle, [{
@@ -14593,6 +14670,14 @@ function get_map_template() {
                     stroke_width: ellps.style.strokeWidth,
                     id: ft.id
                 });
+            } else if (ft.classList.contains('user_rectangle')) {
+                if (!map_config.layout_features.user_rectangle) map_config.layout_features.user_rectangle = [];
+                var rect = ft.childNodes[0];
+                map_config.layout_features.user_rectangle.push({
+                    x: rect.getAttribute('x'), y: rect.getAttribute('y'),
+                    width: rect.getAttribute('width'), height: rect.getAttribute('height'),
+                    style: rect.getAttribute('style'), id: ft.id
+                });
             } else if (ft.classList.contains('arrow')) {
                 if (!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
                 var line = ft.childNodes[0];
@@ -14805,7 +14890,7 @@ function get_map_template() {
         layer_style_i.fill_opacity = selection.style("fill-opacity");
     }
 
-    return Q.all(layers_style.map(function (obj) {
+    return Promise.all(layers_style.map(function (obj) {
         return obj.topo_geom && !obj.targeted ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null;
     })).then(function (result) {
         for (var _i3 = 0; _i3 < layers_style.length; _i3++) {
@@ -14992,23 +15077,33 @@ function apply_user_preferences(json_pref) {
                     ellps_node.style.strokeWidth = _ft2.stroke_width;
                 }
             }
+            if (map_config.layout_features.user_rectangle) {
+                for (var _i8 = 0; _i8 < map_config.layout_features.user_rectangle.length; _i8++) {
+                    var _ft3 = map_config.layout_features.user_rectangle[_i8],
+                        rect = new UserRectangle(_ft3.id, [_ft3.x, _ft3.y], svg_map, true),
+                        rect_node = rect.rectangle.node().querySelector('rect');
+                    rect_node.setAttribute('height', _ft3.height);
+                    rect_node.setAttribute('width', _ft3.width);
+                    rect_node.setAttribute('style', _ft3.style);
+                }
+            }
             if (map_config.layout_features.text_annot) {
-                for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
-                    var _ft3 = map_config.layout_features.text_annot[_i8];
-                    var new_txt_box = new Textbox(svg_map, _ft3.id, [_ft3.position_x, _ft3.position_y]);
+                for (var _i9 = 0; _i9 < map_config.layout_features.text_annot.length; _i9++) {
+                    var _ft4 = map_config.layout_features.text_annot[_i9];
+                    var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
                     var inner_p = new_txt_box.text_annot.select("p").node();
-                    inner_p.innerHTML = _ft3.content;
-                    inner_p.style = _ft3.style;
-                    new_txt_box.text_annot.attr('transform', _ft3.transform);
-                    new_txt_box.fontsize = +_ft3.style.split('font-size: ')[1].split('px')[0];
-                    new_txt_box.font_family = _ft3.style.split('font-family: ')[1].split(';')[0];
+                    inner_p.innerHTML = _ft4.content;
+                    inner_p.style = _ft4.style;
+                    new_txt_box.text_annot.attr('transform', _ft4.transform);
+                    new_txt_box.fontsize = +_ft4.style.split('font-size: ')[1].split('px')[0];
+                    new_txt_box.font_family = _ft4.style.split('font-family: ')[1].split(';')[0];
                 }
             }
             if (map_config.layout_features.single_symbol) {
-                for (var _i9 = 0; _i9 < map_config.layout_features.single_symbol.length; _i9++) {
-                    var _ft4 = map_config.layout_features.single_symbol[_i9];
-                    var symb = add_single_symbol(_ft4.href, _ft4.x, _ft4.y, _ft4.width, _ft4.height);
-                    if (_ft4.scalable) {
+                for (var _i10 = 0; _i10 < map_config.layout_features.single_symbol.length; _i10++) {
+                    var _ft5 = map_config.layout_features.single_symbol[_i10];
+                    var symb = add_single_symbol(_ft5.href, _ft5.x, _ft5.y, _ft5.width, _ft5.height);
+                    if (_ft5.scalable) {
                         var parent_symb = symb.node().parentElement;
                         parent_symb.classList.add('scalable-legend');
                         parent_symb.setAttribute('transform', ['translate(', map_config.zoom_translate[0], ',', map_config.zoom_translate[1], ') scale(', map_config.zoom_scale, ',', map_config.zoom_scale, ')'].join(''));
@@ -15061,8 +15156,8 @@ function apply_user_preferences(json_pref) {
 
     // Add each layer :
 
-    var _loop = function _loop(_i10) {
-        var _layer = layers[_i10],
+    var _loop = function _loop(_i11) {
+        var _layer = layers[_i11],
             layer_name = _layer.layer_name,
             symbol = void 0;
 
@@ -15314,8 +15409,8 @@ function apply_user_preferences(json_pref) {
         }
     };
 
-    for (var _i10 = map_config.n_layers - 1; _i10 > -1; --_i10) {
-        _loop(_i10);
+    for (var _i11 = map_config.n_layers - 1; _i11 > -1; --_i11) {
+        _loop(_i11);
     }
 }
 
@@ -15442,7 +15537,7 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
     newbox.selectAll(".typo_class").insert("span").style("display", "inline-block").html(" px");
     new Sortable(document.getElementById("typo_categories"));
 
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("symbol_box"),
         fn_cb = function fn_cb(evt) {
         helper_esc_key_twbs_cb(evt, _onclose);
@@ -15529,7 +15624,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         "vertical-align": "middle", "margin": "auto", "background-image": "url('')"
     });
 
-    var deferred = Q.defer();
+    var deferred = Promise.pending();
     var fn_cb = function fn_cb(evt) {
         helper_esc_key_twbs_cb(evt, _onclose);
     };
@@ -16537,7 +16632,7 @@ function createBoxTextImportWizard(file) {
 
     var box_content = d3.select("#box_text_import_wizard").select(".modal-body");
     var a = new TextImportWizard(box_content.node(), file);
-    var deferred = Q.defer(),
+    var deferred = Promise.pending(),
         container = document.getElementById("box_text_import_wizard"),
         dialog = container.querySelector('.modal-dialog');
     dialog.style.width = undefined;

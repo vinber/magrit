@@ -345,7 +345,7 @@ function make_box_type_fields(layer_name){
         f = fields_type.map(v => v.name),
         ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("box_type_fields");
 
     let clean_up_box = () => {

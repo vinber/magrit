@@ -101,7 +101,7 @@ var display_box_symbol_typo = function(layer, field, categories){
             .html(" px");
     new Sortable(document.getElementById("typo_categories"));
 
-    let deferred = Q.defer(),
+    let deferred = Promise.pending(),
         container = document.getElementById("symbol_box"),
         fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
 
@@ -210,7 +210,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
                 "vertical-align": "middle", "margin": "auto", "background-image": "url('')"
               });
 
-    let deferred = Q.defer();
+    let deferred = Promise.pending();
     let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
     let clean_up_box = function(){
         container.remove();

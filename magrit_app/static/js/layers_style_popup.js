@@ -461,7 +461,7 @@ function createStyleBoxGraticule(layer_name){
 
     let clip_extent_section = popup.append('p').attr('class', 'line_elem');
     clip_extent_section.append('input')
-        .attrs({type: 'checkbox', id: 'clip_graticule', checked: current_params['clip'] ? true : null})
+        .attrs({type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null})
         .on('change', function(){
             let next_layer = selection_strokeW.node().nextSibling,
                 step_val = +document.getElementById("graticule_step_txt").value,
@@ -479,9 +479,9 @@ function createStyleBoxGraticule(layer_name){
                 if(extent_grat[2] > 180) extent_grat[2] = 180;
                 if(extent_grat[3] > 90) extent_grat[3] = 90;
                 graticule = graticule.extent(extent_grat);
-                current_layers['Graticule'].clip = true;
+                current_layers['Graticule'].extent = extent_grat;
             } else {
-                current_layers['Graticule'].clip = false;
+                current_layers['Graticule'].extent = undefined;
             }
             map.append("g").attrs({id: "Graticule", class: "layer"})
                  .append("path")
@@ -497,7 +497,7 @@ function createStyleBoxGraticule(layer_name){
         .attrs({for: 'clip_graticule'})
         .html(i18next.t('app_page.layer_style_popup.graticule_clip'));
 
-    make_generate_labels_section(popup, "Graticule");
+    make_generate_labels_graticule_section(popup);
 }
 
 function redraw_legend(type_legend, layer_name, field){
@@ -1261,9 +1261,60 @@ function createStyleBox(layer_name){
     make_generate_labels_section(popup, layer_name);
 }
 
+function make_generate_labels_graticule_section(parent_node){
+    let labels_section = parent_node.append("p");
+    labels_section.append("span")
+        .attr("id", "generate_labels")
+        .styles({"cursor": "pointer", "margin-top": "15px"})
+        .html(i18next.t("app_page.layer_style_popup.generate_labels"))
+        .on("mouseover", function(){
+          this.style.fontWeight = "bold"
+        })
+        .on("mouseout", function(){
+          this.style.fontWeight = "";
+        })
+        .on("click", function(){
+            // swal({
+            //     title: "",
+            //     text: i18next.t("app_page.layer_style_popup.position_label_graticule"),
+            //     type: "question",
+            //     customClass: 'swal2_custom',
+            //     showCancelButton: true,
+            //     showCloseButton: false,
+            //     allowEscapeKey: false,
+            //     allowOutsideClick: false,
+            //     confirmButtonColor: "#DD6B55",
+            //     confirmButtonText: i18next.t("app_page.common.confirm"),
+            //     input: 'select',
+            //     inputPlaceholder: i18next.t("app_page.common.field"),
+            //     inputOptions: input_fields,
+            //     inputValidator: function(value) {
+            //         return new Promise(function(resolve, reject){
+            //             if(_fields.indexOf(value) < 0){
+            //                 reject(i18next.t("app_page.common.no_value"));
+            //             } else {
+            let options_labels = {
+              color: "#000",
+              font: "Arial,Helvetica,sans-serif",
+              ref_font_size: 12,
+              uo_layer_name: ["Labels", layer_name].join('_')
+            };
+            render_label_graticule(layer_name, options_labels);
+              //             resolve();
+              //           }
+              //       });
+              //   }
+              // }).then( value => {
+              //       console.log(value);
+              //   }, dismiss => {
+              //       console.log(dismiss);
+              // });
+          });
+}
+
 function make_generate_labels_section(parent_node, layer_name){
     let _fields = get_fields_name(layer_name) || [];
-    if(_fields && _fields.length > 0 || layer_name == "Graticule"){
+    if(_fields && _fields.length > 0){
       let labels_section = parent_node.append("p");
       let input_fields = {};
       for(let i = 0; i < _fields.length; i++){

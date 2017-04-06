@@ -1090,8 +1090,9 @@ var northArrow = {
                 let new_size = +this.value;
                 self.arrow_img.attr("width", new_size);
                 self.arrow_img.attr("height", new_size);
-                self.under_rect.attr("width", new_size);
-                self.under_rect.attr("height", new_size);
+                let bbox = self.arrow_img.node().getBoundingClientRect(),
+                    xy0_map = get_map_xy0();
+                self.attrs({x: bbox.left -7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15})
                 self.x_center = x_pos + new_size / 2;
                 self.y_center = y_pos + new_size / 2;
                 document.getElementById("txt_size_n_arrow").value = new_size;
@@ -1170,6 +1171,7 @@ class UserRectangle {
                 _t.y.baseVal.value = self.pt1[1];
               });
         this.draw();
+        return this;
     }
 
     up_element(){
