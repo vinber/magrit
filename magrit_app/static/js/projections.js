@@ -166,7 +166,10 @@ function addLastProjectionSelect(proj_name){
 
 const createBoxCustomProjection = function(){
 	function updateSelect(filter_in, filter_ex){
-			display_select_proj.selectAll('option').remove();
+			display_select_proj.remove();
+			display_select_proj = p.append('select')
+					.attr('id', 'select_proj')
+		  		.attr('size', 18);
 			if(!filter_in && !filter_ex){
 				for(let proj_name of available_projections.keys()){
 			      display_select_proj.append('option')
@@ -175,25 +178,34 @@ const createBoxCustomProjection = function(){
 			  }
 			} else if (!filter_ex){
 					available_projections.forEach((v,k) => {
-							if(v.param_in == filter_in)
-									display_select_proj.append('option')
-											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+							if(v.param_in == filter_in){
+									display_select_proj.insert('option')
+											.attrs({class: 'i18n', value: k})
 											.text(i18next.t('app_page.projection_name.' + k));
+							}
 					});
 			} else if (!filter_in){
 					available_projections.forEach((v,k) => {
 							if(v.param_ex == filter_ex)
 									display_select_proj.append('option')
-											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+											.attrs({class: 'i18n', value: k})
 											.text(i18next.t('app_page.projection_name.' + k));
 					});
 			} else {
+					let empty = true;
 					available_projections.forEach((v,k) => {
-							if(v.param_in == filter_in && v.param_ex == filter_ex)
+							if(v.param_in == filter_in && v.param_ex == filter_ex){
+									empty = false;
 									display_select_proj.append('option')
-											.attrs({class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k})
+											.attrs({class: 'i18n', value: k})
 											.text(i18next.t('app_page.projection_name.' + k));
+							}
 					});
+					if(empty){
+							display_select_proj.append('option')
+									.attrs({class: 'i18n', value: 'no_result'})
+									.html(i18next.t('app_page.projection_box.no_result_projection'));
+					}
 			}
 	};
 	function onClickFilter(){
@@ -275,7 +287,7 @@ const createBoxCustomProjection = function(){
 	filtersection1.append('div')
 			.attrs({class: 'switch-title'})
 			.html(i18next.t('app_page.projection_box.filter_nature'));
-	['any', 'other', 'cone', 'cylindre', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
+	['any', 'other', 'cone', 'cylindrical', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
 			let _id = 'switch_proj1_elem_' + i;
 			filtersection1.append('input')
 					.attrs({type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v});
@@ -299,8 +311,9 @@ const createBoxCustomProjection = function(){
 
 	Array.prototype.forEach.call(document.querySelectorAll('.filter1,.filter2'), el => { el.onclick = onClickFilter; });
 
-	var display_select_proj = column3.append('select')
-			// .style('margin', '20px 7.5px 0 0')
+	var p = column3.append('p').style('margin', 'auto');
+	var display_select_proj = p.append('select')
+			// .style('margin', '20px 7.5px 0 0') =
 			.attr('id', 'select_proj')
   		.attr('size', 18);
 
@@ -313,6 +326,7 @@ const createBoxCustomProjection = function(){
 			.html(i18next.t('app_page.projection_box.ok_reproject'))
 			.on('click', function(){
 					current_proj_name = document.getElementById('select_proj').value;
+					if(current_proj_name == "no_result") return;
 					addLastProjectionSelect(current_proj_name);
 					change_projection(current_proj_name);
 					updateProjOptions();

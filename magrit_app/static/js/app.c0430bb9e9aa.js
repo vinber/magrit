@@ -15707,7 +15707,8 @@ function addLastProjectionSelect(proj_name) {
 
 var createBoxCustomProjection = function createBoxCustomProjection() {
 		function updateSelect(filter_in, filter_ex) {
-				display_select_proj.selectAll('option').remove();
+				display_select_proj.remove();
+				display_select_proj = p.append('select').attr('id', 'select_proj').attr('size', 18);
 				if (!filter_in && !filter_ex) {
 						var _iteratorNormalCompletion = true;
 						var _didIteratorError = false;
@@ -15735,16 +15736,25 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						}
 				} else if (!filter_ex) {
 						available_projections.forEach(function (v, k) {
-								if (v.param_in == filter_in) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+								if (v.param_in == filter_in) {
+										display_select_proj.insert('option').attrs({ class: 'i18n', value: k }).text(i18next.t('app_page.projection_name.' + k));
+								}
 						});
 				} else if (!filter_in) {
 						available_projections.forEach(function (v, k) {
-								if (v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+								if (v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k }).text(i18next.t('app_page.projection_name.' + k));
 						});
 				} else {
+						var empty = true;
 						available_projections.forEach(function (v, k) {
-								if (v.param_in == filter_in && v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k, 'data-i18n': 'app_page.projection_name.' + k }).text(i18next.t('app_page.projection_name.' + k));
+								if (v.param_in == filter_in && v.param_ex == filter_ex) {
+										empty = false;
+										display_select_proj.append('option').attrs({ class: 'i18n', value: k }).text(i18next.t('app_page.projection_name.' + k));
+								}
 						});
+						if (empty) {
+								display_select_proj.append('option').attrs({ class: 'i18n', value: 'no_result' }).html(i18next.t('app_page.projection_box.no_result_projection'));
+						}
 				}
 		};
 		function onClickFilter() {
@@ -15811,7 +15821,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 
 		var filtersection1 = column1.append('div').attr('class', 'switch-field f1');
 		filtersection1.append('div').attrs({ class: 'switch-title' }).html(i18next.t('app_page.projection_box.filter_nature'));
-		['any', 'other', 'cone', 'cylindre', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach(function (v, i) {
+		['any', 'other', 'cone', 'cylindrical', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach(function (v, i) {
 				var _id = 'switch_proj1_elem_' + i;
 				filtersection1.append('input').attrs({ type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v });
 				filtersection1.append('label').attr('for', _id).html(i18next.t('app_page.projection_box.' + v));
@@ -15829,8 +15839,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				el.onclick = onClickFilter;
 		});
 
-		var display_select_proj = column3.append('select')
-		// .style('margin', '20px 7.5px 0 0')
+		var p = column3.append('p').style('margin', 'auto');
+		var display_select_proj = p.append('select')
+		// .style('margin', '20px 7.5px 0 0') =
 		.attr('id', 'select_proj').attr('size', 18);
 
 		updateSelect(null, null);
@@ -15839,6 +15850,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		// .styles({margin: '5px 0 5px 0', padding: '5px', float: 'right'})
 		.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
 				current_proj_name = document.getElementById('select_proj').value;
+				if (current_proj_name == "no_result") return;
 				addLastProjectionSelect(current_proj_name);
 				change_projection(current_proj_name);
 				updateProjOptions();

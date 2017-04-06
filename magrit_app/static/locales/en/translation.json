@@ -294,7 +294,7 @@
             "other": "Other",
             "cone": "Conic",
             "plan": "Plane",
-            "cylindre": "Cylindrical",
+            "cylindrical": "Cylindrical",
             "pseudocone": "Pseudo-conic",
             "pseudocylindre": "Pseudo-cylindrical",
             "pseudoplan": "Pseudo-plane",
@@ -302,7 +302,8 @@
             "conformal": "Conformal",
             "equalarea": "Equal-area",
             "equidistant": "Equidistant",
-            "any": "No filter"
+            "any": "No filter",
+            "no_result_projection": "<i>(No match)</i>"
         },
         "layout_features_box": {
             "title": "Layout features",

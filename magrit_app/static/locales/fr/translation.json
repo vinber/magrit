@@ -294,7 +294,7 @@
             "other": "Autre",
             "cone": "Cone",
             "plan": "Plan",
-            "cylindre": "Cylindre",
+            "cylindrical": "Cylindre",
             "pseudocone": "Pseudo-cone",
             "pseudocylindre": "Pseudo-cylindre",
             "pseudoplan": "Pseudo-plan",
@@ -302,7 +302,8 @@
             "conformal": "Conforme",
             "equalarea": "Équivalente",
             "equidistant": "Équidistante",
-            "any": "Aucune filtre"
+            "any": "Aucune filtre",
+            "no_result_projection": "<i>(Pas de correspondance)</i>"
         },
         "layout_features_box": {
             "title": "Élements d'habillage",
