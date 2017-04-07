@@ -306,6 +306,11 @@
             "any": "No filter",
             "no_result_projection": "<i>(No match)</i>"
         },
+        "proj4_box":{
+            "title": "",
+            "enter_string": "Saisie d'une chaine de charactère au format proj4",
+            "error": "Valeur invalide. (Détails: {{detail}})"
+        },
         "layout_features_box": {
             "title": "Layout features",
             "subtitle": "Feature to add",
@@ -394,16 +399,16 @@
                 "concatenate": "Concatenate",
                 "join_char": "Character to join the two fields (can stay blank) :<br>",
                 "keep_char": "Number of char to keep (from the left) :<br>",
-                "invalid_name": "Unauthorized column name !",
+                "invalid_name": "Unauthorized column name!",
                 "constant_value": "Constant value..."
             }
         },
         "box_choice_symbol": {
             "title": "Symbol selection",
             "select_symbol": "Select a symbol ...",
-            "upload_symbol": "Or upload your symbol ",
+            "upload_symbol": "Or upload your symbol/image ",
             "browse": "Browse",
-            "selected_symbol": "Selected symbol :"
+            "selected_symbol": "Selected symbol:"
         },
         "legend_style_box": {
             "title": "Layer style options - {{layer_name}}",
@@ -416,7 +421,8 @@
             "no_data": "No data category name",
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Display a box under the legend",
-            "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>"
+            "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>",
+            "choice_break_symbol": "Customize symbols values..."
         },
         "legend_symbol_values_box": {
             "reset": "Reset to default values",
@@ -688,7 +694,7 @@
         "switch_ref_histo": "Switch representation",
         "stddev_share_txt1": "Amplitude:",
         "stddev_share_txt2": "standard deviation",
-        "stddev_role_mean": "Mean value role:",
+        "stddev_role_mean": "Mean value position:",
         "stddev_center_mean": "class center",
         "stddev_break_mean": "class break"
     },

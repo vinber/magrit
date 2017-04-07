@@ -414,6 +414,19 @@ function setUpInterface() {
     });
     var zoom_prop = svg_map.__zoom;
 
+    var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+    d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit",
+        class: "m_elem_right list_elem_section4 button_st4 i18n",
+        'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
+        document.getElementById('btn_s4').click();
+        window.scrollTo(0, 0);
+        w = Math.round(window.innerWidth - 361);
+        h = window.innerHeight - 55;
+        canvas_mod_size([w, h]);
+        document.getElementById('map_ratio_select').value = "ratio_user";
+    });
+
     var c = dv4.append("li").styles({ margin: "1px", padding: "4px" });
     c.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_menu").style("cursor", "pointer");
     c.append("span").attr("id", "map_center_menu_ico").style("display", "inline-table").style("cursor", "pointer");
@@ -458,19 +471,6 @@ function setUpInterface() {
         step: "any" }).style("width", "80px").on("change", function () {
         svg_map.__zoom.k = +this.value / proj.scale();
         zoom_without_redraw();
-    });
-
-    var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit",
-        class: "m_elem_right list_elem_section4 button_st4 i18n",
-        'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
-        document.getElementById('btn_s4').click();
-        window.scrollTo(0, 0);
-        w = Math.round(window.innerWidth - 361);
-        h = window.innerHeight - 55;
-        canvas_mod_size([w, h]);
-        document.getElementById('map_ratio_select').value = "ratio_user";
     });
 
     var g = dv4.append("li").styles({ margin: "1px", padding: "4px" });
@@ -3048,10 +3048,12 @@ var display_discretization = function display_discretization(layer_name, field_n
             input_section_stddev.style('display', '');
             document.getElementById("nb_class_range").disabled = 'disabled';
             txt_nb_class.style('disabled', 'disabled');
+            disc_nb_class.style('display', 'none');
         } else {
             input_section_stddev.style('display', 'none');
             document.getElementById("nb_class_range").disabled = false;
             txt_nb_class.style('disabled', false);
+            disc_nb_class.style('display', 'inline');
         }
         if (type === "Q6") {
             update_nb_class(6);
@@ -7739,12 +7741,12 @@ function getAvailablesFunctionnalities(layer_name) {
             return d.style.filter = "invert(0%) saturate(100%)";
         });
     }
-    if (fields_stock.length === 0 && fields_ratio.length === 0) {
+    if (fields_stock.length === 0 || fields_ratio.length === 0) {
         document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
     } else {
         document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
     }
-    if (fields_stock.length === 0 && fields_categ.length === 0) {
+    if (fields_stock.length === 0 || fields_categ.length === 0) {
         document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
     } else {
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
@@ -12870,9 +12872,11 @@ var UserRectangle = function () {
         this.id = id;
         this.stroke_width = 4;
         this.stroke_color = "rgb(0, 0, 0)";
-        this.fill_color = 'none';
-        this.fill_opacity = 1;
-
+        this.fill_color = 'rgb(255, 255, 255)';
+        this.fill_opacity = 0;
+        this.height = 40;
+        this.width = 30;
+        var self = this;
         if (!untransformed) {
             var zoom_param = svg_map.__zoom;
             this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
@@ -12884,7 +12888,8 @@ var UserRectangle = function () {
             var t = d3.select(this.querySelector("rect"));
             return {
                 x: +t.attr("x"), y: +t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                snap_lines: get_coords_snap_lines(this.id)
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
@@ -12899,6 +12904,49 @@ var UserRectangle = function () {
                 tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
             self.pt1 = [+subject.x + tx, +subject.y + ty];
+            self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
+            if (_app.autoalign_features) {
+                var snap_lines_x = subject.snap_lines.x,
+                    snap_lines_y = subject.snap_lines.y;
+                for (var i = 0; i < subject.snap_lines.x.length; i++) {
+                    if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                        })();
+                    }
+                    if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
+                        (function () {
+                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
+                            setTimeout(function () {
+                                l.remove();
+                            }, 1000);
+                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
+                        })();
+                    }
+                }
+            }
             _t.x.baseVal.value = self.pt1[0];
             _t.y.baseVal.value = self.pt1[1];
         });
@@ -12937,8 +12985,9 @@ var UserRectangle = function () {
             this.rectangle = this.svg_elem.append('g').attrs({ "class": "user_rectangle legend scalable-legend", "id": this.id, transform: svg_map.__zoom.toString() });
 
             var r = this.rectangle.insert("rect").attrs({ "x": this.pt1[0], "y": this.pt1[1],
-                "height": 40, "width": 30 }).styles({ "stroke-width": this.stroke_width,
-                stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                "height": this.height, "width": this.width }).styles({ "stroke-width": this.stroke_width,
+                stroke: this.stroke_color,
+                fill: this.fill_color,
                 "fill-opacity": 0 });
 
             this.rectangle.on("contextmenu", function () {
@@ -12998,7 +13047,7 @@ var UserRectangle = function () {
             var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4).attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
                 var dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 d3.select(this).attr("y", d3.event.y - 4);
-                rectangle_elem.height.baseVal.value = dist * 2;
+                self.height = rectangle_elem.height.baseVal.value = dist * 2;
                 self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
             }));
 
@@ -13007,7 +13056,7 @@ var UserRectangle = function () {
                 y: center_pt[1] * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on("drag", function () {
                 var dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 d3.select(this).attr("x", d3.event.x - 4);
-                rectangle_elem.width.baseVal.value = dist * 2;
+                self.width = rectangle_elem.width.baseVal.value = dist * 2;
                 self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
             }));
 
@@ -13032,7 +13081,7 @@ var UserRectangle = function () {
                     self.stroke_width = rectangle_elem.style.strokeWidth;
                     self.stroke_color = rectangle_elem.style.stroke;
                     self.fill_color = rectangle_elem.style.fill;
-                    self.fill_opacity = rectangle_elem.style.fillOpacity;
+                    self.fill_opacity = +rectangle_elem.style.fillOpacity;
                 } else {
                     //Rollback on initials parameters :
                     self.pt1 = current_options.pt1.slice();
@@ -13054,20 +13103,23 @@ var UserRectangle = function () {
 
             var s2 = box_content.append("p").style("margin", "auto");
             s2.append("p").style("margin", "auto").html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
-            s2.append("input").attrs({ type: "color", id: "rectangle_strokeColor", value: self.stroke_color }).on("change", function () {
+            s2.append("input").attrs({ type: "color", id: "rectangle_strokeColor", value: rgb2hex(self.stroke_color) }).on("change", function () {
                 rectangle_elem.style.stroke = this.value;
             });
 
             var s3 = box_content.append('p').style('margin', 'auto');
             s3.append('p').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_color'));
-            s3.append('input').attrs({ type: 'color', id: 'rectangle_fillColor', value: self.fill_color }).on('change', function () {
+            s3.append('input').attrs({ type: 'color', id: 'rectangle_fillColor', value: rgb2hex(self.fill_color) }).on('change', function () {
                 rectangle_elem.style.fill = this.value;
             });
 
+            console.log(self.fill_opacity);
+            console.log(rectangle_elem.style.fillOpacity);
             var s4 = box_content.append('p').style('margin', 'auto');
             s4.append('p').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
-            s4.append('input').attrs({ type: 'range', value: self.fill_opacity, min: 0, max: 1, step: 0.1 }).styles({ width: '55px', 'vertical-align': 'middle', display: 'inline' }).on('change', function () {
-                rectangle_elem.style.fillOpacity = +this.value;
+            s4.append('input').attrs({ type: 'range', value: rectangle_elem.style.fillOpacity, min: 0, max: 1, step: 0.1 }).styles({ width: '55px', 'vertical-align': 'middle', display: 'inline' }).on('change', function () {
+                console.log(this.value);
+                rectangle_elem.style.fillOpacity = this.value;
             });
         }
     }]);
@@ -13809,7 +13861,9 @@ function createLegend_symbol(layer, field, title, subtitle) {
     }
     var t = current_layers[layer].size_legend_symbol;
     var ref_symbols_params = [{ size: propSize.scale(t[0].value) * z_scale, value: t[0].value }, { size: propSize.scale(t[1].value) * z_scale, value: t[1].value }, { size: propSize.scale(t[2].value) * z_scale, value: t[2].value }, { size: propSize.scale(t[3].value) * z_scale, value: t[3].value }];
-
+    if (ref_symbols_params[3].value == 0) {
+        ref_symbols_params.pop();
+    }
     var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
         return "lg legend_" + i;
     });
@@ -14427,20 +14481,6 @@ function createlegendEditBox(legend_id, layer_name) {
 
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root_symbol") {
-        // let choice_break_value_section1 = box_body.insert('p');
-        // choice_break_value_section1.append('span')
-        //     .styles({cursor: 'pointer'})
-        //     .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
-        //     .on('click', function(){
-        //         container.modal.hide();
-        //         display_box_value_symbol(layer_name).then(confirmed => {
-        //             container.modal.show();
-        //             if(confirmed){
-        //                 redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-        //             }
-        //         });
-        //     });
-
         var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         var _gap_section = box_body.insert("p");
         _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
@@ -14490,6 +14530,17 @@ function createlegendEditBox(legend_id, layer_name) {
         value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color) }).on("change", function () {
         rect_fill_value = { color: this.value, opacity: 1 };
         make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
+    });
+
+    var choice_break_value_section1 = box_body.insert('p');
+    choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
+        container.modal.hide();
+        display_box_value_symbol(layer_name).then(function (confirmed) {
+            container.modal.show();
+            if (confirmed) {
+                redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+            }
+        });
     });
 }
 
@@ -15763,6 +15814,17 @@ var createBoxProj4 = function createBoxProj4() {
 						try {
 								_p = proj4(proj_str);
 						} catch (e) {
+								swal({ title: "Oops...",
+										text: i18next.t('app_page.proj4_box.error', { detail: e }),
+										type: "error",
+										allowOutsideClick: false,
+										allowEscapeKey: false
+								}).then(function () {
+										null;
+								}, function () {
+										null;
+								});
+								console.log(e);
 								return;
 						}
 						change_projection_4(_p);

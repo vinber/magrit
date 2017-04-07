@@ -478,7 +478,9 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
       {size: propSize.scale(t[2].value) * z_scale, value: t[2].value},
       {size: propSize.scale(t[3].value) * z_scale, value: t[3].value}
     ];
-
+    if(ref_symbols_params[3].value == 0){
+        ref_symbols_params.pop();
+    }
     var legend_elems = legend_root.selectAll('.legend')
                                   .append("g")
                                   .data(ref_symbols_params)
@@ -1232,20 +1234,6 @@ function createlegendEditBox(legend_id, layer_name){
 
         document.getElementById("style_lgd").checked = current_state;
     } else if (legend_id == "legend_root_symbol"){
-      // let choice_break_value_section1 = box_body.insert('p');
-      // choice_break_value_section1.append('span')
-      //     .styles({cursor: 'pointer'})
-      //     .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
-      //     .on('click', function(){
-      //         container.modal.hide();
-      //         display_box_value_symbol(layer_name).then(confirmed => {
-      //             container.modal.show();
-      //             if(confirmed){
-      //                 redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-      //             }
-      //         });
-      //     });
-
         let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
         let gap_section = box_body.insert("p");
         gap_section.append("input")
@@ -1315,6 +1303,20 @@ function createlegendEditBox(legend_id, layer_name){
                                  rect_fill_value
                                  );
         });
+
+    let choice_break_value_section1 = box_body.insert('p');
+    choice_break_value_section1.append('span')
+        .styles({cursor: 'pointer'})
+        .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+        .on('click', function(){
+            container.modal.hide();
+            display_box_value_symbol(layer_name).then(confirmed => {
+                container.modal.show();
+                if(confirmed){
+                    redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+                }
+            });
+        });
 }
 
 function move_legends(){
@@ -1348,7 +1350,6 @@ function move_legends(){
         }
     }
 }
-
 
 var get_max_nb_dec = function(layer_name){
     if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))

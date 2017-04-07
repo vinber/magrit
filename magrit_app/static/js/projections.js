@@ -127,6 +127,14 @@ const createBoxProj4 = function(){
 					try {
 						_p = proj4(proj_str);
 					} catch(e){
+						swal({title: "Oops...",
+								 text: i18next.t('app_page.proj4_box.error', {detail: e}),
+								 type: "error",
+								 allowOutsideClick: false,
+								 allowEscapeKey: false
+								}).then( () => { null; },
+													() => { null; });
+						console.log(e);
 						return;
 					}
 					change_projection_4(_p);

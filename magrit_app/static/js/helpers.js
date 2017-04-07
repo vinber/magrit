@@ -504,12 +504,12 @@ function getAvailablesFunctionnalities(layer_name){
     } else {
         Array.prototype.forEach.call(func_categ, d => d.style.filter = "invert(0%) saturate(100%)");
     }
-    if(fields_stock.length === 0 && fields_ratio.length === 0){
+    if(fields_stock.length === 0 || fields_ratio.length === 0){
         document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
     } else {
         document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
     }
-    if(fields_stock.length === 0 && fields_categ.length === 0){
+    if(fields_stock.length === 0 || fields_categ.length === 0){
         document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
     } else {
         document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';

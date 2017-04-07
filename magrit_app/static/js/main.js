@@ -517,6 +517,23 @@ function setUpInterface()
     });
     let zoom_prop = svg_map.__zoom;
 
+    let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    d2.append("p").attr("class", "list_elem_section4 i18n")
+            .attr("data-i18n", "[html]app_page.section4.resize_fit");
+    d2.append("button")
+            .styles({margin: 0, padding: 0})
+            .attrs({id: "resize_fit",
+                    class: "m_elem_right list_elem_section4 button_st4 i18n",
+                    'data-i18n': '[html]app_page.common.ok'})
+            .on('click', function(){
+                document.getElementById('btn_s4').click();
+                window.scrollTo(0, 0);
+                w = Math.round(window.innerWidth - 361);
+                h = window.innerHeight - 55;
+                canvas_mod_size([w, h]);
+                document.getElementById('map_ratio_select').value = "ratio_user";
+            });
+
     let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
     c.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.map_center_menu")
@@ -577,23 +594,6 @@ function setUpInterface()
             .on("change", function(){
                 svg_map.__zoom.k = +this.value / proj.scale();
                 zoom_without_redraw();
-            });
-
-    let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    d2.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button")
-            .styles({margin: 0, padding: 0})
-            .attrs({id: "resize_fit",
-                    class: "m_elem_right list_elem_section4 button_st4 i18n",
-                    'data-i18n': '[html]app_page.common.ok'})
-            .on('click', function(){
-                document.getElementById('btn_s4').click();
-                window.scrollTo(0, 0);
-                w = Math.round(window.innerWidth - 361);
-                h = window.innerHeight - 55;
-                canvas_mod_size([w, h]);
-                document.getElementById('map_ratio_select').value = "ratio_user";
             });
 
     let g = dv4.append("li").styles({margin: "1px", padding: "4px"});

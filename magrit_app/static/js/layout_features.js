@@ -1133,9 +1133,11 @@ class UserRectangle {
         this.id = id;
         this.stroke_width = 4;
         this.stroke_color = "rgb(0, 0, 0)";
-        this.fill_color = 'none';
-        this.fill_opacity = 1;
-
+        this.fill_color = 'rgb(255, 255, 255)';
+        this.fill_opacity = 0;
+        this.height = 40;
+        this.width = 30;
+        let self = this;
         if(!untransformed){
             let zoom_param = svg_map.__zoom;
             this.pt1 = [(origin_pt[0] - zoom_param.x )/ zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
@@ -1148,7 +1150,8 @@ class UserRectangle {
                     let t = d3.select(this.querySelector("rect"));
                     return {
                         x: +t.attr("x"), y: +t.attr("y"),
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                        snap_lines: get_coords_snap_lines(this.id)
                     };
               })
             .on("start", () => {
@@ -1167,6 +1170,37 @@ class UserRectangle {
                     tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
                     ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x + tx, +subject.y + ty];
+                self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
+                if(_app.autoalign_features){
+                    let snap_lines_x = subject.snap_lines.x,
+                        snap_lines_y = subject.snap_lines.y;
+                    for(let i = 0; i < subject.snap_lines.x.length; i++){
+                        if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                        }
+                        if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
+                        }
+                        if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                        }
+                        if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                          let l = map.append('line')
+                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                          setTimeout(function(){ l.remove(); }, 1000);
+                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
+                        }
+                    }
+                }
                 _t.x.baseVal.value = self.pt1[0];
                 _t.y.baseVal.value = self.pt1[1];
               });
@@ -1196,9 +1230,10 @@ class UserRectangle {
 
         let r = this.rectangle.insert("rect")
             .attrs({"x": this.pt1[0], "y": this.pt1[1],
-                    "height": 40, "width": 30})
+                    "height": this.height, "width": this.width})
             .styles({"stroke-width": this.stroke_width,
-                      stroke: this.stroke_color, fill: "rgb(255, 255, 255)",
+                      stroke: this.stroke_color,
+                      fill: this.fill_color,
                       "fill-opacity": 0});
 
         this.rectangle
@@ -1263,7 +1298,7 @@ class UserRectangle {
             .call(d3.drag().on("drag", function(){
                 let dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 d3.select(this).attr("y", d3.event.y - 4);
-                rectangle_elem.height.baseVal.value = dist * 2;
+                self.height = rectangle_elem.height.baseVal.value = dist * 2;
                 self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
             }));
 
@@ -1274,7 +1309,7 @@ class UserRectangle {
             .call(d3.drag().on("drag", function(){
                 let dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 d3.select(this).attr("x", d3.event.x - 4);
-                rectangle_elem.width.baseVal.value = dist * 2;
+                self.width = rectangle_elem.width.baseVal.value = dist * 2;
                 self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
             }));
 
@@ -1299,7 +1334,7 @@ class UserRectangle {
                     self.stroke_width = rectangle_elem.style.strokeWidth;
                     self.stroke_color = rectangle_elem.style.stroke;
                     self.fill_color = rectangle_elem.style.fill;
-                    self.fill_opacity = rectangle_elem.style.fillOpacity;
+                    self.fill_opacity = +rectangle_elem.style.fillOpacity;
                 } else {
                     //Rollback on initials parameters :
                     self.pt1 = current_options.pt1.slice();
@@ -1329,7 +1364,7 @@ class UserRectangle {
             .style("margin", "auto")
             .html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
         s2.append("input")
-            .attrs({type: "color", id: "rectangle_strokeColor", value: self.stroke_color})
+            .attrs({type: "color", id: "rectangle_strokeColor", value: rgb2hex(self.stroke_color)})
             .on("change", function(){
                 rectangle_elem.style.stroke = this.value;
             });
@@ -1339,20 +1374,23 @@ class UserRectangle {
             .style('margin', 'auto')
             .html(i18next.t('app_page.rectangle_edit_box.fill_color'));
         s3.append('input')
-            .attrs({type: 'color', id: 'rectangle_fillColor', value: self.fill_color})
+            .attrs({type: 'color', id: 'rectangle_fillColor', value: rgb2hex(self.fill_color)})
             .on('change', function(){
                 rectangle_elem.style.fill = this.value;
             });
 
+        console.log(self.fill_opacity);
+        console.log(rectangle_elem.style.fillOpacity);
         let s4 = box_content.append('p').style('margin', 'auto');
         s4.append('p')
             .style('margin', 'auto')
             .html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
         s4.append('input')
-            .attrs({type: 'range', value: self.fill_opacity, min: 0, max: 1, step: 0.1})
+            .attrs({type: 'range', value: rectangle_elem.style.fillOpacity, min: 0, max: 1, step: 0.1})
             .styles({width: '55px', 'vertical-align': 'middle', display: 'inline'})
             .on('change', function(){
-                rectangle_elem.style.fillOpacity = +this.value;
+                console.log(this.value)
+                rectangle_elem.style.fillOpacity = this.value;
             });
     }
 }

@@ -576,10 +576,12 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                   input_section_stddev.style('display', '');
                   document.getElementById("nb_class_range").disabled = 'disabled';
                   txt_nb_class.style('disabled', 'disabled');
+                  disc_nb_class.style('display', 'none');
               } else {
                   input_section_stddev.style('display', 'none');
                   document.getElementById("nb_class_range").disabled = false;
                   txt_nb_class.style('disabled', false);
+                  disc_nb_class.style('display', 'inline');
               }
               if(type === "Q6"){
                   update_nb_class(6);

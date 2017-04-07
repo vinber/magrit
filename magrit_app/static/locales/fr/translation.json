@@ -306,6 +306,11 @@
             "any": "Aucune filtre",
             "no_result_projection": "<i>(Pas de correspondance)</i>"
         },
+        "proj4_box":{
+            "title": "",
+            "enter_string": "Saisie d'une chaine de charactère au format proj4",
+            "error": "Valeur invalide. (Détails: {{detail}})"
+        },
         "layout_features_box": {
             "title": "Élements d'habillage",
             "subtitle": "Élement à ajouter",
@@ -397,6 +402,13 @@
                 "constant_value": "Valeur constante..."
             }
         },
+        "box_choice_symbol": {
+            "title": "Sélection du figuré",
+            "select_symbol": "Sélectionnez un symbole  ...",
+            "upload_symbol": "Ou ajouter votre symbole ou image ",
+            "browse": "Browse",
+            "selected_symbol": "Symbole sélectionné :"
+        },
         "legend_style_box": {
             "title": "Style de la couche - {{layer_name}}",
             "subtitle": "Personnalisation de la légende",
@@ -408,7 +420,8 @@
             "no_data": "Catégorie \"absence de données\"",
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Afficher un rectangle sous la légende",
-            "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>"
+            "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>",
+            "choice_break_symbol": "Personnaliser les valeurs des symboles..."
         },
         "legend_symbol_values_box": {
             "reset": "Remise à zéro des valeurs",
@@ -681,7 +694,7 @@
         "switch_ref_histo": "Autre représentation",
         "stddev_share_txt1": "Amplitude :",
         "stddev_share_txt2": "écart-type",
-        "stddev_role_mean": "Role de la moyenne :",
+        "stddev_role_mean": "Position de la moyenne :",
         "stddev_center_mean": "centre de classe",
         "stddev_break_mean": "borne de classe"
     },
