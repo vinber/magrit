@@ -110,31 +110,27 @@ function setUpInterface() {
     var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
 
     var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
-        var previous_value = 'NaturalEarth2';
-        return function () {
-            var val = this.value;
-            if (val == 'more') {
-                this.value = previous_value;
-                createBoxCustomProjection();
-                return;
-            } else if (val == 'proj4') {
-                this.value = previous_value;
-                createBoxProj4();
-                return;
-            } else if (val == 'last_projection') {
-                val = this.querySelector('[value="last_projection"]').name;
-            }
-            if (val == 'def_proj4') {
-                previous_value = val;
-                current_proj_name = val;
-                change_projection_4(proj4(_app.last_projection));
-            } else {
-                previous_value = val;
-                current_proj_name = val;
-                change_projection(current_proj_name);
-            }
-        };
-    }());
+        var val = this.value;
+        if (val == 'more') {
+            this.value = current_proj_name;
+            createBoxCustomProjection();
+            return;
+        } else if (val == 'proj4') {
+            this.value = current_proj_name;
+            createBoxProj4();
+            return;
+        } else if (val == 'last_projection') {
+            val = this.querySelector('[value="last_projection"]').name;
+        }
+        if (val == 'def_proj4') {
+            current_proj_name = val;
+            change_projection_4(proj4(_app.last_projection));
+        } else {
+            current_proj_name = val;
+            change_projection(current_proj_name);
+        }
+    });
+
     for (var i = 0; i < shortListContent.length; i++) {
         var option = shortListContent[i];
         proj_select2.append('option').attrs({ class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option }).text(i18next.t('app_page.projection_name.' + option));
@@ -967,7 +963,7 @@ var proj = d3.geoNaturalEarth().scale(1).translate([0, 0]);
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
-    current_proj_name = "NaturalEarth",
+    current_proj_name = "NaturalEarth2",
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
@@ -1005,8 +1001,7 @@ var _app = {
     targeted_layer_added: false,
     current_functionnality: undefined,
     layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    edit_state_to_cancel: []
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -8309,13 +8304,6 @@ function getTranslateNewLegend() {
     }
 }
 
-function remove_all_edit_state() {
-    for (var i = _app.edit_state_to_cancel.length - 1; i > -1; i--) {
-        var func = _app.edit_state_to_cancel.pop();
-        func();
-    }
-}
-
 var pidegrad = 0.017453292519943295;
 var piraddeg = 57.29577951308232;
 var degreesToRadians = function degreesToRadians(degrees) {
@@ -11963,21 +11951,18 @@ var UserArrow = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
-            remove_all_edit_state();
             var self = this,
                 line = self.arrow.node().querySelector("line"),
                 zoom_params = svg_map.__zoom,
-                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+                msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
             // New behavior if the user click on the lock to move on the map :
             var cleanup_edit_state = function cleanup_edit_state() {
+                edit_layer.remove();
                 msg.dismiss();
                 self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
                 self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-                map.select('#arrow_start_pt').remove();
-                map.select('#arrow_end_pt').remove();
 
                 // Reactive the ability to move the arrow :
                 self.arrow.call(self.drag_behavior);
@@ -11994,11 +11979,9 @@ var UserArrow = function () {
                 document.getElementById("hand_button").onclick = handle_click_hand;
             };
 
-            _app.edit_state_to_cancel.push(cleanup_edit_state);
-
             // Change the behavior of the 'lock' button :
             document.getElementById('hand_button').onclick = function () {
-                remove_all_edit_state();
+                cleanup_edit_state();
                 handle_click_hand();
             };
             // Desactive the ability to drag the arrow :
@@ -12006,8 +11989,16 @@ var UserArrow = function () {
             // Desactive the ability to zoom/move on the map ;
             handle_click_hand('lock');
 
+            // Add a layer to intercept click on the map :
+            var edit_layer = map.insert('g');
+            edit_layer.append('rect').attrs({ x: 0, y: 0, width: w, height: h, class: 'edit_rect' }).style('fill', 'transparent').on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
+
             // Append two red squares for the start point and the end point of the arrow :
-            map.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+            edit_layer.append("rect").attrs({ x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_start_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this),
                     nx = d3.event.x,
                     ny = d3.event.y;
@@ -12015,7 +12006,7 @@ var UserArrow = function () {
                 line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
                 line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
             }));
-            map.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
+            edit_layer.append("rect").attrs({ x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width: 6, id: 'arrow_end_pt' }).styles({ fill: 'red', cursor: 'grab' }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this),
                     nx = d3.event.x,
                     ny = d3.event.y;
@@ -13011,18 +13002,15 @@ var UserRectangle = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
-            remove_all_edit_state();
             var self = this,
                 rectangle_elem = self.rectangle.node().querySelector("rect"),
                 zoom_param = svg_map.__zoom,
-                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-            var center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2];
-
-            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+                center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
+                msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
             var cleanup_edit_state = function cleanup_edit_state() {
-                map.selectAll('.ctrl_pt').remove();
+                edit_layer.remove();
                 msg.dismiss();
                 self.rectangle.call(self.drag_behavior);
                 self.rectangle.on('dblclick', function () {
@@ -13035,10 +13023,10 @@ var UserRectangle = function () {
                 }
                 document.getElementById('hand_button').onclick = handle_click_hand;
             };
-            _app.edit_state_to_cancel.push(cleanup_edit_state);
+
             // Change the behavior of the 'lock' button :
             document.getElementById('hand_button').onclick = function () {
-                remove_all_edit_state();
+                cleanup_edit_state();
                 handle_click_hand();
             };
 
@@ -13047,14 +13035,22 @@ var UserRectangle = function () {
             // Desactive the ability to zoom/move on the map ;
             handle_click_hand('lock');
 
-            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4).attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
+            // Add a layer to intercept click on the map :
+            var edit_layer = map.insert('g');
+            edit_layer.append('rect').attrs({ x: 0, y: 0, width: w, height: h, class: 'edit_rect' }).style('fill', 'transparent').on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
+
+            var tmp_start_point = edit_layer.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4).attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
                 var dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
                 d3.select(this).attr("y", d3.event.y - 4);
                 self.height = rectangle_elem.height.baseVal.value = dist * 2;
                 self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
             }));
 
-            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+            var tmp_end_point = edit_layer.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
                 x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
                 y: center_pt[1] * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on("drag", function () {
                 var dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
@@ -13316,16 +13312,14 @@ var UserEllipse = function () {
     }, {
         key: "handle_ctrl_pt",
         value: function handle_ctrl_pt() {
-            remove_all_edit_state();
             var self = this,
                 ellipse_elem = self.ellipse.node().querySelector("ellipse"),
                 zoom_param = svg_map.__zoom,
-                map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-            var msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+                map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+                msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
             var cleanup_edit_state = function cleanup_edit_state() {
-                map.selectAll('.ctrl_pt').remove();
+                edit_layer.remove();
                 msg.dismiss();
                 self.ellipse.call(self.drag_behavior);
                 self.ellipse.on('dblclick', function () {
@@ -13338,25 +13332,31 @@ var UserEllipse = function () {
                 }
                 document.getElementById('hand_button').onclick = handle_click_hand;
             };
-            _app.edit_state_to_cancel.push(cleanup_edit_state);
+
             // Change the behavior of the 'lock' button :
             document.getElementById('hand_button').onclick = function () {
-                remove_all_edit_state();
+                cleanup_edit_state();
                 handle_click_hand();
             };
-
             // Desactive the ability to drag the ellipse :
             self.ellipse.on('.drag', null);
             // Desactive the ability to zoom/move on the map ;
             handle_click_hand('lock');
+            // Add a layer to intercept click on the map :
+            var edit_layer = map.insert('g');
+            edit_layer.append('rect').attrs({ x: 0, y: 0, width: w, height: h, class: 'edit_rect' }).style('fill', 'transparent').on('dblclick', function () {
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
 
-            var tmp_start_point = map.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
+            var tmp_start_point = edit_layer.append("rect").attr("class", "ctrl_pt").attr('id', 'pt1').attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4).attr("y", self.pt1[1] * zoom_param.k + zoom_param.y - 4).attr("height", 8).attr("width", 8).call(d3.drag().on("drag", function () {
                 var t = d3.select(this);
                 t.attr("x", d3.event.x - 4);
                 var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 ellipse_elem.rx.baseVal.value = dist;
             }));
-            var tmp_end_point = map.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
+            var tmp_end_point = edit_layer.append("rect").attrs({ class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
                 x: self.pt1[0] * zoom_param.k + zoom_param.x - 4, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on("drag", function () {
                 var t = d3.select(this);
                 t.attr("y", d3.event.y - 4);
@@ -16002,9 +16002,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		});
 
 		var p = column3.append('p').style('margin', 'auto');
-		var display_select_proj = p.append('select')
-		// .style('margin', '20px 7.5px 0 0') =
-		.attr('id', 'select_proj').attr('size', 18);
+		var display_select_proj = p.append('select').attr('id', 'select_proj').attr('size', 18);
 
 		updateSelect(null, null);
 
@@ -16066,6 +16064,12 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				handle_parallel_change(this.value);
 		});
 		// }
+
+		if (prev_projection == "def_proj4") {
+				options_proj_content.selectAll('input').attr('disabled', 'disabled');
+				options_proj_content.selectAll('span').styles({ color: 'darkgrey', 'font-style': 'italic' });
+		}
+
 		accordionize2(".accordion_proj", container);
 		var clean_up_box = function clean_up_box() {
 				container.remove();
@@ -16077,12 +16081,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		};
 		var _onclose_cancel = function _onclose_cancel() {
 				clean_up_box();
-				if (prev_projection != "proj4") {
-						current_proj_name = prev_projection;
-						s = prev_scale;
-						t = prev_translate.slice();
+				s = prev_scale;
+				t = prev_translate.slice();
+				current_proj_name = prev_projection;
+				if (prev_projection != "def_proj4") {
 						change_projection(current_proj_name);
-				} else if (prev_projection == "proj4") {}
+				} else if (prev_projection == "def_proj4") {
+						change_projection_4(proj4(_app.last_projection));
+				}
 				if (prev_rotate) {
 						handle_proj_center_button(prev_rotate);
 				}

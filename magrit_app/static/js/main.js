@@ -124,31 +124,27 @@ function setUpInterface()
         .attrs({class: 'i18n', 'id': 'form_projection2'})
         .styles({"width": "calc(100% + 20px)"})
         .on('change', function(){
-              let previous_value = 'NaturalEarth2';
-              return function(){
-                  let val = this.value;
-                  if(val == 'more'){
-                      this.value = previous_value;
-                      createBoxCustomProjection();
-                      return;
-                  } else if (val == 'proj4'){
-                      this.value = previous_value;
-                      createBoxProj4();
-                      return;
-                  }  else if (val == 'last_projection'){
-                      val = this.querySelector('[value="last_projection"]').name;
-                  }
-                  if(val == 'def_proj4'){
-                      previous_value = val;
-                      current_proj_name = val;
-                      change_projection_4(proj4(_app.last_projection));
-                  } else {
-                      previous_value = val;
-                      current_proj_name = val;
-                      change_projection(current_proj_name);
-                  }
-              };
-        }());
+            let val = this.value;
+            if(val == 'more'){
+                this.value = current_proj_name;
+                createBoxCustomProjection();
+                return;
+            } else if (val == 'proj4'){
+                this.value = current_proj_name;
+                createBoxProj4();
+                return;
+            }  else if (val == 'last_projection'){
+                val = this.querySelector('[value="last_projection"]').name;
+            }
+            if(val == 'def_proj4'){
+                current_proj_name = val;
+                change_projection_4(proj4(_app.last_projection));
+            } else {
+                current_proj_name = val;
+                change_projection(current_proj_name);
+            }
+        });
+
     for(let i=0; i < shortListContent.length; i++){
         let option = shortListContent[i];
         proj_select2.append('option').attrs({class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option}).text(i18next.t('app_page.projection_name.' + option));
@@ -1170,7 +1166,7 @@ var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
-    current_proj_name = "NaturalEarth",
+    current_proj_name = "NaturalEarth2",
     zoom = d3.zoom().on("zoom", zoom_without_redraw),
     sample_no_values = new Set(["Sphere", "Graticule", "World"]);
 
@@ -1211,8 +1207,7 @@ var _app = {
     targeted_layer_added: false,
     current_functionnality: undefined,
     layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    edit_state_to_cancel: []
+    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]])
 };
 
 // A bunch of references to the buttons used in the layer manager

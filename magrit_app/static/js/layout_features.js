@@ -157,21 +157,18 @@ class UserArrow {
     }
 
     handle_ctrl_pt(){
-      remove_all_edit_state();
       let self = this,
           line = self.arrow.node().querySelector("line"),
           zoom_params = svg_map.__zoom,
-          map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-      let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+          map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+          msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
       // New behavior if the user click on the lock to move on the map :
       let cleanup_edit_state = () => {
+          edit_layer.remove();
           msg.dismiss();
           self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
           self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-          map.select('#arrow_start_pt').remove();
-          map.select('#arrow_end_pt').remove();
 
           // Reactive the ability to move the arrow :
           self.arrow.call(self.drag_behavior);
@@ -188,11 +185,9 @@ class UserArrow {
           document.getElementById("hand_button").onclick = handle_click_hand;
       }
 
-      _app.edit_state_to_cancel.push(cleanup_edit_state);
-
       // Change the behavior of the 'lock' button :
       document.getElementById('hand_button').onclick = function(){
-          remove_all_edit_state();
+          cleanup_edit_state();
           handle_click_hand();
       };
       // Desactive the ability to drag the arrow :
@@ -200,8 +195,19 @@ class UserArrow {
       // Desactive the ability to zoom/move on the map ;
       handle_click_hand('lock');
 
+      // Add a layer to intercept click on the map :
+      let edit_layer = map.insert('g');
+      edit_layer.append('rect')
+          .attrs({x: 0, y:0, width: w, height: h, class: 'edit_rect'})
+          .style('fill', 'transparent')
+          .on('dblclick', function(){
+              d3.event.stopPropagation();
+              d3.event.preventDefault();
+              cleanup_edit_state();
+          });
+
       // Append two red squares for the start point and the end point of the arrow :
-      map.append("rect")
+      edit_layer.append("rect")
          .attrs({x: self.pt1[0] * zoom_params.k + zoom_params.x - 3, y: self.pt1[1]  * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_start_pt'})
          .styles({fill: 'red', cursor: 'grab'})
          .call(d3.drag().on("drag", function(){
@@ -212,7 +218,7 @@ class UserArrow {
              line.x1.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
              line.y1.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
          }));
-      map.append("rect")
+      edit_layer.append("rect")
          .attrs({x: self.pt2[0] * zoom_params.k + zoom_params.x - 3, y: self.pt2[1] * zoom_params.k + zoom_params.y - 3, height: 6, width:6, id: 'arrow_end_pt'})
          .styles({fill: 'red', cursor: 'grab'})
          .call(d3.drag().on("drag", function(){
@@ -1263,18 +1269,15 @@ class UserRectangle {
         this.rectangle.remove();
     }
     handle_ctrl_pt(){
-        remove_all_edit_state();
         let self = this,
             rectangle_elem = self.rectangle.node().querySelector("rect"),
             zoom_param = svg_map.__zoom,
-            map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-        let center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2];
-
-        let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+            center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
+            msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
         let cleanup_edit_state = () => {
-            map.selectAll('.ctrl_pt').remove();
+            edit_layer.remove();
             msg.dismiss();
             self.rectangle.call(self.drag_behavior);
             self.rectangle.on('dblclick', () => {
@@ -1287,10 +1290,10 @@ class UserRectangle {
             }
             document.getElementById('hand_button').onclick = handle_click_hand;
         };
-        _app.edit_state_to_cancel.push(cleanup_edit_state);
+
         // Change the behavior of the 'lock' button :
         document.getElementById('hand_button').onclick = function(){
-            remove_all_edit_state();
+            cleanup_edit_state();
             handle_click_hand();
         };
 
@@ -1299,7 +1302,18 @@ class UserRectangle {
         // Desactive the ability to zoom/move on the map ;
         handle_click_hand('lock');
 
-        let tmp_start_point = map.append("rect")
+        // Add a layer to intercept click on the map :
+        let edit_layer = map.insert('g');
+        edit_layer.append('rect')
+            .attrs({x: 0, y:0, width: w, height: h, class: 'edit_rect'})
+            .style('fill', 'transparent')
+            .on('dblclick', function(){
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
+
+        let tmp_start_point = edit_layer.append("rect")
             .attr("class", "ctrl_pt").attr('id', 'pt1')
             .attr("x", center_pt[0] * zoom_param.k + zoom_param.x - 4)
             .attr("y", (center_pt[1] - rectangle_elem.height.baseVal.value / 2)  * zoom_param.k + zoom_param.y - 4)
@@ -1311,7 +1325,7 @@ class UserRectangle {
                 self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
             }));
 
-        let tmp_end_point = map.append("rect")
+        let tmp_end_point = edit_layer.append("rect")
             .attrs({class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
                     x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
                     y: center_pt[1] * zoom_param.k + zoom_param.y - 4})
@@ -1606,16 +1620,14 @@ class UserEllipse {
      }
 
     handle_ctrl_pt(){
-        remove_all_edit_state();
         let self = this,
             ellipse_elem = self.ellipse.node().querySelector("ellipse"),
             zoom_param = svg_map.__zoom,
-            map_locked = map_div.select("#hand_button").classed("locked") ? true : false;
-
-        let msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+            map_locked = map_div.select("#hand_button").classed("locked") ? true : false,
+            msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
         let cleanup_edit_state = () => {
-            map.selectAll('.ctrl_pt').remove();
+            edit_layer.remove();
             msg.dismiss();
             self.ellipse.call(self.drag_behavior);
             self.ellipse.on('dblclick', () => {
@@ -1628,19 +1640,28 @@ class UserEllipse {
             }
             document.getElementById('hand_button').onclick = handle_click_hand;
         };
-        _app.edit_state_to_cancel.push(cleanup_edit_state);
+
         // Change the behavior of the 'lock' button :
         document.getElementById('hand_button').onclick = function(){
-            remove_all_edit_state();
+            cleanup_edit_state();
             handle_click_hand();
         };
-
         // Desactive the ability to drag the ellipse :
         self.ellipse.on('.drag', null);
         // Desactive the ability to zoom/move on the map ;
         handle_click_hand('lock');
+        // Add a layer to intercept click on the map :
+        let edit_layer = map.insert('g');
+        edit_layer.append('rect')
+            .attrs({x: 0, y:0, width: w, height: h, class: 'edit_rect'})
+            .style('fill', 'transparent')
+            .on('dblclick', function(){
+                d3.event.stopPropagation();
+                d3.event.preventDefault();
+                cleanup_edit_state();
+            });
 
-        let tmp_start_point = map.append("rect")
+        let tmp_start_point = edit_layer.append("rect")
             .attr("class", "ctrl_pt").attr('id', 'pt1')
             .attr("x", (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4)
             .attr("y", self.pt1[1] * zoom_param.k + zoom_param.y - 4)
@@ -1651,7 +1672,7 @@ class UserEllipse {
                 let dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
                 ellipse_elem.rx.baseVal.value = dist;
             }));
-        let tmp_end_point = map.append("rect")
+        let tmp_end_point = edit_layer.append("rect")
             .attrs({class: 'ctrl_pt', height: 8, width: 8, id: 'pt2',
                     x: self.pt1[0] * zoom_param.k + zoom_param.x - 4, y: (self.pt1[1] - ellipse_elem.ry.baseVal.value) * zoom_param.k + zoom_param.y - 4})
             .call(d3.drag().on("drag", function(){

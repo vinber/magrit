@@ -500,14 +500,6 @@ function getTranslateNewLegend(){
     }
 }
 
-
-function remove_all_edit_state(){
-    for(let i = _app.edit_state_to_cancel.length - 1; i > -1; i--){
-        let func = _app.edit_state_to_cancel.pop();
-        func();
-    }
-}
-
 const pidegrad = 0.017453292519943295;
 const piraddeg = 57.29577951308232;
 const degreesToRadians = function(degrees) { return degrees * pidegrad; }

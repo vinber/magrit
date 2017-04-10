@@ -99,10 +99,10 @@
             "success_graticule_added": "Le graticule a bien été ajouté!",
             "warning_deactivation_scalebar": "Désactivation de l'échelle",
             "warning_deactivation_prop_symbol_legend": "Désactivation de la légende des symboles proportionnels",
-            "instruction_click_map": "Veuillez cliquer sur la carte pour ajouter l'élément",
-            "instruction_click_map_arrow1": "Veuillez cliquer sur la carte localiser le point de départ de la fleche",
-            "instruction_click_map_arrow2": "Veuillez cliquer sur la carte localiser le point d'arrivée de la fleche",
-            "instruction_modify_feature": "Veuillez utiliser les poignées rouges pour modifier l'élément"
+            "instruction_click_map": "Cliquer sur la carte pour ajouter l'élément",
+            "instruction_click_map_arrow1": "Cliquer sur la carte localiser le point de départ de la fleche",
+            "instruction_click_map_arrow2": "Cliquer sur la carte localiser le point d'arrivée de la fleche",
+            "instruction_modify_feature": "Utiliser les poignées rouges pour modifier l'élément.<br>Double-cliquer pour quitter l'édition de l'élément."
         },
         "section1": {
             "title": "Import des données",

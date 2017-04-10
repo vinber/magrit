@@ -321,7 +321,6 @@ const createBoxCustomProjection = function(){
 
 	var p = column3.append('p').style('margin', 'auto');
 	var display_select_proj = p.append('select')
-			// .style('margin', '20px 7.5px 0 0') =
 			.attr('id', 'select_proj')
   		.attr('size', 18);
 
@@ -450,6 +449,14 @@ const createBoxCustomProjection = function(){
 					handle_parallel_change(this.value);
 			});
 	// }
+
+	if(prev_projection == "def_proj4"){
+			options_proj_content.selectAll('input')
+					.attr('disabled', 'disabled');
+			options_proj_content.selectAll('span')
+					.styles({color: 'darkgrey', 'font-style': 'italic'});
+	}
+
 	accordionize2(".accordion_proj", container);
 	let clean_up_box = () => {
 			container.remove();
@@ -459,13 +466,13 @@ const createBoxCustomProjection = function(){
 	let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_cancel); };
   let _onclose_cancel = () => {
 			clean_up_box();
-			if(prev_projection != "proj4"){
-					current_proj_name = prev_projection;
-					s = prev_scale;
-					t = prev_translate.slice();
+			s = prev_scale;
+			t = prev_translate.slice();
+			current_proj_name = prev_projection;
+			if(prev_projection != "def_proj4"){
 					change_projection(current_proj_name)
-			} else if (prev_projection == "proj4"){
-
+			} else if (prev_projection == "def_proj4"){
+					change_projection_4(proj4(_app.last_projection));
 			}
 			if(prev_rotate){ handle_proj_center_button(prev_rotate); }
 			if(prev_parallels){ handle_parallels_change(prev_parallels); }
