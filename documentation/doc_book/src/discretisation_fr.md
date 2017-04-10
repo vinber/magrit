@@ -24,12 +24,20 @@ Cette méthode originale, notamment démocratisée par l'outil <a href="http://p
 Cette méthode permet de créer des classes homogènes. En effet l'algorithme vise à trouver le nombre de classe souhaitées en minimisant la variance intra-classe et en maximisant la variance inter-classe.
 
 
+- **Moyenne et écart-type**  
+Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).
+
 - Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de saisir manuellement les bornes de classes.
 
 
 Le panneau principal de la boite de dialogue permettant de choisir un type de discrétisation ainsi que les palettes de couleurs représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
 
 Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et *essaim d'abeilles*).
+La représentation sous forme de boite à moustache permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).
+
+<p style="text-align: center;">
+<img src="img/box_plot.svg" alt="Box plot" style="width: 450px;"/>
+</p>
 
 
 Vous pouvez consulter l'article <a href="http://mappemonde.mgm.fr/119geov1/">Géovisualisation des discrétisations : une petite application pédagogique</a>, dans la revue *MappeMonde* n°119, qui met en avant l'importance du choix d'une discrétisation adaptée en cartographie.

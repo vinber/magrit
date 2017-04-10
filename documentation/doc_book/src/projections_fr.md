@@ -1,14 +1,15 @@
 # Projections
 
-De nombreuses projections cartographiques sont disponibles dans l'application.   
-La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.
+De nombreuses projections cartographiques particulièrement adaptée à des échelles régionales ou globales sont disponibles dans l'application.   
+La séléction d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.
 
 <p style="text-align: center;">
 <img src="img/win_prc2_fr.png" alt="Changer la projection"/>
 </p>
 
-Le choix d'une projection est accompagné du choix de son centrage.
-Celui-ci est par défaut sur la longitude 0°.
+Quelques projections courantes sont proposées directement à l'utilisateur via ce menu. Ce menu permet également d'accéder à des options de personnalisation plus avancées :
+- Choix d'une projection parmi les 60 proposées par l'application.
+- Rotation sur les axes *lambda*, *phi* et *gamma*.
 
 Plusieurs attributs permettent de distinguer ces projections :
 - la conservation locale des surfaces (ces projections sont dites **équivalentes**, c'est par exemple le cas de la *projection azimutale équivalente de Lambert*)
@@ -37,3 +38,26 @@ projection Interrupted Homolosine</br></br>
 projection Peirce</br></br>
 <img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
 projection Eisenlohr</br></p>
+
+
+L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format *Proj.4*[1](#) correspondante. La saisie du contenu du fichier *.prj* (notation au format *ESRI WKT*) est aussi possible.
+L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
+Cette fonctionnalité permet d'utiliser la projection et le système de coordonné le plus adapté à la zone à cartographier selon les besoins de l'usager.
+Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format *Proj.4 string*)
+
+```
++proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +units=m +no_defs
+```
+
+ou la chaîne de caractère (format *ESRI WKT*)
+
+```
+PROJCS["RGF93_Lambert_93",GEOGCS["GCS_RGF_1993",DATUM["D_RGF_1993",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",700000.0],PARAMETER["False_Northing",6600000.0],PARAMETER["Central_Meridian",3.0],PARAMETER["Standard_Parallel_1",44.0],PARAMETER["Standard_Parallel_2",49.0],PARAMETER["Latitude_Of_Origin",46.5],UNIT["Meter",1.0]]
+```
+
+Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.
+- Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).
+- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une liste maintenue en parallèle de *Magrit*.
+- Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)
+
+De plus l'application propose automatique l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).

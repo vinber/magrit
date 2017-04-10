@@ -68,27 +68,30 @@
 
                 <div id="content" class="content">
                     <h1>Projections</h1>
-<p>De nombreuses projections cartographiques sont disponibles dans l'application.<br />
-La séléction d'une projection s'effectue dans la partie supérieure droite de la fenêtre.</p>
+<p>De nombreuses projections cartographiques particulièrement adaptée à des échelles régionales ou globales sont disponibles dans l'application.<br />
+La séléction d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.</p>
 <p style="text-align: center;">
 <img src="img/win_prc2_fr.png" alt="Changer la projection"/>
 </p>
-<p>Le choix d'une projection est accompagné du choix de son centrage.
-Celui-ci est par défaut sur la longitude 0°.</p>
+<p>Quelques projections courantes sont proposées directement à l'utilisateur via ce menu. Ce menu permet également d'accéder à des options de personnalisation plus avancées :</p>
+<ul>
+<li>Choix d'une projection parmi les 60 proposées par l'application.</li>
+<li>Rotation sur les axes <em>lambda</em>, <em>phi</em> et <em>gamma</em>.</li>
+</ul>
 <p>Plusieurs attributs permettent de distinguer ces projections :</p>
 <ul>
 <li>la conservation locale des surfaces (ces projections sont dites <strong>équivalentes</strong>, c'est par exemple le cas de la <em>projection azimutale équivalente de Lambert</em>)</li>
 <li>la conservation locale des angles (ces projections conservent les formes et sont dites <strong>conformes</strong>, c'est par exemple le cas de la <em>projection Mercator</em>)</li>
 <li>la représentation du globe sous une forme interrompue (<em>projection HEALPix</em> et <em>projection de Goode</em> par exemple)</li>
 </ul>
-<p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/><br></p>
+<p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/></p>
 <p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.<br />
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé &quot;graticule&quot; et est disponible dans la section &quot;ajout d'éléments d'habillage&quot;). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
 Il est également possible (et conseillé lors de l'utilisation des projections dites &quot;interrompues&quot;) d'ajouter une couche d'informations représentant les limites du globe selon le découpage appliqué par la projection.</p>
 <blockquote>
 <h4>Note:</h4>
 <ul>
-<li>La modification de la projection à utiliser est possible à tout moment</li>
+<li>La modification de la projection à utiliser est possible à tout moment.</li>
 <li>Lors de la réalisation d'une carte d'une faible emprise spatiale, l'utilisation de certaines projection n'est pas pertinent et est désactivé par défaut.</li>
 </ul>
 </blockquote>
@@ -104,6 +107,22 @@ projection Interrupted Homolosine</br></br>
 projection Peirce</br></br>
 <img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
 projection Eisenlohr</br></p>
+<p>L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format <em>Proj.4</em><a href="#">1</a> correspondante. La saisie du contenu du fichier <em>.prj</em> (notation au format <em>ESRI WKT</em>) est aussi possible.
+L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
+Cette fonctionnalité permet d'utiliser la projection et le système de coordonné le plus adapté à la zone à cartographier selon les besoins de l'usager.
+Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format <em>Proj.4 string</em>)</p>
+<pre><code>+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +units=m +no_defs
+</code></pre>
+<p>ou la chaîne de caractère (format <em>ESRI WKT</em>)</p>
+<pre><code>PROJCS[&quot;RGF93_Lambert_93&quot;,GEOGCS[&quot;GCS_RGF_1993&quot;,DATUM[&quot;D_RGF_1993&quot;,SPHEROID[&quot;GRS_1980&quot;,6378137.0,298.257222101]],PRIMEM[&quot;Greenwich&quot;,0.0],UNIT[&quot;Degree&quot;,0.017453292519943295]],PROJECTION[&quot;Lambert_Conformal_Conic&quot;],PARAMETER[&quot;False_Easting&quot;,700000.0],PARAMETER[&quot;False_Northing&quot;,6600000.0],PARAMETER[&quot;Central_Meridian&quot;,3.0],PARAMETER[&quot;Standard_Parallel_1&quot;,44.0],PARAMETER[&quot;Standard_Parallel_2&quot;,49.0],PARAMETER[&quot;Latitude_Of_Origin&quot;,46.5],UNIT[&quot;Meter&quot;,1.0]]
+</code></pre>
+<p>Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.</p>
+<ul>
+<li>Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).</li>
+<li>Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une liste maintenue en parallèle de <em>Magrit</em>.</li>
+<li>Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)</li>
+</ul>
+<p>De plus l'application propose automatique l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).</p>
 
                 </div>
 

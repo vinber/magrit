@@ -35,8 +35,9 @@ Magrit propose une série d'éléments nécessaires à l'habillage de la carte :
 - Échelle
 - Zone de texte
 - Ellipse
+- Rectangle
 - Flèche personnalisable
-- Symbole
+- Symbole (pictogramme ou image - les formats png, jpg et svg sont supportés)
 
 <p style="text-align: center;">
 <img src="img/example_mise_en_page.png" alt="Éléments de mise en page"/>
@@ -46,7 +47,7 @@ Magrit propose une série d'éléments nécessaires à l'habillage de la carte :
 <img src="img/contextmenu_northArrow.png" alt="Menu contextuel"/>
 </p>
 
-Les légendes peuvent aussi être modifiées avec le double-click.
+Les légendes peuvent aussi être modifiées avec le double-clic.
 
 <p style="text-align: center;">
 <img src="img/contextmenu_legend.png" alt="Menu contextuel"/>

@@ -186,6 +186,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         .on("click", function(){
             let input = document.createElement('input');
             input.setAttribute("type", "file");
+            input.setAttribute("accept", ".jpeg,.jpg,.svg,.png,.gif");
             input.onchange = function(event){
                 let file = event.target.files[0],
                     file_name = file.name,

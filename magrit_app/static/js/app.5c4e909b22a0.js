@@ -15660,6 +15660,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     newbox.append("p").styles({ margin: 'auto', 'text-align': 'center' }).append("button").html(i18next.t("app_page.box_choice_symbol.browse")).on("click", function () {
         var input = document.createElement('input');
         input.setAttribute("type", "file");
+        input.setAttribute("accept", ".jpeg,.jpg,.svg,.png,.gif");
         input.onchange = function (event) {
             var file = event.target.files[0],
                 file_name = file.name,

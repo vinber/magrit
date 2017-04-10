@@ -13,3 +13,10 @@ Ce type de carte permet de représenter des entités surfaciques selon la valeur
 </p>
 
 - Champ utilisé : **LIBEPT**  
+
+
+#### Exemple (variable qualitative ordonnée) :
+
+<p style="text-align: center;">
+<img src="img/typo2.png" alt="img_typo_map" style="width: 480px;"/>
+</p>
