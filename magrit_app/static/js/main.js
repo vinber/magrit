@@ -554,6 +554,7 @@ function setUpInterface()
         sections[0].style.display = arg;
         sections[1].style.display = arg;
         sections[2].style.display = arg;
+        sections[3].style.display = arg;
     });
 
     let c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
@@ -596,7 +597,7 @@ function setUpInterface()
                 zoom_without_redraw();
             });
 
-    let g = dv4.append("li").styles({margin: "1px", padding: "4px"});
+    let g = dv4.append("li").style("display", "none").attr("class", "to_hide");
     g.append("p").attr("class", "list_elem_section4 i18n")
             .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
 
@@ -626,10 +627,8 @@ function setUpInterface()
         });
 
       g.append("input")
-          .attrs({type: "range", id: "form_rotate", value: 0,
-                  min: 0, max: 360, step: 1})
-          .styles({width: "80px", margin: "0px 10px 9px 15px",
-                   float: "right", "vertical-align": "middle"})
+          .attrs({type: "range", id: "form_rotate", min: 0, max: 360, step: 1})
+          .styles({width: "80px", margin: "0px 10px 5px 15px", float: "right"})
           .on("input", function(){
               rotate_global(this.value);
               document.getElementById("canvas_rotation_value_txt").value = this.value;
@@ -648,16 +647,19 @@ function setUpInterface()
 
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});
-    _i.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
-    // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    _i.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
-    _i.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
-    _i.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
-    _i.insert('span').insert('img').attrs({id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
-    _i.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
-    _i.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
-    _i.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
-    _i.insert('span').insert('img').attrs({id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
+    let p1 = _i.insert('p').style('display', 'inline-block');
+    p1.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
+    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    p1.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
+    p1.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    p1.insert('span').insert('img').attrs({id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
+    p1.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
+
+    let p2 = _i.insert('p').style('display', 'inline-block');
+    p2.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
+    p2.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
+    p2.insert('span').insert('img').attrs({id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
+    p2.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
 
     let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")

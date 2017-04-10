@@ -920,6 +920,7 @@ function display_box_value_symbol(layer_name){
                 sample_svg.selectAll('g').remove();
                 createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, {parent: sample_svg});
                 sample_svg.select('g').select('#under_rect').remove();
+                sample_svg.select('#legend_root_symbol').on('.drag', null);
             }
     })();
 
@@ -1128,9 +1129,23 @@ function createlegendEditBox(legend_id, layer_name){
             .on("keyup", function(){
                 no_data_txt.textContent = this.value;
             });
-   }
+    }
 
-    if((current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols")
+    if(legend_id == "legend_root_symbol"){
+        let choice_break_value_section1 = box_body.insert('p');
+        choice_break_value_section1.append('span')
+            .styles({cursor: 'pointer'})
+            .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+            .on('click', function(){
+                container.modal.hide();
+                display_box_value_symbol(layer_name).then(confirmed => {
+                    container.modal.show();
+                    if(confirmed){
+                        redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+                    }
+                });
+            });
+    } else if((current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols")
         && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))){
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
@@ -1302,20 +1317,6 @@ function createlegendEditBox(legend_id, layer_name){
                                  legend_node_d3.select("#under_rect"),
                                  rect_fill_value
                                  );
-        });
-
-    let choice_break_value_section1 = box_body.insert('p');
-    choice_break_value_section1.append('span')
-        .styles({cursor: 'pointer'})
-        .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
-        .on('click', function(){
-            container.modal.hide();
-            display_box_value_symbol(layer_name).then(confirmed => {
-                container.modal.show();
-                if(confirmed){
-                    redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-                }
-            });
         });
 }
 

@@ -25,8 +25,8 @@ class UserArrow {
                              y: +t.attr("y2") - +t.attr("y1"),
                              x1: t.attr("x1"), x2: t.attr("x2"),
                              y1: t.attr("y1"), y2: t.attr("y2"),
-                             map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                             snap_lines: snap_lines
+                             map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                            //  , snap_lines: snap_lines
                         };
               })
             .on("start", () => {
@@ -36,7 +36,7 @@ class UserArrow {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+                // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -47,40 +47,40 @@ class UserArrow {
                     ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
                 self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
-                if(_app.autoalign_features){
-                    let snap_lines_x = subject.snap_lines.x,
-                        snap_lines_y = subject.snap_lines.y;
-                    for(let i = 0; i < subject.snap_lines.x.length; i++){
-                        if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                        }
-                        if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          if(self.pt2[0] < self.pt1[0])
-                              arrow_head_size = -arrow_head_size;
-                          self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
-                        }
-                        if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                        }
-                        if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          if(self.pt2[1] < self.pt1[1])
-                              arrow_head_size = -arrow_head_size;
-                          self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
-                        }
-                    }
-                }
+                // if(_app.autoalign_features){
+                //     let snap_lines_x = subject.snap_lines.x,
+                //         snap_lines_y = subject.snap_lines.y;
+                //     for(let i = 0; i < subject.snap_lines.x.length; i++){
+                //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                //         }
+                //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           if(self.pt2[0] < self.pt1[0])
+                //               arrow_head_size = -arrow_head_size;
+                //           self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           if(self.pt2[1] < self.pt1[1])
+                //               arrow_head_size = -arrow_head_size;
+                //           self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+                //         }
+                //     }
+                // }
                 _t.x1.baseVal.value = self.pt1[0];
                 _t.x2.baseVal.value = self.pt2[0];
                 _t.y1.baseVal.value = self.pt1[1];
@@ -144,7 +144,7 @@ class UserArrow {
     }
 
     remove(){
-        pos_lgds_elem.delete(this.arrow.attr('id'));
+        // pos_lgds_elem.delete(this.arrow.attr('id'));
         this.arrow.remove();
     }
 
@@ -283,7 +283,7 @@ class UserArrow {
             });
 
         let box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
-        let s1 = box_content.append("p").attr('class', 'line_elem');
+        let s1 = box_content.append("p").attr('class', 'line_elem2');
         s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
         s1.insert("span").styles({'float': 'right', 'width': '13px'}).html("px");
         s1.insert("input")
@@ -303,7 +303,7 @@ class UserArrow {
                 document.getElementById("arrow_weight_text").value = +this.value;
             });
 
-        let s2 = box_content.append("p").attr('class', 'line_elem');
+        let s2 = box_content.append("p").attr('class', 'line_elem2');
         s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"))
         s2.insert("span").styles({'float': 'right', 'width': '13px'}).html("&nbsp;°");
         s2.insert("input")
@@ -531,7 +531,7 @@ class Textbox {
             x_center = nx + bbox.width / 2,
             y_center = ny + bbox.height / 2;
 
-        let option_rotation = box_content.append('p').attr('class', 'line_elem');
+        let option_rotation = box_content.append('p').attr('class', 'line_elem2');
         option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
         option_rotation.append('span').style('float', 'right').html(' °');
         option_rotation.append("input")
@@ -706,6 +706,8 @@ var scaleBar = {
 
         let getItems = () => [
             {"name": i18next.t("app_page.common.edit_style"), "action": () => { this.editStyle()}},
+            {"name": i18next.t("app_page.common.up_element"), "action": () => { this.up_element(); }},
+            {"name": i18next.t("app_page.common.down_element"), "action": () => { this.down_element(); }},
             {"name": i18next.t("app_page.common.delete"), "action": () => { this.remove(); }}
         ];
 
@@ -812,6 +814,12 @@ var scaleBar = {
             this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
         }
     },
+    up_element: function(){
+        up_legend(this.Scale.node());
+    },
+    down_element: function(){
+        down_legend(this.Scale.node());
+    },
     remove: function(){
         pos_lgds_elem.delete(this.Scale.attr('id') + ' ' + this.Scale.attr('class'));
         this.Scale.remove();
@@ -847,7 +855,7 @@ var scaleBar = {
         // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3")
             .html(i18next.t("app_page.scale_bar_edit_box.title"));
-        let a = box_body.append("p").attr('class', 'line_elem');
+        let a = box_body.append("p").attr('class', 'line_elem2');
         a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
         a.append("input")
             .style('float', 'right')
@@ -870,7 +878,7 @@ var scaleBar = {
                 redraw_now();
               });
 
-        let b = box_body.append("p").attr('class', 'line_elem');
+        let b = box_body.append("p").attr('class', 'line_elem2');
         b.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input")
@@ -882,7 +890,7 @@ var scaleBar = {
               redraw_now();
             });
 
-        let c = box_body.append("p").attr('class', 'line_elem');
+        let c = box_body.append("p").attr('class', 'line_elem2');
         c.insert("span")
             .html(i18next.t("app_page.scale_bar_edit_box.unit"));
         let unit_select = c.insert("select")
@@ -897,7 +905,7 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        let e = box_body.append("p").attr('class', 'line_elem');
+        let e = box_body.append("p").attr('class', 'line_elem2');
         e.append("span")
                 .html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
         e.append("input")
@@ -940,8 +948,8 @@ var northArrow = {
                     return {
                         x: +t.attr("x"),
                         y: +t.attr("y"),
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                        snap_lines: snap_lines
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        // , snap_lines: snap_lines
                     };
               })
             .on("start", () => {
@@ -962,41 +970,42 @@ var northArrow = {
                     dim = t2.width.baseVal.value / 2;
                 if(tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim)
                   return;
-                if(_app.autoalign_features){
-                    let bbox = this.getBoundingClientRect(),
-                        xmin = t2.x.baseVal.value,
-                        xmax = xmin + bbox.width,
-                        ymin = t2.y.baseVal.value,
-                        ymax = ymin + bbox.height,
-                        snap_lines_x = d3.event.subject.snap_lines.x,
-                        snap_lines_y = d3.event.subject.snap_lines.y;
-                    for(let i = 0; i < snap_lines_x.length; i++){
-                        if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          tx = snap_lines_x[i];
-                        }
-                        if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          tx = snap_lines_x[i] - bbox.width;
-                        }
-                        if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          ty = snap_lines_y[i];
-                        }
-                        if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                          let l = map.append('line')
-                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          ty = snap_lines_y[i] - bbox.height;
-                        }
-                    }
-                }
+                // if(_app.autoalign_features){
+                //     let bbox = this.getBoundingClientRect(),
+                //         xy0_map = get_map_xy0(),
+                //         xmin = t2.x.baseVal.value,
+                //         xmax = xmin + bbox.width,
+                //         ymin = t2.y.baseVal.value,
+                //         ymax = ymin + bbox.height,
+                //         snap_lines_x = d3.event.subject.snap_lines.x,
+                //         snap_lines_y = d3.event.subject.snap_lines.y;
+                //     for(let i = 0; i < snap_lines_x.length; i++){
+                //         if(Math.abs(snap_lines_x[i] - xmin) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           tx = snap_lines_x[i];
+                //         }
+                //         if(Math.abs(snap_lines_x[i] - xmax) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           tx = snap_lines_x[i] - bbox.width;
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - ymin) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           ty = snap_lines_y[i];
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - ymax) < 10){
+                //           let l = map.append('line')
+                //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           ty = snap_lines_y[i] - bbox.height;
+                //         }
+                //     }
+                // }
                 t1.x.baseVal.value = tx;
                 t1.y.baseVal.value = ty;
                 t2.x.baseVal.value = tx - 7.5;
@@ -1068,7 +1077,7 @@ var northArrow = {
         var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
         box_body.append("h3")
                 .html(i18next.t("app_page.north_arrow_edit_box.title"));
-        let a = box_body.append('p').attr('class', 'line_elem');
+        let a = box_body.append('p').attr('class', 'line_elem2');
         a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
         a.append("span")
             .style('float', 'right')
@@ -1092,13 +1101,13 @@ var northArrow = {
                 self.arrow_img.attr("height", new_size);
                 let bbox = self.arrow_img.node().getBoundingClientRect(),
                     xy0_map = get_map_xy0();
-                self.attrs({x: bbox.left -7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15})
+                self.under_rect.attrs({x: bbox.left -7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15})
                 self.x_center = x_pos + new_size / 2;
                 self.y_center = y_pos + new_size / 2;
                 document.getElementById("txt_size_n_arrow").value = new_size;
             });
 
-        let b = box_body.append("p").attr('class', 'line_elem');
+        let b = box_body.append("p").attr('class', 'line_elem2');
         b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
         b.append("span")
             .style('float', 'right')
@@ -1150,8 +1159,8 @@ class UserRectangle {
                     let t = d3.select(this.querySelector("rect"));
                     return {
                         x: +t.attr("x"), y: +t.attr("y"),
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                        snap_lines: get_coords_snap_lines(this.id)
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                        // , snap_lines: get_coords_snap_lines(this.id)
                     };
               })
             .on("start", () => {
@@ -1161,7 +1170,7 @@ class UserRectangle {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");
-                pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
+                // pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1171,36 +1180,36 @@ class UserRectangle {
                     ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
                 self.pt1 = [+subject.x + tx, +subject.y + ty];
                 self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
-                if(_app.autoalign_features){
-                    let snap_lines_x = subject.snap_lines.x,
-                        snap_lines_y = subject.snap_lines.y;
-                    for(let i = 0; i < subject.snap_lines.x.length; i++){
-                        if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                        }
-                        if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
-                        }
-                        if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                        }
-                        if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                          let l = map.append('line')
-                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
-                        }
-                    }
-                }
+                // if(_app.autoalign_features){
+                //     let snap_lines_x = subject.snap_lines.x,
+                //         snap_lines_y = subject.snap_lines.y;
+                //     for(let i = 0; i < subject.snap_lines.x.length; i++){
+                //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+                //         }
+                //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+                //         }
+                //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+                //           let l = map.append('line')
+                //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+                //           setTimeout(function(){ l.remove(); }, 1000);
+                //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
+                //         }
+                //     }
+                // }
                 _t.x.baseVal.value = self.pt1[0];
                 _t.y.baseVal.value = self.pt1[1];
               });
@@ -1246,11 +1255,11 @@ class UserRectangle {
                 this.handle_ctrl_pt();
             })
             .call(this.drag_behavior);
-        pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
+        // pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
 
     }
     remove(){
-        pos_lgds_elem.delete(this.rectangle.attr('id'));
+        // pos_lgds_elem.delete(this.rectangle.attr('id'));
         this.rectangle.remove();
     }
     handle_ctrl_pt(){
@@ -1345,53 +1354,60 @@ class UserRectangle {
                 }
                 if(!map_locked) handle_click_hand('unlock');
             });
-        let box_content = d3.select(".styleBoxRectangle").select(".modal-body").insert("div").attr("id", "styleBoxRectangle");
-        let s1 = box_content.append("p");
-        s1.append("p")
+        let box_content = d3.select(".styleBoxRectangle")
+            .select(".modal-body")
+            .style("width", "295px")
+            .insert("div")
+            .attr("id", "styleBoxRectangle");
+        let s1 = box_content.append("p").attr('class', 'line_elem2');
+        s1.append("span")
             .style("margin", "auto")
             .html(i18next.t("app_page.rectangle_edit_box.stroke_width"));
-        s1.append("input")
-            .attrs({type: "range", id: "rectangle_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width})
-            .styles({width: "80px", "vertical-align": "middle"})
+        let i1 = s1.append("input")
+            .attrs({type: "range", id: "rectangle_stroke_width", min: 0, max: 34, step: 0.1})
+            .styles({width: "55px", float: 'right'})
             .on("change", function(){
                 rectangle_elem.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-        let txt_line_weight = s1.append("span").html(self.stroke_width + " px");
+        i1.node().value = self.stroke_width;
+        let txt_line_weight = s1.append("span")
+            .styles({float: 'right', margin: '0 5px 0 5px'})
+            .html(self.stroke_width + " px");
 
-        let s2 = box_content.append("p").style("margin", "auto");
-        s2.append("p")
+        let s2 = box_content.append("p").attr('class', 'line_elem2');
+        s2.append("span")
             .style("margin", "auto")
             .html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
         s2.append("input")
+            .style('float', 'right')
             .attrs({type: "color", id: "rectangle_strokeColor", value: rgb2hex(self.stroke_color)})
             .on("change", function(){
                 rectangle_elem.style.stroke = this.value;
             });
 
-        let s3 = box_content.append('p').style('margin', 'auto');
-        s3.append('p')
+        let s3 = box_content.append('p').attr('class', 'line_elem2');
+        s3.append('span')
             .style('margin', 'auto')
             .html(i18next.t('app_page.rectangle_edit_box.fill_color'));
         s3.append('input')
+            .style('float', 'right')
             .attrs({type: 'color', id: 'rectangle_fillColor', value: rgb2hex(self.fill_color)})
             .on('change', function(){
                 rectangle_elem.style.fill = this.value;
             });
 
-        console.log(self.fill_opacity);
-        console.log(rectangle_elem.style.fillOpacity);
-        let s4 = box_content.append('p').style('margin', 'auto');
-        s4.append('p')
+        let s4 = box_content.append('p').attr('class', 'line_elem2');
+        s4.append('span')
             .style('margin', 'auto')
             .html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
-        s4.append('input')
-            .attrs({type: 'range', value: rectangle_elem.style.fillOpacity, min: 0, max: 1, step: 0.1})
-            .styles({width: '55px', 'vertical-align': 'middle', display: 'inline'})
+        let i2 = s4.append('input')
+            .attrs({type: 'range', min: 0, max: 1, step: 0.1})
+            .styles({width: '55px', float: 'right'})
             .on('change', function(){
-                console.log(this.value)
                 rectangle_elem.style.fillOpacity = this.value;
             });
+        i2.node().value = rectangle_elem.style.fillOpacity;
     }
 }
 
@@ -1426,7 +1442,7 @@ class UserEllipse {
             .on("end", function(){
                 if(d3.event.subject && !d3.event.subject.map_locked)
                     handle_click_hand("unlock");  // zoom.on("zoom", zoom_without_redraw);
-                pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
+                // pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
               })
             .on("drag", function(){
                 d3.event.sourceEvent.preventDefault();
@@ -1472,12 +1488,12 @@ class UserEllipse {
                 this.handle_ctrl_pt();
             })
             .call(this.drag_behavior);
-        pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
+        // pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
 
     }
 
     remove(){
-        pos_lgds_elem.delete(this.ellipse.attr('id'));
+        // pos_lgds_elem.delete(this.ellipse.attr('id'));
         this.ellipse.remove();
     }
 
@@ -1531,30 +1547,37 @@ class UserEllipse {
                 }
                 if(!map_locked) handle_click_hand('unlock');
             });
-        let box_content = d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "styleBoxEllipse");
-        let s1 = box_content.append("p");
-        s1.append("p")
+        let box_content = d3.select(".styleBoxEllipse")
+            .select(".modal-body")
+            .style("width", "295px")
+            .insert("div")
+            .attr("id", "styleBoxEllipse");
+        let s1 = box_content.append("p").attr('class', 'line_elem2');
+        s1.append("span")
             .style("margin", "auto")
             .html(i18next.t("app_page.ellipse_edit_box.stroke_width"));
         s1.append("input")
             .attrs({type: "range", id: "ellipse_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width})
-            .styles({width: "80px", "vertical-align": "middle"})
+            .styles({width: "80px",  float: 'right'})
             .on("change", function(){
                 ellipse_elem.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-        let txt_line_weight = s1.append("span").html(self.stroke_width + " px");
+        let txt_line_weight = s1.append("span")
+            .styles({float: 'right', margin: '0 5px 0 5px'})
+            .html(self.stroke_width + " px");
 
-        let s2 = box_content.append("p").style("margin", "auto");
-        s2.append("p")
+        let s2 = box_content.append("p").attr('class', 'line_elem2');
+        s2.append("span")
             .style("margin", "auto")
             .html(i18next.t("app_page.ellipse_edit_box.stroke_color"));
         s2.append("input")
+            .style('float', 'right')
             .attrs({type: "color", id: "ellipse_strokeColor", value: self.stroke_color})
             .on("change", function(){
                 ellipse_elem.style.stroke = this.value;
             });
-      //  let s2b = box_content.append("p").attr('class', 'line_elem')
+      //  let s2b = box_content.append("p").attr('class', 'line_elem2')
       //  s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
       //  s2b.insert("span").styles({float: 'right', 'width': '12px'}).html("&nbsp;°");
       //  s2b.insert("input")

@@ -804,6 +804,17 @@ p.line_elem {
   width: 100%;
 }
 
+p.line_elem2 {
+  display: inline-table;
+  width: 100%;
+  margin: 5px 0 10px;
+}
+
+p.line_elem2 > input[type=range] {
+  margin: 2px;
+}
+
+
 .styleBox > p > input {
   float: right;
 }
@@ -909,7 +920,7 @@ img.layout_ft_ico:hover {
    color: #fff;
 }
 
-#form_projection * {
+#form_projection2 * {
   background-color: black;
 }
 

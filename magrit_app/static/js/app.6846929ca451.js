@@ -443,6 +443,7 @@ function setUpInterface() {
         sections[0].style.display = arg;
         sections[1].style.display = arg;
         sections[2].style.display = arg;
+        sections[3].style.display = arg;
     });
 
     var c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
@@ -473,7 +474,7 @@ function setUpInterface() {
         zoom_without_redraw();
     });
 
-    var g = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+    var g = dv4.append("li").style("display", "none").attr("class", "to_hide");
     g.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.canvas_rotation");
 
     g.append("span").style("float", "right").html("°");
@@ -497,9 +498,7 @@ function setUpInterface() {
         document.getElementById("form_rotate").value = this.value;
     });
 
-    g.append("input").attrs({ type: "range", id: "form_rotate", value: 0,
-        min: 0, max: 360, step: 1 }).styles({ width: "80px", margin: "0px 10px 9px 15px",
-        float: "right", "vertical-align": "middle" }).on("input", function () {
+    g.append("input").attrs({ type: "range", id: "form_rotate", min: 0, max: 360, step: 1 }).styles({ width: "80px", margin: "0px 10px 5px 15px", float: "right" }).on("input", function () {
         rotate_global(this.value);
         document.getElementById("canvas_rotation_value_txt").value = this.value;
     });
@@ -513,33 +512,36 @@ function setUpInterface() {
 
     var _i = dv4.append('li').styles({ 'text-align': 'center' });
     _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
-    _i.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
+    var p1 = _i.insert('p').style('display', 'inline-block');
+    p1.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
         return add_layout_feature('arrow');
     });
-    // _i.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    _i.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
-        return add_layout_feature('ellipse');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
-        return add_layout_feature('graticule');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
-        return add_layout_feature('north_arrow');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
-        return add_layout_feature('scale');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
-        return add_layout_feature('sphere');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
-        return add_layout_feature('symbol');
-    });
-    _i.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
+    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
         return add_layout_feature('text_annot');
     });
-    _i.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
+    p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
+        return add_layout_feature('symbol');
+    });
+    p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
         return add_layout_feature('rectangle');
+    });
+    p1.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
+        return add_layout_feature('ellipse');
+    });
+
+    var p2 = _i.insert('p').style('display', 'inline-block');
+    p2.insert('span').insert('img').attrs({ id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
+        return add_layout_feature('graticule');
+    });
+    p2.insert('span').insert('img').attrs({ id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
+        return add_layout_feature('north_arrow');
+    });
+    p2.insert('span').insert('img').attrs({ id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
+        return add_layout_feature('scale');
+    });
+    p2.insert('span').insert('img').attrs({ id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
+        return add_layout_feature('sphere');
     });
 
     var section5b = d3.select("#section5");
@@ -3071,8 +3073,8 @@ var display_discretization = function display_discretization(layer_name, field_n
     input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
     input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
         var val = this.value;
-        if (val == 0 || val * serie.stddev() > serie.max() - serie.min()) {
-            // If the new value is too big :
+        if (val == 0 || val * serie.stddev() > serie.max() - serie.min() || val * serie.stddev() * 21 < serie.max() - serie.min()) {
+            // If the new value is too big or too small:
             this.value = std_dev_params.share;
             return;
         }
@@ -9496,23 +9498,7 @@ function add_layout_feature(selected_feature) {
     } else if (selected_feature == "rectangle") {
         handleClickAddRectangle();
     } else if (selected_feature == "symbol") {
-        if (!window.default_symbols) {
-            window.default_symbols = [];
-            var a = prepare_available_symbols();
-            a.then(function (confirmed) {
-                var a = box_choice_symbol(window.default_symbols).then(function (result) {
-                    if (result) {
-                        add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2));
-                    }
-                });
-            });
-        } else {
-            var _a = box_choice_symbol(window.default_symbols).then(function (result) {
-                if (result) {
-                    add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2));
-                }
-            });
-        }
+        handleClickAddPicto();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
@@ -9797,7 +9783,6 @@ function handleClickAddRectangle() {
 }
 
 function handleClickAddEllipse() {
-
     var start_point = void 0,
         tmp_start_point = void 0,
         ellipse_id = getIdLayoutFeature('ellispe');
@@ -9831,6 +9816,47 @@ function handleClickTextBox(text_box_id) {
         setTimeout(function (_) {
             text_box.editStyle();
         }, 350);
+    });
+}
+
+function handleClickAddPicto() {
+    var map_point = void 0,
+        click_pt = void 0,
+        prep_symbols = void 0,
+        available_symbols = false,
+        msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    if (!window.default_symbols) {
+        window.default_symbols = [];
+        prep_symbols = prepare_available_symbols();
+    } else {
+        available_symbols = true;
+    }
+
+    document.body.style.cursor = 'not-allowed';
+    map.style('cursor', 'crosshair').on('click', function () {
+        msg.dismiss();
+        click_pt = [d3.event.layerX, d3.event.layerY];
+        map_point = map.append('rect').attrs({ x: click_pt[0] - 2, y: click_pt[1] - 2, height: 4, width: 4 }).style('fill', 'red');
+        setTimeout(function () {
+            map_point.remove();
+        }, 500);
+        map.style('cursor', '').on('click', null);
+        document.body.style.cursor = '';
+        if (!available_symbols) {
+            prep_symbols.then(function (confirmed) {
+                box_choice_symbol(window.default_symbols).then(function (result) {
+                    if (result) {
+                        add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1]);
+                    }
+                });
+            });
+        } else {
+            box_choice_symbol(window.default_symbols).then(function (result) {
+                if (result) {
+                    add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1]);
+                }
+            });
+        }
     });
 }
 
@@ -11806,15 +11832,15 @@ var UserArrow = function () {
                 y: +t.attr("y2") - +t.attr("y1"),
                 x1: t.attr("x1"), x2: t.attr("x2"),
                 y1: t.attr("y1"), y2: t.attr("y2"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                snap_lines: snap_lines
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                //  , snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+            // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("line"),
@@ -11824,50 +11850,40 @@ var UserArrow = function () {
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
             self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
             self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
-            if (_app.autoalign_features) {
-                var snap_lines_x = subject.snap_lines.x,
-                    snap_lines_y = subject.snap_lines.y;
-                for (var i = 0; i < subject.snap_lines.x.length; i++) {
-                    if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            if (self.pt2[0] < self.pt1[0]) arrow_head_size = -arrow_head_size;
-                            self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            if (self.pt2[1] < self.pt1[1]) arrow_head_size = -arrow_head_size;
-                            self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
-                        })();
-                    }
-                }
-            }
+            // if(_app.autoalign_features){
+            //     let snap_lines_x = subject.snap_lines.x,
+            //         snap_lines_y = subject.snap_lines.y;
+            //     for(let i = 0; i < subject.snap_lines.x.length; i++){
+            //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+            //         }
+            //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           if(self.pt2[0] < self.pt1[0])
+            //               arrow_head_size = -arrow_head_size;
+            //           self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           if(self.pt2[1] < self.pt1[1])
+            //               arrow_head_size = -arrow_head_size;
+            //           self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+            //         }
+            //     }
+            // }
             _t.x1.baseVal.value = self.pt1[0];
             _t.x2.baseVal.value = self.pt2[0];
             _t.y1.baseVal.value = self.pt1[1];
@@ -11931,7 +11947,7 @@ var UserArrow = function () {
     }, {
         key: "remove",
         value: function remove() {
-            pos_lgds_elem.delete(this.arrow.attr('id'));
+            // pos_lgds_elem.delete(this.arrow.attr('id'));
             this.arrow.remove();
         }
     }, {
@@ -12069,7 +12085,7 @@ var UserArrow = function () {
             });
 
             var box_content = d3.select(".styleBoxArrow").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxArrow");
-            var s1 = box_content.append("p").attr('class', 'line_elem');
+            var s1 = box_content.append("p").attr('class', 'line_elem2');
             s1.append("span").html(i18next.t("app_page.arrow_edit_box.arrowWeight"));
             s1.insert("span").styles({ 'float': 'right', 'width': '13px' }).html("px");
             s1.insert("input").attrs({ id: "arrow_weight_text", class: "without_spinner", value: self.stroke_width, min: 0, max: 34, step: 0.1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
@@ -12083,7 +12099,7 @@ var UserArrow = function () {
                 document.getElementById("arrow_weight_text").value = +this.value;
             });
 
-            var s2 = box_content.append("p").attr('class', 'line_elem');
+            var s2 = box_content.append("p").attr('class', 'line_elem2');
             s2.append("span").html(i18next.t("app_page.arrow_edit_box.arrowAngle"));
             s2.insert("span").styles({ 'float': 'right', 'width': '13px' }).html("&nbsp;°");
             s2.insert("input").attrs({ id: "arrow_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1 }).styles({ width: "30px", "margin-left": "10px", 'float': 'right' }).on("input", function () {
@@ -12331,7 +12347,7 @@ var Textbox = function () {
                 x_center = nx + bbox.width / 2,
                 y_center = ny + bbox.height / 2;
 
-            var option_rotation = box_content.append('p').attr('class', 'line_elem');
+            var option_rotation = box_content.append('p').attr('class', 'line_elem2');
             option_rotation.append("span").html(i18next.t("app_page.text_box_edit_box.rotation"));
             option_rotation.append('span').style('float', 'right').html(' °');
             option_rotation.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: current_rotate,
@@ -12495,6 +12511,10 @@ var scaleBar = {
         var getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
                     _this5.editStyle();
+                } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
+                    _this5.up_element();
+                } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
+                    _this5.down_element();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
                     _this5.remove();
                 } }];
@@ -12589,6 +12609,12 @@ var scaleBar = {
             this.Scale.select("#text_limit_sup_scale").text(this.dist_txt + " " + this.unit);
         }
     },
+    up_element: function up_element() {
+        up_legend(this.Scale.node());
+    },
+    down_element: function down_element() {
+        down_legend(this.Scale.node());
+    },
     remove: function remove() {
         pos_lgds_elem.delete(this.Scale.attr('id') + ' ' + this.Scale.attr('class'));
         this.Scale.remove();
@@ -12620,7 +12646,7 @@ var scaleBar = {
         var box_body = d3.select(".scaleBarEditBox").select(".modal-body").style("width", "295px");
         // box_body.node().parentElement.style.width = "auto";
         box_body.append("h3").html(i18next.t("app_page.scale_bar_edit_box.title"));
-        var a = box_body.append("p").attr('class', 'line_elem');
+        var a = box_body.append("p").attr('class', 'line_elem2');
         a.append('span').html(i18next.t("app_page.scale_bar_edit_box.fixed_size"));
         a.append("input").style('float', 'right').attrs({ id: 'scale_fixed_field', type: 'number', disabled: self.fixed_size ? null : true, value: +this.dist_txt }).on("change", function () {
             new_val = +this.value;
@@ -12637,14 +12663,14 @@ var scaleBar = {
             redraw_now();
         });
 
-        var b = box_body.append("p").attr('class', 'line_elem');
+        var b = box_body.append("p").attr('class', 'line_elem2');
         b.insert("span").html(i18next.t("app_page.scale_bar_edit_box.precision"));
         b.insert("input").style('float', 'right').attrs({ id: 'scale_precision', type: "number", min: 0, max: 6, step: 1, value: +this.precision }).style("width", "60px").on("change", function () {
             self.precision = +this.value;
             redraw_now();
         });
 
-        var c = box_body.append("p").attr('class', 'line_elem');
+        var c = box_body.append("p").attr('class', 'line_elem2');
         c.insert("span").html(i18next.t("app_page.scale_bar_edit_box.unit"));
         var unit_select = c.insert("select").style('float', 'right').attr('id', "scale_unit").on("change", function () {
             self.unit = this.value;
@@ -12655,7 +12681,7 @@ var scaleBar = {
         unit_select.append("option").text("mi").attr("value", "mi");
         unit_select.node().value = self.unit;
 
-        var e = box_body.append("p").attr('class', 'line_elem');
+        var e = box_body.append("p").attr('class', 'line_elem2');
         e.append("span").html(i18next.t("app_page.scale_bar_edit_box.start_end_bar"));
         e.append("input").style('float', 'right').attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on("change", function (a) {
             self.start_end_bar = self.start_end_bar == true ? false : true;
@@ -12687,8 +12713,8 @@ var northArrow = {
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                snap_lines: snap_lines
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                // , snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
@@ -12704,53 +12730,42 @@ var northArrow = {
                 ty = +d3.event.y,
                 dim = t2.width.baseVal.value / 2;
             if (tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim) return;
-            if (_app.autoalign_features) {
-                var _bbox = this.getBoundingClientRect(),
-                    xmin = t2.x.baseVal.value,
-                    xmax = xmin + _bbox.width,
-                    ymin = t2.y.baseVal.value,
-                    ymax = ymin + _bbox.height,
-                    snap_lines_x = d3.event.subject.snap_lines.x,
-                    snap_lines_y = d3.event.subject.snap_lines.y;
-                for (var i = 0; i < snap_lines_x.length; i++) {
-                    if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            tx = snap_lines_x[i];
-                        })();
-                    }
-                    if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            tx = snap_lines_x[i] - _bbox.width;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            ty = snap_lines_y[i];
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            ty = snap_lines_y[i] - _bbox.height;
-                        })();
-                    }
-                }
-            }
+            // if(_app.autoalign_features){
+            //     let bbox = this.getBoundingClientRect(),
+            //         xy0_map = get_map_xy0(),
+            //         xmin = t2.x.baseVal.value,
+            //         xmax = xmin + bbox.width,
+            //         ymin = t2.y.baseVal.value,
+            //         ymax = ymin + bbox.height,
+            //         snap_lines_x = d3.event.subject.snap_lines.x,
+            //         snap_lines_y = d3.event.subject.snap_lines.y;
+            //     for(let i = 0; i < snap_lines_x.length; i++){
+            //         if(Math.abs(snap_lines_x[i] - xmin) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           tx = snap_lines_x[i];
+            //         }
+            //         if(Math.abs(snap_lines_x[i] - xmax) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           tx = snap_lines_x[i] - bbox.width;
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - ymin) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           ty = snap_lines_y[i];
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - ymax) < 10){
+            //           let l = map.append('line')
+            //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           ty = snap_lines_y[i] - bbox.height;
+            //         }
+            //     }
+            // }
             t1.x.baseVal.value = tx;
             t1.y.baseVal.value = ty;
             t2.x.baseVal.value = tx - 7.5;
@@ -12818,7 +12833,7 @@ var northArrow = {
 
         var box_body = d3.select(".arrowEditBox").select(".modal-body").style("width", "295px");
         box_body.append("h3").html(i18next.t("app_page.north_arrow_edit_box.title"));
-        var a = box_body.append('p').attr('class', 'line_elem');
+        var a = box_body.append('p').attr('class', 'line_elem2');
         a.append('span').html(i18next.t("app_page.north_arrow_edit_box.size"));
         a.append("span").style('float', 'right').html(" px");
         a.append("input").attrs({ type: "number", min: 0, max: 200, step: 1, value: old_dim,
@@ -12834,13 +12849,13 @@ var northArrow = {
             self.arrow_img.attr("height", new_size);
             var bbox = self.arrow_img.node().getBoundingClientRect(),
                 xy0_map = get_map_xy0();
-            self.attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
+            self.under_rect.attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
             self.x_center = x_pos + new_size / 2;
             self.y_center = y_pos + new_size / 2;
             document.getElementById("txt_size_n_arrow").value = new_size;
         });
 
-        var b = box_body.append("p").attr('class', 'line_elem');
+        var b = box_body.append("p").attr('class', 'line_elem2');
         b.append('span').html(i18next.t("app_page.north_arrow_edit_box.rotation"));
         b.append("span").style('float', 'right').html(" °");
         b.append("input").attrs({ type: "number", min: 0, max: 360, step: "any", value: old_rotate,
@@ -12888,15 +12903,15 @@ var UserRectangle = function () {
             var t = d3.select(this.querySelector("rect"));
             return {
                 x: +t.attr("x"), y: +t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                snap_lines: get_coords_snap_lines(this.id)
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+                // , snap_lines: get_coords_snap_lines(this.id)
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
-            pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
+            // pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("rect"),
@@ -12905,48 +12920,36 @@ var UserRectangle = function () {
                 ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
             self.pt1 = [+subject.x + tx, +subject.y + ty];
             self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
-            if (_app.autoalign_features) {
-                var snap_lines_x = subject.snap_lines.x,
-                    snap_lines_y = subject.snap_lines.y;
-                for (var i = 0; i < subject.snap_lines.x.length; i++) {
-                    if (Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                        })();
-                    }
-                    if (Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
-                        })();
-                    }
-                }
-            }
+            // if(_app.autoalign_features){
+            //     let snap_lines_x = subject.snap_lines.x,
+            //         snap_lines_y = subject.snap_lines.y;
+            //     for(let i = 0; i < subject.snap_lines.x.length; i++){
+            //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+            //         }
+            //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k - self.width;
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+            //         }
+            //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+            //           let l = map.append('line')
+            //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+            //           setTimeout(function(){ l.remove(); }, 1000);
+            //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k - self.height;
+            //         }
+            //     }
+            // }
             _t.x.baseVal.value = self.pt1[0];
             _t.y.baseVal.value = self.pt1[1];
         });
@@ -12997,12 +13000,12 @@ var UserRectangle = function () {
                 d3.event.stopPropagation();
                 _this7.handle_ctrl_pt();
             }).call(this.drag_behavior);
-            pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
+            // pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
         }
     }, {
         key: "remove",
         value: function remove() {
-            pos_lgds_elem.delete(this.rectangle.attr('id'));
+            // pos_lgds_elem.delete(this.rectangle.attr('id'));
             this.rectangle.remove();
         }
     }, {
@@ -13092,35 +13095,34 @@ var UserRectangle = function () {
                 }
                 if (!map_locked) handle_click_hand('unlock');
             });
-            var box_content = d3.select(".styleBoxRectangle").select(".modal-body").insert("div").attr("id", "styleBoxRectangle");
-            var s1 = box_content.append("p");
-            s1.append("p").style("margin", "auto").html(i18next.t("app_page.rectangle_edit_box.stroke_width"));
-            s1.append("input").attrs({ type: "range", id: "rectangle_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+            var box_content = d3.select(".styleBoxRectangle").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxRectangle");
+            var s1 = box_content.append("p").attr('class', 'line_elem2');
+            s1.append("span").style("margin", "auto").html(i18next.t("app_page.rectangle_edit_box.stroke_width"));
+            var i1 = s1.append("input").attrs({ type: "range", id: "rectangle_stroke_width", min: 0, max: 34, step: 0.1 }).styles({ width: "55px", float: 'right' }).on("change", function () {
                 rectangle_elem.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-            var txt_line_weight = s1.append("span").html(self.stroke_width + " px");
+            i1.node().value = self.stroke_width;
+            var txt_line_weight = s1.append("span").styles({ float: 'right', margin: '0 5px 0 5px' }).html(self.stroke_width + " px");
 
-            var s2 = box_content.append("p").style("margin", "auto");
-            s2.append("p").style("margin", "auto").html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
-            s2.append("input").attrs({ type: "color", id: "rectangle_strokeColor", value: rgb2hex(self.stroke_color) }).on("change", function () {
+            var s2 = box_content.append("p").attr('class', 'line_elem2');
+            s2.append("span").style("margin", "auto").html(i18next.t("app_page.rectangle_edit_box.stroke_color"));
+            s2.append("input").style('float', 'right').attrs({ type: "color", id: "rectangle_strokeColor", value: rgb2hex(self.stroke_color) }).on("change", function () {
                 rectangle_elem.style.stroke = this.value;
             });
 
-            var s3 = box_content.append('p').style('margin', 'auto');
-            s3.append('p').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_color'));
-            s3.append('input').attrs({ type: 'color', id: 'rectangle_fillColor', value: rgb2hex(self.fill_color) }).on('change', function () {
+            var s3 = box_content.append('p').attr('class', 'line_elem2');
+            s3.append('span').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_color'));
+            s3.append('input').style('float', 'right').attrs({ type: 'color', id: 'rectangle_fillColor', value: rgb2hex(self.fill_color) }).on('change', function () {
                 rectangle_elem.style.fill = this.value;
             });
 
-            console.log(self.fill_opacity);
-            console.log(rectangle_elem.style.fillOpacity);
-            var s4 = box_content.append('p').style('margin', 'auto');
-            s4.append('p').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
-            s4.append('input').attrs({ type: 'range', value: rectangle_elem.style.fillOpacity, min: 0, max: 1, step: 0.1 }).styles({ width: '55px', 'vertical-align': 'middle', display: 'inline' }).on('change', function () {
-                console.log(this.value);
+            var s4 = box_content.append('p').attr('class', 'line_elem2');
+            s4.append('span').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
+            var i2 = s4.append('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '55px', float: 'right' }).on('change', function () {
                 rectangle_elem.style.fillOpacity = this.value;
             });
+            i2.node().value = rectangle_elem.style.fillOpacity;
         }
     }]);
 
@@ -13159,7 +13161,7 @@ var UserEllipse = function () {
             handle_click_hand("lock");
         }).on("end", function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock"); // zoom.on("zoom", zoom_without_redraw);
-            pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
+            // pos_lgds_elem.set(this.id, this.querySelector('ellipse').getBoundingClientRect());
         }).on("drag", function () {
             d3.event.sourceEvent.preventDefault();
             var _t = this.querySelector("ellipse"),
@@ -13207,12 +13209,12 @@ var UserEllipse = function () {
                 d3.event.stopPropagation();
                 _this8.handle_ctrl_pt();
             }).call(this.drag_behavior);
-            pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
+            // pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
         }
     }, {
         key: "remove",
         value: function remove() {
-            pos_lgds_elem.delete(this.ellipse.attr('id'));
+            // pos_lgds_elem.delete(this.ellipse.attr('id'));
             this.ellipse.remove();
         }
     }, {
@@ -13270,21 +13272,21 @@ var UserEllipse = function () {
                 }
                 if (!map_locked) handle_click_hand('unlock');
             });
-            var box_content = d3.select(".styleBoxEllipse").select(".modal-body").insert("div").attr("id", "styleBoxEllipse");
-            var s1 = box_content.append("p");
-            s1.append("p").style("margin", "auto").html(i18next.t("app_page.ellipse_edit_box.stroke_width"));
-            s1.append("input").attrs({ type: "range", id: "ellipse_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width }).styles({ width: "80px", "vertical-align": "middle" }).on("change", function () {
+            var box_content = d3.select(".styleBoxEllipse").select(".modal-body").style("width", "295px").insert("div").attr("id", "styleBoxEllipse");
+            var s1 = box_content.append("p").attr('class', 'line_elem2');
+            s1.append("span").style("margin", "auto").html(i18next.t("app_page.ellipse_edit_box.stroke_width"));
+            s1.append("input").attrs({ type: "range", id: "ellipse_stroke_width", min: 0, max: 34, step: 0.1, value: self.stroke_width }).styles({ width: "80px", float: 'right' }).on("change", function () {
                 ellipse_elem.style.strokeWidth = this.value;
                 txt_line_weight.html(this.value + "px");
             });
-            var txt_line_weight = s1.append("span").html(self.stroke_width + " px");
+            var txt_line_weight = s1.append("span").styles({ float: 'right', margin: '0 5px 0 5px' }).html(self.stroke_width + " px");
 
-            var s2 = box_content.append("p").style("margin", "auto");
-            s2.append("p").style("margin", "auto").html(i18next.t("app_page.ellipse_edit_box.stroke_color"));
-            s2.append("input").attrs({ type: "color", id: "ellipse_strokeColor", value: self.stroke_color }).on("change", function () {
+            var s2 = box_content.append("p").attr('class', 'line_elem2');
+            s2.append("span").style("margin", "auto").html(i18next.t("app_page.ellipse_edit_box.stroke_color"));
+            s2.append("input").style('float', 'right').attrs({ type: "color", id: "ellipse_strokeColor", value: self.stroke_color }).on("change", function () {
                 ellipse_elem.style.stroke = this.value;
             });
-            //  let s2b = box_content.append("p").attr('class', 'line_elem')
+            //  let s2b = box_content.append("p").attr('class', 'line_elem2')
             //  s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
             //  s2b.insert("span").styles({float: 'right', 'width': '12px'}).html("&nbsp;°");
             //  s2b.insert("input")
@@ -14219,6 +14221,7 @@ function display_box_value_symbol(layer_name) {
             sample_svg.selectAll('g').remove();
             createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
             sample_svg.select('g').select('#under_rect').remove();
+            sample_svg.select('#legend_root_symbol').on('.drag', null);
         };
     }();
 
@@ -14389,7 +14392,18 @@ function createlegendEditBox(legend_id, layer_name) {
         });
     }
 
-    if (current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols" && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))) {
+    if (legend_id == "legend_root_symbol") {
+        var choice_break_value_section1 = box_body.insert('p');
+        choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
+            container.modal.hide();
+            display_box_value_symbol(layer_name).then(function (confirmed) {
+                container.modal.show();
+                if (confirmed) {
+                    redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+                }
+            });
+        });
+    } else if (current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols" && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))) {
         // Float precision for label in the legend
         // (actually it's not really the float precision but an estimation based on
         // the string representation of only two values but it will most likely do the job in many cases)
@@ -14530,17 +14544,6 @@ function createlegendEditBox(legend_id, layer_name) {
         value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color) }).on("change", function () {
         rect_fill_value = { color: this.value, opacity: 1 };
         make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
-    });
-
-    var choice_break_value_section1 = box_body.insert('p');
-    choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
-        container.modal.hide();
-        display_box_value_symbol(layer_name).then(function (confirmed) {
-            container.modal.show();
-            if (confirmed) {
-                redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-            }
-        });
     });
 }
 
@@ -15621,9 +15624,10 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     var modal_box = make_dialog_container("box_choice_symbol", i18next.t("app_page.box_choice_symbol.title"), "dialog");
     overlay_under_modal.display();
     var container = document.getElementById("box_choice_symbol");
+    var btn_ok = container.querySelector('.btn_ok');
     container.querySelector('.modal-dialog').classList.add('fitContent');
+    btn_ok.disabled = "disabled";
     var newbox = d3.select(container).select(".modal-body").style('width', '220px');
-
     newbox.append("p").html('<b>' + i18next.t("app_page.box_choice_symbol.select_symbol") + '</b>');
 
     var box_select = newbox.append("div").styles({ width: "190px", height: "100px", overflow: "auto", border: "1.5px solid #1d588b" }).attr("id", "symbols_select");
@@ -15648,6 +15652,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         this.parentElement.style.padding = "-1px";
         this.parentElement.style.border = "1px dashed red";
         var svg_dataUrl = ['url("data:image/svg+xml;base64,', btoa(new XMLSerializer().serializeToString(this)), '")'].join('');
+        btn_ok.disabled = false;
         newbox.select("#current_symb").style("background-image", svg_dataUrl);
     });
 
@@ -15656,12 +15661,12 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
         var input = document.createElement('input');
         input.setAttribute("type", "file");
         input.onchange = function (event) {
-            var file = event.target.files[0];
-            var file_name = file.name;
-            var reader = new FileReader();
+            var file = event.target.files[0],
+                file_name = file.name,
+                reader = new FileReader();
             reader.onloadend = function () {
-                var result = reader.result;
-                var dataUrl_res = ['url("', result, '")'].join('');
+                var dataUrl_res = ['url("', reader.result, '")'].join('');
+                btn_ok.disabled = false;
                 newbox.select("#current_symb").style("background-image", dataUrl_res);
             };
             reader.readAsDataURL(file);

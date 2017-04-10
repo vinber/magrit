@@ -605,8 +605,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .styles({'width': '45px', 'margin-left': '10px', 'margin-right': '10px'})
         .on('change', function(){
             let val = this.value;
-            if(val == 0 || (val * serie.stddev()) > (serie.max() - serie.min())){
-                // If the new value is too big :
+            if(val == 0 || (val * serie.stddev()) > (serie.max() - serie.min()) ||  (val * serie.stddev() * 21) < (serie.max() - serie.min())){
+                // If the new value is too big or too small:
                 this.value = std_dev_params.share;
                 return;
             }

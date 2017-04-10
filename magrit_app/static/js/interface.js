@@ -1231,19 +1231,7 @@ function add_layout_feature(selected_feature, options = {}){
       } else if (selected_feature == "rectangle"){
         handleClickAddRectangle();
     } else if (selected_feature == "symbol"){
-        if(!window.default_symbols){
-            window.default_symbols = [];
-            let a = prepare_available_symbols();
-            a.then(confirmed => {
-                let a = box_choice_symbol(window.default_symbols).then( result => {
-                    if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
-                });
-            });
-        } else {
-            let a = box_choice_symbol(window.default_symbols).then( result => {
-                if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2)); }
-            });
-        }
+        handleClickAddPicto();
     } else {
         swal(i18next.t("app_page.common.error") + "!", i18next.t("app_page.common.error"), "error");
     }
@@ -1553,7 +1541,6 @@ function handleClickAddRectangle(){
   }
 
 function handleClickAddEllipse(){
-
     let start_point,
         tmp_start_point,
         ellipse_id = getIdLayoutFeature('ellispe');
@@ -1589,6 +1576,47 @@ function handleClickTextBox(text_box_id){
             document.body.style.cursor = "";
             let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
             setTimeout(_ => { text_box.editStyle(); }, 350);
+        });
+}
+
+function handleClickAddPicto(){
+    let map_point,
+        click_pt,
+        prep_symbols,
+        available_symbols = false,
+        msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    if(!window.default_symbols){
+        window.default_symbols = [];
+        prep_symbols = prepare_available_symbols();
+
+    } else {
+        available_symbols = true;
+    }
+
+    document.body.style.cursor = 'not-allowed';
+    map.style('cursor', 'crosshair')
+        .on('click', function(){
+              msg.dismiss();
+              click_pt = [d3.event.layerX, d3.event.layerY];
+              map_point = map.append('rect')
+                  .attrs({x: click_pt[0] - 2, y: click_pt[1] - 2, height: 4, width: 4})
+                  .style('fill', 'red');
+              setTimeout(function(){
+                  map_point.remove();
+              }, 500);
+              map.style('cursor', '').on('click', null);
+              document.body.style.cursor = '';
+              if(!available_symbols){
+                  prep_symbols.then(confirmed => {
+                      box_choice_symbol(window.default_symbols).then( result => {
+                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1]); }
+                      });
+                  });
+              } else {
+                  box_choice_symbol(window.default_symbols).then( result => {
+                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1]); }
+                  });
+              }
         });
 }
 

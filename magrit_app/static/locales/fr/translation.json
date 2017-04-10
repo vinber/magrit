@@ -135,6 +135,7 @@
             "resize_fit": "Réadapter la carte à la taille de l'écran",
             "background_color": "Couleur de l'arrière-plan",
             "canvas_rotation": "Rotation de la carte",
+            "autoalign_features": "Alignement des éléments (experimental)",
             "layout_features": "<b>Ajout d'éléments d'habillage :</b>"
         },
         "section5b": {
@@ -406,7 +407,7 @@
             "title": "Sélection du figuré",
             "select_symbol": "Sélectionnez un symbole  ...",
             "upload_symbol": "Ou ajouter votre symbole ou image ",
-            "browse": "Browse",
+            "browse": "Parcourir ...",
             "selected_symbol": "Symbole sélectionné :"
         },
         "legend_style_box": {

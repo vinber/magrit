@@ -135,9 +135,10 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
         "dialog");
     overlay_under_modal.display();
     let container = document.getElementById("box_choice_symbol");
+    let btn_ok = container.querySelector('.btn_ok');
     container.querySelector('.modal-dialog').classList.add('fitContent');
+    btn_ok.disabled = "disabled";
     var newbox = d3.select(container).select(".modal-body").style('width', '220px');
-
     newbox.append("p")
         .html('<b>' + i18next.t("app_page.box_choice_symbol.select_symbol") + '</b>');
 
@@ -171,6 +172,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
                 'url("data:image/svg+xml;base64,',
                 btoa(new XMLSerializer().serializeToString(this)),
                 '")'].join('');
+            btn_ok.disabled = false;
             newbox.select("#current_symb").style("background-image", svg_dataUrl);
         });
 
@@ -185,12 +187,12 @@ function box_choice_symbol(sample_symbols, parent_css_selector){
             let input = document.createElement('input');
             input.setAttribute("type", "file");
             input.onchange = function(event){
-                let file = event.target.files[0];
-                let file_name = file.name;
-                let reader = new FileReader()
+                let file = event.target.files[0],
+                    file_name = file.name,
+                    reader = new FileReader();
                 reader.onloadend = function(){
-                    let result = reader.result;
-                    let dataUrl_res = ['url("', result, '")'].join('');
+                    let dataUrl_res = ['url("', reader.result, '")'].join('');
+                    btn_ok.disabled = false;
                     newbox.select("#current_symb").style("background-image", dataUrl_res);
                 }
                 reader.readAsDataURL(file);
