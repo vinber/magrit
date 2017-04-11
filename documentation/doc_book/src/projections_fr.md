@@ -59,7 +59,7 @@ PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",700000.0],PARAME
 
 Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.
 - Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).
-- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une [liste](./projection_list_fr.md) maintenue en parallèle de *Magrit*.
+- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une [liste](./projection_list_fr.html) maintenue en parallèle de *Magrit*.
 - Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)
 
 De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).

@@ -203,7 +203,7 @@ PROJECTION[&quot;Lambert_Conformal_Conic&quot;],PARAMETER[&quot;False_Easting&qu
 <p>Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.</p>
 <ul>
 <li>Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).</li>
-<li>Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une <a href="./projection_list_fr.md">liste</a> maintenue en parallèle de <em>Magrit</em>.</li>
+<li>Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une <a href="./projection_list_fr.html">liste</a> maintenue en parallèle de <em>Magrit</em>.</li>
 <li>Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)</li>
 </ul>
 <p>De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).</p>
@@ -382,6 +382,7 @@ Les données de rapports (de taux, d’intensités ou de ratios) sont des donné
 <p style="text-align: center;">
 <img src="img/discr3.png" alt="choro_map" style="width: 480px;"/>
 </p>
+Les différents modes de discrétisation proposés dans cette boite sont détaillés dans la partie [Discrétisation des données](./discretisation_fr.html).
 <h4>Exemple :</h4>
 <p style="text-align: center;">
 <img src="img/choropleth_map.png" alt="choro_map" style="width: 480px;"/>
@@ -598,7 +599,9 @@ Cette méthode propose de former des classes en fonction de la valeur de l'écar
 <p>Il est également possible d'utiliser les discrétisations en <strong>progression arithmétique</strong>, en <strong>progression géométrique</strong> ou de saisir manuellement les bornes de classes.</p>
 </li>
 </ul>
-<p>Le panneau principal de la boite de dialogue permettant de choisir un type de discrétisation ainsi que les palettes de couleurs représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.</p>
+<p>Le panneau principal de la boite de dialogue représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
+C'est également dans ce panneau que se trouve le possibilité de changer le type de discrétisation, le nombre de classes souhaitées ainsi que la ou les progression(s) colorée(s) à utiliser.
+Les palettes proposées proviennent de l'outil <a href="http://colorbrewer2.org"><strong><em>ColorBrewer</em></strong></a> (projet sous Licence Apache 2.0. Crédits: <em>Cynthia Brewer, Mark Harrower and The Pennsylvania State University</em>).</p>
 <p>Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et <em>essaim d'abeilles</em>).
 La représentation sous forme de boite à moustache permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).</p>
 <p style="text-align: center;">

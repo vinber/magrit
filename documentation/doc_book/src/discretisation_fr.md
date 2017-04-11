@@ -30,7 +30,9 @@ Cette méthode propose de former des classes en fonction de la valeur de l'écar
 - Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de saisir manuellement les bornes de classes.
 
 
-Le panneau principal de la boite de dialogue permettant de choisir un type de discrétisation ainsi que les palettes de couleurs représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
+Le panneau principal de la boite de dialogue représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
+C'est également dans ce panneau que se trouve le possibilité de changer le type de discrétisation, le nombre de classes souhaitées ainsi que la ou les progression(s) colorée(s) à utiliser.
+Les palettes proposées proviennent de l'outil [__*ColorBrewer*__](http://colorbrewer2.org) (projet sous Licence Apache 2.0. Crédits: *Cynthia Brewer, Mark Harrower and The Pennsylvania State University*).
 
 Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et *essaim d'abeilles*).
 La représentation sous forme de boite à moustache permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).
@@ -38,6 +40,5 @@ La représentation sous forme de boite à moustache permet de visualiser plusieu
 <p style="text-align: center;">
 <img src="img/box_plot.svg" alt="Box plot" style="width: 450px;"/>
 </p>
-
 
 Vous pouvez consulter l'article <a href="http://mappemonde.mgm.fr/119geov1/">Géovisualisation des discrétisations : une petite application pédagogique</a>, dans la revue *MappeMonde* n°119, qui met en avant l'importance du choix d'une discrétisation adaptée en cartographie.
