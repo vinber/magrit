@@ -24,25 +24,25 @@ Il est également possible (et conseillé lors de l'utilisation des projections 
 
 > #### Note:
 > - La modification de la projection à utiliser est possible à tout moment.
-> - Lors de la réalisation d'une carte d'une faible emprise spatiale, l'utilisation de certaines projection n'est pas pertinent et est désactivé par défaut.
+> - Lors de la réalisation d'une carte d'une faible emprise spatiale, l'utilisation de certaines projections n'est pas pertinent.
 
 #### Exemple d'utilisation des graticules et du fond de l'emprise du globe avec des représentations originales :
 <p style="text-align: center;">
 <img src="img/proj_loximuthal.png" alt="proj_loximuthal" style="width: 400px;"/></br>
-projection Loximuthal</br></br>
+Projection Loximuthale</br></br>
 <img src="img/proj_healpix.png" alt="proj_healpix" style="width: 400px;"/></br>
-projection HEALPix</br></br>
+Projection HEALPix</br></br>
 <img src="img/proj_interrupted.png" alt="proj_interrupted" style="width: 400px;"/></br>
-projection Interrupted Homolosine</br></br>
+Projection homolosine de Goode (interrompue)</br></br>
 <img src="img/proj_peirce.png" alt="proj_peirce" style="width: 400px;"/></br>
-projection Peirce</br></br>
+Projection quinconciale de Peirce</br></br>
 <img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
-projection Eisenlohr</br></p>
+Projection de Eisenlohr</br></p>
 
 
 L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format *Proj.4*[1](#) correspondante. La saisie du contenu du fichier *.prj* (notation au format *ESRI WKT*) est aussi possible.
 L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
-Cette fonctionnalité permet d'utiliser la projection et le système de coordonné le plus adapté à la zone à cartographier selon les besoins de l'usager.
+Cette fonctionnalité, qui supporte également les transformations géodésiques, permet d'utiliser la projection et le système de coordonnées les plus adaptés à la zone à cartographier selon les besoins de l'usager.
 Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format *Proj.4 string*)
 
 ```
@@ -52,12 +52,14 @@ Ainsi, après avoir ajouté une couche géographique de la France, il est possib
 ou la chaîne de caractère (format *ESRI WKT*)
 
 ```
-PROJCS["RGF93_Lambert_93",GEOGCS["GCS_RGF_1993",DATUM["D_RGF_1993",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",700000.0],PARAMETER["False_Northing",6600000.0],PARAMETER["Central_Meridian",3.0],PARAMETER["Standard_Parallel_1",44.0],PARAMETER["Standard_Parallel_2",49.0],PARAMETER["Latitude_Of_Origin",46.5],UNIT["Meter",1.0]]
+PROJCS["RGF93_Lambert_93",GEOGCS["GCS_RGF_1993",DATUM["D_RGF_1993",SPHEROID["GRS_1980",6378137.0,298.257222101]],
+PRIMEM["Greenwich",0.0],UNIT["Degree",0.017453292519943295]],
+PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",700000.0],PARAMETER["False_Northing",6600000.0],PARAMETER["Central_Meridian",3.0],PARAMETER["Standard_Parallel_1",44.0],PARAMETER["Standard_Parallel_2",49.0],PARAMETER["Latitude_Of_Origin",46.5],UNIT["Meter",1.0]]
 ```
 
 Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.
 - Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).
-- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une liste maintenue en parallèle de *Magrit*.
+- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une [liste](./projection_list_fr.md) maintenue en parallèle de *Magrit*.
 - Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)
 
-De plus l'application propose automatique l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).
+De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).

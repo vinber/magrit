@@ -15792,17 +15792,15 @@ var createBoxProj4 = function createBoxProj4() {
 
 		var input_section = content.append('p');
 		input_section.append('span').style('float', 'left').html("Enter a proj4 string");
-		input_section.append('input').styles({ 'width': '90%' }).attrs({ id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" }).on("input", function () {
-				null;
-				var proj_str = this.value;
-				if (proj_str.length < 4 || !proj_str.split(' ').every(function (f) {
-						return f[0] == '+';
-				})) {
-						container.querySelector('.btn_ok').disabled = 'disabled';
-				} else {
-						container.querySelector('.btn_ok').disabled = false;
-				}
-		});
+		input_section.append('input').styles({ 'width': '90%' }).attrs({ id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" });
+		// .on("input", function(){
+		// 		let proj_str = this.value;
+		// 		if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
+		// 				container.querySelector('.btn_ok').disabled = 'disabled';
+		// 		} else {
+		// 				container.querySelector('.btn_ok').disabled = false;
+		// 		}
+		// });
 
 		var clean_up_box = function clean_up_box() {
 				container.remove();
@@ -15815,32 +15813,30 @@ var createBoxProj4 = function createBoxProj4() {
 		var _onclose_valid = function _onclose_valid() {
 				var proj_str = document.getElementById('input_proj_string').value;
 				clean_up_box();
-				if (proj_str.length < 4 || !proj_str.split(' ').every(function (f) {
-						return f[0] == '+';
-				})) {
+				// if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
+				// 		return;
+				// } else {
+				var _p = void 0;
+				try {
+						_p = proj4(proj_str);
+				} catch (e) {
+						swal({ title: "Oops...",
+								text: i18next.t('app_page.proj4_box.error', { detail: e }),
+								type: "error",
+								allowOutsideClick: false,
+								allowEscapeKey: false
+						}).then(function () {
+								null;
+						}, function () {
+								null;
+						});
+						console.log(e);
 						return;
-				} else {
-						var _p = void 0;
-						try {
-								_p = proj4(proj_str);
-						} catch (e) {
-								swal({ title: "Oops...",
-										text: i18next.t('app_page.proj4_box.error', { detail: e }),
-										type: "error",
-										allowOutsideClick: false,
-										allowEscapeKey: false
-								}).then(function () {
-										null;
-								}, function () {
-										null;
-								});
-								console.log(e);
-								return;
-						}
-						change_projection_4(_p);
-						_app.last_projection = proj_str;
-						addLastProjectionSelect('def_proj4');
 				}
+				change_projection_4(_p);
+				_app.last_projection = proj_str;
+				addLastProjectionSelect('def_proj4');
+				// }
 		};
 		container.querySelector(".btn_cancel").onclick = clean_up_box;
 		container.querySelector("#xclose").onclick = clean_up_box;

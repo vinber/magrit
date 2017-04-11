@@ -4,6 +4,7 @@
 
 - [Import des données](./import_fr.md)
 - [Choix d'une projection](./projections_fr.md)
+	- [Liste de projections nationales](./projection_list_fr.md)
 - [Choix de la représentation](./carto_fr.md)
 	- [Carte de stocks](./carto/propsmbol_fr.md)
 	- [Carte de ratios](./carto/choro_fr.md)
