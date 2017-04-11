@@ -1297,9 +1297,9 @@ function make_generate_labels_graticule_section(parent_node){
               color: "#000",
               font: "Arial,Helvetica,sans-serif",
               ref_font_size: 12,
-              uo_layer_name: ["Labels", layer_name].join('_')
+              uo_layer_name: ["Labels", "Graticule"].join('_')
             };
-            render_label_graticule(layer_name, options_labels);
+            render_label_graticule("Graticule", options_labels);
               //             resolve();
               //           }
               //       });
@@ -1331,52 +1331,42 @@ function make_generate_labels_section(parent_node, layer_name){
               this.style.fontWeight = "";
             })
             .on("click", function(){
-              if(layer_name == "Graticule"){
-                  let options_labels = {
-                    color: "#000",
-                    font: "Arial,Helvetica,sans-serif",
-                    ref_font_size: 12,
-                    uo_layer_name: ["Labels", layer_name].join('_')
-                  };
-                  render_label_graticule(layer_name, options_labels);
-              } else {
-                  swal({
-                      title: "",
-                      text: i18next.t("app_page.layer_style_popup.field_label"),
-                      type: "question",
-                      customClass: 'swal2_custom',
-                      showCancelButton: true,
-                      showCloseButton: false,
-                      allowEscapeKey: false,
-                      allowOutsideClick: false,
-                      confirmButtonColor: "#DD6B55",
-                      confirmButtonText: i18next.t("app_page.common.confirm"),
-                      input: 'select',
-                      inputPlaceholder: i18next.t("app_page.common.field"),
-                      inputOptions: input_fields,
-                      inputValidator: function(value) {
-                          return new Promise(function(resolve, reject){
-                              if(_fields.indexOf(value) < 0){
-                                  reject(i18next.t("app_page.common.no_value"));
-                              } else {
-                                let options_labels = {
-                                  label_field: value,
-                                  color: "#000",
-                                  font: "Arial,Helvetica,sans-serif",
-                                  ref_font_size: 12,
-                                  uo_layer_name: ["Labels", value, layer_name].join('_')
-                                };
-                                render_label(layer_name, options_labels);
-                                resolve();
-                              }
-                          });
-                      }
-                    }).then( value => {
-                          console.log(value);
-                      }, dismiss => {
-                          console.log(dismiss);
-                    });
-              }
+                swal({
+                    title: "",
+                    text: i18next.t("app_page.layer_style_popup.field_label"),
+                    type: "question",
+                    customClass: 'swal2_custom',
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    allowEscapeKey: false,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.confirm"),
+                    input: 'select',
+                    inputPlaceholder: i18next.t("app_page.common.field"),
+                    inputOptions: input_fields,
+                    inputValidator: function(value) {
+                        return new Promise(function(resolve, reject){
+                            if(_fields.indexOf(value) < 0){
+                                reject(i18next.t("app_page.common.no_value"));
+                            } else {
+                              let options_labels = {
+                                label_field: value,
+                                color: "#000",
+                                font: "Arial,Helvetica,sans-serif",
+                                ref_font_size: 12,
+                                uo_layer_name: ["Labels", value, layer_name].join('_')
+                              };
+                              render_label(layer_name, options_labels);
+                              resolve();
+                            }
+                        });
+                    }
+                  }).then( value => {
+                        console.log(value);
+                    }, dismiss => {
+                        console.log(dismiss);
+                  });
             });
     }
 }

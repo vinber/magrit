@@ -384,9 +384,9 @@ function setUpInterface() {
         var diff_h = dispo_h - h;
         if (this.value == "portrait") {
             if (round_value(w / h, 1) == 1.4) {
-                var _t2 = h;
+                var tmp = h;
                 h = w;
-                w = _t2;
+                w = tmp;
             } else if (diff_h >= diff_w) {
                 w = round_value(h * 0.70707, 0);
             } else {
@@ -394,9 +394,9 @@ function setUpInterface() {
             }
         } else if (this.value == "landscape") {
             if (round_value(h / w, 1) == 1.4) {
-                var _t3 = h;
+                var _tmp = h;
                 h = w;
-                w = _t3;
+                w = _tmp;
             } else if (diff_h <= diff_w) {
                 w = round_value(h / 0.70707, 0);
             } else {
@@ -1678,7 +1678,7 @@ function handleClipPath() {
 
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
 
-        map.selectAll(".layer").attr("clip-path", "url(#clip)");
+        map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
     } else if (proj_name.indexOf('conicconformal') > -1) {
@@ -1692,7 +1692,7 @@ function handleClipPath() {
         defs.append("path").attr("id", "extent").attr("d", path(outline));
         defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#extent");
 
-        map.selectAll(".layer").attr("clip-path", "url(#clip)");
+        map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
 
         // map.selectAll('.layer')
         //     .selectAll('path')
@@ -7099,7 +7099,7 @@ var render_label = function render_label(layer, rendering_params, options) {
             } }];
     };
 
-    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer no_clip" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
         var pt = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
@@ -7138,7 +7138,7 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
     var selected_font = rendering_params.font;
     var font_size = rendering_params.ref_font_size + "px";
     var position_lat = rendering_params.position_lat || 'bottom';
-    var position_lon = rendering_params.position_lat || 'left';
+    var position_lon = rendering_params.position_lon || 'left';
     var new_layer_data = [];
     var layer_to_add = check_layer_name("Labels_Graticule");
     var layer_id = encodeId(layer_to_add);
@@ -7154,14 +7154,14 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
         nb_ft = grat.length;
         for (var i = 0; i < nb_ft; i++) {
             var txt = void 0,
-                geometry = void 0;
-            var line = grat[i];
+                geometry = void 0,
+                line = grat[i];
             if (line.coordinates[0][0] == line.coordinates[1][0]) {
                 txt = line.coordinates[0][0];
-                geometry = position_lat == 'right' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
+                geometry = position_lat == 'bottom' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
             } else if (line.coordinates[0][1] == line.coordinates[1][1]) {
                 txt = line.coordinates[0][1];
-                geometry = position_lon == 'right' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
+                geometry = position_lon == 'left' ? { type: "Point", coordinates: line.coordinates[0] } : { type: "Point", coordinates: line.coordinates[line.length - 1] };
             }
             if (txt != undefined) {
                 new_layer_data.push({
@@ -7183,7 +7183,7 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
             } }];
     };
 
-    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
+    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer no_clip" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
         var pt = path.centroid(d.geometry);
         return {
             "id": "Feature_" + i,
@@ -8367,10 +8367,10 @@ function click_button_add_layer() {
         input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
         target_layer_on_add = true;
     } else if (self.id === "input_geom" || self.id === "img_in_geom") {
-        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json");
         target_layer_on_add = true;
     } else if (self.id == "input_layout_geom") {
-        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json");
     }
     input.setAttribute('type', 'file');
     input.setAttribute('multiple', '');
@@ -8425,43 +8425,52 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                 allowEscapeKey: false,
                 allowOutsideClick: false });
         }
-    } else if (files[0].name.toLowerCase().indexOf('topojson') > -1) {
+    } else if (files[0].name.toLowerCase().indexOf('json') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
-        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
-            text: i18next.t('app_page.common.error_only_one'),
-            customClass: 'swal2_custom',
-            type: "error",
-            allowEscapeKey: false,
-            allowOutsideClick: false });
-        // Most direct way to add a layer :
-        else handle_TopoJSON_files(files, target_layer_on_add);
-    } else if (files[0].name.toLowerCase().indexOf('geojson') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
-        elem.style.border = '';
-
-        if (target_layer_on_add && _app.targeted_layer_added) swal({ title: i18next.t("app_page.common.error") + "!",
-            text: i18next.t('app_page.common.error_only_one'),
-            customClass: 'swal2_custom',
-            type: "error",
-            allowEscapeKey: false,
-            allowOutsideClick: false });
-        // Send the file to the server for conversion :
-        else handle_single_file(files[0], target_layer_on_add);
+        if (target_layer_on_add && _app.targeted_layer_added) {
+            swal({ title: i18next.t("app_page.common.error") + "!",
+                text: i18next.t('app_page.common.error_only_one'),
+                customClass: 'swal2_custom',
+                type: "error",
+                allowEscapeKey: false,
+                allowOutsideClick: false });
+            // Send the file to the server for conversion :
+        } else {
+            if (files[0].name.toLowerCase().indexOf('json' < 0)) {
+                handle_single_file(files[0], target_layer_on_add);
+            } else {
+                var tmp = JSON.parse(files[0]);
+                if (tmp.type && tmp.type == "FeatureCollection") {
+                    handle_single_file(files[0], target_layer_on_add);
+                } else if (tmp.type && tmp.type == "Topology") {
+                    handle_TopoJSON_files(files, target_layer_on_add);
+                }
+            }
+        }
     } else if (files[0].name.toLowerCase().indexOf('.csv') > -1 || files[0].name.toLowerCase().indexOf('.tsv') > -1) {
         elem.style.border = '';
-        if (target_layer_on_add) handle_dataset(files[0], target_layer_on_add);else swal({ title: i18next.t("app_page.common.error") + "!",
-            text: i18next.t('app_page.common.error_only_layout'),
-            type: "error",
-            customClass: 'swal2_custom',
-            allowEscapeKey: false,
-            allowOutsideClick: false });
+        if (target_layer_on_add) {
+            handle_dataset(files[0], target_layer_on_add);
+        } else {
+            swal({ title: i18next.t("app_page.common.error") + "!",
+                text: i18next.t('app_page.common.error_only_layout'),
+                type: "error",
+                customClass: 'swal2_custom',
+                allowEscapeKey: false,
+                allowOutsideClick: false });
+        }
     } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
         elem.style.border = '';
-        if (target_layer_on_add) convert_dataset(files[0]);else swal({ title: i18next.t("app_page.common.error") + "!",
-            text: i18next.t('app_page.common.error_only_layout'),
-            type: "error",
-            customClass: 'swal2_custom',
-            allowEscapeKey: false,
-            allowOutsideClick: false });
+        if (target_layer_on_add) {
+            convert_dataset(files[0]);
+        } else {
+            swal({ title: i18next.t("app_page.common.error") + "!",
+                text: i18next.t('app_page.common.error_only_layout'),
+                type: "error",
+                customClass: 'swal2_custom',
+                allowEscapeKey: false,
+                allowOutsideClick: false });
+        }
     } else {
         elem.style.border = '';
         var shp_part = void 0;
@@ -8883,7 +8892,7 @@ function handle_dataset(f, target_layer_on_add) {
                             allowEscapeKey: false,
                             allowOutsideClick: false });
                     } else {
-                        add_csv_geom(data, dataset_name);
+                        add_csv_geom(data, name.substring(0, name.indexOf('.csv')));
                     }
                     return;
                 }
@@ -9124,7 +9133,7 @@ function add_layer_topojson(text) {
         return;
     }
     var type = "",
-        topoObj = parsedJSON.file,
+        topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects),
         _proj;
@@ -9150,7 +9159,9 @@ function add_layer_topojson(text) {
     }
 
     if (_app.first_layer) {
-        remove_layer_cleanup('World');
+        // remove_layer_cleanup('World');
+        var q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
+        if (q) q.click();
         delete _app.first_layer;
         if (parsedJSON.proj) {
             try {
@@ -9183,21 +9194,24 @@ function add_layer_topojson(text) {
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    var path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
+    var path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path,
+        nb_fields = field_names.length;
 
     map.insert("g", '.legend').attr("id", lyr_id).attr("class", data_to_load ? "targeted_layer layer" : "layer").styles({ "stroke-linecap": "round", "stroke-linejoin": "round" }).selectAll(".subunit").data(topojson.feature(topoObj, topoObj_objects).features).enter().append("path").attrs({ "d": path_to_use, "height": "100%", "width": "100%" }).attr("id", function (d, ix) {
         if (data_to_load) {
-            if (field_names.length > 0) {
+            if (nb_fields > 0) {
                 if (d.id != undefined && d.id != ix) {
                     d.properties["_uid"] = d.id;
                     d.id = +ix;
                 }
                 user_data[lyr_name_to_add].push(d.properties);
             } else {
-                user_data[lyr_name_to_add].push({ "id": d.id || ix });
+                d.properties.id = d.id || ix;
+                user_data[lyr_name_to_add].push({ "id": d.properties.id });
             }
-        } else if (result_layer_on_add) result_data[lyr_name_to_add].push(d.properties);
-
+        } else if (result_layer_on_add) {
+            result_data[lyr_name_to_add].push(d.properties);
+        }
         return "feature_" + ix;
     }).styles({ "stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
         "stroke-opacity": 1,
@@ -9208,7 +9222,6 @@ function add_layer_topojson(text) {
 
     var layers_listed = layer_list.node(),
         li = document.createElement("li"),
-        nb_fields = field_names.length,
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
     li.setAttribute("class", class_name);
@@ -9249,6 +9262,7 @@ function add_layer_topojson(text) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
 
         window._target_layer_file = topoObj;
+        console.log(topoObj);
         if (!skip_rescale) {
             scale_to_lyr(lyr_name_to_add);
             center_map(lyr_name_to_add);
@@ -11318,9 +11332,9 @@ function make_generate_labels_graticule_section(parent_node) {
             color: "#000",
             font: "Arial,Helvetica,sans-serif",
             ref_font_size: 12,
-            uo_layer_name: ["Labels", layer_name].join('_')
+            uo_layer_name: ["Labels", "Graticule"].join('_')
         };
-        render_label_graticule(layer_name, options_labels);
+        render_label_graticule("Graticule", options_labels);
         //             resolve();
         //           }
         //       });
@@ -11347,52 +11361,42 @@ function make_generate_labels_section(parent_node, layer_name) {
             }).on("mouseout", function () {
                 this.style.fontWeight = "";
             }).on("click", function () {
-                if (layer_name == "Graticule") {
-                    var options_labels = {
-                        color: "#000",
-                        font: "Arial,Helvetica,sans-serif",
-                        ref_font_size: 12,
-                        uo_layer_name: ["Labels", layer_name].join('_')
-                    };
-                    render_label_graticule(layer_name, options_labels);
-                } else {
-                    swal({
-                        title: "",
-                        text: i18next.t("app_page.layer_style_popup.field_label"),
-                        type: "question",
-                        customClass: 'swal2_custom',
-                        showCancelButton: true,
-                        showCloseButton: false,
-                        allowEscapeKey: false,
-                        allowOutsideClick: false,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: i18next.t("app_page.common.confirm"),
-                        input: 'select',
-                        inputPlaceholder: i18next.t("app_page.common.field"),
-                        inputOptions: input_fields,
-                        inputValidator: function inputValidator(value) {
-                            return new Promise(function (resolve, reject) {
-                                if (_fields.indexOf(value) < 0) {
-                                    reject(i18next.t("app_page.common.no_value"));
-                                } else {
-                                    var _options_labels = {
-                                        label_field: value,
-                                        color: "#000",
-                                        font: "Arial,Helvetica,sans-serif",
-                                        ref_font_size: 12,
-                                        uo_layer_name: ["Labels", value, layer_name].join('_')
-                                    };
-                                    render_label(layer_name, _options_labels);
-                                    resolve();
-                                }
-                            });
-                        }
-                    }).then(function (value) {
-                        console.log(value);
-                    }, function (dismiss) {
-                        console.log(dismiss);
-                    });
-                }
+                swal({
+                    title: "",
+                    text: i18next.t("app_page.layer_style_popup.field_label"),
+                    type: "question",
+                    customClass: 'swal2_custom',
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    allowEscapeKey: false,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.confirm"),
+                    input: 'select',
+                    inputPlaceholder: i18next.t("app_page.common.field"),
+                    inputOptions: input_fields,
+                    inputValidator: function inputValidator(value) {
+                        return new Promise(function (resolve, reject) {
+                            if (_fields.indexOf(value) < 0) {
+                                reject(i18next.t("app_page.common.no_value"));
+                            } else {
+                                var options_labels = {
+                                    label_field: value,
+                                    color: "#000",
+                                    font: "Arial,Helvetica,sans-serif",
+                                    ref_font_size: 12,
+                                    uo_layer_name: ["Labels", value, layer_name].join('_')
+                                };
+                                render_label(layer_name, options_labels);
+                                resolve();
+                            }
+                        });
+                    }
+                }).then(function (value) {
+                    console.log(value);
+                }, function (dismiss) {
+                    console.log(dismiss);
+                });
             });
         })();
     }

@@ -487,9 +487,9 @@ function setUpInterface()
         let diff_h = dispo_h - h;
         if(this.value == "portrait"){
             if(round_value(w / h, 1) == 1.4){
-              let t = h;
+              let tmp = h;
               h = w;
-              w = t;
+              w = tmp;
             } else if(diff_h >= diff_w){
                 w = round_value(h * 0.70707, 0);
             } else {
@@ -497,9 +497,9 @@ function setUpInterface()
             }
         } else if (this.value == "landscape"){
             if(round_value(h / w, 1) == 1.4){
-              let t = h;
+              let tmp = h;
               h = w;
-              w = t;
+              w = tmp;
             } else if(diff_h <= diff_w){
                 w = round_value(h / 0.70707, 0);
             } else {
@@ -1962,7 +1962,7 @@ function handleClipPath(proj_name='', main_layer){
           .append("use")
             .attr("xlink:href", "#sphere");
 
-        map.selectAll(".layer")
+        map.selectAll(".layer:not(.no_clip)")
             .attr("clip-path", "url(#clip)");
 
         svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
@@ -1982,7 +1982,7 @@ function handleClipPath(proj_name='', main_layer){
           .append("use")
             .attr("xlink:href", "#extent");
 
-        map.selectAll(".layer")
+        map.selectAll(".layer:not(.no_clip)")
             .attr("clip-path", "url(#clip)");
 
         // map.selectAll('.layer')

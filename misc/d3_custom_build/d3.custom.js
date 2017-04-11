@@ -5326,7 +5326,8 @@ var formatLocale = function(locale) {
   var group = locale.grouping && locale.thousands ? formatGroup(locale.grouping, locale.thousands) : identity$3,
       currency = locale.currency,
       decimal = locale.decimal,
-      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3;
+      numerals = locale.numerals ? formatNumerals(locale.numerals) : identity$3,
+      percent = locale.percent || "%";
 
   function newFormat(specifier) {
     specifier = formatSpecifier(specifier);
@@ -5344,7 +5345,7 @@ var formatLocale = function(locale) {
     // Compute the prefix and suffix.
     // For SI-prefix, the suffix is lazily computed.
     var prefix = symbol === "$" ? currency[0] : symbol === "#" && /[boxX]/.test(type) ? "0" + type.toLowerCase() : "",
-        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? "%" : "";
+        suffix = symbol === "$" ? currency[1] : /[%p]/.test(type) ? percent : "";
 
     // What format function should we use?
     // Is this an integer type?
@@ -9520,6 +9521,993 @@ function brush$1(dim) {
   return brush;
 }
 
+var constant$10 = function(x) {
+  return function() {
+    return x;
+  };
+};
+
+function x$4(d) {
+  return d[0];
+}
+
+function y$4(d) {
+  return d[1];
+}
+
+function RedBlackTree() {
+  this._ = null; // root node
+}
+
+function RedBlackNode(node) {
+  node.U = // parent node
+  node.C = // color - true for red, false for black
+  node.L = // left node
+  node.R = // right node
+  node.P = // previous node
+  node.N = null; // next node
+}
+
+RedBlackTree.prototype = {
+  constructor: RedBlackTree,
+
+  insert: function(after, node) {
+    var parent, grandpa, uncle;
+
+    if (after) {
+      node.P = after;
+      node.N = after.N;
+      if (after.N) after.N.P = node;
+      after.N = node;
+      if (after.R) {
+        after = after.R;
+        while (after.L) after = after.L;
+        after.L = node;
+      } else {
+        after.R = node;
+      }
+      parent = after;
+    } else if (this._) {
+      after = RedBlackFirst(this._);
+      node.P = null;
+      node.N = after;
+      after.P = after.L = node;
+      parent = after;
+    } else {
+      node.P = node.N = null;
+      this._ = node;
+      parent = null;
+    }
+    node.L = node.R = null;
+    node.U = parent;
+    node.C = true;
+
+    after = node;
+    while (parent && parent.C) {
+      grandpa = parent.U;
+      if (parent === grandpa.L) {
+        uncle = grandpa.R;
+        if (uncle && uncle.C) {
+          parent.C = uncle.C = false;
+          grandpa.C = true;
+          after = grandpa;
+        } else {
+          if (after === parent.R) {
+            RedBlackRotateLeft(this, parent);
+            after = parent;
+            parent = after.U;
+          }
+          parent.C = false;
+          grandpa.C = true;
+          RedBlackRotateRight(this, grandpa);
+        }
+      } else {
+        uncle = grandpa.L;
+        if (uncle && uncle.C) {
+          parent.C = uncle.C = false;
+          grandpa.C = true;
+          after = grandpa;
+        } else {
+          if (after === parent.L) {
+            RedBlackRotateRight(this, parent);
+            after = parent;
+            parent = after.U;
+          }
+          parent.C = false;
+          grandpa.C = true;
+          RedBlackRotateLeft(this, grandpa);
+        }
+      }
+      parent = after.U;
+    }
+    this._.C = false;
+  },
+
+  remove: function(node) {
+    if (node.N) node.N.P = node.P;
+    if (node.P) node.P.N = node.N;
+    node.N = node.P = null;
+
+    var parent = node.U,
+        sibling,
+        left = node.L,
+        right = node.R,
+        next,
+        red;
+
+    if (!left) next = right;
+    else if (!right) next = left;
+    else next = RedBlackFirst(right);
+
+    if (parent) {
+      if (parent.L === node) parent.L = next;
+      else parent.R = next;
+    } else {
+      this._ = next;
+    }
+
+    if (left && right) {
+      red = next.C;
+      next.C = node.C;
+      next.L = left;
+      left.U = next;
+      if (next !== right) {
+        parent = next.U;
+        next.U = node.U;
+        node = next.R;
+        parent.L = node;
+        next.R = right;
+        right.U = next;
+      } else {
+        next.U = parent;
+        parent = next;
+        node = next.R;
+      }
+    } else {
+      red = node.C;
+      node = next;
+    }
+
+    if (node) node.U = parent;
+    if (red) return;
+    if (node && node.C) { node.C = false; return; }
+
+    do {
+      if (node === this._) break;
+      if (node === parent.L) {
+        sibling = parent.R;
+        if (sibling.C) {
+          sibling.C = false;
+          parent.C = true;
+          RedBlackRotateLeft(this, parent);
+          sibling = parent.R;
+        }
+        if ((sibling.L && sibling.L.C)
+            || (sibling.R && sibling.R.C)) {
+          if (!sibling.R || !sibling.R.C) {
+            sibling.L.C = false;
+            sibling.C = true;
+            RedBlackRotateRight(this, sibling);
+            sibling = parent.R;
+          }
+          sibling.C = parent.C;
+          parent.C = sibling.R.C = false;
+          RedBlackRotateLeft(this, parent);
+          node = this._;
+          break;
+        }
+      } else {
+        sibling = parent.L;
+        if (sibling.C) {
+          sibling.C = false;
+          parent.C = true;
+          RedBlackRotateRight(this, parent);
+          sibling = parent.L;
+        }
+        if ((sibling.L && sibling.L.C)
+          || (sibling.R && sibling.R.C)) {
+          if (!sibling.L || !sibling.L.C) {
+            sibling.R.C = false;
+            sibling.C = true;
+            RedBlackRotateLeft(this, sibling);
+            sibling = parent.L;
+          }
+          sibling.C = parent.C;
+          parent.C = sibling.L.C = false;
+          RedBlackRotateRight(this, parent);
+          node = this._;
+          break;
+        }
+      }
+      sibling.C = true;
+      node = parent;
+      parent = parent.U;
+    } while (!node.C);
+
+    if (node) node.C = false;
+  }
+};
+
+function RedBlackRotateLeft(tree, node) {
+  var p = node,
+      q = node.R,
+      parent = p.U;
+
+  if (parent) {
+    if (parent.L === p) parent.L = q;
+    else parent.R = q;
+  } else {
+    tree._ = q;
+  }
+
+  q.U = parent;
+  p.U = q;
+  p.R = q.L;
+  if (p.R) p.R.U = p;
+  q.L = p;
+}
+
+function RedBlackRotateRight(tree, node) {
+  var p = node,
+      q = node.L,
+      parent = p.U;
+
+  if (parent) {
+    if (parent.L === p) parent.L = q;
+    else parent.R = q;
+  } else {
+    tree._ = q;
+  }
+
+  q.U = parent;
+  p.U = q;
+  p.L = q.R;
+  if (p.L) p.L.U = p;
+  q.R = p;
+}
+
+function RedBlackFirst(node) {
+  while (node.L) node = node.L;
+  return node;
+}
+
+function createEdge(left, right, v0, v1) {
+  var edge = [null, null],
+      index = edges.push(edge) - 1;
+  edge.left = left;
+  edge.right = right;
+  if (v0) setEdgeEnd(edge, left, right, v0);
+  if (v1) setEdgeEnd(edge, right, left, v1);
+  cells[left.index].halfedges.push(index);
+  cells[right.index].halfedges.push(index);
+  return edge;
+}
+
+function createBorderEdge(left, v0, v1) {
+  var edge = [v0, v1];
+  edge.left = left;
+  return edge;
+}
+
+function setEdgeEnd(edge, left, right, vertex) {
+  if (!edge[0] && !edge[1]) {
+    edge[0] = vertex;
+    edge.left = left;
+    edge.right = right;
+  } else if (edge.left === right) {
+    edge[1] = vertex;
+  } else {
+    edge[0] = vertex;
+  }
+}
+
+// Liang–Barsky line clipping.
+function clipEdge(edge, x0, y0, x1, y1) {
+  var a = edge[0],
+      b = edge[1],
+      ax = a[0],
+      ay = a[1],
+      bx = b[0],
+      by = b[1],
+      t0 = 0,
+      t1 = 1,
+      dx = bx - ax,
+      dy = by - ay,
+      r;
+
+  r = x0 - ax;
+  if (!dx && r > 0) return;
+  r /= dx;
+  if (dx < 0) {
+    if (r < t0) return;
+    if (r < t1) t1 = r;
+  } else if (dx > 0) {
+    if (r > t1) return;
+    if (r > t0) t0 = r;
+  }
+
+  r = x1 - ax;
+  if (!dx && r < 0) return;
+  r /= dx;
+  if (dx < 0) {
+    if (r > t1) return;
+    if (r > t0) t0 = r;
+  } else if (dx > 0) {
+    if (r < t0) return;
+    if (r < t1) t1 = r;
+  }
+
+  r = y0 - ay;
+  if (!dy && r > 0) return;
+  r /= dy;
+  if (dy < 0) {
+    if (r < t0) return;
+    if (r < t1) t1 = r;
+  } else if (dy > 0) {
+    if (r > t1) return;
+    if (r > t0) t0 = r;
+  }
+
+  r = y1 - ay;
+  if (!dy && r < 0) return;
+  r /= dy;
+  if (dy < 0) {
+    if (r > t1) return;
+    if (r > t0) t0 = r;
+  } else if (dy > 0) {
+    if (r < t0) return;
+    if (r < t1) t1 = r;
+  }
+
+  if (!(t0 > 0) && !(t1 < 1)) return true; // TODO Better check?
+
+  if (t0 > 0) edge[0] = [ax + t0 * dx, ay + t0 * dy];
+  if (t1 < 1) edge[1] = [ax + t1 * dx, ay + t1 * dy];
+  return true;
+}
+
+function connectEdge(edge, x0, y0, x1, y1) {
+  var v1 = edge[1];
+  if (v1) return true;
+
+  var v0 = edge[0],
+      left = edge.left,
+      right = edge.right,
+      lx = left[0],
+      ly = left[1],
+      rx = right[0],
+      ry = right[1],
+      fx = (lx + rx) / 2,
+      fy = (ly + ry) / 2,
+      fm,
+      fb;
+
+  if (ry === ly) {
+    if (fx < x0 || fx >= x1) return;
+    if (lx > rx) {
+      if (!v0) v0 = [fx, y0];
+      else if (v0[1] >= y1) return;
+      v1 = [fx, y1];
+    } else {
+      if (!v0) v0 = [fx, y1];
+      else if (v0[1] < y0) return;
+      v1 = [fx, y0];
+    }
+  } else {
+    fm = (lx - rx) / (ry - ly);
+    fb = fy - fm * fx;
+    if (fm < -1 || fm > 1) {
+      if (lx > rx) {
+        if (!v0) v0 = [(y0 - fb) / fm, y0];
+        else if (v0[1] >= y1) return;
+        v1 = [(y1 - fb) / fm, y1];
+      } else {
+        if (!v0) v0 = [(y1 - fb) / fm, y1];
+        else if (v0[1] < y0) return;
+        v1 = [(y0 - fb) / fm, y0];
+      }
+    } else {
+      if (ly < ry) {
+        if (!v0) v0 = [x0, fm * x0 + fb];
+        else if (v0[0] >= x1) return;
+        v1 = [x1, fm * x1 + fb];
+      } else {
+        if (!v0) v0 = [x1, fm * x1 + fb];
+        else if (v0[0] < x0) return;
+        v1 = [x0, fm * x0 + fb];
+      }
+    }
+  }
+
+  edge[0] = v0;
+  edge[1] = v1;
+  return true;
+}
+
+function clipEdges(x0, y0, x1, y1) {
+  var i = edges.length,
+      edge;
+
+  while (i--) {
+    if (!connectEdge(edge = edges[i], x0, y0, x1, y1)
+        || !clipEdge(edge, x0, y0, x1, y1)
+        || !(Math.abs(edge[0][0] - edge[1][0]) > epsilon$3
+            || Math.abs(edge[0][1] - edge[1][1]) > epsilon$3)) {
+      delete edges[i];
+    }
+  }
+}
+
+function createCell(site) {
+  return cells[site.index] = {
+    site: site,
+    halfedges: []
+  };
+}
+
+function cellHalfedgeAngle(cell, edge) {
+  var site = cell.site,
+      va = edge.left,
+      vb = edge.right;
+  if (site === vb) vb = va, va = site;
+  if (vb) return Math.atan2(vb[1] - va[1], vb[0] - va[0]);
+  if (site === va) va = edge[1], vb = edge[0];
+  else va = edge[0], vb = edge[1];
+  return Math.atan2(va[0] - vb[0], vb[1] - va[1]);
+}
+
+function cellHalfedgeStart(cell, edge) {
+  return edge[+(edge.left !== cell.site)];
+}
+
+function cellHalfedgeEnd(cell, edge) {
+  return edge[+(edge.left === cell.site)];
+}
+
+function sortCellHalfedges() {
+  for (var i = 0, n = cells.length, cell, halfedges, j, m; i < n; ++i) {
+    if ((cell = cells[i]) && (m = (halfedges = cell.halfedges).length)) {
+      var index = new Array(m),
+          array = new Array(m);
+      for (j = 0; j < m; ++j) index[j] = j, array[j] = cellHalfedgeAngle(cell, edges[halfedges[j]]);
+      index.sort(function(i, j) { return array[j] - array[i]; });
+      for (j = 0; j < m; ++j) array[j] = halfedges[index[j]];
+      for (j = 0; j < m; ++j) halfedges[j] = array[j];
+    }
+  }
+}
+
+function clipCells(x0, y0, x1, y1) {
+  var nCells = cells.length,
+      iCell,
+      cell,
+      site,
+      iHalfedge,
+      halfedges,
+      nHalfedges,
+      start,
+      startX,
+      startY,
+      end,
+      endX,
+      endY,
+      cover = true;
+
+  for (iCell = 0; iCell < nCells; ++iCell) {
+    if (cell = cells[iCell]) {
+      site = cell.site;
+      halfedges = cell.halfedges;
+      iHalfedge = halfedges.length;
+
+      // Remove any dangling clipped edges.
+      while (iHalfedge--) {
+        if (!edges[halfedges[iHalfedge]]) {
+          halfedges.splice(iHalfedge, 1);
+        }
+      }
+
+      // Insert any border edges as necessary.
+      iHalfedge = 0, nHalfedges = halfedges.length;
+      while (iHalfedge < nHalfedges) {
+        end = cellHalfedgeEnd(cell, edges[halfedges[iHalfedge]]), endX = end[0], endY = end[1];
+        start = cellHalfedgeStart(cell, edges[halfedges[++iHalfedge % nHalfedges]]), startX = start[0], startY = start[1];
+        if (Math.abs(endX - startX) > epsilon$3 || Math.abs(endY - startY) > epsilon$3) {
+          halfedges.splice(iHalfedge, 0, edges.push(createBorderEdge(site, end,
+              Math.abs(endX - x0) < epsilon$3 && y1 - endY > epsilon$3 ? [x0, Math.abs(startX - x0) < epsilon$3 ? startY : y1]
+              : Math.abs(endY - y1) < epsilon$3 && x1 - endX > epsilon$3 ? [Math.abs(startY - y1) < epsilon$3 ? startX : x1, y1]
+              : Math.abs(endX - x1) < epsilon$3 && endY - y0 > epsilon$3 ? [x1, Math.abs(startX - x1) < epsilon$3 ? startY : y0]
+              : Math.abs(endY - y0) < epsilon$3 && endX - x0 > epsilon$3 ? [Math.abs(startY - y0) < epsilon$3 ? startX : x0, y0]
+              : null)) - 1);
+          ++nHalfedges;
+        }
+      }
+
+      if (nHalfedges) cover = false;
+    }
+  }
+
+  // If there weren’t any edges, have the closest site cover the extent.
+  // It doesn’t matter which corner of the extent we measure!
+  if (cover) {
+    var dx, dy, d2, dc = Infinity;
+
+    for (iCell = 0, cover = null; iCell < nCells; ++iCell) {
+      if (cell = cells[iCell]) {
+        site = cell.site;
+        dx = site[0] - x0;
+        dy = site[1] - y0;
+        d2 = dx * dx + dy * dy;
+        if (d2 < dc) dc = d2, cover = cell;
+      }
+    }
+
+    if (cover) {
+      var v00 = [x0, y0], v01 = [x0, y1], v11 = [x1, y1], v10 = [x1, y0];
+      cover.halfedges.push(
+        edges.push(createBorderEdge(site = cover.site, v00, v01)) - 1,
+        edges.push(createBorderEdge(site, v01, v11)) - 1,
+        edges.push(createBorderEdge(site, v11, v10)) - 1,
+        edges.push(createBorderEdge(site, v10, v00)) - 1
+      );
+    }
+  }
+
+  // Lastly delete any cells with no edges; these were entirely clipped.
+  for (iCell = 0; iCell < nCells; ++iCell) {
+    if (cell = cells[iCell]) {
+      if (!cell.halfedges.length) {
+        delete cells[iCell];
+      }
+    }
+  }
+}
+
+var circlePool = [];
+
+var firstCircle;
+
+function Circle() {
+  RedBlackNode(this);
+  this.x =
+  this.y =
+  this.arc =
+  this.site =
+  this.cy = null;
+}
+
+function attachCircle(arc) {
+  var lArc = arc.P,
+      rArc = arc.N;
+
+  if (!lArc || !rArc) return;
+
+  var lSite = lArc.site,
+      cSite = arc.site,
+      rSite = rArc.site;
+
+  if (lSite === rSite) return;
+
+  var bx = cSite[0],
+      by = cSite[1],
+      ax = lSite[0] - bx,
+      ay = lSite[1] - by,
+      cx = rSite[0] - bx,
+      cy = rSite[1] - by;
+
+  var d = 2 * (ax * cy - ay * cx);
+  if (d >= -epsilon2$1) return;
+
+  var ha = ax * ax + ay * ay,
+      hc = cx * cx + cy * cy,
+      x = (cy * ha - ay * hc) / d,
+      y = (ax * hc - cx * ha) / d;
+
+  var circle = circlePool.pop() || new Circle;
+  circle.arc = arc;
+  circle.site = cSite;
+  circle.x = x + bx;
+  circle.y = (circle.cy = y + by) + Math.sqrt(x * x + y * y); // y bottom
+
+  arc.circle = circle;
+
+  var before = null,
+      node = circles._;
+
+  while (node) {
+    if (circle.y < node.y || (circle.y === node.y && circle.x <= node.x)) {
+      if (node.L) node = node.L;
+      else { before = node.P; break; }
+    } else {
+      if (node.R) node = node.R;
+      else { before = node; break; }
+    }
+  }
+
+  circles.insert(before, circle);
+  if (!before) firstCircle = circle;
+}
+
+function detachCircle(arc) {
+  var circle = arc.circle;
+  if (circle) {
+    if (!circle.P) firstCircle = circle.N;
+    circles.remove(circle);
+    circlePool.push(circle);
+    RedBlackNode(circle);
+    arc.circle = null;
+  }
+}
+
+var beachPool = [];
+
+function Beach() {
+  RedBlackNode(this);
+  this.edge =
+  this.site =
+  this.circle = null;
+}
+
+function createBeach(site) {
+  var beach = beachPool.pop() || new Beach;
+  beach.site = site;
+  return beach;
+}
+
+function detachBeach(beach) {
+  detachCircle(beach);
+  beaches.remove(beach);
+  beachPool.push(beach);
+  RedBlackNode(beach);
+}
+
+function removeBeach(beach) {
+  var circle = beach.circle,
+      x = circle.x,
+      y = circle.cy,
+      vertex = [x, y],
+      previous = beach.P,
+      next = beach.N,
+      disappearing = [beach];
+
+  detachBeach(beach);
+
+  var lArc = previous;
+  while (lArc.circle
+      && Math.abs(x - lArc.circle.x) < epsilon$3
+      && Math.abs(y - lArc.circle.cy) < epsilon$3) {
+    previous = lArc.P;
+    disappearing.unshift(lArc);
+    detachBeach(lArc);
+    lArc = previous;
+  }
+
+  disappearing.unshift(lArc);
+  detachCircle(lArc);
+
+  var rArc = next;
+  while (rArc.circle
+      && Math.abs(x - rArc.circle.x) < epsilon$3
+      && Math.abs(y - rArc.circle.cy) < epsilon$3) {
+    next = rArc.N;
+    disappearing.push(rArc);
+    detachBeach(rArc);
+    rArc = next;
+  }
+
+  disappearing.push(rArc);
+  detachCircle(rArc);
+
+  var nArcs = disappearing.length,
+      iArc;
+  for (iArc = 1; iArc < nArcs; ++iArc) {
+    rArc = disappearing[iArc];
+    lArc = disappearing[iArc - 1];
+    setEdgeEnd(rArc.edge, lArc.site, rArc.site, vertex);
+  }
+
+  lArc = disappearing[0];
+  rArc = disappearing[nArcs - 1];
+  rArc.edge = createEdge(lArc.site, rArc.site, null, vertex);
+
+  attachCircle(lArc);
+  attachCircle(rArc);
+}
+
+function addBeach(site) {
+  var x = site[0],
+      directrix = site[1],
+      lArc,
+      rArc,
+      dxl,
+      dxr,
+      node = beaches._;
+
+  while (node) {
+    dxl = leftBreakPoint(node, directrix) - x;
+    if (dxl > epsilon$3) node = node.L; else {
+      dxr = x - rightBreakPoint(node, directrix);
+      if (dxr > epsilon$3) {
+        if (!node.R) {
+          lArc = node;
+          break;
+        }
+        node = node.R;
+      } else {
+        if (dxl > -epsilon$3) {
+          lArc = node.P;
+          rArc = node;
+        } else if (dxr > -epsilon$3) {
+          lArc = node;
+          rArc = node.N;
+        } else {
+          lArc = rArc = node;
+        }
+        break;
+      }
+    }
+  }
+
+  createCell(site);
+  var newArc = createBeach(site);
+  beaches.insert(lArc, newArc);
+
+  if (!lArc && !rArc) return;
+
+  if (lArc === rArc) {
+    detachCircle(lArc);
+    rArc = createBeach(lArc.site);
+    beaches.insert(newArc, rArc);
+    newArc.edge = rArc.edge = createEdge(lArc.site, newArc.site);
+    attachCircle(lArc);
+    attachCircle(rArc);
+    return;
+  }
+
+  if (!rArc) { // && lArc
+    newArc.edge = createEdge(lArc.site, newArc.site);
+    return;
+  }
+
+  // else lArc !== rArc
+  detachCircle(lArc);
+  detachCircle(rArc);
+
+  var lSite = lArc.site,
+      ax = lSite[0],
+      ay = lSite[1],
+      bx = site[0] - ax,
+      by = site[1] - ay,
+      rSite = rArc.site,
+      cx = rSite[0] - ax,
+      cy = rSite[1] - ay,
+      d = 2 * (bx * cy - by * cx),
+      hb = bx * bx + by * by,
+      hc = cx * cx + cy * cy,
+      vertex = [(cy * hb - by * hc) / d + ax, (bx * hc - cx * hb) / d + ay];
+
+  setEdgeEnd(rArc.edge, lSite, rSite, vertex);
+  newArc.edge = createEdge(lSite, site, null, vertex);
+  rArc.edge = createEdge(site, rSite, null, vertex);
+  attachCircle(lArc);
+  attachCircle(rArc);
+}
+
+function leftBreakPoint(arc, directrix) {
+  var site = arc.site,
+      rfocx = site[0],
+      rfocy = site[1],
+      pby2 = rfocy - directrix;
+
+  if (!pby2) return rfocx;
+
+  var lArc = arc.P;
+  if (!lArc) return -Infinity;
+
+  site = lArc.site;
+  var lfocx = site[0],
+      lfocy = site[1],
+      plby2 = lfocy - directrix;
+
+  if (!plby2) return lfocx;
+
+  var hl = lfocx - rfocx,
+      aby2 = 1 / pby2 - 1 / plby2,
+      b = hl / plby2;
+
+  if (aby2) return (-b + Math.sqrt(b * b - 2 * aby2 * (hl * hl / (-2 * plby2) - lfocy + plby2 / 2 + rfocy - pby2 / 2))) / aby2 + rfocx;
+
+  return (rfocx + lfocx) / 2;
+}
+
+function rightBreakPoint(arc, directrix) {
+  var rArc = arc.N;
+  if (rArc) return leftBreakPoint(rArc, directrix);
+  var site = arc.site;
+  return site[1] === directrix ? site[0] : Infinity;
+}
+
+var epsilon$3 = 1e-6;
+var epsilon2$1 = 1e-12;
+var beaches;
+var cells;
+var circles;
+var edges;
+
+function triangleArea(a, b, c) {
+  return (a[0] - c[0]) * (b[1] - a[1]) - (a[0] - b[0]) * (c[1] - a[1]);
+}
+
+function lexicographic(a, b) {
+  return b[1] - a[1]
+      || b[0] - a[0];
+}
+
+function Diagram(sites, extent) {
+  var site = sites.sort(lexicographic).pop(),
+      x,
+      y,
+      circle;
+
+  edges = [];
+  cells = new Array(sites.length);
+  beaches = new RedBlackTree;
+  circles = new RedBlackTree;
+
+  while (true) {
+    circle = firstCircle;
+    if (site && (!circle || site[1] < circle.y || (site[1] === circle.y && site[0] < circle.x))) {
+      if (site[0] !== x || site[1] !== y) {
+        addBeach(site);
+        x = site[0], y = site[1];
+      }
+      site = sites.pop();
+    } else if (circle) {
+      removeBeach(circle.arc);
+    } else {
+      break;
+    }
+  }
+
+  sortCellHalfedges();
+
+  if (extent) {
+    var x0 = +extent[0][0],
+        y0 = +extent[0][1],
+        x1 = +extent[1][0],
+        y1 = +extent[1][1];
+    clipEdges(x0, y0, x1, y1);
+    clipCells(x0, y0, x1, y1);
+  }
+
+  this.edges = edges;
+  this.cells = cells;
+
+  beaches =
+  circles =
+  edges =
+  cells = null;
+}
+
+Diagram.prototype = {
+  constructor: Diagram,
+
+  polygons: function() {
+    var edges = this.edges;
+
+    return this.cells.map(function(cell) {
+      var polygon = cell.halfedges.map(function(i) { return cellHalfedgeStart(cell, edges[i]); });
+      polygon.data = cell.site.data;
+      return polygon;
+    });
+  },
+
+  triangles: function() {
+    var triangles = [],
+        edges = this.edges;
+
+    this.cells.forEach(function(cell, i) {
+      if (!(m = (halfedges = cell.halfedges).length)) return;
+      var site = cell.site,
+          halfedges,
+          j = -1,
+          m,
+          s0,
+          e1 = edges[halfedges[m - 1]],
+          s1 = e1.left === site ? e1.right : e1.left;
+
+      while (++j < m) {
+        s0 = s1;
+        e1 = edges[halfedges[j]];
+        s1 = e1.left === site ? e1.right : e1.left;
+        if (s0 && s1 && i < s0.index && i < s1.index && triangleArea(site, s0, s1) < 0) {
+          triangles.push([site.data, s0.data, s1.data]);
+        }
+      }
+    });
+
+    return triangles;
+  },
+
+  links: function() {
+    return this.edges.filter(function(edge) {
+      return edge.right;
+    }).map(function(edge) {
+      return {
+        source: edge.left.data,
+        target: edge.right.data
+      };
+    });
+  },
+
+  find: function(x, y, radius) {
+    var that = this, i0, i1 = that._found || 0, n = that.cells.length, cell;
+
+    // Use the previously-found cell, or start with an arbitrary one.
+    while (!(cell = that.cells[i1])) if (++i1 >= n) return null;
+    var dx = x - cell.site[0], dy = y - cell.site[1], d2 = dx * dx + dy * dy;
+
+    // Traverse the half-edges to find a closer cell, if any.
+    do {
+      cell = that.cells[i0 = i1], i1 = null;
+      cell.halfedges.forEach(function(e) {
+        var edge = that.edges[e], v = edge.left;
+        if ((v === cell.site || !v) && !(v = edge.right)) return;
+        var vx = x - v[0], vy = y - v[1], v2 = vx * vx + vy * vy;
+        if (v2 < d2) d2 = v2, i1 = v.index;
+      });
+    } while (i1 !== null);
+
+    that._found = i0;
+
+    return radius == null || d2 <= radius * radius ? cell.site : null;
+  }
+};
+
+var voronoi = function() {
+  var x$$1 = x$4,
+      y$$1 = y$4,
+      extent = null;
+
+  function voronoi(data) {
+    return new Diagram(data.map(function(d, i) {
+      var s = [Math.round(x$$1(d, i, data) / epsilon$3) * epsilon$3, Math.round(y$$1(d, i, data) / epsilon$3) * epsilon$3];
+      s.index = i;
+      s.data = d;
+      return s;
+    }), extent);
+  }
+
+  voronoi.polygons = function(data) {
+    return voronoi(data).polygons();
+  };
+
+  voronoi.links = function(data) {
+    return voronoi(data).links();
+  };
+
+  voronoi.triangles = function(data) {
+    return voronoi(data).triangles();
+  };
+
+  voronoi.x = function(_) {
+    return arguments.length ? (x$$1 = typeof _ === "function" ? _ : constant$10(+_), voronoi) : x$$1;
+  };
+
+  voronoi.y = function(_) {
+    return arguments.length ? (y$$1 = typeof _ === "function" ? _ : constant$10(+_), voronoi) : y$$1;
+  };
+
+  voronoi.extent = function(_) {
+    return arguments.length ? (extent = _ == null ? null : [[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]], voronoi) : extent && [[extent[0][0], extent[0][1]], [extent[1][0], extent[1][1]]];
+  };
+
+  voronoi.size = function(_) {
+    return arguments.length ? (extent = _ == null ? null : [[0, 0], [+_[0], +_[1]]], voronoi) : extent && [extent[1][0] - extent[0][0], extent[1][1] - extent[0][1]];
+  };
+
+  return voronoi;
+};
+
 // Adds floating point numbers with twice the normal precision.
 // Reference: J. R. Shewchuk, Adaptive Precision Floating-Point Arithmetic and
 // Fast Robust Geometric Predicates, Discrete & Computational Geometry 18(3)
@@ -9561,8 +10549,8 @@ function add$1(adder, a, b) {
   adder.t = (a - av) + (b - bv);
 }
 
-var epsilon$3 = 1e-6;
-var epsilon2$1 = 1e-12;
+var epsilon$4 = 1e-6;
+var epsilon2$2 = 1e-12;
 var pi$3 = Math.PI;
 var halfPi$2 = pi$3 / 2;
 var quarterPi = pi$3 / 4;
@@ -9800,8 +10788,8 @@ var boundsStream = {
     boundsStream.lineStart = boundsLineStart;
     boundsStream.lineEnd = boundsLineEnd;
     if (areaRingSum < 0) lambda0$1 = -(lambda1 = 180), phi0 = -(phi1 = 90);
-    else if (deltaSum > epsilon$3) phi1 = 90;
-    else if (deltaSum < -epsilon$3) phi0 = -90;
+    else if (deltaSum > epsilon$4) phi1 = 90;
+    else if (deltaSum < -epsilon$4) phi0 = -90;
     range$1[0] = lambda0$1, range$1[1] = lambda1;
   }
 };
@@ -9889,7 +10877,7 @@ function boundsRingStart() {
 function boundsRingEnd() {
   boundsRingPoint(lambda00$1, phi00$1);
   areaStream.lineEnd();
-  if (abs$1(deltaSum) > epsilon$3) lambda0$1 = -(lambda1 = 180);
+  if (abs$1(deltaSum) > epsilon$4) lambda0$1 = -(lambda1 = 180);
   range$1[0] = lambda0$1, range$1[1] = lambda1;
   p0 = null;
 }
@@ -10081,19 +11069,19 @@ var centroid$1 = function(object) {
       m = x * x + y * y + z * z;
 
   // If the area-weighted ccentroid is undefined, fall back to length-weighted ccentroid.
-  if (m < epsilon2$1) {
+  if (m < epsilon2$2) {
     x = X1, y = Y1, z = Z1;
     // If the feature has zero length, fall back to arithmetic mean of point vectors.
-    if (W1 < epsilon$3) x = X0, y = Y0, z = Z0;
+    if (W1 < epsilon$4) x = X0, y = Y0, z = Z0;
     m = x * x + y * y + z * z;
     // If the feature still has an undefined ccentroid, then return.
-    if (m < epsilon2$1) return [NaN, NaN];
+    if (m < epsilon2$2) return [NaN, NaN];
   }
 
   return [atan2$1(y, x) * degrees$1, asin$1(z / sqrt$2(m)) * degrees$1];
 };
 
-var constant$10 = function(x) {
+var constant$11 = function(x) {
   return function() {
     return x;
   };
@@ -10211,13 +11199,13 @@ function circleRadius(cosRadius, point) {
   point = cartesian(point), point[0] -= cosRadius;
   cartesianNormalizeInPlace(point);
   var radius = acos$1(-point[1]);
-  return ((-point[2] < 0 ? -radius : radius) + tau$3 - epsilon$3) % tau$3;
+  return ((-point[2] < 0 ? -radius : radius) + tau$3 - epsilon$4) % tau$3;
 }
 
 var geoCircle = function() {
-  var center = constant$10([0, 0]),
-      radius = constant$10(90),
-      precision = constant$10(6),
+  var center = constant$11([0, 0]),
+      radius = constant$11(90),
+      precision = constant$11(6),
       ring,
       rotate,
       stream = {point: point};
@@ -10240,15 +11228,15 @@ var geoCircle = function() {
   }
 
   circle.center = function(_) {
-    return arguments.length ? (center = typeof _ === "function" ? _ : constant$10([+_[0], +_[1]]), circle) : center;
+    return arguments.length ? (center = typeof _ === "function" ? _ : constant$11([+_[0], +_[1]]), circle) : center;
   };
 
   circle.radius = function(_) {
-    return arguments.length ? (radius = typeof _ === "function" ? _ : constant$10(+_), circle) : radius;
+    return arguments.length ? (radius = typeof _ === "function" ? _ : constant$11(+_), circle) : radius;
   };
 
   circle.precision = function(_) {
-    return arguments.length ? (precision = typeof _ === "function" ? _ : constant$10(+_), circle) : precision;
+    return arguments.length ? (precision = typeof _ === "function" ? _ : constant$11(+_), circle) : precision;
   };
 
   return circle;
@@ -10338,7 +11326,7 @@ var clipLine = function(a, b, x0, y0, x1, y1) {
 };
 
 var pointEqual = function(a, b) {
-  return abs$1(a[0] - b[0]) < epsilon$3 && abs$1(a[1] - b[1]) < epsilon$3;
+  return abs$1(a[0] - b[0]) < epsilon$4 && abs$1(a[1] - b[1]) < epsilon$4;
 };
 
 function Intersection(point, points, other, entry) {
@@ -10466,9 +11454,9 @@ function clipExtent(x0, y0, x1, y1) {
   }
 
   function corner(p, direction) {
-    return abs$1(p[0] - x0) < epsilon$3 ? direction > 0 ? 0 : 3
-        : abs$1(p[0] - x1) < epsilon$3 ? direction > 0 ? 2 : 1
-        : abs$1(p[1] - y0) < epsilon$3 ? direction > 0 ? 1 : 0
+    return abs$1(p[0] - x0) < epsilon$4 ? direction > 0 ? 0 : 3
+        : abs$1(p[0] - x1) < epsilon$4 ? direction > 0 ? 2 : 1
+        : abs$1(p[1] - y0) < epsilon$4 ? direction > 0 ? 1 : 0
         : direction > 0 ? 3 : 2; // abs(p[1] - y1) < epsilon
   }
 
@@ -10667,7 +11655,7 @@ var polygonContains = function(polygon, point) {
   // from the point to the South pole.  If it is zero, then the point is the
   // same side as the South pole.
 
-  return (angle < -epsilon$3 || angle < epsilon$3 && sum$2 < -epsilon$3) ^ (winding & 1);
+  return (angle < -epsilon$4 || angle < epsilon$4 && sum$2 < -epsilon$4) ^ (winding & 1);
 };
 
 var lengthSum = adder();
@@ -10777,7 +11765,7 @@ function containsLine(coordinates, point) {
   var ab = distance(coordinates[0], coordinates[1]),
       ao = distance(coordinates[0], point),
       ob = distance(point, coordinates[1]);
-  return ao + ob <= ab + epsilon$3;
+  return ao + ob <= ab + epsilon$4;
 }
 
 function containsPolygon(coordinates, point) {
@@ -10793,12 +11781,12 @@ function pointRadians(point) {
 }
 
 function graticuleX(y0, y1, dy) {
-  var y = range(y0, y1 - epsilon$3, dy).concat(y1);
+  var y = range(y0, y1 - epsilon$4, dy).concat(y1);
   return function(x) { return y.map(function(y) { return [x, y]; }); };
 }
 
 function graticuleY(x0, x1, dx) {
-  var x = range(x0, x1 - epsilon$3, dx).concat(x1);
+  var x = range(x0, x1 - epsilon$4, dx).concat(x1);
   return function(y) { return x.map(function(x) { return [x, y]; }); };
 }
 
@@ -10816,8 +11804,8 @@ function graticule() {
   function lines() {
     return range(ceil(X0 / DX) * DX, X1, DX).map(X)
         .concat(range(ceil(Y0 / DY) * DY, Y1, DY).map(Y))
-        .concat(range(ceil(x0 / dx) * dx, x1, dx).filter(function(x) { return abs$1(x % DX) > epsilon$3; }).map(x))
-        .concat(range(ceil(y0 / dy) * dy, y1, dy).filter(function(y) { return abs$1(y % DY) > epsilon$3; }).map(y));
+        .concat(range(ceil(x0 / dx) * dx, x1, dx).filter(function(x) { return abs$1(x % DX) > epsilon$4; }).map(x))
+        .concat(range(ceil(y0 / dy) * dy, y1, dy).filter(function(y) { return abs$1(y % DY) > epsilon$4; }).map(y));
   }
 
   graticule.lines = function() {
@@ -10887,8 +11875,8 @@ function graticule() {
   };
 
   return graticule
-      .extentMajor([[-180, -90 + epsilon$3], [180, 90 - epsilon$3]])
-      .extentMinor([[-180, -80 - epsilon$3], [180, 80 + epsilon$3]]);
+      .extentMajor([[-180, -90 + epsilon$4], [180, 90 - epsilon$4]])
+      .extentMinor([[-180, -80 - epsilon$4], [180, 80 + epsilon$4]]);
 }
 
 function graticule10() {
@@ -11418,8 +12406,8 @@ function validSegment(segment) {
 // Intersections are sorted along the clip edge. For both antimeridian cutting
 // and circle clipping, the same comparison is used.
 function compareIntersection(a, b) {
-  return ((a = a.x)[0] < 0 ? a[1] - halfPi$2 - epsilon$3 : halfPi$2 - a[1])
-       - ((b = b.x)[0] < 0 ? b[1] - halfPi$2 - epsilon$3 : halfPi$2 - b[1]);
+  return ((a = a.x)[0] < 0 ? a[1] - halfPi$2 - epsilon$4 : halfPi$2 - a[1])
+       - ((b = b.x)[0] < 0 ? b[1] - halfPi$2 - epsilon$4 : halfPi$2 - b[1]);
 }
 
 var clipAntimeridian = clip(
@@ -11446,7 +12434,7 @@ function clipAntimeridianLine(stream) {
     point: function(lambda1, phi1) {
       var sign1 = lambda1 > 0 ? pi$3 : -pi$3,
           delta = abs$1(lambda1 - lambda0);
-      if (abs$1(delta - pi$3) < epsilon$3) { // line crosses a pole
+      if (abs$1(delta - pi$3) < epsilon$4) { // line crosses a pole
         stream.point(lambda0, phi0 = (phi0 + phi1) / 2 > 0 ? halfPi$2 : -halfPi$2);
         stream.point(sign0, phi0);
         stream.lineEnd();
@@ -11455,8 +12443,8 @@ function clipAntimeridianLine(stream) {
         stream.point(lambda1, phi0);
         clean = 0;
       } else if (sign0 !== sign1 && delta >= pi$3) { // line crosses antimeridian
-        if (abs$1(lambda0 - sign0) < epsilon$3) lambda0 -= sign0 * epsilon$3; // handle degeneracies
-        if (abs$1(lambda1 - sign1) < epsilon$3) lambda1 -= sign1 * epsilon$3;
+        if (abs$1(lambda0 - sign0) < epsilon$4) lambda0 -= sign0 * epsilon$4; // handle degeneracies
+        if (abs$1(lambda1 - sign1) < epsilon$4) lambda1 -= sign1 * epsilon$4;
         phi0 = clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1);
         stream.point(sign0, phi0);
         stream.lineEnd();
@@ -11481,7 +12469,7 @@ function clipAntimeridianIntersect(lambda0, phi0, lambda1, phi1) {
   var cosPhi0,
       cosPhi1,
       sinLambda0Lambda1 = sin$1(lambda0 - lambda1);
-  return abs$1(sinLambda0Lambda1) > epsilon$3
+  return abs$1(sinLambda0Lambda1) > epsilon$4
       ? atan((sin$1(phi0) * (cosPhi1 = cos$1(phi1)) * sin$1(lambda1)
           - sin$1(phi1) * (cosPhi0 = cos$1(phi0)) * sin$1(lambda0))
           / (cosPhi0 * cosPhi1 * sinLambda0Lambda1))
@@ -11501,7 +12489,7 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
     stream.point(-pi$3, -phi);
     stream.point(-pi$3, 0);
     stream.point(-pi$3, phi);
-  } else if (abs$1(from[0] - to[0]) > epsilon$3) {
+  } else if (abs$1(from[0] - to[0]) > epsilon$4) {
     var lambda = from[0] < to[0] ? pi$3 : -pi$3;
     phi = direction * lambda / 2;
     stream.point(-lambda, phi);
@@ -11515,7 +12503,7 @@ function clipAntimeridianInterpolate(from, to, direction, stream) {
 var clipCircle = function(radius, delta) {
   var cr = cos$1(radius),
       smallRadius = cr > 0,
-      notHemisphere = abs$1(cr) > epsilon$3; // TODO optimise for this common case
+      notHemisphere = abs$1(cr) > epsilon$4; // TODO optimise for this common case
 
   function interpolate(from, to, direction, stream) {
     circleStream(stream, radius, delta, direction, from, to);
@@ -11553,8 +12541,8 @@ var clipCircle = function(radius, delta) {
         if (v !== v0) {
           point2 = intersect(point0, point1);
           if (pointEqual(point0, point2) || pointEqual(point1, point2)) {
-            point1[0] += epsilon$3;
-            point1[1] += epsilon$3;
+            point1[0] += epsilon$4;
+            point1[1] += epsilon$4;
             v = visible(point1[0], point1[1]);
           }
         }
@@ -11656,15 +12644,15 @@ var clipCircle = function(radius, delta) {
     if (lambda1 < lambda0) z = lambda0, lambda0 = lambda1, lambda1 = z;
 
     var delta = lambda1 - lambda0,
-        polar = abs$1(delta - pi$3) < epsilon$3,
-        meridian = polar || delta < epsilon$3;
+        polar = abs$1(delta - pi$3) < epsilon$4,
+        meridian = polar || delta < epsilon$4;
 
     if (!polar && phi1 < phi0) z = phi0, phi0 = phi1, phi1 = z;
 
     // Check that the first point is between a and b.
     if (meridian
         ? polar
-          ? phi0 + phi1 > 0 ^ q[1] < (abs$1(q[0] - lambda0) < epsilon$3 ? phi0 : phi1)
+          ? phi0 + phi1 > 0 ^ q[1] < (abs$1(q[0] - lambda0) < epsilon$4 ? phi0 : phi1)
           : phi0 <= q[1] && q[1] <= phi1
         : delta > pi$3 ^ (lambda0 <= q[0] && q[0] <= lambda1)) {
       var q1 = cartesianScale(u, (-w + t) / uu);
@@ -11772,7 +12760,7 @@ function resample$1(project, delta2) {
           c = c0 + c1,
           m = sqrt$2(a * a + b * b + c * c),
           phi2 = asin$1(c /= m),
-          lambda2 = abs$1(abs$1(c) - 1) < epsilon$3 || abs$1(lambda0 - lambda1) < epsilon$3 ? (lambda0 + lambda1) / 2 : atan2$1(b, a),
+          lambda2 = abs$1(abs$1(c) - 1) < epsilon$4 || abs$1(lambda0 - lambda1) < epsilon$4 ? (lambda0 + lambda1) / 2 : atan2$1(b, a),
           p = project(lambda2, phi2),
           x2 = p[0],
           y2 = p[1],
@@ -11970,7 +12958,7 @@ function conicEqualAreaRaw(y0, y1) {
   var sy0 = sin$1(y0), n = (sy0 + sin$1(y1)) / 2;
 
   // Are the parallels symmetrical around the Equator?
-  if (abs$1(n) < epsilon$3) return cylindricalEqualAreaRaw(y0);
+  if (abs$1(n) < epsilon$4) return cylindricalEqualAreaRaw(y0);
 
   var c = 1 + sy0 * (2 * n - sy0), r0 = sqrt$2(c) / n;
 
@@ -12074,12 +13062,12 @@ var albersUsa = function() {
 
     alaskaPoint = alaska
         .translate([x - 0.307 * k, y + 0.201 * k])
-        .clipExtent([[x - 0.425 * k + epsilon$3, y + 0.120 * k + epsilon$3], [x - 0.214 * k - epsilon$3, y + 0.234 * k - epsilon$3]])
+        .clipExtent([[x - 0.425 * k + epsilon$4, y + 0.120 * k + epsilon$4], [x - 0.214 * k - epsilon$4, y + 0.234 * k - epsilon$4]])
         .stream(pointStream);
 
     hawaiiPoint = hawaii
         .translate([x - 0.205 * k, y + 0.212 * k])
-        .clipExtent([[x - 0.214 * k + epsilon$3, y + 0.166 * k + epsilon$3], [x - 0.115 * k - epsilon$3, y + 0.234 * k - epsilon$3]])
+        .clipExtent([[x - 0.214 * k + epsilon$4, y + 0.166 * k + epsilon$4], [x - 0.115 * k - epsilon$4, y + 0.234 * k - epsilon$4]])
         .stream(pointStream);
 
     return reset();
@@ -12215,8 +13203,8 @@ function conicConformalRaw(y0, y1) {
   if (!n) return mercatorRaw;
 
   function project(x, y) {
-    if (f > 0) { if (y < -halfPi$2 + epsilon$3) y = -halfPi$2 + epsilon$3; }
-    else { if (y > halfPi$2 - epsilon$3) y = halfPi$2 - epsilon$3; }
+    if (f > 0) { if (y < -halfPi$2 + epsilon$4) y = -halfPi$2 + epsilon$4; }
+    else { if (y > halfPi$2 - epsilon$4) y = halfPi$2 - epsilon$4; }
     var r = f / pow$1(tany(y), n);
     return [r * sin$1(n * x), f - r * cos$1(n * x)];
   }
@@ -12251,7 +13239,7 @@ function conicEquidistantRaw(y0, y1) {
       n = y0 === y1 ? sin$1(y0) : (cy0 - cos$1(y1)) / (y1 - y0),
       g = cy0 / n + y0;
 
-  if (abs$1(n) < epsilon$3) return equirectangularRaw;
+  if (abs$1(n) < epsilon$4) return equirectangularRaw;
 
   function project(x, y) {
     var gy = g - y, nx = n * x;
@@ -12342,7 +13330,7 @@ orthographicRaw.invert = azimuthalInvert(asin$1);
 var geoOrthographic = function() {
   return projection(orthographicRaw)
       .scale(249.5)
-      .clipAngle(90 + epsilon$3);
+      .clipAngle(90 + epsilon$4);
 };
 
 function stereographicRaw(x, y) {
@@ -12401,8 +13389,8 @@ var sign$2 = Math.sign || function(x) { return x > 0 ? 1 : x < 0 ? -1 : 0; };
 var sin$2 = Math.sin;
 var tan$1 = Math.tan;
 
-var epsilon$4 = 1e-6;
-var epsilon2$2 = 1e-12;
+var epsilon$5 = 1e-6;
+var epsilon2$3 = 1e-12;
 var pi$4 = Math.PI;
 var halfPi$3 = pi$4 / 2;
 var quarterPi$1 = pi$4 / 4;
@@ -12475,7 +13463,7 @@ function airyRaw(beta) {
           tanz_2 = tan$1(z_2),
           lnsecz_2 = log$2(1 / cosz_2);
       z -= delta = (2 / tanz_2 * lnsecz_2 - b * tanz_2 - r) / (-lnsecz_2 / (sinz_2 * sinz_2) + 1 - b / (2 * cosz_2 * cosz_2));
-    } while (abs$2(delta) > epsilon$4 && --i > 0);
+    } while (abs$2(delta) > epsilon$5 && --i > 0);
     var sinz = sin$2(z);
     return [atan2$2(x * sinz, r * cos$2(z)), asin$2(y * sinz / r)];
   };
@@ -12491,7 +13479,7 @@ function aitoffRaw(x, y) {
 // Abort if [x, y] is not within an ellipse centered at [0, 0] with
 // semi-major axis pi and semi-minor axis pi/2.
 aitoffRaw.invert = function(x, y) {
-  if (x * x + 4 * y * y > pi$4 * pi$4 + epsilon$4) return;
+  if (x * x + 4 * y * y > pi$4 * pi$4 + epsilon$5) return;
   var x1 = x, y1 = y, i = 25;
   do {
     var sinx = sin$2(x1),
@@ -12517,7 +13505,7 @@ aitoffRaw.invert = function(x, y) {
     var dx = (fy * dxdy - fx * dydy) / z,
         dy = (fx * dydx - fy * dxdx) / z;
     x1 -= dx, y1 -= dy;
-  } while ((abs$2(dx) > epsilon$4 || abs$2(dy) > epsilon$4) && --i > 0);
+  } while ((abs$2(dx) > epsilon$5 || abs$2(dy) > epsilon$5) && --i > 0);
   return [x1, y1];
 };
 
@@ -12557,7 +13545,7 @@ function armadilloRaw(phi0) {
           dLambda = (fy * dxdPhi - fx * dydPhi) / denominator / 2,
           dPhi = (fx * dydLambda - fy * dxdLambda) / denominator;
       lambda -= dLambda, phi -= dPhi;
-    } while ((abs$2(dLambda) > epsilon$4 || abs$2(dPhi) > epsilon$4) && --i > 0);
+    } while ((abs$2(dLambda) > epsilon$5 || abs$2(dPhi) > epsilon$5) && --i > 0);
     return sPhi0 * phi > -atan2$2(cos$2(lambda), tanPhi0) - 1e-3 ? [lambda * 2, phi] : null;
   };
 
@@ -12647,7 +13635,7 @@ bakerRaw.invert = function(x, y) {
   do {
     var cosPhi_2 = cos$2(phi / 2), tanPhi_2 = tan$1(phi / 2);
     phi -= delta = (sqrt8 * (phi - quarterPi$1) - log$2(tanPhi_2) - y0) / (sqrt8 - cosPhi_2 * cosPhi_2 / (2 * tanPhi_2));
-  } while (abs$2(delta) > epsilon2$2 && --i > 0);
+  } while (abs$2(delta) > epsilon2$3 && --i > 0);
   return [x / (cos$2(phi) * (sqrt8 - 1 / sin$2(phi))), sign$2(y) * phi];
 };
 
@@ -12693,7 +13681,7 @@ function berghausRaw(lobes) {
 function mollweideBromleyTheta(cp, phi) {
   var cpsinPhi = cp * sin$2(phi), i = 30, delta;
   do phi -= delta = (phi + sin$2(phi) - cpsinPhi) / (1 + cos$2(phi));
-  while (abs$2(delta) > epsilon$4 && --i > 0);
+  while (abs$2(delta) > epsilon$5 && --i > 0);
   return phi / 2;
 }
 
@@ -12730,7 +13718,7 @@ boggsRaw.invert = function(x, y) {
   do {
     phi = ky - sqrt2 * sin$2(theta);
     theta -= delta = (sin$2(2 * theta) + 2 * theta - pi$4 * sin$2(phi)) / (2 * cos$2(2 * theta) + 2 + pi$4 * cos$2(phi) * sqrt2 * cos$2(theta));
-  } while (abs$2(delta) > epsilon$4 && --i > 0);
+  } while (abs$2(delta) > epsilon$5 && --i > 0);
   phi = ky - sqrt2 * sin$2(theta);
   return [x * (1 / cos$2(phi) + w / cos$2(theta)) / k$1, phi];
 };
@@ -12839,7 +13827,7 @@ function distance$1(dPhi, c1, s1, c2, s2, dLambda) {
     var sindPhi = sin$2(dPhi / 2), sindLambda = sin$2(dLambda / 2);
     r = 2 * asin$2(sqrt$3(sindPhi * sindPhi + c1 * c2 * sindLambda * sindLambda));
   }
-  return abs$2(r) > epsilon$4 ? [r, atan2$2(c2 * sin$2(dLambda), c1 * s2 - s1 * c2 * cosdLambda)] : [0, 0];
+  return abs$2(r) > epsilon$5 ? [r, atan2$2(c2 * sin$2(dLambda), c1 * s2 - s1 * c2 * cosdLambda)] : [0, 0];
 }
 
 // Angle opposite a, and contained between sides of lengths b and c.
@@ -13060,7 +14048,7 @@ var eckert3 = function() {
 function eckert4Raw(lambda, phi) {
   var k = (2 + halfPi$3) * sin$2(phi);
   phi /= 2;
-  for (var i = 0, delta = Infinity; i < 10 && abs$2(delta) > epsilon$4; i++) {
+  for (var i = 0, delta = Infinity; i < 10 && abs$2(delta) > epsilon$5; i++) {
     var cosPhi = cos$2(phi);
     phi -= delta = (phi + sin$2(phi) * (cosPhi + 2) - k) / (2 * cosPhi * (1 + cosPhi));
   }
@@ -13108,7 +14096,7 @@ var eckert5 = function() {
 
 function eckert6Raw(lambda, phi) {
   var k = (1 + halfPi$3) * sin$2(phi);
-  for (var i = 0, delta = Infinity; i < 10 && abs$2(delta) > epsilon$4; i++) {
+  for (var i = 0, delta = Infinity; i < 10 && abs$2(delta) > epsilon$5; i++) {
     phi -= delta = (phi + sin$2(phi) - k) / (1 + cos$2(phi));
   }
   k = sqrt$3(2 + pi$4);
@@ -13190,8 +14178,8 @@ eisenlohrRaw.invert = function(x, y) {
         deltaPhi = (fx * deltayDeltaLambda - fy * deltaxDeltaLambda) / denominator;
     lambda -= deltaLambda;
     phi = max$2(-halfPi$3, min$2(halfPi$3, phi - deltaPhi));
-  } while ((abs$2(deltaLambda) > epsilon$4 || abs$2(deltaPhi) > epsilon$4) && --i > 0);
-  return abs$2(abs$2(phi) - halfPi$3) < epsilon$4 ? [0, phi] : i && [lambda, phi];
+  } while ((abs$2(deltaLambda) > epsilon$5 || abs$2(deltaPhi) > epsilon$5) && --i > 0);
+  return abs$2(abs$2(phi) - halfPi$3) < epsilon$5 ? [0, phi] : i && [lambda, phi];
 };
 
 var eisenlohr = function() {
@@ -13280,7 +14268,7 @@ function gingeryRaw(rho, n) {
       var i = 50, delta;
       do {
         x -= delta = (rho + gingeryIntegrate(s_, rhoCosAlpha, x) * e - r) / (s_(x) * e);
-      } while (abs$2(delta) > epsilon$4 && --i > 0);
+      } while (abs$2(delta) > epsilon$5 && --i > 0);
 
       y = alpha * sin$2(x);
       if (x < halfPi$3) y -= k_ * (x - halfPi$3);
@@ -13318,7 +14306,7 @@ function gingeryRaw(rho, n) {
             k_ = (rhosinAlpha - alpha * sinRhoCosAlpha) / halfPi_RhoCosAlpha,
             s_ = gingeryLength(alpha, k_);
 
-        if (abs$2(delta) < epsilon2$2 || !--i) break;
+        if (abs$2(delta) < epsilon2$3 || !--i) break;
 
         alpha -= delta = (alpha * sinx - k_ * x_halfPi - y) / (
           sinx - x_halfPi * 2 * (
@@ -13402,7 +14390,7 @@ var ginzburgPolyconicRaw = function(a, b, c, d, e, f, g, h) {
       if (!denominator) break;
       lambda -= deltaLambda = (fy * deltaxDeltaPhi - fx * deltayDeltaPhi) / denominator;
       phi -= deltaPhi = (fx * deltayDeltaLambda - fy * deltaxDeltaLambda) / denominator;
-    } while ((abs$2(deltaLambda) > epsilon$4 || abs$2(deltaPhi) > epsilon$4) && --i > 0);
+    } while ((abs$2(deltaLambda) > epsilon$5 || abs$2(deltaPhi) > epsilon$5) && --i > 0);
     return [lambda, phi];
   };
 
@@ -13449,7 +14437,7 @@ function gringortenRaw(lambda, phi) {
       z = sin$2(sPhi * phi);
   lambda = abs$2(atan2$2(y, z));
   phi = asin$2(x);
-  if (abs$2(lambda - halfPi$3) > epsilon$4) lambda %= halfPi$3;
+  if (abs$2(lambda - halfPi$3) > epsilon$5) lambda %= halfPi$3;
   var point = gringortenHexadecant(lambda > pi$4 / 4 ? halfPi$3 - lambda : lambda, phi);
   if (lambda > pi$4 / 4) z = point[0], point[0] = -point[1], point[1] = -z;
   return (point[0] *= sLambda, point[1] *= -sPhi, point);
@@ -13517,12 +14505,12 @@ function gringortenHexadecant(lambda, phi) {
       if (f < 0) x0 = x;
       else x1 = x;
       x = 0.5 * (x0 + x1);
-    } while (abs$2(x1 - x0) > epsilon$4 && --i > 0);
+    } while (abs$2(x1 - x0) > epsilon$5 && --i > 0);
   }
 
   // Newton-Raphson.
   else {
-    x = epsilon$4, i = 25;
+    x = epsilon$5, i = 25;
     do {
       var x2 = x * x,
           g2 = sqrt$3(a2 - x2),
@@ -13530,7 +14518,7 @@ function gringortenHexadecant(lambda, phi) {
           f2 = x * zetaMug + nu * asin$2(x / a) - lambda1,
           df = zetaMug + (nu - mu * x2) / g2;
       x -= delta = g2 ? f2 / df : 0;
-    } while (abs$2(delta) > epsilon$4 && --i > 0);
+    } while (abs$2(delta) > epsilon$5 && --i > 0);
   }
 
   return [x, -h - r * sqrt$3(a2 - x * x)];
@@ -13554,7 +14542,7 @@ function gringortenHexadecantInvert(x, y) {
         g2 = a2 - x * x,
         g = sqrt$3(g2),
         y0 = y + h + r * g;
-    if (abs$2(x1 - x0) < epsilon2$2 || --i === 0 || y0 === 0) break;
+    if (abs$2(x1 - x0) < epsilon2$3 || --i === 0 || y0 === 0) break;
     if (y0 > 0) x0 = r;
     else x1 = r;
     r = 0.5 * (x0 + x1);
@@ -13607,7 +14595,7 @@ function ellipticJi(u, v, m) {
 // Returns [sn, cn, dn, ph](u|m).
 function ellipticJ(u, m) {
   var ai, b, phi, t, twon;
-  if (m < epsilon$4) {
+  if (m < epsilon$5) {
     t = sin$2(u);
     b = cos$2(u);
     ai = m * (u - t * b) / 4;
@@ -13618,7 +14606,7 @@ function ellipticJ(u, m) {
       u - ai
     ];
   }
-  if (m >= 1 - epsilon$4) {
+  if (m >= 1 - epsilon$5) {
     ai = (1 - m) / 4;
     b = cosh$1(u);
     t = tanh$1(u);
@@ -13638,7 +14626,7 @@ function ellipticJ(u, m) {
   b = sqrt$3(1 - m);
   twon = 1;
 
-  while (abs$2(c[i] / a[i]) > epsilon$4 && i < 8) {
+  while (abs$2(c[i] / a[i]) > epsilon$5 && i < 8) {
     ai = a[i++];
     c[i] = (ai - b) / 2;
     a[i] = (ai + b) / 2;
@@ -13686,7 +14674,7 @@ function ellipticF(phi, m) {
   var a = 1,
       b = sqrt$3(1 - m),
       c = sqrt$3(m);
-  for (var i = 0; abs$2(c) > epsilon$4; i++) {
+  for (var i = 0; abs$2(c) > epsilon$5; i++) {
     if (phi % pi$4) {
       var dPhi = atan$1(b * tan$1(phi) / a);
       if (dPhi < 0) dPhi += pi$4;
@@ -13807,7 +14795,7 @@ function hammerRetroazimuthalRaw(phi0) {
         cosLambda = cos$2(lambda),
         z = acos$2(sinPhi0 * sinPhi + cosPhi0 * cosPhi * cosLambda),
         sinz = sin$2(z),
-        K = abs$2(sinz) > epsilon$4 ? z / sinz : 1;
+        K = abs$2(sinz) > epsilon$5 ? z / sinz : 1;
     return [
       K * cosPhi0 * sin$2(lambda),
       (abs$2(lambda) > halfPi$3 ? K : -K) // rotate for back hemisphere
@@ -13951,7 +14939,7 @@ function hillRaw(K) {
             Bt_Bt1 = Bt + atan2$2(sinTheta, L - cosTheta),
             C = 1 + L2 - 2 * L * cosTheta;
         theta -= delta = (theta - K2 * Bt - L * sinTheta + C * Bt_Bt1 -0.5 * t * B) / (2 * L * sinTheta * Bt_Bt1);
-      } while (abs$2(delta) > epsilon2$2 && --i > 0);
+      } while (abs$2(delta) > epsilon2$3 && --i > 0);
       rho = A * sqrt$3(C);
       omega = lambda * Bt_Bt1 / pi$4;
     } else {
@@ -14020,7 +15008,7 @@ var homolosine = function() {
 };
 
 function pointEqual$1(a, b) {
-  return abs$2(a[0] - b[0]) < epsilon$4 && abs$2(a[1] - b[1]) < epsilon$4;
+  return abs$2(a[0] - b[0]) < epsilon$5 && abs$2(a[1] - b[1]) < epsilon$5;
 }
 
 function interpolateLine(coordinates, m) {
@@ -14055,10 +15043,10 @@ function interpolateSphere(lobes) {
     lambda0 = lobe[0][0], phi0 = lobe[0][1], phi1 = lobe[1][1];
     lambda2 = lobe[2][0], phi2 = lobe[2][1];
     coordinates.push(interpolateLine([
-      [lambda0 + epsilon$4, phi0 + epsilon$4],
-      [lambda0 + epsilon$4, phi1 - epsilon$4],
-      [lambda2 - epsilon$4, phi1 - epsilon$4],
-      [lambda2 - epsilon$4, phi2 + epsilon$4]
+      [lambda0 + epsilon$5, phi0 + epsilon$5],
+      [lambda0 + epsilon$5, phi1 - epsilon$5],
+      [lambda2 - epsilon$5, phi1 - epsilon$5],
+      [lambda2 - epsilon$5, phi2 + epsilon$5]
     ], 30));
   }
 
@@ -14068,10 +15056,10 @@ function interpolateSphere(lobes) {
     lambda0 = lobe[0][0], phi0 = lobe[0][1], phi1 = lobe[1][1];
     lambda2 = lobe[2][0], phi2 = lobe[2][1];
     coordinates.push(interpolateLine([
-      [lambda2 - epsilon$4, phi2 - epsilon$4],
-      [lambda2 - epsilon$4, phi1 + epsilon$4],
-      [lambda0 + epsilon$4, phi1 + epsilon$4],
-      [lambda0 + epsilon$4, phi0 - epsilon$4]
+      [lambda2 - epsilon$5, phi2 - epsilon$5],
+      [lambda2 - epsilon$5, phi1 + epsilon$5],
+      [lambda0 + epsilon$5, phi1 + epsilon$5],
+      [lambda0 + epsilon$5, phi0 - epsilon$5]
     ], 30));
   }
 
@@ -14207,7 +15195,7 @@ var sinusoidal$1 = function() {
 function lagrangeRaw(n) {
 
   function forward(lambda, phi) {
-    if (abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, phi < 0 ? -2 : 2];
+    if (abs$2(abs$2(phi) - halfPi$3) < epsilon$5) return [0, phi < 0 ? -2 : 2];
     var sinPhi = sin$2(phi),
         v = pow$2((1 + sinPhi) / (1 - sinPhi), n / 2),
         c = 0.5 * (v + 1 / v) + cos$2(lambda *= n);
@@ -14219,7 +15207,7 @@ function lagrangeRaw(n) {
 
   forward.invert = function(x, y) {
     var y0 = abs$2(y);
-    if (abs$2(y0 - 2) < epsilon$4) return x ? null : [0, sign$2(y) * halfPi$3];
+    if (abs$2(y0 - 2) < epsilon$5) return x ? null : [0, sign$2(y) * halfPi$3];
     if (y0 > 2) return null;
 
     x /= 2, y /= 2;
@@ -14244,8 +15232,8 @@ function loximuthalRaw(phi0) {
 
   function forward(lambda, phi) {
     var y = phi - phi0,
-        x = abs$2(y) < epsilon$4 ? lambda * cosPhi0
-            : abs$2(x = quarterPi$1 + phi / 2) < epsilon$4 || abs$2(abs$2(x) - halfPi$3) < epsilon$4
+        x = abs$2(y) < epsilon$5 ? lambda * cosPhi0
+            : abs$2(x = quarterPi$1 + phi / 2) < epsilon$5 || abs$2(abs$2(x) - halfPi$3) < epsilon$5
             ? 0 : lambda * y / log$2(tan$1(x) / tanPhi0);
     return [x, y];
   }
@@ -14254,8 +15242,8 @@ function loximuthalRaw(phi0) {
     var lambda,
         phi = y + phi0;
     return [
-      abs$2(y) < epsilon$4 ? x / cosPhi0
-          : (abs$2(lambda = quarterPi$1 + phi / 2) < epsilon$4 || abs$2(abs$2(lambda) - halfPi$3) < epsilon$4) ? 0
+      abs$2(y) < epsilon$5 ? x / cosPhi0
+          : (abs$2(lambda = quarterPi$1 + phi / 2) < epsilon$5 || abs$2(abs$2(lambda) - halfPi$3) < epsilon$5) ? 0
           : x * log$2(tan$1(lambda) / tanPhi0) / y,
       phi
     ];
@@ -14334,7 +15322,7 @@ function modifiedStereographicRaw(C) {
       var denominator = br * br + bi * bi, deltar, deltai;
       zr -= deltar = (ar * br + ai * bi) / denominator;
       zi -= deltai = (ai * br - ar * bi) / denominator;
-    } while (abs$2(deltar) + abs$2(deltai) > epsilon$4 * epsilon$4 && --i > 0);
+    } while (abs$2(deltar) + abs$2(deltai) > epsilon$5 * epsilon$5 && --i > 0);
 
     if (i) {
       var rho = sqrt$3(zr * zr + zi * zi),
@@ -14392,7 +15380,7 @@ naturalEarthRaw.invert = function(x, y) {
     var phi2 = phi * phi, phi4 = phi2 * phi2;
     phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
         (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
-  } while (abs$2(delta) > epsilon$4 && --i > 0);
+  } while (abs$2(delta) > epsilon$5 && --i > 0);
   return [
     x / (0.8707 + (phi2 = phi * phi) * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2)))),
     phi
@@ -14418,7 +15406,7 @@ naturalEarth2Raw.invert = function(x, y) {
     phi2 = phi * phi; phi4 = phi2 * phi2;
     phi -= delta = ((phi * (1.01183 + phi4 * phi4 * (-0.02625 + 0.01926 * phi2 - 0.00396 * phi4))) - y) /
       (1.01183 + phi4 * phi4 * ((9 * -0.02625) + (11 * 0.01926) * phi2 + (13 * -0.00396) * phi4));
-  } while (abs$2(delta) > epsilon2$2 && --i > 0);
+  } while (abs$2(delta) > epsilon2$3 && --i > 0);
   phi2 = phi * phi; phi4 = phi2 * phi2; phi6 = phi2 * phi4;
   return [
     x / (0.84719 - 0.13063 * phi2 + phi6 * phi6 * (-0.04515 + 0.05494 * phi2 - 0.02326 * phi4 + 0.00331 * phi6)),
@@ -14460,7 +15448,7 @@ pattersonRaw.invert = function(x, y) {
   do { // Newton-Raphson
     var y2 = yc * yc;
     yc -= delta = ((yc * (pattersonK1 + y2 * y2 * (pattersonK2 + y2 * (pattersonK3 + pattersonK4 * y2)))) - y) / (pattersonC1 + y2 * y2 * (pattersonC2 + y2 * (pattersonC3 + pattersonC4 * y2)));
-  } while (abs$2(delta) > epsilon$4);
+  } while (abs$2(delta) > epsilon$5);
 
   return [x, yc];
 };
@@ -14471,7 +15459,7 @@ var patterson = function() {
 };
 
 function polyconicRaw(lambda, phi) {
-  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  if (abs$2(phi) < epsilon$5) return [lambda, 0];
   var tanPhi = tan$1(phi),
       k = lambda * sin$2(phi);
   return [
@@ -14481,7 +15469,7 @@ function polyconicRaw(lambda, phi) {
 }
 
 polyconicRaw.invert = function(x, y) {
-  if (abs$2(y) < epsilon$4) return [x, 0];
+  if (abs$2(y) < epsilon$5) return [x, 0];
   var k = x * x + y * y,
       phi = y * 0.5,
       i = 10, delta;
@@ -14490,7 +15478,7 @@ polyconicRaw.invert = function(x, y) {
         secPhi = 1 / cos$2(phi),
         j = k - 2 * y * phi + phi * phi;
     phi -= delta = (tanPhi * j + 2 * (phi - y)) / (2 + j * secPhi * secPhi + 2 * (phi - y) * tanPhi);
-  } while (abs$2(delta) > epsilon$4 && --i > 0);
+  } while (abs$2(delta) > epsilon$5 && --i > 0);
   tanPhi = tan$1(phi);
   return [
     (abs$2(y) < abs$2(phi + 1 / tanPhi) ? asin$2(x * tanPhi) : sign$2(x) * (acos$2(abs$2(x * tanPhi)) + halfPi$3)) / sin$2(phi),
@@ -14700,10 +15688,10 @@ function outline(stream, node, parent) {
     edge = edges[(i + j) % n];
     if (Array.isArray(edge)) {
       if (!inside) {
-        stream.point((point = interpolate$2(edge[0], c)(epsilon$4))[0], point[1]);
+        stream.point((point = interpolate$2(edge[0], c)(epsilon$5))[0], point[1]);
         inside = true;
       }
-      stream.point((point = interpolate$2(edge[1], c)(epsilon$4))[0], point[1]);
+      stream.point((point = interpolate$2(edge[1], c)(epsilon$5))[0], point[1]);
     } else {
       inside = false;
       if (edge !== parent) outline(stream, edge, node);
@@ -14950,7 +15938,7 @@ robinsonRaw.invert = function(x, y) {
         by = K[i0 + 1][1];
         cy = K[min$2(19, i0 + 2)][1];
         phi -= (delta = (y >= 0 ? halfPi$3 : -halfPi$3) * (by + di * (cy - ay) / 2 + di * di * (cy - 2 * by + ay) / 2) - y) * degrees$2;
-      } while (abs$2(delta) > epsilon2$2 && --j > 0);
+      } while (abs$2(delta) > epsilon2$3 && --j > 0);
       break;
     }
   } while (--i0 >= 0);
@@ -15015,16 +16003,16 @@ function satelliteRaw(P, omega) {
   return forward;
 }
 
-var epsilon$5 = 1e-4;
+var epsilon$6 = 1e-4;
 var epsilonInverse = 1e4;
 var x0$5 = -180;
-var x0e = x0$5 + epsilon$5;
+var x0e = x0$5 + epsilon$6;
 var x1$1 = 180;
-var x1e = x1$1 - epsilon$5;
+var x1e = x1$1 - epsilon$6;
 var y0$5 = -90;
-var y0e = y0$5 + epsilon$5;
+var y0e = y0$5 + epsilon$6;
 var y1$1 = 90;
-var y1e = y1$1 - epsilon$5;
+var y1e = y1$1 - epsilon$6;
 
 function nonempty(coordinates) {
   return coordinates.length > 0;
@@ -15221,10 +16209,10 @@ function stitchGeometry(input) {
 // TODO clip to ellipse
 
 function vanDerGrintenRaw(lambda, phi) {
-  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  if (abs$2(phi) < epsilon$5) return [lambda, 0];
   var sinTheta = abs$2(phi / halfPi$3),
       theta = asin$2(sinTheta);
-  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
+  if (abs$2(lambda) < epsilon$5 || abs$2(abs$2(phi) - halfPi$3) < epsilon$5) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
   var cosTheta = cos$2(theta),
       A = abs$2(pi$4 / lambda - lambda / pi$4) / 2,
       A2 = A * A,
@@ -15241,8 +16229,8 @@ function vanDerGrintenRaw(lambda, phi) {
 }
 
 vanDerGrintenRaw.invert = function(x, y) {
-  if (abs$2(y) < epsilon$4) return [x, 0];
-  if (abs$2(x) < epsilon$4) return [0, halfPi$3 * sin$2(2 * atan$1(y / pi$4))];
+  if (abs$2(y) < epsilon$5) return [x, 0];
+  if (abs$2(x) < epsilon$5) return [0, halfPi$3 * sin$2(2 * atan$1(y / pi$4))];
   var x2 = (x /= pi$4) * x,
       y2 = (y /= pi$4) * y,
       x2_y2 = x2 + y2,
@@ -15266,10 +16254,10 @@ var vanDerGrinten = function() {
 };
 
 function vanDerGrinten2Raw(lambda, phi) {
-  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  if (abs$2(phi) < epsilon$5) return [lambda, 0];
   var sinTheta = abs$2(phi / halfPi$3),
       theta = asin$2(sinTheta);
-  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
+  if (abs$2(lambda) < epsilon$5 || abs$2(abs$2(phi) - halfPi$3) < epsilon$5) return [0, sign$2(phi) * pi$4 * tan$1(theta / 2)];
   var cosTheta = cos$2(theta),
       A = abs$2(pi$4 / lambda - lambda / pi$4) / 2,
       A2 = A * A,
@@ -15298,10 +16286,10 @@ var vanDerGrinten2 = function() {
 };
 
 function vanDerGrinten3Raw(lambda, phi) {
-  if (abs$2(phi) < epsilon$4) return [lambda, 0];
+  if (abs$2(phi) < epsilon$5) return [lambda, 0];
   var sinTheta = phi / halfPi$3,
       theta = asin$2(sinTheta);
-  if (abs$2(lambda) < epsilon$4 || abs$2(abs$2(phi) - halfPi$3) < epsilon$4) return [0, pi$4 * tan$1(theta / 2)];
+  if (abs$2(lambda) < epsilon$5 || abs$2(abs$2(phi) - halfPi$3) < epsilon$5) return [0, pi$4 * tan$1(theta / 2)];
   var A = (pi$4 / lambda - lambda / pi$4) / 2,
       y1 = sinTheta / (1 + cos$2(theta));
   return [
@@ -15372,7 +16360,7 @@ vanDerGrinten4Raw.invert = function(x, y) {
         f = D * (B_C2 + C2 - 1) + 2 * sqrtF - x1 * (4 * B_C2 + D2),
         f_ = D * (2 * C * C_ + 2 * B_C * (1 + C_)) + F_ / sqrtF - 8 * B_C * (D * (-1 + C2 + B_C2) + 2 * sqrtF) * (1 + C_) / (D2 + 4 * B_C2);
     B -= delta = f / f_;
-  } while (delta > epsilon$4 && --i > 0);
+  } while (delta > epsilon$5 && --i > 0);
   return [
     sign$2(x) * (sqrt$3(D * D + 4) + D) * pi$4 / 4,
     halfPi$3 * B
@@ -15422,7 +16410,7 @@ winkel3Raw.invert = function(x, y) {
         dlambda = (fy * dxdphi - fx * dydphi) / denominator,
         dphi = (fx * dydlambda - fy * dxdlambda) / denominator;
     lambda -= dlambda, phi -= dphi;
-  } while ((abs$2(dlambda) > epsilon$4 || abs$2(dphi) > epsilon$4) && --i > 0);
+  } while ((abs$2(dlambda) > epsilon$5 || abs$2(dphi) > epsilon$5) && --i > 0);
   return [lambda, phi];
 };
 
@@ -15520,6 +16508,7 @@ exports.brush = brush;
 exports.brushX = brushX;
 exports.brushY = brushY;
 exports.brushSelection = brushSelection;
+exports.voronoi = voronoi;
 exports.geoAlbers = albers;
 exports.geoAlbersUsa = albersUsa;
 exports.geoArea = area$2;

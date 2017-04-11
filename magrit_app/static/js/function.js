@@ -3324,7 +3324,7 @@ var render_label = function(layer, rendering_params, options){
         ];
 
     map.insert("g", '.legend')
-        .attrs({id: layer_id, class: "layer result_layer"})
+        .attrs({id: layer_id, class: "layer result_layer no_clip"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")
@@ -3368,7 +3368,7 @@ var render_label_graticule = function(layer, rendering_params, options){
     let selected_font = rendering_params.font;
     let font_size = rendering_params.ref_font_size + "px";
     let position_lat = rendering_params.position_lat || 'bottom';
-    let position_lon = rendering_params.position_lat || 'left';
+    let position_lon = rendering_params.position_lon || 'left';
     let new_layer_data = [];
     let layer_to_add = check_layer_name("Labels_Graticule");
     let layer_id = encodeId(layer_to_add);
@@ -3384,14 +3384,13 @@ var render_label_graticule = function(layer, rendering_params, options){
         grat = current_layers['Graticule'].extent ? grat.extent(current_layers['Graticule'].extent).lines() : grat.lines();
         nb_ft = grat.length;
         for(let i=0; i<nb_ft; i++){
-            let txt, geometry;
-            let line = grat[i];
+            let txt, geometry, line = grat[i];
             if(line.coordinates[0][0] == line.coordinates[1][0]){
                 txt = line.coordinates[0][0];
-                geometry = position_lat == 'right' ? {type: "Point", coordinates: line.coordinates[0]} : {type: "Point", coordinates: line.coordinates[line.length - 1]};
+                geometry = position_lat == 'bottom' ? {type: "Point", coordinates: line.coordinates[0]} : {type: "Point", coordinates: line.coordinates[line.length - 1]};
             } else if (line.coordinates[0][1] == line.coordinates[1][1]){
                 txt = line.coordinates[0][1];
-                geometry = position_lon == 'right' ? {type: "Point", coordinates: line.coordinates[0]} : {type: "Point", coordinates: line.coordinates[line.length - 1]};
+                geometry = position_lon == 'left' ? {type: "Point", coordinates: line.coordinates[0]} : {type: "Point", coordinates: line.coordinates[line.length - 1]};
             }
             if(txt != undefined){
               new_layer_data.push({
@@ -3411,7 +3410,7 @@ var render_label_graticule = function(layer, rendering_params, options){
         ];
 
     map.insert("g", '.legend')
-        .attrs({id: layer_id, class: "layer result_layer"})
+        .attrs({id: layer_id, class: "layer result_layer no_clip"})
         .selectAll("text")
         .data(new_layer_data).enter()
         .insert("text")

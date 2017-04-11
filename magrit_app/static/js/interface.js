@@ -20,10 +20,10 @@ function click_button_add_layer(){
         input.setAttribute("accept", ".xls,.xlsx,.csv,.tsv,.ods,.txt");
         target_layer_on_add = true;
     } else if (self.id === "input_geom" || self.id === "img_in_geom") {
-        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json");
         target_layer_on_add = true;
     } else if (self.id == "input_layout_geom") {
-        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg");
+        input.setAttribute("accept", ".kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json");
     }
     input.setAttribute('type', 'file');
     input.setAttribute('multiple', '');
@@ -81,62 +81,58 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   allowEscapeKey: false,
                   allowOutsideClick: false});
         }
-    }
-    else if(files[0].name.toLowerCase().indexOf('topojson') > -1){
-           elem.style.border = '';
-           if(target_layer_on_add && _app.targeted_layer_added)
-                swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common.error_only_one'),
-                      customClass: 'swal2_custom',
-                      type: "error",
-                      allowEscapeKey: false,
-                      allowOutsideClick: false});
-           // Most direct way to add a layer :
-           else handle_TopoJSON_files(files, target_layer_on_add);
-   }
-   else if(files[0].name.toLowerCase().indexOf('geojson') > -1 ||
-        files[0].name.toLowerCase().indexOf('zip') > -1 ||
-        files[0].name.toLowerCase().indexOf('gml') > -1 ||
-        files[0].name.toLowerCase().indexOf('kml') > -1){
-           elem.style.border = '';
-
-           if(target_layer_on_add && _app.targeted_layer_added)
-                swal({title: i18next.t("app_page.common.error") + "!",
-                      text: i18next.t('app_page.common.error_only_one'),
-                      customClass: 'swal2_custom',
-                      type: "error",
-                      allowEscapeKey: false,
-                      allowOutsideClick: false});
-           // Send the file to the server for conversion :
-           else handle_single_file(files[0], target_layer_on_add);
-   }
-  else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
+   } else if(files[0].name.toLowerCase().indexOf('json') > -1 ||
+            files[0].name.toLowerCase().indexOf('zip') > -1 ||
+            files[0].name.toLowerCase().indexOf('gml') > -1 ||
+            files[0].name.toLowerCase().indexOf('kml') > -1){
+        elem.style.border = '';
+        if(target_layer_on_add && _app.targeted_layer_added){
+            swal({title: i18next.t("app_page.common.error") + "!",
+                  text: i18next.t('app_page.common.error_only_one'),
+                  customClass: 'swal2_custom',
+                  type: "error",
+                  allowEscapeKey: false,
+                  allowOutsideClick: false});
+        // Send the file to the server for conversion :
+        } else {
+            if(files[0].name.toLowerCase().indexOf('json' < 0)){
+                handle_single_file(files[0], target_layer_on_add);
+            } else {
+                let tmp = JSON.parse(files[0]);
+                if(tmp.type && tmp.type == "FeatureCollection") {
+                    handle_single_file(files[0], target_layer_on_add);
+                } else if (tmp.type && tmp.type == "Topology") {
+                    handle_TopoJSON_files(files, target_layer_on_add);
+                }
+            }
+        }
+   } else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
     || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
         elem.style.border = '';
-        if(target_layer_on_add)
+        if(target_layer_on_add){
             handle_dataset(files[0], target_layer_on_add);
-        else
+        } else {
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
                   customClass: 'swal2_custom',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
-   }
-  else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
+        }
+   } else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
     || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
         elem.style.border = '';
-        if(target_layer_on_add)
+        if(target_layer_on_add) {
             convert_dataset(files[0]);
-        else
+        } else {
             swal({title: i18next.t("app_page.common.error") + "!",
                   text: i18next.t('app_page.common.error_only_layout'),
                   type: "error",
                   customClass: 'swal2_custom',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
-   }
-  else {
+        }
+   } else {
         elem.style.border = '';
         let shp_part;
         Array.prototype.forEach.call(files, f =>
@@ -587,7 +583,7 @@ function handle_dataset(f, target_layer_on_add){
                               allowOutsideClick: false});
 
                     } else {
-                        add_csv_geom(data, dataset_name);
+                        add_csv_geom(data, name.substring(0, name.indexOf('.csv')));
                     }
                     return;
                 }
@@ -830,7 +826,7 @@ function add_layer_topojson(text, options = {}){
         return;
     }
     var type = "",
-        topoObj = parsedJSON.file,
+        topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects),
         _proj;
@@ -856,7 +852,9 @@ function add_layer_topojson(text, options = {}){
     }
 
     if(_app.first_layer){
-        remove_layer_cleanup('World');
+        // remove_layer_cleanup('World');
+        let q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
+        if(q) q.click();
         delete _app.first_layer;
         if(parsedJSON.proj){
             try { _proj = proj4(parsedJSON.proj) } catch (e){ _proj = undefined; console.log(e); }
@@ -887,7 +885,8 @@ function add_layer_topojson(text, options = {}){
         current_layers[lyr_name_to_add].is_result = true;
     }
 
-    let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
+    let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path,
+        nb_fields = field_names.length;
 
     map.insert("g", '.legend')
         .attr("id", lyr_id)
@@ -899,18 +898,19 @@ function add_layer_topojson(text, options = {}){
         .attrs({"d": path_to_use, "height": "100%", "width": "100%"})
         .attr("id", function(d, ix) {
               if(data_to_load){
-                  if(field_names.length > 0){
+                  if(nb_fields > 0){
                       if(d.id != undefined && d.id != ix){
                           d.properties["_uid"] = d.id;
                           d.id = +ix;
                       }
                       user_data[lyr_name_to_add].push(d.properties);
                   } else {
-                      user_data[lyr_name_to_add].push({"id": d.id || ix});
+                      d.properties.id = d.id || ix;
+                      user_data[lyr_name_to_add].push({"id": d.properties.id});
                   }
-              } else if(result_layer_on_add)
+              } else if(result_layer_on_add){
                   result_data[lyr_name_to_add].push(d.properties);
-
+              }
               return "feature_" + ix;
           })
         .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
@@ -925,7 +925,6 @@ function add_layer_topojson(text, options = {}){
 
     let layers_listed = layer_list.node(),
         li = document.createElement("li"),
-        nb_fields = field_names.length,
         _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
     li.setAttribute("class", class_name);
@@ -966,6 +965,7 @@ function add_layer_topojson(text, options = {}){
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
 
         window._target_layer_file = topoObj;
+        console.log(topoObj)
         if(!skip_rescale){
             scale_to_lyr(lyr_name_to_add);
             center_map(lyr_name_to_add);

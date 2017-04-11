@@ -142,6 +142,10 @@ export {
 } from "d3-brush";
 
 export {
+  voronoi
+} from "d3-voronoi";
+
+export {
   geoAlbers,
   geoAlbersUsa,
   geoArea,
@@ -233,3 +237,4 @@ export {
   geoVanDerGrinten4,
   geoWinkel3
 } from "d3-geo-projection";
+

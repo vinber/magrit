@@ -23,6 +23,17 @@ def _compute_centroids(geometries, argmax=np.argmax):
 			res.append(geom.centroid)
 	return res
 
+def get_proj4_string(wkt_proj):
+    if not wkt_proj:
+        return None
+    else:
+        a = SpatialReference(wkt_proj)
+        a.MorphFromESRI()
+        res = a.ExportToProj4()
+        return None if \
+            '+proj=longlat +ellps=WGS84 +no_defs' in res \
+            or '+proj=longlat +datum=WGS84 +no_defs' in res \
+            else res
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])

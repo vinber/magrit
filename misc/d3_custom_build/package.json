@@ -5,8 +5,8 @@
     "prepublish": "rollup -c && uglifyjs d3.custom.js -c -m -o d3.custom.min.js"
   },
   "devDependencies": {
-    "d3-selection": "^1.0.2",
-    "d3-selection-multi": "^1.0.0",
+    "d3-selection": "latest",
+    "d3-selection-multi": "latest",
     "d3-shape": "latest",
     "d3-request": "latest",
     "d3-polygon": "latest",
@@ -16,7 +16,7 @@
     "d3-interpolate": "latest",
     "d3-format": "latest",
     "d3-zoom": "latest",
-    "d3-brush": "^1.0.3",
+    "d3-brush": "latest",
     "d3-transition": "latest",
     "d3-scale": "latest",
     "d3-dsv": "latest",
@@ -24,6 +24,7 @@
     "d3-force": "latest",
     "d3-drag": "latest",
     "d3-array": "latest",
+    "d3-voronoi": "latest",
     "rollup": "0.36",
     "rollup-plugin-node-resolve": "2",
     "uglify-js": "2"
