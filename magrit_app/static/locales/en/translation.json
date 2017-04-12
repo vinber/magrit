@@ -308,8 +308,8 @@
         },
         "proj4_box":{
             "title": "",
-            "enter_string": "Saisie d'une chaine de charactère au format proj4",
-            "error": "Valeur invalide. (Détails: {{detail}})"
+            "enter_string": "Enter a proj.4 or wkt definition string",
+            "error": "Invalid value. (Details: {{detail}})"
         },
         "layout_features_box": {
             "title": "Layout features",

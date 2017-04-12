@@ -375,7 +375,6 @@ async def convert(request):
         with open(filepath, 'wb') as f:
             f.write(res)
         result = await geojson_to_topojson(filepath, layer_name)
-        print(result)
         if not result:
             return web.Response(
                 text='{"Error": "Error converting input file"}')

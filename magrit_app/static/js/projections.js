@@ -97,7 +97,7 @@ const createBoxProj4 = function(){
 	let input_section = content.append('p');
 	input_section.append('span')
 			.style('float', 'left')
-			.html("Enter a proj4 string");
+			.html(i18next.t('app_page.proj4_box.enter_string'));
 	input_section.append('input')
 			.styles({'width': '90%'})
 			.attrs({id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"});
@@ -282,11 +282,11 @@ const createBoxCustomProjection = function(){
 					.style("text-align", "center");
 
 	var column1 = choice_proj_content.append('div')
-			.styles({float: 'left', width: '52%'});
-	var column2 = choice_proj_content.append('div')
-			.styles({float: 'left', width: '52%'});
+			.styles({float: 'left', width: '50%'});
 	var column3 = choice_proj_content.append('div')
-			.styles({float: 'left', display: 'contents', width: '45%'});
+			.styles({float: 'right', width: '45%'});
+	var column2 = choice_proj_content.append('div')
+			.styles({float: 'left', width: '50%'});
 	choice_proj_content.append('div')
 			.style('clear', 'both');
 
@@ -331,8 +331,9 @@ const createBoxCustomProjection = function(){
 			.attrs({id: 'btn_valid_reproj', class: 'button_st4 i18n'})
 			.html(i18next.t('app_page.projection_box.ok_reproject'))
 			.on('click', function(){
-					current_proj_name = document.getElementById('select_proj').value;
-					if(current_proj_name == "no_result") return;
+					let value = document.getElementById('select_proj').value;
+					if(value == "no_result") return;
+					current_proj_name = value;
 					addLastProjectionSelect(current_proj_name);
 					change_projection(current_proj_name);
 					updateProjOptions();

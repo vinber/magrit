@@ -124,18 +124,21 @@ function setUpInterface()
         .attrs({class: 'i18n', 'id': 'form_projection2'})
         .styles({"width": "calc(100% + 20px)"})
         .on('change', function(){
-            let val = this.value;
+            let val = this.value,
+                tmp = this.querySelector('[value="last_projection"]');
+
             if(val == 'more'){
-                this.value = current_proj_name;
+                this.value = (tmp && current_proj_name == tmp.name) ? "last_projection" : current_proj_name;
                 createBoxCustomProjection();
                 return;
             } else if (val == 'proj4'){
-                this.value = current_proj_name;
+                this.value = (tmp && current_proj_name == tmp.name) ? "last_projection" : current_proj_name;
                 createBoxProj4();
                 return;
             }  else if (val == 'last_projection'){
-                val = this.querySelector('[value="last_projection"]').name;
+                val = tmp.name;
             }
+
             if(val == 'def_proj4'){
                 current_proj_name = val;
                 change_projection_4(proj4(_app.last_projection));

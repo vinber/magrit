@@ -85,14 +85,3 @@ Variable :
 (1) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:34:48 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096</a>  
 (2) : Eurostat, Dernière mise à jour: 18.01.2017, Date d'extraction: 23 janv. 2017 16:38:34 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004</a>  
 (3) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:56:02 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010</a>  
-
-
-### États des Etats-Unis :
-Fond de carte :  
-Variables :  
-- STUSPS : Identifiant/code de l'état
-- Name : Nom de l'état
-- POP2015_est : Estimation du nombre d'habitants en 2015 (1)
-- POPDENS : Densité de population en nombre d'habitants par kilomètres carrés (1)
-
-(1) : 2015 Population Estimates. United States Census Bureau, Population Division. January 2016. "Table 1. Annual Estimates of the Resident Population for the United States, Regions, States, and Puerto Rico: April 1, 2010 to July 1, 2015" <a href="http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx">http://www.census.gov/popest/data/state/totals/2015/tables/NST-EST2015-01.xlsx</a>).  

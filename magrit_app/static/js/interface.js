@@ -1388,8 +1388,7 @@ function add_sample_layer(){
         ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id","not_number":true},{"name":"STATUT","type":"category","has_duplicate":true},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
         ['nuts2-2013-data', [{"name":"id","type":"id","not_number":true},{"name":"name","type":"id","not_number":true},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category","has_duplicate":true}]],
         ['brazil', [{"name":"ADMIN_NAME","type":"id","not_number":true},{"name":"Abbreviation","type":"id","not_number":true},{"name":"Capital","type":"id","not_number":true},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category","has_duplicate":true},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
-        ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]],
-        ['us_states', [{"name":"NAME","type":"id","not_number":true},{"name":"POPDENS1","type":"ratio"},{"name":"POPDENS2","type":"ratio"},{"name":"STUSPS","type":"id","not_number":true},{"name":"pop2015_est","type":"stock"}]]
+        ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
         ]),
         target_layers = [
            [i18next.t("app_page.sample_layer_box.target_layer"),""],
@@ -1397,8 +1396,7 @@ function add_sample_layer(){
            [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
            [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
            [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
-           [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
-           [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
+           [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"]
         ], dialog_res = [], selec, selec_url, content;
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))

@@ -110,18 +110,21 @@ function setUpInterface() {
     var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
 
     var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
-        var val = this.value;
+        var val = this.value,
+            tmp = this.querySelector('[value="last_projection"]');
+
         if (val == 'more') {
-            this.value = current_proj_name;
+            this.value = tmp && current_proj_name == tmp.name ? "last_projection" : current_proj_name;
             createBoxCustomProjection();
             return;
         } else if (val == 'proj4') {
-            this.value = current_proj_name;
+            this.value = tmp && current_proj_name == tmp.name ? "last_projection" : current_proj_name;
             createBoxProj4();
             return;
         } else if (val == 'last_projection') {
-            val = this.querySelector('[value="last_projection"]').name;
+            val = tmp.name;
         }
+
         if (val == 'def_proj4') {
             current_proj_name = val;
             change_projection_4(proj4(_app.last_projection));
@@ -9647,8 +9650,8 @@ function add_sample_layer() {
     if (!_app.list_extrabasemaps) {
         prepare_extra_dataset_availables();
     }
-    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]], ['us_states', [{ "name": "NAME", "type": "id", "not_number": true }, { "name": "POPDENS1", "type": "ratio" }, { "name": "POPDENS2", "type": "ratio" }, { "name": "STUSPS", "type": "id", "not_number": true }, { "name": "pop2015_est", "type": "stock" }]]]),
-        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]],
+    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]]]),
+        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"]],
         dialog_res = [],
         selec,
         selec_url,
@@ -15867,7 +15870,7 @@ var createBoxProj4 = function createBoxProj4() {
 		dialog.style.minWidth = '400px';
 
 		var input_section = content.append('p');
-		input_section.append('span').style('float', 'left').html("Enter a proj4 string");
+		input_section.append('span').style('float', 'left').html(i18next.t('app_page.proj4_box.enter_string'));
 		input_section.append('input').styles({ 'width': '90%' }).attrs({ id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" });
 		// .on("input", function(){
 		// 		let proj_str = this.value;
@@ -16053,9 +16056,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		    accordion_choice_projs = content.append("div").attrs({ "class": "panel show", "id": "accordion_choice_projection" }).style('padding', '10px').style("width", "98%"),
 		    choice_proj_content = accordion_choice_projs.append("div").attr("id", "choice_proj_content").style("text-align", "center");
 
-		var column1 = choice_proj_content.append('div').styles({ float: 'left', width: '52%' });
-		var column2 = choice_proj_content.append('div').styles({ float: 'left', width: '52%' });
-		var column3 = choice_proj_content.append('div').styles({ float: 'left', display: 'contents', width: '45%' });
+		var column1 = choice_proj_content.append('div').styles({ float: 'left', width: '50%' });
+		var column3 = choice_proj_content.append('div').styles({ float: 'right', width: '45%' });
+		var column2 = choice_proj_content.append('div').styles({ float: 'left', width: '50%' });
 		choice_proj_content.append('div').style('clear', 'both');
 
 		var filtersection1 = column1.append('div').attr('class', 'switch-field f1');
@@ -16086,8 +16089,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		column3.append('button').style('margin', '5px 0 5px 0')
 		// .styles({margin: '5px 0 5px 0', padding: '5px', float: 'right'})
 		.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
-				current_proj_name = document.getElementById('select_proj').value;
-				if (current_proj_name == "no_result") return;
+				var value = document.getElementById('select_proj').value;
+				if (value == "no_result") return;
+				current_proj_name = value;
 				addLastProjectionSelect(current_proj_name);
 				change_projection(current_proj_name);
 				updateProjOptions();

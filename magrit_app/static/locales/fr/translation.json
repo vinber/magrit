@@ -179,7 +179,7 @@
             "Armadillo": "Armadillo",
             "AzimuthalEquidistant": "Azimutale équidistante",
             "AzimuthalEqualArea": "Azimutale équivalente de Lorgna",
-            "AzimuthalEqualArea": "Lambert Azimutale équivalente (Europe)",
+            "AzimuthalEqualAreaEurope": "Lambert Azimutale équivalente (Europe)",
             "Baker": "Dinomique de Baker",
             "Berhmann": "Berhmann",
             "Boggs": "Boggs",
@@ -309,7 +309,7 @@
         },
         "proj4_box":{
             "title": "",
-            "enter_string": "Saisie d'une chaine de charactère au format proj4",
+            "enter_string": "Saisie d'une chaine de charactère au format proj4 ou WKT",
             "error": "Valeur invalide. (Détails: {{detail}})"
         },
         "layout_features_box": {
