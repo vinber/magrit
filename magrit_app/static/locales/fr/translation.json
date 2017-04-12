@@ -346,10 +346,12 @@
             "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
             "nuts2_data": "Nuts 2 (2013) avec données <i>(Polygones)</i>",
-            "brazil": "États fédéraux du Brésil",
+            "brazil": "États fédéraux du Brésil <i>(Polygones)</i>",
             "world_countries": "Pays du monde <i>(Polygones)</i>",
             "us_states": "États des USA <i>(Polygones)</i>",
-            "more_basemaps": "Plus de fonds de carte ..."
+            "more_basemaps": "Plus de fonds de carte ...",
+            "back_sample": "Retour aux jeux de données précédents",
+            "extra_basemaps_info": "Ces fonds de carte comprennent, pour chaque pays, le découpage du premier niveau administratif inter-étatique ainsi que des variables de stock (population à deux dates) et de ratio (densité de population et taux de croissance). Les fonds proviennent du site <a id=\"link1\">Natural Earth Data</a> et les autres métadonnées sont disponibles sur la <a id=\"link2\">page du projet</a>."
         },
         "export_box": {
             "geo": "Exporter vers un format compatible SIG",

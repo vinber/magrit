@@ -9664,13 +9664,10 @@ function add_sample_layer() {
                 request_data('GET', selec_url).then(function (request_result) {
                     var filename = selec_url.split('/').filter(function (el) {
                         return el.indexOf('.geojson') > -1;
-                    });
-                    var content = request_result.target.responseText;
-                    console.log([filename[0], JSON.parse(content)]);
-                    var file = new File([content], filename, { type: 'application/json' });
-                    console.log(file);
+                    }),
+                        content = request_result.target.responseText,
+                        file = new File([content], filename, { type: 'application/geo+json' });
                     handle_single_file(file, true);
-                    console.log('aa');
                 });
             }
         }
@@ -9687,6 +9684,16 @@ function add_sample_layer() {
         for (var i = 0, len_i = _app.list_extrabasemaps.length; i < len_i; i++) {
             select_extrabasemap.append('option').attr('value', _app.list_extrabasemaps[i][1]).html(_app.list_extrabasemaps[i][0]);
         }
+        content.append('p').styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' }).append('span').html(i18next.t('app_page.sample_layer_box.back_sample')).on('click', function () {
+            make_panel1();
+        });
+        if (selec_url) setSelected(select_extrabasemap.node(), selec_url);
+        content.select('#link1').on('click', function () {
+            window.open('http://www.naturalearthdata.com', "Natural Earth", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        });
+        content.select('#link2').on('click', function () {
+            window.open('https://github.com/riatelab/basemaps/tree/master/Countries', "riatelab/basemaps", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        });
     };
 
     function make_panel1() {
@@ -9701,7 +9708,7 @@ function add_sample_layer() {
         t_layer_selec.on("change", function () {
             selec = this.value;
         });
-        content.append('p').append('span').html(i18next.t('app_page.sample_layer_box.more_basemaps')).on('click', function () {
+        content.append('p').styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' }).append('span').html(i18next.t('app_page.sample_layer_box.more_basemaps')).on('click', function () {
             make_panel2();
         });
         if (selec) setSelected(t_layer_selec.node(), selec);
