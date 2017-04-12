@@ -1736,22 +1736,20 @@ function change_projection(new_proj_name) {
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if (!layer_name) {
+    if (!layer_name && def_proj.bounds) {
+        scale_to_bbox(def_proj.bounds);
+    } else if (!layer_name) {
         var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
             return f.style.visibility != "hidden";
         });
         layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
     }
-    if (def_proj.bounds) {
-        scale_to_bbox(def_proj.bounds);
+    if (layer_name) {
+        scale_to_lyr(layer_name);
+        center_map(layer_name);
+        zoom_without_redraw();
     } else {
-        if (layer_name) {
-            scale_to_lyr(layer_name);
-            center_map(layer_name);
-            zoom_without_redraw();
-        } else {
-            reproj_symbol_layer();
-        }
+        reproj_symbol_layer();
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);
@@ -1793,10 +1791,10 @@ function change_projection_4(_proj) {
         s = rv[0];
         t = rv[1];
     }
-    if (isNaN(s) || isNaN(t[0]) || isNaN(t[1])) {
+    if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
         s = 100;t = [0, 0];
         console.log('Error');
-        return;
+        // return;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();
@@ -9473,22 +9471,22 @@ function add_layout_feature(selected_feature) {
         zoom_without_redraw();
     } else if (selected_feature == "scale") {
         if (!scaleBar.displayed) {
-            scaleBar.create();
+            handleClickAddOther('scalebar');
         } else {
             ask_existing_feature('scalebar').then(function () {
                 scaleBar.remove();
-                scaleBar.create();
+                handleClickAddOther('scalebar');
             }, function (dismiss) {
                 null;
             });
         }
     } else if (selected_feature == "north_arrow") {
         if (!northArrow.displayed) {
-            northArrow.display();
+            handleClickAddOther('north_arrow');
         } else {
             ask_existing_feature('north_arrow').then(function (_) {
                 northArrow.remove();
-                northArrow.display();
+                handleClickAddOther('north_arrow');
             }, function (dismiss) {
                 null;
             });
@@ -9623,42 +9621,96 @@ function add_layout_layers() {
     box_body.append("span").style("font-size", "0.65rem").html(i18next.t("app_page.layout_layer_box.disclamer_nuts"));
 }
 
+// Todo :
+//  prepare the list server side and store it for some time in order to avoid overusing the API
+//  (or store it client side to use it after a page reload)
+function prepare_extra_dataset_availables() {
+    _app.list_extrabasemaps = [];
+    request_data('GET', 'https://api.github.com/repos/riatelab/basemaps/contents/Countries').then(function (result) {
+        var dir_list = JSON.parse(result.target.responseText),
+            name_link = dir_list.map(function (o) {
+            return [o.name, o.url.replace('?ref=master', '') + '/geo'];
+        });
+        name_link.forEach(function (elem) {
+            if (elem[0] == "Tunisie") return;
+            request_data('GET', elem[1]).then(function (d) {
+                var info_file = JSON.parse(d.target.responseText)[0];
+                _app.list_extrabasemaps.push([elem[0], info_file.download_url]);
+            });
+        });
+    });
+}
+
 function add_sample_layer() {
     var existing_dialog = document.querySelector(".sampleDialogBox");
     if (existing_dialog) existing_dialog.remove();
-
-    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]], ['us_states', [{ "name": "NAME", "type": "id", "not_number": true }, { "name": "POPDENS1", "type": "ratio" }, { "name": "POPDENS2", "type": "ratio" }, { "name": "STUSPS", "type": "id", "not_number": true }, { "name": "pop2015_est", "type": "stock" }]]]);
-
-    var dialog_res = [],
+    if (!_app.list_extrabasemaps) {
+        prepare_extra_dataset_availables();
+    }
+    var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]], ['us_states', [{ "name": "NAME", "type": "id", "not_number": true }, { "name": "POPDENS1", "type": "ratio" }, { "name": "POPDENS2", "type": "ratio" }, { "name": "STUSPS", "type": "id", "not_number": true }, { "name": "pop2015_est", "type": "stock" }]]]),
+        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]],
+        dialog_res = [],
         selec,
-        target_layers = [[i18next.t("app_page.sample_layer_box.target_layer"), ""], [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"], [i18next.t("app_page.sample_layer_box.martinique"), "martinique"], [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"], [i18next.t("app_page.sample_layer_box.brazil"), "brazil"], [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"], [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]];
+        selec_url,
+        content;
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title")).then(function (confirmed) {
         if (confirmed) {
-            if (selec) {
-                add_sample_geojson(selec, { target_layer_on_add: true, fields_type: fields_type_sample.get(selec) });
+            if (content.attr('id') == "panel1") {
+                if (selec) {
+                    add_sample_geojson(selec, { target_layer_on_add: true, fields_type: fields_type_sample.get(selec) });
+                }
+            } else if (content.attr('id') == "panel2") {
+                request_data('GET', selec_url).then(function (request_result) {
+                    var filename = selec_url.split('/').filter(function (el) {
+                        return el.indexOf('.geojson') > -1;
+                    });
+                    var content = request_result.target.responseText;
+                    console.log([filename[0], JSON.parse(content)]);
+                    var file = new File([content], filename, { type: 'application/json' });
+                    console.log(file);
+                    handle_single_file(file, true);
+                    console.log('aa');
+                });
             }
         }
     });
 
-    var box_body = d3.select(".sampleDialogBox").select(".modal-body");
-    var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+    function make_panel2() {
+        box_body.selectAll('div').remove();
+        content = box_body.append('div').attr('id', 'panel2');
+        var title_tgt_layer = content.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+        content.append('p').append('span').html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
+        var select_extrabasemap = content.append('p').insert('select').on('change', function () {
+            selec_url = this.value;
+        });
+        for (var i = 0, len_i = _app.list_extrabasemaps.length; i < len_i; i++) {
+            select_extrabasemap.append('option').attr('value', _app.list_extrabasemaps[i][1]).html(_app.list_extrabasemaps[i][0]);
+        }
+    };
 
-    var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
-    target_layers.forEach(function (layer_info) {
-        t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
-    });
-    t_layer_selec.on("change", function () {
-        selec = this.value;
-    });
+    function make_panel1() {
+        box_body.selectAll('div').remove();
+        content = box_body.append('div').attr('id', 'panel1');
+        var title_tgt_layer = content.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+
+        var t_layer_selec = content.append('p').html("").insert('select').attr('class', 'sample_target');
+        target_layers.forEach(function (layer_info) {
+            t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]);
+        });
+        t_layer_selec.on("change", function () {
+            selec = this.value;
+        });
+        content.append('p').append('span').html(i18next.t('app_page.sample_layer_box.more_basemaps')).on('click', function () {
+            make_panel2();
+        });
+        if (selec) setSelected(t_layer_selec.node(), selec);
+    }
+    var box_body = d3.select(".sampleDialogBox").select(".modal-body");
     setTimeout(function (_) {
         document.querySelector('select.sample_target').focus();
     }, 500);
-    // if(_app.targeted_layer_added){
-    //     title_tgt_layer.style("color", "grey")
-    //             .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
-    //     t_layer_selec.node().disabled = true;
-    // }
+    make_panel1();
 }
 
 function add_simplified_land_layer() {
@@ -9781,6 +9833,21 @@ function handleClickAddRectangle() {
         map.style("cursor", "").on("click", null);
         document.body.style.cursor = "";
         new UserRectangle(rectangle_id, start_point, svg_map);
+    });
+}
+
+function handleClickAddOther(type) {
+    document.body.style.cursor = "not-allowed";
+    var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    map.style("cursor", "crosshair").on("click", function () {
+        msg.dismiss();
+        map.style("cursor", "").on("click", null);
+        document.body.style.cursor = "";
+        if (type == 'north_arrow') {
+            northArrow.display(d3.event.layerX, d3.event.layerY);
+        } else if (type == 'scalebar') {
+            scaleBar.create(d3.event.layerX, d3.event.layerY);
+        }
     });
 }
 
@@ -12472,7 +12539,7 @@ var Textbox = function () {
 
 
 var scaleBar = {
-    create: function create() {
+    create: function create(x, y) {
         var _this5 = this;
 
         if (!proj.invert) {
@@ -12533,6 +12600,8 @@ var scaleBar = {
             d3.event.stopPropagation();
             return scale_context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
         });
+        if (x && y) scale_gp.attr('transform', 'translate(' + [x - this.x, y - this.y] + ')');
+
         this.Scale = scale_gp;
         this.displayed = true;
         if (this.dist > 100) {
@@ -12688,11 +12757,11 @@ var scaleBar = {
 };
 
 var northArrow = {
-    display: function display() {
+    display: function display(x, y) {
         var _this6 = this;
 
-        var x_pos = w - 100,
-            y_pos = h - 100,
+        var x_pos = x || w - 100,
+            y_pos = y || h - 100,
             self = this;
 
         var arrow_gp = map.append("g").attrs({ id: 'north_arrow', class: 'legend', scale: 1, rotate: null }).style('cursor', 'all-scroll');

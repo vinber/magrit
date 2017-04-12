@@ -347,7 +347,8 @@
             "nuts2_data": "Nuts 2 (2013) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states",
             "world_countries": "World countries <i>(Polygons)</i>",
-            "us_states": "U.S.A states <i>(Polygons)</i>"
+            "us_states": "U.S.A states <i>(Polygons)</i>",
+            "more_basemaps": "More basemaps..."
         },
         "export_box": {
             "geo": "Export layers to a geographic format",

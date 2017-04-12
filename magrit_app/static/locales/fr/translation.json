@@ -348,7 +348,8 @@
             "nuts2_data": "Nuts 2 (2013) avec données <i>(Polygones)</i>",
             "brazil": "États fédéraux du Brésil",
             "world_countries": "Pays du monde <i>(Polygones)</i>",
-            "us_states": "États des USA <i>(Polygones)</i>"
+            "us_states": "États des USA <i>(Polygones)</i>",
+            "more_basemaps": "Plus de fonds de carte ..."
         },
         "export_box": {
             "geo": "Exporter vers un format compatible SIG",

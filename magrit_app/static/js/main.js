@@ -2037,20 +2037,18 @@ function change_projection(new_proj_name) {
 
     // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if(!layer_name){
+    if(!layer_name && def_proj.bounds){
+        scale_to_bbox(def_proj.bounds);
+    } else if (!layer_name){
       let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
       layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
-    if(def_proj.bounds){
-        scale_to_bbox(def_proj.bounds);
+    if(layer_name){
+      scale_to_lyr(layer_name);
+      center_map(layer_name);
+      zoom_without_redraw();
     } else {
-        if(layer_name){
-          scale_to_lyr(layer_name);
-          center_map(layer_name);
-          zoom_without_redraw();
-        } else {
-          reproj_symbol_layer();
-        }
+      reproj_symbol_layer();
     }
     // Set or remove the clip-path according to the projection:
     handleClipPath(new_proj_name, layer_name);
@@ -2090,10 +2088,10 @@ function change_projection_4(_proj) {
         s = rv[0];
         t = rv[1];
     }
-    if(isNaN(s) || isNaN(t[0]) || isNaN(t[1])){
+    if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
         s = 100; t = [0, 0];
         console.log('Error');
-        return;
+        // return;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();

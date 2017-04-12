@@ -684,7 +684,7 @@ class Textbox {
 *
 */
 var scaleBar = {
-    create: function(){
+    create: function(x, y){
         if(!proj.invert){
             swal({title: "",
                   text: i18next.t("app_page.common.error_interrupted_projection_scalebar"),
@@ -743,6 +743,8 @@ var scaleBar = {
             return scale_context_menu
                .showMenu(d3.event, document.querySelector("body"), getItems());
         });
+        if(x && y) scale_gp.attr('transform', 'translate(' + [x - this.x, y - this.y] + ')');
+
         this.Scale = scale_gp;
         this.displayed = true;
         if(this.dist > 100){
@@ -928,9 +930,9 @@ var scaleBar = {
 };
 
 var northArrow = {
-    display: function(){
-        let x_pos = w - 100,
-            y_pos = h - 100,
+    display: function(x, y){
+        let x_pos = x || w - 100,
+            y_pos = y || h - 100,
             self = this;
 
         let arrow_gp = map.append("g")

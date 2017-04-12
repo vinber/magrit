@@ -1206,24 +1206,25 @@ function add_layout_feature(selected_feature, options = {}){
         zoom_without_redraw();
     } else if (selected_feature == "scale"){
         if(!(scaleBar.displayed)){
-            scaleBar.create();
+            handleClickAddOther('scalebar');
         } else {
             ask_existing_feature('scalebar')
               .then(() => {
                   scaleBar.remove();
-                  scaleBar.create();
+                  handleClickAddOther('scalebar');
                 }, dismiss => { null; });
         }
     } else if (selected_feature == "north_arrow"){
-        if(!(northArrow.displayed)){
-            northArrow.display();
-        } else {
-            ask_existing_feature('north_arrow')
-              .then( _ => {
-                northArrow.remove();
-                northArrow.display();
-              }, dismiss => { null; });
-        }
+      if(!(northArrow.displayed)){
+          handleClickAddOther('north_arrow');
+      } else {
+          ask_existing_feature('north_arrow')
+            .then( _ => {
+              northArrow.remove();
+              handleClickAddOther('north_arrow');
+            }, dismiss => { null; });
+      }
+
     } else if (selected_feature == "arrow"){
         handleClickAddArrow();
     } else if (selected_feature == "ellipse"){
@@ -1356,10 +1357,32 @@ function add_layout_layers(){
             .html(i18next.t("app_page.layout_layer_box.disclamer_nuts"))
 }
 
-function add_sample_layer(){
-    var existing_dialog = document.querySelector(".sampleDialogBox");
-    if(existing_dialog) existing_dialog.remove();
+// Todo :
+//  prepare the list server side and store it for some time in order to avoid overusing the API
+//  (or store it client side to use it after a page reload)
+function prepare_extra_dataset_availables(){
+    _app.list_extrabasemaps = [];
+    request_data('GET', 'https://api.github.com/repos/riatelab/basemaps/contents/Countries')
+        .then(function(result){
+            let dir_list = JSON.parse(result.target.responseText),
+                name_link = dir_list.map(o => [o.name, o.url.replace('?ref=master', '') + '/geo']);
+            name_link.forEach(function(elem){
+                if(elem[0] == "Tunisie") return;
+                request_data('GET', elem[1])
+                    .then(function(d){
+                        let info_file = JSON.parse(d.target.responseText)[0];
+                        _app.list_extrabasemaps.push([elem[0], info_file.download_url]);
+                    });
+            });
+        });
+}
 
+function add_sample_layer(){
+    let existing_dialog = document.querySelector(".sampleDialogBox");
+    if(existing_dialog) existing_dialog.remove();
+    if(!_app.list_extrabasemaps){
+        prepare_extra_dataset_availables();
+    }
     var fields_type_sample = new Map([
         ['GrandParisMunicipalities', [{"name":"DEP","type":"category","has_duplicate":true},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category","has_duplicate":true},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category","has_duplicate":true},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
         ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id","not_number":true},{"name":"STATUT","type":"category","has_duplicate":true},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
@@ -1367,10 +1390,7 @@ function add_sample_layer(){
         ['brazil', [{"name":"ADMIN_NAME","type":"id","not_number":true},{"name":"Abbreviation","type":"id","not_number":true},{"name":"Capital","type":"id","not_number":true},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category","has_duplicate":true},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
         ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]],
         ['us_states', [{"name":"NAME","type":"id","not_number":true},{"name":"POPDENS1","type":"ratio"},{"name":"POPDENS2","type":"ratio"},{"name":"STUSPS","type":"id","not_number":true},{"name":"pop2015_est","type":"stock"}]]
-      ]);
-
-    var dialog_res = [],
-        selec,
+        ]),
         target_layers = [
            [i18next.t("app_page.sample_layer_box.target_layer"),""],
            [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
@@ -1379,29 +1399,63 @@ function add_sample_layer(){
            [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
            [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"],
            [i18next.t("app_page.sample_layer_box.us_states"), "us_states"]
-        ];
+        ], dialog_res = [], selec, selec_url, content;
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
         .then(function(confirmed){
             if(confirmed){
-                if(selec){
-                    add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
+                if(content.attr('id') == "panel1"){
+                    if(selec){
+                        add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
+                    }
+                } else if(content.attr('id') == "panel2"){
+                    request_data('GET', selec_url)
+                        .then(function(request_result){
+                            let filename = selec_url.split('/').filter(el => el.indexOf('.geojson') > -1);
+                            let content = request_result.target.responseText;
+                            console.log([filename[0], JSON.parse(content)]);
+                            let file = new File([content], filename, {type : 'application/geo+json'});
+                            console.log(file);
+                            handle_single_file(file, true);
+                            console.log('aa');
+                        });
                 }
             }
         });
 
-    var box_body = d3.select(".sampleDialogBox").select(".modal-body");
-    var title_tgt_layer = box_body.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+    function make_panel2(){
+        box_body.selectAll('div').remove();
+        content = box_body.append('div').attr('id', 'panel2');
+        var title_tgt_layer = content.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+        content.append('p')
+            .append('span')
+            .html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
+        var select_extrabasemap = content.append('p')
+            .insert('select').on('change', function(){ selec_url = this.value; });
+        for(let i=0, len_i = _app.list_extrabasemaps.length; i < len_i; i++){
+            select_extrabasemap.append('option').attr('value', _app.list_extrabasemaps[i][1]).html(_app.list_extrabasemaps[i][0]);
+        }
+    };
 
-    var t_layer_selec = box_body.append('p').html("").insert('select').attr('class', 'sample_target');
-    target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
-    t_layer_selec.on("change", function(){selec = this.value;});
+    function make_panel1(){
+      box_body.selectAll('div').remove();
+      content = box_body.append('div').attr('id', 'panel1');
+      var title_tgt_layer = content.append('h3').html(i18next.t("app_page.sample_layer_box.subtitle1"));
+
+      var t_layer_selec = content.append('p').html("").insert('select').attr('class', 'sample_target');
+      target_layers.forEach(layer_info => { t_layer_selec.append("option").html(layer_info[0]).attr("value", layer_info[1]); });
+      t_layer_selec.on("change", function(){selec = this.value;});
+      content.append('p')
+          .append('span')
+          .html(i18next.t('app_page.sample_layer_box.more_basemaps'))
+          .on('click', function(){
+              make_panel2();
+          });
+      if(selec) setSelected(t_layer_selec.node(), selec);
+    }
+    var box_body = d3.select(".sampleDialogBox").select(".modal-body")
     setTimeout(_ => { document.querySelector('select.sample_target').focus(); }, 500);
-    // if(_app.targeted_layer_added){
-    //     title_tgt_layer.style("color", "grey")
-    //             .html("<i>" + i18next.t("app_page.sample_layer_box.subtitle1") + "</i>");
-    //     t_layer_selec.node().disabled = true;
-    // }
+    make_panel1();
 }
 
 function add_simplified_land_layer(options = {}){
@@ -1539,6 +1593,22 @@ function handleClickAddRectangle(){
               new UserRectangle(rectangle_id, start_point, svg_map);
           });
   }
+
+function handleClickAddOther(type){
+    document.body.style.cursor = "not-allowed";
+    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    map.style("cursor", "crosshair")
+        .on("click", function(){
+            msg.dismiss();
+            map.style("cursor", "").on("click", null);
+            document.body.style.cursor = "";
+            if(type == 'north_arrow'){
+                northArrow.display(d3.event.layerX, d3.event.layerY);
+            } else if (type == 'scalebar'){
+                scaleBar.create(d3.event.layerX, d3.event.layerY);
+            }
+        });
+}
 
 function handleClickAddEllipse(){
     let start_point,
