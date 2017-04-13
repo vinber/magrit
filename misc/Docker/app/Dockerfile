@@ -24,8 +24,10 @@
 FROM ubuntu:latest
 MAINTAINER mth
 
-RUN apt-get update && apt-get install -y gcc libpython3.6-dev libopenblas-dev libopenblas-base \
-        python3.6 python3.6-dev nodejs python3-pip gdal-bin libgdal-dev \
+RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:fkrull/deadsnakes \
+		&& apt-get update \
+		&& apt-get install -y gcc libpython3.6-dev libopenblas-dev libopenblas-base \
+        python3.6 python3.6-dev nodejs gdal-bin libgdal-dev \
         libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev git wget \
 		libxslt1-dev libxml2 libxml2-dev libkml-dev \
@@ -66,12 +68,15 @@ ARG CACHEBUST=1
 RUN mkdir /home/app && cd /home/app && mkdir magrit
 COPY magrit /home/app/magrit
 
+RUN wget https://bootstrap.pypa.io/get-pip.py && python3.6 get-pip.py
+
 RUN cd /home/app/magrit/ \
-    && pip3 install -U -r requirements-dev.txt \
-    && python3 setup.py install
+    && pip3.6 install -U -r requirements-dev.txt \
+    && python3.6 setup.py install
 RUN cd /home/app && cp /usr/local/lib/python3.6/dist-packages/magrit_app-0.0.0-py3.6-linux-x86_64.egg/magrit_app/helpers/*.so /home/app/magrit/magrit_app/helpers/
 
 EXPOSE 9999
 
 CMD service redis-server start \
     && gunicorn "magrit_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/magrit/
+   
