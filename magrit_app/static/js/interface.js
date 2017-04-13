@@ -1423,7 +1423,11 @@ function add_sample_layer(){
             .on('click', function(){
                 make_panel1();
             });
-        if(selec_url) setSelected(select_extrabasemap.node(), selec_url[2]);
+        if(selec_url){
+            setSelected(select_extrabasemap.node(), selec_url[2]);
+        } else {
+            selec_url = [_app.list_extrabasemaps[0][0], _app.list_extrabasemaps[0][1], 0];
+        }
         content.select('#link1').on('click', function(){
                 window.open('http://www.naturalearthdata.com', "Natural Earth", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         });
