@@ -981,7 +981,7 @@ function display_categorical_box(data_layer, layer_name, field, cats){
         .on("click", function(){
             let lines = document.getElementsByClassName("typo_class");
             for(let i=0; i<lines.length; ++i){
-                lines[i].querySelector(".color_square").style.backgroundColor = Colors.names[Colors.random()];
+                lines[i].querySelector(".color_square").style.backgroundColor = randomColor();
             }
         });
 

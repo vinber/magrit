@@ -31,7 +31,7 @@ In addition, an explanation is provided below for an installation via Docker, wh
 (Using *Ubuntu 16.04*)  
 * **Packages provided by `apt`:**
 ```
-$ sudo apt-get install -y gcc libpython3.5-dev libopenblas-dev libopenblas-base python3.5 python3.5-dev nodejs python3-pip \
+$ sudo apt-get install -y gcc libpython3.6-dev libopenblas-dev libopenblas-base python3.6 python3.6-dev nodejs python3-pip \
         libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev git wget libxslt1-dev libxml2 libxml2-dev
 ```
@@ -54,8 +54,8 @@ $ sudo make install
 ```bash
 $ git clone https://github.com/riatelab/magrit
 $ cd magrit
-$ pip3.5 install -r requirements-dev.txt
-$ python3.5 setup.py build_ext --inplace
+$ pip3.6 install -r requirements-dev.txt
+$ python3.6 setup.py build_ext --inplace
 ```
 
 ##### Launching the redis service :
@@ -65,7 +65,7 @@ $ sudo service redis-server start
 
 ##### Launching the server application :
 ```bash
-$ python3.5 magrit_app/app.py -p 9999
+$ python3.6 magrit_app/app.py -p 9999
 DEBUG:aioredis:Creating tcp connection to ('0.0.0.0', 6379)
 INFO:magrit.main:serving on('0.0.0.0', 9999)
 ....
@@ -88,7 +88,7 @@ $ py.test tests/test.py
 $ sudo service redis-server start
 $ git clone https://github.com/riatelab/magrit
 $ cd magrit
-$ virtualenv venv -p /usr/bin/python3.5
+$ virtualenv venv -p /usr/bin/python3.6
 $ source venv/bin/activate
 (venv)$ pip install -r requirements-dev.txt
 (venv)$ python setup.py install

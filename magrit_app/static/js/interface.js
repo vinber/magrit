@@ -934,7 +934,7 @@ function add_layer_topojson(text, options = {}){
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
         if(joined_dataset.length != 0){
-            valid_join_check_display(false); console.log(section1.select(".s1"));
+            valid_join_check_display(false)
             section1.select(".s1").html("").on("click", null);
         }
 
@@ -965,7 +965,6 @@ function add_layer_topojson(text, options = {}){
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
 
         window._target_layer_file = topoObj;
-        console.log(topoObj)
         if(!skip_rescale){
             scale_to_lyr(lyr_name_to_add);
             center_map(lyr_name_to_add);

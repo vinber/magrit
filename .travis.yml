@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.5"
+  - "3.6"
 sudo: required
 dist: trusty
 services:
@@ -37,7 +37,7 @@ addons:
     sources:
       - deadsnakes
     packages:
-      - python3.5
+      - python3.6
       - libpython3.5-dev
       - libopenblas-base
       - libopenblas-dev

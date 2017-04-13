@@ -1526,7 +1526,7 @@ var fields_Anamorphose = {
                         current_layers[n_layer_name].rendered_field = field_name;
                         map.select("#" + _app.layer_to_id.get(n_layer_name))
                             .selectAll("path")
-                            .style("fill", function(){ return Colors.random(); })
+                            .style("fill", _ => randomColor())
                             .style("fill-opacity", 0.8)
                             .style("stroke", "black")
                             .style("stroke-opacity", 0.8);
@@ -2079,7 +2079,7 @@ function prepare_categories_array(layer_name, selected_field, col_map){
             col_map.set(value, ret_val ? [ret_val[0] + 1, [i].concat(ret_val[1])] : [1, [i]]);
         }
         col_map.forEach( (v,k) => {
-            cats.push({name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()]})
+            cats.push({name: k, display_name: k, nb_elem: v[0], color: randomColor()});
         });
         col_map = new Map();
         for(let i=0; i<cats.length; i++){

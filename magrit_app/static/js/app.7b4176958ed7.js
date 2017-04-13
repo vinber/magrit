@@ -2467,6 +2467,44 @@ var ColorsSelected = {
         return to_rgb ? hexToRgb(result_color) : result_color;
     }
 };
+
+// Copy-paste from https://gist.github.com/jdarling/06019d16cb5fd6795edf
+//   itself adapted from http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+var randomColor = function () {
+    var golden_ratio_conjugate = 0.618033988749895;
+    var h = Math.random();
+
+    var hslToRgb = function hslToRgb(h, s, l) {
+        var r, g, b;
+
+        if (s == 0) {
+            r = g = b = l; // achromatic
+        } else {
+            var hue2rgb = function hue2rgb(p, q, t) {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1 / 6) return p + (q - p) * 6 * t;
+                if (t < 1 / 2) return q;
+                if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+                return p;
+            };
+
+            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            var p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+        }
+
+        return '#' + Math.round(r * 255).toString(16) + Math.round(g * 255).toString(16) + Math.round(b * 255).toString(16);
+    };
+
+    return function () {
+        h += golden_ratio_conjugate;
+        h %= 1;
+        return hslToRgb(h, 0.5, 0.60);
+    };
+}();
 "use strict";
 
 function ContextMenu() {
@@ -3379,7 +3417,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
     newbox.insert("p").insert("button").attr("class", "button_st3").html(i18next.t("app_page.categorical_box.new_random_colors")).on("click", function () {
         var lines = document.getElementsByClassName("typo_class");
         for (var i = 0; i < lines.length; ++i) {
-            lines[i].querySelector(".color_square").style.backgroundColor = Colors.names[Colors.random()];
+            lines[i].querySelector(".color_square").style.backgroundColor = randomColor();
         }
     });
 
@@ -5464,8 +5502,8 @@ var fields_Anamorphose = {
                     current_layers[n_layer_name]['stroke-width-const'] = 0.8;
                     current_layers[n_layer_name].renderer = "Carto_doug";
                     current_layers[n_layer_name].rendered_field = field_name;
-                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill", function () {
-                        return Colors.random();
+                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill", function (_) {
+                        return randomColor();
                     }).style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
                     switch_accordion_section();
                 }, function (error) {
@@ -5977,7 +6015,7 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             col_map.set(value, ret_val ? [ret_val[0] + 1, [i].concat(ret_val[1])] : [1, [i]]);
         }
         col_map.forEach(function (v, k) {
-            cats.push({ name: k, display_name: k, nb_elem: v[0], color: Colors.names[Colors.random()] });
+            cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
         });
         col_map = new Map();
         for (var _i4 = 0; _i4 < cats.length; _i4++) {
@@ -9232,7 +9270,7 @@ function add_layer_topojson(text) {
         current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
 
         if (joined_dataset.length != 0) {
-            valid_join_check_display(false);console.log(section1.select(".s1"));
+            valid_join_check_display(false);
             section1.select(".s1").html("").on("click", null);
         }
 
@@ -9263,7 +9301,6 @@ function add_layer_topojson(text) {
         li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('');
 
         window._target_layer_file = topoObj;
-        console.log(topoObj);
         if (!skip_rescale) {
             scale_to_lyr(lyr_name_to_add);
             center_map(lyr_name_to_add);

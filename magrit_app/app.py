@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.5
+#!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 """
 magrit
@@ -98,20 +98,20 @@ async def index_handler(request):
 ##########################################################
 #### These functions are currently totaly insecure
 
-async def ogr_to_geojson(filepath, to_latlong=True):
-    # Todo : Rewrite using asyncio.subprocess methods
-    # Todo : rewrite using new gdal/ogr (> 2.0) bindings to avoid "exiting"
-    # ... python when using ogr2ogr
-    if to_latlong:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON",
-                         "-preserve_fid",
-                         "-t_srs", "EPSG:4326",
-                         "/dev/stdout", filepath], stdout=PIPE)
-    else:
-        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
-                         "/dev/stdout", filepath], stdout=PIPE)
-    stdout, _ = process.communicate()
-    return stdout
+#async def ogr_to_geojson2(filepath, to_latlong=True):
+#    # Todo : Rewrite using asyncio.subprocess methods
+#    # Todo : rewrite using new gdal/ogr (> 2.0) bindings to avoid "exiting"
+#    # ... python when using ogr2ogr
+#    if to_latlong:
+#        process = Popen(["ogr2ogr", "-f", "GeoJSON",
+#                         "-preserve_fid",
+#                         "-t_srs", "EPSG:4326",
+#                         "/dev/stdout", filepath], stdout=PIPE)
+#    else:
+#        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
+#                         "/dev/stdout", filepath], stdout=PIPE)
+#    stdout, _ = process.communicate()
+#    return stdout
 
 #async def geojson_to_topojson(filepath, layer_name, remove=True):
 #    # Todo : Rewrite using asyncio.subprocess methods
@@ -124,6 +124,14 @@ async def ogr_to_geojson(filepath, to_latlong=True):
 #    return ''.join([
 #        stdout[:31], layer_name, stdout[31 + stdout[31:].find('"'):]
 #        ]) if stdout else None
+
+async def ogr_to_geojson(filepath):
+    gdf = GeoDataFrame.from_file(filepath)
+    gdf.columns = [col.replace(' ', '_') for col in gdf.columns]
+    if gdf.crs:
+        return gdf.to_crs({'init': 'epsg:4326'}).to_json().encode()
+    else:
+        gdf.to_json().encode()
 
 async def geojson_to_topojson2(data, layer_name):
     # Todo : Rewrite using asyncio.subprocess methods
@@ -182,12 +190,9 @@ async def cache_input_topojson(request):
                 ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
                 ]))
         else:
-            res = await ogr_to_geojson(path, to_latlong=True)
+            res = await ogr_to_geojson(path)
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
-#            f_path = '/tmp/' + fp_name + ".geojson"
-#            with open(f_path, 'wb') as f:
-#                f.write(res)
             result = await geojson_to_topojson2(res, name)
             asyncio.ensure_future(
                 request.app['redis_conn'].set(
@@ -302,10 +307,7 @@ async def convert(request):
             ))
 
     if "shp" in datatype:
-        res = await ogr_to_geojson(shp_path, to_latlong=True)
-#        filepath2 = '/tmp/' + name.replace('.shp', '.prj')
-#        with open(filepath2, 'wb') as f:
-#            f.write(res)
+        res = await ogr_to_geojson(shp_path)
         result = await geojson_to_topojson2(res, layer_name)
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
@@ -346,14 +348,9 @@ async def convert(request):
 
             os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
-            res = await ogr_to_geojson(slots['shp'], to_latlong=True)
+            res = await ogr_to_geojson(slots['shp'])
             with open(slots['prj'], 'r') as f:
                 proj_info_str = f.read()
-#            filepath2 = slots['shp'].replace(
-#                "{}{}/".format(user_id, hashed_input), "").replace(
-#                '.shp', '.geojson')
-#            with open(filepath2, 'wb') as f:
-#                f.write(res)
             result = await geojson_to_topojson2(res, layer_name)
             if not result:
                 return web.Response(
@@ -373,14 +370,12 @@ async def convert(request):
                  or "gml" in name.lower() or "geojson" in name.lower()):
         with open(filepath, 'wb') as f:
             f.write(data)
-        res = await ogr_to_geojson(filepath, to_latlong=True)
+        res = await ogr_to_geojson(filepath)
         if len(res) == 0:
             return web.Response(text=json.dumps(
                 {'Error': 'Error reading the input file'}))
         if 'gml' in name.lower():
             os.remove(filepath.replace('gml', 'gfs'))
-#        with open(filepath, 'wb') as f:
-#            f.write(res)
         result = await geojson_to_topojson2(res, layer_name)
         if not result:
             return web.Response(
@@ -469,10 +464,8 @@ async def carto_doug(posted_data, user_id, app):
         return
 
     os.remove(tmp_path)
-#    savefile(tmp_path, result)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
     res = await geojson_to_topojson2(result, new_name)
-    # res = res.replace(tmp_part, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -545,10 +538,7 @@ async def links_map(posted_data, user_id, app):
         posted_data["field_fij"],
         n_field_name)
 
-#    tmp_part = get_name()
-#    tmp_name = ''.join(['/tmp/', tmp_part, '.geojson'])
     new_name = ''.join(["Links_", n_field_name])
-#    savefile(tmp_name, result_geojson)
     res = await geojson_to_topojson2(result_geojson, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
@@ -597,7 +587,6 @@ async def carto_gridded(posted_data, user_id, app):
     except (TopologicalError, ValueError) as err:
         return json.dumps({"Error": "geometry_error"})
 
-#    savefile(filenames['src_layer'], result_geojson.encode())
     new_name = '_'.join(['Gridded',
                          str(posted_data["cellsize"]),
                          n_field_name])
@@ -638,9 +627,6 @@ async def compute_olson(posted_data, user_id, app):
             .format(time.time()-st))
         return
 
-#    tmp_part = get_name()
-#    f_name = "".join(["/tmp/", tmp_part, ".geojson"])
-#    savefile(f_name, json.dumps(ref_layer_geojson).encode())
     new_name = "_".join(["Olson_carto", str(posted_data["field_name"])])
     res = await geojson_to_topojson2(json.dumps(ref_layer_geojson).encode(), new_name)
     hash_val = str(mmh3_hash(res))
@@ -663,10 +649,6 @@ async def receiv_layer(request):
     data = posted_data['geojson']
     h_val = mmh3_hash(data)
     f_name = '_'.join([user_id, str(h_val)])
-#    tmp_part = get_name()
-#    filepath = "".join(['/tmp/', tmp_part, '.geojson'])
-#    with open(filepath, 'w', encoding='utf-8') as f:
-#        f.write(data)
     res = await geojson_to_topojson2(data.encode(), layer_name)
     asyncio.ensure_future(
         request.app['redis_conn'].set(f_name, res, pexpire=86400000))
@@ -765,7 +747,6 @@ async def call_stewart(posted_data, user_id, app):
     os.remove(filenames['point_layer'])
     if filenames['mask_layer']:
         os.remove(filenames['mask_layer'])
-#    savefile(filenames['point_layer'], res)
     new_name = '_'.join(['StewartPot', n_field_name1])
     res = await geojson_to_topojson2(res, new_name)
     hash_val = str(mmh3_hash(res))
@@ -955,10 +936,7 @@ async def convert_csv_geo(request):
             ['{"key":', hash_val, ',"file":', result.decode(), '}']))
 
     res = await rawcsv_to_geo(data)
-#    filepath = "/tmp/"+ f_name +".geojson"
-#    with open(filepath, 'wb') as f:
-#        f.write(res.encode())
-    result = await geojson_to_topojson2(res, file_name)
+    result = await geojson_to_topojson2(res.encode(), file_name)
 
     if not result:
         return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))
@@ -1068,7 +1046,7 @@ async def get_extrabasemaps(request):
         return web.Response(text=list_url)
     else:
         return web.Response(text=list_url.decode())
-    
+
 
 def prepare_list_svg_symbols():
     symbols = os.listdir("static/img/svg_symbols/")
