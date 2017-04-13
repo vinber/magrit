@@ -1357,27 +1357,12 @@ function add_layout_layers(){
             .html(i18next.t("app_page.layout_layer_box.disclamer_nuts"))
 }
 
-// Todo :
-//  prepare the list server side and store it for some time in order to avoid overusing the API
-//  (or store it client side to use it after a page reload)
-function prepare_extra_dataset_availables(){
-    _app.list_extrabasemaps = [];
-    request_data('GET', 'https://api.github.com/repos/riatelab/basemaps/contents/Countries')
-        .then(function(result){
-            let dir_list = JSON.parse(result.target.responseText),
-                name_link = dir_list.map(o => [o.name, o.url.replace('?ref=master', '') + '/geo']);
-            name_link.forEach(function(elem){
-                if(elem[0] == "Tunisie") return;
-                request_data('GET', elem[1])
-                    .then(function(d){
-                        let info_file = JSON.parse(d.target.responseText)[0];
-                        _app.list_extrabasemaps.push([elem[0], info_file.download_url]);
-                    });
-            });
-        });
-}
-
 function add_sample_layer(){
+    function prepare_extra_dataset_availables(){
+        request_data('GET', '/extrabasemaps').then(result => {
+            _app.list_extrabasemaps = JSON.parse(result.target.responseText);
+        });
+    }
     let existing_dialog = document.querySelector(".sampleDialogBox");
     if(existing_dialog) existing_dialog.remove();
     if(!_app.list_extrabasemaps){
@@ -1407,11 +1392,9 @@ function add_sample_layer(){
                         add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
                     }
                 } else if(content.attr('id') == "panel2"){
-                    request_data('GET', selec_url)
-                        .then(function(request_result){
-                            let filename = selec_url.split('/').filter(el => el.indexOf('.geojson') > -1),
-                                content = request_result.target.responseText,
-                                file = new File([content], filename, {type : 'application/geo+json'});
+                    xhrequest('GET', selec_url[1], null, true)
+                        .then(request_result => {
+                            let file = new File([request_result], selec_url[0] + '.geojson', {type : 'application/geo+json'});
                             handle_single_file(file, true);
                         });
                 }
@@ -1426,9 +1409,12 @@ function add_sample_layer(){
             .append('span')
             .html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
         var select_extrabasemap = content.append('p')
-            .insert('select').on('change', function(){ selec_url = this.value; });
+            .insert('select').on('change', function(){
+                let id_elem = this.value;
+                selec_url = [_app.list_extrabasemaps[id_elem][0], _app.list_extrabasemaps[id_elem][1], id_elem];
+            });
         for(let i=0, len_i = _app.list_extrabasemaps.length; i < len_i; i++){
-            select_extrabasemap.append('option').attr('value', _app.list_extrabasemaps[i][1]).html(_app.list_extrabasemaps[i][0]);
+            select_extrabasemap.append('option').attr('value', i).html(_app.list_extrabasemaps[i][0]);
         }
         content.append('p')
             .styles({margin: 'auto', 'text-align': 'right', cursor: 'pointer'})
@@ -1437,7 +1423,7 @@ function add_sample_layer(){
             .on('click', function(){
                 make_panel1();
             });
-        if(selec_url) setSelected(select_extrabasemap.node(), selec_url);
+        if(selec_url) setSelected(select_extrabasemap.node(), selec_url[2]);
         content.select('#link1').on('click', function(){
                 window.open('http://www.naturalearthdata.com', "Natural Earth", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         });

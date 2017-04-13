@@ -45,7 +45,7 @@ from pyexcel import get_book
 import jinja2
 import aiohttp_jinja2
 from aioredis import create_pool, create_reconnecting_redis
-from aiohttp import web
+from aiohttp import web, ClientSession
 from aiohttp_session import get_session, session_middleware, redis_storage
 from multidict import MultiDict
 try:
@@ -1029,6 +1029,40 @@ async def convert_tabular(request):
     return web.Response(text=json.dumps(
         {"file": result, "name": name, "message": message}))
 
+async def fetch_list_extrabasemaps(loop):
+    url = 'https://api.github.com/repos/riatelab/basemaps/contents/'
+    async with ClientSession(loop=loop) as client:
+        async with client.get(url) as resp:
+            assert resp.status == 200
+            data = await resp.text()
+            data = json.loads(data)
+            tree_url = [d for d in data
+                        if d['name'] == "Countries"][0]['_links']['git']
+            base_url = 'https://raw.githubusercontent.com/riatelab/basemaps/master/Countries/'
+            async with client.get(tree_url + '?recursive=1') as resp:
+                assert resp.status == 200
+                list_elem = await resp.text()
+                list_elem = json.loads(list_elem)
+                name_url = []
+                for elem in list_elem['tree']:
+                    if '.geojson' in elem['path']:
+                        p = elem['path']
+                        url = base_url + p
+                        filename = p.split('/')[0]
+                        name_url.append((filename, url))
+                return name_url
+
+async def get_extrabasemaps(request):
+    list_url = await request.app['redis_conn'].get('extrabasemaps')
+    if not list_url:
+        list_url = await fetch_list_extrabasemaps(request.app.loop)
+        list_url = json.dumps(list_url)
+        asyncio.ensure_future(request.app['redis_conn'].set(
+                'extrabasemaps', list_url.encode(), pexpire=43200000))
+        return web.Response(text=list_url)
+    else:
+        return web.Response(text=list_url.decode())
+    
 
 def prepare_list_svg_symbols():
     symbols = os.listdir("static/img/svg_symbols/")
@@ -1082,6 +1116,7 @@ async def init(loop, port=None):
     # add_route('GET', '/layers', list_user_layers)
     add_route('POST', '/layers/add', receiv_layer)
     add_route('POST', '/layers/delete', remove_layer)
+    add_route('GET', '/extrabasemaps', get_extrabasemaps)
     add_route('GET', '/get_layer/{expr}', handler_exists_layer)
     add_route('POST', '/get_layer2', handler_exists_layer2)
     add_route('POST', '/compute/{function}', geo_compute)
