@@ -159,7 +159,7 @@ function setUpInterface()
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
+        .html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', function(){
             window.localStorage.removeItem("magrit_project");
             window.removeEventListener("beforeunload", beforeUnloadWindow);
@@ -169,21 +169,21 @@ function setUpInterface()
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
+        .html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
         .on('click', load_map_template);
 
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
-        .html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
+        .html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
         .on('click', save_map_template)
 
     const_options.append('button')
         .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom'})
         .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
+        .html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
         .on('click', function(){
-            window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
         });
 
     const_options.append("button")
@@ -191,7 +191,7 @@ function setUpInterface()
                 "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
                 "data-placement": "bottom"})
         .styles({cursor: "pointer", background: "transparent"})
-        .html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
+        .html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
         .on("click", function(){
             if(document.getElementById("menu_lang"))
                 document.getElementById("menu_lang").remove();
@@ -312,7 +312,7 @@ function setUpInterface()
         dv11 = dv1.append("div").style("width", "auto");
 
     dv11.append("img")
-        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
+        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
 
@@ -324,7 +324,7 @@ function setUpInterface()
 
     let dv12 = dv1.append("div");
     dv12.append("img")
-        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
+        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
         .style("cursor", "pointer")
         .on('click',  click_button_add_layer);
 
@@ -335,7 +335,7 @@ function setUpInterface()
 
     let div_sample = dv1.append("div").attr("id", "sample_zone");
     div_sample.append("img")
-        .attrs({"id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
+        .attrs({"id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
         .style("cursor", "pointer")
         .on('click', add_sample_layer);
 
@@ -381,13 +381,13 @@ function setUpInterface()
         .style("padding-top", "10px").html('');
 
     dv3.append("img")
-        .attrs({"src": "/static/img/b/addsample_t.png", class: 'i18n',
+        .attrs({"src": "static/img/b/addsample_t.png", class: 'i18n',
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
                 "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
         .on('click', add_layout_layers);
     dv3.append("img")
-        .attrs({"src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+        .attrs({"src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
                 "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
                 "data-placement": "right"})
         .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
@@ -647,18 +647,18 @@ function setUpInterface()
     let _i = dv4.append('li').styles({'text-align': 'center'});
     _i.insert('p').styles({clear: 'both', display: 'block', margin: 0}).attrs({class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features"});
     let p1 = _i.insert('p').style('display', 'inline-block');
-    p1.insert('span').insert('img').attrs({id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
-    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    p1.insert('span').insert('img').attrs({id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
-    p1.insert('span').insert('img').attrs({id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
-    p1.insert('span').insert('img').attrs({id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
-    p1.insert('span').insert('img').attrs({id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
+    p1.insert('span').insert('img').attrs({id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
+    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: 'static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    p1.insert('span').insert('img').attrs({id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
+    p1.insert('span').insert('img').attrs({id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    p1.insert('span').insert('img').attrs({id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
+    p1.insert('span').insert('img').attrs({id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
 
     let p2 = _i.insert('p').style('display', 'inline-block');
-    p2.insert('span').insert('img').attrs({id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
-    p2.insert('span').insert('img').attrs({id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
-    p2.insert('span').insert('img').attrs({id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
-    p2.insert('span').insert('img').attrs({id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
+    p2.insert('span').insert('img').attrs({id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule'}).on('click', () => add_layout_feature('graticule'));
+    p2.insert('span').insert('img').attrs({id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow'}).on('click', () => add_layout_feature('north_arrow'));
+    p2.insert('span').insert('img').attrs({id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
+    p2.insert('span').insert('img').attrs({id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
 
     let section5b = d3.select("#section5");
     let dv5b = section5b.append("div")
@@ -899,8 +899,8 @@ function setUpInterface()
         {id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-"},
         {id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+"},
         {id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i"},
-        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'},
-        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}
+        {id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>'},
+        {id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>'}
     ];
 
     let selec = lm.selectAll("input")
@@ -1027,7 +1027,7 @@ function bindTooltips(dataAttr="tooltip-title"){
 function make_eye_button(state){
     if(state == "open"){
         let eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "/static/img/b/eye_open.png");
+        eye_open.setAttribute("src", "static/img/b/eye_open.png");
         eye_open.setAttribute("class", "active_button i18n")
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
@@ -1036,7 +1036,7 @@ function make_eye_button(state){
         return eye_open;
     } else if (state == "closed"){
         let eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "/static/img/b/eye_closed.png");
+        eye_closed.setAttribute("src", "static/img/b/eye_closed.png");
         eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
@@ -1088,7 +1088,7 @@ function make_ico_choice(){
             .insert("img")
             .styles({margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none"})
             .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-                    src: ['/static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
+                    src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
             .on("click", function(){
                 let fill_menu = true;
                 // Do some clean-up related to the previously displayed options :
@@ -1215,35 +1215,35 @@ var _app = {
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
-const button_trash = ' <img src="/static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
-    button_legend = ' <img src="/static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
-    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
-    button_table = ' <img src="/static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
+const button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
+    button_legend = ' <img src="static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
+    button_zoom_fit = ' <img src="static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
+    button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
     button_type = new Map([
-        ["Point", '<img src="/static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'],
-        ["Line", '<img src="/static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'],
-        ["Polygon", '<img src="/static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']
+        ["Point", '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'],
+        ["Line", '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'],
+        ["Polygon", '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']
         ]);
 
 const button_result_type = new Map([
-        ["flow", '<img src="/static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'],
-        ["symbol", '<img src="/static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'],
-        ["grid", '<img src="/static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'],
-        ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'],
-        ["typo", '<img src="/static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'],
-        ["discont", '<img src="/static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'],
-        ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'],
-        ["label", '<img src="/static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'],
-        ["choro", '<img src="/static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'],
-        ["smooth", '<img src="/static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'],
-        ["prop", '<img src="/static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']
+        ["flow", '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'],
+        ["symbol", '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'],
+        ["grid", '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'],
+        ["propchoro", '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'],
+        ["typo", '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'],
+        ["discont", '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'],
+        ["cartogram", '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'],
+        ["label", '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'],
+        ["choro", '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'],
+        ["smooth", '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'],
+        ["prop", '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']
         ]);
 
-const eye_open0 = '<img src="/static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
+const eye_open0 = '<img src="static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
-const sys_run_button = '<img src="/static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
-      sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.png" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
+const sys_run_button = '<img src="static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
+      sys_run_button_t2 = '<img src="static/img/High-contrast-system-run.png" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
 
 // Shortcut to the name of the methods offered by geostats library:
 const discretiz_geostats_switch = new Map([
@@ -1303,7 +1303,7 @@ const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata'
           lng: lang,
           fallbackLng: existing_lang[0],
           backend: {
-            loadPath: "/static/locales/{{lng}}/translation.json"
+            loadPath: "static/locales/{{lng}}/translation.json"
           }
     }, (err, t) => {
         if(err)
@@ -1648,7 +1648,7 @@ function remove_ext_dataset_cleanup(){
     joined_dataset = new Array();
     dataset_name = undefined;
     let ext_dataset_img = document.getElementById("img_data_ext");
-    ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.png");
+    ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
     ext_dataset_img.setAttribute("alt", "Additional dataset");
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
@@ -1698,7 +1698,7 @@ function remove_layer_cleanup(name){
         //$("#input_geom").qtip("destroy");
         document.getElementById("remove_target").remove();
         d3.select("#img_in_geom")
-            .attrs({"id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
+            .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
             .on('click',  click_button_add_layer);
         d3.select("#input_geom")
             .attrs({'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom'})
@@ -1741,7 +1741,7 @@ function handle_click_hand(behavior){
     behavior = behavior && typeof behavior !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
     if(behavior == "lock"){
         hb.classed("locked", true);
-        hb.html('<img src="/static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
+        hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
         map.select('.brush').remove();
         document.getElementById("zoom_in").parentElement.style.display = "none";
         document.getElementById("zoom_out").parentElement.style.display = "none";
@@ -1749,7 +1749,7 @@ function handle_click_hand(behavior){
         zoom.on("zoom", function(){ let blocked = svg_map.__zoom; return function(){ this.__zoom = blocked; }}());
     } else {
         hb.classed("locked", false);
-        hb.html('<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
+        hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
         zoom.on("zoom", zoom_without_redraw);
         document.getElementById("zoom_in").parentElement.style.display = "";
         document.getElementById("zoom_out").parentElement.style.display = "";
@@ -2556,7 +2556,7 @@ function export_layer_geo(layer, type, projec, proj4str){
         ["GML", "zip"],
         ["KML", "kml"]]);
 
-    xhrequest("POST", '/get_layer2', formToSend, true)
+    xhrequest("POST", 'get_layer2', formToSend, true)
         .then( data => {
             if(data.indexOf('{"Error"') == 0 || data.length == 0){
                 let error_message;

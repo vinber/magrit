@@ -182,7 +182,7 @@ function handleOneByOneShp(files, target_layer_on_add){
         html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
               '<strong>Shapefile detected - Missing files to upload</strong><br>' +
               '<p><i>Drop missing files in this area</i></p><br>' +
-              '<image id="img_drop" src="/static/img/Ic_file_download_48px.svg"><br>' +
+              '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' +
               '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' +
               '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
         type: "info",
@@ -453,7 +453,7 @@ function convert_dataset(file){
         var ajaxData = new FormData();
         ajaxData.append("action", "submit_form");
         ajaxData.append('file[]', file);
-        xhrequest("POST", '/convert_tabular', ajaxData, true)
+        xhrequest("POST", 'convert_tabular', ajaxData, true)
             .then(data => {
                 data = JSON.parse(data);
                 dataset_name = data.name;
@@ -486,7 +486,7 @@ function handle_shapefile(files, target_layer_on_add){
     for(let j=0; j<files.length; j++){
         ajaxData.append('file['+j+']', files[j]);
     }
-    xhrequest("POST", '/convert_to_topojson', ajaxData, true)
+    xhrequest("POST", 'convert_to_topojson', ajaxData, true)
         .then(data => {
             add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
         }, error => {
@@ -501,7 +501,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         reader = new FileReader(),
         ajaxData = new FormData();
     ajaxData.append('file[]', f);
-    xhrequest("POST", '/cache_topojson/user', ajaxData, false)
+    xhrequest("POST", 'cache_topojson/user', ajaxData, false)
         .then(res => {
             let key = JSON.parse(res).key;
             reader.onloadend = function(){
@@ -521,7 +521,7 @@ function handle_reload_TopoJSON(text, param_add_func){
     var f = new Blob([text], {type: "application/json"});
     ajaxData.append('file[]', f);
 
-    return xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function(response){
+    return xhrequest("POST", 'cache_topojson/user', ajaxData, false).then(function(response){
         let res = response,
             key = JSON.parse(res).key,
             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
@@ -659,7 +659,7 @@ function update_menu_dataset(){
     d3.select(data_ext.parentElement.firstChild)
         .attrs({"id": "img_data_ext",
                "class": "user_panel",
-               "src": "/static/img/b/tabular.png",
+               "src": "static/img/b/tabular.png",
                "width": "26", "height": "26",
                "alt": "Additional dataset"});
 
@@ -670,7 +670,7 @@ function update_menu_dataset(){
                nb_features, ' ', i18next.t("app_page.common.feature", {count: +nb_features}), ' - ',
                field_names.length, ' ', i18next.t("app_page.common.field", {count: +field_names.length}),
                '</i></span>'].join(''));
-    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
     document.getElementById("remove_dataset").onclick = () => {
         remove_ext_dataset()
@@ -748,7 +748,7 @@ function add_csv_geom(file, name){
     var ajaxData = new FormData();
     ajaxData.append('filename', name);
     ajaxData.append('csv_file', file);
-    xhrequest("POST", '/convert_csv_geo', ajaxData, true)
+    xhrequest("POST", 'convert_csv_geo', ajaxData, true)
         .then( data => {
             dataset_name = undefined;
             add_layer_topojson(data, {target_layer_on_add: true});
@@ -956,7 +956,7 @@ function add_layer_topojson(text, options = {}){
                    nb_fields, ' ', i18next.t("app_page.common.field", {count: +nb_fields}),
                    '</i></span>'].join(''))
             .on("click", null);
-        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
+        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
         let remove_target = document.getElementById("remove_target");
         remove_target.onclick = () => { remove_layer(lyr_name_to_add); };
         remove_target.onmouseover = function(){ this.style.opacity = 1; };
@@ -1466,7 +1466,7 @@ function add_simplified_land_layer(options = {}){
     options.stroke_width = options.stroke_width || "0.3px";
     options.visible = options.visible === false ? false : true;
 
-    d3.json("/static/data_sample/World.topojson", function(error, json) {
+    d3.json("static/data_sample/World.topojson", function(error, json) {
         _app.layer_to_id.set('World', 'World');
         _app.id_to_layer.set('World', 'World');
         current_layers["World"] = {
@@ -1500,7 +1500,7 @@ function add_simplified_land_layer(options = {}){
 function add_sample_geojson(name, options){
     var formToSend = new FormData();
     formToSend.append("layer_name", name);
-    xhrequest("POST", '/cache_topojson/sample_data', formToSend, true)
+    xhrequest("POST", 'cache_topojson/sample_data', formToSend, true)
         .then( data => {
             add_layer_topojson(data, options);
         }).catch( err => {
@@ -1512,7 +1512,7 @@ function add_sample_geojson(name, options){
 function send_remove_server(layer_name){
     let formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
-    xhrequest("POST", '/layers/delete', formToSend, true)
+    xhrequest("POST", 'layers/delete', formToSend, true)
         .then(data => {
             data = JSON.parse(data);
             if(!data.code || data.code != "Ok")
@@ -1761,10 +1761,10 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    return xhrequest('GET', '/static/json/list_symbols.json', null)
+    return xhrequest('GET', 'static/json/list_symbols.json', null)
             .then( list_res => {
                list_res = JSON.parse(list_res);
-               return Promise.all(list_res.map(name => xhrequest('GET', "/static/img/svg_symbols/" + name, null)))
+               return Promise.all(list_res.map(name => xhrequest('GET', "static/img/svg_symbols/" + name, null)))
                 .then( symbols => {
                     for(let i=0; i<list_res.length; i++){
                         default_symbols.push([list_res[i], symbols[i]]);

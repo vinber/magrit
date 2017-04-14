@@ -58,9 +58,9 @@ def build_js_file(use_minified, _id):
 
     with open('../../templates/modules.html', 'r') as f:
         lines = f.readlines()
-    ixs = [ix for ix, ln in enumerate(lines) if 'src="/static/js/app.' in ln or 'static/css/style.' in ln]
+    ixs = [ix for ix, ln in enumerate(lines) if 'src="static/js/app.' in ln or 'static/css/style.' in ln]
     lines[ixs[0]] = '\t<link href="static/css/style.{}.min.css" rel="stylesheet"  type="text/css">\n'.format(_id)
-    lines[ixs[1]] = '\t<script  src="/static/js/{}"></script>\n'.format(name)
+    lines[ixs[1]] = '\t<script  src="static/js/{}"></script>\n'.format(name)
     with open('../../templates/modules.html', 'w') as f:
         f.writelines(lines)
     os.remove('.babelrc')

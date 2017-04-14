@@ -142,23 +142,23 @@ function setUpInterface() {
 
     var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
         window.localStorage.removeItem("magrit_project");
         window.removeEventListener("beforeunload", beforeUnloadWindow);
         location.reload();
     });
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="/static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="/static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
-        window.open('/static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+        window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
     });
 
     const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
         "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="/static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+        "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
         if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
         var click_func = function click_func(window_name, target_url) {
             window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
@@ -266,17 +266,17 @@ function setUpInterface() {
     var dv1 = section1.append("div"),
         dv11 = dv1.append("div").style("width", "auto");
 
-    dv11.append("img").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "26", "height": "26", "alt": "Geometry layer" }).style("cursor", "pointer").on('click', click_button_add_layer);
+    dv11.append("img").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26", "alt": "Geometry layer" }).style("cursor", "pointer").on('click', click_button_add_layer);
 
     dv11.append("p").attrs({ id: "input_geom", class: "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_geom").on('click', click_button_add_layer);
 
     var dv12 = dv1.append("div");
-    dv12.append("img").attrs({ "id": "img_data_ext", "class": "user_panel", "src": "/static/img/b/addtabular.png", "width": "26", "height": "26", "alt": "Additional dataset" }).style("cursor", "pointer").on('click', click_button_add_layer);
+    dv12.append("img").attrs({ "id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26", "alt": "Additional dataset" }).style("cursor", "pointer").on('click', click_button_add_layer);
 
     dv12.append("p").attrs({ "id": "data_ext", "class": "user_panel i18n", "data-i18n": "[html]app_page.section1.add_ext_dataset" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).on('click', click_button_add_layer);
 
     var div_sample = dv1.append("div").attr("id", "sample_zone");
-    div_sample.append("img").attrs({ "id": "sample_button", "class": "user_panel", "src": "/static/img/b/addsample.png", "width": "26", "height": "26", "alt": "Sample layers" }).style("cursor", "pointer").on('click', add_sample_layer);
+    div_sample.append("img").attrs({ "id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26", "alt": "Sample layers" }).style("cursor", "pointer").on('click', add_sample_layer);
 
     div_sample.append("span").attrs({ "id": "sample_link", "class": "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_sample_data").on('click', add_sample_layer);
 
@@ -303,10 +303,10 @@ function setUpInterface() {
 
     var dv3 = section3.append("div").style("padding-top", "10px").html('');
 
-    dv3.append("img").attrs({ "src": "/static/img/b/addsample_t.png", class: 'i18n',
+    dv3.append("img").attrs({ "src": "static/img/b/addsample_t.png", class: 'i18n',
         "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
         "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attrs({ "src": "/static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+    dv3.append("img").attrs({ "src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
         "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
         "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
 
@@ -512,34 +512,34 @@ function setUpInterface() {
     var _i = dv4.append('li').styles({ 'text-align': 'center' });
     _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
     var p1 = _i.insert('p').style('display', 'inline-block');
-    p1.insert('span').insert('img').attrs({ id: 'btn_arrow', src: '/static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
+    p1.insert('span').insert('img').attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
         return add_layout_feature('arrow');
     });
-    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: '/static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: '/static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
+    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: 'static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+    p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
         return add_layout_feature('text_annot');
     });
-    p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: '/static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
+    p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
         return add_layout_feature('symbol');
     });
-    p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: '/static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
+    p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
         return add_layout_feature('rectangle');
     });
-    p1.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: '/static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
+    p1.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
         return add_layout_feature('ellipse');
     });
 
     var p2 = _i.insert('p').style('display', 'inline-block');
-    p2.insert('span').insert('img').attrs({ id: 'btn_graticule', src: '/static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
+    p2.insert('span').insert('img').attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
         return add_layout_feature('graticule');
     });
-    p2.insert('span').insert('img').attrs({ id: 'btn_north', src: '/static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
+    p2.insert('span').insert('img').attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
         return add_layout_feature('north_arrow');
     });
-    p2.insert('span').insert('img').attrs({ id: 'btn_scale', src: '/static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
+    p2.insert('span').insert('img').attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
         return add_layout_feature('scale');
     });
-    p2.insert('span').insert('img').attrs({ id: 'btn_sphere', src: '/static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
+    p2.insert('span').insert('img').attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
         return add_layout_feature('sphere');
     });
 
@@ -724,7 +724,7 @@ function setUpInterface() {
     // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
     var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
 
-    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="/static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
+    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
 
     var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
         return {
@@ -845,7 +845,7 @@ function bindTooltips() {
 function make_eye_button(state) {
     if (state == "open") {
         var eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "/static/img/b/eye_open.png");
+        eye_open.setAttribute("src", "static/img/b/eye_open.png");
         eye_open.setAttribute("class", "active_button i18n");
         eye_open.setAttribute("id", "eye_open");
         eye_open.setAttribute("width", 17);
@@ -854,7 +854,7 @@ function make_eye_button(state) {
         return eye_open;
     } else if (state == "closed") {
         var eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "/static/img/b/eye_closed.png");
+        eye_closed.setAttribute("src", "static/img/b/eye_closed.png");
         eye_closed.setAttribute("class", "active_button i18n");
         eye_closed.setAttribute("id", "eye_closed");
         eye_closed.setAttribute("width", 17);
@@ -891,7 +891,7 @@ function make_ico_choice() {
             func_desc = get_menu_option(func_name).desc,
             margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
         function_panel.insert("img").styles({ margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none" }).attrs({ class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-            src: ['/static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on("click", function () {
+            src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on("click", function () {
             var fill_menu = true;
             // Do some clean-up related to the previously displayed options :
             if (window.fields_handler) {
@@ -1009,19 +1009,19 @@ var _app = {
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
-var button_trash = ' <img src="/static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
-    button_legend = ' <img src="/static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
-    button_zoom_fit = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
-    button_table = ' <img src="/static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
-    button_type = new Map([["Point", '<img src="/static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'], ["Line", '<img src="/static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'], ["Polygon", '<img src="/static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']]);
+var button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
+    button_legend = ' <img src="static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
+    button_zoom_fit = ' <img src="static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
+    button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
+    button_type = new Map([["Point", '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'], ["Line", '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'], ["Polygon", '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']]);
 
-var button_result_type = new Map([["flow", '<img src="/static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ["symbol", '<img src="/static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ["grid", '<img src="/static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ["propchoro", '<img src="/static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ["typo", '<img src="/static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ["discont", '<img src="/static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ["cartogram", '<img src="/static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ["label", '<img src="/static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ["choro", '<img src="/static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ["smooth", '<img src="/static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ["prop", '<img src="/static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']]);
+var button_result_type = new Map([["flow", '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ["symbol", '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ["grid", '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ["propchoro", '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ["typo", '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ["discont", '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ["cartogram", '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ["label", '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ["choro", '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ["smooth", '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ["prop", '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']]);
 
-var eye_open0 = '<img src="/static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
+var eye_open0 = '<img src="static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
 // Reference to the sys run button already in two requested sizes are they are called many times :
-var sys_run_button = '<img src="/static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
-    sys_run_button_t2 = '<img src="/static/img/High-contrast-system-run.png" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
+var sys_run_button = '<img src="static/img/High-contrast-system-run.png" width="22" height="22" style="vertical-align: inherit;" alt="submit"/>',
+    sys_run_button_t2 = '<img src="static/img/High-contrast-system-run.png" class="style_target_layer" width="18" height="18" alt="Layer_rendering" style="float:right;"/>';
 
 // Shortcut to the name of the methods offered by geostats library:
 var discretiz_geostats_switch = new Map([["jenks", "getJenks"], ["equal_interval", "getEqInterval"],
@@ -1054,7 +1054,7 @@ var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: "/static/locales/{{lng}}/translation.json"
+            loadPath: "static/locales/{{lng}}/translation.json"
         }
     }, function (err, t) {
         if (err) throw err;else {
@@ -1398,7 +1398,7 @@ function remove_ext_dataset_cleanup() {
     joined_dataset = new Array();
     dataset_name = undefined;
     var ext_dataset_img = document.getElementById("img_data_ext");
-    ext_dataset_img.setAttribute("src", "/static/img/b/addtabular.png");
+    ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
     ext_dataset_img.setAttribute("alt", "Additional dataset");
     ext_dataset_img.style.cursor = "pointer";
     ext_dataset_img.onclick = click_button_add_layer;
@@ -1443,7 +1443,7 @@ function remove_layer_cleanup(name) {
         // Updating the top of the menu (section 1) :
         //$("#input_geom").qtip("destroy");
         document.getElementById("remove_target").remove();
-        d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "/static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
+        d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
         d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
         // Unfiling the fields related to the targeted functionnality:
         if (_app.current_functionnality) {
@@ -1482,7 +1482,7 @@ function handle_click_hand(behavior) {
     behavior = behavior && (typeof behavior === "undefined" ? "undefined" : _typeof(behavior)) !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
     if (behavior == "lock") {
         hb.classed("locked", true);
-        hb.html('<img src="/static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
+        hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
         map.select('.brush').remove();
         document.getElementById("zoom_in").parentElement.style.display = "none";
         document.getElementById("zoom_out").parentElement.style.display = "none";
@@ -1494,7 +1494,7 @@ function handle_click_hand(behavior) {
         }());
     } else {
         hb.classed("locked", false);
-        hb.html('<img src="/static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
+        hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
         zoom.on("zoom", zoom_without_redraw);
         document.getElementById("zoom_in").parentElement.style.display = "";
         document.getElementById("zoom_out").parentElement.style.display = "";
@@ -2227,7 +2227,7 @@ function export_layer_geo(layer, type, projec, proj4str) {
 
     var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
-    xhrequest("POST", '/get_layer2', formToSend, true).then(function (data) {
+    xhrequest("POST", 'get_layer2', formToSend, true).then(function (data) {
         if (data.indexOf('{"Error"') == 0 || data.length == 0) {
             var error_message = void 0;
             if (data.indexOf('{"Error"') < 5) {
@@ -3373,7 +3373,6 @@ function fetch_categorical_colors() {
 }
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
-    console.log(data_layer, layer_name, field, cats);
     var nb_features = current_layers[layer_name].n_features,
         nb_class = cats.length;
 
@@ -8557,7 +8556,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
 
     swal({
         title: "",
-        html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' + '<strong>Shapefile detected - Missing files to upload</strong><br>' + '<p><i>Drop missing files in this area</i></p><br>' + '<image id="img_drop" src="/static/img/Ic_file_download_48px.svg"><br>' + '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' + '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
+        html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' + '<strong>Shapefile detected - Missing files to upload</strong><br>' + '<p><i>Drop missing files in this area</i></p><br>' + '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' + '<p id="f_shp" class="mini_button_none">.shp</p>' + '<p id="f_shx" class="mini_button_none">.shx</p>' + '<p id="f_dbf" class="mini_button_none">.dbf</p>' + '<p id="f_prj" class="mini_button_none">.prj</p>' + '</div>',
         type: "info",
         showCancelButton: true,
         showCloseButton: false,
@@ -8803,7 +8802,7 @@ function convert_dataset(file) {
         var ajaxData = new FormData();
         ajaxData.append("action", "submit_form");
         ajaxData.append('file[]', file);
-        xhrequest("POST", '/convert_tabular', ajaxData, true).then(function (data) {
+        xhrequest("POST", 'convert_tabular', ajaxData, true).then(function (data) {
             data = JSON.parse(data);
             dataset_name = data.name;
             swal({ title: "",
@@ -8839,7 +8838,7 @@ function handle_shapefile(files, target_layer_on_add) {
     for (var j = 0; j < files.length; j++) {
         ajaxData.append('file[' + j + ']', files[j]);
     }
-    xhrequest("POST", '/convert_to_topojson', ajaxData, true).then(function (data) {
+    xhrequest("POST", 'convert_to_topojson', ajaxData, true).then(function (data) {
         add_layer_topojson(data, { target_layer_on_add: target_layer_on_add });
     }, function (error) {
         display_error_during_computation();
@@ -8852,7 +8851,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         reader = new FileReader(),
         ajaxData = new FormData();
     ajaxData.append('file[]', f);
-    xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function (res) {
+    xhrequest("POST", 'cache_topojson/user', ajaxData, false).then(function (res) {
         var key = JSON.parse(res).key;
         reader.onloadend = function () {
             var text = reader.result;
@@ -8870,7 +8869,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
     var f = new Blob([text], { type: "application/json" });
     ajaxData.append('file[]', f);
 
-    return xhrequest("POST", '/cache_topojson/user', ajaxData, false).then(function (response) {
+    return xhrequest("POST", 'cache_topojson/user', ajaxData, false).then(function (response) {
         var res = response,
             key = JSON.parse(res).key,
             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
@@ -9008,14 +9007,14 @@ function update_menu_dataset() {
 
     d3.select(data_ext.parentElement.firstChild).attrs({ "id": "img_data_ext",
         "class": "user_panel",
-        "src": "/static/img/b/tabular.png",
+        "src": "static/img/b/tabular.png",
         "width": "26", "height": "26",
         "alt": "Additional dataset" });
 
     data_ext.classList.remove('i18n');
     data_ext.removeAttribute('data-i18n');
     d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t("app_page.common.feature", { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t("app_page.common.field", { count: +field_names.length }), '</i></span>'].join(''));
-    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+    data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
     document.getElementById("remove_dataset").onclick = function () {
         remove_ext_dataset();
@@ -9093,7 +9092,7 @@ function add_csv_geom(file, name) {
     var ajaxData = new FormData();
     ajaxData.append('filename', name);
     ajaxData.append('csv_file', file);
-    xhrequest("POST", '/convert_csv_geo', ajaxData, true).then(function (data) {
+    xhrequest("POST", 'convert_csv_geo', ajaxData, true).then(function (data) {
         dataset_name = undefined;
         add_layer_topojson(data, { target_layer_on_add: true });
     }, function (error) {
@@ -9286,7 +9285,7 @@ function add_layer_topojson(text) {
         _input_geom.classList.remove('i18n');
         _input_geom.removeAttribute('data-i18n');
         d3.select(_input_geom).attrs({ "src": _button, "width": "26", "height": "26" }).html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">', nb_ft, ' ', i18next.t("app_page.common.feature", { count: +nb_ft }), ' - ', _nb_fields, ' ', i18next.t("app_page.common.field", { count: +_nb_fields }), '</i></span>'].join('')).on("click", null);
-        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="/static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
+        _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
         var remove_target = document.getElementById("remove_target");
         remove_target.onclick = function () {
             remove_layer(lyr_name_to_add);
@@ -9757,7 +9756,7 @@ function add_simplified_land_layer() {
     options.stroke_width = options.stroke_width || "0.3px";
     options.visible = options.visible === false ? false : true;
 
-    d3.json("/static/data_sample/World.topojson", function (error, json) {
+    d3.json("static/data_sample/World.topojson", function (error, json) {
         _app.layer_to_id.set('World', 'World');
         _app.id_to_layer.set('World', 'World');
         current_layers["World"] = {
@@ -9783,7 +9782,7 @@ function add_simplified_land_layer() {
 function add_sample_geojson(name, options) {
     var formToSend = new FormData();
     formToSend.append("layer_name", name);
-    xhrequest("POST", '/cache_topojson/sample_data', formToSend, true).then(function (data) {
+    xhrequest("POST", 'cache_topojson/sample_data', formToSend, true).then(function (data) {
         add_layer_topojson(data, options);
     }).catch(function (err) {
         display_error_during_computation();
@@ -9794,7 +9793,7 @@ function add_sample_geojson(name, options) {
 function send_remove_server(layer_name) {
     var formToSend = new FormData();
     formToSend.append("layer_name", current_layers[layer_name].key_name);
-    xhrequest("POST", '/layers/delete', formToSend, true).then(function (data) {
+    xhrequest("POST", 'layers/delete', formToSend, true).then(function (data) {
         data = JSON.parse(data);
         if (!data.code || data.code != "Ok") console.log(data);
     }).catch(function (err) {
@@ -10029,10 +10028,10 @@ function handleClickAddArrow() {
 }
 
 function prepare_available_symbols() {
-    return xhrequest('GET', '/static/json/list_symbols.json', null).then(function (list_res) {
+    return xhrequest('GET', 'static/json/list_symbols.json', null).then(function (list_res) {
         list_res = JSON.parse(list_res);
         return Promise.all(list_res.map(function (name) {
-            return xhrequest('GET', "/static/img/svg_symbols/" + name, null);
+            return xhrequest('GET', "static/img/svg_symbols/" + name, null);
         })).then(function (symbols) {
             for (var i = 0; i < list_res.length; i++) {
                 default_symbols.push([list_res[i], symbols[i]]);
