@@ -133,13 +133,11 @@ const createBoxProj4 = function(){
 						 allowEscapeKey: false
 						}).then( () => { null; },
 											() => { null; });
-				console.log(e);
 				return;
 			}
 			change_projection_4(_p);
 			_app.last_projection = proj_str;
 			addLastProjectionSelect('def_proj4');
-			// }
 	};
   container.querySelector(".btn_cancel").onclick = clean_up_box;
   container.querySelector("#xclose").onclick = clean_up_box;

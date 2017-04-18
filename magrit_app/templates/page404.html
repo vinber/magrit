@@ -17,7 +17,6 @@
     <script src="/static/js/lib/loc-i18next.min.js"></script>
     <script src="/static/js/lib/i18nextXHRBackend.min.js"></script>
     <script src="/static/js/lib/bootstrap.min.js"></script>
-    <!-- <script src="/static/js/lib/cookies.min.js"></script> -->
 </head>
 <style>
 @import url(http://fonts.googleapis.com/css?family=Merriweather);
@@ -52,6 +51,7 @@ html, body {
               <ul class="dropdown-menu" role="menu">
                   <li><a id="lang1"></a></li>
                   <li><a id="lang2"></a></li>
+                  <li><a id="lang3"></a></li>
               </ul>
           </div>
       <div class="btn-group" style="float:right;margin:10px 15px 0 15px;";>
@@ -82,7 +82,7 @@ html, body {
 <script>
 //i18n initialization :
 (function(){
-    var existing_lang = ["en", "fr"];
+    var existing_lang = ["en", "es", "fr"];
     let lang = window.navigator.language.split('-')[0];
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
@@ -107,14 +107,18 @@ html, body {
 
 function prepare_lang_buttons(){
     let current_lang =  i18next.language,
-        other_lang = current_lang == "en" ? "fr" : "en";
+        other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+
     document.getElementById("lang_current").innerHTML = current_lang;
     let button_lang1 = document.getElementById("lang1");
     button_lang1.innerHTML = current_lang;
     button_lang1.onclick = handle_change_lang;
     let button_lang2 = document.getElementById("lang2");
-    button_lang2.innerHTML = other_lang;
+    button_lang2.innerHTML = other_langs[0];
     button_lang2.onclick = handle_change_lang;
+    let button_lang3 = document.getElementById("lang3");
+    button_lang3.innerHTML = other_langs[1];
+    button_lang3.onclick = handle_change_lang;
 }
 
 function bind_buttons(){
@@ -136,10 +140,12 @@ function handle_change_lang(){
 }
 
 // Actually change the content of the page :
-function change_lang(new_lang, old_lang){
+function change_lang(new_lang){
     i18next.changeLanguage(new_lang, () => { localize(".i18n");});
+    let other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
     document.getElementById("lang_current").innerHTML = new_lang;
-    document.getElementById("lang2").innerHTML = old_lang;
+    document.getElementById("lang3").innerHTML = other_langs[0];
+    document.getElementById("lang2").innerHTML = other_langs[1];
     document.getElementById("lang1").innerHTML = new_lang;
 }
 

@@ -19,6 +19,7 @@ Function.prototype.memoized = function () {
         this._memo.values.set(key, JSON.stringify(cache_value));
         this._memo.stack.push(key);
         if (this._memo.stack.length >= this._memo.max_size) {
+            t;
             var old_key = this._memo.stack.shift();
             this._memo.values.delete(old_key);
         }
@@ -2622,13 +2623,13 @@ function ContextMenu() {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-function getBreaks(values, type, nb_class) {
+function getBreaks(values, type, n_class) {
     var _values = values.filter(function (v) {
         return v;
     }),
         no_data = values.length - _values.length,
-        serie = new geostats(_values),
-        nb_class = +nb_class || getOptNbClass(_values.length),
+        nb_class = +n_class || getOptNbClass(_values.length);
+    var serie = new geostats(_values),
         breaks = [];
     if (type === "Q6") {
         var tmp = getBreaksQ6(serie.sorted(), serie.precision);
@@ -2688,7 +2689,6 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
     return [nb_class, type, breaks, color_array, colors_map, no_data_color];
 }.memoize();
 
-// Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
 var display_discretization = function display_discretization(layer_name, field_name, nb_class, options) {
     var make_no_data_section = function make_no_data_section() {
         var section = d3.select("#color_div").append("div").attr("id", "no_data_section").append("p").html(i18next.t("disc_box.withnodata", { count: +no_data }));
@@ -2832,10 +2832,10 @@ var display_discretization = function display_discretization(layer_name, field_n
     };
 
     var update_overlay_elements = function update_overlay_elements() {
-        var x_mean = x(serie.mean()),
+        var x_mean = x(mean_serie),
             x_med = x(serie.median()),
-            x_std_left = x(serie.mean() - serie.stddev()),
-            x_std_right = x(serie.mean() + serie.stddev());
+            x_std_left = x(mean_serie - stddev_serie),
+            x_std_right = x(mean_serie + stddev_serie);
         line_mean.transition().attrs({ x1: x_mean, x2: x_mean });
         txt_mean.transition().attr('x', x_mean);
         line_median.transition().attrs({ x1: x_med, x2: x_med });
@@ -2849,20 +2849,17 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var make_overlay_elements = function make_overlay_elements() {
 
-        var mean_val = serie.mean(),
-            stddev = serie.stddev();
+        line_mean = overlay_svg.append("line").attr("class", "line_mean").attr("x1", x(mean_serie)).attr("y1", 10).attr("x2", x(mean_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "blue", fill: "none" }).classed("active", false);
 
-        line_mean = overlay_svg.append("line").attr("class", "line_mean").attr("x1", x(mean_val)).attr("y1", 10).attr("x2", x(mean_val)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "blue", fill: "none" }).classed("active", false);
-
-        txt_mean = overlay_svg.append("text").attr("y", 0).attr("dy", "0.75em").attr("x", x(mean_val)).style("fill", "none").attr("text-anchor", "middle").text(i18next.t("disc_box.mean"));
+        txt_mean = overlay_svg.append("text").attr("y", 0).attr("dy", "0.75em").attr("x", x(mean_serie)).style("fill", "none").attr("text-anchor", "middle").text(i18next.t("disc_box.mean"));
 
         line_median = overlay_svg.append("line").attr("class", "line_med").attr("x1", x(serie.median())).attr("y1", 10).attr("x2", x(serie.median())).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "darkgreen", fill: "none" }).classed("active", false);
 
         txt_median = overlay_svg.append("text").attr("y", 0).attr("dy", "0.75em").attr("x", x(serie.median())).style("fill", "none").attr("text-anchor", "middle").text(i18next.t("disc_box.median"));
 
-        line_std_left = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_val - stddev)).attr("y1", 10).attr("x2", x(mean_val - stddev)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
+        line_std_left = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_serie - stddev_serie)).attr("y1", 10).attr("x2", x(mean_serie - stddev_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
 
-        line_std_right = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_val + stddev)).attr("y1", 10).attr("x2", x(mean_val + stddev)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
+        line_std_right = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_serie + stddev_serie)).attr("y1", 10).attr("x2", x(mean_serie + stddev_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
 
         rug_plot = overlay_svg.append('g').style('display', 'none');
         rug_plot.selectAll('.indiv').data(values.map(function (i) {
@@ -2887,8 +2884,8 @@ var display_discretization = function display_discretization(layer_name, field_n
                 var tmp = getBreaksQ6(values, serie.precision);
                 // stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
-                breaks[0] = serie.min();
-                breaks[6] = serie.max();
+                breaks[0] = min_serie;
+                breaks[6] = max_serie;
                 serie.setClassManually(breaks);
                 serie.doCount();
                 stock_class = Array.prototype.slice.call(serie.counter);
@@ -2907,15 +2904,15 @@ var display_discretization = function display_discretization(layer_name, field_n
                 nb_class = tmp.breaks.length - 1;
                 update_nb_class(nb_class);
 
-                if (breaks[0] > serie.min()) breaks[0] = serie.min();
-                if (breaks[nb_class] < serie.max()) breaks[nb_class] = serie.max();
+                if (breaks[0] > min_serie) breaks[0] = min_serie;
+                if (breaks[nb_class] < max_serie) breaks[nb_class] = max_serie;
 
                 var breaks_serie = breaks.slice();
-                if (breaks_serie[0] < serie.min()) {
-                    breaks_serie[0] = serie.min();
+                if (breaks_serie[0] < min_serie) {
+                    breaks_serie[0] = min_serie;
                 }
-                if (breaks_serie[nb_class] > serie.max()) {
-                    breaks_serie[nb_class] = serie.max();
+                if (breaks_serie[nb_class] > max_serie) {
+                    breaks_serie[nb_class] = max_serie;
                 }
                 serie.setClassManually(breaks_serie);
             } else {
@@ -3029,10 +3026,14 @@ var display_discretization = function display_discretization(layer_name, field_n
     var modal_box = make_dialog_container("discretiz_charts", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''), "discretiz_charts_dialog");
 
     var newBox = d3.select("#discretiz_charts").select(".modal-body");
-
-    if (result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];else if (user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];else {
+    var db_data = void 0;
+    if (result_data.hasOwnProperty(layer_name)) {
+        db_data = result_data[layer_name];
+    } else if (user_data.hasOwnProperty(layer_name)) {
+        db_data = user_data[layer_name];
+    } else {
         var layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
-        var db_data = Array.prototype.map.call(layer.children, function (d) {
+        db_data = Array.prototype.map.call(layer.children, function (d) {
             return d.__data__.properties;
         });
     }
@@ -3040,7 +3041,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         nb_values = db_data.length,
         indexes = [],
         values = [],
-        no_data;
+        no_data = void 0;
 
     var type = options.type;
 
@@ -3067,16 +3068,22 @@ var display_discretization = function display_discretization(layer_name, field_n
         std_dev_params = options.extra_options && options.extra_options.role_mean != undefined ? options.extra_options : { role_mean: 'center', share: 1 };
 
     if (serie.variance() == 0 && serie.stddev() == 0) {
-        var serie = new geostats(values);
+        serie = new geostats(values);
     }
 
+    var min_serie = serie.min();
+    var max_serie = serie.max();
+    var mean_serie = serie.mean();
+    var stddev_serie = serie.stddev();
+
     values = serie.sorted();
+
     var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"], [i18next.t("app_page.common.stddev_f"), "stddev_f"], [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
 
     if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-    var precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
+    var precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
     var formatCount = d3.format(precision_axis);
     var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").insert("select").attr("class", "params").on("change", function () {
         type = this.value;
@@ -3107,7 +3114,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
     input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
         var val = this.value;
-        if (val == 0 || val * serie.stddev() > serie.max() - serie.min() || val * serie.stddev() * 21 < serie.max() - serie.min()) {
+        if (val == 0 || val * stddev_serie > max_serie - min_serie || val * stddev_serie * 21 < max_serie - min_serie) {
             // If the new value is too big or too small:
             this.value = std_dev_params.share;
             return;
@@ -3208,19 +3215,18 @@ var display_discretization = function display_discretization(layer_name, field_n
 
     var svg_histo = div_svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var x = d3.scaleLinear().domain([serie.min(), serie.max()]).range([0, svg_w]);
+    var x = d3.scaleLinear().domain([min_serie, max_serie]).range([0, svg_w]);
 
     var y = d3.scaleLinear().range([svg_h, 0]);
 
     var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
-        line_mean,
-        line_std_right,
-        line_std_left,
-        line_median,
-        txt_median,
-        txt_mean,
-        rug_plot,
-        x;
+        line_mean = void 0,
+        line_std_right = void 0,
+        line_std_left = void 0,
+        line_median = void 0,
+        txt_median = void 0,
+        txt_mean = void 0,
+        rug_plot = void 0;
 
     make_overlay_elements();
 
@@ -3483,7 +3489,7 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
         m_height = svg_h - m_margin.top - m_margin.bottom;
 
     var ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
-    // ref_histo.node().innerHTML = "";
+
     ref_histo.append('p').attrs({ id: 'ref_histo_title' }).styles({ "margin": "auto", "text-align": "center" }).html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
     var c = ref_histo.append("svg").attr("id", "svg_ref_histo").attr("width", svg_w + m_margin.left + m_margin.right).attr("height", svg_h + m_margin.top + m_margin.bottom);
@@ -3540,7 +3546,8 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
 
             for (var i = 0; i < 75; ++i) {
                 simulation.tick();
-            }svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
+            }
+            svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
 
             var cell = svg_ref_histo.append("g").attr("class", "cells").selectAll("g").data(d3.voronoi().extent([[0, 0], [m_width, m_height]]).x(function (d) {
                 return d.x;
@@ -9469,40 +9476,40 @@ function add_layout_feature(selected_feature) {
         handleClickTextBox(new_id);
     } else if (selected_feature == "sphere") {
         if (current_layers.Sphere) return;
-        options.fill = options.fill || "#add8e6";
-        options.fill_opacity = options.fill_opacity || 0.2;
-        options.stroke_width = options.stroke_width || "0.5px";
-        options.stroke_opacity = options.stroke_opacity || 1;
-        options.stroke = options.stroke || "#ffffff";
-        current_layers["Sphere"] = { "type": "Polygon", "n_features": 1, "stroke-width-const": +options.stroke_width.slice(0, -2), "fill_color": { single: options.fill } };
-        map.append("g").attrs({ id: "Sphere", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum({ type: "Sphere" }).styles({ fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke }).attrs({ id: 'sphere', d: path, 'clip-path': 'url(#clip)' });
+        var fill = options.fill || "#add8e6";
+        var fill_opacity = options.fill_opacity || 0.2;
+        var stroke_width = options.stroke_width || "0.5px";
+        var stroke_opacity = options.stroke_opacity || 1;
+        var stroke = options.stroke || "#ffffff";
+        current_layers["Sphere"] = { type: "Polygon", n_features: 1, "stroke-width-const": +stroke_width.slice(0, -2), fill_color: { single: fill } };
+        map.append("g").attrs({ id: "Sphere", class: "layer" }).styles({ 'stroke-width': stroke_width }).append("path").datum({ type: "Sphere" }).styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke }).attrs({ id: 'sphere', d: path, 'clip-path': 'url(#clip)' });
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
         zoom_without_redraw();
         setSphereBottom();
     } else if (selected_feature == "graticule") {
         if (current_layers["Graticule"] != undefined) return;
-        options.stroke = options.stroke || '#808080';
-        options.stroke_width = options.stroke_width || "1px";
-        options.stroke_opacity = options.stroke_opacity || 1;
-        options.stroke_dasharray = options.stroke_dasharray || 5;
-        options.step = options.step || 10;
-        var graticule = d3.geoGraticule().step([options.step, options.step]);
+        var _stroke = options.stroke || '#808080';
+        var _stroke_width = options.stroke_width || "1px";
+        var _stroke_opacity = options.stroke_opacity || 1;
+        var stroke_dasharray = options.stroke_dasharray || 5;
+        var step = options.step || 10;
+        var graticule = d3.geoGraticule().step([step, step]);
         if (options.extent) {
             var bbox_layer = _target_layer_file.bbox,
                 extent = [[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10], [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
             graticule = graticule.extent(extent);
             current_layers['Graticule'].extent = extent;
         }
-        map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': options.stroke_width }).append("path").datum(graticule).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke });
+        map.insert("g", '.legend').attrs({ id: "Graticule", class: "layer" }).styles({ 'stroke-width': _stroke_width }).append("path").datum(graticule).attrs({ 'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path }).styles({ 'stroke-dasharray': stroke_dasharray, 'fill': 'none', 'stroke': _stroke });
         current_layers["Graticule"] = {
             "type": "Line",
             "n_features": 1,
-            "stroke-width-const": +options.stroke_width.slice(0, -2),
-            "fill_color": { single: options.stroke },
-            opacity: options.stroke_opacity,
-            step: options.step,
-            dasharray: options.stroke_dasharray
+            "stroke-width-const": +_stroke_width.slice(0, -2),
+            "fill_color": { single: _stroke },
+            opacity: _stroke_opacity,
+            step: step,
+            dasharray: stroke_dasharray
         };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
@@ -9748,13 +9755,13 @@ function add_sample_layer() {
 function add_simplified_land_layer() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
-    options.skip_rescale = options.skip_rescale || false;
-    options.stroke = options.stroke || "rgb(0,0,0)";
-    options.fill = options.fill || "#d3d3d3";
-    options.stroke_opacity = options.stroke_opacity || 0.0;
-    options.fill_opacity = options.fill_opacity || 0.75;
-    options.stroke_width = options.stroke_width || "0.3px";
-    options.visible = options.visible === false ? false : true;
+    var skip_rescale = options.skip_rescale || false;
+    var stroke = options.stroke || "rgb(0,0,0)";
+    var fill = options.fill || "#d3d3d3";
+    var stroke_opacity = options.stroke_opacity || 0.0;
+    var fill_opacity = options.fill_opacity || 0.75;
+    var stroke_width = options.stroke_width || "0.3px";
+    var visible = options.visible === false ? false : true;
 
     d3.json("static/data_sample/World.topojson", function (error, json) {
         _app.layer_to_id.set('World', 'World');
@@ -9762,17 +9769,17 @@ function add_simplified_land_layer() {
         current_layers["World"] = {
             "type": "Polygon",
             "n_features": 125,
-            "stroke-width-const": +options.stroke_width.slice(0, -2),
-            "fill_color": { single: options.fill }
+            "stroke-width-const": +stroke_width.slice(0, -2),
+            "fill_color": { single: fill }
         };
-        map.insert("g", '.legend').attrs({ id: "World", class: "layer", "clip-path": "url(#clip)" }).style("stroke-width", options.stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({ stroke: options.stroke, fill: options.fill,
-            "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity });
+        map.insert("g", '.legend').attrs({ id: "World", class: "layer", "clip-path": "url(#clip)" }).style("stroke-width", stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({ stroke: stroke, fill: fill,
+            "stroke-opacity": stroke_opacity, "fill-opacity": fill_opacity });
         create_li_layer_elem("World", null, "Polygon", "sample");
-        if (!options.skip_rescale) {
+        if (!skip_rescale) {
             scale_to_lyr("World");
             center_map("World");
         }
-        if (!options.visible) {
+        if (!visible) {
             handle_active_layer('World');
         }
         zoom_without_redraw();
@@ -9807,18 +9814,21 @@ function get_map_xy0() {
 }
 
 var getIdLayoutFeature = function getIdLayoutFeature(type) {
+    var class_name = void 0,
+        id_prefix = void 0,
+        error_name = void 0;
     if (type == "ellipse") {
-        var class_name = 'user_ellipse',
-            id_prefix = 'user_ellipse_',
-            error_name = 'error_max_ellipses';
+        class_name = 'user_ellipse';
+        id_prefix = 'user_ellipse_';
+        error_name = 'error_max_ellipses';
     } else if (type == 'rectangle') {
-        var class_name = 'user_rectangle',
-            id_prefix = 'user_rectangle_',
-            error_name = 'error_max_rectangles';
+        class_name = 'user_rectangle';
+        id_prefix = 'user_rectangle_';
+        error_name = 'error_max_rectangles';
     } else if (type == 'arrow') {
-        var class_name = 'arrow',
-            id_prefix = 'arrow_',
-            error_name = 'error_max_arrows';
+        class_name = 'arrow';
+        id_prefix = 'arrow_';
+        error_name = 'error_max_arrows';
     }
     var features = document.getElementsByClassName(class_name);
     if (!features) {
@@ -9869,8 +9879,8 @@ function handleClickAddRectangle() {
 }
 
 function handleClickAddOther(type) {
-    document.body.style.cursor = "not-allowed";
     var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    document.body.style.cursor = "not-allowed";
     map.style("cursor", "crosshair").on("click", function () {
         msg.dismiss();
         map.style("cursor", "").on("click", null);
@@ -9897,7 +9907,7 @@ function handleClickAddEllipse() {
         msg.dismiss();
         start_point = [d3.event.layerX, d3.event.layerY];
         tmp_start_point = map.append("rect").attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style("fill", "red");
-        setTimeout(function () {
+        setTimeout(function (_) {
             tmp_start_point.remove();
         }, 1000);
         map.style("cursor", "").on("click", null);
@@ -9907,8 +9917,8 @@ function handleClickAddEllipse() {
 }
 
 function handleClickTextBox(text_box_id) {
-    document.body.style.cursor = "not-allowed";
     var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    document.body.style.cursor = "not-allowed";
     map.style("cursor", "crosshair").on("click", function () {
         msg.dismiss();
         map.style("cursor", "").on("click", null);
@@ -15931,13 +15941,11 @@ var createBoxProj4 = function createBoxProj4() {
 						}, function () {
 								null;
 						});
-						console.log(e);
 						return;
 				}
 				change_projection_4(_p);
 				_app.last_projection = proj_str;
 				addLastProjectionSelect('def_proj4');
-				// }
 		};
 		container.querySelector(".btn_cancel").onclick = clean_up_box;
 		container.querySelector("#xclose").onclick = clean_up_box;
@@ -16262,7 +16270,9 @@ var NITER = 20,
     M_HALFPI = Math.PI / 2;
 
 function hatanoRaw(lambda, phi) {
-    var th1, c, i;
+    var th1 = void 0,
+        c = void 0,
+        i = void 0;
     c = sin(phi) * (phi < 0 ? CS : CN);
     for (i = NITER; i; --i) {
         phi -= th1 = (phi + sin(phi) - c) / (1 + cos(phi));
@@ -16272,7 +16282,9 @@ function hatanoRaw(lambda, phi) {
 }
 
 hatanoRaw.invert = function (x, y) {
-    var th = y * (y < 0 ? RYCS : RYCN);
+    var xx = x,
+        yy = y;
+    var th = yy * (yy < 0 ? RYCS : RYCN);
     if (abs(th) > 1) {
         if (abs(th) > ONETOL) {
             console.log('Error');
@@ -16283,20 +16295,20 @@ hatanoRaw.invert = function (x, y) {
     } else {
         th = asin(th);
     }
-    x = RXC * x / cos(th);
+    xx = RXC * xx / cos(th);
     th += th;
-    y = (th + sin(th)) * (y < 0 ? RCS : RCN);
-    if (abs(y) > 1) {
-        if (abs(y) > ONETOL) {
+    yy = (th + sin(th)) * (yy < 0 ? RCS : RCN);
+    if (abs(yy) > 1) {
+        if (abs(yy) > ONETOL) {
             console.log('Error');
             return;
         } else {
-            y = y > 0 ? M_HALFPI : -M_HALFPI;
+            yy = yy > 0 ? M_HALFPI : -M_HALFPI;
         }
     } else {
-        y = asin(y);
+        yy = asin(yy);
     }
-    return [x, y];
+    return [xx, yy];
 };
 
 function winkel1Raw(lat_truescale) {

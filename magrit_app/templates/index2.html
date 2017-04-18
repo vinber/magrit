@@ -90,15 +90,15 @@
                     </div>
                     <div class="box1">
                             <div style="margin: 2px 0 2px 0;">
-                                <span><img id="btn_arrow" src="/static/img/layout_icons/arrow-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.arrow" title="Flèche" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_text_annot" src="/static/img/layout_icons/text-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.text_annot" title="Annotation de texte" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_symbol" src="/static/img/layout_icons/symbols-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.symbol" title="Insertion d'un symbole" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_rectangle" src="/static/img/layout_icons/rect-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.rectangle" title="Rectangle" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_ellipse" src="/static/img/layout_icons/ellipse-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.ellipse" title="Ellipse" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_graticule" src="/static/img/layout_icons/graticule-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.graticule" title="Graticule" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_scale" src="/static/img/layout_icons/scale.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.scale" title="Échelle" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_north" src="/static/img/layout_icons/north-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.north_arrow" title="Flèche nord" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
-                                <span><img id="btn_sphere" src="/static/img/layout_icons/sphere-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.sphere" title="Fond de l'emprise du globe" style="margin: 1px 2px; width: 17px; height: 100%;"></span>
+                                <span><img id="btn_arrow" src="/static/img/layout_icons/arrow-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.arrow" title="Flèche" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_text_annot" src="/static/img/layout_icons/text-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.text_annot" title="Annotation de texte" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_symbol" src="/static/img/layout_icons/symbols-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.symbol" title="Insertion d'un symbole" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_rectangle" src="/static/img/layout_icons/rect-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.rectangle" title="Rectangle" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_ellipse" src="/static/img/layout_icons/ellipse-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.ellipse" title="Ellipse" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_graticule" src="/static/img/layout_icons/graticule-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.graticule" title="Graticule" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_scale" src="/static/img/layout_icons/scale.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.scale" title="Échelle" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_north" src="/static/img/layout_icons/north-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.north_arrow" title="Flèche nord" style="margin: 1px 2px; width: 17px; height: auto;"></span>
+                                <span><img id="btn_sphere" src="/static/img/layout_icons/sphere-01.png" class="hover_scale i18n" data-i18n="[title]app_page.layout_features_box.sphere" title="Fond de l'emprise du globe" style="margin: 1px 2px; width: 17px; height: auto;"></span>
                             </div>
                             <h4 class="i18n" data-i18n="[html]index.bloc.customizable1"></h4>
                             <span class="i18n" data-i18n="[html]index.bloc.customizable2"></span>
@@ -252,7 +252,7 @@ function handle_change_lang(){
     if(this.id == "lang1" && i18next.language == this.innerHTML){
         return;
     }
-    let lang = this.innerHTML;
+    var lang = this.innerHTML;
     change_lang(lang);
 }
 
@@ -268,8 +268,8 @@ function handle_change_lang(){
 // Actually change the content of the page :
 function change_lang(new_lang){
     docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-    i18next.changeLanguage(new_lang, () => { localize(".i18n");});
-    let other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+    i18next.changeLanguage(new_lang, function(){ localize(".i18n");});
+    var other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
     document.getElementById("lang_current").innerHTML = new_lang;
     document.getElementById("lang3").innerHTML = other_langs[0];
     document.getElementById("lang2").innerHTML = other_langs[1];
@@ -278,26 +278,26 @@ function change_lang(new_lang){
 
 
 function bind_enter_buttons(){
-    let enter = () => {
+    var enter = function() {
         if(!docCookies.getItem("cookie_law_validated")){
             docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
         }
         window.location = "/modules"
     };
-    let elems = document.querySelectorAll(".enter_button");
-    for(let i=0; i < elems.length; i++){
+    var elems = document.querySelectorAll(".enter_button"), i;
+    for(i=0; i < elems.length; i++){
         elems[i].onclick = enter;
     }
 }
 
 
 function handle_div_cookie(){
-    let cookie_div = document.getElementById("cookieLaw");
+    var cookie_div = document.getElementById("cookieLaw");
     if(docCookies.getItem("cookie_law_validated")){
         cookie_div.style.display = "none";
     } else {
         cookie_div.querySelector("#understood_cookie")
-            .onclick = () => {
+            .onclick = function() {
                 document.getElementById("cookieLaw").remove();
                 docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
             };
@@ -306,17 +306,17 @@ function handle_div_cookie(){
 
 
 function prepare_lang_buttons(){
-    let current_lang =  i18next.language,
+    var current_lang =  i18next.language,
         other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
 
     document.getElementById("lang_current").innerHTML = current_lang;
-    let button_lang1 = document.getElementById("lang1");
+    var button_lang1 = document.getElementById("lang1");
     button_lang1.innerHTML = current_lang;
     button_lang1.onclick = handle_change_lang;
-    let button_lang2 = document.getElementById("lang2");
+    var button_lang2 = document.getElementById("lang2");
     button_lang2.innerHTML = other_langs[0];
     button_lang2.onclick = handle_change_lang;
-    let button_lang3 = document.getElementById("lang3");
+    var button_lang3 = document.getElementById("lang3");
     button_lang3.innerHTML = other_langs[1];
     button_lang3.onclick = handle_change_lang;
 }
@@ -324,7 +324,7 @@ function prepare_lang_buttons(){
 //i18n initialization :
 (function(){
     var existing_lang = ["en", "es", "fr"];
-    let lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
+    var lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
     lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
     i18next.use(i18nextXHRBackend)
       .init({
@@ -334,7 +334,7 @@ function prepare_lang_buttons(){
           backend: {
             loadPath: "/static/locales/{{lng}}/translation.json"
           }
-    }, (err, t) => {
+    }, function(err, t) {
         if(err)
             throw err;
         else {

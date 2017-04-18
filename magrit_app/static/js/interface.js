@@ -1150,18 +1150,18 @@ function add_layout_feature(selected_feature, options = {}){
         handleClickTextBox(new_id);
     } else if (selected_feature == "sphere"){
         if(current_layers.Sphere) return;
-        options.fill = options.fill || "#add8e6";
-        options.fill_opacity = options.fill_opacity || 0.2;
-        options.stroke_width = options.stroke_width || "0.5px";
-        options.stroke_opacity = options.stroke_opacity || 1;
-        options.stroke = options.stroke || "#ffffff";
-        current_layers["Sphere"] = {"type": "Polygon", "n_features":1, "stroke-width-const": +options.stroke_width.slice(0,-2), "fill_color" : {single: options.fill}};
+        let fill = options.fill || "#add8e6";
+        let fill_opacity = options.fill_opacity || 0.2;
+        let stroke_width = options.stroke_width || "0.5px";
+        let stroke_opacity = options.stroke_opacity || 1;
+        let stroke = options.stroke || "#ffffff";
+        current_layers["Sphere"] = {type: "Polygon", n_features: 1, "stroke-width-const": +stroke_width.slice(0,-2), fill_color: {single: fill}};
         map.append("g")
             .attrs({id: "Sphere", class: "layer"})
-            .styles({'stroke-width': options.stroke_width})
+            .styles({'stroke-width': stroke_width})
             .append("path")
             .datum({type: "Sphere"})
-            .styles({fill: options.fill, "fill-opacity": options.fill_opacity, 'stroke-opacity': options.stroke_opacity, stroke: options.stroke})
+            .styles({fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke})
             .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
         create_li_layer_elem("Sphere", null, "Polygon", "sample");
         alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
@@ -1169,12 +1169,12 @@ function add_layout_feature(selected_feature, options = {}){
         setSphereBottom();
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined) return;
-        options.stroke = options.stroke || '#808080';
-        options.stroke_width = options.stroke_width || "1px";
-        options.stroke_opacity = options.stroke_opacity || 1;
-        options.stroke_dasharray = options.stroke_dasharray || 5;
-        options.step = options.step || 10;
-        let graticule = d3.geoGraticule().step([options.step, options.step]);
+        let stroke = options.stroke || '#808080';
+        let stroke_width = options.stroke_width || "1px";
+        let stroke_opacity = options.stroke_opacity || 1;
+        let stroke_dasharray = options.stroke_dasharray || 5;
+        let step = options.step || 10;
+        let graticule = d3.geoGraticule().step([step, step]);
         if(options.extent){
             let bbox_layer = _target_layer_file.bbox,
                 extent = [
@@ -1185,19 +1185,19 @@ function add_layout_feature(selected_feature, options = {}){
         }
         map.insert("g", '.legend')
             .attrs({id: "Graticule", class: "layer"})
-            .styles({'stroke-width': options.stroke_width})
+            .styles({'stroke-width': stroke_width})
             .append("path")
             .datum(graticule)
             .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-            .styles({'stroke-dasharray': options.stroke_dasharray, 'fill': 'none', 'stroke': options.stroke});
+            .styles({'stroke-dasharray': stroke_dasharray, 'fill': 'none', 'stroke': stroke});
         current_layers["Graticule"] = {
             "type": "Line",
             "n_features":1,
-            "stroke-width-const": +options.stroke_width.slice(0,-2),
-            "fill_color": {single: options.stroke},
-            opacity: options.stroke_opacity,
-            step: options.step,
-            dasharray: options.stroke_dasharray,
+            "stroke-width-const": +stroke_width.slice(0,-2),
+            "fill_color": {single: stroke},
+            opacity: stroke_opacity,
+            step: step,
+            dasharray: stroke_dasharray,
             };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
@@ -1458,112 +1458,113 @@ function add_sample_layer(){
 }
 
 function add_simplified_land_layer(options = {}){
-    options.skip_rescale = options.skip_rescale || false;
-    options.stroke = options.stroke || "rgb(0,0,0)";
-    options.fill = options.fill || "#d3d3d3";
-    options.stroke_opacity = options.stroke_opacity || 0.0;
-    options.fill_opacity = options.fill_opacity || 0.75;
-    options.stroke_width = options.stroke_width || "0.3px";
-    options.visible = options.visible === false ? false : true;
+  let skip_rescale = options.skip_rescale || false;
+  let stroke = options.stroke || "rgb(0,0,0)";
+  let fill = options.fill || "#d3d3d3";
+  let stroke_opacity = options.stroke_opacity || 0.0;
+  let fill_opacity = options.fill_opacity || 0.75;
+  let stroke_width = options.stroke_width || "0.3px";
+  let visible = options.visible === false ? false : true;
 
-    d3.json("static/data_sample/World.topojson", function(error, json) {
-        _app.layer_to_id.set('World', 'World');
-        _app.id_to_layer.set('World', 'World');
-        current_layers["World"] = {
-            "type": "Polygon",
-            "n_features":125,
-            "stroke-width-const": +options.stroke_width.slice(0,-2),
-            "fill_color": {single: options.fill}
-        };
-        map.insert("g", '.legend')
-            .attrs({id: "World", class: "layer", "clip-path": "url(#clip)"})
-            .style("stroke-width", options.stroke_width)
-            .selectAll('.subunit')
-            .data(topojson.feature(json, json.objects.World).features)
-            .enter()
-            .append('path')
-            .attr('d', path)
-            .styles({stroke: options.stroke, fill: options.fill,
-                     "stroke-opacity": options.stroke_opacity, "fill-opacity": options.fill_opacity});
-        create_li_layer_elem("World", null, "Polygon", "sample");
-        if(!options.skip_rescale){
-            scale_to_lyr("World");
-            center_map("World");
-        }
-        if(!options.visible){
-            handle_active_layer('World');
-        }
-        zoom_without_redraw();
-    });
+  d3.json("static/data_sample/World.topojson", function(error, json) {
+    _app.layer_to_id.set('World', 'World');
+    _app.id_to_layer.set('World', 'World');
+    current_layers["World"] = {
+      "type": "Polygon",
+      "n_features":125,
+      "stroke-width-const": +stroke_width.slice(0,-2),
+      "fill_color": {single: fill}
+    };
+    map.insert("g", '.legend')
+      .attrs({id: "World", class: "layer", "clip-path": "url(#clip)"})
+      .style("stroke-width", stroke_width)
+      .selectAll('.subunit')
+      .data(topojson.feature(json, json.objects.World).features)
+      .enter()
+      .append('path')
+      .attr('d', path)
+      .styles({stroke: stroke, fill: fill,
+               "stroke-opacity": stroke_opacity, "fill-opacity": fill_opacity});
+    create_li_layer_elem("World", null, "Polygon", "sample");
+    if(!skip_rescale){
+      scale_to_lyr("World");
+      center_map("World");
+    }
+    if(!visible){
+      handle_active_layer('World');
+    }
+    zoom_without_redraw();
+  });
 }
 
 function add_sample_geojson(name, options){
-    var formToSend = new FormData();
-    formToSend.append("layer_name", name);
-    xhrequest("POST", 'cache_topojson/sample_data', formToSend, true)
-        .then( data => {
-            add_layer_topojson(data, options);
-        }).catch( err => {
-            display_error_during_computation();
-            console.log(err);
-        });
+  let formToSend = new FormData();
+  formToSend.append("layer_name", name);
+  xhrequest("POST", 'cache_topojson/sample_data', formToSend, true)
+    .then( data => {
+        add_layer_topojson(data, options);
+    }).catch( err => {
+        display_error_during_computation();
+        console.log(err);
+    });
 }
 
 function send_remove_server(layer_name){
-    let formToSend = new FormData();
-    formToSend.append("layer_name", current_layers[layer_name].key_name);
-    xhrequest("POST", 'layers/delete', formToSend, true)
-        .then(data => {
-            data = JSON.parse(data);
-            if(!data.code || data.code != "Ok")
-                console.log(data);
-          }).catch(err => {
-              console.log(err);
-          });
+  let formToSend = new FormData();
+  formToSend.append("layer_name", current_layers[layer_name].key_name);
+  xhrequest("POST", 'layers/delete', formToSend, true)
+    .then(data => {
+        data = JSON.parse(data);
+        if(!data.code || data.code != "Ok")
+            console.log(data);
+      }).catch(err => {
+          console.log(err);
+      });
 }
 
 function get_map_xy0(){
-    let bbox = svg_map.getBoundingClientRect();
-    return {x: bbox.left, y: bbox.top}
+  let bbox = svg_map.getBoundingClientRect();
+  return {x: bbox.left, y: bbox.top}
 }
 
 const getIdLayoutFeature = (type) => {
-    if(type == "ellipse"){
-        var class_name = 'user_ellipse',
-            id_prefix = 'user_ellipse_',
-            error_name = 'error_max_ellipses';
-    } else if (type == 'rectangle'){
-        var class_name = 'user_rectangle',
-            id_prefix = 'user_rectangle_',
-            error_name = 'error_max_rectangles';
-    } else if (type == 'arrow'){
-        var class_name = 'arrow',
-            id_prefix = 'arrow_',
-            error_name = 'error_max_arrows';
+  let class_name, id_prefix, error_name;
+  if(type == "ellipse"){
+    class_name = 'user_ellipse';
+    id_prefix = 'user_ellipse_';
+    error_name = 'error_max_ellipses';
+  } else if (type == 'rectangle'){
+    class_name = 'user_rectangle';
+    id_prefix = 'user_rectangle_';
+    error_name = 'error_max_rectangles';
+  } else if (type == 'arrow'){
+    class_name = 'arrow';
+    id_prefix = 'arrow_';
+    error_name = 'error_max_arrows';
+  }
+  let features = document.getElementsByClassName(class_name);
+  if(!features){
+    return 0;
+  } else if (features.length > 30){
+    swal(i18next.t("app_page.common.error"), i18next.t("app_page.common." + error_name), "error").catch(swal.noop);
+    return null;
+  } else {
+    let ids = [];
+    for(let i=0; i<features.length; i++){
+      ids.push(+features[i].id.split(id_prefix)[1])
     }
-    let features = document.getElementsByClassName(class_name);
-    if(!features){
-        return 0;
-    } else if (features.length > 30){
-        swal(i18next.t("app_page.common.error"), i18next.t("app_page.common." + error_name), "error").catch(swal.noop);
-        return null;
+    if(ids.indexOf(features.length) == -1){
+      return features.length;
     } else {
-        let ids = [];
-        for(let i=0; i<features.length; i++){
-            ids.push(+features[i].id.split(id_prefix)[1])
+      for(let i=0; i<features.length; i++){
+        if(ids.indexOf(i) == -1){
+          return i;
         }
-        if(ids.indexOf(features.length) == -1){
-            return features.length;
-        } else {
-            for(let i=0; i<features.length; i++){
-                if(ids.indexOf(i) == -1){
-                    return i;
-                }
-            }
-        }
-        return null;
+      }
     }
     return null;
+  }
+  return null;
 };
 
 
@@ -1571,81 +1572,79 @@ function handleClickAddRectangle(){
   let start_point,
       tmp_start_point,
       rectangle_id = getIdLayoutFeature('rectangle');
-      if(rectangle_id === null){
-          return;
-      }
-      rectangle_id = "user_rectangle_" + rectangle_id;
-      document.body.style.cursor = "not-allowed";
-      let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-      map.style("cursor", "crosshair")
-          .on("click", function(){
-              msg.dismiss();
-              start_point = [d3.event.layerX, d3.event.layerY];
-              tmp_start_point = map.append("rect")
-                  .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
-                  .style("fill", "red");
-              setTimeout(function(){
-                  tmp_start_point.remove();
-              }, 1000);
-              map.style("cursor", "").on("click", null);
-              document.body.style.cursor = "";
-              new UserRectangle(rectangle_id, start_point, svg_map);
-          });
+  if(rectangle_id === null){
+    return;
+  }
+  rectangle_id = "user_rectangle_" + rectangle_id;
+  document.body.style.cursor = "not-allowed";
+  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  map.style("cursor", "crosshair")
+    .on("click", function(){
+      msg.dismiss();
+      start_point = [d3.event.layerX, d3.event.layerY];
+      tmp_start_point = map.append("rect")
+          .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
+          .style("fill", "red");
+      setTimeout(function(){
+          tmp_start_point.remove();
+      }, 1000);
+      map.style("cursor", "").on("click", null);
+      document.body.style.cursor = "";
+      new UserRectangle(rectangle_id, start_point, svg_map);
+    });
   }
 
 function handleClickAddOther(type){
-    document.body.style.cursor = "not-allowed";
-    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-    map.style("cursor", "crosshair")
-        .on("click", function(){
-            msg.dismiss();
-            map.style("cursor", "").on("click", null);
-            document.body.style.cursor = "";
-            if(type == 'north_arrow'){
-                northArrow.display(d3.event.layerX, d3.event.layerY);
-            } else if (type == 'scalebar'){
-                scaleBar.create(d3.event.layerX, d3.event.layerY);
-            }
-        });
+  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  document.body.style.cursor = "not-allowed";
+  map.style("cursor", "crosshair")
+    .on("click", function(){
+      msg.dismiss();
+      map.style("cursor", "").on("click", null);
+      document.body.style.cursor = "";
+      if(type == 'north_arrow'){
+        northArrow.display(d3.event.layerX, d3.event.layerY);
+      } else if (type == 'scalebar'){
+        scaleBar.create(d3.event.layerX, d3.event.layerY);
+      }
+    });
 }
 
 function handleClickAddEllipse(){
-    let start_point,
-        tmp_start_point,
-        ellipse_id = getIdLayoutFeature('ellispe');
-    if(ellipse_id === null){
-        return;
-    }
-    ellipse_id = "user_ellipse_" + ellipse_id;
-    document.body.style.cursor = "not-allowed";
-    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-    map.style("cursor", "crosshair")
-        .on("click", function(){
-            msg.dismiss();
-            start_point = [d3.event.layerX, d3.event.layerY];
-            tmp_start_point = map.append("rect")
-                .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
-                .style("fill", "red");
-            setTimeout(function(){
-                tmp_start_point.remove();
-            }, 1000);
-            map.style("cursor", "").on("click", null);
-            document.body.style.cursor = "";
-            new UserEllipse(ellipse_id, start_point, svg_map);
-        });
+  let start_point,
+      tmp_start_point,
+      ellipse_id = getIdLayoutFeature('ellispe');
+  if(ellipse_id === null){
+    return;
+  }
+  ellipse_id = "user_ellipse_" + ellipse_id;
+  document.body.style.cursor = "not-allowed";
+  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  map.style("cursor", "crosshair")
+    .on("click", function(){
+      msg.dismiss();
+      start_point = [d3.event.layerX, d3.event.layerY];
+      tmp_start_point = map.append("rect")
+          .attrs({x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4})
+          .style("fill", "red");
+      setTimeout(_ => { tmp_start_point.remove(); }, 1000);
+      map.style("cursor", "").on("click", null);
+      document.body.style.cursor = "";
+      new UserEllipse(ellipse_id, start_point, svg_map);
+    });
 }
 
 function handleClickTextBox(text_box_id){
-    document.body.style.cursor = "not-allowed";
-    let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-    map.style("cursor", "crosshair")
-        .on("click", function(){
-            msg.dismiss();
-            map.style("cursor", "").on("click", null);
-            document.body.style.cursor = "";
-            let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
-            setTimeout(_ => { text_box.editStyle(); }, 350);
-        });
+  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  document.body.style.cursor = "not-allowed";
+  map.style("cursor", "crosshair")
+    .on("click", function(){
+      msg.dismiss();
+      map.style("cursor", "").on("click", null);
+      document.body.style.cursor = "";
+      let text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
+      setTimeout(_ => { text_box.editStyle(); }, 350);
+    });
 }
 
 function handleClickAddPicto(){

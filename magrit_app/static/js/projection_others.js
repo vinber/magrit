@@ -1,10 +1,10 @@
 "use strict";
-var sin = Math.sin,
+const sin = Math.sin,
     asin = Math.asin,
     abs = Math.abs,
     cos = Math.cos;
 
-var NITER = 20,
+const NITER = 20,
     EPS = 1e-7,
     ONETOL = 1.000001,
     CN = 2.67595,
@@ -20,7 +20,7 @@ var NITER = 20,
     M_HALFPI = Math.PI / 2;
 
 function hatanoRaw(lambda, phi) {
-  var th1, c, i;
+  let th1, c, i;
   c = sin(phi) * (phi < 0 ? CS : CN);
   for(i = NITER; i; --i){
       phi -= th1 = (phi + sin(phi) - c) / (1 + cos(phi));
@@ -33,7 +33,9 @@ function hatanoRaw(lambda, phi) {
 }
 
 hatanoRaw.invert = function(x, y) {
-  var th = y * (y < 0 ? RYCS : RYCN);
+  let xx = x,
+      yy = y;
+  let th = yy * (yy < 0 ? RYCS : RYCN);
   if(abs(th) > 1){
       if(abs(th) > ONETOL){
           console.log('Error');
@@ -44,32 +46,32 @@ hatanoRaw.invert = function(x, y) {
   } else {
       th = asin(th);
   }
-  x = RXC * x / cos(th);
+  xx = RXC * xx / cos(th);
   th += th;
-  y = (th + sin(th)) * (y < 0 ? RCS : RCN);
-  if(abs(y) > 1){
-      if(abs(y) > ONETOL){
+  yy = (th + sin(th)) * (yy < 0 ? RCS : RCN);
+  if(abs(yy) > 1){
+      if(abs(yy) > ONETOL){
           console.log('Error');
           return;
       } else {
-          y = y > 0 ? M_HALFPI : -M_HALFPI;
+          yy = yy > 0 ? M_HALFPI : -M_HALFPI;
       }
   } else {
-      y = asin(y);
+      yy = asin(yy);
   }
-  return [x,  y];
+  return [xx,  yy];
 };
 
 function winkel1Raw(lat_truescale) {
-  var cosphi1 = cos(lat_truescale);
+  const cosphi1 = cos(lat_truescale);
 
   function forward(lambda, phi) {
-    var x = lambda, y = phi;
+    let x = lambda, y = phi;
     return [0.5 * x * (cosphi1 + cos(phi)), y];
   }
 
   forward.invert = function(x, y) {
-    var lambda = x, phi = y;
+    let lambda = x, phi = y;
     return [2 * lambda / (cosphi1 + cos(phi)), phi];
   };
 

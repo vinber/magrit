@@ -51,7 +51,7 @@ function has_negative(arr){
 * @param {Array} arr - The array to test
 * @return {Boolean} result - True or False, according to whether it contains empty values or not
 */
-var contains_empty_val = function(arr){
+const contains_empty_val = function(arr){
     for(let i = arr.length - 1; i > -1; --i)
         if(arr[i] == null) return true;
         else if(isNaN(+arr[i])) return true;
@@ -79,7 +79,7 @@ function has_duplicate(arr){
 * @param {Number} precision - The wanted precision.
 * @return {Number} value - The rounded value.
 */
-var round_value = function(val, nb){
+const round_value = function(val, nb){
     if(nb == undefined)
         return val;
     let dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
@@ -105,7 +105,7 @@ function get_nb_left_separator(nb){
 * @return {String} separator - The decimal separator (dot or comma)
 */
 function getDecimalSeparator(){
-    return 1.1.toLocaleString().substr(1,1)
+    return 1.1.toLocaleString().substr(1,1);
 }
 
 const get_precision_axis = (serie_min, serie_max, precision) => {

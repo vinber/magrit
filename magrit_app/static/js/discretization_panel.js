@@ -1,23 +1,23 @@
 "use strict";
 
-function getBreaks(values, type, nb_class){
-    var _values = values.filter(v => v),
-        no_data = values.length - _values.length,
-        serie = new geostats(_values),
-        nb_class = +nb_class || getOptNbClass(_values.length),
-        breaks = [];
-    if(type === "Q6"){
-        let tmp = getBreaksQ6(serie.sorted(), serie.precision);
-        breaks = tmp.breaks;
-        breaks[0] = serie.min();
-        breaks[nb_class] = serie.max();
-        serie.setClassManually(breaks);
-    } else {
-        let _func = discretiz_geostats_switch.get(type);
-        breaks = serie[_func](nb_class);
-        if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
-    }
-    return [serie, breaks, nb_class, no_data];
+function getBreaks(values, type, n_class){
+  const _values = values.filter(v => v),
+      no_data = values.length - _values.length,
+      nb_class = +n_class || getOptNbClass(_values.length);
+  let serie = new geostats(_values),
+      breaks = [];
+  if(type === "Q6"){
+      let tmp = getBreaksQ6(serie.sorted(), serie.precision);
+      breaks = tmp.breaks;
+      breaks[0] = serie.min();
+      breaks[nb_class] = serie.max();
+      serie.setClassManually(breaks);
+  } else {
+      let _func = discretiz_geostats_switch.get(type);
+      breaks = serie[_func](nb_class);
+      if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
+  }
+  return [serie, breaks, nb_class, no_data];
 }
 
 function discretize_to_size(values, type, nb_class, min_size, max_size){
@@ -48,8 +48,8 @@ var discretize_to_colors = (function discretize_to_colors(values, type, nb_class
     return [nb_class, type, breaks, color_array, colors_map, no_data_color];
 }).memoize();
 
-// Todo: let the user choose if he wants a regular histogram or a "beeswarm" plot ?
-var display_discretization = function(layer_name, field_name, nb_class, options){
+
+const display_discretization = function(layer_name, field_name, nb_class, options){
     var make_no_data_section = function(){
         var section = d3.select("#color_div")
                 .append("div").attr("id", "no_data_section")
@@ -260,10 +260,10 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     };
 
     var update_overlay_elements = function(){
-        let x_mean = x(serie.mean()),
+        let x_mean = x(mean_serie),
             x_med = x(serie.median()),
-            x_std_left = x(serie.mean() - serie.stddev()),
-            x_std_right = x(serie.mean() + serie.stddev());
+            x_std_left = x(mean_serie - stddev_serie),
+            x_std_right = x(mean_serie + stddev_serie);
         line_mean.transition().attrs({x1: x_mean, x2: x_mean});
         txt_mean.transition().attr('x', x_mean);
         line_median.transition().attrs({x1: x_med, x2: x_med});
@@ -275,14 +275,11 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
     var make_overlay_elements = function(){
 
-      let mean_val = serie.mean(),
-          stddev = serie.stddev();
-
       line_mean = overlay_svg.append("line")
           .attr("class", "line_mean")
-          .attr("x1", x(mean_val))
+          .attr("x1", x(mean_serie))
           .attr("y1", 10)
-          .attr("x2", x(mean_val))
+          .attr("x2", x(mean_serie))
           .attr("y2", svg_h - margin.bottom)
           .styles({"stroke-width": 0, stroke: "blue", fill: "none"})
           .classed("active", false);
@@ -290,7 +287,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
       txt_mean = overlay_svg.append("text")
           .attr("y", 0)
           .attr("dy", "0.75em")
-          .attr("x", x(mean_val))
+          .attr("x", x(mean_serie))
           .style("fill", "none")
           .attr("text-anchor", "middle")
           .text(i18next.t("disc_box.mean"));
@@ -314,18 +311,18 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
       line_std_left = overlay_svg.append("line")
           .attr("class", "lines_std")
-          .attr("x1", x(mean_val - stddev))
+          .attr("x1", x(mean_serie - stddev_serie))
           .attr("y1", 10)
-          .attr("x2", x(mean_val - stddev))
+          .attr("x2", x(mean_serie - stddev_serie))
           .attr("y2", svg_h - margin.bottom)
           .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
           .classed("active", false);
 
       line_std_right = overlay_svg.append("line")
           .attr("class", "lines_std")
-          .attr("x1", x(mean_val + stddev))
+          .attr("x1", x(mean_serie + stddev_serie))
           .attr("y1", 10)
-          .attr("x2", x(mean_val + stddev))
+          .attr("x2", x(mean_serie + stddev_serie))
           .attr("y2", svg_h - margin.bottom)
           .styles({"stroke-width": 0, stroke: "grey", fill: "none"})
           .classed("active", false);
@@ -348,8 +345,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             .html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
     }
 
-    var redisplay = {
-        compute: function(){
+    const redisplay = {
+        compute() {
             serie = new geostats(values);
             breaks = [];
             values = serie.sorted();
@@ -358,8 +355,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 var tmp = getBreaksQ6(values, serie.precision);
                 // stock_class = tmp.stock_class;
                 breaks = tmp.breaks;
-                breaks[0] = serie.min();
-                breaks[6] = serie.max();
+                breaks[0] = min_serie;
+                breaks[6] = max_serie;
                 serie.setClassManually(breaks);
                 serie.doCount()
                 stock_class = Array.prototype.slice.call(serie.counter);
@@ -378,17 +375,17 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                 nb_class = tmp.breaks.length - 1;
                 update_nb_class(nb_class);
 
-                if(breaks[0] > serie.min())
-                    breaks[0] = serie.min();
-                if(breaks[nb_class] < serie.max())
-                    breaks[nb_class] = serie.max();
+                if(breaks[0] > min_serie)
+                    breaks[0] = min_serie;
+                if(breaks[nb_class] < max_serie)
+                    breaks[nb_class] = max_serie;
 
                 let breaks_serie = breaks.slice();
-                if(breaks_serie[0] < serie.min()){
-                    breaks_serie[0] = serie.min();
+                if(breaks_serie[0] < min_serie){
+                    breaks_serie[0] = min_serie;
                 }
-                if(breaks_serie[nb_class] > serie.max()){
-                    breaks_serie[nb_class] = serie.max();
+                if(breaks_serie[nb_class] > max_serie){
+                    breaks_serie[nb_class] = max_serie;
                 }
                 serie.setClassManually(breaks_serie);
             } else {
@@ -415,7 +412,8 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             }
             return true;
         },
-        draw: function(provided_colors){
+
+        draw(provided_colors) {
             // Clean-up previously made histogram :
             newBox.select("#svg_discretization").selectAll(".bar").remove();
             newBox.select("#svg_discretization").selectAll(".text_bar").remove();
@@ -505,27 +503,29 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
 
     //////////////////////////////////////////////////////////////////////////
 
-    var modal_box = make_dialog_container(
+    const modal_box = make_dialog_container(
          "discretiz_charts",
          [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''),
          "discretiz_charts_dialog"
         );
 
-    var newBox = d3.select("#discretiz_charts").select(".modal-body");
-
-    if(result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
-    else if(user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
-    else {
+    const newBox = d3.select("#discretiz_charts").select(".modal-body");
+    let db_data;
+    if(result_data.hasOwnProperty(layer_name)) {
+      db_data = result_data[layer_name];
+    } else if(user_data.hasOwnProperty(layer_name)) {
+      db_data = user_data[layer_name];
+    } else {
       let layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
-      var db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
+      db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
     }
-    var color_array = [],
+    let color_array = [],
         nb_values = db_data.length,
         indexes = [],
         values = [],
         no_data;
 
-    var type = options.type;
+    let type = options.type;
 
     for(let i=0; i<nb_values; i++){
         if(db_data[i][field_name] != null && db_data[i][field_name] != ""){
@@ -541,18 +541,24 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         nb_values = values.length;
     }
 
-    var serie = new geostats(values),
+    let serie = new geostats(values),
         breaks = [], stock_class = [],
         bins = [], user_break_list = null,
         max_nb_class = 20 < nb_values ? 20 : nb_values,
         std_dev_params = options.extra_options && options.extra_options.role_mean != undefined ? options.extra_options : {role_mean: 'center', share: 1};
 
     if(serie.variance() == 0 && serie.stddev() == 0){
-        var serie = new geostats(values);
+        serie = new geostats(values);
     }
 
+    const min_serie = serie.min();
+    const max_serie = serie.max();
+    const mean_serie = serie.mean();
+    const stddev_serie = serie.stddev();
+
     values = serie.sorted();
-    var available_functions = [
+
+    const available_functions = [
      [i18next.t("app_page.common.equal_interval"), "equal_interval"],
      [i18next.t("app_page.common.quantiles"), "quantiles"],
      [i18next.t("app_page.common.stddev_f"), "stddev_f"],
@@ -564,9 +570,9 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
     if(!serie._hasZeroValue() && !serie._hasNegativeValue()){
         available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
     }
-    let precision_axis = get_precision_axis(serie.min(), serie.max(), serie.precision);
-    var formatCount = d3.format(precision_axis);
-    var discretization = newBox.append('div')
+    let precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
+    let formatCount = d3.format(precision_axis);
+    let discretization = newBox.append('div')
         .attr("id", "discretization_panel")
         .insert("p")
         .insert("select").attr("class", "params")
@@ -594,7 +600,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         discretization.append("option").text(func[0]).attr("value", func[1]);
     });
 
-    var input_section_stddev = d3.select('#discretization_panel')
+    let input_section_stddev = d3.select('#discretization_panel')
         .insert('p')
         .styles({'display': type === 'stddev_f' ? '' : 'none',
                  'margin': 'auto'});
@@ -605,7 +611,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .styles({'width': '45px', 'margin-left': '10px', 'margin-right': '10px'})
         .on('change', function(){
             let val = this.value;
-            if(val == 0 || (val * serie.stddev()) > (serie.max() - serie.min()) ||  (val * serie.stddev() * 21) < (serie.max() - serie.min())){
+            if(val == 0 || (val * stddev_serie) > (max_serie - min_serie) ||  (val * stddev_serie * 21) < (max_serie - min_serie)){
                 // If the new value is too big or too small:
                 this.value = std_dev_params.share;
                 return;
@@ -636,7 +642,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             .attrs({'for': "button_stddev_"+el[1]}).html(el[0]);
         });
     document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
-    var txt_nb_class = d3.select("#discretization_panel").append("input")
+    let txt_nb_class = d3.select("#discretization_panel").append("input")
         .attrs({type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1})
         .styles({width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)"})
         .on("change", function(){
@@ -649,7 +655,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .append('span')
         .html(i18next.t("disc_box.class"));
 
-    var disc_nb_class = d3.select("#discretization_panel")
+    let disc_nb_class = d3.select("#discretization_panel")
         .insert("input")
         .styles({display: "inline", width: "60px", "vertical-align": "middle", margin: "10px"})
         .attrs({id: "nb_class_range", type: "range"})
@@ -679,7 +685,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
             }
         });
 
-    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
+    let ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
     ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
 
     discretization.node().value = type;
@@ -722,25 +728,25 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
             });
     }
-    var div_svg = newBox.append('div')
+    let div_svg = newBox.append('div')
         .append("svg").attr("id", "svg_discretization")
         .attr("width", svg_w + margin.left + margin.right)
         .attr("height", svg_h + margin.top + margin.bottom);
 
     make_box_histo_option();
 
-    var svg_histo = div_svg.append("g")
+    let svg_histo = div_svg.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var x = d3.scaleLinear()
-        .domain([serie.min(), serie.max()])
+    let x = d3.scaleLinear()
+        .domain([min_serie, max_serie])
         .range([0, svg_w]);
 
-    var y = d3.scaleLinear()
+    let y = d3.scaleLinear()
         .range([svg_h, 0]);
 
-    var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
-        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot, x;
+    let overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
+        line_mean, line_std_right, line_std_left, line_median, txt_median, txt_mean, rug_plot;
 
     make_overlay_elements();
 
@@ -751,7 +757,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
         .scale(x)
         .tickFormat(formatCount));
 
-    var b_accordion_colors = newBox.append("button")
+    let b_accordion_colors = newBox.append("button")
                         .attrs({"class": "accordion_disc active", "id": "btn_acc_disc_color"})
                         .style("padding", "0 6px")
                         .html(i18next.t("disc_box.title_color_scheme")),
@@ -774,10 +780,10 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                         redisplay.draw();
                       });
     });
-    var to_reverse = false;
+    let to_reverse = false;
     document.getElementById("button_sequential").checked = true;
 
-    var b_accordion_breaks = newBox.append("button")
+    let b_accordion_breaks = newBox.append("button")
                         .attrs({"class": "accordion_disc", "id": "btn_acc_disc_break"})
                         .style("padding", "0 6px")
                         .html(i18next.t("disc_box.title_break_values")),
@@ -785,7 +791,7 @@ var display_discretization = function(layer_name, field_name, nb_class, options)
                         .attrs({"class": "panel", "id": "accordion_breaks_vals"})
                         .style("width", "98%");
 
-    var user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
+    let user_defined_breaks =  accordion_breaks.append("div").attr("id","user_breaks");
 
     user_defined_breaks.insert("textarea")
                         .attr("id","user_breaks_area")
@@ -1031,169 +1037,169 @@ function reOpenParent(css_selector){
     }
 }
 
-var prepare_ref_histo = function(parent_node, serie, formatCount){
-    var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
-        svg_w = w / 4 > 320 ? 320 : w / 4,
-        values = serie.sorted(),
-        nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
-    var q5 = serie.getQuantile(4).map(v => +v);
+const prepare_ref_histo = function(parent_node, serie, formatCount){
+  const svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
+      svg_w = w / 4 > 320 ? 320 : w / 4,
+      values = serie.sorted(),
+      nb_bins = 51 < (values.length / 3) ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+  const q5 = serie.getQuantile(4).map(v => +v);
 
-    var m_margin = {top: 10, right: 20, bottom: 10, left: 20},
-        m_width = svg_w - m_margin.right - m_margin.left,
-        m_height = svg_h - m_margin.top - m_margin.bottom;
+  const m_margin = {top: 10, right: 20, bottom: 10, left: 20},
+      m_width = svg_w - m_margin.right - m_margin.left,
+      m_height = svg_h - m_margin.top - m_margin.bottom;
 
-    var ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
-    // ref_histo.node().innerHTML = "";
-    ref_histo.append('p')
-        .attrs({id: 'ref_histo_title'})
-        .styles({"margin": "auto", "text-align": "center"})
-        .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+  const ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
 
-    var c = ref_histo.append("svg").attr("id", "svg_ref_histo")
-        .attr("width", svg_w + m_margin.left + m_margin.right)
-        .attr("height", svg_h + m_margin.top + m_margin.bottom)
-    var svg_ref_histo = c.append("g")
-        .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+  ref_histo.append('p')
+      .attrs({id: 'ref_histo_title'})
+      .styles({"margin": "auto", "text-align": "center"})
+      .html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
-    var x = d3.scaleLinear()
-        .domain([serie.min(), serie.max()])
-        .rangeRound([0, m_width]);
+  let c = ref_histo.append("svg").attr("id", "svg_ref_histo")
+      .attr("width", svg_w + m_margin.left + m_margin.right)
+      .attr("height", svg_h + m_margin.top + m_margin.bottom)
+  let svg_ref_histo = c.append("g")
+      .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
 
-    return function(type){
-        svg_ref_histo.remove();
-        svg_ref_histo = c.append("g")
-          .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
-        if(type == 'histogram'){
-            var data = d3.histogram()
-                .domain(x.domain())
-                .thresholds(x.ticks(nb_bins))
-                (values);
+  let x = d3.scaleLinear()
+      .domain([serie.min(), serie.max()])
+      .rangeRound([0, m_width]);
 
-            var y = d3.scaleLinear()
-                .domain([0, d3.max(data, function(d) { return d.length; })])
-                .range([m_height, 0]);
+  return function(type){
+    svg_ref_histo.remove();
+    svg_ref_histo = c.append("g")
+      .attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+    if(type == 'histogram'){
+      var data = d3.histogram()
+          .domain(x.domain())
+          .thresholds(x.ticks(nb_bins))
+          (values);
 
-            var bar = svg_ref_histo.selectAll(".bar")
-                .data(data)
-              .enter()
-                .append("rect")
-                .attrs( d => ({
-                  "class": "bar", "width": Math.abs(x(d.x1)) - Math.abs(x(d.x0)), "height": m_height - y(d.length), "x": 0,
-                  "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-                }))
-                .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
+      var y = d3.scaleLinear()
+          .domain([0, d3.max(data, function(d) { return d.length; })])
+          .range([m_height, 0]);
 
-            svg_ref_histo.append("g")
-                .style("font-size", "10px")
-                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                .call(d3.axisBottom()
-                    .scale(x)
-                    .ticks(4)
-                    .tickFormat(formatCount))
-                .selectAll("text")
-                    .attr("y", 4)
-                    .attr("x", -4)
-                    .attr("dy", ".45em")
-                    .attr("transform", "rotate(-40)")
-                    .style("text-anchor", "end");
+      var bar = svg_ref_histo.selectAll(".bar")
+          .data(data)
+        .enter()
+          .append("rect")
+          .attrs( d => ({
+            "class": "bar", "width": Math.abs(x(d.x1)) - Math.abs(x(d.x0)), "height": m_height - y(d.length), "x": 0,
+            "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
+          }))
+          .styles({fill: "beige", stroke: "black", "stroke-width": "0.4px"});
 
-            svg_ref_histo.append("g")
-                .attr("class", "y_axis")
-                .style("font-size", "10px")
-                .call(d3.axisLeft()
-                    .scale(y)
-                    .ticks(5)
-                    .tickFormat(d3.format(".0f")));
-        } else if (type == "box_plot") {
-            svg_ref_histo.append("g")
-                .style("font-size", "10px")
-                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                .call(d3.axisBottom()
-                    .scale(x)
-                    .ticks(4)
-                    .tickFormat(formatCount))
-                .selectAll("text")
-                    .attr("y", 4).attr("x", -4)
-                    .attr("dy", ".45em")
-                    .attr("transform", "rotate(-40)")
-                    .style("text-anchor", "end");
+      svg_ref_histo.append("g")
+          .style("font-size", "10px")
+          .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+          .call(d3.axisBottom()
+              .scale(x)
+              .ticks(4)
+              .tickFormat(formatCount))
+          .selectAll("text")
+              .attr("y", 4)
+              .attr("x", -4)
+              .attr("dy", ".45em")
+              .attr("transform", "rotate(-40)")
+              .style("text-anchor", "end");
 
-            var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2
+      svg_ref_histo.append("g")
+          .attr("class", "y_axis")
+          .style("font-size", "10px")
+          .call(d3.axisLeft()
+              .scale(y)
+              .ticks(5)
+              .tickFormat(d3.format(".0f")));
+    } else if (type == "box_plot") {
+      svg_ref_histo.append("g")
+          .style("font-size", "10px")
+          .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+          .call(d3.axisBottom()
+              .scale(x)
+              .ticks(4)
+              .tickFormat(formatCount))
+          .selectAll("text")
+              .attr("y", 4).attr("x", -4)
+              .attr("dy", ".45em")
+              .attr("transform", "rotate(-40)")
+              .style("text-anchor", "end");
 
-            var min = svg_ref_histo.append('g')
-                    .insert('line')
-                    .attrs({x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "none"});
+      var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2
 
-            var rect = svg_ref_histo.append('g')
-                    .insert('rect')
-                    .attrs({x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
+      var min = svg_ref_histo.append('g')
+              .insert('line')
+              .attrs({x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2})
+              .styles({"stroke-width": 1, stroke: "black", fill: "none"});
 
-            var med = svg_ref_histo.append('g')
-                    .insert('line')
-                    .attrs({x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2:  m_height - m_margin.bottom})
-                    .styles({"stroke-width": 3, stroke: "black", fill: "none"});
+      var rect = svg_ref_histo.append('g')
+              .insert('rect')
+              .attrs({x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top})
+              .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
 
-            var rect = svg_ref_histo.append('g')
-                    .insert('rect')
-                    .attrs({x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
+      var med = svg_ref_histo.append('g')
+              .insert('line')
+              .attrs({x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2:  m_height - m_margin.bottom})
+              .styles({"stroke-width": 3, stroke: "black", fill: "none"});
 
-            var max = svg_ref_histo.append('g')
-                    .insert('line')
-                    .attrs({x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "none"});
+      var rect = svg_ref_histo.append('g')
+              .insert('rect')
+              .attrs({x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top})
+              .styles({"stroke-width": 1, stroke: "black", fill: "lightblue"});
 
-            var interline_min = svg_ref_histo.append('g')
-                    .insert('line')
-                    .attrs({x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
+      var max = svg_ref_histo.append('g')
+              .insert('line')
+              .attrs({x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2})
+              .styles({"stroke-width": 1, stroke: "black", fill: "none"});
 
-            var interline_max = svg_ref_histo.append('g')
-                    .insert('line')
-                    .attrs({x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid})
-                    .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
-        } else if (type == "beeswarm"){
-            var data = values.map(v => ({value: +v}));
+      var interline_min = svg_ref_histo.append('g')
+              .insert('line')
+              .attrs({x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid})
+              .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
 
-            var simulation = d3.forceSimulation(data)
-                .force("x", d3.forceX(d => x(d.value)).strength(1))
-                .force("y", d3.forceY(m_height / 2).strength(2))
-                .force("collide", d3.forceCollide(4))
-                .stop();
+      var interline_max = svg_ref_histo.append('g')
+              .insert('line')
+              .attrs({x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid})
+              .styles({"stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3'});
+    } else if (type == "beeswarm"){
+      var data = values.map(v => ({value: +v}));
 
-            for (var i = 0; i < 75; ++i)
-                simulation.tick();
+      var simulation = d3.forceSimulation(data)
+          .force("x", d3.forceX(d => x(d.value)).strength(1))
+          .force("y", d3.forceY(m_height / 2).strength(2))
+          .force("collide", d3.forceCollide(4))
+          .stop();
 
-            svg_ref_histo.append("g")
-                .style("font-size", "10px")
-                .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
-                .call(d3.axisBottom()
-                    .scale(x)
-                    .ticks(4)
-                    .tickFormat(formatCount))
-                .selectAll("text")
-                    .attr("y", 4).attr("x", -4)
-                    .attr("dy", ".45em")
-                    .attr("transform", "rotate(-40)")
-                    .style("text-anchor", "end");
+      for (let i = 0; i < 75; ++i){
+          simulation.tick();
+      }
+      svg_ref_histo.append("g")
+          .style("font-size", "10px")
+          .attrs({'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')'})
+          .call(d3.axisBottom()
+              .scale(x)
+              .ticks(4)
+              .tickFormat(formatCount))
+          .selectAll("text")
+              .attr("y", 4).attr("x", -4)
+              .attr("dy", ".45em")
+              .attr("transform", "rotate(-40)")
+              .style("text-anchor", "end");
 
-            var cell = svg_ref_histo.append("g")
-                .attr("class", "cells")
-              .selectAll("g").data(d3.voronoi()
-                  .extent([[0, 0], [m_width, m_height]])
-                  .x(d => d.x).y(d => d.y)
-                .polygons(data)).enter().append("g");
+      var cell = svg_ref_histo.append("g")
+          .attr("class", "cells")
+        .selectAll("g").data(d3.voronoi()
+            .extent([[0, 0], [m_width, m_height]])
+            .x(d => d.x).y(d => d.y)
+          .polygons(data)).enter().append("g");
 
-            cell.append("circle")
-                .attrs(d => {
-                    if(d) return {
-                    r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1, transform: 'translate(' + d.data.x + ',' + d.data.y + ')'};
-                  });
+      cell.append("circle")
+          .attrs(d => {
+              if(d) return {
+              r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1, transform: 'translate(' + d.data.x + ',' + d.data.y + ')'};
+            });
 
-            cell.append("path")
-                .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
-        }
-    };
+      cell.append("path")
+          .attr('d', d => {if(d) return 'M' + d.join('L') + 'Z'; });
+    }
+  };
 };
