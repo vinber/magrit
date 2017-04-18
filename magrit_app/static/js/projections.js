@@ -358,13 +358,13 @@ const createBoxCustomProjection = function(){
 			.html(i18next.t('app_page.section5.projection_center_lambda'));
 	let lambda_input = lambda_section.append('input')
 			.styles({'width': '60px', 'float': 'right'})
-			.attrs({type: 'number', value: prev_rotate ? prev_rotate[0] : 0, min: -180, max: 180, step: 0.50})
+			.attrs({type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50})
 			.on("input", function(){
 					if(this.value > 180)
 							this.value = 180;
 					else if (this.value < -180)
 							this.value = -180;
-					handle_proj_center_button([this.value, null, null]);
+					handle_proj_center_button([-this.value, null, null]);
 			});
 
 	let phi_section = rotate_section.append('p')
@@ -374,13 +374,13 @@ const createBoxCustomProjection = function(){
 			.html(i18next.t('app_page.section5.projection_center_phi'));
 	let phi_input = phi_section.append('input')
 			.styles({'width': '60px', 'float': 'right'})
-			.attrs({type: 'number', value: prev_rotate ? prev_rotate[1] : 0, min: -180, max: 180, step: 0.5})
+			.attrs({type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5})
 			.on("input", function(){
 					if(this.value > 180)
 							this.value = 180;
 					else if (this.value < -180)
 							this.value = -180;
-					handle_proj_center_button([null, this.value, null]);
+					handle_proj_center_button([null, -this.value, null]);
 			});
 
 	let gamma_section = rotate_section.append('p')
@@ -390,13 +390,13 @@ const createBoxCustomProjection = function(){
 			.html(i18next.t('app_page.section5.projection_center_gamma'));
 	let gamma_input = gamma_section.append('input')
 			.styles({'width': '60px', 'float': 'right'})
-			.attrs({type: 'number', value: prev_rotate ? prev_rotate[2] : 0, min: -90, max: 90, step: 0.5})
+			.attrs({type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5})
 			.on("input", function(){
 					if(this.value > 90)
 							this.value = 90;
 					else if (this.value < -90)
 							this.value = -90;
-					handle_proj_center_button([null, null, this.value]);
+					handle_proj_center_button([null, null, -this.value]);
 			});
 	// }
 	// if(prev_parallels){

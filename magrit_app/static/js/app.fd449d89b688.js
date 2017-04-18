@@ -19,7 +19,6 @@ Function.prototype.memoized = function () {
         this._memo.values.set(key, JSON.stringify(cache_value));
         this._memo.stack.push(key);
         if (this._memo.stack.length >= this._memo.max_size) {
-            t;
             var old_key = this._memo.stack.shift();
             this._memo.values.delete(old_key);
         }
@@ -12287,7 +12286,9 @@ var Textbox = function () {
                 for (var i = 0; i < snap_lines_x.length; i++) {
                     if (Math.abs(snap_lines_x[i] - xmin) < 10) {
                         (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            var _y1 = Math.min(snap_lines_y[i], ymin);
+                            var _y2 = Math.max(snap_lines_y[i], ymax);
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2 }).style('stroke', 'red');
                             setTimeout(function () {
                                 l.remove();
                             }, 1000);
@@ -12296,7 +12297,9 @@ var Textbox = function () {
                     }
                     if (Math.abs(snap_lines_x[i] - xmax) < 10) {
                         (function () {
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
+                            var _y1 = Math.min(snap_lines_y[i], ymin);
+                            var _y2 = Math.max(snap_lines_y[i], ymax);
+                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2 }).style('stroke', 'red');
                             setTimeout(function () {
                                 l.remove();
                             }, 1000);
@@ -12304,22 +12307,16 @@ var Textbox = function () {
                         })();
                     }
                     if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            _this3.parentElement.y.baseVal.value = snap_lines_y[i];
-                        })();
+                        var x1 = Math.min(snap_lines_x[i], xmin);
+                        var x2 = Math.max(snap_lines_x[i], xmax);
+                        make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
+                        this.parentElement.y.baseVal.value = snap_lines_y[i];
                     }
                     if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                        (function () {
-                            var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            _this3.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
-                        })();
+                        var _x4 = Math.min(snap_lines_x[i], xmin);
+                        var _x5 = Math.max(snap_lines_x[i], xmax);
+                        make_red_line_snap(_x4, _x5, snap_lines_y[i], snap_lines_y[i]);
+                        this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
                     }
                 }
             }
@@ -13665,6 +13662,14 @@ function make_legend_context_menu(legend_node, layer) {
     });
 }
 
+var make_red_line_snap = function make_red_line_snap(x1, x2, y1, y2) {
+    var timeout = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 750;
+
+    var line = map.append('line').attrs({ x1: x1, x2: x2, y1: y1, y2: y2 }).styles({ stroke: 'red', 'stroke-width': 0.7 });
+    setTimeout(function (_) {
+        line.remove();
+    }, timeout);
+};
 var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
         var t = d3.select(this),
@@ -13714,44 +13719,32 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                 snap_lines_y = d3.event.subject.snap_lines.y;
             for (var i = 0; i < snap_lines_x.length; i++) {
                 if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
-                        change = true;
-                    })();
+                    var _y1 = Math.min(snap_lines_y[i], ymin);
+                    var _y2 = Math.max(snap_lines_y[i], ymax);
+                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y1, _y2);
+                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
+                    change = true;
                 }
                 if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
-                        change = true;
-                    })();
+                    var _y = Math.min(snap_lines_y[i], ymin);
+                    var _y3 = Math.max(snap_lines_y[i], ymax);
+                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y, _y3);
+                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
+                    change = true;
                 }
                 if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        val_y = snap_lines_y[i] - d3.event.subject.offset[1];
-                        change = true;
-                    })();
+                    var x1 = Math.min(snap_lines_x[i], xmin);
+                    var x2 = Math.max(snap_lines_x[i], xmax);
+                    make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
+                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
+                    change = true;
                 }
                 if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                    (function () {
-                        var l = map.append('line').attrs({ x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i] }).style('stroke', 'red');
-                        setTimeout(function () {
-                            l.remove();
-                        }, 1000);
-                        val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
-                        change = true;
-                    })();
+                    var _x2 = Math.min(snap_lines_x[i], xmin);
+                    var _x3 = Math.max(snap_lines_x[i], xmax);
+                    make_red_line_snap(_x2, _x3, snap_lines_y[i], snap_lines_y[i]);
+                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
+                    change = true;
                 }
             }
         }
@@ -16135,23 +16128,23 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		var rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
 		var lambda_section = rotate_section.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
-		var lambda_input = lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 }).on("input", function () {
+		var lambda_input = lambda_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 }).on("input", function () {
 				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-				handle_proj_center_button([this.value, null, null]);
+				handle_proj_center_button([-this.value, null, null]);
 		});
 
 		var phi_section = rotate_section.append('p').style('clear', 'both');
 		phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
-		var phi_input = phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 }).on("input", function () {
+		var phi_input = phi_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 }).on("input", function () {
 				if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
-				handle_proj_center_button([null, this.value, null]);
+				handle_proj_center_button([null, -this.value, null]);
 		});
 
 		var gamma_section = rotate_section.append('p').style('clear', 'both');
 		gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
-		var gamma_input = gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
+		var gamma_input = gamma_section.append('input').styles({ 'width': '60px', 'float': 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 }).on("input", function () {
 				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
-				handle_proj_center_button([null, null, this.value]);
+				handle_proj_center_button([null, null, -this.value]);
 		});
 		// }
 		// if(prev_parallels){

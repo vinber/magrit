@@ -382,27 +382,31 @@ class Textbox {
                         snap_lines_y = d3.event.subject.snap_lines.y;
                     for(let i = 0; i < snap_lines_x.length; i++){
                         if(Math.abs(snap_lines_x[i] - xmin) < 10){
+                          let _y1 = Math.min(snap_lines_y[i], ymin);
+                          let _y2 = Math.max(snap_lines_y[i], ymax);
                           let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
                           setTimeout(function(){ l.remove(); }, 1000);
                           this.parentElement.x.baseVal.value = snap_lines_x[i];
                         }
                         if(Math.abs(snap_lines_x[i] - xmax) < 10){
+                          let _y1 = Math.min(snap_lines_y[i], ymin);
+                          let _y2 = Math.max(snap_lines_y[i], ymax);
                           let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
                           setTimeout(function(){ l.remove(); }, 1000);
                           this.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
                         }
                         if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                          let l = map.append('line')
-                              .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
+                          let x1 = Math.min(snap_lines_x[i], xmin);
+                          let x2 = Math.max(snap_lines_x[i], xmax);
+                          make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
                           this.parentElement.y.baseVal.value = snap_lines_y[i];
                         }
                         if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                          let l = map.append('line')
-                                .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
+                          let x1 = Math.min(snap_lines_x[i], xmin);
+                          let x2 = Math.max(snap_lines_x[i], xmax);
+                          make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
                           this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
                         }
                     }
