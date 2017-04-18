@@ -11926,7 +11926,7 @@ var UserArrow = function () {
         }
         var self = this;
         this.drag_behavior = d3.drag().subject(function () {
-            var snap_lines = get_coords_snap_lines(this.id + this.className);
+            // let snap_lines = get_coords_snap_lines(this.id + this.className);
             var t = d3.select(this.querySelector("line"));
             return { x: +t.attr("x2") - +t.attr("x1"),
                 y: +t.attr("y2") - +t.attr("y1"),
@@ -12270,8 +12270,6 @@ var Textbox = function () {
             if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
             pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
         }).on("drag", function () {
-            var _this3 = this;
-
             d3.event.sourceEvent.preventDefault();
             d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
 
@@ -12284,39 +12282,34 @@ var Textbox = function () {
                     snap_lines_x = d3.event.subject.snap_lines.x,
                     snap_lines_y = d3.event.subject.snap_lines.y;
                 for (var i = 0; i < snap_lines_x.length; i++) {
-                    if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                        (function () {
-                            var _y1 = Math.min(snap_lines_y[i], ymin);
-                            var _y2 = Math.max(snap_lines_y[i], ymax);
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2 }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            _this3.parentElement.x.baseVal.value = snap_lines_x[i];
-                        })();
+                    if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+                        var _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                        var _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                        // let l = map.append('line')
+                        //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
+                        // setTimeout(function(){ l.remove(); }, 1000);
+                        make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                        this.parentElement.x.baseVal.value = snap_lines_x[i][0];
                     }
-                    if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                        (function () {
-                            var _y1 = Math.min(snap_lines_y[i], ymin);
-                            var _y2 = Math.max(snap_lines_y[i], ymax);
-                            var l = map.append('line').attrs({ x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2 }).style('stroke', 'red');
-                            setTimeout(function () {
-                                l.remove();
-                            }, 1000);
-                            _this3.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
-                        })();
+                    if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+                        var _y = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                        var _y3 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                        // let l = map.append('line')
+                        //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
+                        make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
+                        this.parentElement.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
                     }
-                    if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                        var x1 = Math.min(snap_lines_x[i], xmin);
-                        var x2 = Math.max(snap_lines_x[i], xmax);
-                        make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                        this.parentElement.y.baseVal.value = snap_lines_y[i];
+                    if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+                        var x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                        var x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                        make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                        this.parentElement.y.baseVal.value = snap_lines_y[i][0];
                     }
-                    if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                        var _x4 = Math.min(snap_lines_x[i], xmin);
-                        var _x5 = Math.max(snap_lines_x[i], xmax);
-                        make_red_line_snap(_x4, _x5, snap_lines_y[i], snap_lines_y[i]);
-                        this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                    if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+                        var _x4 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                        var _x5 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                        make_red_line_snap(_x4, _x5, snap_lines_y[i][0], snap_lines_y[i][0]);
+                        this.parentElement.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
                     }
                 }
             }
@@ -12395,7 +12388,7 @@ var Textbox = function () {
     }, {
         key: "editStyle",
         value: function editStyle() {
-            var _this4 = this;
+            var _this3 = this;
 
             var map_xy0 = get_map_xy0();
             var self = this,
@@ -12474,7 +12467,7 @@ var Textbox = function () {
                 font_select.append("option").text(font[0]).attr("value", font[1]);
             });
             font_select.node().selectedIndex = available_fonts.map(function (d) {
-                return d[1] == _this4.font_family ? "1" : "0";
+                return d[1] == _this3.font_family ? "1" : "0";
             }).indexOf("1");
 
             options_font.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: 0.1, value: this.fontsize }).style('width', '60px').on("change", function () {
@@ -12579,7 +12572,7 @@ var Textbox = function () {
 
 var scaleBar = {
     create: function create(x, y) {
-        var _this5 = this;
+        var _this4 = this;
 
         if (!proj.invert) {
             swal({ title: "",
@@ -12611,13 +12604,13 @@ var scaleBar = {
 
         var getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                    _this5.editStyle();
+                    _this4.editStyle();
                 } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                    _this5.up_element();
+                    _this4.up_element();
                 } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                    _this5.down_element();
+                    _this4.down_element();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                    _this5.remove();
+                    _this4.remove();
                 } }];
         };
 
@@ -12797,7 +12790,7 @@ var scaleBar = {
 
 var northArrow = {
     display: function display(x, y) {
-        var _this6 = this;
+        var _this5 = this;
 
         var x_pos = x || w - 100,
             y_pos = y || h - 100,
@@ -12879,13 +12872,13 @@ var northArrow = {
 
         var getItems = function getItems() {
             return [{ "name": i18next.t("app_page.common.options"), "action": function action() {
-                    _this6.editStyle();
+                    _this5.editStyle();
                 } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                    _this6.up_element();
+                    _this5.up_element();
                 } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                    _this6.down_element();
+                    _this5.down_element();
                 } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                    _this6.remove();
+                    _this5.remove();
                 } }];
         };
 
@@ -13073,18 +13066,18 @@ var UserRectangle = function () {
     }, {
         key: "draw",
         value: function draw() {
-            var _this7 = this;
+            var _this6 = this;
 
             var context_menu = new ContextMenu(),
                 getItems = function getItems() {
                 return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                        _this7.editStyle();
+                        _this6.editStyle();
                     } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                        _this7.up_element();
+                        _this6.up_element();
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                        _this7.down_element();
+                        _this6.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this7.remove();
+                        _this6.remove();
                     } }];
             };
 
@@ -13101,7 +13094,7 @@ var UserRectangle = function () {
             }).on('dblclick', function () {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
-                _this7.handle_ctrl_pt();
+                _this6.handle_ctrl_pt();
             }).call(this.drag_behavior);
             // pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
         }
@@ -13288,18 +13281,18 @@ var UserEllipse = function () {
     _createClass(UserEllipse, [{
         key: "draw",
         value: function draw() {
-            var _this8 = this;
+            var _this7 = this;
 
             var context_menu = new ContextMenu(),
                 getItems = function getItems() {
                 return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                        _this8.editStyle();
+                        _this7.editStyle();
                     } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                        _this8.up_element();
+                        _this7.up_element();
                     } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                        _this8.down_element();
+                        _this7.down_element();
                     } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                        _this8.remove();
+                        _this7.remove();
                     } }];
             };
 
@@ -13315,7 +13308,7 @@ var UserEllipse = function () {
             }).on('dblclick', function () {
                 d3.event.preventDefault();
                 d3.event.stopPropagation();
-                _this8.handle_ctrl_pt();
+                _this7.handle_ctrl_pt();
             }).call(this.drag_behavior);
             // pos_lgds_elem.set(this.ellipse.id, e.node().getBoundingClientRect());
         }
@@ -13487,15 +13480,26 @@ var UserEllipse = function () {
     return UserEllipse;
 }();
 
+// TODO : refactor in order
+
+
 var get_coords_snap_lines = function get_coords_snap_lines(uid) {
     var snap_lines = { x: [], y: [] };
-    var xy_map = get_map_xy0();
+
+    var _get_map_xy = get_map_xy0(),
+        x = _get_map_xy.x,
+        y = _get_map_xy.y;
+
     pos_lgds_elem.forEach(function (v, k) {
         if (k != uid) {
-            snap_lines.y.push(v.bottom - xy_map.y);
-            snap_lines.y.push(v.top - xy_map.y);
-            snap_lines.x.push(v.left - xy_map.x);
-            snap_lines.x.push(v.right - xy_map.x);
+            snap_lines.y.push([v.bottom - y, v.top - y]);
+            snap_lines.y.push([v.top - y, v.bottom - y]);
+            snap_lines.x.push([v.left - x, v.right - x]);
+            snap_lines.x.push([v.right - x, v.left - x]);
+            // snap_lines.y.push(v.bottom - y0);
+            // snap_lines.y.push(v.top - y0);
+            // snap_lines.x.push(v.left - x0);
+            // snap_lines.x.push(v.right - x0);
         }
     });
     return snap_lines;
@@ -13665,10 +13669,17 @@ function make_legend_context_menu(legend_node, layer) {
 var make_red_line_snap = function make_red_line_snap(x1, x2, y1, y2) {
     var timeout = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 750;
 
-    var line = map.append('line').attrs({ x1: x1, x2: x2, y1: y1, y2: y2 }).styles({ stroke: 'red', 'stroke-width': 0.7 });
-    setTimeout(function (_) {
-        line.remove();
-    }, timeout);
+    var current_timeout = void 0;
+    return function () {
+        if (current_timeout) {
+            clearTimeout(current_timeout);
+        }
+        map.select('.snap_line').remove();
+        var line = map.append('line').attrs({ x1: x1, x2: x2, y1: y1, y2: y2, class: 'snap_line' }).styles({ stroke: 'red', 'stroke-width': 0.7 });
+        current_timeout = setTimeout(function (_) {
+            line.remove();
+        }, timeout);
+    }();
 };
 var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
@@ -13718,32 +13729,32 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             var snap_lines_x = d3.event.subject.snap_lines.x,
                 snap_lines_y = d3.event.subject.snap_lines.y;
             for (var i = 0; i < snap_lines_x.length; i++) {
-                if (Math.abs(snap_lines_x[i] - xmin) < 10) {
-                    var _y1 = Math.min(snap_lines_y[i], ymin);
-                    var _y2 = Math.max(snap_lines_y[i], ymax);
-                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y1, _y2);
-                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
+                if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+                    var _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    var _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                    val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
                     change = true;
                 }
-                if (Math.abs(snap_lines_x[i] - xmax) < 10) {
-                    var _y = Math.min(snap_lines_y[i], ymin);
-                    var _y3 = Math.max(snap_lines_y[i], ymax);
-                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y, _y3);
-                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
+                if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+                    var _y = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    var _y3 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
+                    val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
                     change = true;
                 }
-                if (Math.abs(snap_lines_y[i] - ymin) < 10) {
-                    var x1 = Math.min(snap_lines_x[i], xmin);
-                    var x2 = Math.max(snap_lines_x[i], xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
+                if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+                    var x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    var x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                    val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
                     change = true;
                 }
-                if (Math.abs(snap_lines_y[i] - ymax) < 10) {
-                    var _x2 = Math.min(snap_lines_x[i], xmin);
-                    var _x3 = Math.max(snap_lines_x[i], xmax);
-                    make_red_line_snap(_x2, _x3, snap_lines_y[i], snap_lines_y[i]);
-                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
+                if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+                    var _x2 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    var _x3 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    make_red_line_snap(_x2, _x3, snap_lines_y[i][0], snap_lines_y[i][0]);
+                    val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
                     change = true;
                 }
             }

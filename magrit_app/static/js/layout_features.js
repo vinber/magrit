@@ -19,7 +19,7 @@ class UserArrow {
         let self = this;
         this.drag_behavior = d3.drag()
              .subject(function() {
-                    let snap_lines = get_coords_snap_lines(this.id + this.className);
+                    // let snap_lines = get_coords_snap_lines(this.id + this.className);
                     let t = d3.select(this.querySelector("line"));
                     return { x: +t.attr("x2") - +t.attr("x1"),
                              y: +t.attr("y2") - +t.attr("y1"),
@@ -381,33 +381,34 @@ class Textbox {
                         snap_lines_x = d3.event.subject.snap_lines.x,
                         snap_lines_y = d3.event.subject.snap_lines.y;
                     for(let i = 0; i < snap_lines_x.length; i++){
-                        if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                          let _y1 = Math.min(snap_lines_y[i], ymin);
-                          let _y2 = Math.max(snap_lines_y[i], ymax);
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          this.parentElement.x.baseVal.value = snap_lines_x[i];
+                        if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
+                          let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                          let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                          // let l = map.append('line')
+                          //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
+                          // setTimeout(function(){ l.remove(); }, 1000);
+                          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                          this.parentElement.x.baseVal.value = snap_lines_x[i][0];
                         }
-                        if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                          let _y1 = Math.min(snap_lines_y[i], ymin);
-                          let _y2 = Math.max(snap_lines_y[i], ymax);
-                          let l = map.append('line')
-                              .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
-                          setTimeout(function(){ l.remove(); }, 1000);
-                          this.parentElement.x.baseVal.value = snap_lines_x[i] - bbox.width;
+                        if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
+                          let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                          let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                          // let l = map.append('line')
+                          //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
+                          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                          this.parentElement.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
                         }
-                        if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                          let x1 = Math.min(snap_lines_x[i], xmin);
-                          let x2 = Math.max(snap_lines_x[i], xmax);
-                          make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                          this.parentElement.y.baseVal.value = snap_lines_y[i];
+                        if(Math.abs(snap_lines_y[i][0] - ymin) < 10){
+                          let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                          let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                          make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                          this.parentElement.y.baseVal.value = snap_lines_y[i][0];
                         }
-                        if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                          let x1 = Math.min(snap_lines_x[i], xmin);
-                          let x2 = Math.max(snap_lines_x[i], xmax);
-                          make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                          this.parentElement.y.baseVal.value = snap_lines_y[i] - bbox.height;
+                        if(Math.abs(snap_lines_y[i][0] - ymax) < 10){
+                          let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                          let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                          make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                          this.parentElement.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
                         }
                     }
                 }
@@ -1696,15 +1697,20 @@ class UserEllipse {
     }
  }
 
+// TODO : refactor in order
 const get_coords_snap_lines = function(uid){
     let snap_lines = {x: [], y: []};
-    let xy_map = get_map_xy0();
+    let { x, y } = get_map_xy0();
     pos_lgds_elem.forEach((v,k) => {
         if(k != uid){
-            snap_lines.y.push(v.bottom - xy_map.y);
-            snap_lines.y.push(v.top - xy_map.y);
-            snap_lines.x.push(v.left - xy_map.x);
-            snap_lines.x.push(v.right - xy_map.x);
+            snap_lines.y.push([v.bottom - y, v.top - y]);
+            snap_lines.y.push([v.top - y, v.bottom - y]);
+            snap_lines.x.push([v.left - x, v.right - x]);
+            snap_lines.x.push([v.right - x, v.left - x]);
+            // snap_lines.y.push(v.bottom - y0);
+            // snap_lines.y.push(v.top - y0);
+            // snap_lines.x.push(v.left - x0);
+            // snap_lines.x.push(v.right - x0);
         }
     });
     return snap_lines;

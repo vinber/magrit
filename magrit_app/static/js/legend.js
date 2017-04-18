@@ -173,10 +173,17 @@ function make_legend_context_menu(legend_node, layer){
 }
 
 const make_red_line_snap = function(x1, x2, y1, y2, timeout=750){
-  let line = map.append('line')
-      .attrs({x1: x1, x2: x2, y1: y1, y2: y2})
-      .styles({stroke: 'red', 'stroke-width': 0.7});
-  setTimeout(_ => { line.remove(); }, timeout);
+  let current_timeout;
+  return (function(){
+    if(current_timeout){
+      clearTimeout(current_timeout);
+    }
+    map.select('.snap_line').remove();
+    let line = map.append('line')
+        .attrs({x1: x1, x2: x2, y1: y1, y2: y2, class: 'snap_line'})
+        .styles({stroke: 'red', 'stroke-width': 0.7});
+    current_timeout = setTimeout(_ => { line.remove(); }, timeout);
+  })();
 }
 var drag_legend_func = function(legend_group){
     return d3.drag()
@@ -226,32 +233,32 @@ var drag_legend_func = function(legend_group){
               let snap_lines_x = d3.event.subject.snap_lines.x,
                   snap_lines_y = d3.event.subject.snap_lines.y;
               for(let i = 0; i < snap_lines_x.length; i++){
-                  if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                    let _y1 = Math.min(snap_lines_y[i], ymin);
-                    let _y2 = Math.max(snap_lines_y[i], ymax);
-                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y1, _y2);
-                    val_x = snap_lines_x[i] - d3.event.subject.offset[0];;
+                  if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
+                    let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                    val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
                     change = true;
                   }
-                  if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                    let _y1 = Math.min(snap_lines_y[i], ymin);
-                    let _y2 = Math.max(snap_lines_y[i], ymax);
-                    make_red_line_snap(snap_lines_x[i], snap_lines_x[i], _y1, _y2);
-                    val_x = snap_lines_x[i] - bbox_elem.width - d3.event.subject.offset[0];
+                  if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
+                    let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                    val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
                     change = true;
                   }
-                  if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                    let x1 = Math.min(snap_lines_x[i], xmin);
-                    let x2 = Math.max(snap_lines_x[i], xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                    val_y = snap_lines_y[i] - d3.event.subject.offset[1];
+                  if(Math.abs(snap_lines_y[i][0] - ymin) < 10){
+                    let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                    val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
                     change = true;
                   }
-                  if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                    let x1 = Math.min(snap_lines_x[i], xmin);
-                    let x2 = Math.max(snap_lines_x[i], xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i], snap_lines_y[i]);
-                    val_y = snap_lines_y[i] - bbox_elem.height - d3.event.subject.offset[1];
+                  if(Math.abs(snap_lines_y[i][0] - ymax) < 10){
+                    let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                    val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
                     change = true;
                   }
               }
