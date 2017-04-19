@@ -15929,7 +15929,7 @@ var createBoxProj4 = function createBoxProj4() {
 				helper_esc_key_twbs_cb(evt, clean_up_box);
 		};
 		var _onclose_valid = function _onclose_valid() {
-				var proj_str = document.getElementById('input_proj_string').value;
+				var proj_str = document.getElementById('input_proj_string').value.trim();
 				clean_up_box();
 				// if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
 				// 		return;
@@ -16053,9 +16053,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				if (proj.rotate) {
 						rotate_section.style('display', '');
 						var param_rotate = proj.rotate();
-						lambda_input.node().value = param_rotate[0];
-						phi_input.node().value = param_rotate[1];
-						gamma_input.node().value = param_rotate[2];
+						lambda_input.node().value = -param_rotate[0];
+						phi_input.node().value = -param_rotate[1];
+						gamma_input.node().value = -param_rotate[2];
 				} else {
 						rotate_section.style('display', 'none');
 				}

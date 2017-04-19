@@ -117,7 +117,7 @@ const createBoxProj4 = function(){
 	};
 	let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, clean_up_box); };
 	let _onclose_valid = () => {
-			let proj_str = document.getElementById('input_proj_string').value;
+			let proj_str = document.getElementById('input_proj_string').value.trim();
 			clean_up_box();
 			// if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
 			// 		return;
@@ -226,9 +226,9 @@ const createBoxCustomProjection = function(){
 			if(proj.rotate){
 					rotate_section.style('display', '');
 					let param_rotate = proj.rotate();
-					lambda_input.node().value = param_rotate[0];
-					phi_input.node().value = param_rotate[1];
-					gamma_input.node().value = param_rotate[2];
+					lambda_input.node().value = -param_rotate[0];
+					phi_input.node().value = -param_rotate[1];
+					gamma_input.node().value = -param_rotate[2];
 			} else {
 					rotate_section.style('display', 'none');
 			}
