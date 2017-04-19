@@ -4,13 +4,6 @@
 
 [Magrit](http://magrit.cnrs.fr) is an online mapping application developped by [UMS RIATE](http://www.riate.cnrs.fr).  
 
-## Examples :
-<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/><img src="https://raw.githubusercontent.com/mthh/magrit/master/magrit_app/static/img/gallery/popdensity_africa.png" height="250"/></p>
-
-More examples are available in the [gallery](http://magrit.hypotheses.org/galerie).
-
-
-
 ## Usage
 
 Most users should go on :
@@ -26,14 +19,20 @@ The only targeted/tested OS is currently GNU/Linux.
 We use js/D3 for map rendering and interface.
 Python for complex geoprocessing
 
-
-
-
 Magrit can be served or build by 3 mmeans
 
 - [docker]()
 - [clone]()
 - [python virt env]()
+
+
+
+## Examples :
+<p><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/smoothed2.png" height="250"/><img src="https://raw.githubusercontent.com/mthh/magrit/master/magrit_app/static/img/gallery/popdensity_africa.png" height="250"/></p>
+
+More examples are available in the [gallery](http://magrit.hypotheses.org/galerie).
+
+
 
 
 
