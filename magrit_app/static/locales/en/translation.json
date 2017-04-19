@@ -350,7 +350,7 @@
             "us_states": "U.S.A states <i>(Polygons)</i>",
             "more_basemaps": "More basemaps...",
             "back_sample": "Back to sample datasets",
-            "extra_basemaps_info": "These basemaps include, for each country, the geometries of the first inter-state administrative level and variables of stock (population at two dates) and ratio (population density and growth rate). The basemaps come from the Natural Earth Data site.<a id=\"link1\">Natural Earth Data</a>. Other metadata are available on their <a id=\"link2\">repository page</a>."
+            "extra_basemaps_info": "These basemaps include, for each country, the geometries of the first subnational administrative level and variables of stock (population at two dates) and ratio (population density and growth rate). The basemaps come from the Natural Earth Data site.<a id=\"link1\">Natural Earth Data</a>. Other metadata are available on their <a id=\"link2\">repository page</a>."
         },
         "export_box": {
             "geo": "Export layers to a geographic format",
