@@ -12805,7 +12805,7 @@ var northArrow = {
 
         this.drag_behavior = d3.drag().subject(function () {
             var t = d3.select(this.querySelector("image"));
-            var snap_lines = get_coords_snap_lines(this.id);
+            // let snap_lines = get_coords_snap_lines(this.id);
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
@@ -13480,9 +13480,6 @@ var UserEllipse = function () {
     return UserEllipse;
 }();
 
-// TODO : refactor in order
-
-
 var get_coords_snap_lines = function get_coords_snap_lines(uid) {
     var snap_lines = { x: [], y: [] };
 
@@ -13496,10 +13493,6 @@ var get_coords_snap_lines = function get_coords_snap_lines(uid) {
             snap_lines.y.push([v.top - y, v.bottom - y]);
             snap_lines.x.push([v.left - x, v.right - x]);
             snap_lines.x.push([v.right - x, v.left - x]);
-            // snap_lines.y.push(v.bottom - y0);
-            // snap_lines.y.push(v.top - y0);
-            // snap_lines.x.push(v.left - x0);
-            // snap_lines.x.push(v.right - x0);
         }
     });
     return snap_lines;
@@ -13686,6 +13679,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
         var t = d3.select(this),
             prev_translate = t.attr("transform"),
             snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
+        console.log(t.attr('id') + ' ' + t.attr('class'));
         prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
@@ -13703,6 +13697,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }).on("end", function () {
         if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         legend_group.style("cursor", "grab");
+        console.log(legend_group.attr('id') + ' ' + legend_group.attr('class'));
         pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
     }).on("drag", function () {
         var prev_value = legend_group.attr("transform");
@@ -14286,15 +14281,17 @@ function createLegend_choro(layer, field, title, subtitle) {
                 return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
             });
         })();
-    } else legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
-        return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-        return d.value;
-    });
-
+    } else {
+        legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
+            return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
+        }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+            return d.value;
+        });
+    }
     if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
         var gp_no_data = legend_root.append("g");
-        gp_no_data.append('rect').attrs({ x: xpos + boxheight, y: last_pos + 2 * boxheight }).attr('width', boxwidth).attr('height', boxheight).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
+        gp_no_data.append('rect').attrs({ x: xpos + boxheight, y: last_pos + 2 * boxheight,
+            width: boxwidth, height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
 
         gp_no_data.append('text').attrs({ x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt" }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : "No data");
 

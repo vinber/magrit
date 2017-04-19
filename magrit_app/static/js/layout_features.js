@@ -957,7 +957,7 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    let snap_lines = get_coords_snap_lines(this.id);
+                    // let snap_lines = get_coords_snap_lines(this.id);
                     return {
                         x: +t.attr("x"),
                         y: +t.attr("y"),
@@ -1697,7 +1697,6 @@ class UserEllipse {
     }
  }
 
-// TODO : refactor in order
 const get_coords_snap_lines = function(uid){
     let snap_lines = {x: [], y: []};
     let { x, y } = get_map_xy0();
@@ -1707,10 +1706,6 @@ const get_coords_snap_lines = function(uid){
             snap_lines.y.push([v.top - y, v.bottom - y]);
             snap_lines.x.push([v.left - x, v.right - x]);
             snap_lines.x.push([v.right - x, v.left - x]);
-            // snap_lines.y.push(v.bottom - y0);
-            // snap_lines.y.push(v.top - y0);
-            // snap_lines.x.push(v.left - x0);
-            // snap_lines.x.push(v.right - x0);
         }
     });
     return snap_lines;
