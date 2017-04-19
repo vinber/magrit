@@ -14,17 +14,16 @@ Most users should go on :
 
 ## Instruction for developpers
 
-The only targeted/tested OS is currently GNU/Linux. 
+The only targeted/tested OS is currently GNU/Linux.
 
-We use js/D3 for map rendering and interface.
-Python for complex geoprocessing
+Magrit use JS (particularly the D3 library) in the browser for interface and map rendering.
+Some geoprocessings are delegated to the server part: a python 3.5+ application.
 
-Magrit can be served or build by 3 mmeans
+Magrit can be served or build by various means:
 
-- [docker]()
-- [clone]()
-- [python virt env]()
-
+- [Installing for developpement](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-1---installing-for-developpement-with-no-virtual-environnement-)
+- [Installing for developpement (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-2---installing-for-developpement)
+- [Deploying with Docker](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-3---deploying-the-application-thanks-to-docker)
 
 
 ## Examples :
@@ -33,16 +32,10 @@ Magrit can be served or build by 3 mmeans
 More examples are available in the [gallery](http://magrit.hypotheses.org/galerie).
 
 
-
-
-
-
-
 ## Contributing to Magrit :
+
 Contributions are welcome! There are various way to contribute to the project:
 - Feedback and bug reports
 - Translation (French, English and Spanish languages are currently available)
 - Code contribution (you're one the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
 - Contribute to the [gallery](http://magrit.hypotheses.org/galerie)
-
-
