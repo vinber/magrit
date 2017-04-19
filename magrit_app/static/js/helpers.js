@@ -315,7 +315,9 @@ var type_col2 = function(table, field, skip_if_empty_values=false){
     for(let j = 0, len = fields.length; j < len; ++j){
         field = fields[j];
         let has_dup = dups[field];
-        if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
+        if(field.toLowerCase() === 'id' && !has_dup){
+            result.push({name: field, type: "id", has_duplicate: has_dup});
+        } else if(tmp[field].every(ft => ft === "stock" || ft === "empty") && tmp[field].indexOf("stock") > -1)
             result.push({name: field, type: "stock", has_duplicate: has_dup});
         else if (tmp[field].every(ft => ft === "string" || ft === "empty") && tmp[field].indexOf("string") > -1)
             result.push({name: field, type: "category", has_duplicate: has_dup});

@@ -7581,7 +7581,9 @@ var type_col2 = function type_col2(table, field) {
     for (var _j2 = 0, _len2 = fields.length; _j2 < _len2; ++_j2) {
         field = fields[_j2];
         var has_dup = dups[field];
-        if (tmp[field].every(function (ft) {
+        if (field.toLowerCase() === 'id' && !has_dup) {
+            result.push({ name: field, type: "id", has_duplicate: has_dup });
+        } else if (tmp[field].every(function (ft) {
             return ft === "stock" || ft === "empty";
         }) && tmp[field].indexOf("stock") > -1) result.push({ name: field, type: "stock", has_duplicate: has_dup });else if (tmp[field].every(function (ft) {
             return ft === "string" || ft === "empty";
@@ -9454,6 +9456,9 @@ function setSphereBottom() {
 function add_layout_feature(selected_feature) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
+    if (document.body.style.cursor === "not-allowed") {
+        return;
+    }
     if (selected_feature == "text_annot") {
         var existing_annotation = document.getElementsByClassName("txt_annot"),
             existing_id = [],
@@ -12285,17 +12290,12 @@ var Textbox = function () {
                     if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
                         var _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
                         var _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                        // let l = map.append('line')
-                        //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
-                        // setTimeout(function(){ l.remove(); }, 1000);
                         make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                         this.parentElement.x.baseVal.value = snap_lines_x[i][0];
                     }
                     if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
                         var _y = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
                         var _y3 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                        // let l = map.append('line')
-                        //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
                         make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
                         this.parentElement.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
                     }
@@ -12306,9 +12306,9 @@ var Textbox = function () {
                         this.parentElement.y.baseVal.value = snap_lines_y[i][0];
                     }
                     if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-                        var _x4 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                        var _x5 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                        make_red_line_snap(_x4, _x5, snap_lines_y[i][0], snap_lines_y[i][0]);
+                        var _x5 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                        var _x6 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                        make_red_line_snap(_x5, _x6, snap_lines_y[i][0], snap_lines_y[i][0]);
                         this.parentElement.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
                     }
                 }
@@ -12357,7 +12357,7 @@ var Textbox = function () {
         });
 
         inner_ft.on("mouseover", function () {
-            inner_ft.style("background-color", "#0080001a");
+            inner_ft.style("background-color", "rgba(0, 128, 0, 0.1)");
             // toogle the size of the container to 100% while we are using it :
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
@@ -12615,7 +12615,7 @@ var scaleBar = {
         };
 
         var scale_context_menu = new ContextMenu();
-        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 7.5, y: y_pos - 20, height: 30, width: this.bar_size + 15, id: "under_rect" }).styles({ "fill": "green", "fill-opacity": 0 });
+        this.under_rect = scale_gp.insert("rect").attrs({ x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: "under_rect" }).styles({ "fill": "green", "fill-opacity": 0 });
         scale_gp.insert("rect").attr("id", "rect_scale").attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style("fill", "black");
         scale_gp.insert("text").attr("id", "text_limit_sup_scale").attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ "font": "11px 'Enriqueta', arial, serif",
             "text-anchor": "middle" }).text(this.dist_txt + " km");
@@ -12683,7 +12683,7 @@ var scaleBar = {
         this.Scale.select("#text_limit_sup_scale").attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
-        this.under_rect.attr("width", new_size + 15);
+        this.under_rect.attr("width", new_size + 20);
         var err = this.getDist();
         if (err) {
             this.remove();
@@ -12805,12 +12805,12 @@ var northArrow = {
 
         this.drag_behavior = d3.drag().subject(function () {
             var t = d3.select(this.querySelector("image"));
-            // let snap_lines = get_coords_snap_lines(this.id);
+            var snap_lines = get_coords_snap_lines(this.id);
             return {
                 x: +t.attr("x"),
                 y: +t.attr("y"),
-                map_locked: map_div.select("#hand_button").classed("locked") ? true : false
-                // , snap_lines: snap_lines
+                map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                snap_lines: snap_lines
             };
         }).on("start", function () {
             d3.event.sourceEvent.stopPropagation();
@@ -12826,48 +12826,54 @@ var northArrow = {
                 ty = +d3.event.y,
                 dim = t2.width.baseVal.value / 2;
             if (tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim) return;
-            // if(_app.autoalign_features){
-            //     let bbox = this.getBoundingClientRect(),
-            //         xy0_map = get_map_xy0(),
-            //         xmin = t2.x.baseVal.value,
-            //         xmax = xmin + bbox.width,
-            //         ymin = t2.y.baseVal.value,
-            //         ymax = ymin + bbox.height,
-            //         snap_lines_x = d3.event.subject.snap_lines.x,
-            //         snap_lines_y = d3.event.subject.snap_lines.y;
-            //     for(let i = 0; i < snap_lines_x.length; i++){
-            //         if(Math.abs(snap_lines_x[i] - xmin) < 10){
-            //           let l = map.append('line')
-            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-            //           setTimeout(function(){ l.remove(); }, 1000);
-            //           tx = snap_lines_x[i];
-            //         }
-            //         if(Math.abs(snap_lines_x[i] - xmax) < 10){
-            //           let l = map.append('line')
-            //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-            //           setTimeout(function(){ l.remove(); }, 1000);
-            //           tx = snap_lines_x[i] - bbox.width;
-            //         }
-            //         if(Math.abs(snap_lines_y[i] - ymin) < 10){
-            //           let l = map.append('line')
-            //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-            //           setTimeout(function(){ l.remove(); }, 1000);
-            //           ty = snap_lines_y[i];
-            //         }
-            //         if(Math.abs(snap_lines_y[i] - ymax) < 10){
-            //           let l = map.append('line')
-            //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-            //           setTimeout(function(){ l.remove(); }, 1000);
-            //           ty = snap_lines_y[i] - bbox.height;
-            //         }
-            //     }
-            // }
             t1.x.baseVal.value = tx;
             t1.y.baseVal.value = ty;
             t2.x.baseVal.value = tx - 7.5;
             t2.y.baseVal.value = ty - 7.5;
-            self.x_center = tx + dim;
-            self.y_center = ty + dim;
+            self.x_center = tx - 7.5 + dim;
+            self.y_center = ty - 7.5 + dim;
+            if (_app.autoalign_features) {
+                var _bbox = t2.getBoundingClientRect(),
+                    _xy0_map = get_map_xy0(),
+                    xmin = t2.x.baseVal.value,
+                    xmax = xmin + _bbox.width,
+                    ymin = t2.y.baseVal.value,
+                    ymax = ymin + _bbox.height,
+                    snap_lines_x = d3.event.subject.snap_lines.x,
+                    snap_lines_y = d3.event.subject.snap_lines.y;
+                for (var i = 0; i < snap_lines_x.length; i++) {
+                    if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+                        var _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                        var _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                        make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                        tx = snap_lines_x[i][0] + 7.5;
+                    }
+                    if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+                        var _y4 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                        var _y5 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                        make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y4, _y5);
+                        tx = snap_lines_x[i][0] - _bbox.width + 7.5;
+                    }
+                    if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+                        var _x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                        var _x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                        make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                        ty = snap_lines_y[i][0] + 7.5;
+                    }
+                    if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+                        var _x7 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                        var _x8 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                        make_red_line_snap(_x7, _x8, snap_lines_y[i][0], snap_lines_y[i][0]);
+                        ty = snap_lines_y[i][0] - _bbox.height + 7.5;
+                    }
+                }
+                t1.x.baseVal.value = tx;
+                t1.y.baseVal.value = ty;
+                t2.x.baseVal.value = tx - 7.5;
+                t2.y.baseVal.value = ty - 7.5;
+                self.x_center = tx - 7.5 + dim;
+                self.y_center = ty - 7.5 + dim;
+            }
         });
 
         var getItems = function getItems() {
@@ -13674,12 +13680,12 @@ var make_red_line_snap = function make_red_line_snap(x1, x2, y1, y2) {
         }, timeout);
     }();
 };
+
 var drag_legend_func = function drag_legend_func(legend_group) {
     return d3.drag().subject(function () {
         var t = d3.select(this),
             prev_translate = t.attr("transform"),
             snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
-        console.log(t.attr('id') + ' ' + t.attr('class'));
         prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
@@ -13697,14 +13703,15 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }).on("end", function () {
         if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
         legend_group.style("cursor", "grab");
-        console.log(legend_group.attr('id') + ' ' + legend_group.attr('class'));
         pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
     }).on("drag", function () {
+        var Min = Math.min;
+        var Max = Math.max;
+        var new_value = [d3.event.x, d3.event.y];
         var prev_value = legend_group.attr("transform");
         prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
             return +f;
         }) : [0, 0];
-        var new_value = [d3.event.x, d3.event.y];
 
         legend_group.attr('transform', 'translate(' + new_value + ')').style("cursor", "grabbing");
 
@@ -13725,29 +13732,29 @@ var drag_legend_func = function drag_legend_func(legend_group) {
                 snap_lines_y = d3.event.subject.snap_lines.y;
             for (var i = 0; i < snap_lines_x.length; i++) {
                 if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
-                    var _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    var _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    var _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    var _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
                     make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                     val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
                     change = true;
                 }
                 if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
-                    var _y = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    var _y3 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                    var _y = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    var _y3 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
                     make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
                     val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
                     change = true;
                 }
                 if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
-                    var x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    var x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    var x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    var x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
                     make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
                     val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
                     change = true;
                 }
                 if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-                    var _x2 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    var _x3 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                    var _x2 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    var _x3 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
                     make_red_line_snap(_x2, _x3, snap_lines_y[i][0], snap_lines_y[i][0]);
                     val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
                     change = true;
@@ -13763,7 +13770,9 @@ var drag_legend_func = function drag_legend_func(legend_group) {
             val_y = prev_value[1];
             change = true;
         }
-        if (change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
+        if (change) {
+            legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
+        }
     });
 };
 
@@ -13895,19 +13904,16 @@ function make_underlying_rect(legend_root, under_rect, fill) {
         return +d;
     }) : [0, 0];
 
-    var bbox = {
-        x_top_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
-        y_top_left: bbox_legend.top - map_xy0.y - 5 - translate[1],
-        x_top_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
-        y_top_right: bbox_legend.top - map_xy0.y - 5 - translate[1],
-        x_bottom_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
-        y_bottom_left: bbox_legend.bottom - map_xy0.y + 5 - translate[1]
-    };
-    var rect_height = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_bottom_left, bbox.y_bottom_left]),
-        rect_width = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_top_right, bbox.y_top_right]);
+    var x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
+        y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
+        x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
+        y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
 
-    under_rect.attrs({ "id": "under_rect", "height": rect_height, "width": rect_width });
-    under_rect.attr("x", bbox.x_top_left).attr("y", bbox.y_top_left);
+    var rect_height = y_bottom_left - y_top_left,
+        rect_width = x_top_right - x_top_left;
+
+    under_rect.attrs({ id: "under_rect", x: x_top_left, y: y_top_left,
+        height: rect_height, width: rect_width });
 
     if (!fill || !fill.color || !fill.opacity) {
         under_rect.style("fill", "green").style("fill-opacity", 0);

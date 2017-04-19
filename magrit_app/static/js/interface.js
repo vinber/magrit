@@ -1127,6 +1127,9 @@ function setSphereBottom(){
 
 
 function add_layout_feature(selected_feature, options = {}){
+    if(document.body.style.cursor === "not-allowed"){
+        return;
+    }
     if(selected_feature == "text_annot"){
         let existing_annotation = document.getElementsByClassName("txt_annot"),
             existing_id = [],

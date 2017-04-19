@@ -185,97 +185,100 @@ const make_red_line_snap = function(x1, x2, y1, y2, timeout=750){
     current_timeout = setTimeout(_ => { line.remove(); }, timeout);
   })();
 }
-var drag_legend_func = function(legend_group){
-    return d3.drag()
-       .subject(function() {
-              var t = d3.select(this),
-                  prev_translate = t.attr("transform"),
-                  snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
-              console.log(t.attr('id') + ' ' + t.attr('class'));
-              prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
-              return {
-                  x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
-                  map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-                  map_offset: get_map_xy0(),
-                  snap_lines: snap_lines,
-                  offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
-              };
-          })
-      .on("start", () => {
-          d3.event.sourceEvent.stopPropagation();
-          d3.event.sourceEvent.preventDefault();
-          handle_click_hand("lock");
-        })
-      .on("end", function(){
-          if(d3.event.subject && !d3.event.subject.map_locked)
-            handle_click_hand("unlock");
-          legend_group.style("cursor", "grab");
-          console.log(legend_group.attr('id') + ' ' + legend_group.attr('class'))
-          pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
-        })
-      .on("drag", () => {
-          let prev_value = legend_group.attr("transform");
-          prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(f => +f) : [0, 0];
-          let new_value = [d3.event.x, d3.event.y];
 
-          legend_group.attr('transform', 'translate(' + new_value + ')')
-                  .style("cursor", "grabbing");
+const drag_legend_func = function(legend_group){
+  return d3.drag()
+    .subject(function() {
+      let t = d3.select(this),
+          prev_translate = t.attr("transform"),
+          snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
+      prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+      return {
+          x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
+          map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+          map_offset: get_map_xy0(),
+          snap_lines: snap_lines,
+          offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
+      };
+    })
+    .on("start", () => {
+        d3.event.sourceEvent.stopPropagation();
+        d3.event.sourceEvent.preventDefault();
+        handle_click_hand("lock");
+      })
+    .on("end", function(){
+        if(d3.event.subject && !d3.event.subject.map_locked)
+          handle_click_hand("unlock");
+        legend_group.style("cursor", "grab");
+        pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
+      })
+    .on("drag", () => {
+      const Min = Math.min;
+      const Max = Math.max;
+      let new_value = [d3.event.x, d3.event.y];
+      let prev_value = legend_group.attr("transform");
+      prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(f => +f) : [0, 0];
 
-          let bbox_elem = legend_group.node().getBoundingClientRect(),
-              map_offset = d3.event.subject.map_offset,
-              val_x = d3.event.x, val_y = d3.event.y, change;
+      legend_group.attr('transform', 'translate(' + new_value + ')')
+          .style("cursor", "grabbing");
 
-          if(_app.autoalign_features){
-              let xy0 = get_map_xy0(),
-                  xmin = bbox_elem.left - xy0.x,
-                  xmax = bbox_elem.right - xy0.x,
-                  ymin = bbox_elem.top - xy0.y,
-                  ymax = bbox_elem.bottom - xy0.y;
+      let bbox_elem = legend_group.node().getBoundingClientRect(),
+          map_offset = d3.event.subject.map_offset,
+          val_x = d3.event.x, val_y = d3.event.y, change;
 
-              let snap_lines_x = d3.event.subject.snap_lines.x,
-                  snap_lines_y = d3.event.subject.snap_lines.y;
-              for(let i = 0; i < snap_lines_x.length; i++){
-                  if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
-                    let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-                    val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
-                    change = true;
-                  }
-                  if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
-                    let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-                    val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
-                    change = true;
-                  }
-                  if(Math.abs(snap_lines_y[i][0] - ymin) < 10){
-                    let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
-                    change = true;
-                  }
-                  if(Math.abs(snap_lines_y[i][0] - ymax) < 10){
-                    let x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    let x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
-                    change = true;
-                  }
-              }
+      if(_app.autoalign_features){
+        let xy0 = get_map_xy0(),
+            xmin = bbox_elem.left - xy0.x,
+            xmax = bbox_elem.right - xy0.x,
+            ymin = bbox_elem.top - xy0.y,
+            ymax = bbox_elem.bottom - xy0.y;
+
+        let snap_lines_x = d3.event.subject.snap_lines.x,
+            snap_lines_y = d3.event.subject.snap_lines.y;
+        for(let i = 0; i < snap_lines_x.length; i++){
+          if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
+            let _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            let _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+            val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
+            change = true;
           }
+          if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
+            let _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            let _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+            val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
+            change = true;
+          }
+          if(Math.abs(snap_lines_y[i][0] - ymin) < 10){
+            let x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            let x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+            val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
+            change = true;
+          }
+          if(Math.abs(snap_lines_y[i][0] - ymax) < 10){
+            let x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            let x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+            val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
+            change = true;
+          }
+        }
+      }
 
-          if(bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)){
-              val_x = prev_value[0];
-              change = true;
-          }
-          if(bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)){
-              val_y = prev_value[1];
-              change = true;
-          }
-          if(change) legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
-        });
+      if(bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)){
+        val_x = prev_value[0];
+        change = true;
+      }
+      if(bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)){
+        val_y = prev_value[1];
+        change = true;
+      }
+      if(change){
+        legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
+      }
+    });
 }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
@@ -403,19 +406,16 @@ function make_underlying_rect(legend_root, under_rect, fill){
             ? translate.split("translate(")[1].split(")")[0].split(",").map(d => +d)
             : [0, 0];
 
-    let bbox = {
-        x_top_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
-        y_top_left: bbox_legend.top - map_xy0.y - 5 - translate[1],
-        x_top_right: bbox_legend.right - map_xy0.x + 5 - translate[0],
-        y_top_right: bbox_legend.top - map_xy0.y - 5 - translate[1],
-        x_bottom_left: bbox_legend.left - map_xy0.x - 5 - translate[0],
-        y_bottom_left: bbox_legend.bottom - map_xy0.y + 5 - translate[1]
-    }
-    let rect_height = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_bottom_left, bbox.y_bottom_left]),
-        rect_width = get_distance([bbox.x_top_left, bbox.y_top_left], [bbox.x_top_right, bbox.y_top_right]);
+    let x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
+        y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
+        x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
+        y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
 
-    under_rect.attrs({"id": "under_rect", "height": rect_height, "width": rect_width});
-    under_rect.attr("x", bbox.x_top_left).attr("y", bbox.y_top_left)
+    let rect_height = y_bottom_left - y_top_left,
+        rect_width = x_top_right - x_top_left;
+
+    under_rect.attrs({id: "under_rect", x: x_top_left, y: y_top_left,
+                      height: rect_height, width: rect_width});
 
     if(!fill || (!fill.color || !fill.opacity)){
         under_rect.style("fill", "green")

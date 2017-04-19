@@ -384,17 +384,12 @@ class Textbox {
                         if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
                           let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
                           let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                          // let l = map.append('line')
-                          //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
-                          // setTimeout(function(){ l.remove(); }, 1000);
                           make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                           this.parentElement.x.baseVal.value = snap_lines_x[i][0];
                         }
                         if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
                           let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
                           let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                          // let l = map.append('line')
-                          //     .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: _y1, y2: _y2}).style('stroke', 'red');
                           make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                           this.parentElement.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
                         }
@@ -460,7 +455,7 @@ class Textbox {
         });
 
         inner_ft.on("mouseover", () => {
-            inner_ft.style("background-color", "#0080001a");
+            inner_ft.style("background-color", "rgba(0, 128, 0, 0.1)");
             // toogle the size of the container to 100% while we are using it :
             foreign_obj.setAttributeNS(null, "width", "100%");
             foreign_obj.setAttributeNS(null, "height", "100%");
@@ -724,7 +719,7 @@ var scaleBar = {
 
         let scale_context_menu = new ContextMenu();
         this.under_rect = scale_gp.insert("rect")
-            .attrs({x: x_pos - 7.5, y: y_pos - 20, height: 30, width: this.bar_size + 15, id: "under_rect"})
+            .attrs({x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: "under_rect"})
             .styles({"fill": "green", "fill-opacity": 0});
         scale_gp.insert("rect").attr("id", "rect_scale")
             .attrs({x: x_pos, y: y_pos, height: 2, width: this.bar_size})
@@ -804,7 +799,7 @@ var scaleBar = {
                   .attr("x", this.x + new_size / 2);
         this.bar_size = new_size;
         this.fixed_size = desired_dist;
-        this.under_rect.attr("width", new_size + 15);
+        this.under_rect.attr("width", new_size + 20);
         let err = this.getDist();
         if(err){
             this.remove();
@@ -957,12 +952,12 @@ var northArrow = {
         this.drag_behavior = d3.drag()
              .subject(function() {
                     let t = d3.select(this.querySelector("image"));
-                    // let snap_lines = get_coords_snap_lines(this.id);
+                    let snap_lines = get_coords_snap_lines(this.id);
                     return {
                         x: +t.attr("x"),
                         y: +t.attr("y"),
-                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
-                        // , snap_lines: snap_lines
+                        map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+                        snap_lines: snap_lines
                     };
               })
             .on("start", () => {
@@ -983,48 +978,54 @@ var northArrow = {
                     dim = t2.width.baseVal.value / 2;
                 if(tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim)
                   return;
-                // if(_app.autoalign_features){
-                //     let bbox = this.getBoundingClientRect(),
-                //         xy0_map = get_map_xy0(),
-                //         xmin = t2.x.baseVal.value,
-                //         xmax = xmin + bbox.width,
-                //         ymin = t2.y.baseVal.value,
-                //         ymax = ymin + bbox.height,
-                //         snap_lines_x = d3.event.subject.snap_lines.x,
-                //         snap_lines_y = d3.event.subject.snap_lines.y;
-                //     for(let i = 0; i < snap_lines_x.length; i++){
-                //         if(Math.abs(snap_lines_x[i] - xmin) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           tx = snap_lines_x[i];
-                //         }
-                //         if(Math.abs(snap_lines_x[i] - xmax) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           tx = snap_lines_x[i] - bbox.width;
-                //         }
-                //         if(Math.abs(snap_lines_y[i] - ymin) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           ty = snap_lines_y[i];
-                //         }
-                //         if(Math.abs(snap_lines_y[i] - ymax) < 10){
-                //           let l = map.append('line')
-                //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           ty = snap_lines_y[i] - bbox.height;
-                //         }
-                //     }
-                // }
                 t1.x.baseVal.value = tx;
                 t1.y.baseVal.value = ty;
                 t2.x.baseVal.value = tx - 7.5;
                 t2.y.baseVal.value = ty - 7.5;
-                self.x_center = tx + dim;
-                self.y_center = ty + dim;
+                self.x_center = tx - 7.5 + dim;
+                self.y_center = ty - 7.5 + dim;
+                if(_app.autoalign_features){
+                    let bbox = t2.getBoundingClientRect(),
+                        xy0_map = get_map_xy0(),
+                        xmin = t2.x.baseVal.value,
+                        xmax = xmin + bbox.width,
+                        ymin = t2.y.baseVal.value,
+                        ymax = ymin + bbox.height,
+                        snap_lines_x = d3.event.subject.snap_lines.x,
+                        snap_lines_y = d3.event.subject.snap_lines.y;
+                    for(let i = 0; i < snap_lines_x.length; i++){
+                        if(Math.abs(snap_lines_x[i][0] - xmin) < 10){
+                          let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                          let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                          tx = snap_lines_x[i][0] + 7.5;
+                        }
+                        if(Math.abs(snap_lines_x[i][0] - xmax) < 10){
+                          let _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                          let _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+                          tx = snap_lines_x[i][0] - bbox.width + 7.5;
+                        }
+                        if(Math.abs(snap_lines_y[i][0] - ymin) < 10){
+                          let _x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                          let _x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                          make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                          ty = snap_lines_y[i][0] + 7.5;
+                        }
+                        if(Math.abs(snap_lines_y[i][0] - ymax) < 10){
+                          let _x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                          let _x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                          make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+                          ty = snap_lines_y[i][0] - bbox.height + 7.5;
+                        }
+                    }
+                t1.x.baseVal.value = tx;
+                t1.y.baseVal.value = ty;
+                t2.x.baseVal.value = tx - 7.5;
+                t2.y.baseVal.value = ty - 7.5;
+                self.x_center = tx - 7.5 + dim;
+                self.y_center = ty - 7.5 + dim;
+                }
               });
 
         let getItems = () => [
