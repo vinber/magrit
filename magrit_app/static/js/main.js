@@ -968,14 +968,17 @@ function setUpInterface(reload_project)
         },
     });
 
-    if(reload_project){
-        if(reload_project.indexOf('/') > -1){
-          let url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
-          xhrequest("GET", url, undefined, true)
-            .then((data) => {
-              apply_user_preferences(data);
-            });
+    if (reload_project) {
+        let url;
+        if(reload_project.startsWith('http')){
+          url = reload_project;
+        } else {
+          url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
         }
+        xhrequest("GET", url, undefined, true)
+          .then((data) => {
+            apply_user_preferences(data);
+          });
     } else {
       // Check if there is a project to reload in the localStorage :
       let last_project = window.localStorage.getItem("magrit_project");
@@ -1008,28 +1011,22 @@ function setUpInterface(reload_project)
 }
 
 function encodeId(s) {
-    if (s==='') return '_';
-    return s.replace(/[^a-zA-Z0-9_-]/g, function(match) {
-        return '_'+match[0].charCodeAt(0).toString(16)+'_';
-    });
+    if (s === '') return '_';
+    return s.replace(/[^a-zA-Z0-9_-]/g, match => '_' + match[0].charCodeAt(0).toString(16) + '_');
 }
 
 function bindTooltips(dataAttr="tooltip-title"){
     // bind the mains tooltips
-    // let existing_tooltips = document.querySelectorAll(".bs_tooltip");
-    // for(let i = existing_tooltips.length - 1; i > -1; i--){
-    //     existing_tooltips[i].remove();
-    // }
-    let tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
-    for(let i = tooltips_elem.length - 1; i > -1; i--){
-        new Tooltip(tooltips_elem[i], {
-            dataAttr: dataAttr,
-            animation: "slideNfade",
-            duration: 50,
-            delay: 100,
-            container: document.getElementById("twbs"),
-        });
-    }
+  let tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
+  for (let i = tooltips_elem.length - 1; i > -1; i--) {
+    new Tooltip(tooltips_elem[i], {
+      dataAttr: dataAttr,
+      animation: 'slideNfade',
+      duration: 50,
+      delay: 100,
+      container: document.getElementById('twbs'),
+    });
+  }
 }
 
 
@@ -1305,7 +1302,7 @@ function parseQuery(search) {
       kvp = arg.split('=');
       key = decodeURIComponent(kvp[0]).trim();
       value = decodeURIComponent(kvp[1]).trim();
-      argsParsed[key] = value;
+      argsParsed[key] = decodeURIComponent(kvp[1]).trim();
     }
   }
   return argsParsed;
@@ -1317,7 +1314,8 @@ function parseQuery(search) {
   document.querySelector('noscript').remove();
 
   if (window.location.search) {
-    params = parseQuery(window.location.search);
+    let parsed_querystring = parseQuery(window.location.search);
+    params.reload = parsed_querystring.reload;
     if (typeof (history.replaceState) !== 'undefined') {
       // replaceState should avoid creating a new entry on the history
       let obj = { Page: window.location.search, Url: window.location.pathname };

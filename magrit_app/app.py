@@ -143,7 +143,6 @@ async def cache_input_topojson(request):
         name = posted_data.get('layer_name')
         path = request.app['db_layers'][name]
         hash_val = str(mmh3_hash(path))
-        fp_name = '_'.join([user_id, name])
         f_name = '_'.join([user_id, hash_val])
 
         asyncio.ensure_future(
@@ -244,7 +243,8 @@ async def convert(request):
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
-        layer_name = shp_path.replace(''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
+        layer_name = shp_path.replace(
+            ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
         hashed_input = mmh3_file(shp_path)
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"

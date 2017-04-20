@@ -784,12 +784,15 @@ function setUpInterface(reload_project) {
     });
 
     if (reload_project) {
-        if (reload_project.indexOf('/') > -1) {
-            var url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
-            xhrequest("GET", url, undefined, true).then(function (data) {
-                apply_user_preferences(data);
-            });
+        var url = void 0;
+        if (reload_project.startsWith('http')) {
+            url = reload_project;
+        } else {
+            url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
         }
+        xhrequest("GET", url, undefined, true).then(function (data) {
+            apply_user_preferences(data);
+        });
     } else {
         // Check if there is a project to reload in the localStorage :
         var last_project = window.localStorage.getItem("magrit_project");
@@ -832,18 +835,14 @@ function bindTooltips() {
     var dataAttr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "tooltip-title";
 
     // bind the mains tooltips
-    // let existing_tooltips = document.querySelectorAll(".bs_tooltip");
-    // for(let i = existing_tooltips.length - 1; i > -1; i--){
-    //     existing_tooltips[i].remove();
-    // }
     var tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
     for (var i = tooltips_elem.length - 1; i > -1; i--) {
         new Tooltip(tooltips_elem[i], {
             dataAttr: dataAttr,
-            animation: "slideNfade",
+            animation: 'slideNfade',
             duration: 50,
             delay: 100,
-            container: document.getElementById("twbs")
+            container: document.getElementById('twbs')
         });
     }
 }
@@ -1057,7 +1056,7 @@ function parseQuery(search) {
             kvp = arg.split('=');
             key = decodeURIComponent(kvp[0]).trim();
             value = decodeURIComponent(kvp[1]).trim();
-            argsParsed[key] = value;
+            argsParsed[key] = decodeURIComponent(kvp[1]).trim();
         }
     }
     return argsParsed;
@@ -1069,7 +1068,8 @@ function parseQuery(search) {
     document.querySelector('noscript').remove();
 
     if (window.location.search) {
-        params = parseQuery(window.location.search);
+        var parsed_querystring = parseQuery(window.location.search);
+        params.reload = parsed_querystring.reload;
         if (typeof history.replaceState !== 'undefined') {
             // replaceState should avoid creating a new entry on the history
             var obj = { Page: window.location.search, Url: window.location.pathname };

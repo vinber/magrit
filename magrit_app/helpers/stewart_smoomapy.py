@@ -24,6 +24,7 @@ def save_reload(result):
             None
     return res
 
+
 def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                    user_defined_breaks=None, mask=None):
     """
@@ -38,13 +39,14 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
                            output="GeoDataFrame",
                            new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
-    if mask == None:
+    if not mask:
         res = save_reload(result)
     else:
         res = json.loads(result[::-1].to_json())
     repairCoordsPole(res)
     return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]})
+
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,
                       beta=2, typefct='exponential',
@@ -95,7 +97,7 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     _min, _max = result[["min", "max"]].values.T.tolist()
 #    return (result[::-1].to_json().encode(),
 #            {"min": _min[::-1], "max": _max[::-1]})
-    if mask == None:
+    if not mask:
         # Woo silly me :
         res = save_reload(result)
     else:

@@ -8,9 +8,9 @@ import logging
 from subprocess import Popen, PIPE
 from concurrent.futures import ThreadPoolExecutor
 
-logger = logging.getLogger("magrit_app.watch_change")
 
-files_to_watch = [
+logger = logging.getLogger("magrit_app.watch_change")
+files = [
     'helpers.js',
     'projection_others.js',
     'helpers_calc.js',
@@ -33,12 +33,16 @@ files_to_watch = [
     'map_project.js'
     ]
 
+
 class JsFileWatcher:
-    def __init__(self, files_to_watch=files_to_watch, loop=None, base='static/js/'):
+    def __init__(self, files_to_watch=files, loop=None, base='static/js/'):
         self.loop = loop or asyncio.get_event_loop()
         watcher = aionotify.Watcher()
         for file in files_to_watch:
-            watcher.watch(alias='modif' + file, path=base+file, flags=aionotify.Flags.MODIFY)
+            watcher.watch(
+                alias='modif' + file,
+                path=base + file,
+                flags=aionotify.Flags.MODIFY)
         self.watcher = watcher
         self.tp = ThreadPoolExecutor(2)
         asyncio.ensure_future(self.run(), loop=self.loop)
@@ -57,7 +61,8 @@ class JsFileWatcher:
             nonlocal working
             working = True
             logger.info('Building JS file ...')
-            p = Popen([sys.executable, '../misc/jsbuild/build.py'], stdout=PIPE, stderr=PIPE)
+            p = Popen([sys.executable, '../misc/jsbuild/build.py'],
+                      stdout=PIPE, stderr=PIPE)
             p.communicate()
             logger.info('Done')
             working = False
@@ -67,6 +72,7 @@ class JsFileWatcher:
         while True:
             event = await self.watcher.get_event()
             if not working:
-                asyncio.ensure_future(self.loop.run_in_executor(self.tp, onchange, event))
+                asyncio.ensure_future(
+                    self.loop.run_in_executor(self.tp, onchange, event))
             else:
                 logger.info('Busy...')

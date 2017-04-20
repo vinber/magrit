@@ -17,14 +17,15 @@ from .cartogram_doug import make_cartogram
 
 
 def _compute_centroids(geometries, argmax=np.argmax):
-	res = []
-	for geom in geometries:
-		if hasattr(geom, '__len__'):
-			ix_biggest = argmax([g.area for g in geom])
-			res.append(geom[ix_biggest].centroid)
-		else:
-			res.append(geom.centroid)
-	return res
+    res = []
+    for geom in geometries:
+        if hasattr(geom, '__len__'):
+            ix_biggest = argmax([g.area for g in geom])
+            res.append(geom[ix_biggest].centroid)
+        else:
+            res.append(geom.centroid)
+    return res
+
 
 def get_proj4_string(wkt_proj):
     if not wkt_proj:
@@ -42,22 +43,22 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
     gdf.set_index(join_field, inplace=True, drop=False)
     gdf.geometry = _compute_centroids(gdf.geometry)
-    csv_table = pd_read_json(csv_table)
-    csv_table = csv_table[csv_table[field_i].isin(gdf.index) & csv_table[field_j].isin(gdf.index)]
+    table = pd_read_json(csv_table)
+    table = \
+        table[table[field_i].isin(gdf.index) & table[field_j].isin(gdf.index)]
     geoms_loc = gdf.geometry.loc
     ft_template_start = \
         '''{"type":"Feature","geometry":{"type":"LineString","coordinates":['''
     geojson_features = []
-    for n, id_i, id_j, fij in csv_table[[field_i, field_j, field_fij]].itertuples():
-#        pt1, pt2 = \
-#            list(geoms_loc[id_i].coords)[0], list(geoms_loc[id_j].coords)[0]
+    for n, id_i, id_j, fij in table[[field_i, field_j, field_fij]].itertuples():
         pts = \
             list(geoms_loc[id_i].coords)[0] + list(geoms_loc[id_j].coords)[0]
         geojson_features.append(''.join([
                 ft_template_start,
                 '''[{0},{1}],[{2},{3}]'''.format(*pts),
                 ''']},"properties":{"''',
-                '''{0}":"{1}","{2}":"{3}","{4}":"{5}"'''.format(field_i, id_i, field_j, id_j, field_fij, fij),
+                '''{0}":"{1}","{2}":"{3}","{4}":"{5}"'''
+                .format(field_i, id_i, field_j, id_j, field_fij, fij),
                 '''}}'''
                 ])
             )
@@ -83,42 +84,42 @@ def make_carto_doug(file_path, field_name, iterations):
 
 
 def olson_transform(geojson, scale_values):
-	"""
-	Inplace scaling transformation of each polygon of the geojson provided
-	according to the "scale values" also provided.
+    """
+    Inplace scaling transformation of each polygon of the geojson provided
+    according to the "scale values" also provided.
 
-	Args:
-	    geojson, dict:
-	        The geojson of polygon to transform
-	        (it might be useful to have choosen an appropriate projection as we
-	        want to deal with the area)
-	    scale_values:
-	        The pre-computed scale values for olson transformation
-	        (1 = no transformation)
-	Return:
-	    Nothing
-	"""
-	if len(geojson["features"]) != len(scale_values):
-		raise ValueError("Inconsistent number of features/values")
-	for val, feature in zip(scale_values, geojson['features']):
-		geom = shape(feature["geometry"])
-		feature['properties']['ref_area'] = geom.area
-		if hasattr(geom, '__len__'):
-			feature["geometry"] = mapping(
-				MultiPolygon([scale(g, xfact=val, yfact=val) for g in geom]))
-		else:
-			feature["geometry"] = mapping(
-				scale(geom, xfact=val, yfact=val))
-	geojson['features'].sort(key=lambda x: x['properties']['ref_area'], reverse=True)
+    Args:
+        geojson, dict:
+            The geojson of polygon to transform
+            (it might be useful to have choosen an appropriate projection as we
+            want to deal with the area)
+        scale_values:
+            The pre-computed scale values for olson transformation
+            (1 = no transformation)
+    Return:
+        Nothing
+    """
+    if len(geojson["features"]) != len(scale_values):
+        raise ValueError("Inconsistent number of features/values")
+    for val, feature in zip(scale_values, geojson['features']):
+        geom = shape(feature["geometry"])
+        feature['properties']['ref_area'] = geom.area
+        if hasattr(geom, '__len__'):
+            feature["geometry"] = mapping(
+                MultiPolygon([scale(g, xfact=val, yfact=val) for g in geom]))
+        else:
+            feature["geometry"] = mapping(scale(geom, xfact=val, yfact=val))
+    geojson['features'].sort(
+        key=lambda x: x['properties']['ref_area'], reverse=True)
 
 
 def reproj_convert_layer_kml(geojson_path):
-	process = Popen(["ogr2ogr", "-f", "KML",
-					 "-preserve_fid",
-					 "-t_srs", "EPSG:4326",
-					 "/dev/stdout", geojson_path], stdout=PIPE)
-	stdout, _ = process.communicate()
-	return stdout
+    process = Popen(["ogr2ogr", "-f", "KML",
+                     "-preserve_fid",
+                     "-t_srs", "EPSG:4326",
+                     "/dev/stdout", geojson_path], stdout=PIPE)
+    stdout, _ = process.communicate()
+    return stdout
 
 
 def reproj_convert_layer(geojson_path, output_path,
@@ -200,17 +201,19 @@ def check_projection(proj4string):
     except:
         return False
 
+
 def on_geom(geom):
     for pts in geom:
         for pt in pts:
             if pt[0] > 179.9999:
                 pt[0] = 179.9999
             elif pt[0] < -179.9999:
-                pt[0] =  -179.9999
+                pt[0] = -179.9999
             if pt[1] > 89.9999:
                 pt[1] = 89.9999
             elif pt[1] < -89.9999:
                 pt[1] = -89.9999
+
 
 def repairCoordsPole(geojson):
     for ft in geojson['features']:
@@ -229,6 +232,7 @@ def repairCoordsPole(geojson):
             if(len(geom['coordinates']) > 2):
                 # interiors  = poly[1:]
                 on_geom(geom['coordinates'][1:])
+
 
 def multi_to_single(gdf, columns=None):
     values = gdf[[i for i in gdf.columns if i != 'geometry']]
