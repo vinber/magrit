@@ -99,7 +99,7 @@ def install_package_js():
         print("Error when installing node dependencies : ", r[1])
         sys.exit(1)
     os.remove('package.json')
-    os.chdir('../../misc/jsbuild')
+    os.chdir('../../../misc/jsbuild')
 
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.realpath(__file__)))

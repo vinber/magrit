@@ -199,110 +199,110 @@ function getOptNbClass(len_serie){
 * @return {Object} summary - Object containing the breaks and the stock in each class.
 */
 function getBreaksQ6(serie, precision=null){
-    var breaks = [], tmp = 0, j = undefined,
-        len_serie = serie.length, stock_class = [],
-        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
-    for(let i=0; i < 7; ++i){
-        j = Math.round(q6_class[i]) - 1
-        breaks.push(+serie[j]);
-        stock_class.push(j - tmp)
-        tmp = j;
-    }
-    stock_class.shift();
-    if(breaks[0] == breaks[1]){
-        // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
-        breaks[1] = (+serie[1] + breaks[0]) / 2;
-    }
-    if(breaks[6] == breaks[5]){
-        breaks[5] = serie[len_serie - 2];
-        // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
-    }
-    if(precision != null){
-        breaks = breaks.map(val => round_value(val, precision));
-    }
-    return {
-        breaks: breaks,
-        stock_class: stock_class
-        };
+  const len_serie = serie.length;
+  const q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
+  let breaks = [];
+  let tmp = 0;
+  let j;
+  let stock_class = [];
+  for (let i = 0; i < 7; ++i) {
+    j = Math.round(q6_class[i]) - 1
+    breaks.push(+serie[j]);
+    stock_class.push(j - tmp)
+    tmp = j;
+  }
+  stock_class.shift();
+  if (breaks[0] == breaks[1]) {
+      // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
+    breaks[1] = (+serie[1] + breaks[0]) / 2;
+  }
+  if (breaks[6] == breaks[5]) {
+    breaks[5] = serie[len_serie - 2];
+      // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
+  }
+  if(precision != null){
+      breaks = breaks.map(val => round_value(val, precision));
+  }
+  return {
+      breaks: breaks,
+      stock_class: stock_class
+  };
 }
 
 function getBreaksStdDev(serie, share, mean_position='center', precision){
-    let min = serie.min(),
-        max = serie.max(),
-        mean = serie.mean(),
-        std_dev = serie.stddev(),
-        class_size = std_dev * share,
-        breaks = mean_position == 'center' ? [mean - (class_size / 2), mean + (class_size /2)] : [mean - class_size, mean, mean + class_size];
+  const min = serie.min(),
+    max = serie.max(),
+    mean = serie.mean(),
+    std_dev = serie.stddev(),
+    class_size = std_dev * share;
+  let breaks = mean_position == 'center' ? [mean - (class_size / 2), mean + (class_size /2)] : [mean - class_size, mean, mean + class_size];
 
-    precision = precision || serie.precision;
+  precision = precision || serie.precision;
 
-    // let v = breaks[0];
-    while(breaks[0] > min){
-        breaks.unshift(breaks[0] - class_size);
-        // v = breaks[0];
+  while (breaks[0] > min) {
+    breaks.unshift(breaks[0] - class_size);
+  }
+  while (breaks[breaks.length - 1] < max) {
+    breaks.push(breaks[breaks.length - 1] + class_size);
+  }
+  let nb_class = breaks.length - 1;
+  if (breaks[0] < min) {
+    if (breaks[1] < min) {
+      console.log("This shouldn't happen (min)");
     }
-    // v = breaks[breaks.length - 1];
-    while(breaks[breaks.length - 1] < max){
-        breaks.push(breaks[breaks.length - 1] + class_size);
-    }
-    let nb_class = breaks.length - 1;
-    if(breaks[0] < min){
-        if(breaks[1] < min){
-            console.log("This shouldn't happen (min)");
-        }
-        breaks[0] = min;
-    }
+    breaks[0] = min;
+  }
 
-    if(breaks[nb_class] > max){
-        if(breaks[nb_class - 1] > max){
-            console.log("This shouldn't happen (max)");
-        }
-        breaks[nb_class] = max;
+  if (breaks[nb_class] > max) {
+    if (breaks[nb_class - 1] > max) {
+      console.log("This shouldn't happen (max)");
     }
-    return {
-        nb_class: nb_class,
-        breaks: breaks.map(v => round_value(v, precision))
-    };
+    breaks[nb_class] = max;
+  }
+  return {
+    nb_class: nb_class,
+    breaks: breaks.map(v => round_value(v, precision))
+  };
 }
 
-function getBinsCount(_values, bins=16){
-    _values = _values.filter(a => a).sort((a,b) => a-b);
-    let nb_ft = _values.length,
-        mean = undefined,
-        stddev = undefined,
-        min = _values[0],
-        max = _values[nb_ft - 1],
-        extend = max - min,
-        bin_size = extend / bins,
-        counts = new Array(bins),
-        break_values = [min],
-        sum = 0,
-        ix_med = (nb_ft + 1) / 2;
+function getBinsCount(_values, bins = 16) {
+  const values = _values.filter(a => a).sort((a, b) => a - b);
+  const nb_ft = values.length;
+  let mean,
+    stddev,
+    min = values[0],
+    max = values[nb_ft - 1],
+    extend = max - min,
+    bin_size = extend / bins,
+    counts = new Array(bins),
+    break_values = [min],
+    sum = 0,
+    ix_med = (nb_ft + 1) / 2;
 
-    for(let i = 0; i < bins; i++){
-        break_values.push(break_values[i] + bin_size);
+  for (let i = 0; i < bins; i++) {
+    break_values.push(break_values[i] + bin_size);
+  }
+  for (let i = 1, j = 0; i<nb_ft; i++) {
+    let class_max = break_values[i-1];
+    counts[i-1] = 0;
+    while (values[j] <= class_max) {
+      sum += values[j];
+      counts[i-1] += 1;
+      j++;
     }
-    for(let i = 1, j = 0; i<nb_ft; i++){
-        let class_max = break_values[i-1];
-        counts[i-1] = 0;
-        while(_values[j] <= class_max){
-            sum += _values[j];
-            counts[i-1] += 1;
-            j++;
-        }
-    }
-    mean = sum / nb_ft;
-    stddev = getStdDev(_values, mean);
+  }
+  mean = sum / nb_ft;
+  stddev = getStdDev(values, mean);
 
-    return {
-        breaks: break_values,
-        counts: counts,
-        min: min,
-        max: max,
-        mean: mean,
-        median: (ix_med | 0) == ix_med ? _values[ix_med] : (_values[Math.floor(ix_med)] + _values[Math.ceil(ix_med)]) / 2,
-        stddev: stddev
-        };
+  return {
+      breaks: break_values,
+      counts: counts,
+      min: min,
+      max: max,
+      mean: mean,
+      median: (ix_med | 0) == ix_med ? values[ix_med] : (values[Math.floor(ix_med)] + values[Math.ceil(ix_med)]) / 2,
+      stddev: stddev
+  };
 }
 
 function parseUserDefinedBreaks(serie, breaks_list){
@@ -386,19 +386,20 @@ function coslaw_dist(A, B){
 * @return {Number} distance - The distance between pt1 and pt2.
 */
 function get_distance(pt1, pt2){
-    let xs = pt2[0] - pt1[1],
-        ys = pt2[1] - pt1[1];
-    return Math.sqrt((xs*xs)+(ys*ys));
+  const xs = pt2[0] - pt1[1];
+  const ys = pt2[1] - pt1[1];
+  return Math.sqrt((xs * xs) + (ys * ys));
 }
 
 function getStdDev(values, mean_val){
-  let nb_val = values.length,
-      pow = Math.pow,
-      s = 0;
-  for(let i=0; i < nb_val; i++){
-      s += pow(values[i] - mean_val, 2);
+  const nb_val = values.length;
+  // const pow = Math.pow;
+  let s = 0;
+  for(let i = 0; i < nb_val; i++){
+      // s += pow(values[i] - mean_val, 2);
+    s += (values[i] - mean_val) ** 2;
   }
-  return Math.sqrt((1/nb_val) * s)
+  return Math.sqrt((1 / nb_val) * s)
 }
 
 /**
@@ -409,101 +410,101 @@ function getStdDev(values, mean_val){
 */
 function getMaximalAvailableRectangle(legend_nodes){
   function getMaxRect(){
-      let matrix = mat;
-      var bestUpperLeft = {x: -1, y: -1};
-      var bestLowerRight = {x: -1, y: -1};
+    let matrix = mat;
+    var bestUpperLeft = {x: -1, y: -1};
+    var bestLowerRight = {x: -1, y: -1};
 
-      var cache = new Array(rows+1), stack = [];
-      for(var i = 0; i < cache.length; i++)
-          cache[i] = 0;
+    var cache = new Array(rows+1), stack = [];
+    for(var i = 0; i < cache.length; i++)
+        cache[i] = 0;
 
-      for(var x = cols-1; x >= 0; x--){
-          updateCache(x, cache);
-          var width = 0;
-          for(var y = 0; y < rows+1; y++){
-              if(cache[y] > width){
-                  stack.push({y: y, width: width});
-                  width = cache[y];
-              }
-              if(cache[y] < width){
-                  while(true){
-                      var pop = stack.pop();
-                      var y0 = pop.y, w0 = pop.width;
-                      if(((width * (y - y0)) > area(bestUpperLeft, bestLowerRight)) && (y-y0 >= minQuadY) && (width >= minQuadX)){
-                          bestUpperLeft = {x: x, y: y0};
-                          bestLowerRight = {x: x+width-1, y: y-1};
-                      }
-                      width = w0;
-                      if(cache[y] >= width)
-                          break;
-                  }
-                  width = cache[y];
-                  if(width != 0)
-                      stack.push({y: y0, width: w0});
-              }
+    for(var x = cols-1; x >= 0; x--){
+      updateCache(x, cache);
+      var width = 0;
+      for (var y = 0; y < rows+1; y++) {
+        if (cache[y] > width) {
+          stack.push({y: y, width: width});
+          width = cache[y];
+        }
+        if (cache[y] < width) {
+          while (true) {
+            var pop = stack.pop();
+            var y0 = pop.y, w0 = pop.width;
+            if(((width * (y - y0)) > area(bestUpperLeft, bestLowerRight)) && (y-y0 >= minQuadY) && (width >= minQuadX)){
+              bestUpperLeft = { x: x, y: y0 };
+              bestLowerRight = { x: x + width - 1, y: y - 1 };
+            }
+            width = w0;
+            if (cache[y] >= width) break;
           }
+          width = cache[y];
+          if (width != 0) stack.push({y: y0, width: w0});
+        }
       }
-      return { x: bestUpperLeft.x, y: bestUpperLeft.y, lenX: bestLowerRight.x-bestUpperLeft.x+1, lenY: bestLowerRight.y-bestUpperLeft.y+1, area: area(bestUpperLeft, bestLowerRight)};
+    }
+    return {
+      x: bestUpperLeft.x,
+      y: bestUpperLeft.y,
+      lenX: bestLowerRight.x-bestUpperLeft.x+1,
+      lenY: bestLowerRight.y-bestUpperLeft.y+1,
+      area: area(bestUpperLeft, bestLowerRight)
+    };
   }
 
   function area(upperLeft, lowerRight){
-      if(upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y)
-          return 0;
-      return ((lowerRight.x+1)-(upperLeft.x))*((lowerRight.y+1)-(upperLeft.y));
+    if (upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y) return 0;
+    return ((lowerRight.x+1)-(upperLeft.x))*((lowerRight.y+1)-(upperLeft.y));
   }
 
   function updateCache(x, cache){
-      for(var y = 0; y < rows; y++)
-          if(mat[x][y] == 1)
-              cache[y]++;
-          else
-              cache[y] = 0;
+    for (var y = 0; y < rows; y++) {
+      if (mat[x][y] == 1) cache[y]++;
+      else cache[y] = 0;
+    }
   }
 
   function fillMat(xs, ys){
-      for (let x = xs[0]; x < xs[1]; x++){
-        for (let y = ys[0]; y < ys[1]; y++){
-          mat[x][y] = 0;
+    for (let x = xs[0]; x < xs[1]; x++){
+      for (let y = ys[0]; y < ys[1]; y++){
+        mat[x][y] = 0;
       }
     }
   }
-  let xy0 = get_map_xy0(),
-      x0 = Math.abs(xy0.x),
-      y0 = Math.abs(xy0.y);
-  let cols = Math.abs(w),
-      rows = Math.abs(h),
-      minQuadY = 100,
-      minQuadX = 40;
+  let xy0 = get_map_xy0();
+  let x0 = Math.abs(xy0.x);
+  let y0 = Math.abs(xy0.y);
+  let cols = Math.abs(w);
+  let rows = Math.abs(h);
+  let minQuadY = 100;
+  let minQuadX = 40;
   let mat = new Array(cols);
-  for (let i = 0; i < cols; i++){
+  for (let i = 0; i < cols; i++) {
     mat[i] = new Array(rows);
-    for(let j = 0; j < rows; j++){
+    for (let j = 0; j < rows; j++) {
       mat[i][j] = 1;
     }
   }
-  for(let i = 0; i < legend_nodes.length; i++){
-      let bbox = legend_nodes[i].getBoundingClientRect(),
-          bx = Math.floor(bbox.left - x0),
-          by = Math.floor(bbox.top - y0);
-      fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+  for (let i = 0; i < legend_nodes.length; i++) {
+    let bbox = legend_nodes[i].getBoundingClientRect(),
+        bx = Math.floor(bbox.left - x0),
+        by = Math.floor(bbox.top - y0);
+    fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
   }
   return getMaxRect(mat);
 }
 
 function getTranslateNewLegend(){
-    let legends = svg_map.querySelectorAll('.legend_feature');
-    if(legends.length == 0) {
-      return [0, 0];
-    } else {
-      let max_rect = getMaximalAvailableRectangle(legends);
-      return max_rect;
-    }
+  let legends = svg_map.querySelectorAll('.legend_feature');
+  if (legends.length === 0) {
+    return [0, 0];
+  }
+  return getMaximalAvailableRectangle(legends);
 }
 
 const pidegrad = 0.017453292519943295;
 const piraddeg = 57.29577951308232;
-const degreesToRadians = function(degrees) { return degrees * pidegrad; }
-const radiansToDegrees = function(radians) { return radians * piraddeg; }
+const degreesToRadians = function degreesToRadians(degrees) { return degrees * pidegrad; }
+const radiansToDegrees = function radiansToDegrees(radians) { return radians * piraddeg; }
 // const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
 // const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
 

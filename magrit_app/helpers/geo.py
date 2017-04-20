@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
 import numpy as np
+import ujson as json
 from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
@@ -12,6 +13,7 @@ from shapely.affinity import scale
 from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
+
 
 def _compute_centroids(geometries, argmax=np.argmax):
 	res = []
@@ -64,6 +66,19 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
         ','.join(geojson_features),
         ''']}'''
         ]).encode()
+
+
+def make_carto_doug(file_path, field_name, iterations):
+    gdf = GeoDataFrame.from_file(file_path)
+    if not gdf[field_name].dtype in (int, float):
+        gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
+        gdf.loc[:, field_name] = gdf[field_name].astype(float)
+    gdf = gdf[gdf[field_name].notnull()]
+    gdf = gdf.iloc[gdf[field_name].nonzero()]
+    gdf.index = range(len(gdf))
+    result_json = json.loads(make_cartogram(gdf.copy(), field_name, iterations))
+    repairCoordsPole(result_json)
+    return json.dumps(result_json).encode()
 
 
 def olson_transform(geojson, scale_values):

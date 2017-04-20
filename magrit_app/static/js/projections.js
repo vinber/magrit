@@ -1,22 +1,22 @@
 "use strict";
 
 const shortListContent = [
-		'AzimuthalEqualAreaEurope',
-		'ConicConformalFrance',
-		'HEALPix',
-		'Mercator',
-		'NaturalEarth2',
-		'Robinson',
-		'TransverseMercator',
-		'WinkelTriple',
-		'more',
-		'proj4'
+	'AzimuthalEqualAreaEurope',
+	'ConicConformalFrance',
+	'HEALPix',
+	'Mercator',
+	'NaturalEarth2',
+	'Robinson',
+	'TransverseMercator',
+	'WinkelTriple',
+	'more',
+	'proj4'
 ];
 
 const available_projections = new Map([
-	['Albers', {'name': 'geoAlbers', 'scale': '400', param_ex: 'cone', param_in:'equalarea'}],
-	["Armadillo", {'name': 'geoArmadillo', 'scale': '400', param_in: 'other', param_ex: 'aphylactic'}],
-	["AzimuthalEquidistant", {'name': 'geoAzimuthalEquidistant' ,'scale': '700', param_in: 'plan', param_ex: 'equidistant'}],
+  ['Albers', { name: 'geoAlbers', scale: '400', param_ex: 'cone', param_in: 'equalarea' }],
+  ['Armadillo', { name: 'geoArmadillo', scale: '400', param_in: 'other', param_ex: 'aphylactic' }],
+  ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant' ,'scale': '700', param_in: 'plan', param_ex: 'equidistant' }],
 	["AzimuthalEqualArea", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', param_in: 'plan', param_ex: 'equalarea'}],
 	["AzimuthalEqualAreaEurope", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', rotate: [-10,-52,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'plan', param_ex: 'equalarea'}],
 	["Baker", {'name': 'geoBaker', 'scale': '400', param_in: 'other', param_ex: 'aphylactic'}],
@@ -26,7 +26,6 @@ const available_projections = new Map([
 	["Bonne", {'name': 'geoBonne', 'scale': '400', param_in: 'pseudocone', param_ex: 'equalarea'}],
 	["Bromley", {'name': 'geoBromley', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
 	["Collignon", {'name': 'geoCollignon', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea'}],
-	// ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
 	["ConicConformalTangent", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44], param_in: 'cone', param_ex: 'conformal'}],
 	["ConicConformalSec", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], param_in: 'cone', param_ex: 'conformal'}],
 	["ConicConformalFrance", {'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], rotate: [-3,-46.5,0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'cone', param_ex: 'conformal'}],
@@ -78,17 +77,45 @@ const available_projections = new Map([
 	["WinkelTriple", {'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic'}]
 ]);
 
+// const available_proj_projections = new Map([
+// 	['cea', ]
+// 	['laea', ],
+// 	['lcc', ],
+// 	['merc', ],
+// 	['tmerc', ],
+// 	['sterea', ]
+// ]);
+// const first_parse_proj4 = function(proj4_str){
+// 	if(!proj4_str.startsWith('+proj'))
+// 		return false;
+// 	const split = proj4_str.split(' ');
+// 	if(split.length > 5)
+// 		return false;
+// 	let proj_name = split.filter(a => a.indexOf('+proj') > -1)[0];
+// 	if(available_proj_projections.has(proj_name)){
+// 		let lat0 = split.filter(a => a.indexOf('+lat_0') > -1)[0];
+// 		let lon0 = split.filter(a => a.indexOf('+lon_0') > -1)[0];
+// 		if((!lat0 && !lon0 && split.length > 1) || (!lat0 || !lon0) && split.length > 2 )
+// 			return false;
+// 		else if (lat0){
+//
+// 		} else if (lon0){
+//
+// 		}
+// 	}
+// }
+
 const createBoxProj4 = function(){
-	let modal_box = make_dialog_container(
-      "box_projection_input",
-      i18next.t("app_page.section5.title"),
-      "dialog");
-	let container = document.getElementById("box_projection_input"),
-			dialog = container.querySelector('.modal-dialog');
+	make_dialog_container(
+	  "box_projection_input",
+	  i18next.t("app_page.section5.title"),
+	  "dialog");
+	const container = document.getElementById("box_projection_input");
+	const dialog = container.querySelector('.modal-dialog');
 
 	let content = d3.select(container)
-			.select(".modal-body")
-			.attr('id', 'box_proj4');
+		.select(".modal-body")
+		.attr('id', 'box_proj4');
 
 	dialog.style.width = undefined;
 	dialog.style.maxWidth = '500px';
@@ -99,16 +126,10 @@ const createBoxProj4 = function(){
 			.style('float', 'left')
 			.html(i18next.t('app_page.proj4_box.enter_string'));
 	input_section.append('input')
-			.styles({'width': '90%'})
-			.attrs({id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"});
-			// .on("input", function(){
-			// 		let proj_str = this.value;
-			// 		if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
-			// 				container.querySelector('.btn_ok').disabled = 'disabled';
-			// 		} else {
-			// 				container.querySelector('.btn_ok').disabled = false;
-			// 		}
-			// });
+			.styles({ 'width': '90%' })
+			.attrs({
+				id: 'input_proj_string',
+				placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" });
 
 	let clean_up_box = () => {
 			container.remove();
@@ -117,27 +138,40 @@ const createBoxProj4 = function(){
 	};
 	let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, clean_up_box); };
 	let _onclose_valid = () => {
-			let proj_str = document.getElementById('input_proj_string').value.trim();
-			clean_up_box();
-			// if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
-			// 		return;
-			// } else {
-			let _p;
-			try {
-				_p = proj4(proj_str);
-			} catch(e){
-				swal({title: "Oops...",
-						 text: i18next.t('app_page.proj4_box.error', {detail: e}),
-						 type: "error",
-						 allowOutsideClick: false,
-						 allowEscapeKey: false
-						}).then( () => { null; },
-											() => { null; });
-				return;
-			}
-			change_projection_4(_p);
+		let proj_str = document.getElementById('input_proj_string').value.trim();
+		let _p;
+		if(proj_str.startsWith('"') || proj_str.startsWith("'")){
+			proj_str = proj_str.substr(1);
+		}
+		if(proj_str.endsWith('"') || proj_str.endsWith("'")){
+			proj_str = proj_str.slice(0, -1);
+		}
+		clean_up_box();
+		try {
+			_p = proj4(proj_str);
+		} catch(e){
+			swal({title: "Oops...",
+					 text: i18next.t('app_page.proj4_box.error', {detail: e}),
+					 type: "error",
+					 allowOutsideClick: false,
+					 allowEscapeKey: false
+					}).then( () => { null; },
+										() => { null; });
+			return;
+		}
+		let rv = change_projection_4(_p);
+		if(rv){
 			_app.last_projection = proj_str;
 			addLastProjectionSelect('def_proj4');
+		} else {
+			swal({title: "Oops...",
+					 text: i18next.t('app_page.proj4_box.error', {detail: ''}),
+					 type: "error",
+					 allowOutsideClick: false,
+					 allowEscapeKey: false
+					}).then( () => { null; },
+										() => { null; });
+		}
 	};
   container.querySelector(".btn_cancel").onclick = clean_up_box;
   container.querySelector("#xclose").onclick = clean_up_box;
@@ -169,83 +203,84 @@ function addLastProjectionSelect(proj_name){
 		}
 }
 
-const createBoxCustomProjection = function(){
+const createBoxCustomProjection = function createBoxCustomProjection(){
 	function updateSelect(filter_in, filter_ex){
-			display_select_proj.remove();
-			display_select_proj = p.append('select')
-					.attr('id', 'select_proj')
-		  		.attr('size', 18);
-			if(!filter_in && !filter_ex){
-				for(let proj_name of available_projections.keys()){
-			      display_select_proj.append('option')
-								.attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name})
-								.text(i18next.t('app_page.projection_name.' + proj_name));
-			  }
-			} else if (!filter_ex){
-					available_projections.forEach((v,k) => {
-							if(v.param_in == filter_in){
-									display_select_proj.insert('option')
-											.attrs({class: 'i18n', value: k})
-											.text(i18next.t('app_page.projection_name.' + k));
-							}
-					});
-			} else if (!filter_in){
-					available_projections.forEach((v,k) => {
-							if(v.param_ex == filter_ex)
-									display_select_proj.append('option')
-											.attrs({class: 'i18n', value: k})
-											.text(i18next.t('app_page.projection_name.' + k));
-					});
-			} else {
-					let empty = true;
-					available_projections.forEach((v,k) => {
-							if(v.param_in == filter_in && v.param_ex == filter_ex){
-									empty = false;
-									display_select_proj.append('option')
-											.attrs({class: 'i18n', value: k})
-											.text(i18next.t('app_page.projection_name.' + k));
-							}
-					});
-					if(empty){
-							display_select_proj.append('option')
-									.attrs({class: 'i18n', value: 'no_result'})
-									.html(i18next.t('app_page.projection_box.no_result_projection'));
+		display_select_proj.remove();
+		display_select_proj = p.append('select')
+			.attr('id', 'select_proj')
+  		.attr('size', 18);
+		if (!filter_in && !filter_ex) {
+			for (let proj_name of available_projections.keys()) {
+	      display_select_proj.append('option')
+						.attrs({class: 'i18n', value: proj_name, 'data-i18n': 'app_page.projection_name.' + proj_name})
+						.text(i18next.t('app_page.projection_name.' + proj_name));
+		  }
+		} else if (!filter_ex) {
+			available_projections.forEach((v,k) => {
+				if (v.param_in == filter_in) {
+					display_select_proj.insert('option')
+							.attrs({class: 'i18n', value: k})
+							.text(i18next.t('app_page.projection_name.' + k));
+				}
+			});
+		} else if (!filter_in) {
+			available_projections.forEach((v,k) => {
+					if (v.param_ex == filter_ex) {
+						display_select_proj.append('option')
+								.attrs({class: 'i18n', value: k})
+								.text(i18next.t('app_page.projection_name.' + k));
 					}
+			});
+		} else {
+			let empty = true;
+			available_projections.forEach((v,k) => {
+				if (v.param_in == filter_in && v.param_ex == filter_ex) {
+						empty = false;
+						display_select_proj.append('option')
+								.attrs({class: 'i18n', value: k})
+								.text(i18next.t('app_page.projection_name.' + k));
+				}
+			});
+			if (empty) {
+				display_select_proj.append('option')
+						.attrs({class: 'i18n', value: 'no_result'})
+						.html(i18next.t('app_page.projection_box.no_result_projection'));
 			}
+		}
 	};
 	function onClickFilter(){
-			let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
-			filter1_val = filter1_val == undefined ? undefined : filter1_val.value;
-			if(filter1_val == 'any') filter1_val = undefined;
-			let filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), f => f.checked)[0];
-			filter2_val = filter2_val == undefined ? undefined : filter2_val.value;
-			if(filter2_val == 'any') filter2_val = undefined;
-			updateSelect(filter1_val, filter2_val);
+		let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
+		filter1_val = filter1_val == undefined ? undefined : filter1_val.value;
+		if(filter1_val == 'any') filter1_val = undefined;
+		let filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), f => f.checked)[0];
+		filter2_val = filter2_val == undefined ? undefined : filter2_val.value;
+		if(filter2_val == 'any') filter2_val = undefined;
+		updateSelect(filter1_val, filter2_val);
 	};
 	function updateProjOptions(){
-			if(proj.rotate){
-					rotate_section.style('display', '');
-					let param_rotate = proj.rotate();
-					lambda_input.node().value = -param_rotate[0];
-					phi_input.node().value = -param_rotate[1];
-					gamma_input.node().value = -param_rotate[2];
-			} else {
-					rotate_section.style('display', 'none');
-			}
-			if(proj.parallels){
-					let param_parallels = proj.parallels();
-					parallels_section.style('display', '');
-					parallel_section.style('display', 'none');
-					sp1_input.node().value = param_parallels[0];
-					sp2_input.node().value = param_parallels[1];
-			} else if (proj.parallel){
-					parallels_section.style('display', 'none');
-					parallel_section.style('display', '');
-					sp_input.node().value = proj.parallel();
-			} else {
-					parallels_section.style('display', 'none');
-					parallel_section.style('display', 'none');
-			}
+		if (proj.rotate) {
+			rotate_section.style('display', '');
+			let param_rotate = proj.rotate();
+			lambda_input.node().value = -param_rotate[0];
+			phi_input.node().value = -param_rotate[1];
+			gamma_input.node().value = -param_rotate[2];
+		} else {
+			rotate_section.style('display', 'none');
+		}
+		if (proj.parallels) {
+			let param_parallels = proj.parallels();
+			parallels_section.style('display', '');
+			parallel_section.style('display', 'none');
+			sp1_input.node().value = param_parallels[0];
+			sp2_input.node().value = param_parallels[1];
+		} else if (proj.parallel) {
+			parallels_section.style('display', 'none');
+			parallel_section.style('display', '');
+			sp_input.node().value = proj.parallel();
+		} else {
+			parallels_section.style('display', 'none');
+			parallel_section.style('display', 'none');
+		}
 	};
 	let prev_projection = current_proj_name,
 			prev_translate = [].concat(t),
@@ -350,22 +385,19 @@ const createBoxCustomProjection = function(){
 					.style('width', '60%')
 					.style('transform', 'translateX(45%)');
 
-	// if(prev_rotate){
 	let rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
 	let lambda_section = rotate_section.append('p');
 	lambda_section.append('span')
-			.style('float', 'left')
-			.html(i18next.t('app_page.section5.projection_center_lambda'));
+		.style('float', 'left')
+		.html(i18next.t('app_page.section5.projection_center_lambda'));
 	let lambda_input = lambda_section.append('input')
-			.styles({'width': '60px', 'float': 'right'})
-			.attrs({type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50})
-			.on("input", function(){
-					if(this.value > 180)
-							this.value = 180;
-					else if (this.value < -180)
-							this.value = -180;
-					handle_proj_center_button([-this.value, null, null]);
-			});
+		.styles({'width': '60px', 'float': 'right'})
+		.attrs({type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50})
+		.on("input", function(){
+			if(this.value > 180) this.value = 180;
+			else if (this.value < -180) this.value = -180;
+			handle_proj_center_button([-this.value, null, null]);
+		});
 
 	let phi_section = rotate_section.append('p')
 			.style('clear', 'both');
@@ -373,15 +405,15 @@ const createBoxCustomProjection = function(){
 			.style('float', 'left')
 			.html(i18next.t('app_page.section5.projection_center_phi'));
 	let phi_input = phi_section.append('input')
-			.styles({'width': '60px', 'float': 'right'})
-			.attrs({type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5})
-			.on("input", function(){
-					if(this.value > 180)
-							this.value = 180;
-					else if (this.value < -180)
-							this.value = -180;
-					handle_proj_center_button([null, -this.value, null]);
-			});
+		.styles({'width': '60px', 'float': 'right'})
+		.attrs({type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5})
+		.on("input", function(){
+				if(this.value > 180)
+						this.value = 180;
+				else if (this.value < -180)
+						this.value = -180;
+				handle_proj_center_button([null, -this.value, null]);
+		});
 
 	let gamma_section = rotate_section.append('p')
 			.style('clear', 'both');
@@ -398,8 +430,7 @@ const createBoxCustomProjection = function(){
 							this.value = -90;
 					handle_proj_center_button([null, null, -this.value]);
 			});
-	// }
-	// if(prev_parallels){
+
 	let parallels_section = options_proj_content.append('div')
 			.styles({'text-align': 'center', 'clear': 'both'})
 			.style('display', prev_parallels ? '' : 'none');
@@ -408,77 +439,70 @@ const createBoxCustomProjection = function(){
 	let inputs = parallels_section.append('p')
 			.styles({'text-align': 'center', 'margin': 'auto'});
 	let sp1_input = inputs.append('input')
-			.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
-			.attrs({type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5})
-			.on("input", function(){
-					if(this.value > 90)
-							this.value = 90;
-					else if (this.value < -90)
-							this.value = -90;
-					handle_parallels_change([this.value, null]);
-			});
+		.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
+		.attrs({type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5})
+		.on("input", function(){
+				if(this.value > 90) this.value = 90;
+				else if (this.value < -90) this.value = -90;
+				handle_parallels_change([this.value, null]);
+		});
 	let sp2_input = inputs.append('input')
-			.styles({width: '60px', display: 'inline', 'margin-left': '2px'})
-			.attrs({type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5})
-			.on("input", function(){
-					if(this.value > 90)
-							this.value = 90;
-					else if (this.value < -90)
-							this.value = -90;
-					handle_parallels_change([null, this.value]);
-			});
-	// } else if(prev_parallel){
+		.styles({width: '60px', display: 'inline', 'margin-left': '2px'})
+		.attrs({type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5})
+		.on("input", function(){
+				if(this.value > 90) this.value = 90;
+				else if (this.value < -90) this.value = -90;
+				handle_parallels_change([null, this.value]);
+		});
+
 	let parallel_section = options_proj_content.append('div')
-			.styles({'text-align': 'center', 'clear': 'both'})
-			.style('display', prev_parallel ? '' : 'none');
+		.styles({'text-align': 'center', 'clear': 'both'})
+		.style('display', prev_parallel ? '' : 'none');
 	parallel_section.append('span')
-			.html(i18next.t('app_page.section5.parallel'));
+		.html(i18next.t('app_page.section5.parallel'));
 
 	let sp_input = parallel_section.append('p')
-			.styles({'text-align': 'center', 'margin': 'auto'})
-			.append('input')
-			.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
-			.attrs({type: 'number', value: prev_parallel || 0, min: -90, max: 90, step: 0.5})
-			.on("input", function(){
-					if(this.value > 90)
-							this.value = 90;
-					else if (this.value < -90)
-							this.value = -90;
-					handle_parallel_change(this.value);
-			});
-	// }
+		.styles({'text-align': 'center', 'margin': 'auto'})
+		.append('input')
+		.styles({width: '60px', display: 'inline', 'margin-right': '2px'})
+		.attrs({type: 'number', value: prev_parallel || 0, min: -90, max: 90, step: 0.5})
+		.on("input", function(){
+			if (this.value > 90) this.value = 90;
+			else if (this.value < -90) this.value = -90;
+			handle_parallel_change(this.value);
+		});
 
-	if(prev_projection == "def_proj4"){
-			options_proj_content.selectAll('input')
-					.attr('disabled', 'disabled');
-			options_proj_content.selectAll('span')
-					.styles({color: 'darkgrey', 'font-style': 'italic'});
+	if (prev_projection == "def_proj4") {
+		options_proj_content.selectAll('input')
+			.attr('disabled', 'disabled');
+		options_proj_content.selectAll('span')
+			.styles({color: 'darkgrey', 'font-style': 'italic'});
 	}
 
 	accordionize2(".accordion_proj", container);
 	let clean_up_box = () => {
-			container.remove();
-			overlay_under_modal.hide();
-			document.removeEventListener('keydown', fn_cb);
+		container.remove();
+		overlay_under_modal.hide();
+		document.removeEventListener('keydown', fn_cb);
 	};
 	let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_cancel); };
   let _onclose_cancel = () => {
-			clean_up_box();
-			s = prev_scale;
-			t = prev_translate.slice();
-			current_proj_name = prev_projection;
-			if(prev_projection != "def_proj4"){
-					change_projection(current_proj_name)
-			} else if (prev_projection == "def_proj4"){
-					change_projection_4(proj4(_app.last_projection));
-			}
-			if(prev_rotate){ handle_proj_center_button(prev_rotate); }
-			if(prev_parallels){ handle_parallels_change(prev_parallels); }
-			else if(prev_parallel){ handle_parallel_change(prev_parallel); }
+		clean_up_box();
+		s = prev_scale;
+		t = prev_translate.slice();
+		current_proj_name = prev_projection;
+		if (prev_projection != "def_proj4") {
+				change_projection(current_proj_name)
+		} else if (prev_projection == "def_proj4") {
+				change_projection_4(proj4(_app.last_projection));
+		}
+		if (prev_rotate) { handle_proj_center_button(prev_rotate); }
+		if (prev_parallels) { handle_parallels_change(prev_parallels); }
+		else if (prev_parallel) { handle_parallel_change(prev_parallel); }
   };
-  container.querySelector(".btn_cancel").onclick = _onclose_cancel;
-  container.querySelector("#xclose").onclick = _onclose_cancel;
-  container.querySelector(".btn_ok").onclick = clean_up_box;
+  container.querySelector('.btn_cancel').onclick = _onclose_cancel;
+  container.querySelector('#xclose').onclick = _onclose_cancel;
+  container.querySelector('.btn_ok').onclick = clean_up_box;
   document.addEventListener('keydown', fn_cb);
   overlay_under_modal.display();
 };

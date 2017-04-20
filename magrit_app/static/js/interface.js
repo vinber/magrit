@@ -935,7 +935,7 @@ function add_layer_topojson(text, options = {}){
 
         if(joined_dataset.length != 0){
             valid_join_check_display(false)
-            section1.select(".s1").html("").on("click", null);
+            // section1.select(".s1").html("").on("click", null);
         }
 
         document.getElementById('sample_zone').style.display = "none";
@@ -1082,15 +1082,16 @@ function get_bbox_layer_path(name){
 * Redraw the path from all the current layers to reflect the change.
 *
 * @param {string} name - The name of layer to scale on
+* @return {undefined}
 */
 function scale_to_lyr(name){
-    let bbox_layer_path = get_bbox_layer_path(name);
-    if(!bbox_layer_path) return;
-    s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
-    t = [0, 0];
-    proj.scale(s).translate(t);
-    map.selectAll(".layer").selectAll("path").attr("d", path);
-    reproj_symbol_layer();
+  let bbox_layer_path = get_bbox_layer_path(name);
+  if (!bbox_layer_path) return;
+  s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+  t = [0, 0];
+  proj.scale(s).translate(t);
+  map.selectAll(".layer").selectAll("path").attr("d", path);
+  reproj_symbol_layer();
 };
 
 /**
@@ -1098,15 +1099,16 @@ function scale_to_lyr(name){
 * Projection properties stay unchanged.
 *
 * @param {string} name - The name of layer to zoom on
+* @return {undefined}
 */
 function center_map(name){
-    let bbox_layer_path = get_bbox_layer_path(name);
-    let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
-    let _zoom = svg_map.__zoom;
-    _zoom.k = zoom_scale;
-    _zoom.x = zoom_translate[0];
-    _zoom.y = zoom_translate[1];
+  let bbox_layer_path = get_bbox_layer_path(name);
+  let zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+  let zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+  let _zoom = svg_map.__zoom;
+  _zoom.k = zoom_scale;
+  _zoom.x = zoom_translate[0];
+  _zoom.y = zoom_translate[1];
 };
 
 function fitLayer(layer_name) {
@@ -1119,10 +1121,10 @@ function fitLayer(layer_name) {
 }
 
 function setSphereBottom(){
-    let layers_list = document.querySelector(".layer_list");
-    layers_list.appendChild(layers_list.childNodes[0]);
-    svg_map.insertBefore(svg_map.querySelector('#Sphere'), svg_map.childNodes[0]);
-    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+  let layers_list = document.querySelector(".layer_list");
+  layers_list.appendChild(layers_list.childNodes[0]);
+  svg_map.insertBefore(svg_map.querySelector('#Sphere'), svg_map.childNodes[0]);
+  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
  }
 
 

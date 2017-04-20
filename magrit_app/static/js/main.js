@@ -297,11 +297,11 @@ function setUpInterface()
         b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
         accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
 
-    window.section1 =  accordion1.append("div")
-                        .attr("id","section1")
-                        .attr("class", "i18n")
-                        .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
-                        .attr("data-placement", "right");
+    let section1 =  accordion1.append("div")
+      .attr("id","section1")
+      .attr("class", "i18n")
+      .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
+      .attr("data-placement", "right");
     window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
     accordion3.append("div").attrs({id: "section3"}),
@@ -2090,11 +2090,15 @@ function change_projection_4(_proj) {
         let rv = fitLayer(layer_name);
         s = rv[0];
         t = rv[1];
+        if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
+            s = 100; t = [0, 0];
+            scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+        }
     }
     if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
         s = 100; t = [0, 0];
         console.log('Error');
-        // return;
+        return false;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();
@@ -2103,6 +2107,7 @@ function change_projection_4(_proj) {
 
     // Remove the existing clip path if any :
     handleClipPath();
+    return true;
 }
 
 
@@ -2396,66 +2401,62 @@ function unpatchSvgForFonts(){
 }
 
 function patchSvgForInkscape(){
-    svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
-    let elems = svg_map.getElementsByTagName("g");
-    for(let i = elems.length - 1; i > -1; i--){
-        if(elems[i].id == ""){
-            continue;
-        } else if (elems[i].classList.contains("layer")) {
-            elems[i].setAttribute("inkscape:label", elems[i].id);
-        } else if(elems[i].id.indexOf("legend") > -1){
-            let layer_name = elems[i].className.baseVal.split("lgdf_")[1];
-            elems[i].setAttribute("inkscape:label", "legend_" + layer_name);
-        } else {
-            elems[i].setAttribute("inkscape:label", elems[i].id);
-        }
-        elems[i].setAttribute("inkscape:groupmode", "layer");
+  svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
+  let elems = svg_map.getElementsByTagName("g");
+  for (let i = elems.length - 1; i > -1; i--) {
+    if (elems[i].id === '') {
+      continue;
+    } else if (elems[i].classList.contains("layer")) {
+      elems[i].setAttribute("inkscape:label", elems[i].id);
+    } else if (elems[i].id.indexOf("legend") > -1) {
+      let layer_name = elems[i].className.baseVal.split("lgdf_")[1];
+      elems[i].setAttribute("inkscape:label", "legend_" + layer_name);
+    } else {
+      elems[i].setAttribute("inkscape:label", elems[i].id);
     }
+    elems[i].setAttribute("inkscape:groupmode", "layer");
+  }
 }
 
 function unpatchSvgForInkscape(){
-    svg_map.removeAttribute("xmlns:inkscape");
-    let elems = svg_map.getElementsByTagName("g");
-    for(let i = elems.length - 1; i > -1; i--){
-        if(elems[i].id == ""){
-            continue;
-        } else {
-            elems[i].removeAttribute("inkscape:label");
-            elems[i].removeAttribute("inkscape:groupmode");
-        }
+  svg_map.removeAttribute('xmlns:inkscape');
+  const elems = svg_map.getElementsByTagName('g');
+  for (let i = elems.length - 1; i > -1; i--) {
+    if (elems[i].id !== '') {
+      elems[i].removeAttribute('inkscape:label');
+      elems[i].removeAttribute('inkscape:groupmode');
     }
-
+  }
 }
 
 function check_output_name(name, extension){
-    let _part = name.split("."),
-        regexp_name = new RegExp(/^[a-z0-9_]+$/i);
-    if(regexp_name.test(_part[0]) && _part[0].length < 250){
-        return _part[0] + "." + extension;
-    } else {
-        return "export." + extension;
-    }
+  const part = name.split('.');
+  const regexpName = new RegExp(/^[a-z0-9_]+$/i);
+  if (regexpName.test(part[0]) && part[0].length < 250) {
+    return part[0] + '.' + extension;
+  }
+  return "export." + extension;
 }
 
 function patchSvgForForeignObj(){
-    let elems = document.getElementsByTagName("foreignObject");
-    let originals = [];
-    for(let i = 0; i < elems.length; i++){
-        let el = elems[i];
-        originals.push([el.getAttribute('width'), el.getAttribute('height')]);
-        el.setAttribute('width', '100%');
-        el.setAttribute('height', '100%')
-    }
-    return originals;
+  let elems = document.getElementsByTagName('foreignObject');
+  let originals = [];
+  for (let i = 0; i < elems.length; i++) {
+    let el = elems[i];
+    originals.push([el.getAttribute('width'), el.getAttribute('height')]);
+    el.setAttribute('width', '100%');
+    el.setAttribute('height', '100%')
+  }
+  return originals;
 }
 
 function unpatchSvgForForeignObj(originals){
-    let elems = document.getElementsByTagName("foreignObject");
-    for(let i = 0; i < originals.length; i++){
-        let el = elems[i];
-        el.setAttribute('width', originals[i][0]);
-        el.setAttribute('height', originals[i][1]);
-    }
+  let elems = document.getElementsByTagName('foreignObject');
+  for(let i = 0; i < originals.length; i++){
+    let el = elems[i];
+    el.setAttribute('width', originals[i][0]);
+    el.setAttribute('height', originals[i][1]);
+  }
 }
 
 
@@ -2596,44 +2597,41 @@ function export_layer_geo(layer, type, projec, proj4str){
 *
 */
 function changeResolution(canvas, scaleFactor) {
-    // Set up CSS size if it's not set up already
-    if (!canvas.style.width)
-        canvas.style.width = canvas.width + 'px';
-    if (!canvas.style.height)
-        canvas.style.height = canvas.height + 'px';
+  // Set up CSS size if it's not set up already
+  if (!canvas.style.width) canvas.style.width = canvas.width + 'px';
+  if (!canvas.style.height) canvas.style.height = canvas.height + 'px';
 
-    canvas.width = Math.ceil(canvas.width * scaleFactor);
-    canvas.height = Math.ceil(canvas.height * scaleFactor);
-    var ctx = canvas.getContext('2d');
-    ctx.scale(scaleFactor, scaleFactor);
+  canvas.width = Math.ceil(canvas.width * scaleFactor);
+  canvas.height = Math.ceil(canvas.height * scaleFactor);
+  let ctx = canvas.getContext('2d');
+  ctx.scale(scaleFactor, scaleFactor);
 }
 
 function fill_export_png_options(displayed_ratio){
-    let select_size_png = d3.select("#select_png_format");
-    select_size_png.selectAll("option").remove();
+  let select_size_png = d3.select("#select_png_format");
+  select_size_png.selectAll("option").remove();
 
-    select_size_png.append("option").attrs({value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web"});
-    select_size_png.append("option").attrs({value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined"});
+  select_size_png.append("option").attrs({value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web"});
+  select_size_png.append("option").attrs({value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined"});
 
-    if(displayed_ratio == "portrait"){
-        select_size_png.append("option").attrs({value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait"});
-        select_size_png.append("option").attrs({value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait"});
-        select_size_png.append("option").attrs({value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait"});
-
-    } else if (displayed_ratio == "landscape") {
-        select_size_png.append("option").attrs({value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape"});
-        select_size_png.append("option").attrs({value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape"});
-        select_size_png.append("option").attrs({value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape"});
-    }
-    localize("#select_png_format > .i18n");
+  if (displayed_ratio === "portrait") {
+    select_size_png.append("option").attrs({value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait"});
+    select_size_png.append("option").attrs({value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait"});
+    select_size_png.append("option").attrs({value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait"});
+  } else if (displayed_ratio === "landscape") {
+    select_size_png.append("option").attrs({value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape"});
+    select_size_png.append("option").attrs({value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape"});
+    select_size_png.append("option").attrs({value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape"});
+  }
+  localize("#select_png_format > .i18n");
 }
 
 let beforeUnloadWindow = (event) => {
-    get_map_template().then(function(json_params){
-        window.localStorage.removeItem("magrit_project");
-        window.localStorage.setItem("magrit_project", json_params);
-    });
-    event.returnValue = (_app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0)
-                        ? "Confirm exit" : undefined;
+  get_map_template().then((jsonParams) => {
+    window.localStorage.removeItem('magrit_project');
+    window.localStorage.setItem('magrit_project', jsonParams);
+  });
+  event.returnValue = (_app.targeted_layer_added
+                          || Object.getOwnPropertyNames(result_data).length > 0)
+                      ? 'Confirm exit' : undefined;
 };
-;

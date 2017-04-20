@@ -55,7 +55,7 @@ try:
     from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer,
+        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
         make_geojson_links, repairCoordsPole, TopologicalError)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
@@ -69,7 +69,7 @@ except:
     from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer,
+        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
         make_geojson_links, repairCoordsPole, TopologicalError)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
@@ -79,7 +79,7 @@ except:
 pp = '(aiohttp_app) '
 
 
-@aiohttp_jinja2.template('index2.html')
+@aiohttp_jinja2.template('index.html')
 async def index_handler(request):
     asyncio.ensure_future(
         request.app['redis_conn'].incr('view_onepage'),
@@ -92,38 +92,6 @@ async def index_handler(request):
     session['already_seen'] = True
     return {'app_name': request.app['app_name']}
 
-##########################################################
-#### A few functions to open (server side)
-#### ... a geo layer uploaded by the user
-##########################################################
-#### These functions are currently totaly insecure
-
-#async def ogr_to_geojson2(filepath, to_latlong=True):
-#    # Todo : Rewrite using asyncio.subprocess methods
-#    # Todo : rewrite using new gdal/ogr (> 2.0) bindings to avoid "exiting"
-#    # ... python when using ogr2ogr
-#    if to_latlong:
-#        process = Popen(["ogr2ogr", "-f", "GeoJSON",
-#                         "-preserve_fid",
-#                         "-t_srs", "EPSG:4326",
-#                         "/dev/stdout", filepath], stdout=PIPE)
-#    else:
-#        process = Popen(["ogr2ogr", "-f", "GeoJSON", "-preserve_fid",
-#                         "/dev/stdout", filepath], stdout=PIPE)
-#    stdout, _ = process.communicate()
-#    return stdout
-
-#async def geojson_to_topojson(filepath, layer_name, remove=True):
-#    # Todo : Rewrite using asyncio.subprocess methods
-#    # Todo : Use topojson python port if possible to avoid writing a temp. file
-#    process = Popen(["geo2topo", filepath, "--bbox"], stdout=PIPE, stderr=PIPE)
-#    stdout, _ = process.communicate()
-#    stdout = stdout.decode()
-#    if remove:
-#        os.remove(filepath)
-#    return ''.join([
-#        stdout[:31], layer_name, stdout[31 + stdout[31:].find('"'):]
-#        ]) if stdout else None
 
 async def ogr_to_geojson(filepath):
     gdf = GeoDataFrame.from_file(filepath)
@@ -132,6 +100,7 @@ async def ogr_to_geojson(filepath):
         return gdf.to_crs({'init': 'epsg:4326'}).to_json().encode()
     else:
         gdf.to_json().encode()
+
 
 async def geojson_to_topojson2(data, layer_name):
     # Todo : Rewrite using asyncio.subprocess methods
@@ -424,17 +393,6 @@ async def store_contact_info(request):
                 })))
     return web.Response(text='')
 
-def make_carto_doug(file_path, field_name, iterations):
-    gdf = GeoDataFrame.from_file(file_path)
-    if not gdf[field_name].dtype in (int, float):
-        gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
-        gdf.loc[:, field_name] = gdf[field_name].astype(float)
-    gdf = gdf[gdf[field_name].notnull()]
-    gdf = gdf.iloc[gdf[field_name].nonzero()]
-    gdf.index = range(len(gdf))
-    result_json = json.loads(make_cartogram(gdf.copy(), field_name, iterations))
-    repairCoordsPole(result_json)
-    return json.dumps(result_json).encode()
 
 async def carto_doug(posted_data, user_id, app):
     st = time.time()
@@ -628,7 +586,8 @@ async def compute_olson(posted_data, user_id, app):
         return
 
     new_name = "_".join(["Olson_carto", str(posted_data["field_name"])])
-    res = await geojson_to_topojson2(json.dumps(ref_layer_geojson).encode(), new_name)
+    res = await geojson_to_topojson2(
+        json.dumps(ref_layer_geojson).encode(), new_name)
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
@@ -828,8 +787,9 @@ async def handler_exists_layer2(request):
                 os.removedirs(tmp_path)
                 return web.Response(text=result.decode())
             else:
-                out_proj = check_projection(projection["name"] if "name" in projection
-                                            else projection["proj4string"])
+                out_proj = check_projection(
+                    projection["name"] if "name" in projection
+                    else projection["proj4string"])
                 if not out_proj:
                     return web.Response(
                         text=json.dumps(
@@ -974,7 +934,8 @@ async def get_stats_json(request):
     count = await redis_conn.get('single_view_modulepage')
     return web.Response(text=json.dumps(
         {"count": count , "layer": layers,
-         "view_onepage": view_onepage, "single_view_onepage": single_view_onepage,
+         "view_onepage": view_onepage,
+         "single_view_onepage": single_view_onepage,
          "sample": sample_layers, "contact": contact,
          "t": {"stewart": stewart, "dougenik": doug,
                "gridded": gridded, "olson": olson, "links": links}
@@ -1000,7 +961,8 @@ async def convert_tabular(request):
         # replace spaces in variable names
         firstrowlength = csv.find('\n')
         result = csv[0:firstrowlength].replace(' ','_')+csv[firstrowlength:]
-        message = ["app_page.common.warn_multiple_sheets", sheet_names] if len(sheet_names) > 1 else None
+        message = ["app_page.common.warn_multiple_sheets", sheet_names] \
+            if len(sheet_names) > 1 else None
     else:
         result = "Unknown tabular file format"
         request.app['logger'].info(
@@ -1042,7 +1004,7 @@ async def get_extrabasemaps(request):
         list_url = await fetch_list_extrabasemaps(request.app.loop)
         list_url = json.dumps(list_url)
         asyncio.ensure_future(request.app['redis_conn'].set(
-                'extrabasemaps', list_url.encode(), pexpire=43200000))
+                'extrabasemaps', list_url.encode(), pexpire=21600000))
         return web.Response(text=list_url)
     else:
         return web.Response(text=list_url.decode())

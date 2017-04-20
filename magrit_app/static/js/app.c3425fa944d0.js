@@ -257,7 +257,7 @@ function setUpInterface() {
         b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
         accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
 
-    window.section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
+    var section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
     window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
     window.section2 = accordion2.append('div').attr('id', 'section2');
     accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
@@ -1793,11 +1793,15 @@ function change_projection_4(_proj) {
         var rv = fitLayer(layer_name);
         s = rv[0];
         t = rv[1];
+        if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
+            s = 100;t = [0, 0];
+            scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+        }
     }
     if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
         s = 100;t = [0, 0];
         console.log('Error');
-        // return;
+        return false;
     }
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();
@@ -1806,6 +1810,7 @@ function change_projection_4(_proj) {
 
     // Remove the existing clip path if any :
     handleClipPath();
+    return true;
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
@@ -2079,7 +2084,7 @@ function patchSvgForInkscape() {
     svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
     var elems = svg_map.getElementsByTagName("g");
     for (var i = elems.length - 1; i > -1; i--) {
-        if (elems[i].id == "") {
+        if (elems[i].id === '') {
             continue;
         } else if (elems[i].classList.contains("layer")) {
             elems[i].setAttribute("inkscape:label", elems[i].id);
@@ -2094,30 +2099,27 @@ function patchSvgForInkscape() {
 }
 
 function unpatchSvgForInkscape() {
-    svg_map.removeAttribute("xmlns:inkscape");
-    var elems = svg_map.getElementsByTagName("g");
+    svg_map.removeAttribute('xmlns:inkscape');
+    var elems = svg_map.getElementsByTagName('g');
     for (var i = elems.length - 1; i > -1; i--) {
-        if (elems[i].id == "") {
-            continue;
-        } else {
-            elems[i].removeAttribute("inkscape:label");
-            elems[i].removeAttribute("inkscape:groupmode");
+        if (elems[i].id !== '') {
+            elems[i].removeAttribute('inkscape:label');
+            elems[i].removeAttribute('inkscape:groupmode');
         }
     }
 }
 
 function check_output_name(name, extension) {
-    var _part = name.split("."),
-        regexp_name = new RegExp(/^[a-z0-9_]+$/i);
-    if (regexp_name.test(_part[0]) && _part[0].length < 250) {
-        return _part[0] + "." + extension;
-    } else {
-        return "export." + extension;
+    var part = name.split('.');
+    var regexpName = new RegExp(/^[a-z0-9_]+$/i);
+    if (regexpName.test(part[0]) && part[0].length < 250) {
+        return part[0] + '.' + extension;
     }
+    return "export." + extension;
 }
 
 function patchSvgForForeignObj() {
-    var elems = document.getElementsByTagName("foreignObject");
+    var elems = document.getElementsByTagName('foreignObject');
     var originals = [];
     for (var i = 0; i < elems.length; i++) {
         var el = elems[i];
@@ -2129,7 +2131,7 @@ function patchSvgForForeignObj() {
 }
 
 function unpatchSvgForForeignObj(originals) {
-    var elems = document.getElementsByTagName("foreignObject");
+    var elems = document.getElementsByTagName('foreignObject');
     for (var i = 0; i < originals.length; i++) {
         var el = elems[i];
         el.setAttribute('width', originals[i][0]);
@@ -2286,11 +2288,11 @@ function fill_export_png_options(displayed_ratio) {
     select_size_png.append("option").attrs({ value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web" });
     select_size_png.append("option").attrs({ value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined" });
 
-    if (displayed_ratio == "portrait") {
+    if (displayed_ratio === "portrait") {
         select_size_png.append("option").attrs({ value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait" });
         select_size_png.append("option").attrs({ value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait" });
         select_size_png.append("option").attrs({ value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait" });
-    } else if (displayed_ratio == "landscape") {
+    } else if (displayed_ratio === "landscape") {
         select_size_png.append("option").attrs({ value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape" });
         select_size_png.append("option").attrs({ value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape" });
         select_size_png.append("option").attrs({ value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape" });
@@ -2299,13 +2301,12 @@ function fill_export_png_options(displayed_ratio) {
 }
 
 var beforeUnloadWindow = function beforeUnloadWindow(event) {
-    get_map_template().then(function (json_params) {
-        window.localStorage.removeItem("magrit_project");
-        window.localStorage.setItem("magrit_project", json_params);
+    get_map_template().then(function (jsonParams) {
+        window.localStorage.removeItem('magrit_project');
+        window.localStorage.setItem('magrit_project', jsonParams);
     });
-    event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? "Confirm exit" : undefined;
+    event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? 'Confirm exit' : undefined;
 };
-;
 "use strict";
 // Helper function in order to have a colorbrewer color ramp with
 // non-supported number of value using interpolation between the colorbrewer color
@@ -7264,58 +7265,58 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var drag_elem_geo = d3.drag().subject(function () {
-    var t = d3.select(this);
-    return {
-        x: t.attr("x"), y: t.attr("y"),
-        map_locked: map_div.select("#hand_button").classed("locked") ? true : false
-    };
+  var t = d3.select(this);
+  return {
+    x: t.attr("x"), y: t.attr("y"),
+    map_locked: map_div.select("#hand_button").classed("locked") ? true : false
+  };
 }).on("start", function () {
-    d3.event.sourceEvent.stopPropagation();
-    d3.event.sourceEvent.preventDefault();
-    handle_click_hand("lock");
+  d3.event.sourceEvent.stopPropagation();
+  d3.event.sourceEvent.preventDefault();
+  handle_click_hand("lock");
 }).on("end", function () {
-    if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+  if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
 }).on("drag", function () {
-    d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
+  d3.select(this).attr("x", d3.event.x).attr("y", d3.event.y);
 });
 
 function setSelected(selectNode, value) {
-    selectNode.value = value;
-    selectNode.dispatchEvent(new Event('change'));
+  selectNode.value = value;
+  selectNode.dispatchEvent(new Event('change'));
 }
 
 // Function to be called after clicking on "render" in order to close the section 2
 // and to have the section 3 opened
 function switch_accordion_section(id_elem) {
-    id_elem = id_elem || 'btn_s3';
-    document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
+  id_elem = id_elem || 'btn_s3';
+  document.getElementById(id_elem).dispatchEvent(new MouseEvent("click"));
 }
 
 function path_to_geojson(layer_name) {
-    var id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
-    var result_geojson = [];
-    d3.select(id_layer).selectAll("path").each(function (d, i) {
-        result_geojson.push({
-            type: "Feature",
-            id: i,
-            properties: d.properties,
-            geometry: { type: d.type, coordinates: d.coordinates }
-        });
+  var id_layer = ["#", _app.layer_to_id.get(layer_name)].join('');
+  var result_geojson = [];
+  d3.select(id_layer).selectAll("path").each(function (d, i) {
+    result_geojson.push({
+      type: "Feature",
+      id: i,
+      properties: d.properties,
+      geometry: { type: d.type, coordinates: d.coordinates }
     });
-    return JSON.stringify({
-        type: "FeatureCollection",
-        crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
-        features: result_geojson
-    });
+  });
+  return JSON.stringify({
+    type: "FeatureCollection",
+    crs: { type: "name", properties: { name: "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+    features: result_geojson
+  });
 }
 
 function display_error_during_computation(msg) {
-    msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
-    swal({ title: i18next.t("app_page.common.error") + "!",
-        text: i18next.t("app_page.common.error_message") + msg,
-        customClass: 'swal2_custom',
-        type: "error",
-        allowOutsideClick: false });
+  msg = msg ? ["<br><i>", i18next.t("app_page.common.details"), ":</i> ", msg].join("") : "";
+  swal({ title: i18next.t("app_page.common.error") + "!",
+    text: i18next.t("app_page.common.error_message") + msg,
+    customClass: 'swal2_custom',
+    type: "error",
+    allowOutsideClick: false });
 }
 
 /**
@@ -7327,13 +7328,13 @@ function display_error_during_computation(msg) {
 * @return {Promise} response
 */
 function request_data(method, url, data) {
-    return new Promise(function (resolve, reject) {
-        var request = new XMLHttpRequest();
-        request.open(method, url, true);
-        request.onload = resolve;
-        request.onerror = reject;
-        request.send(data);
-    });
+  return new Promise(function (resolve, reject) {
+    var request = new XMLHttpRequest();
+    request.open(method, url, true);
+    request.onload = resolve;
+    request.onerror = reject;
+    request.send(data);
+  });
 }
 
 /**
@@ -7346,481 +7347,513 @@ function request_data(method, url, data) {
 * @return {Promise} response
 */
 function xhrequest(method, url, data, waiting_message) {
-    if (waiting_message) {
-        document.getElementById("overlay").style.display = "";
-    }
-    return new Promise(function (resolve, reject) {
-        var request = new XMLHttpRequest();
-        _app.xhr_to_cancel = request;
-        request.open(method, url, true);
-        request.onload = function (resp) {
-            resolve(resp.target.responseText);
-            _app.xhr_to_cancel = undefined;
-            if (waiting_message) {
-                document.getElementById("overlay").style.display = "none";
-            }
-        };
-        request.onerror = function (err) {
-            reject(err);
-            _app.xhr_to_cancel = undefined;
-            if (waiting_message) {
-                document.getElementById("overlay").style.display = "none";
-            }
-        };
-        request.send(data);
-    });
+  if (waiting_message) {
+    document.getElementById("overlay").style.display = "";
+  }
+  return new Promise(function (resolve, reject) {
+    var request = new XMLHttpRequest();
+    _app.xhr_to_cancel = request;
+    request.open(method, url, true);
+    request.onload = function (resp) {
+      resolve(resp.target.responseText);
+      _app.xhr_to_cancel = undefined;
+      if (waiting_message) {
+        document.getElementById("overlay").style.display = "none";
+      }
+    };
+    request.onerror = function (err) {
+      reject(err);
+      _app.xhr_to_cancel = undefined;
+      if (waiting_message) {
+        document.getElementById("overlay").style.display = "none";
+      }
+    };
+    request.send(data);
+  });
 }
 
 function make_content_summary(serie) {
-    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 6;
+  var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 6;
 
-    return [i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>", i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ", i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>", i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>", i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>", i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>", i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>", i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)].join('');
+  return [i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>", i18next.t("app_page.stat_summary.min"), " : ", round_value(serie.min(), precision), " | ", i18next.t("app_page.stat_summary.max"), " : ", round_value(serie.max(), precision), "<br>", i18next.t("app_page.stat_summary.mean"), " : ", round_value(serie.mean(), precision), "<br>", i18next.t("app_page.stat_summary.median"), " : ", round_value(serie.median(), precision), "<br>", i18next.t("app_page.stat_summary.variance"), " : ", round_value(serie.variance(), precision), "<br>", i18next.t("app_page.stat_summary.stddev"), " : ", round_value(serie.stddev(), precision), "<br>", i18next.t("app_page.stat_summary.cov"), " : ", round_value(serie.cov(), precision)].join('');
 }
 
 function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
-    var id_new_layer = encodeId(new_name),
-        id_ref_layer = _app.layer_to_id.get(ref_layer),
-        node_ref_layer = svg_map.querySelector("#" + id_ref_layer);
-    _app.layer_to_id.set(new_name, id_new_layer);
-    _app.id_to_layer.set(id_new_layer, new_name);
-    svg_map.appendChild(node_ref_layer.cloneNode(true));
-    svg_map.lastChild.setAttribute("id", id_new_layer);
-    var node_new_layer = document.getElementById(id_new_layer);
-    svg_map.insertBefore(node_new_layer, svg_map.querySelector('.legend'));
-    node_new_layer.setAttribute("class", "result_layer layer");
-    result_data[new_name] = [];
-    current_layers[new_name] = { n_features: current_layers[ref_layer].n_features,
-        type: current_layers[ref_layer].type,
-        ref_layer_name: ref_layer };
-    if (current_layers[ref_layer].pointRadius) current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
-    var selec_src = node_ref_layer.getElementsByTagName("path"),
-        selec_dest = node_new_layer.getElementsByTagName("path");
-    if (!fields_to_copy) {
-        for (var i = 0; i < selec_src.length; i++) {
-            selec_dest[i].__data__ = selec_src[i].__data__;
-            result_data[new_name].push(selec_dest[i].__data__.properties);
-        }
-    } else {
-        for (var _i = 0; _i < selec_src.length; _i++) {
-            selec_dest[_i].__data__ = { type: "Feature", properties: {}, geometry: cloneObj(selec_src[_i].__data__.geometry) };
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = fields_to_copy[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var f = _step.value;
-
-                    selec_dest[_i].__data__.properties[f] = selec_src[_i].__data__.properties[f];
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
-                    }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
-            }
-
-            result_data[new_name].push(selec_dest[_i].__data__.properties);
-        }
+  var id_new_layer = encodeId(new_name);
+  var id_ref_layer = _app.layer_to_id.get(ref_layer);
+  var node_ref_layer = svg_map.querySelector("#" + id_ref_layer);
+  _app.layer_to_id.set(new_name, id_new_layer);
+  _app.id_to_layer.set(id_new_layer, new_name);
+  svg_map.appendChild(node_ref_layer.cloneNode(true));
+  svg_map.lastChild.setAttribute("id", id_new_layer);
+  var node_new_layer = document.getElementById(id_new_layer);
+  svg_map.insertBefore(node_new_layer, svg_map.querySelector('.legend'));
+  node_new_layer.setAttribute("class", "result_layer layer");
+  result_data[new_name] = [];
+  current_layers[new_name] = {
+    n_features: current_layers[ref_layer].n_features,
+    type: current_layers[ref_layer].type,
+    ref_layer_name: ref_layer
+  };
+  if (current_layers[ref_layer].pointRadius) {
+    current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
+  }
+  var selec_src = node_ref_layer.getElementsByTagName("path"),
+      selec_dest = node_new_layer.getElementsByTagName("path");
+  if (!fields_to_copy) {
+    for (var i = 0; i < selec_src.length; i++) {
+      selec_dest[i].__data__ = selec_src[i].__data__;
+      result_data[new_name].push(selec_dest[i].__data__.properties);
     }
-    node_new_layer.style.visibility = "";
-    create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
+  } else {
+    for (var _i = 0; _i < selec_src.length; _i++) {
+      selec_dest[_i].__data__ = { type: "Feature", properties: {}, geometry: cloneObj(selec_src[_i].__data__.geometry) };
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = fields_to_copy[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var f = _step.value;
+
+          selec_dest[_i].__data__.properties[f] = selec_src[_i].__data__.properties[f];
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      result_data[new_name].push(selec_dest[_i].__data__.properties);
+    }
+  }
+  node_new_layer.style.visibility = "";
+  create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 
 /**
 * Send a geo result layer computed client-side (currently only discontinuities)
 * to the server in order to use it as other result layers computed server side
-* @param {string} layer_name
-* @param {string} url
+* @param {string} layerName - The name of the layer to send
+* @param {string} url - The url to use
+* @return {undefined}
 */
-function send_layer_server(layer_name, url) {
-    var formToSend = new FormData();
-    var JSON_layer = path_to_geojson(layer_name);
-    formToSend.append("geojson", JSON_layer);
-    formToSend.append("layer_name", layer_name);
-    xhrequest("POST", url, formToSend, false).then(function (e) {
-        var key = JSON.parse(e).key;
-        current_layers[layer_name].key_name = key;
-    }).catch(function (err) {
-        display_error_during_computation();
-        console.log(err);
-    });
+function send_layer_server(layerName, url) {
+  var JSON_layer = path_to_geojson(layerName);
+  var formToSend = new FormData();
+  formToSend.append('geojson', JSON_layer);
+  formToSend.append('layer_name', layerName);
+  xhrequest('POST', url, formToSend, false).then(function (e) {
+    current_layers[layerName].key_name = JSON.parse(e).key;
+  }).catch(function (err) {
+    display_error_during_computation();
+    console.log(err);
+  });
 }
 
-// Function returning the name of all current layers (excepted the sample layers used as layout)
+/**
+* Function returning the name of all current layers (excepted the sample layers used as layout)
+*
+* @return {Array} - The name of the other layers in an Array
+*/
 function get_other_layer_names() {
-    var other_layers = Object.getOwnPropertyNames(current_layers),
-        tmp_idx = null;
+  var otherLayers = Object.getOwnPropertyNames(current_layers);
+  var tmpIdx = null;
 
-    tmp_idx = other_layers.indexOf("Graticule");
-    if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  tmpIdx = otherLayers.indexOf('Graticule');
+  if (tmpIdx > -1) otherLayers.splice(tmpIdx, 1);
 
-    tmp_idx = other_layers.indexOf("World");
-    if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  tmpIdx = otherLayers.indexOf('World');
+  if (tmpIdx > -1) otherLayers.splice(tmpIdx, 1);
 
-    tmp_idx = other_layers.indexOf("Sphere");
-    if (tmp_idx > -1) other_layers.splice(tmp_idx, 1);
+  tmpIdx = otherLayers.indexOf('Sphere');
+  if (tmpIdx > -1) otherLayers.splice(tmpIdx, 1);
 
-    return other_layers;
+  return otherLayers;
 }
+
 /**
 * function triggered in order to add a new layer
 * in the "layer manager" (with appropriates icons regarding to its type, etc.)
 *
+* @return {undefined}
 */
 function create_li_layer_elem(layer_name, nb_ft, type_geom, type_layer) {
-    var _list_display_name = get_display_name_on_layer_list(layer_name),
-        layer_id = encodeId(layer_name),
-        layers_listed = layer_list.node(),
-        li = document.createElement("li");
+  var _list_display_name = get_display_name_on_layer_list(layer_name),
+      layer_id = encodeId(layer_name),
+      layers_listed = layer_list.node(),
+      li = document.createElement("li");
 
-    li.setAttribute("layer_name", layer_name);
-    if (type_layer == "result") {
-        li.setAttribute("class", ["sortable_result ", layer_id].join(''));
-        // li.setAttribute("layer-tooltip",
-        //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
-        li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(type_geom[1]), "</div> "].join('');
-    } else if (type_layer == "sample") {
-        li.setAttribute("class", ["sortable ", layer_id].join(''));
-        // li.setAttribute("layer-tooltip",
-        //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
-        li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type_geom), "</div> "].join('');
-    }
-    layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-    binds_layers_buttons(layer_name);
+  li.setAttribute("layer_name", layer_name);
+  if (type_layer == "result") {
+    li.setAttribute("class", ["sortable_result ", layer_id].join(''));
+    // li.setAttribute("layer-tooltip",
+    //         ["<b>", layer_name, "</b> - ", type_geom[0] ," - ", nb_ft, " features"].join(''));
+    li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(type_geom[1]), "</div> "].join('');
+  } else if (type_layer === "sample") {
+    li.setAttribute("class", ["sortable ", layer_id].join(''));
+    // li.setAttribute("layer-tooltip",
+    //         ["<b>", layer_name, "</b> - Sample layout layer"].join(''));
+    li.innerHTML = [_list_display_name, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type_geom), "</div> "].join('');
+  }
+  layers_listed.insertBefore(li, layers_listed.childNodes[0]);
+  binds_layers_buttons(layer_name);
 }
 
 var type_col = function type_col(layer_name, target) {
-    var skip_if_empty_values = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+  // Function returning an object like {"field1": "field_type", "field2": "field_type"},
+  //  for the fields of the selected layer.
+  // If target is set to "number" it should return an array containing only the name of the numerical fields
+  // ------------------- "string" ---------------------------------------------------------non-numerial ----
+  var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data.hasOwnProperty(layer_name) ? result_data[layer_name] : joined_dataset[0];
+  var fields = Object.getOwnPropertyNames(table[0]);
+  var nbFeatures = table.length;
+  var deepthTest = 100 < nbFeatures ? 100 : nbFeatures - 1;
+  var result = {};
+  var field = void 0;
+  var tmpType = void 0;
 
-    // Function returning an object like {"field1": "field_type", "field2": "field_type"},
-    //  for the fields of the selected layer.
-    // If target is set to "number" it should return an array containing only the name of the numerical fields
-    // ------------------- "string" ---------------------------------------------------------non-numerial ----
-    var table = user_data.hasOwnProperty(layer_name) ? user_data[layer_name] : result_data.hasOwnProperty(layer_name) ? result_data[layer_name] : joined_dataset[0],
-        fields = Object.getOwnPropertyNames(table[0]),
-        nb_features = table.length,
-        deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-        result = {},
-        field = undefined,
-        tmp_type = undefined;
-    for (var j = 0, len = fields.length; j < len; ++j) {
-        field = fields[j];
-        result[field] = [];
-        for (var i = 0; i < deepth_test; ++i) {
-            tmp_type = _typeof(table[i][field]);
-            if (tmp_type == "string" && table[i][field].length == 0) tmp_type = "empty";else if (tmp_type === "string" && !isNaN(Number(table[i][field]))) tmp_type = "number";else if (tmp_type === "object" && isFinite(table[i][field])) tmp_type = "empty";
-            result[fields[j]].push(tmp_type);
-        }
+  for (var j = 0, len = fields.length; j < len; ++j) {
+    field = fields[j];
+    result[field] = [];
+    for (var i = 0; i < deepthTest; ++i) {
+      tmpType = _typeof(table[i][field]);
+      if (tmpType === 'string' && table[i][field].length === 0) {
+        tmpType = 'empty';
+      } else if (tmpType === 'string' && !isNaN(Number(table[i][field]))) {
+        tmpType = 'number';
+      } else if (tmpType === 'object' && isFinite(table[i][field])) {
+        tmpType = 'empty';
+      }
+      result[fields[j]].push(tmpType);
     }
+  }
 
-    for (var _j = 0, _len = fields.length; _j < _len; ++_j) {
-        field = fields[_j];
-        if (result[field].every(function (ft) {
-            return ft === "number" || ft === "empty";
-        }) && result[field].indexOf("number") > -1) result[field] = "number";else result[field] = "string";
-    }
-    if (target) {
-        var res = [];
-        for (var k in result) {
-            if (result[k] === target && k != "_uid") res.push(k);
-        }return res;
-    } else return result;
-};
-
-var type_col2 = function type_col2(table, field) {
-    var skip_if_empty_values = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-
-    // Function returning an object like {"field1": "field_type", "field2": "field_type"},
-    //  for the fields of the selected layer.
-    var tmp_type = undefined,
-        result = [],
-        nb_features = table.length,
-        deepth_test = nb_features,
-
-    // deepth_test = 100 < nb_features ? 100 : nb_features - 1,
-    tmp = {};
-    if (!field) {
-        var fields = Object.getOwnPropertyNames(table[0]).filter(function (v) {
-            return v != '_uid';
-        });
-        field = undefined;
+  for (var _j = 0, _len = fields.length; _j < _len; ++_j) {
+    field = fields[_j];
+    if (result[field].every(function (ft) {
+      return ft === 'number' || ft === 'empty';
+    }) && result[field].indexOf('number') > -1) {
+      result[field] = 'number';
     } else {
-        var fields = [field];
-        field = undefined;
+      result[field] = 'string';
     }
-    var dups = {};
-    for (var j = 0, len = fields.length; j < len; ++j) {
-        field = fields[j];
-        tmp[field] = [];
-        dups[field] = false;
-        var h = {};
-        for (var i = 0; i < deepth_test; ++i) {
-            var val = table[i][field];
-            if (h[val]) dups[field] = true;else h[val] = true;
-            tmp_type = typeof val === "undefined" ? "undefined" : _typeof(val);
-            if (tmp_type === "object" && isFinite(val)) {
-                tmp_type = "empty";
-            } else if (tmp_type === "string" && val.length == 0) {
-                tmp_type = "empty";
-            } else if (tmp_type === "string" && !isNaN(Number(val)) || tmp_type === 'number') {
-                var _val = Number(table[i][field]);
-                tmp_type = (_val | 0) == val ? "stock" : "ratio";
-            }
-            tmp[fields[j]].push(tmp_type);
-        }
+  }
+  if (target) {
+    var res = [];
+    for (var k in result) {
+      if (result[k] === target && k !== '_uid') {
+        res.push(k);
+      }
     }
-    for (var _j2 = 0, _len2 = fields.length; _j2 < _len2; ++_j2) {
-        field = fields[_j2];
-        var has_dup = dups[field];
-        if (field.toLowerCase() === 'id' && !has_dup) {
-            result.push({ name: field, type: "id", has_duplicate: has_dup });
-        } else if (tmp[field].every(function (ft) {
-            return ft === "stock" || ft === "empty";
-        }) && tmp[field].indexOf("stock") > -1) result.push({ name: field, type: "stock", has_duplicate: has_dup });else if (tmp[field].every(function (ft) {
-            return ft === "string" || ft === "empty";
-        }) && tmp[field].indexOf("string") > -1) result.push({ name: field, type: "category", has_duplicate: has_dup });else if (tmp[field].every(function (ft) {
-            return ft === "ratio" || ft === "stock" || ft === "empty";
-        }) && tmp[field].indexOf("ratio") > -1) result.push({ name: field, type: "ratio" });else result.push({ name: field, type: "unknown", has_duplicate: has_dup });
-    }
-    return result;
+    return res;
+  }
+  return result;
 };
 
-function getFieldsType(type, layer_name, ref) {
-    if (!layer_name && !ref) return;
-    ref = ref || current_layers[layer_name].fields_type;
-    return ref.filter(function (d) {
-        return d.type === type;
-    }).map(function (d) {
-        return d.name;
+var type_col2 = function type_col2(table, _field) {
+  var skip_if_empty_values = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+  // Function returning an object like {"field1": "field_type", "field2": "field_type"},
+  //  for the fields of the selected layer.
+  var result = [];
+  var nbFeatures = table.length;
+  var tmp = {};
+  var dups = {};
+  var field = _field;
+  var tmpType = void 0;
+  var fields = void 0;
+
+  if (!field) {
+    fields = Object.getOwnPropertyNames(table[0]).filter(function (v) {
+      return v !== '_uid';
     });
-}
+    field = undefined;
+  } else {
+    fields = [field];
+    field = undefined;
+  }
+
+  for (var j = 0, len = fields.length; j < len; ++j) {
+    field = fields[j];
+    tmp[field] = [];
+    dups[field] = false;
+    var h = {};
+    for (var i = 0; i < nbFeatures; ++i) {
+      var val = table[i][field];
+      if (h[val]) dups[field] = true;else h[val] = true;
+      tmpType = typeof val === "undefined" ? "undefined" : _typeof(val);
+      if (tmpType === 'object' && isFinite(val)) {
+        tmpType = 'empty';
+      } else if (tmpType === 'string' && val.length == 0) {
+        tmpType = 'empty';
+      } else if (tmpType === 'string' && !isNaN(Number(val)) || tmpType === 'number') {
+        var _val = Number(table[i][field]);
+        tmpType = (_val | 0) == val ? 'stock' : 'ratio';
+      }
+      tmp[fields[j]].push(tmpType);
+    }
+  }
+  for (var _j2 = 0, _len2 = fields.length; _j2 < _len2; ++_j2) {
+    field = fields[_j2];
+    var hasDup = dups[field];
+    if (field.toLowerCase() === 'id' && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+    } else if (tmp[field].every(function (ft) {
+      return ft === 'stock' || ft === 'empty';
+    }) && tmp[field].indexOf('stock') > -1) {
+      result.push({ name: field, type: 'stock', has_duplicate: hasDup });
+    } else if (tmp[field].every(function (ft) {
+      return ft === 'string' || ft === 'empty';
+    }) && tmp[field].indexOf('string') > -1) {
+      result.push({ name: field, type: 'category', has_duplicate: hasDup });
+    } else if (tmp[field].every(function (ft) {
+      return ft === 'ratio' || ft === 'stock' || ft === 'empty';
+    }) && tmp[field].indexOf('ratio') > -1) {
+      result.push({ name: field, type: 'ratio' });
+    } else {
+      result.push({ name: field, type: 'unknown', has_duplicate: hasDup });
+    }
+  }
+  return result;
+};
+
+var getFieldsType = function getFieldsType(type, layerName, ref) {
+  if (!layerName && !ref) return null;
+  var refField = ref || current_layers[layerName].fields_type;
+  return refField.filter(function (d) {
+    return d.type === type;
+  }).map(function (d) {
+    return d.name;
+  });
+};
 
 function make_box_type_fields(layer_name) {
-    var modal_box = make_dialog_container("box_type_fields", i18next.t("app_page.box_type_fields.title"), "dialog");
-    d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
-    var newbox = d3.select("#box_type_fields").select(".modal-body"),
-        tmp = type_col2(user_data[layer_name]),
-        fields_type = current_layers[layer_name].fields_type,
-        f = fields_type.map(function (v) {
-        return v.name;
-    }),
-        ref_type = ['id', 'stock', 'ratio', 'category', 'unknown'];
+  make_dialog_container("box_type_fields", i18next.t("app_page.box_type_fields.title"), "dialog");
+  d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
+  var newbox = d3.select("#box_type_fields").select(".modal-body");
+  var tmp = type_col2(user_data[layer_name]);
+  var fields_type = current_layers[layer_name].fields_type;
+  var f = fields_type.map(function (v) {
+    return v.name;
+  });
+  var refType = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
-    var deferred = Promise.pending(),
-        container = document.getElementById("box_type_fields");
+  var deferred = Promise.pending();
+  var container = document.getElementById("box_type_fields");
 
-    var clean_up_box = function clean_up_box() {
-        container.remove();
-        overlay_under_modal.hide();
-        document.removeEventListener('keydown', helper_esc_key_twbs);
+  var clean_up_box = function clean_up_box() {
+    container.remove();
+    overlay_under_modal.hide();
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+  };
+
+  if (f.length === 0) {
+    // If the user dont have already selected the type :
+    fields_type = tmp.slice();
+    container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+    var _onclose = function _onclose() {
+      // Or use the default values if he use the X  close button
+      current_layers[layer_name].fields_type = tmp.slice();
+      getAvailablesFunctionnalities(layer_name);
+      deferred.resolve(false);
+      clean_up_box();
     };
-
-    if (f.length === 0) {
-        // If the user dont have already selected the type :
-        fields_type = tmp.slice();
-        container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
-        var _onclose = function _onclose() {
-            // Or use the default values if he use the X  close button
-            current_layers[layer_name].fields_type = tmp.slice();
-            getAvailablesFunctionnalities(layer_name);
-            deferred.resolve(false);
-            clean_up_box();
-        };
-        container.querySelector("#xclose").onclick = _onclose;
-    } else if (tmp.length > fields_type.length) {
-        // There is already types selected but new fields where added :
-        tmp.forEach(function (d) {
-            if (f.indexOf(d.name) === -1) fields_type.push(d);
-        });
-        container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
-        var _onclose2 = function _onclose2() {
-            // Or use the default values if he use the X  close button
-            current_layers[layer_name].fields_type = tmp.slice();
-            getAvailablesFunctionnalities(layer_name);
-            deferred.resolve(false);
-            clean_up_box();
-        };
-        container.querySelector("#xclose").onclick = _onclose2;
-    } else {
-        // There is already types selected and no new fields (so this is a modification) :
-        // Use the previous values if the user close the window without confirmation (cancel or X button)
-        var _onclose3 = function _onclose3() {
-            current_layers[layer_name].fields_type = fields_type;
-            deferred.resolve(false);
-            clean_up_box();
-        };
-        container.querySelector(".btn_cancel").onclick = _onclose3;
-        container.querySelector("#xclose").onclick = _onclose3;
-    }
-
-    // Fetch and store the selected values when 'Ok' button is clicked :
-    container.querySelector(".btn_ok").onclick = function () {
-        var r = [];
-        Array.prototype.forEach.call(document.getElementById('fields_select').getElementsByTagName('p'), function (elem) {
-            r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
-        });
-        deferred.resolve(true);
-        current_layers[layer_name].fields_type = r.slice();
-        getAvailablesFunctionnalities(layer_name);
-        if (window.fields_handler) {
-            fields_handler.unfill();
-            fields_handler.fill(layer_name);
-        }
-        clean_up_box();
+    container.querySelector("#xclose").onclick = _onclose;
+  } else if (tmp.length > fields_type.length) {
+    // There is already types selected but new fields where added
+    tmp.forEach(function (d) {
+      if (f.indexOf(d.name) === -1) fields_type.push(d);
+    });
+    container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+    var _onclose2 = function _onclose2() {
+      // Or use the default values if he use the X  close button
+      current_layers[layer_name].fields_type = tmp.slice();
+      getAvailablesFunctionnalities(layer_name);
+      deferred.resolve(false);
+      clean_up_box();
     };
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.stopPropagation();
-            current_layers[layer_name].fields_type = tmp.slice();
-            getAvailablesFunctionnalities(layer_name);
-            deferred.resolve(false);
-            clean_up_box();
-        }
-    }
-    document.addEventListener('keydown', helper_esc_key_twbs);
-    document.getElementById('btn_type_fields').removeAttribute('disabled');
+    container.querySelector("#xclose").onclick = _onclose2;
+  } else {
+    // There is already types selected and no new fields (so this is a modification) :
+    // Use the previous values if the user close the window without confirmation (cancel or X button)
+    var _onclose3 = function _onclose3() {
+      current_layers[layer_name].fields_type = fields_type;
+      deferred.resolve(false);
+      clean_up_box();
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose3;
+    container.querySelector("#xclose").onclick = _onclose3;
+  }
 
-    newbox.append("h3").html(i18next.t("app_page.box_type_fields.message_invite"));
-
-    var box_select = newbox.append("div").attr("id", "fields_select");
-
-    var a = box_select.selectAll("p").data(fields_type).enter().append('p').style('margin', '15px');
-
-    box_select.selectAll("p").insert('span').html(function (d) {
-        return d.name;
+  // Fetch and store the selected values when 'Ok' button is clicked :
+  container.querySelector(".btn_ok").onclick = function () {
+    var r = [];
+    Array.prototype.forEach.call(document.getElementById('fields_select').getElementsByTagName('p'), function (elem) {
+      r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
     });
-
-    box_select.selectAll('p').insert('select').style('float', 'right').selectAll('option').data(ref_type).enter().insert('option').attr('value', function (d) {
-        return d;
-    }).text(function (d) {
-        return i18next.t('app_page.box_type_fields.' + d);
-    }).exit();
-
-    box_select.selectAll('select').each(function (d) {
-        this.value = d.type;
-    });
-
-    for (var i = 0; i < fields_type.length; i++) {
-        if (fields_type[i].type == "category" || fields_type[i].not_number) {
-            box_select.node().childNodes[i].childNodes[1].options.remove(2);
-            box_select.node().childNodes[i].childNodes[1].options.remove(1);
-        }
-        if (fields_type[i].has_duplicate) {
-            box_select.node().childNodes[i].childNodes[1].options.remove(0);
-        }
+    deferred.resolve(true);
+    current_layers[layer_name].fields_type = r.slice();
+    getAvailablesFunctionnalities(layer_name);
+    if (window.fields_handler) {
+      fields_handler.unfill();
+      fields_handler.fill(layer_name);
     }
-    overlay_under_modal.display();
-    setTimeout(function (_) {
-        container.querySelector('button.btn_ok').focus();
-    }, 400);
-    return deferred.promise;
-};
-
-function getAvailablesFunctionnalities(layer_name) {
-    var fields_stock = getFieldsType('stock', layer_name),
-        fields_ratio = getFieldsType('ratio', layer_name),
-        fields_categ = getFieldsType('category', layer_name),
-        section = document.getElementById('section2_pre');
-
-    if (current_layers[layer_name].type == "Line") {
-        // Layer type is Line
-        var elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
-        for (var i = 0, len_i = elems.length; i < len_i; i++) {
-            elems[i].style.filter = "grayscale(100%)";
-        }
-        var func_stock = section.querySelectorAll('#button_prop'),
-            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
-            func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
-    } else if (current_layers[layer_name].type == "Point") {
-        // layer type is Point
-        var _elems = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
-        for (var _i2 = 0, _len_i = _elems.length; _i2 < _len_i; _i2++) {
-            _elems[_i2].style.filter = "grayscale(100%)";
-        }
-        var func_stock = section.querySelectorAll('#button_smooth, #button_prop'),
-            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
-            func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
-    } else {
-        // Layer type is Polygon
-        var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont'),
-            func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
-            func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
-    }
-    if (fields_stock.length === 0) {
-        Array.prototype.forEach.call(func_stock, function (d) {
-            return d.style.filter = "grayscale(100%)";
-        });
-    } else {
-        Array.prototype.forEach.call(func_stock, function (d) {
-            return d.style.filter = "invert(0%) saturate(100%)";
-        });
-    }
-    if (fields_ratio.length === 0) {
-        Array.prototype.forEach.call(func_ratio, function (d) {
-            return d.style.filter = "grayscale(100%)";
-        });
-    } else {
-        Array.prototype.forEach.call(func_ratio, function (d) {
-            return d.style.filter = "invert(0%) saturate(100%)";
-        });
-    }
-    if (fields_categ.length === 0) {
-        Array.prototype.forEach.call(func_categ, function (d) {
-            return d.style.filter = "grayscale(100%)";
-        });
-    } else {
-        Array.prototype.forEach.call(func_categ, function (d) {
-            return d.style.filter = "invert(0%) saturate(100%)";
-        });
-    }
-    if (fields_stock.length === 0 || fields_ratio.length === 0) {
-        document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
-    } else {
-        document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
-    }
-    if (fields_stock.length === 0 || fields_categ.length === 0) {
-        document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
-    } else {
-        document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
-    }
-}
-
-var clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
-    return fetch(url).then(function (res) {
-        return res.blob();
-    }).then(function (blob) {
-        var blobUrl = URL.createObjectURL(blob);
-        var dlAnchorElem = document.createElement('a');
-        dlAnchorElem.style.display = 'none';
-        dlAnchorElem.setAttribute("href", blobUrl);
-        dlAnchorElem.setAttribute("download", filename);
-        document.body.appendChild(dlAnchorElem);
-        dlAnchorElem.click();
-        dlAnchorElem.remove();
-        URL.revokeObjectURL(blobUrl);
-    });
-};
-
-var helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
+    clean_up_box();
+  };
+  function helper_esc_key_twbs(evt) {
     evt = evt || window.event;
     var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
     if (isEscape) {
-        evt.stopPropagation();
-        if (callback) {
-            callback();
-        }
+      evt.stopPropagation();
+      current_layers[layer_name].fields_type = tmp.slice();
+      getAvailablesFunctionnalities(layer_name);
+      deferred.resolve(false);
+      clean_up_box();
     }
+  }
+  document.addEventListener('keydown', helper_esc_key_twbs);
+  document.getElementById('btn_type_fields').removeAttribute('disabled');
+
+  newbox.append("h3").html(i18next.t("app_page.box_type_fields.message_invite"));
+
+  var box_select = newbox.append('div').attr('id', 'fields_select');
+
+  box_select.selectAll("p").data(fields_type).enter().append('p').style('margin', '15px');
+
+  box_select.selectAll('p').insert('span').html(function (d) {
+    return d.name;
+  });
+
+  box_select.selectAll('p').insert('select').style('float', 'right').selectAll('option').data(refType).enter().insert('option').attr('value', function (d) {
+    return d;
+  }).text(function (d) {
+    return i18next.t('app_page.box_type_fields.' + d);
+  }).exit();
+
+  box_select.selectAll('select').each(function (d) {
+    this.value = d.type;
+  });
+
+  for (var i = 0; i < fields_type.length; i++) {
+    if (fields_type[i].type === 'category' || fields_type[i].not_number) {
+      box_select.node().childNodes[i].childNodes[1].options.remove(2);
+      box_select.node().childNodes[i].childNodes[1].options.remove(1);
+    }
+    if (fields_type[i].has_duplicate) {
+      box_select.node().childNodes[i].childNodes[1].options.remove(0);
+    }
+  }
+  overlay_under_modal.display();
+  setTimeout(function (_) {
+    container.querySelector('button.btn_ok').focus();
+  }, 400);
+  return deferred.promise;
+};
+
+function getAvailablesFunctionnalities(layer_name) {
+  var fields_stock = getFieldsType('stock', layer_name),
+      fields_ratio = getFieldsType('ratio', layer_name),
+      fields_categ = getFieldsType('category', layer_name),
+      section = document.getElementById('section2_pre');
+
+  if (current_layers[layer_name].type == "Line") {
+    // Layer type is Line
+    var elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
+    for (var i = 0, len_i = elems.length; i < len_i; i++) {
+      elems[i].style.filter = "grayscale(100%)";
+    }
+    var func_stock = section.querySelectorAll('#button_prop'),
+        func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
+        func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
+  } else if (current_layers[layer_name].type == "Point") {
+    // layer type is Point
+    var _elems = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
+    for (var _i2 = 0, _len_i = _elems.length; _i2 < _len_i; _i2++) {
+      _elems[_i2].style.filter = "grayscale(100%)";
+    }
+    var func_stock = section.querySelectorAll('#button_smooth, #button_prop'),
+        func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
+        func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+  } else {
+    // Layer type is Polygon
+    var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont'),
+        func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
+        func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+  }
+  if (fields_stock.length === 0) {
+    Array.prototype.forEach.call(func_stock, function (d) {
+      return d.style.filter = "grayscale(100%)";
+    });
+  } else {
+    Array.prototype.forEach.call(func_stock, function (d) {
+      return d.style.filter = "invert(0%) saturate(100%)";
+    });
+  }
+  if (fields_ratio.length === 0) {
+    Array.prototype.forEach.call(func_ratio, function (d) {
+      return d.style.filter = "grayscale(100%)";
+    });
+  } else {
+    Array.prototype.forEach.call(func_ratio, function (d) {
+      return d.style.filter = "invert(0%) saturate(100%)";
+    });
+  }
+  if (fields_categ.length === 0) {
+    Array.prototype.forEach.call(func_categ, function (d) {
+      return d.style.filter = "grayscale(100%)";
+    });
+  } else {
+    Array.prototype.forEach.call(func_categ, function (d) {
+      return d.style.filter = "invert(0%) saturate(100%)";
+    });
+  }
+  if (fields_stock.length === 0 || fields_ratio.length === 0) {
+    document.getElementById('button_choroprop').style.filter = "grayscale(100%)";
+  } else {
+    document.getElementById('button_choroprop').style.filter = "invert(0%) saturate(100%)";
+  }
+  if (fields_stock.length === 0 || fields_categ.length === 0) {
+    document.getElementById('button_proptypo').style.filter = "grayscale(100%)";
+  } else {
+    document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
+  }
+}
+
+var clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
+  return fetch(url).then(function (res) {
+    return res.blob();
+  }).then(function (blob) {
+    var blobUrl = URL.createObjectURL(blob);
+    var dlAnchorElem = document.createElement('a');
+    dlAnchorElem.style.display = 'none';
+    dlAnchorElem.setAttribute('ref', blobUrl);
+    dlAnchorElem.setAttribute('download', filename);
+    document.body.appendChild(dlAnchorElem);
+    dlAnchorElem.click();
+    dlAnchorElem.remove();
+    URL.revokeObjectURL(blobUrl);
+  });
+};
+
+var helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
+  evt = evt || window.event;
+  var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
+  if (isEscape) {
+    evt.stopPropagation();
+    if (callback) {
+      callback();
+    }
+  }
 };
 "use strict";
 
@@ -7836,12 +7869,12 @@ var helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function min_fast(arr) {
-    var min = arr[0];
-    for (var i = 1, len_i = arr.length; i < len_i; ++i) {
-        var val = +arr[i];
-        if (val && val < min) min = val;
-    }
-    return min;
+  var min = arr[0];
+  for (var i = 1, len_i = arr.length; i < len_i; ++i) {
+    var val = +arr[i];
+    if (val && val < min) min = val;
+  }
+  return min;
 }
 
 /**
@@ -7851,12 +7884,12 @@ function min_fast(arr) {
 * @return {Number} max
 */
 function max_fast(arr) {
-    var max = arr[0];
-    for (var i = 1, len_i = arr.length; i < len_i; ++i) {
-        var val = +arr[i];
-        if (val > max) max = arr[i];
-    }
-    return max;
+  var max = arr[0];
+  for (var i = 1, len_i = arr.length; i < len_i; ++i) {
+    var val = +arr[i];
+    if (val > max) max = arr[i];
+  }
+  return max;
 }
 
 /**
@@ -7866,9 +7899,9 @@ function max_fast(arr) {
 * @return {Bool} result - True or False, whether it contains negatives values or not
 */
 function has_negative(arr) {
-    for (var i = 0; i < arr.length; ++i) {
-        if (+arr[i] < 0) return true;
-    }return false;
+  for (var i = 0; i < arr.length; ++i) {
+    if (+arr[i] < 0) return true;
+  }return false;
 }
 
 /**
@@ -7876,9 +7909,9 @@ function has_negative(arr) {
 * @return {Boolean} result - True or False, according to whether it contains empty values or not
 */
 var contains_empty_val = function contains_empty_val(arr) {
-    for (var i = arr.length - 1; i > -1; --i) {
-        if (arr[i] == null) return true;else if (isNaN(+arr[i])) return true;
-    }return false;
+  for (var i = arr.length - 1; i > -1; --i) {
+    if (arr[i] == null) return true;else if (isNaN(+arr[i])) return true;
+  }return false;
 };
 
 /**
@@ -7886,12 +7919,12 @@ var contains_empty_val = function contains_empty_val(arr) {
 * @return {Boolean} result - True or False, according to whether it contains duplicate or not
 */
 function has_duplicate(arr) {
-    var h = {},
-        len_arr = arr.length;
-    for (var i = 0; i < len_arr; i++) {
-        if (h[arr[i]]) return true;else h[arr[i]] = true;
-    }
-    return false;
+  var h = {},
+      len_arr = arr.length;
+  for (var i = 0; i < len_arr; i++) {
+    if (h[arr[i]]) return true;else h[arr[i]] = true;
+  }
+  return false;
 }
 
 /**
@@ -7902,19 +7935,19 @@ function has_duplicate(arr) {
 * @return {Number} value - The rounded value.
 */
 var round_value = function round_value(val, nb) {
-    if (nb == undefined) return val;
-    var dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
-    return nb >= 0 ? Math.round(+val * dec_mult) / dec_mult : Math.round(+val / dec_mult) * dec_mult;
+  if (nb == undefined) return val;
+  var dec_mult = +["1", Array(Math.abs(nb)).fill("0").join('')].join('');
+  return nb >= 0 ? Math.round(+val * dec_mult) / dec_mult : Math.round(+val / dec_mult) * dec_mult;
 };
 
 function get_nb_decimals(nb) {
-    var tmp = nb.toString().split('.');
-    return tmp.length < 2 ? 0 : tmp[1].length;
+  var tmp = nb.toString().split('.');
+  return tmp.length < 2 ? 0 : tmp[1].length;
 }
 
 function get_nb_left_separator(nb) {
-    var tmp = nb.toString().split('.');
-    return tmp[0].length;
+  var tmp = nb.toString().split('.');
+  return tmp[0].length;
 }
 
 /**
@@ -7924,104 +7957,104 @@ function get_nb_left_separator(nb) {
 * @return {String} separator - The decimal separator (dot or comma)
 */
 function getDecimalSeparator() {
-    return 1.1.toLocaleString().substr(1, 1);
+  return 1.1.toLocaleString().substr(1, 1);
 }
 
 var get_precision_axis = function get_precision_axis(serie_min, serie_max, precision) {
-    var range_serie = serie_max - serie_min;
-    if (serie_max > 1 && range_serie > 100) {
-        return ".0f";
-    } else if (range_serie > 10) {
-        if (precision == 0) {
-            return ".0f";
-        }
-        return ".1f";
-    } else if (range_serie > 1) {
-        if (precision < 2) {
-            return ".1f";
-        }
-        return ".2f";
-    } else if (range_serie > 0.1) {
-        return ".3f";
-    } else if (range_serie > 0.01) {
-        return ".4f";
-    } else if (range_serie > 0.001) {
-        return ".5f";
-    } else if (range_serie > 0.0001) {
-        return ".6f";
-    } else if (range_serie > 0.00001) {
-        return ".7f";
-    } else {
-        return ".8f";
+  var range_serie = serie_max - serie_min;
+  if (serie_max > 1 && range_serie > 100) {
+    return ".0f";
+  } else if (range_serie > 10) {
+    if (precision == 0) {
+      return ".0f";
     }
+    return ".1f";
+  } else if (range_serie > 1) {
+    if (precision < 2) {
+      return ".1f";
+    }
+    return ".2f";
+  } else if (range_serie > 0.1) {
+    return ".3f";
+  } else if (range_serie > 0.01) {
+    return ".4f";
+  } else if (range_serie > 0.001) {
+    return ".5f";
+  } else if (range_serie > 0.0001) {
+    return ".6f";
+  } else if (range_serie > 0.00001) {
+    return ".7f";
+  } else {
+    return ".8f";
+  }
 };
 
 var PropSizer = function PropSizer(fixed_value, fixed_size, type_symbol) {
-    var _this = this;
+  var _this = this;
 
-    this.fixed_value = fixed_value;
-    var sqrt = Math.sqrt,
-        abs = Math.abs,
-        pi = Math.PI;
-    if (type_symbol === "circle") {
-        this.smax = fixed_size * fixed_size * pi;
-        this.scale = function (val) {
-            return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
-        };
-        this.get_value = function (size) {
-            return Math.pow(size * pi, 2) / _this.smax * _this.fixed_value;
-        };
-    } else if (type_symbol === "line") {
-        this.smax = fixed_size;
-        this.scale = function (val) {
-            return abs(val) * _this.smax / _this.fixed_value;
-        };
-        this.get_value = function (size) {
-            return size / _this.smax * _this.fixed_value;
-        };
-    } else {
-        this.smax = fixed_size * fixed_size;
-        this.scale = function (val) {
-            return sqrt(abs(val) * _this.smax / _this.fixed_value);
-        };
-        this.get_value = function (size) {
-            return Math.pow(size, 2) / _this.smax * _this.fixed_value;
-        };
-    }
+  this.fixed_value = fixed_value;
+  var sqrt = Math.sqrt,
+      abs = Math.abs,
+      pi = Math.PI;
+  if (type_symbol === "circle") {
+    this.smax = fixed_size * fixed_size * pi;
+    this.scale = function (val) {
+      return sqrt(abs(val) * _this.smax / _this.fixed_value) / pi;
+    };
+    this.get_value = function (size) {
+      return Math.pow(size * pi, 2) / _this.smax * _this.fixed_value;
+    };
+  } else if (type_symbol === "line") {
+    this.smax = fixed_size;
+    this.scale = function (val) {
+      return abs(val) * _this.smax / _this.fixed_value;
+    };
+    this.get_value = function (size) {
+      return size / _this.smax * _this.fixed_value;
+    };
+  } else {
+    this.smax = fixed_size * fixed_size;
+    this.scale = function (val) {
+      return sqrt(abs(val) * _this.smax / _this.fixed_value);
+    };
+    this.get_value = function (size) {
+      return Math.pow(size, 2) / _this.smax * _this.fixed_value;
+    };
+  }
 };
 
 function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol) {
-    var pi = Math.PI,
-        abs = Math.abs,
-        sqrt = Math.sqrt,
-        arr_len = arr.length,
-        res = [];
+  var pi = Math.PI,
+      abs = Math.abs,
+      sqrt = Math.sqrt,
+      arr_len = arr.length,
+      res = [];
 
-    if (!fixed_value || fixed_value == 0) fixed_value = max_fast(arr);
+  if (!fixed_value || fixed_value == 0) fixed_value = max_fast(arr);
 
-    if (type_symbol == "circle") {
-        var smax = fixed_size * fixed_size * pi;
-        var _t = smax / fixed_value;
-        for (var i = 0; i < arr_len; ++i) {
-            res.push(sqrt(abs(arr[i]) * _t) / pi);
-        }
-    } else if (type_symbol == "line") {
-        var _t2 = fixed_size / fixed_value;
-        for (var _i = 0; _i < arr_len; ++_i) {
-            res.push(abs(arr[_i]) * _t2);
-        }
-    } else {
-        var _smax = fixed_size * fixed_size;
-        var _t3 = _smax / fixed_value;
-        for (var _i2 = 0; _i2 < arr_len; ++_i2) {
-            res.push(sqrt(abs(arr[_i2]) * _t3));
-        }
+  if (type_symbol == "circle") {
+    var smax = fixed_size * fixed_size * pi;
+    var _t = smax / fixed_value;
+    for (var i = 0; i < arr_len; ++i) {
+      res.push(sqrt(abs(arr[i]) * _t) / pi);
     }
-    return res;
+  } else if (type_symbol == "line") {
+    var _t2 = fixed_size / fixed_value;
+    for (var _i = 0; _i < arr_len; ++_i) {
+      res.push(abs(arr[_i]) * _t2);
+    }
+  } else {
+    var _smax = fixed_size * fixed_size;
+    var _t3 = _smax / fixed_value;
+    for (var _i2 = 0; _i2 < arr_len; ++_i2) {
+      res.push(sqrt(abs(arr[_i2]) * _t3));
+    }
+  }
+  return res;
 }
 
 function getOptNbClass(len_serie) {
-    return Math.floor(1 + 3.3 * Math.log10(len_serie));
+  return Math.floor(1 + 3.3 * Math.log10(len_serie));
 }
 
 /**
@@ -8033,158 +8066,155 @@ function getOptNbClass(len_serie) {
 * @return {Object} summary - Object containing the breaks and the stock in each class.
 */
 function getBreaksQ6(serie) {
-    var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+  var precision = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
-    var breaks = [],
-        tmp = 0,
-        j = undefined,
-        len_serie = serie.length,
-        stock_class = [],
-        q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
-    for (var i = 0; i < 7; ++i) {
-        j = Math.round(q6_class[i]) - 1;
-        breaks.push(+serie[j]);
-        stock_class.push(j - tmp);
-        tmp = j;
-    }
-    stock_class.shift();
-    if (breaks[0] == breaks[1]) {
-        // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
-        breaks[1] = (+serie[1] + breaks[0]) / 2;
-    }
-    if (breaks[6] == breaks[5]) {
-        breaks[5] = serie[len_serie - 2];
-        // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
-    }
-    if (precision != null) {
-        breaks = breaks.map(function (val) {
-            return round_value(val, precision);
-        });
-    }
-    return {
-        breaks: breaks,
-        stock_class: stock_class
-    };
+  var len_serie = serie.length;
+  var q6_class = [1, 0.05 * len_serie, 0.275 * len_serie, 0.5 * len_serie, 0.725 * len_serie, 0.95 * len_serie, len_serie];
+  var breaks = [];
+  var tmp = 0;
+  var j = void 0;
+  var stock_class = [];
+  for (var i = 0; i < 7; ++i) {
+    j = Math.round(q6_class[i]) - 1;
+    breaks.push(+serie[j]);
+    stock_class.push(j - tmp);
+    tmp = j;
+  }
+  stock_class.shift();
+  if (breaks[0] == breaks[1]) {
+    // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
+    breaks[1] = (+serie[1] + breaks[0]) / 2;
+  }
+  if (breaks[6] == breaks[5]) {
+    breaks[5] = serie[len_serie - 2];
+    // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
+  }
+  if (precision != null) {
+    breaks = breaks.map(function (val) {
+      return round_value(val, precision);
+    });
+  }
+  return {
+    breaks: breaks,
+    stock_class: stock_class
+  };
 }
 
 function getBreaksStdDev(serie, share) {
-    var mean_position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'center';
-    var precision = arguments[3];
+  var mean_position = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'center';
+  var precision = arguments[3];
 
-    var min = serie.min(),
-        max = serie.max(),
-        mean = serie.mean(),
-        std_dev = serie.stddev(),
-        class_size = std_dev * share,
-        breaks = mean_position == 'center' ? [mean - class_size / 2, mean + class_size / 2] : [mean - class_size, mean, mean + class_size];
+  var min = serie.min(),
+      max = serie.max(),
+      mean = serie.mean(),
+      std_dev = serie.stddev(),
+      class_size = std_dev * share;
+  var breaks = mean_position == 'center' ? [mean - class_size / 2, mean + class_size / 2] : [mean - class_size, mean, mean + class_size];
 
-    precision = precision || serie.precision;
+  precision = precision || serie.precision;
 
-    // let v = breaks[0];
-    while (breaks[0] > min) {
-        breaks.unshift(breaks[0] - class_size);
-        // v = breaks[0];
+  while (breaks[0] > min) {
+    breaks.unshift(breaks[0] - class_size);
+  }
+  while (breaks[breaks.length - 1] < max) {
+    breaks.push(breaks[breaks.length - 1] + class_size);
+  }
+  var nb_class = breaks.length - 1;
+  if (breaks[0] < min) {
+    if (breaks[1] < min) {
+      console.log("This shouldn't happen (min)");
     }
-    // v = breaks[breaks.length - 1];
-    while (breaks[breaks.length - 1] < max) {
-        breaks.push(breaks[breaks.length - 1] + class_size);
-    }
-    var nb_class = breaks.length - 1;
-    if (breaks[0] < min) {
-        if (breaks[1] < min) {
-            console.log("This shouldn't happen (min)");
-        }
-        breaks[0] = min;
-    }
+    breaks[0] = min;
+  }
 
-    if (breaks[nb_class] > max) {
-        if (breaks[nb_class - 1] > max) {
-            console.log("This shouldn't happen (max)");
-        }
-        breaks[nb_class] = max;
+  if (breaks[nb_class] > max) {
+    if (breaks[nb_class - 1] > max) {
+      console.log("This shouldn't happen (max)");
     }
-    return {
-        nb_class: nb_class,
-        breaks: breaks.map(function (v) {
-            return round_value(v, precision);
-        })
-    };
+    breaks[nb_class] = max;
+  }
+  return {
+    nb_class: nb_class,
+    breaks: breaks.map(function (v) {
+      return round_value(v, precision);
+    })
+  };
 }
 
 function getBinsCount(_values) {
-    var bins = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
+  var bins = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 16;
 
-    _values = _values.filter(function (a) {
-        return a;
-    }).sort(function (a, b) {
-        return a - b;
-    });
-    var nb_ft = _values.length,
-        mean = undefined,
-        stddev = undefined,
-        min = _values[0],
-        max = _values[nb_ft - 1],
-        extend = max - min,
-        bin_size = extend / bins,
-        counts = new Array(bins),
-        break_values = [min],
-        sum = 0,
-        ix_med = (nb_ft + 1) / 2;
+  var values = _values.filter(function (a) {
+    return a;
+  }).sort(function (a, b) {
+    return a - b;
+  });
+  var nb_ft = values.length;
+  var mean = void 0,
+      stddev = void 0,
+      min = values[0],
+      max = values[nb_ft - 1],
+      extend = max - min,
+      bin_size = extend / bins,
+      counts = new Array(bins),
+      break_values = [min],
+      sum = 0,
+      ix_med = (nb_ft + 1) / 2;
 
-    for (var i = 0; i < bins; i++) {
-        break_values.push(break_values[i] + bin_size);
+  for (var i = 0; i < bins; i++) {
+    break_values.push(break_values[i] + bin_size);
+  }
+  for (var _i3 = 1, j = 0; _i3 < nb_ft; _i3++) {
+    var class_max = break_values[_i3 - 1];
+    counts[_i3 - 1] = 0;
+    while (values[j] <= class_max) {
+      sum += values[j];
+      counts[_i3 - 1] += 1;
+      j++;
     }
-    for (var _i3 = 1, j = 0; _i3 < nb_ft; _i3++) {
-        var class_max = break_values[_i3 - 1];
-        counts[_i3 - 1] = 0;
-        while (_values[j] <= class_max) {
-            sum += _values[j];
-            counts[_i3 - 1] += 1;
-            j++;
-        }
-    }
-    mean = sum / nb_ft;
-    stddev = getStdDev(_values, mean);
+  }
+  mean = sum / nb_ft;
+  stddev = getStdDev(values, mean);
 
-    return {
-        breaks: break_values,
-        counts: counts,
-        min: min,
-        max: max,
-        mean: mean,
-        median: (ix_med | 0) == ix_med ? _values[ix_med] : (_values[Math.floor(ix_med)] + _values[Math.ceil(ix_med)]) / 2,
-        stddev: stddev
-    };
+  return {
+    breaks: break_values,
+    counts: counts,
+    min: min,
+    max: max,
+    mean: mean,
+    median: (ix_med | 0) == ix_med ? values[ix_med] : (values[Math.floor(ix_med)] + values[Math.ceil(ix_med)]) / 2,
+    stddev: stddev
+  };
 }
 
 function parseUserDefinedBreaks(serie, breaks_list) {
-    var separator = has_negative(serie) ? '- ' : '-';
-    return breaks_list.split(separator).map(function (el) {
-        return +el.trim();
-    });
+  var separator = has_negative(serie) ? '- ' : '-';
+  return breaks_list.split(separator).map(function (el) {
+    return +el.trim();
+  });
 }
 
 function getBreaks_userDefined(serie, break_values) {
-    if (typeof break_values === "string") {
-        break_values = parseUserDefinedBreaks(serie, break_values);
-    }
-    var len_serie = serie.length,
-        j = 0,
-        len_break_val = break_values.length,
-        stock_class = new Array(len_break_val - 1);
+  if (typeof break_values === "string") {
+    break_values = parseUserDefinedBreaks(serie, break_values);
+  }
+  var len_serie = serie.length,
+      j = 0,
+      len_break_val = break_values.length,
+      stock_class = new Array(len_break_val - 1);
 
-    for (var i = 1; i < len_break_val; ++i) {
-        var class_max = break_values[i];
-        stock_class[i - 1] = 0;
-        while (serie[j] <= class_max) {
-            stock_class[i - 1] += 1;
-            j++;
-        }
+  for (var i = 1; i < len_break_val; ++i) {
+    var class_max = break_values[i];
+    stock_class[i - 1] = 0;
+    while (serie[j] <= class_max) {
+      stock_class[i - 1] += 1;
+      j++;
     }
-    return {
-        breaks: break_values,
-        stock_class: stock_class
-    };
+  }
+  return {
+    breaks: break_values,
+    stock_class: stock_class
+  };
 }
 
 /**
@@ -8195,20 +8225,20 @@ function getBreaks_userDefined(serie, break_values) {
 * @return {Number} distance - The distance in km between A and B
 */
 function haversine_dist(A, B) {
-    var pi_dr = Math.PI / 180;
+  var pi_dr = Math.PI / 180;
 
-    var lat1 = +A[0],
-        lon1 = +A[1],
-        lat2 = +B[0],
-        lon2 = +B[1];
+  var lat1 = +A[0],
+      lon1 = +A[1],
+      lat2 = +B[0],
+      lon2 = +B[1];
 
-    var x1 = lat2 - lat1,
-        dLat = x1 * pi_dr,
-        x2 = lon2 - lon1,
-        dLon = x2 * pi_dr;
+  var x1 = lat2 - lat1,
+      dLat = x1 * pi_dr,
+      x2 = lon2 - lon1,
+      dLon = x2 * pi_dr;
 
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 /**
@@ -8220,16 +8250,16 @@ function haversine_dist(A, B) {
 * @return {Number} distance - The distance in km between A and B
 */
 function coslaw_dist(A, B) {
-    var pi_dr = Math.PI / 180;
+  var pi_dr = Math.PI / 180;
 
-    var lat1 = +A[0],
-        lon1 = +A[1],
-        lat2 = +B[0],
-        lon2 = +B[1];
-    var phi1 = lat1 * pi_dr,
-        phi2 = lat2 * pi_dr,
-        d_lambda = (lon2 - lon1) * pi_dr;
-    return Math.acos(Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)) * 6371;
+  var lat1 = +A[0],
+      lon1 = +A[1],
+      lat2 = +B[0],
+      lon2 = +B[1];
+  var phi1 = lat1 * pi_dr,
+      phi2 = lat2 * pi_dr,
+      d_lambda = (lon2 - lon1) * pi_dr;
+  return Math.acos(Math.sin(phi1) * Math.sin(phi2) + Math.cos(phi1) * Math.cos(phi2) * Math.cos(d_lambda)) * 6371;
 }
 
 /**
@@ -8240,19 +8270,20 @@ function coslaw_dist(A, B) {
 * @return {Number} distance - The distance between pt1 and pt2.
 */
 function get_distance(pt1, pt2) {
-    var xs = pt2[0] - pt1[1],
-        ys = pt2[1] - pt1[1];
-    return Math.sqrt(xs * xs + ys * ys);
+  var xs = pt2[0] - pt1[1];
+  var ys = pt2[1] - pt1[1];
+  return Math.sqrt(xs * xs + ys * ys);
 }
 
 function getStdDev(values, mean_val) {
-    var nb_val = values.length,
-        pow = Math.pow,
-        s = 0;
-    for (var i = 0; i < nb_val; i++) {
-        s += pow(values[i] - mean_val, 2);
-    }
-    return Math.sqrt(1 / nb_val * s);
+  var nb_val = values.length;
+  // const pow = Math.pow;
+  var s = 0;
+  for (var i = 0; i < nb_val; i++) {
+    // s += pow(values[i] - mean_val, 2);
+    s += Math.pow(values[i] - mean_val, 2);
+  }
+  return Math.sqrt(1 / nb_val * s);
 }
 
 /**
@@ -8262,131 +8293,135 @@ function getStdDev(values, mean_val) {
 * Implementation taken from http://www.codinghands.co.uk/blog/2013/02/javascript-implementation-omn-maximal-rectangle-algorithm/
 */
 function getMaximalAvailableRectangle(legend_nodes) {
-    function getMaxRect() {
-        var matrix = mat;
-        var bestUpperLeft = { x: -1, y: -1 };
-        var bestLowerRight = { x: -1, y: -1 };
+  function getMaxRect() {
+    var matrix = mat;
+    var bestUpperLeft = { x: -1, y: -1 };
+    var bestLowerRight = { x: -1, y: -1 };
 
-        var cache = new Array(rows + 1),
-            stack = [];
-        for (var i = 0; i < cache.length; i++) {
-            cache[i] = 0;
-        }for (var x = cols - 1; x >= 0; x--) {
-            updateCache(x, cache);
-            var width = 0;
-            for (var y = 0; y < rows + 1; y++) {
-                if (cache[y] > width) {
-                    stack.push({ y: y, width: width });
-                    width = cache[y];
-                }
-                if (cache[y] < width) {
-                    while (true) {
-                        var pop = stack.pop();
-                        var y0 = pop.y,
-                            w0 = pop.width;
-                        if (width * (y - y0) > area(bestUpperLeft, bestLowerRight) && y - y0 >= minQuadY && width >= minQuadX) {
-                            bestUpperLeft = { x: x, y: y0 };
-                            bestLowerRight = { x: x + width - 1, y: y - 1 };
-                        }
-                        width = w0;
-                        if (cache[y] >= width) break;
-                    }
-                    width = cache[y];
-                    if (width != 0) stack.push({ y: y0, width: w0 });
-                }
+    var cache = new Array(rows + 1),
+        stack = [];
+    for (var i = 0; i < cache.length; i++) {
+      cache[i] = 0;
+    }for (var x = cols - 1; x >= 0; x--) {
+      updateCache(x, cache);
+      var width = 0;
+      for (var y = 0; y < rows + 1; y++) {
+        if (cache[y] > width) {
+          stack.push({ y: y, width: width });
+          width = cache[y];
+        }
+        if (cache[y] < width) {
+          while (true) {
+            var pop = stack.pop();
+            var y0 = pop.y,
+                w0 = pop.width;
+            if (width * (y - y0) > area(bestUpperLeft, bestLowerRight) && y - y0 >= minQuadY && width >= minQuadX) {
+              bestUpperLeft = { x: x, y: y0 };
+              bestLowerRight = { x: x + width - 1, y: y - 1 };
             }
+            width = w0;
+            if (cache[y] >= width) break;
+          }
+          width = cache[y];
+          if (width != 0) stack.push({ y: y0, width: w0 });
         }
-        return { x: bestUpperLeft.x, y: bestUpperLeft.y, lenX: bestLowerRight.x - bestUpperLeft.x + 1, lenY: bestLowerRight.y - bestUpperLeft.y + 1, area: area(bestUpperLeft, bestLowerRight) };
+      }
     }
+    return {
+      x: bestUpperLeft.x,
+      y: bestUpperLeft.y,
+      lenX: bestLowerRight.x - bestUpperLeft.x + 1,
+      lenY: bestLowerRight.y - bestUpperLeft.y + 1,
+      area: area(bestUpperLeft, bestLowerRight)
+    };
+  }
 
-    function area(upperLeft, lowerRight) {
-        if (upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y) return 0;
-        return (lowerRight.x + 1 - upperLeft.x) * (lowerRight.y + 1 - upperLeft.y);
-    }
+  function area(upperLeft, lowerRight) {
+    if (upperLeft.x > lowerRight.x || upperLeft.y > lowerRight.y) return 0;
+    return (lowerRight.x + 1 - upperLeft.x) * (lowerRight.y + 1 - upperLeft.y);
+  }
 
-    function updateCache(x, cache) {
-        for (var y = 0; y < rows; y++) {
-            if (mat[x][y] == 1) cache[y]++;else cache[y] = 0;
-        }
+  function updateCache(x, cache) {
+    for (var y = 0; y < rows; y++) {
+      if (mat[x][y] == 1) cache[y]++;else cache[y] = 0;
     }
+  }
 
-    function fillMat(xs, ys) {
-        for (var x = xs[0]; x < xs[1]; x++) {
-            for (var y = ys[0]; y < ys[1]; y++) {
-                mat[x][y] = 0;
-            }
-        }
+  function fillMat(xs, ys) {
+    for (var x = xs[0]; x < xs[1]; x++) {
+      for (var y = ys[0]; y < ys[1]; y++) {
+        mat[x][y] = 0;
+      }
     }
-    var xy0 = get_map_xy0(),
-        x0 = Math.abs(xy0.x),
-        y0 = Math.abs(xy0.y);
-    var cols = Math.abs(w),
-        rows = Math.abs(h),
-        minQuadY = 100,
-        minQuadX = 40;
-    var mat = new Array(cols);
-    for (var i = 0; i < cols; i++) {
-        mat[i] = new Array(rows);
-        for (var j = 0; j < rows; j++) {
-            mat[i][j] = 1;
-        }
+  }
+  var xy0 = get_map_xy0();
+  var x0 = Math.abs(xy0.x);
+  var y0 = Math.abs(xy0.y);
+  var cols = Math.abs(w);
+  var rows = Math.abs(h);
+  var minQuadY = 100;
+  var minQuadX = 40;
+  var mat = new Array(cols);
+  for (var i = 0; i < cols; i++) {
+    mat[i] = new Array(rows);
+    for (var j = 0; j < rows; j++) {
+      mat[i][j] = 1;
     }
-    for (var _i4 = 0; _i4 < legend_nodes.length; _i4++) {
-        var bbox = legend_nodes[_i4].getBoundingClientRect(),
-            bx = Math.floor(bbox.left - x0),
-            by = Math.floor(bbox.top - y0);
-        fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
-    }
-    return getMaxRect(mat);
+  }
+  for (var _i4 = 0; _i4 < legend_nodes.length; _i4++) {
+    var bbox = legend_nodes[_i4].getBoundingClientRect(),
+        bx = Math.floor(bbox.left - x0),
+        by = Math.floor(bbox.top - y0);
+    fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+  }
+  return getMaxRect(mat);
 }
 
 function getTranslateNewLegend() {
-    var legends = svg_map.querySelectorAll('.legend_feature');
-    if (legends.length == 0) {
-        return [0, 0];
-    } else {
-        var max_rect = getMaximalAvailableRectangle(legends);
-        return max_rect;
-    }
+  var legends = svg_map.querySelectorAll('.legend_feature');
+  if (legends.length === 0) {
+    return [0, 0];
+  }
+  return getMaximalAvailableRectangle(legends);
 }
 
 var pidegrad = 0.017453292519943295;
 var piraddeg = 57.29577951308232;
 var degreesToRadians = function degreesToRadians(degrees) {
-    return degrees * pidegrad;
+  return degrees * pidegrad;
 };
 var radiansToDegrees = function radiansToDegrees(radians) {
-    return radians * piraddeg;
+  return radians * piraddeg;
 };
 // const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
 // const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
 
 function scale_to_bbox(bbox) {
-    var _bbox = _slicedToArray(bbox, 4),
-        xmin = _bbox[0],
-        ymin = _bbox[1],
-        xmax = _bbox[2],
-        ymax = _bbox[3];
+  var _bbox = _slicedToArray(bbox, 4),
+      xmin = _bbox[0],
+      ymin = _bbox[1],
+      xmax = _bbox[2],
+      ymax = _bbox[3];
 
-    var feature = {
-        type: "Feature", properties: {}, id: 0,
-        geometry: { type: "LineString",
-            coordinates: [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax], [xmin, ymin]]
-        }
-    };
-    var bbox_path = path.bounds(feature);
-    s = 0.95 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / w, (bbox_path[1][1] - bbox_path[0][1]) / h) * proj.scale();
-    t = [0, 0];
-    proj.scale(s).translate(t);
-    map.selectAll(".layer").selectAll("path").attr("d", path);
-    reproj_symbol_layer();
-    var zoom_scale = 1;
-    var zoom_translate = [(w - zoom_scale * (bbox_path[1][0] + bbox_path[0][0])) / 2, (h - zoom_scale * (bbox_path[1][1] + bbox_path[0][1])) / 2];
-    var _zoom = svg_map.__zoom;
-    _zoom.k = zoom_scale;
-    _zoom.x = zoom_translate[0];
-    _zoom.y = zoom_translate[1];
-    zoom_without_redraw();
+  var feature = {
+    type: "Feature", properties: {}, id: 0,
+    geometry: { type: "LineString",
+      coordinates: [[xmin, ymin], [xmax, ymin], [xmax, ymax], [xmin, ymax], [xmin, ymin]]
+    }
+  };
+  var bbox_path = path.bounds(feature);
+  s = 0.95 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / w, (bbox_path[1][1] - bbox_path[0][1]) / h) * proj.scale();
+  t = [0, 0];
+  proj.scale(s).translate(t);
+  map.selectAll(".layer").selectAll("path").attr("d", path);
+  reproj_symbol_layer();
+  var zoom_scale = 1;
+  var zoom_translate = [(w - zoom_scale * (bbox_path[1][0] + bbox_path[0][0])) / 2, (h - zoom_scale * (bbox_path[1][1] + bbox_path[0][1])) / 2];
+  var _zoom = svg_map.__zoom;
+  _zoom.k = zoom_scale;
+  _zoom.x = zoom_translate[0];
+  _zoom.y = zoom_translate[1];
+  zoom_without_redraw();
 }
 "use strict";
 ////////////////////////////////////////////////////////////////////////
@@ -9278,7 +9313,7 @@ function add_layer_topojson(text) {
 
         if (joined_dataset.length != 0) {
             valid_join_check_display(false);
-            section1.select(".s1").html("").on("click", null);
+            // section1.select(".s1").html("").on("click", null);
         }
 
         document.getElementById('sample_zone').style.display = "none";
@@ -9410,6 +9445,7 @@ function get_bbox_layer_path(name) {
 * Redraw the path from all the current layers to reflect the change.
 *
 * @param {string} name - The name of layer to scale on
+* @return {undefined}
 */
 function scale_to_lyr(name) {
     var bbox_layer_path = get_bbox_layer_path(name);
@@ -9426,6 +9462,7 @@ function scale_to_lyr(name) {
 * Projection properties stay unchanged.
 *
 * @param {string} name - The name of layer to zoom on
+* @return {undefined}
 */
 function center_map(name) {
     var bbox_layer_path = get_bbox_layer_path(name);
@@ -10095,75 +10132,74 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function handle_join() {
-    var layer_name = Object.getOwnPropertyNames(user_data);
+  var layer_name = Object.getOwnPropertyNames(user_data);
 
-    if (!(layer_name.length === 1 && joined_dataset.length === 1)) {
-        swal("", i18next.t("app_page.join_box.unable_join"), "error");
-        return;
-    } else if (field_join_map.length != 0) {
-        make_confirm_dialog2("dialogBox", undefined, { html_content: i18next.t("app_page.join_box.ask_forget_join") }).then(function (confirmed) {
-            if (confirmed) {
-                valid_join_check_display();
-                field_join_map = [];
-                remove_existing_jointure(layer_name);
-                createJoinBox(layer_name[0]);
-            }
-        });
-    } else if (user_data[layer_name].length != joined_dataset[0].length) {
-        make_confirm_dialog2("dialogBox", undefined, { html_content: i18next.t("app_page.join_box.ask_diff_nb_features") }).then(function (confirmed) {
-            if (confirmed) {
-                createJoinBox(layer_name[0]);
-            }
-        });
-    } else {
+  if (!(layer_name.length === 1 && joined_dataset.length === 1)) {
+    swal('', i18next.t('app_page.join_box.unable_join'), 'error');
+  } else if (field_join_map.length != 0) {
+    make_confirm_dialog2('dialogBox', undefined, { html_content: i18next.t('app_page.join_box.ask_forget_join') }).then(function (confirmed) {
+      if (confirmed) {
+        valid_join_check_display();
+        field_join_map = [];
+        remove_existing_jointure(layer_name);
         createJoinBox(layer_name[0]);
-    }
+      }
+    });
+  } else if (user_data[layer_name].length !== joined_dataset[0].length) {
+    make_confirm_dialog2('dialogBox', undefined, { html_content: i18next.t('app_page.join_box.ask_diff_nb_features') }).then(function (confirmed) {
+      if (confirmed) {
+        createJoinBox(layer_name[0]);
+      }
+    });
+  } else {
+    createJoinBox(layer_name[0]);
+  }
 }
 
 // Function called to update the menu according to user operation (triggered when layers/dataset are added and after a join operation)
 function valid_join_check_display(val, prop) {
-    if (!val) {
-        var ext_dataset_img = document.getElementById("img_data_ext");
-        ext_dataset_img.setAttribute("src", "/static/img/b/joinfalse.png");
-        ext_dataset_img.setAttribute("alt", "Non-validated join");
-        ext_dataset_img.style.width = "28px";
-        ext_dataset_img.style.height = "28px";
-        ext_dataset_img.onclick = handle_join;
+  if (!val) {
+    var ext_dataset_img = document.getElementById("img_data_ext");
+    ext_dataset_img.setAttribute("src", "/static/img/b/joinfalse.png");
+    ext_dataset_img.setAttribute("alt", "Non-validated join");
+    ext_dataset_img.style.width = "28px";
+    ext_dataset_img.style.height = "28px";
+    ext_dataset_img.onclick = handle_join;
 
-        var join_sec = document.getElementById("join_section");
-        join_sec.innerHTML = [prop, i18next.t('app_page.join_box.state_not_joined')].join('');
+    var join_sec = document.getElementById("join_section");
+    join_sec.innerHTML = [prop, i18next.t('app_page.join_box.state_not_joined')].join('');
 
-        var button = document.createElement("button");
-        button.setAttribute("id", "join_button");
-        button.style.display = "inline";
-        button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("app_page.join_box.button_join") + '</button>';
-        button.onclick = handle_join;
-        join_sec.appendChild(button);
-    } else {
-        var _ext_dataset_img = document.getElementById("img_data_ext");
-        _ext_dataset_img.setAttribute("src", "/static/img/b/jointrue.png");
-        _ext_dataset_img.setAttribute("alt", "Validated join");
-        _ext_dataset_img.style.width = "28px";
-        _ext_dataset_img.style.height = "28px";
-        _ext_dataset_img.onclick = null;
+    var button = document.createElement("button");
+    button.setAttribute("id", "join_button");
+    button.style.display = "inline";
+    button.innerHTML = '<button style="font-size: 11px;" class="button_st3" id="_join_button">' + i18next.t("app_page.join_box.button_join") + '</button>';
+    button.onclick = handle_join;
+    join_sec.appendChild(button);
+  } else {
+    var _ext_dataset_img = document.getElementById("img_data_ext");
+    _ext_dataset_img.setAttribute("src", "/static/img/b/jointrue.png");
+    _ext_dataset_img.setAttribute("alt", "Validated join");
+    _ext_dataset_img.style.width = "28px";
+    _ext_dataset_img.style.height = "28px";
+    _ext_dataset_img.onclick = null;
 
-        var _prop$split$map = prop.split("/").map(function (d) {
-            return +d;
-        }),
-            _prop$split$map2 = _slicedToArray(_prop$split$map, 2),
-            v1 = _prop$split$map2[0],
-            v2 = _prop$split$map2[1];
+    var _prop$split$map = prop.split("/").map(function (d) {
+      return +d;
+    }),
+        _prop$split$map2 = _slicedToArray(_prop$split$map, 2),
+        v1 = _prop$split$map2[0],
+        v2 = _prop$split$map2[1];
 
-        var _join_sec = document.getElementById("join_section");
-        _join_sec.innerHTML = [' <b>', prop, i18next.t("app_page.join_box.match", { count: v1 }), '</b>'].join(' ');
+    var _join_sec = document.getElementById("join_section");
+    _join_sec.innerHTML = [' <b>', prop, i18next.t("app_page.join_box.match", { count: v1 }), '</b>'].join(' ');
 
-        var _button = document.createElement("button");
-        _button.setAttribute("id", "join_button");
-        _button.style.display = "inline";
-        _button.innerHTML = [" - <i> ", i18next.t("app_page.join_box.change_field"), " </i>"].join('');
-        _button.onclick = handle_join;
-        _join_sec.appendChild(_button);
-    }
+    var _button = document.createElement("button");
+    _button.setAttribute("id", "join_button");
+    _button.style.display = "inline";
+    _button.innerHTML = [" - <i> ", i18next.t("app_page.join_box.change_field"), " </i>"].join('');
+    _button.onclick = handle_join;
+    _join_sec.appendChild(_button);
+  }
 }
 
 // Where the real join is done
@@ -10172,172 +10208,173 @@ function valid_join_check_display(val, prop) {
 //       (storing the relation between index of the geometry layer and index of the external dataset)
 //    -the update of the global "user_data" object, adding actualy the value to each object representing each feature of the layer
 function valid_join_on(layer_name, field1, field2) {
-    var join_values1 = [],
-        join_values2 = [],
-        hits = 0,
-        val = undefined;
+  var join_values1 = [],
+      join_values2 = [],
+      hits = 0,
+      val = undefined;
 
+  field_join_map = [];
+
+  for (var i = 0, len = joined_dataset[0].length; i < len; i++) {
+    join_values2.push(joined_dataset[0][i][field2]);
+  }
+  for (var _i = 0, _len = user_data[layer_name].length; _i < _len; _i++) {
+    join_values1.push(user_data[layer_name][_i][field1]);
+  }
+
+  if (has_duplicate(join_values1) || has_duplicate(join_values2)) {
+    return swal("", i18next.t("app_page.join_box.error_not_uniques"), "warning");
+  }
+
+  if (typeof join_values1[0] === "number" && typeof join_values2[0] === "string") {
+    for (var _i2 = 0, _len2 = join_values1.length; _i2 < _len2; _i2++) {
+      val = join_values2.indexOf(String(join_values1[_i2]));
+      if (val != -1) {
+        field_join_map.push(val);hits++;
+      } else {
+        field_join_map.push(undefined);
+      }
+    }
+  } else if (typeof join_values2[0] === "number" && typeof join_values1[0] === "string") {
+    for (var _i3 = 0, _len3 = join_values1.length; _i3 < _len3; _i3++) {
+      val = join_values2.indexOf(Number(join_values1[_i3]));
+      if (val != -1) {
+        field_join_map.push(val);hits++;
+      } else {
+        field_join_map.push(undefined);
+      }
+    }
+  } else if (typeof join_values2[0] === "number" && typeof join_values1[0] === "number") {
+    for (var _i4 = 0, _len4 = join_values1.length; _i4 < _len4; _i4++) {
+      val = join_values2.indexOf(join_values1[_i4]);
+      if (val != -1) {
+        field_join_map.push(val);hits++;
+      } else {
+        field_join_map.push(undefined);
+      }
+    }
+  } else {
+    for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
+      val = join_values2.indexOf(String(join_values1[_i5]));
+      if (val != -1) {
+        field_join_map.push(val);hits++;
+      } else {
+        field_join_map.push(undefined);
+      }
+    }
+  }
+
+  var prop = [hits, "/", join_values1.length].join(""),
+      f_name = "";
+
+  if (hits == join_values1.length) {
+    swal({ title: '',
+      text: i18next.t('app_page.common.success'),
+      type: "success",
+      allowOutsideClick: true });
+    var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+    for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
+      val = field_join_map[_i6];
+      for (var j = 0, leng = fields_name_to_add.length; j < leng; j++) {
+        f_name = fields_name_to_add[j];
+        if (f_name.length > 0) {
+          user_data[layer_name][_i6][f_name] = joined_dataset[0][val][f_name];
+        }
+      }
+    }
+    valid_join_check_display(true, prop);
+    return Promise.resolve(true);
+  } else if (hits > 0) {
+    return swal({
+      title: i18next.t("app_page.common.confirm") + "!",
+      text: i18next.t("app_page.join_box.partial_join", { ratio: prop }),
+      allowOutsideClick: false,
+      allowEscapeKey: true,
+      type: "question",
+      showConfirmButton: true,
+      showCancelButton: true,
+      confirmButtonText: i18next.t("app_page.common.yes"),
+      cancelButtonText: i18next.t("app_page.common.no")
+    }).then(function () {
+      var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      for (var _i7 = 0, _len7 = field_join_map.length; _i7 < _len7; _i7++) {
+        val = field_join_map[_i7];
+        for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
+          f_name = fields_name_to_add[_j];
+          if (f_name.length > 0) {
+            var t_val = void 0;
+            if (val == undefined) t_val = null;else if (joined_dataset[0][val][f_name] === '') t_val = null;else t_val = joined_dataset[0][val][f_name];
+            user_data[layer_name][_i7][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
+          }
+        }
+      }
+      valid_join_check_display(true, prop);
+      return Promise.resolve(true);
+    }, function (dismiss) {
+      field_join_map = [];
+      return Promise.resolve(false);
+    });
+  } else {
+    swal('', i18next.t('app_page.join_box.no_match', { field1: field1, field2: field2 }), "error");
     field_join_map = [];
-
-    for (var i = 0, len = joined_dataset[0].length; i < len; i++) {
-        join_values2.push(joined_dataset[0][i][field2]);
-    }
-    for (var _i = 0, _len = user_data[layer_name].length; _i < _len; _i++) {
-        join_values1.push(user_data[layer_name][_i][field1]);
-    }
-
-    if (has_duplicate(join_values1) || has_duplicate(join_values2)) {
-        swal("", i18next.t("app_page.join_box.error_not_uniques"), "warning");
-        return;
-    }
-
-    if (typeof join_values1[0] === "number" && typeof join_values2[0] === "string") {
-        for (var _i2 = 0, _len2 = join_values1.length; _i2 < _len2; _i2++) {
-            val = join_values2.indexOf(String(join_values1[_i2]));
-            if (val != -1) {
-                field_join_map.push(val);hits++;
-            } else {
-                field_join_map.push(undefined);
-            }
-        }
-    } else if (typeof join_values2[0] === "number" && typeof join_values1[0] === "string") {
-        for (var _i3 = 0, _len3 = join_values1.length; _i3 < _len3; _i3++) {
-            val = join_values2.indexOf(Number(join_values1[_i3]));
-            if (val != -1) {
-                field_join_map.push(val);hits++;
-            } else {
-                field_join_map.push(undefined);
-            }
-        }
-    } else if (typeof join_values2[0] === "number" && typeof join_values1[0] === "number") {
-        for (var _i4 = 0, _len4 = join_values1.length; _i4 < _len4; _i4++) {
-            val = join_values2.indexOf(join_values1[_i4]);
-            if (val != -1) {
-                field_join_map.push(val);hits++;
-            } else {
-                field_join_map.push(undefined);
-            }
-        }
-    } else {
-        for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
-            val = join_values2.indexOf(String(join_values1[_i5]));
-            if (val != -1) {
-                field_join_map.push(val);hits++;
-            } else {
-                field_join_map.push(undefined);
-            }
-        }
-    }
-
-    var prop = [hits, "/", join_values1.length].join(""),
-        f_name = "";
-
-    if (hits == join_values1.length) {
-        swal({ title: "",
-            text: i18next.t("app_page.common.success"),
-            type: "success",
-            allowOutsideClick: true });
-        var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-        for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
-            val = field_join_map[_i6];
-            for (var j = 0, leng = fields_name_to_add.length; j < leng; j++) {
-                f_name = fields_name_to_add[j];
-                if (f_name.length > 0) {
-                    user_data[layer_name][_i6][f_name] = joined_dataset[0][val][f_name];
-                }
-            }
-        }
-        valid_join_check_display(true, prop);
-        return Promise.resolve(true);
-    } else if (hits > 0) {
-        return swal({ title: i18next.t("app_page.common.confirm") + "!",
-            text: i18next.t("app_page.join_box.partial_join", { ratio: prop }),
-            allowOutsideClick: false,
-            allowEscapeKey: true,
-            type: "question",
-            showConfirmButton: true,
-            showCancelButton: true,
-            confirmButtonText: i18next.t("app_page.common.yes"),
-            cancelButtonText: i18next.t("app_page.common.no")
-        }).then(function () {
-            var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-            // ,i_id = fields_name_to_add.indexOf("id");
-
-            // if(i_id > -1){ fields_name_to_add.splice(i_id, 1); }
-            for (var _i7 = 0, _len7 = field_join_map.length; _i7 < _len7; _i7++) {
-                val = field_join_map[_i7];
-                for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
-                    f_name = fields_name_to_add[_j];
-                    if (f_name.length > 0) {
-                        var t_val = void 0;
-                        if (val == undefined) t_val = null;else if (joined_dataset[0][val][f_name] == "") t_val = null;else t_val = joined_dataset[0][val][f_name];
-                        user_data[layer_name][_i7][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null;
-                    }
-                }
-            }
-            valid_join_check_display(true, prop);
-            return Promise.resolve(true);
-        }, function (dismiss) {
-            field_join_map = [];
-            return Promise.resolve(false);
-        });
-    } else {
-        swal("", i18next.t("app_page.join_box.no_match", { field1: field1, field2: field2 }), "error");
-        field_join_map = [];
-        return Promise.resolve(false);
-    }
+    return Promise.resolve(false);
+  }
 }
 
 // Function creating the join box , filled by to "select" input linked one to
 // the geometry layer and the other to the external dataset, in order to choose
 // the common field to do the join.
-function createJoinBox(layer) {
-    var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys())),
-        ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
-        button1 = ["<select id=button_field1>"],
-        button2 = ["<select id=button_field2>"],
-        last_choice = { "field1": geom_layer_fields[0], "field2": ext_dataset_fields[0] };
+var createJoinBox = function createJoinBox(layer) {
+  var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys())),
+      ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]),
+      button1 = ["<select id=button_field1>"],
+      button2 = ["<select id=button_field2>"],
+      last_choice = { "field1": geom_layer_fields[0], "field2": ext_dataset_fields[0] };
 
-    for (var i = 0, len = geom_layer_fields.length; i < len; i++) {
-        button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
-    }button1.push("</select>");
+  for (var i = 0, len = geom_layer_fields.length; i < len; i++) {
+    button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
+  }
+  button1.push('</select>');
 
-    for (var _i8 = 0, _len8 = ext_dataset_fields.length; _i8 < _len8; _i8++) {
-        if (ext_dataset_fields[_i8].length > 0) button2.push(['<option value="', ext_dataset_fields[_i8], '">', ext_dataset_fields[_i8], '</option>'].join(''));
-    }button2.push("</select>");
+  for (var _i8 = 0, _len8 = ext_dataset_fields.length; _i8 < _len8; _i8++) {
+    if (ext_dataset_fields[_i8].length > 0) {
+      button2.push(['<option value="', ext_dataset_fields[_i8], '">', ext_dataset_fields[_i8], '</option>'].join(''));
+    }
+  }
+  button2.push('</select>');
 
-    var inner_box = ['<p><b><i>', i18next.t("app_page.join_box.select_fields"), '</i></b></p>', '<div style="padding:10px"><p>', i18next.t("app_page.join_box.geom_layer_field"), '</p>', button1.join(''), '<em style="float:right;">(', layer, ')</em></div>', '<div style="padding:15px 10px 10px"><p>', i18next.t("app_page.join_box.ext_dataset_field"), '<br></p>', button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>', '<br><p><strong>', i18next.t("app_page.join_box.ask_join"), '<strong></p></div>'].join('');
+  var inner_box = ['<p><b><i>', i18next.t('app_page.join_box.select_fields'), '</i></b></p>', '<div style="padding:10px"><p>', i18next.t('app_page.join_box.geom_layer_field'), '</p>', button1.join(''), '<em style="float:right;">(', layer, ')</em></div>', '<div style="padding:15px 10px 10px"><p>', i18next.t('app_page.join_box.ext_dataset_field'), '<br></p>', button2.join(''), '<em style="float:right;">(', dataset_name, '.csv)</em></div>', '<br><p><strong>', i18next.t('app_page.join_box.ask_join'), '<strong></p></div>'].join('');
 
-    make_confirm_dialog2("joinBox", i18next.t("app_page.join_box.title"), { html_content: inner_box, widthFitContent: true }).then(function (confirmed) {
-        if (confirmed) {
-            valid_join_on(layer, last_choice.field1, last_choice.field2).then(function (valid) {
-                if (valid) make_box_type_fields(layer);
-            });
-        }
-    });
+  make_confirm_dialog2('joinBox', i18next.t('app_page.join_box.title'), { html_content: inner_box, widthFitContent: true }).then(function (confirmed) {
+    if (confirmed) {
+      valid_join_on(layer, last_choice.field1, last_choice.field2).then(function (valid) {
+        if (valid) make_box_type_fields(layer);
+      });
+    }
+  });
 
-    d3.select(".joinBox").styles({ "text-align": "center", "line-height": "0.9em" });
-    d3.select("#button_field1").style("float", "left").on("change", function () {
-        last_choice.field1 = this.value;
-    });
-    d3.select("#button_field2").style("float", "left").on("change", function () {
-        last_choice.field2 = this.value;
-    });
-}
+  d3.select('.joinBox').styles({ 'text-align': 'center', 'line-height': '0.9em' });
+  d3.select('#button_field1').style('float', 'left').on('change', function () {
+    last_choice.field1 = this.value;
+  });
+  d3.select('#button_field2').style('float', 'left').on('change', function () {
+    last_choice.field2 = this.value;
+  });
+};
 
 var remove_existing_jointure = function remove_existing_jointure(layer_name) {
-    if (!user_data[layer_name] || user_data[layer_name].length < 1) return;
-    var data_layer = user_data[layer_name],
-        original_fields = current_layers[layer_name].original_fields,
-        field_difference = Object.getOwnPropertyNames(data_layer[0]).filter(function (f) {
-        return !original_fields.has(f);
-    }),
-        nb_fields = field_difference.length;
-    for (var i = 0, nb_ft = data_layer.length; i < nb_ft; i++) {
-        for (var j = 0; j < nb_fields; j++) {
-            delete data_layer[i][field_difference[j]];
-        }
+  if (!user_data[layer_name] || user_data[layer_name].length < 1) return;
+  var data_layer = user_data[layer_name];
+  var original_fields = current_layers[layer_name].original_fields;
+  var field_difference = Object.getOwnPropertyNames(data_layer[0]).filter(function (f) {
+    return !original_fields.has(f);
+  });
+  var nbFields = field_difference.length;
+  for (var i = 0, nbFt = data_layer.length; i < nbFt; i++) {
+    for (var j = 0; j < nbFields; j++) {
+      delete data_layer[i][field_difference[j]];
     }
+  }
 };
 "use strict";
 // TODO : refactor some functions in this file (they are really too messy)
@@ -15893,14 +15930,40 @@ function make_style_box_indiv_symbol(symbol_node) {
 
 var shortListContent = ['AzimuthalEqualAreaEurope', 'ConicConformalFrance', 'HEALPix', 'Mercator', 'NaturalEarth2', 'Robinson', 'TransverseMercator', 'WinkelTriple', 'more', 'proj4'];
 
-var available_projections = new Map([['Albers', { 'name': 'geoAlbers', 'scale': '400', param_ex: 'cone', param_in: 'equalarea' }], ["Armadillo", { 'name': 'geoArmadillo', 'scale': '400', param_in: 'other', param_ex: 'aphylactic' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700', param_in: 'plan', param_ex: 'equidistant' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', param_in: 'plan', param_ex: 'equalarea' }], ["AzimuthalEqualAreaEurope", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', rotate: [-10, -52, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'plan', param_ex: 'equalarea' }], ["Baker", { 'name': 'geoBaker', 'scale': '400', param_in: 'other', param_ex: 'aphylactic' }], ["Berhmann", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400', param_in: 'pseudocone', param_ex: 'equalarea' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }],
-// ["Cassini", {"name": 'geoEquirectangular', 'scale': '400', 'rotate': [0,0,90]}],
-["ConicConformalTangent", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalSec", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalFrance", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], rotate: [-3, -46.5, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'cone', param_ex: 'conformal' }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400', param_in: 'cone', param_ex: 'equalarea' }], ["ConicEquidistantDeslisle", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45], param_in: 'cone', param_ex: 'equidistant' }], ["ConicEquidistantTangent", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40], param_in: 'cone', param_ex: 'equidistant' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400', param_in: 'cylindrical', param_ex: 'equidistant' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400', param_in: 'cylindrical', param_ex: 'equalarea' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'equalarea' }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'aphylactic' }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '', param_in: 'other', param_ex: 'aphylactic' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400', param_in: 'plan', param_ex: 'aphylactic' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['Hatano', { 'name': 'geoHatano', 'scale': '200', param_in: 'other', param_ex: 'equalarea' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["HoboDyer", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375', param_in: 'cylindrical', param_ex: 'conformal' }], ["Miller", { 'name': 'geoMiller', 'scale': '375', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375', param_in: 'plan', param_ex: 'conformal' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90, param_in: 'plan', param_ex: 'aphylactic' }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400', param_in: 'pseudocone', param_ex: 'aphylactic' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400', param_in: 'cylindrical', param_ex: 'conformal' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90, param_in: 'pseudocone', param_ex: 'equalarea' }], ["Winkel1", { 'name': 'geoWinkel1', 'scale': '200', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic' }]]);
+var available_projections = new Map([['Albers', { name: 'geoAlbers', scale: '400', param_ex: 'cone', param_in: 'equalarea' }], ['Armadillo', { name: 'geoArmadillo', scale: '400', param_in: 'other', param_ex: 'aphylactic' }], ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant', 'scale': '700', param_in: 'plan', param_ex: 'equidistant' }], ["AzimuthalEqualArea", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', param_in: 'plan', param_ex: 'equalarea' }], ["AzimuthalEqualAreaEurope", { 'name': 'geoAzimuthalEqualArea', 'scale': '700', rotate: [-10, -52, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'plan', param_ex: 'equalarea' }], ["Baker", { 'name': 'geoBaker', 'scale': '400', param_in: 'other', param_ex: 'aphylactic' }], ["Berhmann", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 30, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Boggs", { 'name': 'geoBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedBoggs", { 'name': 'geoInterruptedBoggs', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Bonne", { 'name': 'geoBonne', 'scale': '400', param_in: 'pseudocone', param_ex: 'equalarea' }], ["Bromley", { 'name': 'geoBromley', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Collignon", { 'name': 'geoCollignon', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["ConicConformalTangent", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 44], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalSec", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], param_in: 'cone', param_ex: 'conformal' }], ["ConicConformalFrance", { 'name': 'geoConicConformal', 'scale': '400', 'parallels': [44, 49], rotate: [-3, -46.5, 0], bounds: [-10.6700, 34.5000, 31.5500, 71.0500], param_in: 'cone', param_ex: 'conformal' }], ["ConicEqualArea", { 'name': 'geoConicEqualArea', 'scale': '400', param_in: 'cone', param_ex: 'equalarea' }], ["ConicEquidistantDeslisle", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 45], param_in: 'cone', param_ex: 'equidistant' }], ["ConicEquidistantTangent", { 'name': 'geoConicEquidistant', 'scale': '400', parallels: [40, 40], param_in: 'cone', param_ex: 'equidistant' }], ["CrasterParabolic", { 'name': 'geoCraster', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Equirectangular", { 'name': 'geoEquirectangular', 'scale': '400', param_in: 'cylindrical', param_ex: 'equidistant' }], ["CylindricalEqualArea", { 'name': 'geoCylindricalEqualArea', 'scale': '400', param_in: 'cylindrical', param_ex: 'equalarea' }], ["CylindricalStereographic", { 'name': 'geoCylindricalStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["EckertI", { 'name': 'geoEckert1', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertII", { 'name': 'geoEckert2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertIII", { 'name': 'geoEckert3', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertIV", { 'name': 'geoEckert4', 'scale': '525', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["EckertV", { 'name': 'geoEckert5', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["EckertVI", { 'name': 'geoEckert6', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Eisenlohr", { 'name': 'geoEisenlohr', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ['GallPeters', { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'equalarea' }], ['GallStereographic', { 'name': 'geoCylindricalStereographic', scale: '400', parallel: 45, param_in: 'cylindrical', param_ex: 'aphylactic' }], ['Gilbert', { 'name': 'geoGilbert', scale: '400', type: '', param_in: 'other', param_ex: 'aphylactic' }], ["Gnomonic", { 'name': 'geoGnomonic', 'scale': '400', param_in: 'plan', param_ex: 'aphylactic' }], ["Gringorten", { 'name': 'geoGringorten', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['GringortenQuincuncial', { 'name': 'geoGringortenQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'equalarea' }], ['Hatano', { 'name': 'geoHatano', 'scale': '200', param_in: 'other', param_ex: 'equalarea' }], ["HEALPix", { 'name': 'geoHealpix', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["HoboDyer", { 'name': 'geoCylindricalEqualArea', scale: '400', parallel: 37.5, param_in: 'cylindrical', param_ex: 'equalarea' }], ["Homolosine", { 'name': 'geoHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedHomolosine", { 'name': 'geoInterruptedHomolosine', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Loximuthal", { 'name': 'geoLoximuthal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Mercator", { 'name': 'geoMercator', 'scale': '375', param_in: 'cylindrical', param_ex: 'conformal' }], ["Miller", { 'name': 'geoMiller', 'scale': '375', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["MillerOblatedStereographic", { 'name': 'geoModifiedStereographicMiller', 'scale': '375', param_in: 'plan', param_ex: 'conformal' }], ["Mollweide", { 'name': 'geoMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["NaturalEarth", { 'name': 'geoNaturalEarth', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["NaturalEarth2", { 'name': 'geoNaturalEarth2', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["Orthographic", { 'name': 'geoOrthographic', 'scale': '475', 'clipAngle': 90, param_in: 'plan', param_ex: 'aphylactic' }], ["Patterson", { 'name': 'geoPatterson', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["Polyconic", { 'name': 'geoPolyconic', 'scale': '400', param_in: 'pseudocone', param_ex: 'aphylactic' }], ["Peircequincuncial", { 'name': 'geoPeirceQuincuncial', 'scale': '400', param_in: 'other', param_ex: 'conformal' }], ["Robinson", { 'name': 'geoRobinson', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["SinuMollweide", { 'name': 'geoSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinuMollweide", { 'name': 'geoInterruptedSinuMollweide', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["Sinusoidal", { 'name': 'geoSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ["InterruptedSinusoidal", { 'name': 'geoInterruptedSinusoidal', 'scale': '400', param_in: 'pseudocylindre', param_ex: 'equalarea' }], ['Stereographic', { 'name': 'geoStereographic', 'scale': '400', param_in: 'cylindrical', param_ex: 'aphylactic' }], ["TransverseMercator", { 'name': 'geoTransverseMercator', 'scale': '400', param_in: 'cylindrical', param_ex: 'conformal' }], ['Werner', { 'name': 'geoBonne', scale: '400', parallel: 90, param_in: 'pseudocone', param_ex: 'equalarea' }], ["Winkel1", { 'name': 'geoWinkel1', 'scale': '200', param_in: 'pseudocylindre', param_ex: 'aphylactic' }], ["WinkelTriple", { 'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic' }]]);
+
+// const available_proj_projections = new Map([
+// 	['cea', ]
+// 	['laea', ],
+// 	['lcc', ],
+// 	['merc', ],
+// 	['tmerc', ],
+// 	['sterea', ]
+// ]);
+// const first_parse_proj4 = function(proj4_str){
+// 	if(!proj4_str.startsWith('+proj'))
+// 		return false;
+// 	const split = proj4_str.split(' ');
+// 	if(split.length > 5)
+// 		return false;
+// 	let proj_name = split.filter(a => a.indexOf('+proj') > -1)[0];
+// 	if(available_proj_projections.has(proj_name)){
+// 		let lat0 = split.filter(a => a.indexOf('+lat_0') > -1)[0];
+// 		let lon0 = split.filter(a => a.indexOf('+lon_0') > -1)[0];
+// 		if((!lat0 && !lon0 && split.length > 1) || (!lat0 || !lon0) && split.length > 2 )
+// 			return false;
+// 		else if (lat0){
+//
+// 		} else if (lon0){
+//
+// 		}
+// 	}
+// }
 
 var createBoxProj4 = function createBoxProj4() {
-		var modal_box = make_dialog_container("box_projection_input", i18next.t("app_page.section5.title"), "dialog");
-		var container = document.getElementById("box_projection_input"),
-		    dialog = container.querySelector('.modal-dialog');
+		make_dialog_container("box_projection_input", i18next.t("app_page.section5.title"), "dialog");
+		var container = document.getElementById("box_projection_input");
+		var dialog = container.querySelector('.modal-dialog');
 
 		var content = d3.select(container).select(".modal-body").attr('id', 'box_proj4');
 
@@ -15910,15 +15973,9 @@ var createBoxProj4 = function createBoxProj4() {
 
 		var input_section = content.append('p');
 		input_section.append('span').style('float', 'left').html(i18next.t('app_page.proj4_box.enter_string'));
-		input_section.append('input').styles({ 'width': '90%' }).attrs({ id: 'input_proj_string', placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" });
-		// .on("input", function(){
-		// 		let proj_str = this.value;
-		// 		if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
-		// 				container.querySelector('.btn_ok').disabled = 'disabled';
-		// 		} else {
-		// 				container.querySelector('.btn_ok').disabled = false;
-		// 		}
-		// });
+		input_section.append('input').styles({ 'width': '90%' }).attrs({
+				id: 'input_proj_string',
+				placeholder: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs" });
 
 		var clean_up_box = function clean_up_box() {
 				container.remove();
@@ -15930,11 +15987,14 @@ var createBoxProj4 = function createBoxProj4() {
 		};
 		var _onclose_valid = function _onclose_valid() {
 				var proj_str = document.getElementById('input_proj_string').value.trim();
-				clean_up_box();
-				// if(proj_str.length < 4 || !proj_str.split(' ').every(f => f[0] == '+')){
-				// 		return;
-				// } else {
 				var _p = void 0;
+				if (proj_str.startsWith('"') || proj_str.startsWith("'")) {
+						proj_str = proj_str.substr(1);
+				}
+				if (proj_str.endsWith('"') || proj_str.endsWith("'")) {
+						proj_str = proj_str.slice(0, -1);
+				}
+				clean_up_box();
 				try {
 						_p = proj4(proj_str);
 				} catch (e) {
@@ -15950,9 +16010,22 @@ var createBoxProj4 = function createBoxProj4() {
 						});
 						return;
 				}
-				change_projection_4(_p);
-				_app.last_projection = proj_str;
-				addLastProjectionSelect('def_proj4');
+				var rv = change_projection_4(_p);
+				if (rv) {
+						_app.last_projection = proj_str;
+						addLastProjectionSelect('def_proj4');
+				} else {
+						swal({ title: "Oops...",
+								text: i18next.t('app_page.proj4_box.error', { detail: '' }),
+								type: "error",
+								allowOutsideClick: false,
+								allowEscapeKey: false
+						}).then(function () {
+								null;
+						}, function () {
+								null;
+						});
+				}
 		};
 		container.querySelector(".btn_cancel").onclick = clean_up_box;
 		container.querySelector("#xclose").onclick = clean_up_box;
@@ -16021,7 +16094,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						});
 				} else if (!filter_in) {
 						available_projections.forEach(function (v, k) {
-								if (v.param_ex == filter_ex) display_select_proj.append('option').attrs({ class: 'i18n', value: k }).text(i18next.t('app_page.projection_name.' + k));
+								if (v.param_ex == filter_ex) {
+										display_select_proj.append('option').attrs({ class: 'i18n', value: k }).text(i18next.t('app_page.projection_name.' + k));
+								}
 						});
 				} else {
 						var empty = true;
@@ -16138,7 +16213,6 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		    accordion_choice_options = content.append("div").attrs({ "class": "panel", "id": "accordion_choice_projection" }).style('padding', '10px').style("width", "98%"),
 		    options_proj_content = accordion_choice_options.append("div").attr("id", "options_proj_content").style('width', '60%').style('transform', 'translateX(45%)');
 
-		// if(prev_rotate){
 		var rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
 		var lambda_section = rotate_section.append('p');
 		lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
@@ -16160,8 +16234,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 				handle_proj_center_button([null, null, -this.value]);
 		});
-		// }
-		// if(prev_parallels){
+
 		var parallels_section = options_proj_content.append('div').styles({ 'text-align': 'center', 'clear': 'both' }).style('display', prev_parallels ? '' : 'none');
 		parallels_section.append('span').html(i18next.t('app_page.section5.parallels'));
 		var inputs = parallels_section.append('p').styles({ 'text-align': 'center', 'margin': 'auto' });
@@ -16173,7 +16246,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 				handle_parallels_change([null, this.value]);
 		});
-		// } else if(prev_parallel){
+
 		var parallel_section = options_proj_content.append('div').styles({ 'text-align': 'center', 'clear': 'both' }).style('display', prev_parallel ? '' : 'none');
 		parallel_section.append('span').html(i18next.t('app_page.section5.parallel'));
 
@@ -16181,7 +16254,6 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				if (this.value > 90) this.value = 90;else if (this.value < -90) this.value = -90;
 				handle_parallel_change(this.value);
 		});
-		// }
 
 		if (prev_projection == "def_proj4") {
 				options_proj_content.selectAll('input').attr('disabled', 'disabled');
@@ -16216,9 +16288,9 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						handle_parallel_change(prev_parallel);
 				}
 		};
-		container.querySelector(".btn_cancel").onclick = _onclose_cancel;
-		container.querySelector("#xclose").onclick = _onclose_cancel;
-		container.querySelector(".btn_ok").onclick = clean_up_box;
+		container.querySelector('.btn_cancel').onclick = _onclose_cancel;
+		container.querySelector('#xclose').onclick = _onclose_cancel;
+		container.querySelector('.btn_ok').onclick = clean_up_box;
 		document.addEventListener('keydown', fn_cb);
 		overlay_under_modal.display();
 };
