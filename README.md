@@ -16,8 +16,8 @@ Most users should go on :
 
 The only targeted/tested OS is currently GNU/Linux.
 
-Magrit use JS (particularly the D3 library) in the browser for interface and map rendering.
-Some geoprocessings are delegated to the server part: a python 3.5+ application.
+Magrit uses JS (particularly the D3 library) in the browser for interface and map rendering.
+Some geoprocessing tasks are delegated to the server part: a python 3.5+ application.
 
 Magrit can be served or build by various means:
 
