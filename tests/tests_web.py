@@ -1078,7 +1078,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self._verif_legend_hide_show_button('my_result_layer')
 
         # Test that labels are correctly generated from a layer of prop symbols :
-        self.open_menu_section(3)
         self.click_elem_retry(
             driver.find_element_by_css_selector(
                 "li.my_result_layer > div > .style_target_layer"))
