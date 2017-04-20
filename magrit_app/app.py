@@ -5,8 +5,8 @@ magrit
 
 Usage:
   magrit
-  magrit [--port <port_nb> --name-app <name>]
-  magrit [-p <port_nb> -n <name>]
+  magrit [--port <port_nb> --name-app <name> --dev]
+  magrit [-p <port_nb> -n <name> -d]
   magrit --version
   magrit --help
 
@@ -14,6 +14,7 @@ Options:
   -h, --help                        Show this screen.
   --version                         Show version.
   -p <port>, --port <port>          Port number to use (exit if not available) [default: 9999]
+  -d, --dev                         Watch for changes in js/css files and update the transpiled/minified versions
   -n <name>, --name-app <name>      Name of the application [default: Magrit]
 """
 
@@ -49,6 +50,7 @@ from aiohttp import web, ClientSession
 from aiohttp_session import get_session, session_middleware, redis_storage
 from multidict import MultiDict
 try:
+    from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
     from helpers.cy_misc import get_name, join_field_topojson
@@ -62,6 +64,7 @@ try:
     from helpers.error_middleware404 import error_middleware
 
 except:
+    from .helpers.watch_change import JsFileWatcher
     from .helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
     from .helpers.cy_misc import get_name, join_field_topojson
@@ -1038,7 +1041,7 @@ async def on_shutdown(app):
         elif not "Application.shutdown()" in info[1]:
             task.cancel()
 
-async def init(loop, port=None):
+async def init(loop, port=None, watch_change=False):
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("magrit_app.main")
     redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
@@ -1082,6 +1085,8 @@ async def init(loop, port=None):
     app['geo_function'] = {
         "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
         "carto_doug": carto_doug, "olson": compute_olson}
+    if watch_change:
+        app['FileWatcher'] = JsFileWatcher()
 #    app.on_startup.append(on_startup)
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
@@ -1117,7 +1122,7 @@ def main():
     # $ ./magrit_app/app.py --name AppName --port 9999
     #   or when installed and started like :
     # $ magrit --name AppName --port 9999
-    arguments = docopt.docopt(__doc__, version='Magrit 0.0.0 (Unreleased)')
+    arguments = docopt.docopt(__doc__, version='Magrit 0.2.0')
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
         sys.exit("Error: Invalid port value")
@@ -1127,6 +1132,8 @@ def main():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
         sys.exit("Error : Selected port is already in use")
 
+    watch_change = True if arguments['--dev'] else False
+
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
@@ -1134,7 +1141,7 @@ def main():
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
-    srv, app, handler = loop.run_until_complete(init(loop, port))
+    srv, app, handler = loop.run_until_complete(init(loop, port, watch_change))
     app['app_name'] = arguments["--name-app"]
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
     try:

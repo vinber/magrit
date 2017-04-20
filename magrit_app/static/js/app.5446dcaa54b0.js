@@ -39,7 +39,7 @@ Function.prototype.memoize = function () {
 * as they are gonna be frequently used
 *
 */
-function setUpInterface() {
+function setUpInterface(reload_project) {
     // Only ask for confirmation before leaving page if things have been done
     // (layer added, etc..)
     window.addEventListener("beforeunload", beforeUnloadWindow);
@@ -783,32 +783,40 @@ function setUpInterface() {
         }
     });
 
-    // Check if there is a project to reload in the localStorage :
-    var last_project = window.localStorage.getItem("magrit_project");
-    if (last_project && last_project.length && last_project.length > 0) {
-        swal({ title: "",
-            // text: i18next.t("app_page.common.resume_last_project"),
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-            type: "question",
-            showConfirmButton: true,
-            showCancelButton: true,
-            confirmButtonText: i18next.t("app_page.common.new_project"),
-            cancelButtonText: i18next.t("app_page.common.resume_last")
-        }).then(function () {
-            // If we don't want to resume from the last project, we can
-            // remove it :
-            window.localStorage.removeItem("magrit_project");
+    if (reload_project) {
+        if (reload_project.indexOf('/') > -1) {
+            var url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
+            xhrequest("GET", url, undefined, true).then(function (data) {
+                apply_user_preferences(data);
+            });
+        }
+    } else {
+        // Check if there is a project to reload in the localStorage :
+        var last_project = window.localStorage.getItem("magrit_project");
+        if (last_project && last_project.length && last_project.length > 0) {
+            swal({ title: "",
+                // text: i18next.t("app_page.common.resume_last_project"),
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                type: "question",
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: i18next.t("app_page.common.new_project"),
+                cancelButtonText: i18next.t("app_page.common.resume_last")
+            }).then(function () {
+                // If we don't want to resume from the last project, we can
+                // remove it :
+                window.localStorage.removeItem("magrit_project");
+                // Indicate that that no layer have been added for now :*
+                _app.first_layer = true;
+            }, function (dismiss) {
+                apply_user_preferences(last_project);
+            });
+        } else {
             // Indicate that that no layer have been added for now :*
             _app.first_layer = true;
-        }, function (dismiss) {
-            apply_user_preferences(last_project);
-        });
-    } else {
-        // Indicate that that no layer have been added for now :*
-        _app.first_layer = true;
+        }
     }
-
     // Set the properties for the notification zone :
     alertify.set('notifier', 'position', 'bottom-left');
 }
@@ -1034,12 +1042,35 @@ var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 
 // the .css file.
 var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
+function parseQuery(search) {
+    var args = search.substring(1).split('&');
+    var argsParsed = {};
+    var arg = void 0,
+        kvp = void 0,
+        key = void 0,
+        value = void 0;
+    for (var i = 0; i < args.length; i++) {
+        arg = args[i];
+        if (arg.indexOf('=') === -1) {
+            argsParsed[decodeURIComponent(arg).trim()] = true;
+        } else {
+            kvp = arg.split('=');
+            key = decodeURIComponent(kvp[0]).trim();
+            value = decodeURIComponent(kvp[1]).trim();
+            argsParsed[key] = value;
+        }
+    }
+    return argsParsed;
+}
+
 (function () {
     var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
-    document.querySelector("noscript").remove();
+    var params = {};
+    document.querySelector('noscript').remove();
 
     if (window.location.search) {
-        if (typeof history.replaceState != "undefined") {
+        params = parseQuery(window.location.search);
+        if (typeof history.replaceState !== 'undefined') {
             // replaceState should avoid creating a new entry on the history
             var obj = { Page: window.location.search, Url: window.location.pathname };
             history.replaceState(obj, obj.Page, obj.Url);
@@ -1052,12 +1083,14 @@ var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: "static/locales/{{lng}}/translation.json"
+            loadPath: 'static/locales/{{lng}}/translation.json'
         }
-    }, function (err, t) {
-        if (err) throw err;else {
+    }, function (err, tr) {
+        if (err) {
+            throw err;
+        } else {
             window.localize = locI18next.init(i18next);
-            setUpInterface();
+            setUpInterface(params.reload);
             localize(".i18n");
             bindTooltips();
         }
@@ -2220,7 +2253,7 @@ function export_layer_geo(layer, type, projec, proj4str) {
     var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
     xhrequest("POST", 'get_layer2', formToSend, true).then(function (data) {
-        if (data.indexOf('{"Error"') == 0 || data.length == 0) {
+        if (data.indexOf('{"Error"') === 0 || data.length === 0) {
             var error_message = void 0;
             if (data.indexOf('{"Error"') < 5) {
                 data = JSON.parse(data);
@@ -2243,12 +2276,12 @@ function export_layer_geo(layer, type, projec, proj4str) {
         var ext = extensions.get(type),
             filename = [layer, ext].join('.'),
             dataStr = void 0;
-        if (ext.indexOf("json") > -1) {
-            dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
+        if (ext.indexOf('json') > -1) {
+            dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
         } else if (ext.indexOf("kml") > -1) {
-            dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
+            dataStr = 'data:text/xml;charset=utf-8,' + encodeURIComponent(data);
         } else {
-            dataStr = "data:application/zip;base64," + data;
+            dataStr = 'data:application/zip;base64,' + data;
         }
         clickLinkFromDataUrl(dataStr, filename);
     }, function (error) {
@@ -16253,7 +16286,7 @@ function handle_parallel_change(parallel) {
 		map.selectAll(".layer").selectAll("path").attr("d", path);
 		reproj_symbol_layer();
 }
-"use strict";
+'use strict';
 
 var sin = Math.sin,
     asin = Math.asin,
@@ -16276,71 +16309,69 @@ var NITER = 20,
     M_HALFPI = Math.PI / 2;
 
 function hatanoRaw(lambda, phi) {
-    var th1 = void 0,
-        c = void 0,
-        i = void 0;
-    c = sin(phi) * (phi < 0 ? CS : CN);
-    for (i = NITER; i; --i) {
-        phi -= th1 = (phi + sin(phi) - c) / (1 + cos(phi));
-        if (abs(th1) < EPS) break;
-    }
-    return [FXC * lambda * cos(phi *= 0.5), sin(phi) * (phi < 0 ? FYCS : FYCN)];
+  var c = sin(phi) * (phi < 0 ? CS : CN);
+  var y = phi;
+  var th1 = void 0;
+  var i = void 0;
+  for (i = NITER; i; --i) {
+    y -= th1 = (y + sin(y) - c) / (1 + cos(y));
+    if (abs(th1) < EPS) break;
+  }
+  return [FXC * lambda * cos(y *= 0.5), sin(y) * (y < 0 ? FYCS : FYCN)];
 }
 
 hatanoRaw.invert = function (x, y) {
-    var xx = x,
-        yy = y;
-    var th = yy * (yy < 0 ? RYCS : RYCN);
-    if (abs(th) > 1) {
-        if (abs(th) > ONETOL) {
-            console.log('Error');
-            return;
-        } else {
-            th = th > 0 ? M_HALFPI : -M_HALFPI;
-        }
-    } else {
-        th = asin(th);
+  var xx = x;
+  var yy = y;
+  var th = yy * (yy < 0 ? RYCS : RYCN);
+  if (abs(th) > 1) {
+    if (abs(th) > ONETOL) {
+      console.log('Error');
+      return [NaN, NaN];
     }
-    xx = RXC * xx / cos(th);
-    th += th;
-    yy = (th + sin(th)) * (yy < 0 ? RCS : RCN);
-    if (abs(yy) > 1) {
-        if (abs(yy) > ONETOL) {
-            console.log('Error');
-            return;
-        } else {
-            yy = yy > 0 ? M_HALFPI : -M_HALFPI;
-        }
-    } else {
-        yy = asin(yy);
+    th = th > 0 ? M_HALFPI : -M_HALFPI;
+  } else {
+    th = asin(th);
+  }
+  xx = RXC * xx / cos(th);
+  th += th;
+  yy = (th + sin(th)) * (yy < 0 ? RCS : RCN);
+  if (abs(yy) > 1) {
+    if (abs(yy) > ONETOL) {
+      console.log('Error');
+      return [NaN, NaN];
     }
-    return [xx, yy];
+    yy = yy > 0 ? M_HALFPI : -M_HALFPI;
+  } else {
+    yy = asin(yy);
+  }
+  return [xx, yy];
 };
 
 function winkel1Raw(lat_truescale) {
-    var cosphi1 = cos(lat_truescale);
+  var cosphi1 = cos(lat_truescale);
 
-    function forward(lambda, phi) {
-        var x = lambda,
-            y = phi;
-        return [0.5 * x * (cosphi1 + cos(phi)), y];
-    }
+  function forward(lambda, phi) {
+    var x = lambda;
+    var y = phi;
+    return [0.5 * x * (cosphi1 + cos(phi)), y];
+  }
 
-    forward.invert = function (x, y) {
-        var lambda = x,
-            phi = y;
-        return [2 * lambda / (cosphi1 + cos(phi)), phi];
-    };
+  forward.invert = function (x, y) {
+    var lambda = x;
+    var phi = y;
+    return [2 * lambda / (cosphi1 + cos(phi)), phi];
+  };
 
-    return forward;
+  return forward;
 }
 
 d3.geoWinkel1 = function () {
-    return d3.geoProjection(winkel1Raw(45)).scale(200);
+  return d3.geoProjection(winkel1Raw(45)).scale(200);
 };
 
 d3.geoHatano = function () {
-    return d3.geoProjection(hatanoRaw).scale(200);
+  return d3.geoProjection(hatanoRaw).scale(200);
 };
 "use strict";
 

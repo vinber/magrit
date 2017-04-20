@@ -35,7 +35,7 @@ Function.prototype.memoize = function() {
 * as they are gonna be frequently used
 *
 */
-function setUpInterface()
+function setUpInterface(reload_project)
 {
     // Only ask for confirmation before leaving page if things have been done
     // (layer added, etc..)
@@ -968,32 +968,41 @@ function setUpInterface()
         },
     });
 
-    // Check if there is a project to reload in the localStorage :
-    let last_project = window.localStorage.getItem("magrit_project");
-    if (last_project && last_project.length && last_project.length > 0) {
-        swal({title: "",
-              // text: i18next.t("app_page.common.resume_last_project"),
-              allowOutsideClick: false,
-              allowEscapeKey: false,
-              type: "question",
-              showConfirmButton: true,
-              showCancelButton: true,
-              confirmButtonText: i18next.t("app_page.common.new_project"),
-              cancelButtonText: i18next.t("app_page.common.resume_last"),
-            }).then(() => {
-                // If we don't want to resume from the last project, we can
-                // remove it :
-                window.localStorage.removeItem("magrit_project");
-                // Indicate that that no layer have been added for now :*
-                _app.first_layer = true;
-             }, dismiss => {
-               apply_user_preferences(last_project);
-             })
+    if(reload_project){
+        if(reload_project.indexOf('/') > -1){
+          let url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
+          xhrequest("GET", url, undefined, true)
+            .then((data) => {
+              apply_user_preferences(data);
+            });
+        }
     } else {
-        // Indicate that that no layer have been added for now :*
-        _app.first_layer = true;
+      // Check if there is a project to reload in the localStorage :
+      let last_project = window.localStorage.getItem("magrit_project");
+      if (last_project && last_project.length && last_project.length > 0) {
+          swal({title: "",
+                // text: i18next.t("app_page.common.resume_last_project"),
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                type: "question",
+                showConfirmButton: true,
+                showCancelButton: true,
+                confirmButtonText: i18next.t("app_page.common.new_project"),
+                cancelButtonText: i18next.t("app_page.common.resume_last"),
+              }).then(() => {
+                  // If we don't want to resume from the last project, we can
+                  // remove it :
+                  window.localStorage.removeItem("magrit_project");
+                  // Indicate that that no layer have been added for now :*
+                  _app.first_layer = true;
+               }, dismiss => {
+                 apply_user_preferences(last_project);
+               })
+      } else {
+          // Indicate that that no layer have been added for now :*
+          _app.first_layer = true;
+      }
     }
-
     // Set the properties for the notification zone :
     alertify.set('notifier', 'position', 'bottom-left');
 }
@@ -1284,36 +1293,56 @@ const available_fonts = [
 // the .css file.
 const customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
-(function(){
-    let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
-    document.querySelector("noscript").remove();
-
-    if(window.location.search){
-        if (typeof (history.replaceState) != "undefined") {
-            // replaceState should avoid creating a new entry on the history
-            var obj = {Page: window.location.search, Url: window.location.pathname};
-            history.replaceState(obj, obj.Page, obj.Url);
-        }
+function parseQuery(search) {
+  const args = search.substring(1).split('&');
+  const argsParsed = {};
+  let arg, kvp, key, value;
+  for (let i = 0; i < args.length; i++) {
+    arg = args[i];
+    if (arg.indexOf('=') === -1) {
+      argsParsed[decodeURIComponent(arg).trim()] = true;
+    } else {
+      kvp = arg.split('=');
+      key = decodeURIComponent(kvp[0]).trim();
+      value = decodeURIComponent(kvp[1]).trim();
+      argsParsed[key] = value;
     }
+  }
+  return argsParsed;
+}
 
-    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
-    i18next.use(i18nextXHRBackend)
-      .init({
-          debug: true,
-          lng: lang,
-          fallbackLng: existing_lang[0],
-          backend: {
-            loadPath: "static/locales/{{lng}}/translation.json"
-          }
-    }, (err, t) => {
-        if(err)
-            throw err;
-        else {
-            window.localize = locI18next.init(i18next);
-            setUpInterface();
-            localize(".i18n");
-            bindTooltips();
-        }
+(function(){
+  let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
+  let params = {};
+  document.querySelector('noscript').remove();
+
+  if (window.location.search) {
+    params = parseQuery(window.location.search);
+    if (typeof (history.replaceState) !== 'undefined') {
+      // replaceState should avoid creating a new entry on the history
+      let obj = { Page: window.location.search, Url: window.location.pathname };
+      history.replaceState(obj, obj.Page, obj.Url);
+    }
+  }
+
+  lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
+  i18next.use(i18nextXHRBackend)
+    .init({
+      debug: true,
+      lng: lang,
+      fallbackLng: existing_lang[0],
+      backend: {
+        loadPath: 'static/locales/{{lng}}/translation.json'
+      },
+    }, (err, tr) => {
+      if (err) {
+        throw err;
+      } else {
+        window.localize = locI18next.init(i18next);
+        setUpInterface(params.reload);
+        localize(".i18n");
+        bindTooltips();
+      }
     });
 })();
 
@@ -2541,55 +2570,55 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
 }
 
 function export_layer_geo(layer, type, projec, proj4str){
-    let formToSend = new FormData();
-    formToSend.append("layer", layer);
-    formToSend.append("layer_name", current_layers[layer].key_name);
-    formToSend.append("format", type);
-    if(projec == "proj4string")
-        formToSend.append("projection", JSON.stringify({"proj4string" : proj4str}));
-    else
-        formToSend.append("projection", JSON.stringify({"name" : projec}));
+  let formToSend = new FormData();
+  formToSend.append("layer", layer);
+  formToSend.append("layer_name", current_layers[layer].key_name);
+  formToSend.append("format", type);
+  if(projec == "proj4string")
+    formToSend.append("projection", JSON.stringify({"proj4string" : proj4str}));
+  else
+    formToSend.append("projection", JSON.stringify({"name" : projec}));
 
-    let extensions = new Map([
-        ["GeoJSON", "geojson"],
-        ["TopoJSON", "topojson"],
-        ["ESRI Shapefile", "zip"],
-        ["GML", "zip"],
-        ["KML", "kml"]]);
+  let extensions = new Map([
+    ["GeoJSON", "geojson"],
+    ["TopoJSON", "topojson"],
+    ["ESRI Shapefile", "zip"],
+    ["GML", "zip"],
+    ["KML", "kml"]]);
 
-    xhrequest("POST", 'get_layer2', formToSend, true)
-        .then( data => {
-            if(data.indexOf('{"Error"') == 0 || data.length == 0){
-                let error_message;
-                if(data.indexOf('{"Error"') < 5){
-                    data = JSON.parse(data);
-                    error_message = i18next.t(data.Error);
-                } else {
-                    error_message = i18next.t('app_page.common.error_msg');
-                }
-                swal({title: "Oops...",
-                     text: error_message,
-                     type: "error",
-                     allowOutsideClick: false,
-                     allowEscapeKey: false
-                    }).then( () => { null; },
-                              () => { null; });
-                return;
-            }
-            let ext = extensions.get(type),
-                filename = [layer, ext].join('.'),
-                dataStr;
-            if(ext.indexOf("json") > -1){
-                dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data);
-            } else if (ext.indexOf("kml") > -1) {
-                dataStr = "data:text/xml;charset=utf-8," + encodeURIComponent(data);
-            } else {
-                dataStr = "data:application/zip;base64," + data;
-            }
-            clickLinkFromDataUrl(dataStr, filename);
-        }, error => {
-            console.log(error);
-        });
+  xhrequest("POST", 'get_layer2', formToSend, true)
+    .then( data => {
+      if (data.indexOf('{"Error"') === 0 || data.length === 0) {
+        let error_message;
+        if (data.indexOf('{"Error"') < 5) {
+          data = JSON.parse(data);
+          error_message = i18next.t(data.Error);
+        } else {
+          error_message = i18next.t('app_page.common.error_msg');
+        }
+        swal({title: "Oops...",
+             text: error_message,
+             type: "error",
+             allowOutsideClick: false,
+             allowEscapeKey: false
+            }).then( () => { null; },
+                      () => { null; });
+        return;
+      }
+      let ext = extensions.get(type),
+        filename = [layer, ext].join('.'),
+        dataStr;
+      if (ext.indexOf('json') > -1) {
+        dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
+      } else if (ext.indexOf("kml") > -1) {
+        dataStr = 'data:text/xml;charset=utf-8,' + encodeURIComponent(data);
+      } else {
+        dataStr = 'data:application/zip;base64,' + data;
+      }
+      clickLinkFromDataUrl(dataStr, filename);
+    }, (error) => {
+      console.log(error);
+    });
 }
 
 /*
