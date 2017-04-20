@@ -545,7 +545,7 @@ const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
       const blobUrl = URL.createObjectURL(blob);
       const dlAnchorElem = document.createElement('a');
       dlAnchorElem.style.display = 'none';
-      dlAnchorElem.setAttribute('ref', blobUrl);
+      dlAnchorElem.setAttribute('href', blobUrl);
       dlAnchorElem.setAttribute('download', filename);
       document.body.appendChild(dlAnchorElem);
       dlAnchorElem.click();

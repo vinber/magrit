@@ -61,7 +61,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # self.driver = webdriver.Firefox(executable_path="/home/mz/geckodriver", firefox_profile=profile)
 
         self.driver.set_window_size(1600, 900)
-        self.driver.implicitly_wait(5)
+        self.driver.implicitly_wait(2)
         self.base_url = "http://localhost:9999/modules"
         self.verificationErrors = []
         self.accept_next_alert = True
@@ -145,6 +145,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Test the scale bar :
         driver.find_element_by_id('btn_scale').click()
         time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
         self._verif_context_menu(
@@ -154,6 +156,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Test the north arrow :
         driver.find_element_by_id('btn_north').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "north_arrow"):
             self.fail("North arrow won't display")
@@ -188,6 +192,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             self.fail("Ellipse won't display")
         self._verif_context_menu(
             driver.find_element_by_id("user_ellipse_0"), "user ellipse")
+
+        # Test the rectangle creation :
+        driver.find_element_by_id('btn_rectangle').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.5)
+        if not self.try_element_present(By.ID, "user_rectangle_0"):
+            self.fail("Rectangle won't display")
+        self._verif_context_menu(
+            driver.find_element_by_id("user_rectangle_0"), "user rectangle")
 
         # Test the map background color :
         driver.execute_script(
@@ -315,13 +329,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.open_menu_section(3)
 
         # Change the projection for an interrupted one :
-        Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("InterruptedSinusoidal")
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("HEALPix")
         time.sleep(2)
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
-        self.assertEqual(proj_name, "InterruptedSinusoidal")
+        self.assertEqual(proj_name, "HEALPix")
         # Layer have a clip-path (as this projection is interrupted) :
         clip_path_value1 = driver.execute_script(
             '''val = document.getElementById("World").getAttribute("clip-path");
@@ -333,13 +347,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         self.assertEqual("url(#clip)", clip_path_value2)
 
         # Change for a non-interrupted projection :
-        Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("Baker")
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("Robinson")
         time.sleep(2)
 
         # Global value was updated :
         proj_name = driver.execute_script('value = window.current_proj_name; return value;');
-        self.assertEqual(proj_name, "Baker")
+        self.assertEqual(proj_name, "Robinson")
         # Layer don't have a clip-path anymore :
         clip_path_value1 = driver.execute_script(
             '''val = document.getElementById("World").getAttribute("clip-path");
@@ -369,29 +383,33 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Click on the "fit-zoom" button of an other layer and fetch the new zoom value :
         self.click_elem_retry(
             driver.find_element_by_css_selector(
+                "li.World > div > #eye_closed"))
+
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
                 "li.World > div > #zoom_fit_button"))
         zoom_val3 = driver.execute_script(
             '''val = svg_map.__zoom.toString(); return val;''');
         # This time it should have changed :
         self.assertNotEqual(zoom_val, zoom_val3)
 
-        # Change for a projection offering customization options:
-        Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("ConicEqualArea")
+        # Change for a projection with some "preselections":
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("AzimuthalEqualAreaEurope")
         time.sleep(2)
 
-        parallels_1 = driver.execute_script(
-            '''proj.parallels([22, 25]); return proj.parallels();''');
+        rotate_params = driver.execute_script('''return proj.rotate();''');
+        self.assertEquals(rotate_params, [-10, -52, 0])
 
-        # Change for a projection offering customization options:
-        Select(driver.find_element_by_id("form_projection")
-            ).select_by_value("ConicEquidistant")
+        # Change for an other projection with "preselections":
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("ConicConformalFrance")
         time.sleep(2)
 
         # Value for parallels have been changed :
-        parallels_2 = driver.execute_script(
+        parallels = driver.execute_script(
             '''return proj.parallels();''');
-        self.assertNotEqual(parallels_1, parallels_2)
+        self.assertEquals(parallels, [44, 49])
 
     def test_reload_project_localStorage(self):
         driver = self.driver
@@ -422,6 +440,8 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Then add some layout features :
         driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
         time.sleep(0.2)
         if not self.try_element_present(By.ID, "scale_bar"):
             self.fail("Scale bar won't display")
@@ -598,11 +618,11 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         # Valid theses properties and click on the "render" button :
         driver.find_element_by_id("Typo_yes").click()
-
+        time.sleep(0.3)
         # Confirm the fact that there is a lot of features for this kind of representation :
         self.waitClickButtonSwal()
 
-        time.sleep(1.5)
+        time.sleep(1)
 
         if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_result_layer", 5):
             self.fail("Legend not displayed for Categorical map")

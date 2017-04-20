@@ -1734,6 +1734,7 @@ function handleClickAddArrow(){
     if(arrow_id === null){
         return;
     }
+    arrow_id = 'arrow_' + arrow_id;
     document.body.style.cursor = "not-allowed";
     let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
     map.style("cursor", "crosshair")

@@ -52,12 +52,11 @@ try:
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
     from helpers.cy_misc import get_name, join_field_topojson
-    from helpers.cartogram_doug import make_cartogram
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, repairCoordsPole, TopologicalError)
+        make_geojson_links, TopologicalError)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
@@ -66,12 +65,11 @@ except:
     from .helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
     from .helpers.cy_misc import get_name, join_field_topojson
-    from .helpers.cartogram_doug import make_cartogram
     from .helpers.topo_to_geo import convert_from_topo
     from .helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, repairCoordsPole, TopologicalError)
+        make_geojson_links, TopologicalError)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
     from .helpers.error_middleware404 import error_middleware

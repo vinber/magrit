@@ -13,6 +13,7 @@ from shapely.affinity import scale
 from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
+from .cartogram_doug import make_cartogram
 
 
 def _compute_centroids(geometries, argmax=np.argmax):
