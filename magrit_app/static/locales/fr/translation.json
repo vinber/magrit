@@ -238,7 +238,7 @@
             "WinkelTriple": "Winkel Tripel",
             "more": "Plus d'options ...",
             "proj4": "Saisie d'un code EPSG/Proj.4 ...",
-            "def_proj4": "Projection définie par l'utilsateur {{value}}"
+            "def_proj4": "Projection définie par l'utilisateur {{value}}"
         },
         "stat_summary": {
             "population": "Population",
@@ -309,7 +309,7 @@
         },
         "proj4_box":{
             "title": "",
-            "enter_string": "Saisie d'une chaine de charactère au format proj4 ou WKT",
+            "enter_string": "Saisie d'une chaine de charactères au format proj4 ou WKT",
             "error": "Valeur invalide. (Détails: {{detail}})"
         },
         "layout_features_box": {
