@@ -2084,6 +2084,17 @@ function change_projection(new_proj_name) {
     handleClipPath(new_proj_name, layer_name);
 }
 
+const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
+  // Create the custom d3 projection using proj 4 forward and inverse functions:
+  var projRaw = function(lambda, phi) {
+  	return _proj.forward([lambda, phi].map(radiansToDegrees));
+  };
+  projRaw.invert = function(x, y) {
+  	return _proj.inverse([x, y]).map(degreesToRadians);
+  };
+  return d3.geoProjection(projRaw);
+}
+
 function change_projection_4(_proj) {
     remove_layer_cleanup('Sphere');
     // Disable the zoom by rectangle selection if the user is using it :
@@ -2092,14 +2103,7 @@ function change_projection_4(_proj) {
     // Only keep the first argument of the rotation parameter :
     let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0];
 
-    // Create the custom d3 projection using proj 4 forward and inverse functions:
-    var projRaw = function(lambda, phi) {
-    	return _proj.forward([lambda, phi].map(radiansToDegrees));
-    };
-    projRaw.invert = function(x, y) {
-    	return _proj.inverse([x, y]).map(degreesToRadians);
-    };
-    proj = d3.geoProjection(projRaw);
+    proj = getD3ProjFromProj4(_proj)
     path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:

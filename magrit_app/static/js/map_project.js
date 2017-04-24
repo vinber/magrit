@@ -1,41 +1,43 @@
 "use strict";
 
-function get_map_template(){
-    var map_config = new Object(),
-        layers_style = [],
-        layers = map.selectAll("g.layer"),
-        map_title = document.getElementById('map_title'),
-        layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
-        zoom_transform = d3.zoomTransform(svg_map);
+function get_map_template() {
+    let map_config = {},
+      layers_style = [],
+      layers = map.selectAll("g.layer"),
+      map_title = document.getElementById('map_title'),
+      layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
+      zoom_transform = d3.zoomTransform(svg_map);
 
-    function get_legend_info(lgd_node){
-        let type_lgd = lgd_node.id,
-            rect_fill_value = (lgd_node.getAttribute("visible_rect") == "true") ? {
-                                color: lgd_node.querySelector("#under_rect").style.fill,
-                                opacity: lgd_node.querySelector("#under_rect").style.fillOpacity
-                            } : undefined,
-            result = {
-                type: type_lgd,
-                display: lgd_node.getAttribute('display'),
-                transform: lgd_node.getAttribute('transform'),
-                field: lgd_node.getAttribute('layer_field'),
-                rounding_precision: lgd_node.getAttribute('rounding_precision'),
-                rect_fill_value: rect_fill_value,
-                title: lgd_node.querySelector('#legendtitle').innerHTML,
-                subtitle: lgd_node.querySelector('#legendsubtitle').innerHTML,
-                bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML
-            }
-        if(type_lgd == 'legend_root'){
-            result['box_gap'] = lgd_node.getAttribute('box_gap');
-            let no_data = lgd_node.querySelector('#no_data_txt');
-            if(no_data) result['no_data_txt'] = no_data.innerHTML;
-        } else if (type_lgd == 'legend_root_symbol') {
-            result['nested_symbols'] = lgd_node.getAttribute('nested');
-        }
-        return result;
+    function get_legend_info(lgd_node) {
+      let type_lgd = lgd_node.id;
+      let rect_fill_value = (lgd_node.getAttribute("visible_rect") === "true") ? {
+                              color: lgd_node.querySelector("#under_rect").style.fill,
+                              opacity: lgd_node.querySelector("#under_rect").style.fillOpacity } : undefined;
+      let result = {
+        type: type_lgd,
+        display: lgd_node.getAttribute('display'),
+        transform: lgd_node.getAttribute('transform'),
+        field: lgd_node.getAttribute('layer_field'),
+        rounding_precision: lgd_node.getAttribute('rounding_precision'),
+        rect_fill_value: rect_fill_value,
+        title: lgd_node.querySelector('#legendtitle').innerHTML,
+        subtitle: lgd_node.querySelector('#legendsubtitle').innerHTML,
+        bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML
+      };
+      if (type_lgd === 'legend_root') {
+        result['box_gap'] = lgd_node.getAttribute('box_gap');
+        let no_data = lgd_node.querySelector('#no_data_txt');
+        if(no_data) result.no_data_txt = no_data.innerHTML;
+      } else if (type_lgd === 'legend_root_symbol') {
+        result.nested_symbols = lgd_node.getAttribute('nested');
+      }
+      return result;
     }
 
     map_config.projection = current_proj_name;
+    if (current_proj_name == "def_proj4") {
+      map_config.custom_projection = _app.last_projection;
+    }
     map_config.projection_scale = proj.scale();
     map_config.projection_translate = proj.translate();
     map_config.projection_center = proj.center();
@@ -50,301 +52,301 @@ function get_map_template(){
     map_config.background_color = map.style("background-color");
     map_config.canvas_rotation = typeof canvas_rotation_value == "string" ? canvas_rotation_value.match(/\d+/) : undefined;
 
-    if(map_title){
-        map_config.title = {
-            "content": map_title.textContent,
-            "x": map_title.getElementsByTagName('text')[0].getAttribute("x"),
-            "y": map_title.getElementsByTagName('text')[0].getAttribute("y"),
-            "style": map_title.getElementsByTagName('text')[0].getAttribute("style")
-            };
+    if (map_title) {
+      map_config.title = {
+        content: map_title.textContent,
+        x: map_title.getElementsByTagName('text')[0].getAttribute("x"),
+        y: map_title.getElementsByTagName('text')[0].getAttribute("y"),
+        style: map_title.getElementsByTagName('text')[0].getAttribute("style")
+      };
     }
 
     // Save the provided dataset if it wasn't joined to the geo layer :
-    if(joined_dataset.length > 0 && field_join_map.length == 0){
-        map_config.joined_dataset = joined_dataset[0];
-        map_config.dataset_name = dataset_name;
+    if (joined_dataset.length > 0 && field_join_map.length === 0) {
+      map_config.joined_dataset = joined_dataset[0];
+      map_config.dataset_name = dataset_name;
     }
 
     map_config.layout_features = {};
-    if(layout_features){
-        for(let i = 0; i < layout_features.length; i++){
-            let ft = layout_features[i];
-            if(ft.id === "scale_bar"){
-                map_config.layout_features.scale_bar = {
-                    bar_size: scaleBar.bar_size,
-                    displayed: scaleBar.displayed,
-                    dist: scaleBar.dist,
-                    dist_txt: scaleBar.dist_txt,
-                    fixed_size: scaleBar.fixed_size,
-                    precision: scaleBar.precision,
-                    unit: scaleBar.unit,
-                    x: scaleBar.x,
-                    y: scaleBar.y,
-                    transform: scaleBar.Scale._groups[0][0].getAttribute('transform') || ""
-                };
-            } else if(ft.id === "north_arrow"){
-              let n_arr = northArrow.arrow_img._groups[0][0];
-              map_config.layout_features.north_arrow = {
-                  arrow_img: ft.getAttribute('href'),
-                  displayed: northArrow.displayed,
-                  x_img: n_arr.getAttribute('x'),
-                  y_img: n_arr.getAttribute('y'),
-                  x_center: northArrow.x_center,
-                  y_center: northArrow.y_center,
-                  size: n_arr.getAttribute('width')
-              };
-            } else if(ft.classList.contains('user_ellipse')){
-                if(!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
-                let ellps = ft.childNodes[0];
-                map_config.layout_features.user_ellipse.push({
-                    rx: ellps.getAttribute('rx'),
-                    ry: ellps.getAttribute('ry'),
-                    cx: ellps.getAttribute('cx'),
-                    cy: ellps.getAttribute('cy'),
-                    stroke: ellps.style.stroke,
-                    stroke_width: ellps.style.strokeWidth,
-                    id: ft.id
-                });
-            } else if (ft.classList.contains('user_rectangle')){
-                if(!map_config.layout_features.user_rectangle) map_config.layout_features.user_rectangle = [];
-                let rect = ft.childNodes[0];
-                map_config.layout_features.user_rectangle.push({
-                    x: rect.getAttribute('x'), y: rect.getAttribute('y'),
-                    width: rect.getAttribute('width'), height: rect.getAttribute('height'),
-                    style: rect.getAttribute('style'), id: ft.id
-                });
-            } else if(ft.classList.contains('arrow')){
-                if(!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
-                let line = ft.childNodes[0];
-                map_config.layout_features.arrow.push({
-                    stroke_width: line.style.strokeWidth,
-                    stroke: line.style.stroke,
-                    pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
-                    pt2: [line.x2.baseVal.value, line.y2.baseVal.value],
-                    id: ft.id
-                });
-            } else if(ft.classList.contains('txt_annot')) {
-                if(!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
-                let inner_p = ft.childNodes[0];
-                map_config.layout_features.text_annot.push({
-                    id: ft.id,
-                    content: inner_p.innerHTML,
-                    style: inner_p.getAttribute('style'),
-                    position_x: ft.x.baseVal.value,
-                    position_y: ft.y.baseVal.value,
-                    transform: ft.getAttribute('transform')
-                });
-            } else if(ft.classList.contains('single_symbol')) {
-                if(!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
-                let img = ft.childNodes[0];
-                map_config.layout_features.single_symbol.push({
-                    x: img.getAttribute('x'),
-                    y: img.getAttribute('y'),
-                    width: img.getAttribute('width'),
-                    height: img.getAttribute('height'),
-                    href: img.getAttribute('href'),
-                    scalable: ft.classList.contains('scalable-legend')
-                });
-                // console.log(map_config.layout_features.single_symbol);
-            }
+    if (layout_features) {
+      for (let i = 0; i < layout_features.length; i++) {
+        let ft = layout_features[i];
+        if (ft.id === 'scale_bar') {
+          map_config.layout_features.scale_bar = {
+            bar_size: scaleBar.bar_size,
+            displayed: scaleBar.displayed,
+            dist: scaleBar.dist,
+            dist_txt: scaleBar.dist_txt,
+            fixed_size: scaleBar.fixed_size,
+            precision: scaleBar.precision,
+            unit: scaleBar.unit,
+            x: scaleBar.x,
+            y: scaleBar.y,
+            transform: scaleBar.Scale._groups[0][0].getAttribute('transform') || ''
+          };
+        } else if (ft.id === 'north_arrow') {
+          let n_arr = northArrow.arrow_img._groups[0][0];
+          map_config.layout_features.north_arrow = {
+            arrow_img: ft.getAttribute('href'),
+            displayed: northArrow.displayed,
+            x_img: n_arr.getAttribute('x'),
+            y_img: n_arr.getAttribute('y'),
+            x_center: northArrow.x_center,
+            y_center: northArrow.y_center,
+            size: n_arr.getAttribute('width')
+          };
+        } else if(ft.classList.contains('user_ellipse')){
+          if (!map_config.layout_features.user_ellipse) map_config.layout_features.user_ellipse = [];
+          let ellps = ft.childNodes[0];
+          map_config.layout_features.user_ellipse.push({
+            rx: ellps.getAttribute('rx'),
+            ry: ellps.getAttribute('ry'),
+            cx: ellps.getAttribute('cx'),
+            cy: ellps.getAttribute('cy'),
+            stroke: ellps.style.stroke,
+            stroke_width: ellps.style.strokeWidth,
+            id: ft.id
+          });
+        } else if (ft.classList.contains('user_rectangle')) {
+          if (!map_config.layout_features.user_rectangle) map_config.layout_features.user_rectangle = [];
+          let rect = ft.childNodes[0];
+          map_config.layout_features.user_rectangle.push({
+            x: rect.getAttribute('x'), y: rect.getAttribute('y'),
+            width: rect.getAttribute('width'), height: rect.getAttribute('height'),
+            style: rect.getAttribute('style'), id: ft.id
+          });
+        } else if (ft.classList.contains('arrow')) {
+          if (!map_config.layout_features.arrow) map_config.layout_features.arrow = [];
+          let line = ft.childNodes[0];
+          map_config.layout_features.arrow.push({
+            stroke_width: line.style.strokeWidth,
+            stroke: line.style.stroke,
+            pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
+            pt2: [line.x2.baseVal.value, line.y2.baseVal.value],
+            id: ft.id
+          });
+        } else if (ft.classList.contains('txt_annot')) {
+          if (!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
+          let inner_p = ft.childNodes[0];
+          map_config.layout_features.text_annot.push({
+            id: ft.id,
+            content: inner_p.innerHTML,
+            style: inner_p.getAttribute('style'),
+            position_x: ft.x.baseVal.value,
+            position_y: ft.y.baseVal.value,
+            transform: ft.getAttribute('transform')
+          });
+        } else if (ft.classList.contains('single_symbol')) {
+          if (!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
+          let img = ft.childNodes[0];
+          map_config.layout_features.single_symbol.push({
+            x: img.getAttribute('x'),
+            y: img.getAttribute('y'),
+            width: img.getAttribute('width'),
+            height: img.getAttribute('height'),
+            href: img.getAttribute('href'),
+            scalable: ft.classList.contains('scalable-legend')
+          });
+          // console.log(map_config.layout_features.single_symbol);
         }
+      }
 
     }
-    for(let i=map_config.n_layers-1; i > -1; --i){
-        layers_style[i] = new Object();
-        let layer_style_i = layers_style[i],
-            layer_id = layers._groups[0][i].id,
-            layer_name = _app.id_to_layer.get(layer_id),
-            current_layer_prop = current_layers[layer_name],
-            nb_ft = current_layer_prop.n_features,
-            selection;
+    for (let i=map_config.n_layers-1; i > -1; --i) {
+      layers_style[i] = {};
+      let layer_style_i = layers_style[i],
+          layer_id = layers._groups[0][i].id,
+          layer_name = _app.id_to_layer.get(layer_id),
+          current_layer_prop = current_layers[layer_name],
+          nb_ft = current_layer_prop.n_features,
+          selection;
 
-        layer_style_i.layer_name = layer_name;
-        layer_style_i.n_features = nb_ft;
-        layer_style_i.visible = layers._groups[0][i].style.visibility;
-        let lgd = document.getElementsByClassName('lgdf_' + layer_id);
-        if(lgd.length == 0){
-            layer_style_i.legend = undefined;
-        } else if (lgd.length == 1) {
-            layer_style_i.legend = [get_legend_info(lgd[0])];
-        } else if (lgd.length == 2){
-            layer_style_i.legend = lgd[0].id == "legend_root" ? [get_legend_info(lgd[0]), get_legend_info(lgd[1])] : [get_legend_info(lgd[1]), get_legend_info(lgd[0])];
-        }
+      layer_style_i.layer_name = layer_name;
+      layer_style_i.n_features = nb_ft;
+      layer_style_i.visible = layers._groups[0][i].style.visibility;
+      let lgd = document.getElementsByClassName('lgdf_' + layer_id);
+      if(lgd.length == 0){
+          layer_style_i.legend = undefined;
+      } else if (lgd.length == 1) {
+          layer_style_i.legend = [get_legend_info(lgd[0])];
+      } else if (lgd.length == 2){
+          layer_style_i.legend = lgd[0].id == "legend_root" ? [get_legend_info(lgd[0]), get_legend_info(lgd[1])] : [get_legend_info(lgd[1]), get_legend_info(lgd[0])];
+      }
 
-        if(current_layer_prop["stroke-width-const"])
-            layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
+      if(current_layer_prop["stroke-width-const"])
+          layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
 
-        if(current_layer_prop.pointRadius != undefined)
-            layer_style_i.pointRadius = current_layer_prop.pointRadius;
+      if(current_layer_prop.pointRadius != undefined)
+          layer_style_i.pointRadius = current_layer_prop.pointRadius;
 
-        if(current_layer_prop.fixed_stroke != undefined)
-            layer_style_i.fixed_stroke = current_layer_prop.fixed_stroke;
+      if(current_layer_prop.fixed_stroke != undefined)
+          layer_style_i.fixed_stroke = current_layer_prop.fixed_stroke;
 
-        if(current_layer_prop.colors_breaks)
-            layer_style_i.colors_breaks = current_layer_prop.colors_breaks;
+      if(current_layer_prop.colors_breaks)
+          layer_style_i.colors_breaks = current_layer_prop.colors_breaks;
 
-        if(current_layer_prop.options_disc !== undefined)
-            layer_style_i.options_disc = current_layer_prop.options_disc;
+      if(current_layer_prop.options_disc !== undefined)
+          layer_style_i.options_disc = current_layer_prop.options_disc;
 
-        if (current_layer_prop.targeted){
-            selection = map.select("#" + layer_id).selectAll("path");
-            layer_style_i.fill_opacity = selection.style("fill-opacity");
-            layer_style_i.targeted = true;
-            layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.fields_type = current_layer_prop.fields_type;
-        } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
-            selection = map.select("#" + layer_name).selectAll("path");
-            layer_style_i.fill_color = rgb2hex(selection.style("fill"));
-            layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
-            if(layer_name == "Graticule"){
-                layer_style_i.stroke_dasharray = current_layers.Graticule.dasharray;
-                layer_style_i.step = current_layers.Graticule.step;
-            }
-        } else if(!current_layer_prop.renderer){
-            selection = map.select("#" + layer_id).selectAll("path");
-            layer_style_i.fill_opacity = selection.style("fill-opacity");
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
-        } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line"){
-            let type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_id).selectAll(type_symbol);
-            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
-            layer_style_i.symbol = type_symbol;
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            if(current_layer_prop.rendered_field2)
-                layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.size = current_layer_prop.size;
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-            layer_style_i.geo_pt = {
-              type: "FeatureCollection",
-              features: features
-            };
-            if(current_layer_prop.renderer === "PropSymbolsTypo"){
-                layer_style_i.color_map = [...current_layer_prop.color_map];
-            }
-            if(current_layer_prop.break_val)
-                layer_style_i.break_val = current_layer_prop.break_val;
-        } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type == "Line"){
-            let type_symbol = current_layer_prop.symbol;
-            selection = map.select("#" + layer_id).selectAll('path');
-            let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName('path'), function(d){ return d.__data__; });
-            layer_style_i.symbol = type_symbol;
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            if(current_layer_prop.rendered_field2)
-                layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.size = current_layer_prop.size;
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-            layer_style_i.geo_line = {
-              type: "FeatureCollection",
-              features: features
-            };
-            if(current_layer_prop.renderer === "PropSymbolsTypo"){
-                layer_style_i.color_map = [...current_layer_prop.color_map];
-            }
-            if(current_layer_prop.break_val)
-                layer_style_i.break_val = current_layer_prop.break_val;
+      if (current_layer_prop.targeted){
+          selection = map.select("#" + layer_id).selectAll("path");
+          layer_style_i.fill_opacity = selection.style("fill-opacity");
+          layer_style_i.targeted = true;
+          layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.fields_type = current_layer_prop.fields_type;
+      } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
+          selection = map.select("#" + layer_name).selectAll("path");
+          layer_style_i.fill_color = rgb2hex(selection.style("fill"));
+          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
+          if(layer_name == "Graticule"){
+              layer_style_i.stroke_dasharray = current_layers.Graticule.dasharray;
+              layer_style_i.step = current_layers.Graticule.step;
+          }
+      } else if(!current_layer_prop.renderer){
+          selection = map.select("#" + layer_id).selectAll("path");
+          layer_style_i.fill_opacity = selection.style("fill-opacity");
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.topo_geom = String(current_layer_prop.key_name);
+      } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line"){
+          let type_symbol = current_layer_prop.symbol;
+          selection = map.select("#" + layer_id).selectAll(type_symbol);
+          let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
+          layer_style_i.symbol = type_symbol;
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          if(current_layer_prop.rendered_field2)
+              layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.size = current_layer_prop.size;
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+          layer_style_i.geo_pt = {
+            type: "FeatureCollection",
+            features: features
+          };
+          if(current_layer_prop.renderer === "PropSymbolsTypo"){
+              layer_style_i.color_map = [...current_layer_prop.color_map];
+          }
+          if(current_layer_prop.break_val)
+              layer_style_i.break_val = current_layer_prop.break_val;
+      } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type == "Line"){
+          let type_symbol = current_layer_prop.symbol;
+          selection = map.select("#" + layer_id).selectAll('path');
+          let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName('path'), function(d){ return d.__data__; });
+          layer_style_i.symbol = type_symbol;
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          if(current_layer_prop.rendered_field2)
+              layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.size = current_layer_prop.size;
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+          layer_style_i.geo_line = {
+            type: "FeatureCollection",
+            features: features
+          };
+          if(current_layer_prop.renderer === "PropSymbolsTypo"){
+              layer_style_i.color_map = [...current_layer_prop.color_map];
+          }
+          if(current_layer_prop.break_val)
+              layer_style_i.break_val = current_layer_prop.break_val;
 
-        } else if (current_layer_prop.renderer == "Stewart"
-                    || current_layer_prop.renderer == "Gridded"
-                    || current_layer_prop.renderer == "Choropleth"
-                    || current_layer_prop.renderer == "Categorical"
-                    || current_layer_prop.renderer == "Carto_doug"
-                    || current_layer_prop.renderer == "OlsonCarto"){
-            selection = map.select("#" + layer_id).selectAll("path");
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-            let color_by_id = [], params = current_layer_prop.type == "Line" ? "stroke" : "fill";
-            selection.each(function(){
-                color_by_id.push(rgb2hex(this.style[params]));
-            });
-            layer_style_i.color_by_id = color_by_id;
-            if(current_layer_prop.renderer == "Stewart"){
-                layer_style_i.current_palette = current_layer_prop.current_palette;
-            }
-            if(current_layer_prop.renderer !== "Categorical") {
-                layer_style_i.options_disc = current_layer_prop.options_disc;
-            } else {
-                layer_style_i.color_map = [...current_layer_prop.color_map];
-            }
-            if(current_layer_prop.renderer == "OlsonCarto"){
-                layer_style_i.scale_max = current_layer_prop.scale_max;
-                layer_style_i.scale_byFeature = current_layer_prop.scale_byFeature;
-            }
-        } else if (current_layer_prop.renderer == "Links"
-                    || current_layer_prop.renderer == "DiscLayer"){
-            selection = map.select("#" + layer_id).selectAll("path");
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            layer_style_i.topo_geom = String(current_layer_prop.key_name);
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-            layer_style_i.size = current_layer_prop.size;
-            layer_style_i.min_display = current_layer_prop.min_display;
-            layer_style_i.breaks = current_layer_prop.breaks;
-            // layer_style_i.topo_geom = String(current_layer_prop.key_name);
-            if(current_layer_prop.renderer == "Links"){
-                layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
-            }
-        } else if (current_layer_prop.renderer == "TypoSymbols"){
-            selection = map.select("#" + layer_id).selectAll("image")
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.symbols_map = [...current_layer_prop.symbols_map];
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+      } else if (current_layer_prop.renderer == "Stewart"
+                  || current_layer_prop.renderer == "Gridded"
+                  || current_layer_prop.renderer == "Choropleth"
+                  || current_layer_prop.renderer == "Categorical"
+                  || current_layer_prop.renderer == "Carto_doug"
+                  || current_layer_prop.renderer == "OlsonCarto"){
+          selection = map.select("#" + layer_id).selectAll("path");
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.topo_geom = String(current_layer_prop.key_name);
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+          let color_by_id = [], params = current_layer_prop.type == "Line" ? "stroke" : "fill";
+          selection.each(function(){
+              color_by_id.push(rgb2hex(this.style[params]));
+          });
+          layer_style_i.color_by_id = color_by_id;
+          if(current_layer_prop.renderer == "Stewart"){
+              layer_style_i.current_palette = current_layer_prop.current_palette;
+          }
+          if(current_layer_prop.renderer !== "Categorical") {
+              layer_style_i.options_disc = current_layer_prop.options_disc;
+          } else {
+              layer_style_i.color_map = [...current_layer_prop.color_map];
+          }
+          if(current_layer_prop.renderer == "OlsonCarto"){
+              layer_style_i.scale_max = current_layer_prop.scale_max;
+              layer_style_i.scale_byFeature = current_layer_prop.scale_byFeature;
+          }
+      } else if (current_layer_prop.renderer == "Links"
+                  || current_layer_prop.renderer == "DiscLayer"){
+          selection = map.select("#" + layer_id).selectAll("path");
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.topo_geom = String(current_layer_prop.key_name);
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+          layer_style_i.size = current_layer_prop.size;
+          layer_style_i.min_display = current_layer_prop.min_display;
+          layer_style_i.breaks = current_layer_prop.breaks;
+          // layer_style_i.topo_geom = String(current_layer_prop.key_name);
+          if(current_layer_prop.renderer == "Links"){
+              layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
+          }
+      } else if (current_layer_prop.renderer == "TypoSymbols"){
+          selection = map.select("#" + layer_id).selectAll("image")
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.symbols_map = [...current_layer_prop.symbols_map];
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
 
-            let state_to_save = [];
-            let selec = selection._groups[0];
-            for(let i = 0; i < selec.length ; i++){
-                let ft = selec[i];
-                state_to_save.push({display: ft.style.display,
-                                    data: ft.__data__,
-                                    pos: [ft.getAttribute('x'), ft.getAttribute('y')],
-                                    size: ft.getAttribute('width')
-                                    });
-            }
-            layer_style_i.current_state = state_to_save;
-        } else if(current_layer_prop.renderer == "Label") {
-            selection = map.select("#" + layer_id).selectAll("text");
-            let selec = document.getElementById(layer_id).getElementsByTagName('text');
-            layer_style_i.renderer = current_layer_prop.renderer;
-            layer_style_i.rendered_field = current_layer_prop.rendered_field;
-            layer_style_i.default_font = current_layer_prop.default_font;
-            layer_style_i.default_size = +current_layer_prop.default_size.slice(0,2);
-            layer_style_i.fill_color = current_layer_prop.fill_color;
-            let features = [],
-                current_position = [];
-            for(let j = selec.length - 1;  j > -1; j--) {
-                let s = selec[j];
-                features.push(s.__data__);
-                current_position.push([s.getAttribute('y'), s.getAttribute('y'), s.style.display]);
-            }
-            layer_style_i.data_labels = features;
-            layer_style_i.current_position = current_position
-        } else {
-            selection = map.select("#" + layer_id).selectAll("path");
-        }
-        layer_style_i.stroke_opacity = selection.style("stroke-opacity");
-        layer_style_i.fill_opacity = selection.style("fill-opacity");
+          let state_to_save = [];
+          let selec = selection._groups[0];
+          for(let i = 0; i < selec.length ; i++){
+              let ft = selec[i];
+              state_to_save.push({display: ft.style.display,
+                                  data: ft.__data__,
+                                  pos: [ft.getAttribute('x'), ft.getAttribute('y')],
+                                  size: ft.getAttribute('width')
+                                  });
+          }
+          layer_style_i.current_state = state_to_save;
+      } else if(current_layer_prop.renderer == "Label") {
+          selection = map.select("#" + layer_id).selectAll("text");
+          let selec = document.getElementById(layer_id).getElementsByTagName('text');
+          layer_style_i.renderer = current_layer_prop.renderer;
+          layer_style_i.rendered_field = current_layer_prop.rendered_field;
+          layer_style_i.default_font = current_layer_prop.default_font;
+          layer_style_i.default_size = +current_layer_prop.default_size.slice(0,2);
+          layer_style_i.fill_color = current_layer_prop.fill_color;
+          let features = [],
+              current_position = [];
+          for(let j = selec.length - 1;  j > -1; j--) {
+              let s = selec[j];
+              features.push(s.__data__);
+              current_position.push([s.getAttribute('y'), s.getAttribute('y'), s.style.display]);
+          }
+          layer_style_i.data_labels = features;
+          layer_style_i.current_position = current_position
+      } else {
+          selection = map.select("#" + layer_id).selectAll("path");
+      }
+      layer_style_i.stroke_opacity = selection.style("stroke-opacity");
+      layer_style_i.fill_opacity = selection.style("fill-opacity");
     }
 
-    return Promise.all(layers_style.map( obj => {return (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null}))
-        .then(function(result){
-            for(let i = 0; i < layers_style.length; i++){
-                    if(result[i]){
-                        layers_style[i].topo_geom = result[i];
-                    }
-                }
-            // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-            return JSON.stringify({"map_config": map_config, "layers": layers_style});;
-        });
+    return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
+      .then((result) => {
+        for (let i = 0; i < layers_style.length; i++) {
+          if (result[i]) {
+            layers_style[i].topo_geom = result[i];
+          }
+        }
+        // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
+        return JSON.stringify({"map_config": map_config, "layers": layers_style});;
+      });
 }
 
 // Function triggered when the user request a download of its map preferences
@@ -398,24 +400,24 @@ function apply_user_preferences(json_pref){
     }
     // Restore the state of the page (without open functionnality)
     if(window.fields_handler){
-        clean_menu_function();
+      clean_menu_function();
     }
     // Clean the values remembered for the user from the previous rendering if any :
     reset_user_values();
     {
-        let layer_names = Object.getOwnPropertyNames(current_layers);
-        for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
-            remove_layer_cleanup(layer_names[i]);
-        }
-        let _l, _ll;
-        // Make sure there is no layers and legend/layout features on the map :
-        _l = svg_map.childNodes;  _ll = _l.length;
-        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-        // And in the layer manager :
-        _l = layer_list.node().childNodes;  _ll = _l.length;
-        for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
-        // Get a new object for where we are storing the main properties :
-        current_layers = new Object();
+      let layer_names = Object.getOwnPropertyNames(current_layers);
+      for(let i = 0, nb_layers=layer_names.length; i < nb_layers; i++){
+          remove_layer_cleanup(layer_names[i]);
+      }
+      let _l, _ll;
+      // Make sure there is no layers and legend/layout features on the map :
+      _l = svg_map.childNodes;  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+      // And in the layer manager :
+      _l = layer_list.node().childNodes;  _ll = _l.length;
+      for(let i = _ll-1; i > -1; i--){ _l[i].remove(); }
+      // Get a new object for where we are storing the main properties :
+      current_layers = {};
     }
 
     let a = document.getElementById("overlay");
@@ -424,37 +426,37 @@ function apply_user_preferences(json_pref){
 
     let g_timeout;
     let set_final_param = () => {
-        g_timeout = setTimeout(function(){
-            let _zoom = svg_map.__zoom;
-            _zoom.k = map_config.zoom_scale;
-            _zoom.x = map_config.zoom_translate[0];
-            _zoom.y = map_config.zoom_translate[1];
-            zoom_without_redraw();
-            s = map_config.projection_scale;
-            t = map_config.projection_translate;
-            proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-            path = d3.geoPath().projection(proj).pointRadius(4);
-            map.selectAll(".layer").selectAll("path").attr("d", path);
-            handleClipPath(current_proj_name);
-            reproj_symbol_layer();
-            if(layers.length > 1){
-                let desired_order = layers.map( i => i.layer_name);
-                reorder_elem_list_layer(desired_order);
-                desired_order.reverse();
-                reorder_layers(desired_order);
-            }
-            apply_layout_lgd_elem();
-            if(map_config.canvas_rotation){
-                document.getElementById("form_rotate").value = map_config.canvas_rotation;
-                document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
-                rotate_global(map_config.canvas_rotation);
-            }
-            let a = document.getElementById("overlay");
-            a.style.display = "none";
-            a.querySelector("button").style.display = "";
-            let targeted_layer = Object.getOwnPropertyNames(user_data)[0];
-            if(targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-        }, layers.length > 1 ? 125 : 250);
+      g_timeout = setTimeout(function(){
+        let _zoom = svg_map.__zoom;
+        _zoom.k = map_config.zoom_scale;
+        _zoom.x = map_config.zoom_translate[0];
+        _zoom.y = map_config.zoom_translate[1];
+        zoom_without_redraw();
+        s = map_config.projection_scale;
+        t = map_config.projection_translate;
+        proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+        path = d3.geoPath().projection(proj).pointRadius(4);
+        map.selectAll(".layer").selectAll("path").attr("d", path);
+        handleClipPath(current_proj_name);
+        reproj_symbol_layer();
+        if(layers.length > 1){
+          let desired_order = layers.map( i => i.layer_name);
+          reorder_elem_list_layer(desired_order);
+          desired_order.reverse();
+          reorder_layers(desired_order);
+        }
+        apply_layout_lgd_elem();
+        if(map_config.canvas_rotation){
+          document.getElementById("form_rotate").value = map_config.canvas_rotation;
+          document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
+          rotate_global(map_config.canvas_rotation);
+        }
+        let a = document.getElementById("overlay");
+        a.style.display = "none";
+        a.querySelector("button").style.display = "";
+        let targeted_layer = Object.getOwnPropertyNames(user_data)[0];
+        if(targeted_layer) getAvailablesFunctionnalities(targeted_layer);
+      }, layers.length > 1 ? 125 : 250);
     };
 
     function apply_layout_lgd_elem(){
@@ -548,8 +550,8 @@ function apply_user_preferences(json_pref){
         }
     }
 
-    var done = 0;
-    var func_name_corresp = new Map([
+    let done = 0;
+    let func_name_corresp = new Map([
         ["Links", "flow"], ["Carto_doug", "cartogram"],
         ["OlsonCarto", "cartogram"], ["Stewart", "smooth"],
         ["Gridded", "grid"], ["DiscLayer", "discont"],
@@ -563,38 +565,35 @@ function apply_user_preferences(json_pref){
     document.getElementById("input-width").value = w;
     document.getElementById("input-height").value = h;
 
-    // Projection were slightly changed in a last version :
-    map_config.projection = map_config.projection.replace(/ /g, '');
-
-    // Set the variables/fields related to the projection :
-    current_proj_name = map_config.projection;
-    proj = d3[available_projections.get(current_proj_name).name]();
-    if(map_config.projection_parallels)
-        proj = proj.parallels(map_config.projection_parallels);
-    if(map_config.projection_parallel)
-        proj = proj.parallel(map_config.projection_parallel);
-    if(map_config.projection_clipAngle)
-        proj = proj.clipAngle(map_config.projection_clipAngle);
+    // Set the variables/fields related to the projection
+    // (names were slightly changed in a last version, thus the replacing of whitespace)
+    current_proj_name = map_config.projection.replace(/ /g, '');
+    if (map_config.custom_projection) {
+      proj = getD3ProjFromProj4(proj4(map_config.custom_projection));
+      _app.last_projection = map_config.custom_projection;
+    } else {
+      proj = d3[available_projections.get(current_proj_name).name]();
+    }
+    if(map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
+    if(map_config.projection_parallel) proj = proj.parallel(map_config.projection_parallel);
+    if(map_config.projection_clipAngle) proj = proj.clipAngle(map_config.projection_clipAngle);
     s = map_config.projection_scale;
     t = map_config.projection_translate;
     proj.scale(s).translate(t).rotate(map_config.projection_rotation);
-    // document.getElementById('form_projection_center').value = map_config.projection_rotation[0];
-    // document.getElementById('proj_center_value_txt').value = map_config.projection_rotation[0];
     defs = map.append("defs");
-    document.getElementById('form_projection2').value = current_proj_name;
     path = d3.geoPath().projection(proj).pointRadius(4);
     map.selectAll(".layer").selectAll("path").attr("d", path);
-
+    addLastProjectionSelect(current_proj_name);
     // Set the background color of the map :
     map.style("background-color", map_config.background_color);
     document.querySelector("input#bg_color").value = rgb2hex(map_config.background_color);
 
     // Reload the external (not-joined) dataset if there is one :
     if(map_config.joined_dataset){
-        field_join_map = [];
-        joined_dataset = [map_config.joined_dataset.slice()];
-        dataset_name = map_config.dataset_name;
-        update_menu_dataset();
+      field_join_map = [];
+      joined_dataset = [map_config.joined_dataset.slice()];
+      dataset_name = map_config.dataset_name;
+      update_menu_dataset();
     }
 
     // Add each layer :

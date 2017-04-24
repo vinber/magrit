@@ -77,40 +77,12 @@ const available_projections = new Map([
 	["WinkelTriple", {'name': 'geoWinkel3', 'scale': '400', param_in: 'pseudoplan', param_ex: 'aphylactic'}]
 ]);
 
-// const available_proj_projections = new Map([
-// 	['cea', ]
-// 	['laea', ],
-// 	['lcc', ],
-// 	['merc', ],
-// 	['tmerc', ],
-// 	['sterea', ]
-// ]);
-// const first_parse_proj4 = function(proj4_str){
-// 	if(!proj4_str.startsWith('+proj'))
-// 		return false;
-// 	const split = proj4_str.split(' ');
-// 	if(split.length > 5)
-// 		return false;
-// 	let proj_name = split.filter(a => a.indexOf('+proj') > -1)[0];
-// 	if(available_proj_projections.has(proj_name)){
-// 		let lat0 = split.filter(a => a.indexOf('+lat_0') > -1)[0];
-// 		let lon0 = split.filter(a => a.indexOf('+lon_0') > -1)[0];
-// 		if((!lat0 && !lon0 && split.length > 1) || (!lat0 || !lon0) && split.length > 2 )
-// 			return false;
-// 		else if (lat0){
-//
-// 		} else if (lon0){
-//
-// 		}
-// 	}
-// }
-
-const createBoxProj4 = function(){
+const createBoxProj4 = function createBoxProj4() {
 	make_dialog_container(
 	  "box_projection_input",
 	  i18next.t("app_page.section5.title"),
 	  "dialog");
-	const container = document.getElementById("box_projection_input");
+	const container = document.getElementById('box_projection_input');
 	const dialog = container.querySelector('.modal-dialog');
 
 	let content = d3.select(container)
@@ -163,6 +135,7 @@ const createBoxProj4 = function(){
 		if(rv){
 			_app.last_projection = proj_str;
 			addLastProjectionSelect('def_proj4');
+			current_proj_name = 'def_proj4';
 		} else {
 			swal({title: "Oops...",
 					 text: i18next.t('app_page.proj4_box.error', {detail: ''}),
