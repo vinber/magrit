@@ -14,16 +14,16 @@ Most users should go on :
 
 ## Instruction for developpers
 
-The only targeted/tested OS is currently GNU/Linux.
+The only targeted/tested OS for developpement is currently GNU/Linux. However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX).
 
 Magrit uses JS (particularly the D3 library) in the browser for interface and map rendering.
 Some geoprocessing tasks are delegated to the server part: a python 3.5+ application.
 
 Magrit can be served or build by various means:
 
-- [Installing for developpement](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-1---installing-for-developpement-with-no-virtual-environnement-)
-- [Installing for developpement (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-2---installing-for-developpement)
-- [Deploying with Docker](https://github.com/riatelab/magrit/wiki/Instruction-for-developers#example-3---deploying-the-application-thanks-to-docker)
+- [Installing for developpement](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Installing for developpement (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Deploying with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
 
 
 ## Examples :
