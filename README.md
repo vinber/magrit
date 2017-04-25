@@ -1,6 +1,6 @@
 [![png](magrit_app/static/img/magrit_banner.png)](http://magrit.cnrs.fr)    
 
-[![Build Status](https://travis-ci.org/mthh/magrit.svg?branch=master)](https://travis-ci.org/mthh/magrit)  
+[![Build Status](https://travis-ci.org/riatelab/magrit.svg?branch=master)](https://travis-ci.org/riatelab/magrit)  
 
 [Magrit](http://magrit.cnrs.fr) is an online mapping application developped by [UMS RIATE](http://www.riate.cnrs.fr).  
 
