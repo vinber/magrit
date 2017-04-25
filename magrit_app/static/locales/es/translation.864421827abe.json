@@ -1,4 +1,4 @@
-﻿{
+{
     "app_page": {
         "common": {
             "loading_results": "Cargando resultados...",
@@ -10,6 +10,7 @@
             "alert_upload_shp": "Se requiere el conjunto de archivos que permiten la lectura de un shapefile (.shp, .dbf, .shx, .prj).",
             "alert_upload_invalid": "Fuente de datos inválida (no se detectó ningún archivo de tipo GeoJSON/TopoJSON/zip/Shapefile/KML/GML).",
             "layer_success": "¡Capa correctamente cargada!",
+            "layer_success_and_proj": "¡Resultado añadido al mapa! ¿Desea utilizar las informaciones de proyección contenidas en el archivo?",
             "ask_replace_dataset": "Un conjunto de datos ya fue proporcionado. ¿Desea remplazarlo?",
             "error_message": "Se produjo un error, la operación en curso fue detenida.",
             "error_discretization": "Un error se produjo en la discretización (intente con {{arg}} número de clases u otro método)",
@@ -20,12 +21,14 @@
             "error_existing_north_arrow": "Sólo puede agregarse una flecha del Norte. ¿Desea remplazar la existe por una nueva?",
             "error_max_arrows": "El número límite de flechas fue alcanzado. Esta función permite crear únicamente 30 flechas.",
             "error_max_text_annot": "El número límite de etiquetas fue alcanzado.",
+            "error_max_ellipses": "El número límite de elipses fue alcanzado. Esta función permite crear únicamente 30 elipses.",
+            "error_max_rectangles": "El número límite de recuadros fue alcanzado. Esta función permite crear únicamente 30 recuadros.",
             "error_no_title": "Ausencia de título",
             "error_no_visible": "¡Error: ninguna capa visible fue encontrada!",
             "error_proj4_string": "Error: la proyección no fue reconocida.",
-            "error_type_fields": "La capa objetivo no parece contener los campos apropiados para ese tipo de representación (o tienen demasiados valores nulos).",
-            "error_too_many_features": "El número de entidades es demasiado grande para este tipo de representación. Esto podría alentar considerablemente la navegación.",
-            "error_too_many_features_color": "El número de entidades es demasiado grande para este tipo de representación. Esto podría afectar la lectura del mapa.",
+            "error_type_fields": "La capa objetivo no parece contener los campos apropiados para ese tipo de mapa (o tienen demasiados valores nulos).",
+            "error_too_many_features": "El número de entidades es demasiado grande para este tipo de mapa. Esto podría alentar considerablemente la navegación.",
+            "error_too_many_features_color": "El número de entidades es demasiado grande para este tipo de mapa. Esto podría afectar la lectura del mapa.",
             "error_too_low_resolution": "La resolución requerida es demasiado baja.",
             "error_too_high_resolution": "La resolución requerida es demasiado grande.",
             "error_values_order": "Los valores deben estar ordenados (de mínimo a máximo)",
@@ -45,7 +48,7 @@
             "delete": "Eliminar",
             "deleted": "Eliminada",
             "done": "¡Finalizado!",
-            "ok": "De acuerdo",
+            "ok": "Aceptar",
             "valid": "Confirmar",
             "close": "Cerrar",
             "edit_style": "Cambiar el estilo...",
@@ -65,6 +68,7 @@
             "S5": "S5",
             "arithmetic_progression": "Progresión aritmética",
             "jenks": "Jenks",
+            "stddev_f": "Desviación estándar",
             "geometric_progression": "Progresión geométrica",
             "user_defined": "Definido por el usuario",
             "up_element": "Subir",
@@ -74,7 +78,7 @@
             "larger": "más grande",
             "expected_class": "Formato esperado: 0 - 10 - 50 - 1500 - 10000",
             "details": "Detalles",
-            "representation": "Representación",
+            "representation": "Tipo de mapa",
             "ask_confirm": "¿Confirmar?",
             "layer_type_selection": "Seleccionar tipo de elemento",
             "target_l": "Capa base",
@@ -90,6 +94,16 @@
             "class": "{{count}} clase",
             "class_plural": "{{count}} clases"
         },
+        "notification":{
+          "instruction_click_map": "Seleccionar una parte del mapa para agregar el objeto",
+          "instruction_click_map_arrow1": "Seleccionar en el mapa el punto de partida de la flecha",
+          "instruction_click_map_arrow2": "Seleccionar en el mapa el punto de llegada de la flecha",
+          "instruction_modify_feature": "Utilizar los nodos rojos para editar el objecto.<br>Salir de la edición con un doble clic.",
+          "success_graticule_added": "¡La cuadrícula fue correctamente agregada!",
+          "success_sphere_added": "¡La esfera fue correctamente agregada!",
+          "warning_deactivation_prop_symbol_legend": "Los símbolos proporcionales de la leyenda fueron desactivados.",
+          "warning_deactivation_scalebar": "Escala gráfica desactivada"
+        },
         "section1": {
             "title": "Importar datos",
             "add_geom": "Agregar una capa base",
@@ -97,10 +111,10 @@
             "add_sample_data": "Seleccionar una capa base de ejemplo (con datos incluidos)"
         },
         "section2": {
-            "title": "Escoger tipo de representación"
+            "title": "Escoger tipo de mapa"
         },
         "section2_": {
-            "title_no_choice": "Ninguna representación seleccionada"
+            "title_no_choice": "Ningún tipo de mapa seleccionado"
         },
         "section3": {
             "title": "Gestión de las capas"
@@ -121,7 +135,8 @@
             "resize_fit": "Ajustar el mapa al tamaño de la pantalla",
             "background_color": "Color de fondo",
             "canvas_rotation": "Rotación del mapa",
-            "layout_features": "<b>Agregar elementos de diseño:</b>"
+            "layout_features": "<b>Agregar elementos de diseño:</b>",
+            "autoalign_features": "Alinear los elementos (experimental)"
         },
         "section5b": {
             "title": "Exportar el mapa",
@@ -156,7 +171,8 @@
             "projection_center_phi": "Centro de la proyección (rotación del eje φ)",
             "projection_center_gamma": "Centro de la proyección (rotación del eje γ)",
             "parallels": "Paralelos de referencia",
-            "reset": "Restaurar parámetros"
+            "reset": "Restaurar parámetros",
+            "parallel": "Paralelo de referencia"
         },
         "projection_name":{
             "Armadillo": "Armadillo",
@@ -193,7 +209,38 @@
             "InterruptedSinuMollweide": "Sinu-Mollweide interrumpida",
             "Sinusoidal": "Sinusoidal",
             "InterruptedSinusoidal": "Sinusoidal interrumpida",
-            "TransverseMercator": "Transversal de Mercator"
+            "TransverseMercator": "Transversal de Mercator",
+            "Albers": "Albers",
+            "AzimuthalEqualAreaEurope": "Azimutal equivalente de Lambert (Europa)",
+            "Berhmann": "Berhmann",
+            "ConicConformalFrance": "Cónica conforme (Lambert 93 - Francia)",
+            "ConicConformalSec": "Cónica conforme de Lambert (secante)",
+            "ConicConformalTangent": "Cónica conforme de Lambert (tangente)",
+            "ConicEquidistantDeslisle": "Cónica equidistante de Deslisle",
+            "ConicEquidistantTangent": "Cónica equidistante (tangente)",
+            "CylindricalEqualArea": "Cilíndrica equivalente",
+            "CylindricalStereographic": "Cilíndrica estereográfica",
+            "Equirectangular": "Equirectangular",
+            "GallPeters": "Gall-Peters",
+            "GallStereographic": "Gall estereográfica",
+            "Gilbert": "Gilbert",
+            "GringortenQuincuncial": "Gringorten Quincuncial",
+            "Hatano": "Hatano asimétrica",
+            "HoboDyer": "Hobo-Dyer",
+            "Miller": "Miller",
+            "MillerOblatedStereographic": "Estereográfica de Miller (achatada en los polos)",
+            "Mollweide": "Mollweide",
+            "NaturalEarth2": "Natural Earth II",
+            "Patterson": "Patterson",
+            "Polyconic": "Policónica",
+            "SinuMollweide": "Sinu-Mollweide",
+            "Stereographic": "Estereográfica",
+            "Werner": "Werner",
+            "Winkel1": "Winkel I",
+            "WinkelTriple": "Winkel Tripel",
+            "def_proj4": "Proyección definida por el usuario {{value}}",
+            "more": "Más opciones...",
+            "proj4": "Escribir un parámetros de tipo EPSG/Proj.4..."
         },
         "stat_summary": {
             "population": "Población",
@@ -207,8 +254,8 @@
             "mini_summary" : "Mínimo: {{min}} | Máximo: {{max}}<br>Promedio: {{mean}} | Mediana: {{median}}<br>Desviación estándar: {{stddev}}"
         },
         "tooltips": {
-            "section1": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML en esta zona o bien agregue manualmente una capa seleccionado el botón",
-            "section3": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML de diseño en esta zona o bien agregue manualmente una capa seleccionado el botón",
+            "section1": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML en esta zona o bien agregue manualmente una capa seleccionando una opción",
+            "section3": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML de diseño en esta zona o bien agregue manualmente una capa seleccionando una opción",
             "section3_add_layout": "Agregar una capa de diseño",
             "section3_add_layout_sample": "Agregar une ejemplo de capa base de diseño",
             "load_project_file": "Cargar un proyecto",
@@ -220,7 +267,7 @@
             "smooth": "Generar un mapa de potenciales (modelo de Stewart)",
             "prop": "Generar un mapa de valores absolutos",
             "choroprop": "Generar un mapa de valores absolutos y relativos",
-            "proptypo": "Generar un mapa de valores absolutos y elementos cualitativos",
+            "proptypo": "Generar un mapa de valores absolutos y cualitativos",
             "choro": "Generar un mapa de valores relativos",
             "cartogram": "Generar un mapa anamórfico",
             "grid": "Generar una cuadrícula de densidades",
@@ -230,17 +277,42 @@
             "typosymbol": "Generar un mapa cualitativo con pictogramas"
         },
         "func_title" : {
-            "smooth": "Mapa de potenciales (modelo de Stewart)",
-            "prop": "Mapa de valores absolutos",
-            "choroprop": "Mapa de valores absolutos y relativos",
-            "proptypo": "Mapa de valores absolutos y elementos cualitativos",
-            "choro": "Mapa de valores relativos",
-            "cartogram": "Mapa anamórfico",
+            "smooth": "Potenciales (modelo de Stewart)",
+            "prop": "Valores absolutos",
+            "choroprop": "Valores absolutos y relativos",
+            "proptypo": "Valores absolutos y cualitativos",
+            "choro": "Valores relativos",
+            "cartogram": "Anamórfico",
             "grid": "Cuadrícula de densidades",
-            "flow": "Mapa de relaciones",
-            "discont": "Mapa de discontinuidades",
-            "typo": "Mapa cualitativo",
-            "typosymbol": "Mapa cualitativo con pictogramas"
+            "flow": "Relaciones",
+            "discont": "Discontinuidades",
+            "typo": "Cualitativo",
+            "typosymbol": "Cualitativo con pictogramas"
+        },
+        "projection_box": {
+            "any": "Ningún filtro",
+            "aphylactic": "Afiláctica",
+            "choice_projection": "Seleccionar una proyección",
+            "cone": "Cónica",
+            "conformal": "Conforme",
+            "cylindrical": "Cilíndrica",
+            "equalarea": "Equivalente",
+            "equidistant": "Equidistante",
+            "filter_nature": "Tipo de proyección",
+            "filter_prop": "Propiedades de la proyección",
+            "no_result_projection": "<i>(No hay coincidencias)</i>",
+            "ok_reproject": "¡Reproyectar!",
+            "other": "Otra",
+            "plan": "Plana",
+            "projection_options": "Opciones de la proyección",
+            "pseudocone": "Pseudocónica",
+            "pseudocylindre": "Pseudocilíndrica",
+            "pseudoplan": "Pseudoplana"
+        },
+        "proj4_box":{
+            "title": "",
+            "enter_string": "Definir los parámetros de proyección en formato proj4 o WKT",
+            "error": "Parámetros inválidos. (Detalles: {{detail}})"
         },
         "layout_features_box": {
             "title": "Elementos de diseño",
@@ -253,7 +325,8 @@
             "arrow": "Flecha",
             "symbol": "Agregar un símbolo",
             "ellipse": "Elipse",
-            "free_draw": "Dibujo libre"
+            "free_draw": "Dibujo libre",
+            "rectangle": "Recuadro"
         },
         "layout_layer_box": {
             "title": "Capas de diseño",
@@ -277,7 +350,10 @@
             "nuts2_data": "Nuts 2 (2013) con datos <i>(Polígonos)</i>",
             "brazil": "Estados de Brasil",
             "world_countries": "Países del mundo <i>(Polígonos)</i>",
-            "us_states": "Estados Unidos <i>(Polígonos)</i>"
+            "us_states": "Estados Unidos <i>(Polígonos)</i>",
+            "back_sample": "Regresar al conjunto de dato anterior",
+            "extra_basemaps_info": "Estas capas contienen, para cada país, la división político-administrativa de primer nivel así como datos de población, densidad y tasa de crecimiento. Las capas provienen del sitio <a id=\"link1\">Natural Earth Data</a> y el resto de los metadatos están disponibles en la <a id=\"link2\">página del proyecto</a>.",
+            "more_basemaps": "Más capas geográficas..."
         },
         "export_box": {
             "geo": "Exportar en un formato compatible para los SIG",
@@ -332,6 +408,13 @@
                 "constant_value": "Valor constante..."
             }
         },
+        "box_choice_symbol": {
+            "title": "Seleccione una figura",
+            "select_symbol": "Seleccione un símbolo...",
+            "upload_symbol": "O agregue su propio símbolo o imagen ",
+            "browse": "Explorar...",
+            "selected_symbol": "Símbolo seleccionado:"
+        },
         "legend_style_box": {
             "title": "Estilo de la capa - {{layer_name}}",
             "subtitle": "Personalizar la leyenda",
@@ -343,7 +426,12 @@
             "no_data": "Categoría de elementos sin datos",
             "additionnal_notes": "Anotaciones adicionales<br>",
             "under_rectangle": "Enmarcar la leyenda",
-            "info_tooltip_line_break": "Para hacer un salto de línea insertar el símbolo <i> \\n </i>"
+            "info_tooltip_line_break": "Para hacer un salto de línea insertar el símbolo <i> \\n </i>",
+            "choice_break_symbol": "Personalizar el valor de los símbolos..."
+        },
+        "legend_symbol_values_box": {
+            "reset": "Remise à zéro des valeurs",
+            "title": "Ajustar el valor de los símbolos"
         },
         "help_box": {
             "title": "Más información",
@@ -360,6 +448,13 @@
             "title": "Opciones de la flecha de orientación",
             "size": "Tamaño ",
             "rotation": "Rotación "
+        },
+        "rectangle_edit_box":{
+            "title": "Opciones del recuadro",
+            "stroke_width": "Ancho de borde",
+            "stroke_color": "Color del borde",
+            "fill_color": "Color de relleno",
+            "fill_opacity": "Opacidad del relleno"
         },
         "scale_bar_edit_box": {
             "title": "Opciones de la escala gráfica",
@@ -433,7 +528,7 @@
             "labels_default_color": "Color por defecto de las etiquetas",
             "labels_default_font": "Fuente utilizada por defecto",
             "single_color": "Color único",
-            "categorical_color": "Color de acuerdo a un campo de categorías",
+            "categorical_color": "Color de acuerdo con un campo de categorías",
             "random_color": "Color aleatorio para cada entidad",
             "field_to_render": "Escoger campo ",
             "choose_colors": "Modificar los colores",
@@ -453,7 +548,7 @@
             "width": "Grosor (px)<br>",
             "border_width": "Grosor del contorno (px)<br>",
             "field_symbol_color": "Campo utilizado para los <strong>colores de los símbolos</strong> : <i>{{ field }}</i><br>",
-            "color_break": "Color de acuerdo a un valor límite",
+            "color_break": "Color de acuerdo con un valor límite",
             "break_value": "<br>Valor límite ",
             "field_symbol_size": "Campo utilizado para los <strong>valores proporcionales</strong> : <i>{{ field }}</i><br><br>",
             "symbol_fixed_size": "Tamaño fijo del símbolo ",
@@ -462,7 +557,8 @@
             "graticule_steps": "Distancia angular entre las líneas<br>",
             "graticule_dasharray": "Tamaño de los guiones<br>",
             "generate_labels": "Generar etiquetas para esta capa...",
-            "field_label": "Seleccionar campo"
+            "field_label": "Seleccionar campo",
+            "graticule_clip": "Usar los límites de la capa de referencia para la cuadrícula"
         },
         "lm_buttons":{
             "zoom+": "Acercar",
@@ -601,7 +697,12 @@
         "colored_central_class": "colorear clase central",
         "color_palette": "Rampa de colores ",
         "break_on": "Ruptura de color en la clase... ",
-        "switch_ref_histo": "Otro modo de representación"
+        "switch_ref_histo": "Otro tipo de mapa",
+        "stddev_break_mean": "al límite del intervalo",
+        "stddev_center_mean": "al centro del intervalo",
+        "stddev_role_mean": "Posición de la media:",
+        "stddev_share_txt1": "Amplitud:",
+        "stddev_share_txt2": "desviaciones estándar"
     },
     "index":{
         "title": "Magrit - Cartografía temática",

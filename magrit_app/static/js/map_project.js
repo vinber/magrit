@@ -208,6 +208,7 @@ function get_map_template() {
           layer_style_i.fill_opacity = selection.style("fill-opacity");
           layer_style_i.fill_color = current_layer_prop.fill_color;
           layer_style_i.topo_geom = String(current_layer_prop.key_name);
+          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
       } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line"){
           let type_symbol = current_layer_prop.symbol;
           selection = map.select("#" + layer_id).selectAll(type_symbol);
@@ -219,6 +220,7 @@ function get_map_template() {
           layer_style_i.renderer = current_layer_prop.renderer;
           layer_style_i.size = current_layer_prop.size;
           layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
           layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
           layer_style_i.geo_pt = {
             type: "FeatureCollection",
@@ -261,6 +263,7 @@ function get_map_template() {
           layer_style_i.renderer = current_layer_prop.renderer;
           layer_style_i.topo_geom = String(current_layer_prop.key_name);
           layer_style_i.fill_color = current_layer_prop.fill_color;
+          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
           layer_style_i.rendered_field = current_layer_prop.rendered_field;
           layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
           let color_by_id = [], params = current_layer_prop.type == "Line" ? "stroke" : "fill";
@@ -651,12 +654,14 @@ function apply_user_preferences(json_pref){
                     current_layer_prop.options_disc = _layer.options_disc;
                 if(_layer.fill_color)
                     current_layer_prop.fill_color = _layer.fill_color;
+                if(_layer.stroke_color)
+                    layer_selec.selectAll('path').style('stroke', _layer.stroke_color)
                 if(_layer.renderer){
                     if(_layer.renderer == "Choropleth"
                             || _layer.renderer == "Stewart"
                             || _layer.renderer == "Gridded"){
                         layer_selec.selectAll("path")
-                            .style(current_layer_prop.type != "Line" ? "fill" : "stroke", (d,j) => _layer.color_by_id[j])
+                            .style(current_layer_prop.type === "Line" ? "stroke" : "fill", (d,j) => _layer.color_by_id[j])
                     } else if (_layer.renderer == "Links"){
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
@@ -757,9 +762,10 @@ function apply_user_preferences(json_pref){
 
               if(_layer.symbol == 'line')
                   make_prop_line(rendering_params, geojson_layer);
-              else
+              else {
                   make_prop_symbols(rendering_params, geojson_layer);
-
+                  if(_layer.stroke_color) map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).style('stroke', _layer.stroke_color)
+              }
               if(_layer.renderer == "PropSymbolsTypo"){
                   current_layers[layer_name].color_map = new Map(_layer.color_map);
               }

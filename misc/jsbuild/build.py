@@ -42,7 +42,19 @@ def build_js_file(use_minified, _id):
         os.remove(f_path)
 
     with open('app.{}.js'.format(_id), 'wb') as f:
-        f.write(r[0])
+        f.write(r[0].decode().replace('''/translation.json''', '''/translation.{}.json'''.format(_id)).encode())
+
+    try:
+        prev_id = os.listdir('../locales/en/')[0][12:].replace('.json', '')
+        os.remove('../locales/en/translation.{}.json'.format(prev_id))
+        os.remove('../locales/es/translation.{}.json'.format(prev_id))
+        os.remove('../locales/fr/translation.{}.json'.format(prev_id))
+    except Exception as err:
+        pass
+
+    copy('../locales/en/translation.json', '../locales/en/translation.{}.json'.format(_id))
+    copy('../locales/es/translation.json', '../locales/es/translation.{}.json'.format(_id))
+    copy('../locales/fr/translation.json', '../locales/fr/translation.{}.json'.format(_id))
 
     p = Popen(['uglifyjs',
            'app.{}.js'.format(_id),

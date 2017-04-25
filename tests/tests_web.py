@@ -399,7 +399,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         time.sleep(2)
 
         rotate_params = driver.execute_script('''return proj.rotate();''');
-        self.assertEquals(rotate_params, [-10, -52, 0])
+        self.assertEqual(rotate_params, [-10, -52, 0])
 
         # Change for an other projection with "preselections":
         Select(driver.find_element_by_id("form_projection2")
@@ -409,7 +409,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Value for parallels have been changed :
         parallels = driver.execute_script(
             '''return proj.parallels();''');
-        self.assertEquals(parallels, [44, 49])
+        self.assertEqual(parallels, [44, 49])
 
     def test_reload_project_localStorage(self):
         driver = self.driver
@@ -532,7 +532,7 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).select_by_value("KML")
         driver.find_element_by_id("export_button_section5b").click()
 
-        time.sleep(2)
+        time.sleep(3)
         with open(self.tmp_folder + "nuts2-2013-data.kml", "r") as f:
             raw_kml_file = f.read()
         self.assertIn("<kml xmlns=", raw_kml_file)
