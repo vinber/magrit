@@ -1083,7 +1083,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.dd401d93eb7e.json'
+            loadPath: 'static/locales/{{lng}}/translation.6549849a8e06.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -7105,9 +7105,13 @@ var render_label = function render_label(layer, rendering_params, options) {
     var new_layer_data = [];
     var layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0 ? check_layer_name(rendering_params.uo_layer_name) : check_layer_name("Labels_" + layer);
     var layer_id = encodeId(layer_to_add);
+    var pt_position = void 0;
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
     var nb_ft = void 0;
+    if (options && options.current_position) {
+        pt_position = options.current_position;
+    }
     if (options && options.data) {
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
@@ -7151,24 +7155,46 @@ var render_label = function render_label(layer, rendering_params, options) {
             } }];
     };
 
-    map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer no_clip" }).selectAll("text").data(new_layer_data).enter().insert("text").attrs(function (d, i) {
-        var pt = path.centroid(d.geometry);
-        return {
-            "id": "Feature_" + i,
-            "x": pt[0],
-            "y": pt[1],
-            "alignment-baseline": "middle",
-            "text-anchor": "middle"
-        };
-    }).styles({ "font-size": font_size, "font-family": selected_font, fill: txt_color }).text(function (d) {
-        return d.properties.label;
-    }).on("mouseover", function () {
+    var selection = map.insert("g", '.legend').attrs({ id: layer_id, class: "layer result_layer no_clip" }).selectAll("text").data(new_layer_data).enter().insert("text");
+    if (pt_position) {
+        selection.attrs(function (d, i) {
+            return {
+                "id": "Feature_" + i,
+                "x": pt_position[i][0],
+                "y": pt_position[i][1],
+                "alignment-baseline": "middle",
+                "text-anchor": "middle"
+            };
+        }).styles(function (d, i) {
+            return {
+                display: pt_position[i][2], 'font-size': pt_position[i][3], 'font-family': pt_position[i][4], fill: pt_position[i][5]
+            };
+        }).text(function (_, i) {
+            return pt_position[i][6];
+        });
+    } else {
+        selection.attrs(function (d, i) {
+            var pt = path.centroid(d.geometry);
+            return {
+                "id": "Feature_" + i,
+                "x": pt[0],
+                "y": pt[1],
+                "alignment-baseline": "middle",
+                "text-anchor": "middle"
+            };
+        }).styles({ "font-size": font_size, "font-family": selected_font, fill: txt_color }).text(function (d) {
+            return d.properties.label;
+        });
+    }
+
+    selection.on("mouseover", function () {
         this.style.cursor = "pointer";
     }).on("mouseout", function () {
         this.style.cursor = "initial";
     }).on("dblclick contextmenu", function () {
         context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-    }).call(drag_elem_geo);
+    }).call(drag_elem_geo);;
+
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
     current_layers[layer_to_add] = {
         "n_features": new_layer_data.length,
@@ -11842,6 +11868,9 @@ function make_style_box_indiv_label(label_node) {
             label_node.style.fill = current_options.color;
             label_node.style.fontFamily = current_options.font;
         }
+        // else {
+        //     label_node.__data__.properties.label = label_node.textContent;
+        // }
     });
     var box_content = d3.select(".styleTextAnnotation").select(".modal-content").style("width", "300px").select(".modal-body").insert('div');
     var a = box_content.append("p").attr('class', 'line_elem');
@@ -15055,7 +15084,7 @@ function get_map_template() {
             for (var j = _selec.length - 1; j > -1; j--) {
                 var _s = _selec[j];
                 _features2.push(_s.__data__);
-                current_position.push([_s.getAttribute('y'), _s.getAttribute('y'), _s.style.display]);
+                current_position.push([+_s.getAttribute('x'), +_s.getAttribute('y'), _s.style.display, _s.style.fontSize, _s.style.fontFamily, _s.style.fill, _s.textContent]);
             }
             layer_style_i.data_labels = _features2;
             layer_style_i.current_position = current_position;
@@ -15518,7 +15547,17 @@ function apply_user_preferences(json_pref) {
                     ref_font_size: _layer.default_size,
                     font: _layer.default_font
                 };
-                render_label(null, _rendering_params, { data: _layer.data_labels });
+                render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
+                // let features = svg_map.querySelector('#' + _app.layer_to_id.get(layer_name)).getElementsByTagName('text');
+                // console.log(features); console.log(_layer.current_position);
+                // for(let i = 0; i < features.length; i++){
+                //     features[i].setAttribute("x", _layer.current_position[i][0]);
+                //     features[i].setAttribute("y", _layer.current_position[i][1]);
+                //     features[i].style.display = _layer.current_position[i][2];
+                //     features[i].style.fontSize = _layer.current_position[i][3];
+                //     features[i].style.fontFamily = _layer.current_position[i][4];
+                //     features[i].style.fill = _layer.current_position[i][5];
+                // }
             } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")) {
                 var symbols_map = new Map(_layer.symbols_map);
                 var new_layer_data = {
@@ -16050,6 +16089,10 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 								display_select_proj.append('option').attrs({ class: 'i18n', value: 'no_result' }).html(i18next.t('app_page.projection_box.no_result_projection'));
 						}
 				}
+				display_select_proj.on('dblclick', function () {
+						if (this.value === 'no_result') return;
+						reproj(this.value);
+				});
 		};
 		function onClickFilter() {
 				var filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), function (f) {
@@ -16089,6 +16132,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 						parallel_section.style('display', 'none');
 				}
 		};
+
+		function reproj(value) {
+				current_proj_name = value;
+				addLastProjectionSelect(current_proj_name);
+				change_projection(current_proj_name);
+				updateProjOptions();
+		};
+
 		var prev_projection = current_proj_name,
 		    prev_translate = [].concat(t),
 		    prev_scale = s,
@@ -16143,10 +16194,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 		.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' }).html(i18next.t('app_page.projection_box.ok_reproject')).on('click', function () {
 				var value = document.getElementById('select_proj').value;
 				if (value == "no_result") return;
-				current_proj_name = value;
-				addLastProjectionSelect(current_proj_name);
-				change_projection(current_proj_name);
-				updateProjOptions();
+				reproj(value);
 		});
 
 		var choice_options = content.append("button").attrs({ "class": "accordion_proj", "id": "btn_choice_proj" }).style("padding", "0 6px").html(i18next.t("app_page.projection_box.projection_options")),

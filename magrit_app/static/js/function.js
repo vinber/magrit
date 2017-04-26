@@ -3280,9 +3280,13 @@ var render_label = function(layer, rendering_params, options){
                     ? check_layer_name(rendering_params.uo_layer_name)
                     : check_layer_name("Labels_" + layer);
     let layer_id = encodeId(layer_to_add);
+    let pt_position;
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
     let nb_ft;
+    if(options && options.current_position){
+      pt_position = options.current_position;
+    }
     if(options && options.data){
         new_layer_data = options.data;
         nb_ft = new_layer_data.length;
@@ -3323,30 +3327,49 @@ var render_label = function(layer, rendering_params, options){
             {"name": i18next.t("app_page.common.delete"), "action": () => { self_parent.style.display = "none"; }}
         ];
 
-    map.insert("g", '.legend')
-        .attrs({id: layer_id, class: "layer result_layer no_clip"})
-        .selectAll("text")
-        .data(new_layer_data).enter()
-        .insert("text")
-        .attrs( (d,i) => {
-          let pt = path.centroid(d.geometry);
-          return {
-            "id": "Feature_" + i,
-            "x": pt[0],
-            "y": pt[1],
-            "alignment-baseline": "middle",
-            "text-anchor": "middle"
+    let selection = map.insert("g", '.legend')
+            .attrs({id: layer_id, class: "layer result_layer no_clip"})
+            .selectAll("text")
+            .data(new_layer_data).enter()
+            .insert("text");
+    if(pt_position){
+      selection
+          .attrs((d,i) => (
+            {
+              "id": "Feature_" + i,
+              "x": pt_position[i][0],
+              "y": pt_position[i][1],
+              "alignment-baseline": "middle",
+              "text-anchor": "middle"
+            }))
+        .styles((d,i) => ({
+            display: pt_position[i][2], 'font-size': pt_position[i][3], 'font-family': pt_position[i][4], fill: pt_position[i][5]
+        }))
+        .text((_,i) => pt_position[i][6]);
+    } else {
+      selection
+          .attrs((d,i) => {
+            let pt = path.centroid(d.geometry);
+            return {
+              "id": "Feature_" + i,
+              "x": pt[0],
+              "y": pt[1],
+              "alignment-baseline": "middle",
+              "text-anchor": "middle"
             };
         })
         .styles({"font-size": font_size, "font-family": selected_font, fill: txt_color})
-        .text(d => d.properties.label)
-        .on("mouseover", function(){ this.style.cursor = "pointer";})
+        .text(d => d.properties.label);
+    }
+
+    selection.on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){
             context_menu.showMenu(d3.event,
                                   document.querySelector("body"),
-                                  getItems(this)); })
-        .call(drag_elem_geo);
+                                  getItems(this));
+        }).call(drag_elem_geo);;
+
     create_li_layer_elem(layer_to_add, nb_ft, ["Point", "label"], "result");
     current_layers[layer_to_add] = {
         "n_features": new_layer_data.length,

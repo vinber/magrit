@@ -331,7 +331,7 @@ function get_map_template() {
           for(let j = selec.length - 1;  j > -1; j--) {
               let s = selec[j];
               features.push(s.__data__);
-              current_position.push([s.getAttribute('y'), s.getAttribute('y'), s.style.display]);
+              current_position.push([+s.getAttribute('x'), +s.getAttribute('y'), s.style.display, s.style.fontSize, s.style.fontFamily, s.style.fill, s.textContent]);
           }
           layer_style_i.data_labels = features;
           layer_style_i.current_position = current_position
@@ -807,7 +807,7 @@ function apply_user_preferences(json_pref){
                   ref_font_size: _layer.default_size,
                   font: _layer.default_font
               };
-              render_label(null, rendering_params, {data: _layer.data_labels});
+              render_label(null, rendering_params, {data: _layer.data_labels, current_position: _layer.current_position});
           } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")){
               let symbols_map = new Map(_layer.symbols_map);
               let new_layer_data = {

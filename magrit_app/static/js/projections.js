@@ -220,6 +220,11 @@ const createBoxCustomProjection = function createBoxCustomProjection(){
 						.html(i18next.t('app_page.projection_box.no_result_projection'));
 			}
 		}
+		display_select_proj.on('dblclick', function(){
+			if (this.value === 'no_result') return;
+			reproj(this.value);
+		});
+
 	};
 	function onClickFilter(){
 		let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
@@ -255,6 +260,14 @@ const createBoxCustomProjection = function createBoxCustomProjection(){
 			parallel_section.style('display', 'none');
 		}
 	};
+
+	function reproj(value) {
+		current_proj_name = value;
+		addLastProjectionSelect(current_proj_name);
+		change_projection(current_proj_name);
+		updateProjOptions();
+	};
+
 	let prev_projection = current_proj_name,
 			prev_translate = [].concat(t),
 			prev_scale = s,
@@ -339,10 +352,7 @@ const createBoxCustomProjection = function createBoxCustomProjection(){
 			.on('click', function(){
 					let value = document.getElementById('select_proj').value;
 					if(value == "no_result") return;
-					current_proj_name = value;
-					addLastProjectionSelect(current_proj_name);
-					change_projection(current_proj_name);
-					updateProjOptions();
+					reproj(value);
 			});
 
 	var choice_options = content.append("button")

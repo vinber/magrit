@@ -1734,6 +1734,9 @@ function make_style_box_indiv_label(label_node){
                 label_node.style.fill = current_options.color;
                 label_node.style.fontFamily = current_options.font;
             }
+            // else {
+            //     label_node.__data__.properties.label = label_node.textContent;
+            // }
         });
     var box_content = d3.select(".styleTextAnnotation")
                     .select(".modal-content").style("width", "300px")
