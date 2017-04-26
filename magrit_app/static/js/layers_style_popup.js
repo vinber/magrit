@@ -543,8 +543,6 @@ function createStyleBox_Line(layer_name){
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
-    var lgd_to_change;
-
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
 
@@ -572,7 +570,6 @@ function createStyleBox_Line(layer_name){
             selec[i].style.strokeWidth = prop_values[i];
         }
     }
-
 
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
@@ -655,7 +652,7 @@ function createStyleBox_Line(layer_name){
                                  .style("stroke-opacity", border_opacity);
                     else if(fill_meth == "random")
                         selection.style("stroke-opacity", border_opacity)
-                                 .style("stroke", () => Colors.name[Colors.random()]);
+                                 .style("stroke", () => Colors.names[Colors.random()]);
                     else if(fill_meth == "class" && renderer == "Links")
                         selection.style('stroke-opacity', (d,i) => current_layers[layer_name].linksbyId[i][0])
                                  .style("stroke", stroke_prev);
@@ -690,11 +687,10 @@ function createStyleBox_Line(layer_name){
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
-                                    renderer:"Categorical", rendered_field: color_field
+                                    renderer:"Categorical", rendered_field: color_field, field: color_field
                                 };
                             selection.transition()
                                 .style('stroke', (d,i) => rendering_params.colorsByFeature[i]);
-                            lgd_to_change = true;
                         }
                     });
             });
@@ -737,7 +733,6 @@ function createStyleBox_Line(layer_name){
             .attrs({type: "color", value: stroke_prev})
             .style("float", "right")
             .on('change', function(){
-                lgd_to_change = true;
                 selection.style("stroke", this.value);
                 current_layers[layer_name].fill_color = { single: this.value };
                 // current_layers[layer_name].fill_color.single = this.value;
@@ -757,7 +752,6 @@ function createStyleBox_Line(layer_name){
             .attrs({type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display})
             .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right",  "margin-right": "0px"})
             .on("change", function(){
-                lgd_to_change = true;
                 let val = +this.value;
                 popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
                 selection.style("display", d => (+d.properties.fij > val) ? null : "none");
@@ -783,8 +777,6 @@ function createStyleBox_Line(layer_name){
                                 let serie = result[0],
                                     sizes = result[1].map(ft => ft[1]),
                                     links_byId = current_layers[layer_name].linksbyId;
-
-                                lgd_to_change = true;
                                 serie.setClassManually(result[2]);
                                 current_layers[layer_name].breaks = result[1];
                                 selection.style('fill-opacity', 0)
@@ -804,7 +796,6 @@ function createStyleBox_Line(layer_name){
             .attrs({type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display})
             .styles({width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px"})
             .on("change", function(){
-                lgd_to_change = true;
                 let val = +this.value;
                 let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
                 popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
@@ -831,7 +822,6 @@ function createStyleBox_Line(layer_name){
                             let serie = result[0],
                                 sizes = result[1].map(ft => ft[1]);
 
-                            lgd_to_change = true;
                             serie.setClassManually(result[2]);
                             current_layers[layer_name].breaks = result[1];
                             current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
@@ -915,8 +905,6 @@ function createStyleBox(layer_name){
         selection = map.select(g_lyr_name).selectAll("path"),
         opacity = selection.style('fill-opacity');
 
-    var lgd_to_change;
-
     var fill_prev = cloneObj(current_layers[layer_name].fill_color),
         prev_col_breaks;
 
@@ -976,7 +964,7 @@ function createStyleBox(layer_name){
                     current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
                 }
 
-                if((lgd_to_change || rendering_params !== undefined) && rendering_params.field !== undefined){
+                if(rendering_params !== undefined && rendering_params.field !== undefined){
                     redraw_legend('default', layer_name, rendering_params.field);
                 }
                 zoom_without_redraw();
@@ -1002,7 +990,7 @@ function createStyleBox(layer_name){
                                .style('stroke-opacity', border_opacity)
                                .style("stroke", stroke_prev);
                     } else if(fill_meth == "random"){
-                        selection.style('fill', function(){return Colors.name[Colors.random()];})
+                        selection.style('fill', function(){return Colors.names[Colors.random()];})
                                  .style('stroke', stroke_prev);
                     } else if(fill_meth == "categorical"){
                         fill_categorical(layer_name, fill_prev.categorical[0], "path", fill_prev.categorical[1])
@@ -1089,11 +1077,10 @@ function createStyleBox(layer_name){
                         if(confirmed){
                             rendering_params = {
                                     nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
-                                    renderer:"Categorical", rendered_field: rendered_field
+                                    renderer:"Categorical", rendered_field: rendered_field, field: rendered_field
                                 };
                             selection.transition()
                                 .style('fill', (d,i) => rendering_params.colorsByFeature[i]);
-                            lgd_to_change = true;
                         }
                     });
             });
@@ -1227,9 +1214,7 @@ function createStyleBox(layer_name){
         .attrs({type: "color", value: stroke_prev})
         .style("float", "right")
         .on('change', function(){
-            lgd_to_change = true;
             selection.style("stroke", this.value);
-            // current_layers[layer_name].fill_color.single = this.value;
         });
 
     let opacity_section = popup.append('p').attr("class", "line_elem");
@@ -1437,19 +1422,21 @@ function createStyleBox_ProbSymbol(layer_name){
     make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
         .then(function(confirmed){
             if(confirmed){
-                if(current_layers[layer_name].size != old_size){
-                    let lgd_prop_symb = document.querySelector(["#legend_root_symbol.lgdf_", layer_name].join(''));
-                    if(lgd_prop_symb){ redraw_legends_symbols(lgd_prop_symb); }
-                    if(type_symbol === "circle") {
-                        selection.each(function(d,i){
-                            d.properties.prop_value = this.getAttribute('r');
-                        });
-                    } else {
-                        selection.each(function(d,i){
-                            d.properties.prop_value = this.getAttribute('height');
-                        });
-                    }
-                }
+                // if(current_layers[layer_name].size != old_size){
+                  let lgd_prop_symb = document.querySelector(["#legend_root_symbol.lgdf_", layer_name].join(''));
+                  if(lgd_prop_symb){ redraw_legends_symbols(lgd_prop_symb); }
+                  if(type_symbol === "circle") {
+                      selection.each(function(d,i){
+                          d.properties.prop_value = this.getAttribute('r');
+                          d.properties.color = rgb2hex(this.style.fill);
+                      });
+                  } else {
+                      selection.each(function(d,i){
+                          d.properties.prop_value = this.getAttribute('height');
+                          d.properties.color = rgb2hex(this.style.fill);
+                      });
+                  }
+                // }
                 if((type_method == "PropSymbolsChoro" || type_method == "PropSymbolsTypo") && rendering_params != undefined){
                     if(type_method == "PropSymbolsChoro"){
                         current_layers[layer_name].fill_color = {"class": [].concat(rendering_params.colorsByFeature) };
@@ -1477,11 +1464,11 @@ function createStyleBox_ProbSymbol(layer_name){
                     // Also change the legend if there is one displayed :
                     redraw_legend('default', layer_name, rendering_params.field);
                 }
-                if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
-                    selection.each((d,i) => {
-                        d.properties.color = rendering_params.colorsByFeature[i];
-                    });
-                }
+                // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
+                //     selection.each((d,i) => {
+                //         d.properties.color = rendering_params.colorsByFeature[i];
+                //     });
+                // }
             } else {
                 selection.style('fill-opacity', opacity);
                 map.select(g_lyr_name).style('stroke-width', stroke_width);
@@ -1499,12 +1486,12 @@ function createStyleBox_ProbSymbol(layer_name){
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "class") {
                     selection.style('fill-opacity', opacity)
-                           .style("fill", function(d, i){ return current_layers[layer_name].fill_color.class[i] })
+                           .style("fill", (d,i) => current_layers[layer_name].fill_color.class[i])
                            .style('stroke-opacity', border_opacity)
                            .style("stroke", stroke_prev);
                     current_layers[layer_name].colors_breaks = prev_col_breaks;
                 } else if(fill_meth == "random"){
-                    selection.style('fill', function(){return Colors.name[Colors.random()];})
+                    selection.style('fill', _ => Colors.names[Colors.random()])
                              .style('stroke-opacity', border_opacity)
                              .style('stroke', stroke_prev);
                 } else if(fill_meth == "categorical"){
@@ -1609,10 +1596,9 @@ function createStyleBox_ProbSymbol(layer_name){
                     if(confirmed){
                         rendering_params = {
                                 nb_class: confirmed[0], color_map :confirmed[1], colorsByFeature: confirmed[2],
-                                renderer:"Categorical", rendered_field: field_color
+                                renderer:"Categorical", rendered_field: field_color, field: field_color
                             }
                         selection.style("fill", (d,i) => rendering_params.colorsByFeature[i]);
-                        lgd_to_change = true;
                     }
                 });
       });

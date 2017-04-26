@@ -240,7 +240,7 @@
             "WinkelTriple": "Winkel Tripel",
             "def_proj4": "Proyección definida por el usuario {{value}}",
             "more": "Más opciones...",
-            "proj4": "Escribir un parámetros de tipo EPSG/Proj.4..."
+            "proj4": "Definir parámetros de tipo WKT/Proj.4..."
         },
         "stat_summary": {
             "population": "Población",
@@ -290,7 +290,7 @@
             "typosymbol": "Cualitativo con pictogramas"
         },
         "projection_box": {
-            "any": "Ningún filtro",
+            "any": "Sin filtro",
             "aphylactic": "Afiláctica",
             "choice_projection": "Seleccionar una proyección",
             "cone": "Cónica",
@@ -301,10 +301,10 @@
             "filter_nature": "Tipo de proyección",
             "filter_prop": "Propiedades de la proyección",
             "no_result_projection": "<i>(No hay coincidencias)</i>",
-            "ok_reproject": "¡Reproyectar!",
+            "ok_reproject": "¡Proyectar!",
             "other": "Otra",
             "plan": "Plana",
-            "projection_options": "Opciones de la proyección",
+            "projection_options": "Parámetros de proyección",
             "pseudocone": "Pseudocónica",
             "pseudocylindre": "Pseudocilíndrica",
             "pseudoplan": "Pseudoplana"

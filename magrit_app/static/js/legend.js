@@ -303,7 +303,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     var rect_under_legend = legend_root.insert("rect");
 
     legend_root.insert('text').attr("id","legendtitle")
-            .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
+            .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
             .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
 
     legend_root.insert('text').attr("id","legendsubtitle")
@@ -385,7 +385,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
             .style("font", "11px 'Enriqueta', arial, serif")
             .text(note_bottom != null ? note_bottom : '');
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
+    // legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
     return legend_root;
 }
@@ -635,7 +635,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = "false", re
 
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
+    // legend_root.select('#legendtitle').text(title || "");
     if(parent == map)
         make_legend_context_menu(legend_root, layer);
     return legend_root;
@@ -807,7 +807,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     var rect_under_legend = legend_root.insert("rect");
 
     legend_root.insert('text').attr("id","legendtitle")
-            .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
+            .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
             .attrs(subtitle != "" ? {x: xpos + boxheight, y: ypos} : {x: xpos + boxheight, y: ypos + 15});
 
     legend_root.insert('text').attr("id","legendsubtitle")
@@ -901,7 +901,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
             .text(note_bottom != null ? note_bottom : '');
     legend_root.call(drag_legend_func(legend_root));
     make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
+    // legend_root.select('#legendtitle').text(title || "");
     make_legend_context_menu(legend_root, layer);
     return legend_root;
 }

@@ -25,7 +25,7 @@ function get_map_template() {
         bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML
       };
       if (type_lgd === 'legend_root') {
-        result['box_gap'] = lgd_node.getAttribute('box_gap');
+        result['boxgap'] = lgd_node.getAttribute('boxgap');
         let no_data = lgd_node.querySelector('#no_data_txt');
         if(no_data) result.no_data_txt = no_data.innerHTML;
       } else if (type_lgd === 'legend_root_symbol') {
@@ -195,6 +195,7 @@ function get_map_template() {
           layer_style_i.topo_geom = JSON.stringify(_target_layer_file);
           layer_style_i.fill_color = current_layer_prop.fill_color;
           layer_style_i.fields_type = current_layer_prop.fields_type;
+          layer_style_i.stroke_color = selection.style("stroke");
       } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
           selection = map.select("#" + layer_name).selectAll("path");
           layer_style_i.fill_color = rgb2hex(selection.style("fill"));
@@ -208,19 +209,20 @@ function get_map_template() {
           layer_style_i.fill_opacity = selection.style("fill-opacity");
           layer_style_i.fill_color = current_layer_prop.fill_color;
           layer_style_i.topo_geom = String(current_layer_prop.key_name);
-          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
+          layer_style_i.stroke_color = selection.style("stroke");
       } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line"){
           let type_symbol = current_layer_prop.symbol;
           selection = map.select("#" + layer_id).selectAll(type_symbol);
           let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function(d){ return d.__data__; });
           layer_style_i.symbol = type_symbol;
+          layer_style_i.size_legend_symbol = current_layer_prop.size_legend_symbol;
           layer_style_i.rendered_field = current_layer_prop.rendered_field;
           if(current_layer_prop.rendered_field2)
               layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
           layer_style_i.renderer = current_layer_prop.renderer;
           layer_style_i.size = current_layer_prop.size;
           layer_style_i.fill_color = current_layer_prop.fill_color;
-          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
+          layer_style_i.stroke_color = selection.style("stroke");
           layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
           layer_style_i.geo_pt = {
             type: "FeatureCollection",
@@ -231,7 +233,7 @@ function get_map_template() {
           }
           if(current_layer_prop.break_val)
               layer_style_i.break_val = current_layer_prop.break_val;
-      } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type == "Line"){
+      } else if(current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type === "Line"){
           let type_symbol = current_layer_prop.symbol;
           selection = map.select("#" + layer_id).selectAll('path');
           let features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName('path'), function(d){ return d.__data__; });
@@ -263,7 +265,7 @@ function get_map_template() {
           layer_style_i.renderer = current_layer_prop.renderer;
           layer_style_i.topo_geom = String(current_layer_prop.key_name);
           layer_style_i.fill_color = current_layer_prop.fill_color;
-          layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
+          layer_style_i.stroke_color = selection.style("stroke");
           layer_style_i.rendered_field = current_layer_prop.rendered_field;
           layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
           let color_by_id = [], params = current_layer_prop.type == "Line" ? "stroke" : "fill";
@@ -638,12 +640,7 @@ function apply_user_preferences(json_pref){
                 let layer_selec = map.select("#" + layer_id);
 
                 current_layer_prop.rendered_field = _layer.rendered_field;
-                if( _layer['stroke-width-const']){
-                  current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
-                  layer_selec.style('stroke-width', _layer['stroke-width-const']);
-                }
-                if(_layer.fixed_stroke)
-                  current_layer_prop.fixed_stroke = _layer.fixed_stroke;
+
                 if(_layer.ref_layer_name)
                     current_layer_prop.ref_layer_name = _layer.ref_layer_name;
                 if(_layer.size)
@@ -654,14 +651,12 @@ function apply_user_preferences(json_pref){
                     current_layer_prop.options_disc = _layer.options_disc;
                 if(_layer.fill_color)
                     current_layer_prop.fill_color = _layer.fill_color;
-                if(_layer.stroke_color)
-                    layer_selec.selectAll('path').style('stroke', _layer.stroke_color)
                 if(_layer.renderer){
                     if(_layer.renderer == "Choropleth"
                             || _layer.renderer == "Stewart"
                             || _layer.renderer == "Gridded"){
                         layer_selec.selectAll("path")
-                            .style(current_layer_prop.type === "Line" ? "stroke" : "fill", (d,j) => _layer.color_by_id[j])
+                            .style(current_layer_prop.type === "Line" ? "stroke" : "fill", (d,j) => _layer.color_by_id[j]);
                     } else if (_layer.renderer == "Links"){
                         current_layer_prop.linksbyId = _layer.linksbyId;
                         current_layer_prop.min_display = _layer.min_display;
@@ -696,7 +691,15 @@ function apply_user_preferences(json_pref){
                         rehandle_legend(layer_name, _layer.legend);
                     }
                 }
-
+                if(_layer.stroke_color){
+                    layer_selec.selectAll('path').style('stroke', _layer.stroke_color)
+                }
+                if( _layer['stroke-width-const']){
+                  current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+                  layer_selec.style('stroke-width', _layer['stroke-width-const']);
+                }
+                if(_layer.fixed_stroke)
+                  current_layer_prop.fixed_stroke = _layer.fixed_stroke;
                 if(_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer"){
                     layer_selec
                         .selectAll('path')
@@ -750,7 +753,7 @@ function apply_user_preferences(json_pref){
                   renderer: _layer.renderer,
               };
               if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")
-                  rendering_params.fill_color = _layer.fill_color.class
+                  rendering_params.fill_color = _layer.fill_color.class;
               else if(_layer.fill_color.random)
                   rendering_params.fill_color = "#fff";
               else if(_layer.fill_color.single != undefined)
@@ -777,6 +780,9 @@ function apply_user_preferences(json_pref){
               }
               if(_layer.colors_breaks){
                   current_layers[layer_name].colors_breaks = _layer.colors_breaks;
+              }
+              if (_layer.size_legend_symbol) {
+                current_layers[layer_name].size_legend_symbol = _layer.size_legend_symbol;
               }
               if(_layer.legend){
                   rehandle_legend(layer_name, _layer.legend);
@@ -897,7 +903,7 @@ function rehandle_legend(layer_name, properties){
     for(let i = 0; i < properties.length; i++){
         let prop = properties[i];
         if(prop.type == 'legend_root'){
-            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.box_gap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
+            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
         } else if(prop.type == 'legend_root_symbol') {
             createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
         } else if(prop.type == 'legend_root_lines_class'){
