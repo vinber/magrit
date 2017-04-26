@@ -474,6 +474,7 @@ const createBoxCustomProjection = function createBoxCustomProjection(){
 		s = prev_scale;
 		t = prev_translate.slice();
 		current_proj_name = prev_projection;
+		addLastProjectionSelect(current_proj_name);
 		if (prev_projection != "def_proj4") {
 				change_projection(current_proj_name)
 		} else if (prev_projection == "def_proj4") {
@@ -497,7 +498,7 @@ function handle_proj_center_button(param){
     // Fetch the current rotation params :
     let current_rotation = proj.rotate();
     // Reuse it for the missing value passed in arguments :
-    param = param.map((val,i) => val ? val : current_rotation[i]);
+    param = param.map((val,i) => val !== null ? val : current_rotation[i]);
     // Do the rotation :
     proj.rotate(param);
     // Redraw the path and move the symbols :

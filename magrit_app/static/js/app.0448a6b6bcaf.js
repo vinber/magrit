@@ -1083,7 +1083,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.6549849a8e06.json'
+            loadPath: 'static/locales/{{lng}}/translation.0448a6b6bcaf.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -15548,16 +15548,6 @@ function apply_user_preferences(json_pref) {
                     font: _layer.default_font
                 };
                 render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
-                // let features = svg_map.querySelector('#' + _app.layer_to_id.get(layer_name)).getElementsByTagName('text');
-                // console.log(features); console.log(_layer.current_position);
-                // for(let i = 0; i < features.length; i++){
-                //     features[i].setAttribute("x", _layer.current_position[i][0]);
-                //     features[i].setAttribute("y", _layer.current_position[i][1]);
-                //     features[i].style.display = _layer.current_position[i][2];
-                //     features[i].style.fontSize = _layer.current_position[i][3];
-                //     features[i].style.fontFamily = _layer.current_position[i][4];
-                //     features[i].style.fill = _layer.current_position[i][5];
-                // }
             } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")) {
                 var symbols_map = new Map(_layer.symbols_map);
                 var new_layer_data = {
@@ -16262,6 +16252,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 				s = prev_scale;
 				t = prev_translate.slice();
 				current_proj_name = prev_projection;
+				addLastProjectionSelect(current_proj_name);
 				if (prev_projection != "def_proj4") {
 						change_projection(current_proj_name);
 				} else if (prev_projection == "def_proj4") {
@@ -16290,7 +16281,7 @@ function handle_proj_center_button(param) {
 		var current_rotation = proj.rotate();
 		// Reuse it for the missing value passed in arguments :
 		param = param.map(function (val, i) {
-				return val ? val : current_rotation[i];
+				return val !== null ? val : current_rotation[i];
 		});
 		// Do the rotation :
 		proj.rotate(param);

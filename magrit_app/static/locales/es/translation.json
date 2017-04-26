@@ -237,7 +237,7 @@
             "Stereographic": "Estereográfica",
             "Werner": "Werner",
             "Winkel1": "Winkel I",
-            "WinkelTriple": "Winkel Tripel",
+            "WinkelTriple": "Winkel-Tripel",
             "def_proj4": "Proyección definida por el usuario {{value}}",
             "more": "Más opciones...",
             "proj4": "Definir parámetros de tipo WKT/Proj.4..."
