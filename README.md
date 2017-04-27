@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/riatelab/magrit.svg?branch=master)](https://travis-ci.org/riatelab/magrit)  
 
-[Magrit](http://magrit.cnrs.fr) is an online mapping application developped by [UMS RIATE](http://www.riate.cnrs.fr).  
+[Magrit](http://magrit.cnrs.fr) is an online mapping application developed by [UMS RIATE](http://www.riate.cnrs.fr).  
 
 ## Usage
 
@@ -12,17 +12,17 @@ Most users should go on :
 - the [blog](http://magrit.hypotheses.org)
 
 
-## Instruction for developpers
+## Instruction for developers
 
-The only targeted/tested OS for developpement is currently GNU/Linux. However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX).
+The only targeted/tested OS for development is currently GNU/Linux. However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX).
 
 Magrit uses JS (particularly the D3 library) in the browser for interface and map rendering.
 Some geoprocessing tasks are delegated to the server part: a python 3.5+ application.
 
 Magrit can be served or build by various means:
 
-- [Installing for developpement](https://github.com/riatelab/magrit/wiki/Installation-for-development)
-- [Installing for developpement (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Installing for development](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Installing for development (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
 - [Deploying with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
 
 
