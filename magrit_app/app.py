@@ -1048,6 +1048,7 @@ async def init(loop, port=None, watch_change=False):
     redis_conn = await create_reconnecting_redis(('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
         loop=loop,
+        client_max_size = 16384**2,
         middlewares=[
             error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])

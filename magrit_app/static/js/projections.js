@@ -14,7 +14,6 @@ const shortListContent = [
 ];
 
 const available_projections = new Map([
-  ['Albers', { name: 'geoAlbers', scale: '400', param_ex: 'cone', param_in: 'equalarea' }],
   ['Armadillo', { name: 'geoArmadillo', scale: '400', param_in: 'other', param_ex: 'aphylactic' }],
   ["AzimuthalEquidistant", { 'name': 'geoAzimuthalEquidistant' ,'scale': '700', param_in: 'plan', param_ex: 'equidistant' }],
 	["AzimuthalEqualArea", {'name': 'geoAzimuthalEqualArea' ,'scale': '700', param_in: 'plan', param_ex: 'equalarea'}],

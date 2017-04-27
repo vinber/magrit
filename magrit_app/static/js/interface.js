@@ -813,19 +813,24 @@ function ask_existing_feature(feature_name){
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options = {}){
-
-    var parsedJSON = JSON.parse(text);
-    var result_layer_on_add = options.result_layer_on_add ? true : false,
+    let parsedJSON;
+    try {
+      parsedJSON = JSON.parse(text);
+    } catch (e) {
+      parsedjSON = {Error: 'Unable to load the layer'};
+    }
+    if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+        display_error_during_computation(parsedJSON.Error);
+        return;
+    }
+    let result_layer_on_add = options.result_layer_on_add ? true : false,
         target_layer_on_add = options.target_layer_on_add ? true : false,
         skip_alert = options.skip_alert ? true : false,
         skip_rescale = options.skip_rescale === true ? true : false,
         fields_type = options.fields_type ? options.fields_type : undefined;
 
-    if(parsedJSON.Error){  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
-        display_error_during_computation(parsedJSON.Error);
-        return;
-    }
-    var type = "",
+
+    let type = "",
         topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects),
@@ -1089,6 +1094,9 @@ function scale_to_lyr(name){
   if (!bbox_layer_path) return;
   s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
   t = [0, 0];
+  if (current_proj_name === "ConicConformalFrance") {
+    s *= 5000;
+  }
   proj.scale(s).translate(t);
   map.selectAll(".layer").selectAll("path").attr("d", path);
   reproj_symbol_layer();
@@ -1362,9 +1370,9 @@ function add_layout_layers(){
 }
 
 function add_sample_layer(){
-    function prepare_extra_dataset_availables(){
+    function prepare_extra_dataset_availables() {
         request_data('GET', '/extrabasemaps').then(result => {
-            _app.list_extrabasemaps = JSON.parse(result.target.responseText);
+            _app.list_extrabasemaps = JSON.parse(result.target.responseText).filter(elem => elem[0] !== "Tunisia");
         });
     }
     let existing_dialog = document.querySelector(".sampleDialogBox");

@@ -2049,18 +2049,10 @@ function change_projection(new_proj_name) {
         proj = proj.clipAngle(def_proj.clipAngle);
     if(def_proj.rotate)
         prev_rotate = def_proj.rotate;
-
-    path = d3.geoPath().projection(proj).pointRadius(4);
-
-    if(def_proj.bounds)
-        scale_to_bbox(def_proj.bounds);
-    else
-        proj.translate(t).scale(s);
-
     if(proj.rotate)
         proj.rotate(prev_rotate);
 
-    map.selectAll(".layer").selectAll("path").attr("d", path);
+    path = d3.geoPath().projection(proj).pointRadius(4);
 
     // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
     document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
@@ -2078,6 +2070,8 @@ function change_projection(new_proj_name) {
       center_map(layer_name);
       zoom_without_redraw();
     } else {
+      proj.translate(t).scale(s);
+      map.selectAll(".layer").selectAll("path").attr("d", path);
       reproj_symbol_layer();
     }
     // Set or remove the clip-path according to the projection:

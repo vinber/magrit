@@ -194,7 +194,7 @@
             "ConicEquidistantTangent": "Conic Equidistant with one standard parallel",
             "CrasterParabolic": "Craster Parabolic",
             "CylindricalEqualArea": "Lambert Cylindrical Equal-Area",
-            "CylindricalStereographic": "Cylindrical Stereographic",
+            "CylindricalStereographic": "Braun Cylindrical Stereographic",
             "EckertI": "Eckert I",
             "EckertII": "Eckert II",
             "EckertIII": "Eckert III",
