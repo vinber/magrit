@@ -341,7 +341,6 @@ async def convert(request):
                  or "gml" in name.lower() or "geojson" in name.lower()):
         with open(filepath, 'wb') as f:
             f.write(data)
-        res = await ogr_to_geojson(filepath)
         res = await request.app.loop.run_in_executor(
             request.app["ThreadPool"],
             ogr_to_geojson, filepath)
