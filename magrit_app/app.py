@@ -35,7 +35,7 @@ from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO, BytesIO
-from geopandas import GeoDataFrame
+
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
@@ -58,7 +58,7 @@ try:
     from helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, TopologicalError)
+        make_geojson_links, TopologicalError, ogr_to_geojson)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
@@ -72,7 +72,7 @@ except:
     from .helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, TopologicalError)
+        make_geojson_links, TopologicalError, ogr_to_geojson)
     from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from .helpers.grid_layer import get_grid_layer
     from .helpers.error_middleware404 import error_middleware
@@ -86,21 +86,12 @@ async def index_handler(request):
         request.app['redis_conn'].incr('view_onepage'),
         loop=request.app.loop)
     session = await get_session(request)
-    if not 'already_seen' in session:
+    if 'already_seen' not in session:
         asyncio.ensure_future(
             request.app['redis_conn'].incr('single_view_onepage'),
             loop=request.app.loop)
     session['already_seen'] = True
     return {'app_name': request.app['app_name']}
-
-
-async def ogr_to_geojson(filepath):
-    gdf = GeoDataFrame.from_file(filepath)
-    gdf.columns = [col.replace(' ', '_') for col in gdf.columns]
-    if gdf.crs:
-        return gdf.to_crs({'init': 'epsg:4326'}).to_json().encode()
-    else:
-        gdf.to_json().encode()
 
 
 async def geojson_to_topojson2(data, layer_name):
@@ -111,6 +102,7 @@ async def geojson_to_topojson2(data, layer_name):
     stdout, _ = process.communicate(input=data)
     stdout = stdout.decode()
     return stdout
+
 
 def topojson_to_geojson(data):
     """
@@ -159,7 +151,10 @@ async def cache_input_topojson(request):
                 ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
                 ]))
         else:
-            res = await ogr_to_geojson(path)
+            res = await request.app.loop.run_in_executor(
+                request.app["ThreadPool"],
+                ogr_to_geojson, path)
+
             request.app['logger'].info(
                 '{} - Transform coordinates from GeoJSON'.format(user_id))
             result = await geojson_to_topojson2(res, name)
@@ -205,6 +200,7 @@ async def cache_input_topojson(request):
         return web.Response(text=''.join(
             ['{"key":', hash_val, ',"file":null}']
             ))
+
 
 def get_user_id(session_redis, app_users, app=None):
     """
@@ -277,7 +273,10 @@ async def convert(request):
             ))
 
     if "shp" in datatype:
-        res = await ogr_to_geojson(shp_path)
+        res = await request.app.loop.run_in_executor(
+            request.app["ThreadPool"],
+            ogr_to_geojson, shp_path)
+
         result = await geojson_to_topojson2(res, layer_name)
         result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
@@ -308,7 +307,7 @@ async def convert(request):
                         slots['dbf'] = f
                     elif 'cpg' in ext:
                         slots['cpg'] = f
-                assert(all(v != None for v in slots.values()))
+                assert(all(v is not None for v in slots.values()))
                 assert(all(name == names[0] for name in names))
                 assert(4 <= len(list_files) < 8)
             except Exception as err:
@@ -318,7 +317,9 @@ async def convert(request):
 
             os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
-            res = await ogr_to_geojson(slots['shp'])
+            res = await request.app.loop.run_in_executor(
+                request.app["ThreadPool"],
+                ogr_to_geojson, slots['shp'])
             with open(slots['prj'], 'r') as f:
                 proj_info_str = f.read()
             result = await geojson_to_topojson2(res, layer_name)
@@ -332,15 +333,18 @@ async def convert(request):
         [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
         os.removedirs(dir_path)
 
-    elif ('octet-stream' in datatype or 'text/json' in datatype \
+    elif ('octet-stream' in datatype or 'text/json' in datatype
             or 'application/geo+json' in datatype
-            or 'application/vnd.google-earth.kml+xml' in datatype \
+            or 'application/vnd.google-earth.kml+xml' in datatype
             or 'application/gml+xml' in datatype) \
-            and ("kml" in name.lower() \
+            and ("kml" in name.lower()
                  or "gml" in name.lower() or "geojson" in name.lower()):
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await ogr_to_geojson(filepath)
+        res = await request.app.loop.run_in_executor(
+            request.app["ThreadPool"],
+            ogr_to_geojson, filepath)
         if len(res) == 0:
             return web.Response(text=json.dumps(
                 {'Error': 'Error reading the input file'}))
@@ -382,10 +386,11 @@ async def serve_contact_form(request):
 
 async def store_contact_info(request):
     posted_data = await request.post()
-    date = datetime.fromtimestamp(time.time()).strftime("%B %d, %Y at %H:%M:%S")
+    date = datetime.fromtimestamp(
+        time.time()).strftime("%B %d, %Y at %H:%M:%S")
     asyncio.ensure_future(
-        request.app['redis_conn'].lpush('contact',
-            json.dumps({
+        request.app['redis_conn'].lpush(
+            'contact', json.dumps({
                 "name": posted_data.get('name'),
                 "email": posted_data.get('email'),
                 "subject": posted_data.get('subject'),
@@ -934,13 +939,13 @@ async def get_stats_json(request):
     contact = await redis_conn.lrange('contact', 0, -1)
     count = await redis_conn.get('single_view_modulepage')
     return web.Response(text=json.dumps(
-        {"count": count , "layer": layers,
+        {"count": count, "layer": layers,
          "view_onepage": view_onepage,
          "single_view_onepage": single_view_onepage,
          "sample": sample_layers, "contact": contact,
          "t": {"stewart": stewart, "dougenik": doug,
-               "gridded": gridded, "olson": olson, "links": links}
-             }))
+               "gridded": gridded, "olson": olson, "links": links}}))
+
 
 async def convert_tabular(request):
     st = time.time()
@@ -961,7 +966,7 @@ async def convert_tabular(request):
         csv = book[sheet_names[0]].csv
         # replace spaces in variable names
         firstrowlength = csv.find('\n')
-        result = csv[0:firstrowlength].replace(' ','_')+csv[firstrowlength:]
+        result = csv[0:firstrowlength].replace(' ', '_') + csv[firstrowlength:]
         message = ["app_page.common.warn_multiple_sheets", sheet_names] \
             if len(sheet_names) > 1 else None
     else:
@@ -985,7 +990,8 @@ async def fetch_list_extrabasemaps(loop):
             data = json.loads(data)
             tree_url = [d for d in data
                         if d['name'] == "Countries"][0]['_links']['git']
-            base_url = 'https://raw.githubusercontent.com/riatelab/basemaps/master/Countries/'
+            base_url = ('https://raw.githubusercontent.com/riatelab/basemaps'
+                        '/master/Countries/')
             async with client.get(tree_url + '?recursive=1') as resp:
                 assert resp.status == 200
                 list_elem = await resp.text()
@@ -1038,17 +1044,19 @@ async def on_shutdown(app):
                 await asyncio.wait_for(task, 2)
             except asyncio.TimeoutError:
                 task.cancel()
-        elif not "Application.shutdown()" in info[1]:
+        elif "Application.shutdown()" not in info[1]:
             task.cancel()
 
 async def init(loop, port=None, watch_change=False):
     logging.basicConfig(level=logging.DEBUG)
     logger = logging.getLogger("magrit_app.main")
-    redis_cookie = await create_pool(('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
-    redis_conn = await create_reconnecting_redis(('0.0.0.0', 6379), db=1, loop=loop)
+    redis_cookie = await create_pool(
+        ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
+    redis_conn = await create_reconnecting_redis(
+        ('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
         loop=loop,
-        client_max_size = 16384**2,
+        client_max_size=16384**2,
         middlewares=[
             error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])
@@ -1099,6 +1107,7 @@ async def init(loop, port=None, watch_change=False):
             handler, '0.0.0.0', port)
         return srv, app, handler
 
+
 def _init(loop):
     # Entry point to use with py.test unittest :
     app_real_path = os.path.dirname(os.path.realpath(__file__))
@@ -1106,9 +1115,12 @@ def _init(loop):
         os.chdir(app_real_path)
     return init(loop)
 
+
 def create_app(app_name="Magrit"):
     # Entry point when using Gunicorn to run the application with something like :
-    # $ gunicorn "magrit_app.app:create_app('AppName')" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
+    # $ gunicorn "magrit_app.app:create_app('AppName')" \
+    #   --bind 0.0.0.0:9999 \
+    #   --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)

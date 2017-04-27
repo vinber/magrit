@@ -14,7 +14,8 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
-
+import fiona
+from collections import OrderedDict
 
 def _compute_centroids(geometries, argmax=np.argmax):
     res = []
@@ -38,6 +39,30 @@ def get_proj4_string(wkt_proj):
             '+proj=longlat +ellps=WGS84 +no_defs' in res \
             or '+proj=longlat +datum=WGS84 +no_defs' in res \
             else res
+
+def ogr_to_geojson(filepath):
+    res = []
+    with fiona.open(filepath) as f:
+        if f.crs:
+            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
+            f.schema['properties'] = OrderedDict(
+                (k.replace(' ', '_'), v) for k, v in f.schema['properties'].items())
+            for item in f.values():
+                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
+                item['properties'] = OrderedDict(
+                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
+                res.append(item)
+        else:
+            f.schema['properties'] = OrderedDict(
+                (k.replace(' ', '_'), v) for k, v in f.schema['properties'].items())
+            for item in f.values():
+                item['properties'] = OrderedDict(
+                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
+                res.append(item)
+    return ''.join(
+        ('''{"type":"FeatureCollection", "features":''',
+         json.dumps(res),
+         '''}''')).encode()
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
