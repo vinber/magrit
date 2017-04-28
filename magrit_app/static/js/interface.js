@@ -829,7 +829,6 @@ function add_layer_topojson(text, options = {}){
         skip_rescale = options.skip_rescale === true ? true : false,
         fields_type = options.fields_type ? options.fields_type : undefined;
 
-
     let type = "",
         topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,

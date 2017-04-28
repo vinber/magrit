@@ -1083,7 +1083,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.a042b69c0cc7.json'
+            loadPath: 'static/locales/{{lng}}/translation.8e4d1396906a.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -15071,7 +15071,7 @@ function get_map_template() {
                 });
                 layer_style_i.color_by_id = color_by_id;
                 if (current_layer_prop.renderer == "Stewart") {
-                    layer_style_i.current_palette = current_layer_prop.current_palette;
+                    layer_style_i.color_palette = current_layer_prop.color_palette;
                 }
                 if (current_layer_prop.renderer !== "Categorical") {
                     layer_style_i.options_disc = current_layer_prop.options_disc;
@@ -15448,6 +15448,7 @@ function apply_user_preferences(json_pref) {
                 if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
                 if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
                 if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
+                if (_layer.color_palette) current_layer_prop.color_palette;
                 if (_layer.renderer) {
                     if (_layer.renderer == "Choropleth" || _layer.renderer == "Stewart" || _layer.renderer == "Gridded") {
                         layer_selec.selectAll("path").style(current_layer_prop.type === "Line" ? "stroke" : "fill", function (d, j) {

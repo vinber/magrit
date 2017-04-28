@@ -236,7 +236,7 @@
             "Winkel1": "Winkel I",
             "WinkelTriple": "Winkel-Tripel",
             "more": "More options...",
-            "proj4": "Projection from EPSG/proj4 definition...",
+            "proj4": "Projection from WKT/proj4 definition...",
             "def_proj4": "User defined projection {{value}}"
         },
         "stat_summary": {

@@ -16,6 +16,8 @@ from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
 import re
 
+
+
 def _compute_centroids(geometries, argmax=np.argmax):
     res = []
     for geom in geometries:

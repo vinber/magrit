@@ -237,7 +237,7 @@
             "Winkel1": "Winkel I",
             "WinkelTriple": "Winkel-Tripel",
             "more": "Plus d'options ...",
-            "proj4": "Saisie d'un code EPSG/Proj.4 ...",
+            "proj4": "Saisie d'un code WKT/Proj.4 ...",
             "def_proj4": "Projection définie par l'utilisateur {{value}}"
         },
         "stat_summary": {

@@ -11,7 +11,7 @@ De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces
 ## Import du fond de carte
 
 L'import du fond de carte principal peut se faire de différentes manières :
-- Par un click sur le bouton *Ajout d'un fond de carte*.
+- Par un clic sur le bouton *Ajout d'un fond de carte*.
 - Par un glisser-déposer dans la zone de la carte.
 
 
@@ -21,7 +21,7 @@ Plusieurs formats sont supportés:
 - ```TopoJSON```
 - ```kml```
 - ```gml```
-- ```csv``` (contenant des colonnes x/y ou *geometry*)
+- ```csv``` (contenant des colonnes x/y)
 
 > **Note:**
 > La plupart des formats permettent de spécifier un système de coordonnées de référence; cette indication est ici obligatoire pour ouvrir correctement le fichier (présence du fichier ```.prj``` pour le format ShapeFile par exemple)
