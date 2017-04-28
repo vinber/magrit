@@ -274,11 +274,11 @@ async def convert(request):
 
     if "shp" in datatype:
         res = await request.app.loop.run_in_executor(
-            request.app["ThreadPool"],
+            request.app["ProcessPool"],
             ogr_to_geojson, shp_path)
 
         result = await geojson_to_topojson2(res, layer_name)
-        result = result.replace(''.join([user_id, '_']), '')
+        # result = result.replace(''.join([user_id, '_']), '')
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_name, result, pexpire=86400000))
         with open('/tmp/' + name.replace('.shp', '.prj'), 'r') as f:
@@ -318,7 +318,7 @@ async def convert(request):
             os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
             res = await request.app.loop.run_in_executor(
-                request.app["ThreadPool"],
+                request.app["ProcessPool"],
                 ogr_to_geojson, slots['shp'])
             with open(slots['prj'], 'r') as f:
                 proj_info_str = f.read()
@@ -326,7 +326,7 @@ async def convert(request):
             if not result:
                 return web.Response(
                     text='{"Error": "Error converting input file"}')
-            result = result.replace(''.join([user_id, '_']), '')
+            # result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(
                     f_name, result, pexpire=86400000))
@@ -354,7 +354,7 @@ async def convert(request):
             return web.Response(
                 text='{"Error": "Error converting input file"}')
         else:
-            result = result.replace(''.join([user_id, '_']), '')
+            # result = result.replace(''.join([user_id, '_']), '')
             asyncio.ensure_future(
                 request.app['redis_conn'].set(
                     f_name, result, pexpire=86400000))
@@ -372,6 +372,49 @@ async def convert(request):
          '}']))
 
 
+async def convert_extrabasemap(request):
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis, request.app['app_users'])
+
+    url = posted_data['url']
+    layer_name = posted_data['layer_name']
+    async with ClientSession(loop=request.app.loop) as client:
+        async with client.get(url) as resp:
+            assert resp.status == 200
+            data = await resp.text()
+            data = data.encode()
+            hashed_input = mmh3_hash(data)
+            f_name = '_'.join([user_id, str(hashed_input)])
+
+            asyncio.ensure_future(
+                request.app['redis_conn'].incr('layers'))
+
+            result = await request.app['redis_conn'].get(f_name)
+            if result:
+                request.app['logger'].info(
+                    '{} - Used result from redis'.format(user_id))
+                request.app['redis_conn'].pexpire(f_name, 86400000)
+                return web.Response(text=''.join(
+                    ['{"key":', str(hashed_input),
+                     ',"file":', result.decode(), '}']))
+
+            result = await geojson_to_topojson2(data, layer_name)
+            if not result:
+                return web.Response(
+                    text='{"Error": "Error converting input file"}')
+            else:
+                asyncio.ensure_future(
+                    request.app['redis_conn'].set(
+                        f_name, result, pexpire=86400000))
+
+            request.app['logger'].info(
+                '{} - Converted, stored in redis and sent back to client'
+                .format(user_id))
+            return web.Response(text=''.join(
+                ['{"key":', str(hashed_input), ',"file":', result, '}']))
+
+
 @aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
     session_redis = await get_session(request)
@@ -382,6 +425,7 @@ async def serve_main_page(request):
 @aiohttp_jinja2.template('contact_form.html')
 async def serve_contact_form(request):
     return {"app_name": request.app["app_name"]}
+
 
 async def store_contact_info(request):
     posted_data = await request.post()
@@ -1078,6 +1122,7 @@ async def init(loop, port=None, watch_change=False):
     add_route('POST', '/stats', get_stats_json)
     add_route('POST', '/convert_to_topojson', convert)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
+    add_route('POST', '/convert_extrabasemap', convert_extrabasemap)
     add_route('POST', '/convert_tabular', convert_tabular)
     add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)

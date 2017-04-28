@@ -14,8 +14,7 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
-import fiona
-from collections import OrderedDict
+
 
 def _compute_centroids(geometries, argmax=np.argmax):
     res = []
@@ -40,29 +39,98 @@ def get_proj4_string(wkt_proj):
             or '+proj=longlat +datum=WGS84 +no_defs' in res \
             else res
 
-def ogr_to_geojson(filepath):
+
+def ogr_to_geojson(file_path):
+    if 'kml' in file_path:
+        file_format = "KML"
+    elif 'gml' in file_path:
+        file_format = "GML"
+    elif 'geojson' in file_path:
+        file_format = "GeoJSON"
+    else:
+        file_format = "ESRI ShapeFile"
+
+    in_driver = GetDriverByName(file_format)
+    out_driver = GetDriverByName('MEMORY')
+
+    f_in = in_driver.Open(file_path)
+    input_layer = f_in.GetLayer()
+ 
+    outSpRef = SpatialReference()
+    outSpRef.ImportFromEPSG(4326)
+    coords_transform = CoordinateTransformation(
+        input_layer.GetSpatialRef(), outSpRef)
+    
+    f_out = out_driver.CreateDataSource('')
+    output_layer = f_out.CreateLayer('', outSpRef)
+
+    input_lyr_defn = input_layer.GetLayerDefn()
+    for i in range(input_lyr_defn.GetFieldCount()):
+        fieldDefn = input_lyr_defn.GetFieldDefn(i)
+        fieldDefn.SetName(fieldDefn.GetNameRef().replace(' ', '_'))
+        output_layer.CreateField(fieldDefn)
+
+    output_lyr_defn = output_layer.GetLayerDefn()
+    nb_field = output_lyr_defn.GetFieldCount()
+    field_names = [output_lyr_defn.GetFieldDefn(i).GetNameRef()
+                   for i in range(nb_field)]
     res = []
-    with fiona.open(filepath) as f:
-        if f.crs:
-            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
-            f.schema['properties'] = OrderedDict(
-                (k.replace(' ', '_'), v) for k, v in f.schema['properties'].items())
-            for item in f.values():
-                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
-                item['properties'] = OrderedDict(
-                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
-                res.append(item)
-        else:
-            f.schema['properties'] = OrderedDict(
-                (k.replace(' ', '_'), v) for k, v in f.schema['properties'].items())
-            for item in f.values():
-                item['properties'] = OrderedDict(
-                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
-                res.append(item)
-    return ''.join(
-        ('''{"type":"FeatureCollection", "features":''',
-         json.dumps(res),
-         '''}''')).encode()
+    for inFeature in input_layer:
+        geom = inFeature.GetGeometryRef()
+        geom.Transform(coords_transform)
+        outFeature = OgrFeature(output_lyr_defn)
+        outFeature.SetGeometry(geom)
+        for i in range(nb_field):
+            outFeature.SetField(
+                field_names[i],
+                inFeature.GetField(i))
+        res.append(outFeature.ExportToJson())
+        outFeature.Destroy()
+        inFeature.Destroy()
+    f_in.Destroy()
+    f_out.Destroy()
+
+    return ''.join([
+        '''{"type":"FeatureCollection","features":[''',
+        ','.join(res),
+        ''']}'''
+        ]).encode()
+
+
+#def ogr_to_geojson(filepath):
+#    res = []
+#    reproject = True
+#    change_field_name = True
+#    with fiona.open(filepath) as f:
+#        if not f.crs:
+#            reproject = False
+#        if not any(' ' in field_name for field_name in f.schema['properties']):
+#            change_field_name = False
+#
+#        if reproject and change_field_name:
+#            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
+#            for item in f.values():
+#                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
+#                item['properties'] = OrderedDict(
+#                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
+#                res.append(item)
+#        elif change_field_name:
+#            for item in f.values():
+#                item['properties'] = OrderedDict(
+#                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
+#                res.append(item)
+#        elif reproject:
+#            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
+#            for item in f.values():
+#                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
+#                res.append(item)
+#        else:
+#            res = [item for item in f.values()]
+#
+#    return ''.join(
+#        ('''{"type":"FeatureCollection", "features":''',
+#         json.dumps(res),
+#         '''}''')).encode()
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])

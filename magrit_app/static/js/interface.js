@@ -893,6 +893,31 @@ function add_layer_topojson(text, options = {}){
     let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path,
         nb_fields = field_names.length;
 
+    // let func_data_idx;
+    // if (data_to_load && nb_fields > 0) {
+    //   func_data_idx = (d, ix) => {
+    //     if(d.id != undefined && d.id != ix){
+    //         d.properties["_uid"] = d.id;
+    //         d.id = +ix;
+    //     }
+    //     user_data[lyr_name_to_add].push(d.properties);
+    //     return "feature_" + ix;
+    //   };
+    // } else if (data_to_load) {
+    //   func_data_idx = (d, ix) => {
+    //     d.properties.id = d.id || ix;
+    //     user_data[lyr_name_to_add].push({"id": d.properties.id});
+    //     return "feature_" + ix;
+    //   };
+    // } else if(result_layer_on_add){
+    //   func_data_idx = (d, ix) => {
+    //     result_data[lyr_name_to_add].push(d.properties);
+    //     return "feature_" + ix;
+    //   };
+    // } else {
+    //   func_data_idx = (_, ix) => "feature_" + ix;
+    // }
+
     map.insert("g", '.legend')
         .attr("id", lyr_id)
         .attr("class", data_to_load ? "targeted_layer layer" : "layer")
@@ -1404,11 +1429,20 @@ function add_sample_layer(){
                         add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
                     }
                 } else if(content.attr('id') == "panel2"){
-                    xhrequest('GET', selec_url[1], null, true)
-                        .then(request_result => {
-                            let file = new File([request_result], selec_url[0] + '.geojson', {type : 'application/geo+json'});
-                            handle_single_file(file, true);
-                        });
+                  let formToSend = new FormData();
+                  formToSend.append("url", selec_url[1]);
+                  formToSend.append("layer_name", selec_url[0]);
+                  xhrequest('POST', '/convert_extrabasemap', formToSend, true)
+                    .then( data => {
+                        add_layer_topojson(data, {target_layer_on_add: true});
+                    }, error => {
+                        display_error_during_computation();
+                    });
+                    // xhrequest('GET', selec_url[1], null, true)
+                    //     .then(request_result => {
+                    //         let file = new File([request_result], selec_url[0] + '.geojson', {type : 'application/geo+json'});
+                    //         handle_single_file(file, true);
+                    //     });
                 }
             }
         });
