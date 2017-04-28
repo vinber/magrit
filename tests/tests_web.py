@@ -456,6 +456,13 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.ID, "Sphere"):
             self.fail("Sphere background won't display")
 
+        driver.find_element_by_id('btn_rectangle').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.2)
+        if not self.try_element_present(By.ID, "user_rectangle_0"):
+            self.fail("Rectangle won't display")
+
         # Reload the page :
         driver.get(self.base_url)
         time.sleep(0.2)
@@ -466,6 +473,33 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         # Click on the button to reload the last project :
         self.waitClickButtonSwal("button.swal2-cancel")
         time.sleep(1)
+
+        # Assert the various element were reloaded :
+        if not self.try_element_present(By.ID, "scale_bar"):
+            self.fail("Scale bar not reloaded")
+
+        if not self.try_element_present(By.ID, "Graticule"):
+            self.fail("Graticule not reloaded")
+
+        if not self.try_element_present(By.ID, "Sphere"):
+            self.fail("Sphere background  not reloaded")
+
+        if not self.try_element_present(By.ID, "user_rectangle_0"):
+            self.fail("Rectangle not reloaded")
+
+        # Assert our layers have been reloaded :
+        layers = driver.execute_script('''
+            return Object.getOwnPropertyNames(window.current_layers);''')
+        expected_layers = {
+            'World',
+            'Sphere',
+            'Graticule',
+            'nuts2-2013-data',
+            'Gridded_200000_GDP'
+            }
+        self.assertEqual(len(expected_layers), len(layers))
+        for name in layers:
+            self.assertIn(name, expected_layers)
 
     def test_downloads(self):
         driver = self.driver
@@ -938,7 +972,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         self._verif_export_result('my_result_layer')
 
-
     def test_propSymbolsTypo(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -1094,6 +1127,48 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             ).find_elements_by_css_selector("text")
         self.assertIsInstance(labels, list)
         self.assertGreater(len(labels), 0)
+
+    def test_extra_basemaps(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        driver.find_element_by_css_selector("#panel1 > p > span").click()
+        time.sleep(0.2)
+        # Select an extra basemap :
+        Select(driver.find_element_by_css_selector('#panel2 > p > select')
+            ).select_by_visible_text('Canada')
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+        time.sleep(0.5)
+
+        self._verif_export_result('Canada')
+
+    def test_add_gml_format(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        with open('tests/load_gml.js') as f:
+            script = f.read()
+        driver.execute_script(script)
+        time.sleep(0.3)
+        self.waitClickButtonSwal()
+        # Valid the type of each field :
+        self.validTypefield()
+        time.sleep(1)
+
+        # Field order was preserved :
+        fields = driver.execute_script('''
+            names = window.current_layers["Ecuador"].fields_type.map(ft => ft.name);
+            return names;
+            ''');
+        expected_fields = [
+            "fid", "ID", "ISO", "NAME",
+            "AREA", "POP_2001", "POP_2010",
+            "POP_DEN", "POP_VAR1", "POP_VAR2"]
+        for f1, f2 in zip(fields, expected_fields):
+            self.assertEqual(f1, f2)
 
     def _verif_legend_hide_show_button(self, layer_name):
         driver = self.driver
