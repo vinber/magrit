@@ -14,7 +14,7 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
-
+import re
 
 def _compute_centroids(geometries, argmax=np.argmax):
     res = []
@@ -50,24 +50,26 @@ def ogr_to_geojson(file_path):
     else:
         file_format = "ESRI ShapeFile"
 
+    regex_field_name = re.compile("[^a-zA-Z0-9_-ëêàáâãæêéèñòóô]+")
+
     in_driver = GetDriverByName(file_format)
     out_driver = GetDriverByName('MEMORY')
 
     f_in = in_driver.Open(file_path)
     input_layer = f_in.GetLayer()
- 
+
     outSpRef = SpatialReference()
     outSpRef.ImportFromEPSG(4326)
     coords_transform = CoordinateTransformation(
         input_layer.GetSpatialRef(), outSpRef)
-    
+
     f_out = out_driver.CreateDataSource('')
     output_layer = f_out.CreateLayer('', outSpRef)
 
     input_lyr_defn = input_layer.GetLayerDefn()
     for i in range(input_lyr_defn.GetFieldCount()):
         fieldDefn = input_lyr_defn.GetFieldDefn(i)
-        fieldDefn.SetName(fieldDefn.GetNameRef().replace(' ', '_'))
+        fieldDefn.SetName(regex_field_name.sub('_', fieldDefn.GetNameRef()))
         output_layer.CreateField(fieldDefn)
 
     output_lyr_defn = output_layer.GetLayerDefn()
@@ -80,6 +82,7 @@ def ogr_to_geojson(file_path):
         geom.Transform(coords_transform)
         outFeature = OgrFeature(output_lyr_defn)
         outFeature.SetGeometry(geom)
+        outFeature.SetFID(inFeature.GetFID())
         for i in range(nb_field):
             outFeature.SetField(
                 field_names[i],
@@ -95,7 +98,6 @@ def ogr_to_geojson(file_path):
         ','.join(res),
         ''']}'''
         ]).encode()
-
 
 #def ogr_to_geojson(filepath):
 #    res = []

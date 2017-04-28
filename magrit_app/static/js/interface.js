@@ -893,30 +893,30 @@ function add_layer_topojson(text, options = {}){
     let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path,
         nb_fields = field_names.length;
 
-    // let func_data_idx;
-    // if (data_to_load && nb_fields > 0) {
-    //   func_data_idx = (d, ix) => {
-    //     if(d.id != undefined && d.id != ix){
-    //         d.properties["_uid"] = d.id;
-    //         d.id = +ix;
-    //     }
-    //     user_data[lyr_name_to_add].push(d.properties);
-    //     return "feature_" + ix;
-    //   };
-    // } else if (data_to_load) {
-    //   func_data_idx = (d, ix) => {
-    //     d.properties.id = d.id || ix;
-    //     user_data[lyr_name_to_add].push({"id": d.properties.id});
-    //     return "feature_" + ix;
-    //   };
-    // } else if(result_layer_on_add){
-    //   func_data_idx = (d, ix) => {
-    //     result_data[lyr_name_to_add].push(d.properties);
-    //     return "feature_" + ix;
-    //   };
-    // } else {
-    //   func_data_idx = (_, ix) => "feature_" + ix;
-    // }
+    let func_data_idx;
+    if (data_to_load && nb_fields > 0) {
+      func_data_idx = (d, ix) => {
+        if(d.id != undefined && d.id != ix){
+            d.properties["_uid"] = d.id;
+            d.id = +ix;
+        }
+        user_data[lyr_name_to_add].push(d.properties);
+        return "feature_" + ix;
+      };
+    } else if (data_to_load) {
+      func_data_idx = (d, ix) => {
+        d.properties.id = d.id || ix;
+        user_data[lyr_name_to_add].push({"id": d.properties.id});
+        return "feature_" + ix;
+      };
+    } else if(result_layer_on_add){
+      func_data_idx = (d, ix) => {
+        result_data[lyr_name_to_add].push(d.properties);
+        return "feature_" + ix;
+      };
+    } else {
+      func_data_idx = (_, ix) => "feature_" + ix;
+    }
 
     map.insert("g", '.legend')
         .attr("id", lyr_id)
@@ -926,23 +926,24 @@ function add_layer_topojson(text, options = {}){
         .data(topojson.feature(topoObj, topoObj_objects).features)
         .enter().append("path")
         .attrs({"d": path_to_use, "height": "100%", "width": "100%"})
-        .attr("id", function(d, ix) {
-              if(data_to_load){
-                  if(nb_fields > 0){
-                      if(d.id != undefined && d.id != ix){
-                          d.properties["_uid"] = d.id;
-                          d.id = +ix;
-                      }
-                      user_data[lyr_name_to_add].push(d.properties);
-                  } else {
-                      d.properties.id = d.id || ix;
-                      user_data[lyr_name_to_add].push({"id": d.properties.id});
-                  }
-              } else if(result_layer_on_add){
-                  result_data[lyr_name_to_add].push(d.properties);
-              }
-              return "feature_" + ix;
-          })
+        .attr("id", func_data_idx)
+        //  {
+        //       if(data_to_load){
+        //           if(nb_fields > 0){
+        //               if(d.id != undefined && d.id != ix){
+        //                   d.properties["_uid"] = d.id;
+        //                   d.id = +ix;
+        //               }
+        //               user_data[lyr_name_to_add].push(d.properties);
+        //           } else {
+        //               d.properties.id = d.id || ix;
+        //               user_data[lyr_name_to_add].push({"id": d.properties.id});
+        //           }
+        //       } else if(result_layer_on_add){
+        //           result_data[lyr_name_to_add].push(d.properties);
+        //       }
+        //       return "feature_" + ix;
+        //   })
         .styles({"stroke": type != 'Line' ? "rgb(0, 0, 0)" : random_color1,
                  "stroke-opacity": 1,
                  "fill": type != 'Line' ? random_color1 : null,

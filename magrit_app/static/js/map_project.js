@@ -718,8 +718,8 @@ function apply_user_preferences(json_pref){
                 done += 1;
                 if(done == map_config.n_layers) set_final_param();
             });
-      } else if (layer_name == "World"){
-          add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible != 'hidden'});
+      } else if (layer_name === "World"){
+          add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible !== 'hidden'});
           done += 1;
           if(done == map_config.n_layers) set_final_param();
       // ... or this is a layer provided by the application :
@@ -865,7 +865,7 @@ function apply_user_preferences(json_pref){
               null;
           }
           // Was the layer visible when the project was saved :
-          if(_layer.visible == 'hidden'){
+          if(_layer.visible === 'hidden' && layer_name !== "World"){
               handle_active_layer(layer_name);
           }
           // This function is called on each layer added
