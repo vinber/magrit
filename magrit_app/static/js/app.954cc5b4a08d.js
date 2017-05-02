@@ -1087,7 +1087,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.b448c18b8d54.json'
+            loadPath: 'static/locales/{{lng}}/translation.954cc5b4a08d.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -11312,8 +11312,8 @@ function createStyleBox(layer_name) {
                 current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
             }
 
-            if (rendering_params !== undefined && rendering_params.field !== undefined) {
-                redraw_legend('default', layer_name, rendering_params.field);
+            if (rendering_params !== undefined && rendering_params.field !== undefined || renderer === 'Stewart') {
+                redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
             }
             zoom_without_redraw();
         } else {
