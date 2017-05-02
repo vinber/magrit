@@ -35,10 +35,10 @@ def resume_stewart(dumped_obj, nb_class=8, disc_kind=None,
     result = StePot.render(nb_class,
                            disc_kind,
                            user_defined_breaks,
-                           func_grid="scipy",
                            output="GeoDataFrame",
                            new_mask=mask)
     _min, _max = result[["min", "max"]].values.T.tolist()
+    result.to_crs({'init': 'epsg:4326'}, inplace=True)
     if not mask:
         res = save_reload(result)
     else:
@@ -73,7 +73,7 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
         The number of class, if unset will most likely be 8.
     resolution: int, default None
         The resolution to use (in unit of the input file), if not set a resolution
-        will be used in order to make a grid containing around 7560 pts.
+        will be used in order to make a grid containing around 10000 pts.
     mask: str, default None
         Path to the file (Polygons only) to use as clipping mask.
     user_defined_breaks: list or tuple, default None
@@ -87,22 +87,22 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     breaks: dict
         The break values used.
     """
-    StePot = SmoothStewart(input_geojson_points, variable_name, span,
-                           beta, typefct, resolution, variable_name2, mask)
+    StePot = SmoothStewart(
+        input_geojson_points, variable_name,
+        span, beta, typefct, resolution,
+        variable_name2, mask, distGeo=False,
+        projDistance='+proj=natearth')
     result = StePot.render(nb_class,
                            disc_kind,
                            user_defined_breaks,
-                           func_grid="scipy",
                            output="GeoDataFrame")
     _min, _max = result[["min", "max"]].values.T.tolist()
-#    return (result[::-1].to_json().encode(),
-#            {"min": _min[::-1], "max": _max[::-1]})
+    result.to_crs({'init': 'epsg:4326'}, inplace=True)
     if not mask:
         # Woo silly me :
         res = save_reload(result)
     else:
         res = json.loads(result[::-1].to_json())
-
     repairCoordsPole(res)
     return (json.dumps(res).encode(),
             {"min": _min[::-1], "max": _max[::-1]},

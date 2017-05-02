@@ -53,11 +53,13 @@ function setUpInterface(reload_project) {
             return 1;
         });
         if (layer_names.length) {
-            var formToSend = new FormData();
-            layer_names.forEach(function (name) {
-                formToSend.append("layer_name", current_layers[name].key_name);
-            });
-            navigator.sendBeacon("/layers/delete", formToSend);
+            (function () {
+                var formToSend = new FormData();
+                layer_names.forEach(function (name) {
+                    formToSend.append("layer_name", current_layers[name].key_name);
+                });
+                navigator.sendBeacon("/layers/delete", formToSend);
+            })();
         }
     }, false);
     var bg = document.createElement('div');
@@ -111,12 +113,12 @@ function setUpInterface(reload_project) {
         var val = this.value,
             tmp = this.querySelector('[value="last_projection"]');
 
-        if (val == 'more') {
-            this.value = tmp && current_proj_name == tmp.name ? "last_projection" : current_proj_name;
+        if (val === 'more') {
+            this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
             createBoxCustomProjection();
             return;
         } else if (val == 'proj4') {
-            this.value = tmp && current_proj_name == tmp.name ? "last_projection" : current_proj_name;
+            this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
             createBoxProj4();
             return;
         } else if (val == 'last_projection') {
@@ -794,31 +796,33 @@ function setUpInterface(reload_project) {
             apply_user_preferences(data);
         });
     } else {
-        // Check if there is a project to reload in the localStorage :
-        var last_project = window.localStorage.getItem("magrit_project");
-        if (last_project && last_project.length && last_project.length > 0) {
-            swal({ title: "",
-                // text: i18next.t("app_page.common.resume_last_project"),
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                type: "question",
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: i18next.t("app_page.common.new_project"),
-                cancelButtonText: i18next.t("app_page.common.resume_last")
-            }).then(function () {
-                // If we don't want to resume from the last project, we can
-                // remove it :
-                window.localStorage.removeItem("magrit_project");
+        (function () {
+            // Check if there is a project to reload in the localStorage :
+            var last_project = window.localStorage.getItem("magrit_project");
+            if (last_project && last_project.length && last_project.length > 0) {
+                swal({ title: "",
+                    // text: i18next.t("app_page.common.resume_last_project"),
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    type: "question",
+                    showConfirmButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: i18next.t("app_page.common.new_project"),
+                    cancelButtonText: i18next.t("app_page.common.resume_last")
+                }).then(function () {
+                    // If we don't want to resume from the last project, we can
+                    // remove it :
+                    window.localStorage.removeItem("magrit_project");
+                    // Indicate that that no layer have been added for now :*
+                    _app.first_layer = true;
+                }, function (dismiss) {
+                    apply_user_preferences(last_project);
+                });
+            } else {
                 // Indicate that that no layer have been added for now :*
                 _app.first_layer = true;
-            }, function (dismiss) {
-                apply_user_preferences(last_project);
-            });
-        } else {
-            // Indicate that that no layer have been added for now :*
-            _app.first_layer = true;
-        }
+            }
+        })();
     }
     // Set the properties for the notification zone :
     alertify.set('notifier', 'position', 'bottom-left');
@@ -1083,7 +1087,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.8e4d1396906a.json'
+            loadPath: 'static/locales/{{lng}}/translation.b448c18b8d54.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -1160,42 +1164,48 @@ function displayInfoOnMove() {
         info_features.style("display", "none").html("");
         svg_map.style.cursor = "";
     } else {
-        map.select('.brush').remove();
-        var layers = svg_map.getElementsByClassName("layer"),
-            nb_layer = layers.length,
-            top_visible_layer = null;
+        var _ret6 = function () {
+            map.select('.brush').remove();
+            var layers = svg_map.getElementsByClassName("layer"),
+                nb_layer = layers.length,
+                top_visible_layer = null;
 
-        for (var i = nb_layer - 1; i > -1; i--) {
-            if (layers[i].style.visibility != "hidden") {
-                top_visible_layer = _app.id_to_layer.get(layers[i].id);
-                break;
+            for (var i = nb_layer - 1; i > -1; i--) {
+                if (layers[i].style.visibility != "hidden") {
+                    top_visible_layer = _app.id_to_layer.get(layers[i].id);
+                    break;
+                }
             }
-        }
 
-        if (!top_visible_layer) {
-            swal("", i18next.t("app_page.common.error_no_visible"), "error");
-            return;
-        }
+            if (!top_visible_layer) {
+                swal("", i18next.t("app_page.common.error_no_visible"), "error");
+                return {
+                    v: void 0
+                };
+            }
 
-        var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
-            symbol = current_layers[top_visible_layer].symbol || "path";
+            var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
+                symbol = current_layers[top_visible_layer].symbol || "path";
 
-        map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
-            var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-            var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
-            Object.getOwnPropertyNames(properties).forEach(function (el) {
-                txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
+            map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
+                var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+                var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+                Object.getOwnPropertyNames(properties).forEach(function (el) {
+                    txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
+                });
+                txt_info.push("</p>");
+                info_features.style("display", null).html(txt_info.join(''));
             });
-            txt_info.push("</p>");
-            info_features.style("display", null).html(txt_info.join(''));
-        });
 
-        map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
-            info_features.style("display", "none").html("");
-        });
+            map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
+                info_features.style("display", "none").html("");
+            });
 
-        info_features.classed("active", true);
-        svg_map.style.cursor = "help";
+            info_features.classed("active", true);
+            svg_map.style.cursor = "help";
+        }();
+
+        if ((typeof _ret6 === "undefined" ? "undefined" : _typeof(_ret6)) === "object") return _ret6.v;
     }
 }
 
@@ -2087,15 +2097,17 @@ function patchSvgForFonts() {
     if (needed_definitions.length == 0) {
         return;
     } else {
-        var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
-            return i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null;
-        })[0].cssRules;
-        var fonts_to_add = needed_definitions.map(function (name) {
-            return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
-        });
-        var style_elem = document.createElement("style");
-        style_elem.innerHTML = fonts_to_add.join(' ');
-        svg_map.querySelector("defs").appendChild(style_elem);
+        (function () {
+            var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
+                return i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null;
+            })[0].cssRules;
+            var fonts_to_add = needed_definitions.map(function (name) {
+                return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
+            });
+            var style_elem = document.createElement("style");
+            style_elem.innerHTML = fonts_to_add.join(' ');
+            svg_map.querySelector("defs").appendChild(style_elem);
+        })();
     }
 }
 
@@ -3209,27 +3221,29 @@ var display_discretization = function display_discretization(layer_name, field_n
         height: window.innerHeight - 60 + "px" });
 
     if (values.length < 500) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            var str_tr = void 0;
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-                str_tr = "_boxplot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-                str_tr = '_beeswarm';
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-                str_tr = '';
-            }
-            document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
-        });
+        (function () {
+            // Only allow for beeswarm plot if there isn't too many values
+            // as it seems to be costly due to the "simulation" + the voronoi
+            var current_histo = "histogram",
+                choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+            choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+                var str_tr = void 0;
+                if (current_histo == 'histogram') {
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                    str_tr = "_boxplot";
+                } else if (current_histo == "box_plot") {
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+                    str_tr = '_beeswarm';
+                } else if (current_histo == "beeswarm") {
+                    refDisplay("histogram");
+                    current_histo = "histogram";
+                    str_tr = '';
+                }
+                document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
+            });
+        })();
     }
     var div_svg = newBox.append('div').append("svg").attr("id", "svg_discretization").attr("width", svg_w + margin.left + margin.right).attr("height", svg_h + margin.top + margin.bottom);
 
@@ -3852,22 +3866,24 @@ var display_discretization_links_discont = function display_discretization_links
     refDisplay("histogram");
 
     if (values.length < 750) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-            }
-        });
+        (function () {
+            // Only allow for beeswarm plot if there isn't too many values
+            // as it seems to be costly due to the "simulation" + the voronoi
+            var current_histo = "histogram",
+                choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+            choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+                if (current_histo == 'histogram') {
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                } else if (current_histo == "box_plot") {
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+                } else if (current_histo == "beeswarm") {
+                    refDisplay("histogram");
+                    current_histo = "histogram";
+                }
+            });
+        })();
     }
 
     var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
@@ -3975,6 +3991,8 @@ var display_discretization_links_discont = function display_discretization_links
     return deferred.promise;
 };
 "use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -5195,27 +5213,33 @@ var fields_Stewart = {
         if (default_selected_mask) setSelected(mask_selec.node(), default_selected_mask);
 
         if (layer) {
-            // let fields = type_col(layer, "number"),
-            var fields = getFieldsType("stock", layer),
-                field_selec = section2.select("#stewart_field"),
-                field_selec2 = section2.select("#stewart_field2");
+            var _ret3 = function () {
+                // let fields = type_col(layer, "number"),
+                var fields = getFieldsType("stock", layer),
+                    field_selec = section2.select("#stewart_field"),
+                    field_selec2 = section2.select("#stewart_field2");
 
-            if (fields.length == 0) {
-                display_error_num_field();
-                return;
-            }
+                if (fields.length == 0) {
+                    display_error_num_field();
+                    return {
+                        v: void 0
+                    };
+                }
 
-            field_selec2.append("option").text(" ").attr("value", "None");
-            fields.forEach(function (field) {
-                field_selec.append("option").text(field).attr("value", field);
-                field_selec2.append("option").text(field).attr("value", field);
-            });
-            document.getElementById("stewart_span").value = get_first_guess_span('stewart');
+                field_selec2.append("option").text(" ").attr("value", "None");
+                fields.forEach(function (field) {
+                    field_selec.append("option").text(field).attr("value", field);
+                    field_selec2.append("option").text(field).attr("value", field);
+                });
+                document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
-            field_selec.on("change", function () {
-                document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
-            });
-            section2.select('#stewart_yes').on('click', render_stewart);
+                field_selec.on("change", function () {
+                    document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
+                });
+                section2.select('#stewart_yes').on('click', render_stewart);
+            }();
+
+            if ((typeof _ret3 === "undefined" ? "undefined" : _typeof(_ret3)) === "object") return _ret3.v;
         }
         section2.selectAll(".params").attr("disabled", null);
     },
@@ -5425,72 +5449,74 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                // let opt_scale_max = document.getElementById("Anamorph_opt2");
-                // if(opt_scale_max.value > 100){
-                //     opt_scale_max.value = 100;
-                // }
-                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                var nb_ft = current_layers[layer].n_features,
-                    dataset = user_data[layer];
+                (function () {
+                    // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                    // if(opt_scale_max.value > 100){
+                    //     opt_scale_max.value = 100;
+                    // }
+                    // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    var nb_ft = current_layers[layer].n_features,
+                        dataset = user_data[layer];
 
-                // if(contains_empty_val(dataset.map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
+                    // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
-                var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                    sqrt = Math.sqrt,
-                    abs = Math.abs,
-                    d_val = [],
-                    transform = [];
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                        sqrt = Math.sqrt,
+                        abs = Math.abs,
+                        d_val = [],
+                        transform = [];
 
-                for (var i = 0; i < nb_ft; ++i) {
-                    var val = +dataset[i][field_name];
-                    // We deliberatly use 0 if this is a missing value :
-                    if (isNaN(val) || !isFinite(val)) val = 0;
-                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
-                }
-                d_val.sort(function (a, b) {
-                    return b[1] - a[1];
-                });
-                var ref = d_val[0][1] / d_val[0][2];
-                d_val[0].push(1);
-
-                for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
-                    var _val = d_val[_i3][1] / d_val[_i3][2];
-                    var scale = sqrt(_val / ref);
-                    d_val[_i3].push(scale);
-                }
-                d_val.sort(function (a, b) {
-                    return a[0] - b[0];
-                });
-                var formToSend = new FormData();
-                formToSend.append("json", JSON.stringify({
-                    topojson: current_layers[layer].key_name,
-                    scale_values: d_val.map(function (ft) {
-                        return ft[3];
-                    }),
-                    field_name: field_name }));
-                xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
-                    var options = { result_layer_on_add: true };
-                    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-                        options["choosed_name"] = new_user_layer_name;
+                    for (var i = 0; i < nb_ft; ++i) {
+                        var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
+                        d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                     }
-                    var n_layer_name = add_layer_topojson(result, options);
-                    current_layers[n_layer_name].renderer = "OlsonCarto";
-                    current_layers[n_layer_name].rendered_field = field_name;
-                    current_layers[n_layer_name].scale_max = 1;
-                    current_layers[n_layer_name].ref_layer_name = layer;
-                    current_layers[n_layer_name].scale_byFeature = transform;
-                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
-                    switch_accordion_section();
-                }, function (err) {
-                    display_error_during_computation();
-                    console.log(err);
-                });
+                    d_val.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+                    var ref = d_val[0][1] / d_val[0][2];
+                    d_val[0].push(1);
+
+                    for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+                        var _val = d_val[_i3][1] / d_val[_i3][2];
+                        var scale = sqrt(_val / ref);
+                        d_val[_i3].push(scale);
+                    }
+                    d_val.sort(function (a, b) {
+                        return a[0] - b[0];
+                    });
+                    var formToSend = new FormData();
+                    formToSend.append("json", JSON.stringify({
+                        topojson: current_layers[layer].key_name,
+                        scale_values: d_val.map(function (ft) {
+                            return ft[3];
+                        }),
+                        field_name: field_name }));
+                    xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
+                        var options = { result_layer_on_add: true };
+                        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+                            options["choosed_name"] = new_user_layer_name;
+                        }
+                        var n_layer_name = add_layer_topojson(result, options);
+                        current_layers[n_layer_name].renderer = "OlsonCarto";
+                        current_layers[n_layer_name].rendered_field = field_name;
+                        current_layers[n_layer_name].scale_max = 1;
+                        current_layers[n_layer_name].ref_layer_name = layer;
+                        current_layers[n_layer_name].scale_byFeature = transform;
+                        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
+                        switch_accordion_section();
+                    }, function (err) {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
+                })();
             } else if (algo === "dougenik") {
-                var _formToSend = new FormData(),
+                var formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
@@ -5498,16 +5524,16 @@ var fields_Anamorphose = {
                 if (!current_layers[layer].original_fields.has(field_name)) {
                     var table = user_data[layer],
                         to_send = var_to_send[field_name];
-                    for (var _i4 = 0, i_len = table.length; _i4 < i_len; ++_i4) {
-                        to_send.push(+table[_i4][field_name]);
+                    for (var i = 0, i_len = table.length; i < i_len; ++i) {
+                        to_send.push(+table[i][field_name]);
                     }
                 }
-                _formToSend.append("json", JSON.stringify({
+                formToSend.append("json", JSON.stringify({
                     "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
                     "iterations": nb_iter }));
 
-                xhrequest("POST", '/compute/carto_doug', _formToSend, true).then(function (data) {
+                xhrequest("POST", '/compute/carto_doug', formToSend, true).then(function (data) {
                     var options = { result_layer_on_add: true };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
                         options["choosed_name"] = new_user_layer_name;
@@ -5605,62 +5631,64 @@ function make_prop_line(rendering_params, geojson_line_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_line_layer) {
-        var make_geojson_line_layer = function make_geojson_line_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: cloneObj(ft.geometry)
-                };
-                if (f_ix_len) {
-                    for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                        new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_line_layer = function make_geojson_line_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: cloneObj(ft.geometry)
+                    };
+                    if (f_ix_len) {
+                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                        }
                     }
+                    new_obj.properties[field] = value;
+                    new_obj.properties[t_field_name] = propSize.scale(value);
+                    new_obj.properties['color'] = get_color(value, i);
+                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                    result.push([value, new_obj]);
                 }
-                new_obj.properties[field] = value;
-                new_obj.properties[t_field_name] = propSize.scale(value);
-                new_obj.properties['color'] = get_color(value, i);
-                if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                result.push([value, new_obj]);
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_line_layer = make_geojson_line_layer();
+            geojson_line_layer = make_geojson_line_layer();
+        })();
     }
 
     var layer_id = encodeId(layer_to_add);
@@ -5716,85 +5744,87 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_pt_layer) {
-        var make_geojson_pt_layer = function make_geojson_pt_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: { type: 'Point' }
-                };
-                if (ft.geometry.type.indexOf('Multi') < 0) {
-                    if (f_ix_len) {
-                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_pt_layer = function make_geojson_pt_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: { type: 'Point' }
+                    };
+                    if (ft.geometry.type.indexOf('Multi') < 0) {
+                        if (f_ix_len) {
+                            for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                                new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                            }
                         }
-                    }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
-                } else {
-                    var areas = [];
-                    for (var j = 0; j < ft.geometry.coordinates.length; j++) {
-                        areas.push(path.area({
-                            type: ft.geometry.type,
-                            coordinates: [ft.geometry.coordinates[j]]
-                        }));
-                    }
-                    var ix_max = areas.indexOf(max_fast(areas));
-                    if (f_ix_len) {
-                        for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
-                            new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
+                    } else {
+                        var areas = [];
+                        for (var j = 0; j < ft.geometry.coordinates.length; j++) {
+                            areas.push(path.area({
+                                type: ft.geometry.type,
+                                coordinates: [ft.geometry.coordinates[j]]
+                            }));
                         }
+                        var ix_max = areas.indexOf(max_fast(areas));
+                        if (f_ix_len) {
+                            for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
+                                new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                            }
+                        }
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
                     }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
                 }
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_pt_layer = make_geojson_pt_layer();
+            geojson_pt_layer = make_geojson_pt_layer();
+        })();
     }
     var layer_id = encodeId(layer_to_add);
     _app.layer_to_id.set(layer_to_add, layer_id);
@@ -6030,8 +6060,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
         });
         col_map = new Map();
-        for (var _i5 = 0; _i5 < cats.length; _i5++) {
-            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
+        for (var _i4 = 0; _i4 < cats.length; _i4++) {
+            col_map.set(cats[_i4].name, [cats[_i4].color, cats[_i4].name, cats[_i4].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -6423,13 +6453,15 @@ var render_discont = function render_discont() {
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
 
         {
-            // Only display the 50% most important values :
-            // TODO : reintegrate this upstream in the layer creation :
-            var lim = 0.5 * current_layers[new_layer_name].n_features;
-            result_layer.selectAll('path').style("display", function (d, i) {
-                return i <= lim ? null : "none";
-            });
-            current_layers[new_layer_name].min_display = 0.5;
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style("display", function (d, i) {
+                    return i <= lim ? null : "none";
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
@@ -7081,8 +7113,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i6 = 0; _i6 < nb_class; ++_i6) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i6], user_breaks[_i6 + 1]], sizes[_i6]]);
+        for (var _i5 = 0; _i5 < nb_class; ++_i5) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i5], user_breaks[_i5 + 1]], sizes[_i5]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });
@@ -8513,7 +8545,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     if (!(files.length == 1)) {
         var files_to_send = [];
         Array.prototype.forEach.call(files, function (f) {
-            return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? files_to_send.push(f) : null;
+            return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 || f.name.indexOf('.cpg') > -1 ? files_to_send.push(f) : null;
         });
         elem.style.border = '';
         if (target_layer_on_add && _app.targeted_layer_added) {
@@ -8523,7 +8555,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                 type: "error",
                 allowEscapeKey: false,
                 allowOutsideClick: false });
-        } else if (files_to_send.length == 4) {
+        } else if (files_to_send.length >= 4 && files_to_send.length <= 6) {
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {
@@ -10998,15 +11030,17 @@ function createStyleBox_Line(layer_name) {
                     return current_layers[layer_name].linksbyId[i][2];
                 });
             } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].size = prev_size;
-                current_layers[layer_name].breaks = prev_breaks;
-                var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
-                    return +i <= lim ? null : "none";
-                }).style('stroke-width', function (d) {
-                    return d.properties.prop_val;
-                });
+                (function () {
+                    current_layers[layer_name].min_display = prev_min_display;
+                    current_layers[layer_name].size = prev_size;
+                    current_layers[layer_name].breaks = prev_breaks;
+                    var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+                    selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
+                        return +i <= lim ? null : "none";
+                    }).style('stroke-width', function (d) {
+                        return d.properties.prop_val;
+                    });
+                })();
             } else {
                 if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", border_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", border_opacity).style("stroke", function () {
                     return Colors.names[Colors.random()];
@@ -11024,28 +11058,30 @@ function createStyleBox_Line(layer_name) {
     var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo") {
-        var color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
+        (function () {
+            var color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
 
-        popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
-                _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
-                cats = _prepare_categories_a2[0],
-                _ = _prepare_categories_a2[1];
+            popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
+                    _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+                    cats = _prepare_categories_a2[0],
+                    _ = _prepare_categories_a2[1];
 
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: color_field, field: color_field
-                    };
-                    selection.transition().style('stroke', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+                container.modal.hide();
+                display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: color_field, field: color_field
+                        };
+                        selection.transition().style('stroke', function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             container.modal.hide();
@@ -11081,48 +11117,52 @@ function createStyleBox_Line(layer_name) {
     }
 
     if (renderer == "Links") {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        var max_val = 0;
-        selection.each(function (d) {
-            if (+d.properties.fij > max_val) max_val = d.properties.fij;
-        });
-        var threshold_section = popup.append('p').attr("class", "line_elem");
-        threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
-        // The legend will be updated in order to start on the minimum value displayed instead of
-        //   using the minimum value of the serie (skipping unused class if necessary)
-        threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
-            var val = +this.value;
-            popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-            selection.style("display", function (d) {
-                return +d.properties.fij > val ? null : "none";
+        (function () {
+            prev_min_display = current_layers[layer_name].min_display || 0;
+            prev_breaks = current_layers[layer_name].breaks.slice();
+            var max_val = 0;
+            selection.each(function (d) {
+                if (+d.properties.fij > max_val) max_val = d.properties.fij;
             });
-            current_layers[layer_name].min_display = val;
-        });
-        threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
-            container.modal.hide();
-            display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
-                container.modal.show();
-                if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    }),
-                        links_byId = current_layers[layer_name].linksbyId;
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+links_byId[i][1])];
-                    });
-                }
+            var threshold_section = popup.append('p').attr("class", "line_elem");
+            threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
+            // The legend will be updated in order to start on the minimum value displayed instead of
+            //   using the minimum value of the serie (skipping unused class if necessary)
+            threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
+                var val = +this.value;
+                popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                selection.style("display", function (d) {
+                    return +d.properties.fij > val ? null : "none";
+                });
+                current_layers[layer_name].min_display = val;
             });
-        });
+            threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
+            popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+                container.modal.hide();
+                display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                    container.modal.show();
+                    if (result) {
+                        (function () {
+                            var serie = result[0],
+                                sizes = result[1].map(function (ft) {
+                                return ft[1];
+                            }),
+                                links_byId = current_layers[layer_name].linksbyId;
+                            serie.setClassManually(result[2]);
+                            current_layers[layer_name].breaks = result[1];
+                            selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
+                                return sizes[serie.getClass(+links_byId[i][1])];
+                            });
+                        })();
+                    }
+                });
+            });
+        })();
     } else if (renderer == "DiscLayer") {
         prev_min_display = current_layers[layer_name].min_display || 0;
         prev_size = current_layers[layer_name].size.slice();
         prev_breaks = current_layers[layer_name].breaks.slice();
-        var _max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
+        var max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
             return i.disc_value;
         }));
         var disc_part = popup.append("p").attr("class", "line_elem");
@@ -11142,17 +11182,19 @@ function createStyleBox_Line(layer_name) {
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                 container.modal.show();
                 if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    });
+                    (function () {
+                        var serie = result[0],
+                            sizes = result[1].map(function (ft) {
+                            return ft[1];
+                        });
 
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+d.properties.disc_value)];
-                    });
+                        serie.setClassManually(result[2]);
+                        current_layers[layer_name].breaks = result[1];
+                        current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+                        selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
+                            return sizes[serie.getClass(+d.properties.disc_value)];
+                        });
+                    })();
                 }
             });
         });
@@ -11177,29 +11219,31 @@ function createStyleBox_Line(layer_name) {
             current_layers[layer_name]['stroke-width-const'] = val;
         });
     } else if (renderer.startsWith('PropSymbols')) {
-        var field_used = current_layers[layer_name].rendered_field;
-        var d_values = result_data[layer_name].map(function (f) {
-            return +f[field_used];
-        });
-        var prop_val_content = popup.append("p");
-        prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: current_layers[layer_name].rendered_field }));
-        prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
-        prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
-            var f_size = +this.value,
-                prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
-            current_layers[layer_name].size[1] = f_size;
-            redraw_prop_val(prop_values);
-        });
-        prop_val_content.append("span").style("float", "right").html('(px)');
+        (function () {
+            var field_used = current_layers[layer_name].rendered_field;
+            var d_values = result_data[layer_name].map(function (f) {
+                return +f[field_used];
+            });
+            var prop_val_content = popup.append("p");
+            prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: current_layers[layer_name].rendered_field }));
+            prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
+            prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
+                var f_size = +this.value,
+                    prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
+                current_layers[layer_name].size[1] = f_size;
+                redraw_prop_val(prop_values);
+            });
+            prop_val_content.append("span").style("float", "right").html('(px)');
 
-        var prop_val_content2 = popup.append("p").attr("class", "line_elem");
-        prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
-        prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
-            var f_val = +this.value,
-                prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
-            redraw_prop_val(prop_values);
-            current_layers[layer_name].size[0] = f_val;
-        });
+            var prop_val_content2 = popup.append("p").attr("class", "line_elem");
+            prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
+            prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
+                var f_val = +this.value,
+                    prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
+                redraw_prop_val(prop_values);
+                current_layers[layer_name].size[0] = f_val;
+            });
+        })();
     }
 
     make_generate_labels_section(popup, layer_name);
@@ -11331,45 +11375,49 @@ function createStyleBox(layer_name) {
 
     if (current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical") {
         if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
-            var fields = getFieldsType('category', null, fields_layer);
-            var fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-            [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
-                fill_method.append("option").text(d[0]).attr("value", d[1]);
-            });
-            popup.append('div').attrs({ id: "fill_color_section" });
-            fill_method.on("change", function () {
-                d3.select("#fill_color_section").html("").on("click", null);
-                if (this.value == "single") make_single_color_menu(layer_name, fill_prev);else if (this.value == "categorical") make_categorical_color_menu(fields, layer_name, fill_prev);else if (this.value == "random") make_random_color(layer_name);
-            });
-            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            (function () {
+                var fields = getFieldsType('category', null, fields_layer);
+                var fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
+                [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
+                    fill_method.append("option").text(d[0]).attr("value", d[1]);
+                });
+                popup.append('div').attrs({ id: "fill_color_section" });
+                fill_method.on("change", function () {
+                    d3.select("#fill_color_section").html("").on("click", null);
+                    if (this.value == "single") make_single_color_menu(layer_name, fill_prev);else if (this.value == "categorical") make_categorical_color_menu(fields, layer_name, fill_prev);else if (this.value == "random") make_random_color(layer_name);
+                });
+                setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            })();
         } else {
             popup.append('div').attrs({ id: "fill_color_section" });
             make_single_color_menu(layer_name, fill_prev);
         }
     } else if (renderer == "Categorical") {
-        var rendered_field = current_layers[layer_name].rendered_field;
+        (function () {
+            var rendered_field = current_layers[layer_name].rendered_field;
 
-        popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            container.modal.hide();
+            popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                container.modal.hide();
 
-            var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
-                _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
-                cats = _prepare_categories_a4[0],
-                _ = _prepare_categories_a4[1];
+                var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
+                    _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+                    cats = _prepare_categories_a4[0],
+                    _ = _prepare_categories_a4[1];
 
-            display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: rendered_field, field: rendered_field
-                    };
-                    selection.transition().style('fill', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+                display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: rendered_field, field: rendered_field
+                        };
+                        selection.transition().style('fill', function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Choropleth") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             container.modal.hide();
@@ -11398,64 +11446,74 @@ function createStyleBox(layer_name) {
             });
         });
     } else if (renderer == "Gridded") {
-        var field_to_discretize = current_layers[layer_name].rendered_field;
-        popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "Choropleth",
-                        field: field_to_discretize,
-                        extra_options: confirmed[7]
-                    };
-                    var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                    selection.transition().style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+        (function () {
+            var field_to_discretize = current_layers[layer_name].rendered_field;
+            popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
+                display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
+                            colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
+                            renderer: "Choropleth",
+                            field: field_to_discretize,
+                            extra_options: confirmed[7]
+                        };
+                        var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+                        selection.transition().style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Stewart") {
-        var field_to_colorize = "min",
-            nb_ft = current_layers[layer_name].n_features;
-        var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-        rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+        var prev_palette;
+        var recolor_stewart;
+        var color_palette_section;
 
-        var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
-            var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-            if (reversed) new_coloramp.reverse();
-            for (var i = 0; i < nb_ft; ++i) {
-                rendering_params.breaks[i][1] = new_coloramp[i];
-            }selection.transition().style("fill", function (d, i) {
-                return new_coloramp[i];
+        (function () {
+            var field_to_colorize = "min",
+                nb_ft = current_layers[layer_name].n_features;
+            prev_palette = cloneObj(current_layers[layer_name].color_palette);
+
+            rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+
+            recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
+                var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+                if (reversed) new_coloramp.reverse();
+                for (var i = 0; i < nb_ft; ++i) {
+                    rendering_params.breaks[i][1] = new_coloramp[i];
+                }selection.transition().style("fill", function (d, i) {
+                    return new_coloramp[i];
+                });
+                current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+            };
+
+            color_palette_section = popup.insert("p").attr("class", "line_elem");
+
+            color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
+            var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
+                recolor_stewart(this.value, false);
             });
-            current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
-        };
 
-        var color_palette_section = popup.insert("p").attr("class", "line_elem");
-        color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-        var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
-            recolor_stewart(this.value, false);
-        });
-
-        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-            seq_color_select.append("option").text(name).attr("value", name);
-        });
-        seq_color_select.node().value = prev_palette.name;
-        popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
-            var pal_name = document.getElementById("coloramp_params").value;
-            recolor_stewart(pal_name, true);
-        });
+            ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+                seq_color_select.append("option").text(name).attr("value", name);
+            });
+            seq_color_select.node().value = prev_palette.name;
+            popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                var pal_name = document.getElementById("coloramp_params").value;
+                recolor_stewart(pal_name, true);
+            });
+        })();
     }
     var fill_opacity_section = popup.append('p').attr("class", "line_elem");
     fill_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
@@ -11539,53 +11597,55 @@ function make_generate_labels_graticule_section(parent_node) {
 function make_generate_labels_section(parent_node, layer_name) {
     var _fields = get_fields_name(layer_name) || [];
     if (_fields && _fields.length > 0) {
-        var labels_section = parent_node.append("p");
-        var input_fields = {};
-        for (var i = 0; i < _fields.length; i++) {
-            input_fields[_fields[i]] = _fields[i];
-        }
-        labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
-            this.style.fontWeight = "bold";
-        }).on("mouseout", function () {
-            this.style.fontWeight = "";
-        }).on("click", function () {
-            swal({
-                title: "",
-                text: i18next.t("app_page.layer_style_popup.field_label"),
-                type: "question",
-                customClass: 'swal2_custom',
-                showCancelButton: true,
-                showCloseButton: false,
-                allowEscapeKey: false,
-                allowOutsideClick: false,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: i18next.t("app_page.common.confirm"),
-                input: 'select',
-                inputPlaceholder: i18next.t("app_page.common.field"),
-                inputOptions: input_fields,
-                inputValidator: function inputValidator(value) {
-                    return new Promise(function (resolve, reject) {
-                        if (_fields.indexOf(value) < 0) {
-                            reject(i18next.t("app_page.common.no_value"));
-                        } else {
-                            var options_labels = {
-                                label_field: value,
-                                color: "#000",
-                                font: "Arial,Helvetica,sans-serif",
-                                ref_font_size: 12,
-                                uo_layer_name: ["Labels", value, layer_name].join('_')
-                            };
-                            render_label(layer_name, options_labels);
-                            resolve();
-                        }
-                    });
-                }
-            }).then(function (value) {
-                console.log(value);
-            }, function (dismiss) {
-                console.log(dismiss);
+        (function () {
+            var labels_section = parent_node.append("p");
+            var input_fields = {};
+            for (var i = 0; i < _fields.length; i++) {
+                input_fields[_fields[i]] = _fields[i];
+            }
+            labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
+                this.style.fontWeight = "bold";
+            }).on("mouseout", function () {
+                this.style.fontWeight = "";
+            }).on("click", function () {
+                swal({
+                    title: "",
+                    text: i18next.t("app_page.layer_style_popup.field_label"),
+                    type: "question",
+                    customClass: 'swal2_custom',
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    allowEscapeKey: false,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.confirm"),
+                    input: 'select',
+                    inputPlaceholder: i18next.t("app_page.common.field"),
+                    inputOptions: input_fields,
+                    inputValidator: function inputValidator(value) {
+                        return new Promise(function (resolve, reject) {
+                            if (_fields.indexOf(value) < 0) {
+                                reject(i18next.t("app_page.common.no_value"));
+                            } else {
+                                var options_labels = {
+                                    label_field: value,
+                                    color: "#000",
+                                    font: "Arial,Helvetica,sans-serif",
+                                    ref_font_size: 12,
+                                    uo_layer_name: ["Labels", value, layer_name].join('_')
+                                };
+                                render_label(layer_name, options_labels);
+                                resolve();
+                            }
+                        });
+                    }
+                }).then(function (value) {
+                    console.log(value);
+                }, function (dismiss) {
+                    console.log(dismiss);
+                });
             });
-        });
+        })();
     }
 }
 
@@ -11735,32 +11795,34 @@ function createStyleBox_ProbSymbol(layer_name) {
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
-        var field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "PropSymbolsChoro",
-                        field: field_color,
-                        extra_options: confirmed[7]
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+        (function () {
+            var field_color = current_layers[layer_name].rendered_field2;
+            popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
+                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
+                            colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
+                            renderer: "PropSymbolsChoro",
+                            field: field_color,
+                            extra_options: confirmed[7]
+                        };
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (current_layers[layer_name].break_val != undefined) {
         var fill_color_section = popup.append('div').attr("id", "fill_color_section");
         fill_color_section.append("p").style("text-align", "center").html(i18next.t("app_page.layer_style_popup.color_break"));
@@ -11792,48 +11854,52 @@ function createStyleBox_ProbSymbol(layer_name) {
             });
         });
     } else if (type_method === "PropSymbolsTypo") {
-        var _field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: _field_color }));
-        popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a5 = prepare_categories_array(layer_name, _field_color, current_layers[layer_name].color_map),
-                _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
-                cats = _prepare_categories_a6[0],
-                _ = _prepare_categories_a6[1];
+        (function () {
+            var field_color = current_layers[layer_name].rendered_field2;
+            popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color }));
+            popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var _prepare_categories_a5 = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map),
+                    _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
+                    cats = _prepare_categories_a6[0],
+                    _ = _prepare_categories_a6[1];
 
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, _field_color, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: _field_color, field: _field_color
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
+                container.modal.hide();
+                display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: field_color, field: field_color
+                        };
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
+            });
+        })();
+    } else {
+        (function () {
+            var fields_all = type_col2(result_data[layer_name]),
+                fields = getFieldsType('category', null, fields_all),
+                fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
+
+            [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
+                fill_method.append("option").text(d[0]).attr("value", d[1]);
+            });
+            popup.append('div').attr("id", "fill_color_section");
+            fill_method.on("change", function () {
+                popup.select("#fill_color_section").html("").on("click", null);
+                if (this.value == "single") {
+                    make_single_color_menu(layer_name, fill_prev, type_symbol);
+                    map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
+                    current_layers[layer_name].fill_color = cloneObj(fill_prev);
+                } else if (this.value == "random") {
+                    make_random_color(layer_name, type_symbol);
                 }
             });
-        });
-    } else {
-        var fields_all = type_col2(result_data[layer_name]),
-            fields = getFieldsType('category', null, fields_all),
-            fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-
-        [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
-            fill_method.append("option").text(d[0]).attr("value", d[1]);
-        });
-        popup.append('div').attr("id", "fill_color_section");
-        fill_method.on("change", function () {
-            popup.select("#fill_color_section").html("").on("click", null);
-            if (this.value == "single") {
-                make_single_color_menu(layer_name, fill_prev, type_symbol);
-                map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
-                current_layers[layer_name].fill_color = cloneObj(fill_prev);
-            } else if (this.value == "random") {
-                make_random_color(layer_name, type_symbol);
-            }
-        });
-        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+        })();
     }
 
     var fill_opct_section = popup.append('p').attr("class", "line_elem");
@@ -13587,39 +13653,43 @@ var get_coords_snap_lines = function get_coords_snap_lines(uid) {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function handle_legend(layer) {
-    var state = current_layers[layer].renderer;
-    if (state != undefined) {
-        var class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
-        var legends = svg_map.getElementsByClassName(class_name);
-        if (legends.length > 0) {
-            if (legends[0].getAttribute('display') == null) Array.prototype.forEach.call(legends, function (el) {
-                return el.setAttribute('display', 'none');
-            });else {
-                Array.prototype.forEach.call(legends, function (el) {
-                    return el.removeAttribute('display');
-                });
-                // Redisplay the legend(s) and also
-                // verify if still in the visible part
-                // of the map, if not, move them in:
-                // .. so it's actually a feature if the legend is redrawn on its origin location
-                // after being moved too close to the outer border of the map :
-                var tol = 7.5,
-                    map_xy0 = get_map_xy0(),
-                    limit_left = map_xy0.x - tol,
-                    limit_right = map_xy0.x + +w + tol,
-                    limit_top = map_xy0.y - tol,
-                    limit_bottom = map_xy0.y + +h + tol;
+  var state = current_layers[layer].renderer;
+  if (state != undefined) {
+    var class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
+    var legends = svg_map.getElementsByClassName(class_name);
+    if (legends.length > 0) {
+      if (legends[0].getAttribute('display') == null) {
+        Array.prototype.forEach.call(legends, function (el) {
+          return el.setAttribute('display', 'none');
+        });
+      } else {
+        Array.prototype.forEach.call(legends, function (el) {
+          return el.removeAttribute('display');
+        });
+        // Redisplay the legend(s) and also
+        // verify if still in the visible part
+        // of the map, if not, move them in:
+        // .. so it's actually a feature if the legend is redrawn on its origin location
+        // after being moved too close to the outer border of the map :
+        var tol = 7.5,
+            map_xy0 = get_map_xy0(),
+            limit_left = map_xy0.x - tol,
+            limit_right = map_xy0.x + +w + tol,
+            limit_top = map_xy0.y - tol,
+            limit_bottom = map_xy0.y + +h + tol;
 
-                for (var i = 0; i < legends.length; i++) {
-                    var bbox_legend = legends[i].getBoundingClientRect();
-                    if (bbox_legend.left < limit_left || bbox_legend.left > limit_right || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom) legends[i].setAttribute("transform", "translate(0, 0)");
-                }
-            }
-        } else {
-            createLegend(layer, "");
-            up_legends();
+        for (var i = 0; i < legends.length; i++) {
+          var bbox_legend = legends[i].getBoundingClientRect();
+          if (bbox_legend.left < limit_left || bbox_legend.left > limit_right || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom) {
+            legends[i].setAttribute("transform", "translate(0, 0)");
+          }
         }
+      }
+    } else {
+      createLegend(layer, "");
+      up_legends();
     }
+  }
 }
 
 /**
@@ -13631,333 +13701,335 @@ function handle_legend(layer) {
 *
 */
 function createLegend(layer, title) {
-    var renderer = current_layers[layer].renderer,
-        field = current_layers[layer].rendered_field,
-        field2 = current_layers[layer].rendered_field2,
-        type_layer = current_layers[layer].type,
-        el,
-        el2,
-        lgd_pos,
-        lgd_pos2;
+  var renderer = current_layers[layer].renderer,
+      field = current_layers[layer].rendered_field,
+      field2 = current_layers[layer].rendered_field2,
+      type_layer = current_layers[layer].type,
+      el = void 0,
+      el2 = void 0,
+      lgd_pos = void 0,
+      lgd_pos2 = void 0;
 
-    lgd_pos = getTranslateNewLegend();
+  lgd_pos = getTranslateNewLegend();
 
-    if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1 || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
-        el = createLegend_choro(layer, field, title, field, 0);
-    } else if (renderer.indexOf('Categorical') > -1) {
-        el = createLegend_choro(layer, field, title, field, 4);
-    } else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) {
-        el = createLegend_discont_links(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbolsChoro") != -1) {
-        el = createLegend_choro(layer, field2, title, field2, 0);
-        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
-        el = createLegend_choro(layer, field2, title, field2, 4);
-        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
-    } else if (renderer.indexOf("PropSymbols") != -1) {
-        el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
-    } else {
-        swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
-        return;
-    }
+  if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1 || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
+    el = createLegend_choro(layer, field, title, field, 0);
+  } else if (renderer.indexOf('Categorical') > -1) {
+    el = createLegend_choro(layer, field, title, field, 4);
+  } else if (renderer.indexOf("Links") != -1 || renderer.indexOf("DiscLayer") != -1) {
+    el = createLegend_discont_links(layer, field, title, field);
+  } else if (renderer.indexOf("PropSymbolsChoro") != -1) {
+    el = createLegend_choro(layer, field2, title, field2, 0);
+    el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
+    el = createLegend_choro(layer, field2, title, field2, 4);
+    el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf("PropSymbols") != -1) {
+    el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+  } else {
+    swal("Oops..", i18next.t("No legend available for this representation") + ".<br>" + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), "warning");
+    return;
+  }
 
-    if (el && lgd_pos && lgd_pos.x) {
-        el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
+  if (el && lgd_pos && lgd_pos.x) {
+    el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
+  }
+  pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect());
+  if (el2) {
+    var _lgd_pos = getTranslateNewLegend(),
+        prev_bbox = el.node().getBoundingClientRect(),
+        dim_h = lgd_pos.y + prev_bbox.height,
+        dim_w = lgd_pos.x + prev_bbox.width;
+    if (_lgd_pos.x != lgd_pos.x || _lgd_pos.y != lgd_pos.y) {
+      el2.attr('transform', 'translate(' + _lgd_pos.x + ',' + _lgd_pos.y + ')');
+    } else if (dim_h < h) {
+      el2.attr('transform', 'translate(' + lgd_pos.x + ',' + dim_h + ')');
+    } else if (dim_w < w) {
+      el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
     }
-    pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect());
-    if (el2) {
-        var _lgd_pos = getTranslateNewLegend(),
-            prev_bbox = el.node().getBoundingClientRect(),
-            dim_h = lgd_pos.y + prev_bbox.height,
-            dim_w = lgd_pos.x + prev_bbox.width;
-        if (_lgd_pos.x != lgd_pos.x || _lgd_pos.y != lgd_pos.y) {
-            el2.attr('transform', 'translate(' + _lgd_pos.x + ',' + _lgd_pos.y + ')');
-        } else if (dim_h < h) {
-            el2.attr('transform', 'translate(' + lgd_pos.x + ',' + dim_h + ')');
-        } else if (dim_w < w) {
-            el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
-        }
-        pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect());
-    }
+    pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect());
+  }
 }
 
 function up_legend(legend_node) {
-    var lgd_features = svg_map.getElementsByClassName("legend"),
-        nb_lgd_features = +lgd_features.length,
-        self_position = void 0;
-    for (var i = 0; i < nb_lgd_features; i++) {
-        if (lgd_features[i].id == legend_node.id && lgd_features[i].classList == legend_node.classList) {
-            self_position = i;
-        }
+  var lgd_features = svg_map.getElementsByClassName("legend"),
+      nb_lgd_features = +lgd_features.length,
+      self_position = void 0;
+
+  for (var i = 0; i < nb_lgd_features; i++) {
+    if (lgd_features[i].id == legend_node.id && lgd_features[i].classList == legend_node.classList) {
+      self_position = i;
     }
-    if (self_position == nb_lgd_features - 1) {
-        return;
-    } else {
-        svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position]);
-    }
+  }
+  if (self_position == nb_lgd_features - 1) {
+    return;
+  } else {
+    svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position]);
+  }
 }
 
 function down_legend(legend_node) {
-    var lgd_features = svg_map.getElementsByClassName("legend"),
-        nb_lgd_features = +lgd_features.length,
-        self_position = void 0;
-    for (var i = 0; i < nb_lgd_features; i++) {
-        if (lgd_features[i].id == legend_node.id && lgd_features[i].classList == legend_node.classList) {
-            self_position = i;
-        }
+  var lgd_features = svg_map.getElementsByClassName("legend"),
+      nb_lgd_features = +lgd_features.length,
+      self_position = void 0;
+
+  for (var i = 0; i < nb_lgd_features; i++) {
+    if (lgd_features[i].id == legend_node.id && lgd_features[i].classList == legend_node.classList) {
+      self_position = i;
     }
-    if (self_position == 0) {
-        return;
-    } else {
-        svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
-    }
+  }
+  if (self_position == 0) {
+    return;
+  } else {
+    svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+  }
 }
 
 function make_legend_context_menu(legend_node, layer) {
-    var context_menu = new ContextMenu(),
-        getItems = function getItems() {
-        return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                createlegendEditBox(legend_node.attr("id"), layer);
-            } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
-                up_legend(legend_node.node());
-            } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
-                down_legend(legend_node.node());
-            } }, { "name": i18next.t("app_page.common.hide"), "action": function action() {
-                if (!(legend_node.attr("display") == "none")) legend_node.attr("display", "none");else legend_node.attr("display", null);
-            } }];
-    };
-    legend_node.on("dblclick", function () {
-        d3.event.stopPropagation();
-        d3.event.preventDefault();
+  var context_menu = new ContextMenu(),
+      getItems = function getItems() {
+    return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
         createlegendEditBox(legend_node.attr("id"), layer);
-    });
+      } }, { "name": i18next.t("app_page.common.up_element"), "action": function action() {
+        up_legend(legend_node.node());
+      } }, { "name": i18next.t("app_page.common.down_element"), "action": function action() {
+        down_legend(legend_node.node());
+      } }, { "name": i18next.t("app_page.common.hide"), "action": function action() {
+        if (!(legend_node.attr("display") == "none")) legend_node.attr("display", "none");else legend_node.attr("display", null);
+      } }];
+  };
+  legend_node.on("dblclick", function () {
+    d3.event.stopPropagation();
+    d3.event.preventDefault();
+    createlegendEditBox(legend_node.attr("id"), layer);
+  });
 
-    legend_node.on("contextmenu", function () {
-        context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
-    });
+  legend_node.on("contextmenu", function () {
+    context_menu.showMenu(d3.event, document.querySelector("body"), getItems());
+  });
 }
 
 var make_red_line_snap = function make_red_line_snap(x1, x2, y1, y2) {
-    var timeout = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 750;
+  var timeout = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 750;
 
-    var current_timeout = void 0;
-    return function () {
-        if (current_timeout) {
-            clearTimeout(current_timeout);
-        }
-        map.select('.snap_line').remove();
-        var line = map.append('line').attrs({ x1: x1, x2: x2, y1: y1, y2: y2, class: 'snap_line' }).styles({ stroke: 'red', 'stroke-width': 0.7 });
-        current_timeout = setTimeout(function (_) {
-            line.remove();
-        }, timeout);
-    }();
+  var current_timeout = void 0;
+  return function () {
+    if (current_timeout) {
+      clearTimeout(current_timeout);
+    }
+    map.select('.snap_line').remove();
+    var line = map.append('line').attrs({ x1: x1, x2: x2, y1: y1, y2: y2, class: 'snap_line' }).styles({ stroke: 'red', 'stroke-width': 0.7 });
+    current_timeout = setTimeout(function (_) {
+      line.remove();
+    }, timeout);
+  }();
 };
 
 var drag_legend_func = function drag_legend_func(legend_group) {
-    return d3.drag().subject(function () {
-        var t = d3.select(this),
-            prev_translate = t.attr("transform"),
-            snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
-        prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
-            return +f;
-        }) : [0, 0];
-        return {
-            x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
-            map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
-            map_offset: get_map_xy0(),
-            snap_lines: snap_lines,
-            offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
-        };
-    }).on("start", function () {
-        d3.event.sourceEvent.stopPropagation();
-        d3.event.sourceEvent.preventDefault();
-        handle_click_hand("lock");
-    }).on("end", function () {
-        if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
-        legend_group.style("cursor", "grab");
-        pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
-    }).on("drag", function () {
-        var Min = Math.min;
-        var Max = Math.max;
-        var new_value = [d3.event.x, d3.event.y];
-        var prev_value = legend_group.attr("transform");
-        prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
-            return +f;
-        }) : [0, 0];
+  return d3.drag().subject(function () {
+    var t = d3.select(this),
+        prev_translate = t.attr("transform"),
+        snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
+    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
+      return +f;
+    }) : [0, 0];
+    return {
+      x: t.attr("x") + prev_translate[0], y: t.attr("y") + prev_translate[1],
+      map_locked: map_div.select("#hand_button").classed("locked") ? true : false,
+      map_offset: get_map_xy0(),
+      snap_lines: snap_lines,
+      offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
+    };
+  }).on("start", function () {
+    d3.event.sourceEvent.stopPropagation();
+    d3.event.sourceEvent.preventDefault();
+    handle_click_hand("lock");
+  }).on("end", function () {
+    if (d3.event.subject && !d3.event.subject.map_locked) handle_click_hand("unlock");
+    legend_group.style("cursor", "grab");
+    pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
+  }).on("drag", function () {
+    var Min = Math.min;
+    var Max = Math.max;
+    var new_value = [d3.event.x, d3.event.y];
+    var prev_value = legend_group.attr("transform");
+    prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
+      return +f;
+    }) : [0, 0];
 
-        legend_group.attr('transform', 'translate(' + new_value + ')').style("cursor", "grabbing");
+    legend_group.attr('transform', 'translate(' + new_value + ')').style("cursor", "grabbing");
 
-        var bbox_elem = legend_group.node().getBoundingClientRect(),
-            map_offset = d3.event.subject.map_offset,
-            val_x = d3.event.x,
-            val_y = d3.event.y,
-            change = void 0;
+    var bbox_elem = legend_group.node().getBoundingClientRect(),
+        map_offset = d3.event.subject.map_offset,
+        val_x = d3.event.x,
+        val_y = d3.event.y,
+        change = void 0;
 
-        if (_app.autoalign_features) {
-            var xy0 = get_map_xy0(),
-                xmin = bbox_elem.left - xy0.x,
-                xmax = bbox_elem.right - xy0.x,
-                ymin = bbox_elem.top - xy0.y,
-                ymax = bbox_elem.bottom - xy0.y;
+    if (_app.autoalign_features) {
+      var xy0 = get_map_xy0(),
+          xmin = bbox_elem.left - xy0.x,
+          xmax = bbox_elem.right - xy0.x,
+          ymin = bbox_elem.top - xy0.y,
+          ymax = bbox_elem.bottom - xy0.y;
 
-            var snap_lines_x = d3.event.subject.snap_lines.x,
-                snap_lines_y = d3.event.subject.snap_lines.y;
-            for (var i = 0; i < snap_lines_x.length; i++) {
-                if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
-                    var _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    var _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-                    val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
-                    change = true;
-                }
-                if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
-                    var _y = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    var _y3 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
-                    val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
-                    change = true;
-                }
-                if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
-                    var x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    var x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
-                    change = true;
-                }
-                if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-                    var _x2 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    var _x3 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(_x2, _x3, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
-                    change = true;
-                }
-            }
+      var snap_lines_x = d3.event.subject.snap_lines.x,
+          snap_lines_y = d3.event.subject.snap_lines.y;
+      for (var i = 0; i < snap_lines_x.length; i++) {
+        if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+          var _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+          var _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+          val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];;
+          change = true;
         }
+        if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+          var _y = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+          var _y3 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+          make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
+          val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
+          change = true;
+        }
+        if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+          var x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+          var x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+          make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+          val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
+          change = true;
+        }
+        if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+          var _x2 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+          var _x3 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+          make_red_line_snap(_x2, _x3, snap_lines_y[i][0], snap_lines_y[i][0]);
+          val_y = snap_lines_y[i][0] - bbox_elem.height - d3.event.subject.offset[1];
+          change = true;
+        }
+      }
+    }
 
-        if (bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)) {
-            val_x = prev_value[0];
-            change = true;
-        }
-        if (bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)) {
-            val_y = prev_value[1];
-            change = true;
-        }
-        if (change) {
-            legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
-        }
-    });
+    if (bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)) {
+      val_x = prev_value[0];
+      change = true;
+    }
+    if (bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)) {
+      val_y = prev_value[1];
+      change = true;
+    }
+    if (change) {
+      legend_group.attr('transform', 'translate(' + [val_x, val_y] + ')');
+    }
+  });
 };
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
-    var space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 = ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        breaks = current_layers[layer].breaks,
-        nb_class = breaks.length;
+  var space_elem = 18,
+      boxgap = 12,
+      xpos = 30,
+      ypos = 30,
+      y_pos2 = ypos + space_elem,
+      tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
+      breaks = current_layers[layer].breaks,
+      nb_class = breaks.length;
 
-    if (rounding_precision == undefined) {
-        var b_val = breaks.map(function (v, i) {
-            return v[0][0];
-        }).concat(breaks[nb_class - 1][0][1]);
-        rounding_precision = get_lgd_display_precision(b_val);
+  if (rounding_precision == undefined) {
+    var b_val = breaks.map(function (v, i) {
+      return v[0][0];
+    }).concat(breaks[nb_class - 1][0][1]);
+    rounding_precision = get_lgd_display_precision(b_val);
+  }
+
+  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+
+  var rect_under_legend = legend_root.insert("rect");
+
+  legend_root.insert('text').attr("id", "legendtitle").text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+
+  legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+
+  var ref_symbols_params = [];
+
+  // Prepare symbols for the legend, taking care of not representing values
+  // under the display threshold defined by the user (if any) :
+  var current_min_value = +current_layers[layer].min_display;
+  if (current_layers[layer].renderer == "DiscLayer") {
+    // Todo use the same way to store the threshold for links and disclayer
+    // in order to avoid theses condition
+    var values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'), function (d) {
+      return +d.__data__.properties["disc_value"];
+    });
+    current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
+  }
+  var _iteratorNormalCompletion = true;
+  var _didIteratorError = false;
+  var _iteratorError = undefined;
+
+  try {
+    for (var _iterator = breaks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      var _b_val = _step.value;
+
+      if (_b_val[1] != 0) {
+        if (current_min_value >= +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
+          ref_symbols_params.push({ value: [current_min_value, _b_val[0][1]], size: _b_val[1] });
+        } else if (current_min_value < +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
+          ref_symbols_params.push({ value: _b_val[0], size: _b_val[1] });
+        }
+      }
     }
-
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
-
-    var rect_under_legend = legend_root.insert("rect");
-
-    legend_root.insert('text').attr("id", "legendtitle").text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
-
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
-
-    var ref_symbols_params = [];
-
-    // Prepare symbols for the legend, taking care of not representing values
-    // under the display threshold defined by the user (if any) :
-    var current_min_value = +current_layers[layer].min_display;
-    if (current_layers[layer].renderer == "DiscLayer") {
-        // Todo use the same way to store the threshold for links and disclayer
-        // in order to avoid theses condition
-        var values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'), function (d) {
-            return +d.__data__.properties["disc_value"];
-        });
-        current_min_value = current_min_value != 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
-    }
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
+  } catch (err) {
+    _didIteratorError = true;
+    _iteratorError = err;
+  } finally {
     try {
-        for (var _iterator = breaks[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _b_val = _step.value;
-
-            if (_b_val[1] != 0) {
-                if (current_min_value >= +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
-                    ref_symbols_params.push({ value: [current_min_value, _b_val[0][1]], size: _b_val[1] });
-                } else if (current_min_value < +_b_val[0][0] && current_min_value < +_b_val[0][1]) {
-                    ref_symbols_params.push({ value: _b_val[0], size: _b_val[1] });
-                }
-            }
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+      if (!_iteratorNormalCompletion && _iterator.return) {
+        _iterator.return();
+      }
     } finally {
-        try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-            }
-        } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
-            }
-        }
+      if (_didIteratorError) {
+        throw _iteratorError;
+      }
     }
+  }
 
-    ref_symbols_params.reverse();
+  ref_symbols_params.reverse();
 
-    var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
-        return "lg legend_" + i;
-    });
+  var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
+    return "lg legend_" + i;
+  });
 
-    var max_size = current_layers[layer].size[1],
-        last_size = 0,
-        last_pos = y_pos2,
-        color = current_layers[layer].fill_color.single,
-        xrect = xpos + space_elem + max_size / 2;
+  var max_size = current_layers[layer].size[1],
+      last_size = 0,
+      last_pos = y_pos2,
+      color = current_layers[layer].fill_color.single,
+      xrect = xpos + space_elem + max_size / 2;
 
-    legend_elems.append("rect").styles({ fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0 }).attrs(function (d) {
-        last_pos = boxgap + last_pos + last_size;
-        last_size = d.size;
-        return { x: xrect, y: last_pos, width: 45, height: d.size };
-    });
+  legend_elems.append("rect").styles({ fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0 }).attrs(function (d) {
+    last_pos = boxgap + last_pos + last_size;
+    last_size = d.size;
+    return { x: xrect, y: last_pos, width: 45, height: d.size };
+  });
 
-    last_pos = y_pos2;
-    last_size = 0;
+  last_pos = y_pos2;
+  last_size = 0;
 
-    var x_text_pos = xpos + space_elem + max_size * 1.5 + 45;
-    var tmp_pos = void 0;
-    legend_elems.append("text").attrs(function (d) {
-        last_pos = boxgap + last_pos + last_size;
-        last_size = d.size;
-        tmp_pos = last_pos - d.size / 4;
-        return { x: x_text_pos, y: tmp_pos };
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-        return round_value(d.value[1], rounding_precision).toLocaleString();
-    });
+  var x_text_pos = xpos + space_elem + max_size * 1.5 + 45;
+  var tmp_pos = void 0;
+  legend_elems.append("text").attrs(function (d) {
+    last_pos = boxgap + last_pos + last_size;
+    last_size = d.size;
+    tmp_pos = last_pos - d.size / 4;
+    return { x: x_text_pos, y: tmp_pos };
+  }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+    return round_value(d.value[1], rounding_precision).toLocaleString();
+  });
 
-    legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", x_text_pos).attr("y", tmp_pos + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(round_value(ref_symbols_params[ref_symbols_params.length - 1].value[0], rounding_precision).toLocaleString());
+  legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", x_text_pos).attr("y", tmp_pos + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(round_value(ref_symbols_params[ref_symbols_params.length - 1].value[0], rounding_precision).toLocaleString());
 
-    legend_root.call(drag_legend_func(legend_root));
+  legend_root.call(drag_legend_func(legend_root));
 
-    legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  // legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 /**
@@ -13967,841 +14039,863 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 *
 */
 function make_underlying_rect(legend_root, under_rect, fill) {
-    under_rect.attrs({ "width": 0, height: 0 });
-    var bbox_legend = legend_root.node().getBoundingClientRect(),
-        translate = legend_root.attr("transform"),
-        map_xy0 = get_map_xy0();
+  under_rect.attrs({ "width": 0, height: 0 });
+  var bbox_legend = legend_root.node().getBoundingClientRect();
+  var translate = legend_root.attr("transform");
+  var map_xy0 = get_map_xy0();
 
-    translate = translate ? translate.split("translate(")[1].split(")")[0].split(",").map(function (d) {
-        return +d;
-    }) : [0, 0];
+  translate = translate ? translate.split("translate(")[1].split(")")[0].split(",").map(function (d) {
+    return +d;
+  }) : [0, 0];
 
-    var x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
-        y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
-        x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
-        y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
+  var x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
+      y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
+      x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
+      y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
 
-    var rect_height = y_bottom_left - y_top_left,
-        rect_width = x_top_right - x_top_left;
+  var rect_height = y_bottom_left - y_top_left;
+  var rect_width = x_top_right - x_top_left;
 
-    under_rect.attrs({ id: "under_rect", x: x_top_left, y: y_top_left,
-        height: rect_height, width: rect_width });
+  under_rect.attrs({
+    id: "under_rect", x: x_top_left, y: y_top_left,
+    height: rect_height, width: rect_width });
 
-    if (!fill || !fill.color || !fill.opacity) {
-        under_rect.style("fill", "green").style("fill-opacity", 0);
-        legend_root.attr("visible_rect", "false");
-        legend_root.on("mouseover", function () {
-            under_rect.style("fill-opacity", 0.1);
-        }).on("mouseout", function () {
-            under_rect.style("fill-opacity", 0);
-        });
-    } else {
-        under_rect.style("fill", fill.color).style("fill-opacity", fill.opacity);
-        legend_root.attr("visible_rect", "true");
-        legend_root.on("mouseover", null).on("mouseout", null);
-    }
+  if (!fill || !fill.color || !fill.opacity) {
+    under_rect.styles({ fill: 'green', 'fill-opacity': 0 });
+    legend_root.attr("visible_rect", "false");
+    legend_root.on("mouseover", function () {
+      under_rect.style("fill-opacity", 0.1);
+    }).on("mouseout", function () {
+      under_rect.style("fill-opacity", 0);
+    });
+  } else {
+    under_rect.styles({ fill: fill.color, 'fill-opacity': fill.opacity });
+    legend_root.attr("visible_rect", "true");
+    legend_root.on("mouseover", null).on("mouseout", null);
+  }
 }
 
 function createLegend_symbol(layer, field, title, subtitle) {
-    var nested = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "false";
-    var rect_fill_value = arguments[5];
-    var rounding_precision = arguments[6];
-    var note_bottom = arguments[7];
-    var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
+  var nested = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "false";
+  var rect_fill_value = arguments[5];
+  var rounding_precision = arguments[6];
+  var note_bottom = arguments[7];
+  var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
 
-    var parent = options.parent || window.map;
-    var space_elem = 18,
-        boxgap = 4,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 = ypos + space_elem * 1.5,
-        nb_features = current_layers[layer].n_features,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        symbol_type = current_layers[layer].symbol;
+  var parent = options.parent || window.map;
+  var space_elem = 18;
+  var boxgap = 4;
+  var xpos = 30;
+  var ypos = 30;
+  var y_pos2 = ypos + space_elem * 1.5;
+  var nb_features = current_layers[layer].n_features;
+  var tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+  var symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
+  var color_symb_lgd = current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = parent.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root_symbol', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
-        nested: nested, rounding_precision: rounding_precision, layer_field: field });
+  var legend_root = parent.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root_symbol', class: tmp_class_name,
+    transform: 'translate(0,0)', layer_name: layer,
+    nested: nested, rounding_precision: rounding_precision,
+    layer_field: field });
 
-    var rect_under_legend = legend_root.insert("rect");
-    legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+  var rect_under_legend = legend_root.insert("rect");
+  legend_root.insert('text').attr("id", "legendtitle").text(title).style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
-    var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
-        type_param = symbol_type === 'circle' ? 'r' : 'width',
-        z_scale = +d3.zoomTransform(map.node()).k,
-        _current_layers$layer = _slicedToArray(current_layers[layer].size, 2),
-        ref_value = _current_layers$layer[0],
-        ref_size = _current_layers$layer[1],
-        propSize = new PropSizer(ref_value, ref_size, symbol_type);
+  var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
+  var type_param = symbol_type === 'circle' ? 'r' : 'width';
+  var z_scale = +d3.zoomTransform(map.node()).k;
 
+  var _current_layers$layer = _slicedToArray(current_layers[layer].size, 2),
+      ref_value = _current_layers$layer[0],
+      ref_size = _current_layers$layer[1];
 
-    if (!current_layers[layer].size_legend_symbol) {
-        var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
-            if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
-        }),
-            size_max = +non_empty[0].getAttribute(type_param),
-            size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
-            sqrt = Math.sqrt,
-            val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-            val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-            r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
-            diff_size = sqrt(size_max) - sqrt(size_min),
-            size_interm1 = sqrt(size_min) + diff_size / 3,
-            size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
-        size_interm1 = Math.pow(size_interm1, 2);
-        current_layers[layer].size_legend_symbol = [{ value: val_max }, { value: round_value(propSize.get_value(size_interm2), r) }, { value: round_value(propSize.get_value(size_interm1), r) }, { value: val_min }];
+  var propSize = new PropSizer(ref_value, ref_size, symbol_type);
+
+  if (!current_layers[layer].size_legend_symbol) {
+    var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+      if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
+    }),
+        size_max = +non_empty[0].getAttribute(type_param),
+        size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+        sqrt = Math.sqrt,
+        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+        r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
+        diff_size = sqrt(size_max) - sqrt(size_min),
+        size_interm1 = sqrt(size_min) + diff_size / 3,
+        size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
+    size_interm1 = Math.pow(size_interm1, 2);
+    current_layers[layer].size_legend_symbol = [{ value: val_max }, { value: round_value(propSize.get_value(size_interm2), r) }, { value: round_value(propSize.get_value(size_interm1), r) }, { value: val_min }];
+  }
+
+  var t = current_layers[layer].size_legend_symbol;
+  var ref_symbols_params = [{ size: propSize.scale(t[0].value) * z_scale, value: t[0].value }, { size: propSize.scale(t[1].value) * z_scale, value: t[1].value }, { size: propSize.scale(t[2].value) * z_scale, value: t[2].value }, { size: propSize.scale(t[3].value) * z_scale, value: t[3].value }];
+  if (ref_symbols_params[3].value == 0) {
+    ref_symbols_params.pop();
+  }
+  var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
+    return "lg legend_" + i;
+  });
+
+  var max_size = ref_symbols_params[0].size;
+  var last_size = 0;
+
+  if (symbol_type === "rect") {
+    y_pos2 = y_pos2 - max_size / 2;
+  }
+
+  var last_pos = y_pos2;
+
+  if (nested == "false") {
+    if (symbol_type === "circle") {
+      legend_elems.append("circle").styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 }).attrs(function (d, i) {
+        last_pos = i * boxgap + d.size + last_pos + last_size;
+        last_size = d.size;
+        return {
+          "cx": xpos + space_elem + boxgap + max_size / 2,
+          "cy": last_pos,
+          "r": d.size
+        };
+      });
+
+      last_pos = y_pos2;last_size = 0;
+      legend_elems.append("text").attrs(function (d, i) {
+        last_pos = i * boxgap + d.size + last_pos + last_size;
+        last_size = d.size;
+        return {
+          "x": xpos + space_elem + boxgap + max_size * 1.5 + 5,
+          "y": last_pos + i * 2 / 3
+        };
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(d.value, rounding_precision).toLocaleString();
+      });
+    } else if (symbol_type === "rect") {
+      legend_elems.append("rect").styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 }).attrs(function (d, i) {
+        last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
+        last_size = d.size;
+        return {
+          "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
+          "y": last_pos,
+          "width": last_size,
+          "height": last_size
+        };
+      });
+
+      last_pos = y_pos2;last_size = 0;
+      var x_text_pos = xpos + space_elem + max_size * 1.25;
+      legend_elems.append("text").attr("x", x_text_pos).attr("y", function (d, i) {
+        last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
+        last_size = d.size;
+        return last_pos + d.size * 0.6;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(d.value, rounding_precision).toLocaleString();
+      });
     }
-    var t = current_layers[layer].size_legend_symbol;
-    var ref_symbols_params = [{ size: propSize.scale(t[0].value) * z_scale, value: t[0].value }, { size: propSize.scale(t[1].value) * z_scale, value: t[1].value }, { size: propSize.scale(t[2].value) * z_scale, value: t[2].value }, { size: propSize.scale(t[3].value) * z_scale, value: t[3].value }];
-    if (ref_symbols_params[3].value == 0) {
-        ref_symbols_params.pop();
+  } else if (nested == "true") {
+    if (symbol_type === "circle") {
+      legend_elems.append("circle").attrs(function (d) {
+        return {
+          cx: xpos + space_elem + boxgap + max_size / 2,
+          cy: ypos + 45 + max_size + max_size / 2 - d.size,
+          r: d.size
+        };
+      }).styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 });
+      last_pos = y_pos2;last_size = 0;
+      legend_elems.append("text").attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5).attr("y", function (d) {
+        return ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(d.value, rounding_precision).toLocaleString();
+      });
+      last_pos = ypos + 30 + max_size + max_size / 2;
+    } else if (symbol_type === "rect") {
+      legend_elems.append("rect").attrs(function (d) {
+        return {
+          x: xpos + space_elem + boxgap,
+          y: ypos + 45 + max_size - d.size,
+          width: d.size, height: d.size };
+      }).styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 });
+      last_pos = y_pos2;last_size = 0;
+      legend_elems.append("text").attr("x", xpos + space_elem + max_size * 1.25).attr("y", function (d) {
+        return ypos + 46 + max_size - d.size;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(d.value, rounding_precision).toLocaleString();
+      });
+      last_pos = ypos + 30 + max_size;
     }
-    var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
-        return "lg legend_" + i;
-    });
+  }
 
-    var max_size = ref_symbols_params[0].size,
-        last_size = 0;
+  if (current_layers[layer].break_val != undefined) {
+    var bottom_colors = legend_root.append("g");
+    bottom_colors.insert("text").attr("id", "col1_txt").attr("x", xpos + space_elem).attr("y", last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('< ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors.insert("rect").attr("id", "col1").attr("x", xpos + space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[0]);
+    bottom_colors.insert("text").attr("id", "col1_txt").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('> ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors.insert("rect").attr("id", "col2").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[1]);
+    last_pos = last_pos + 2.5 * space_elem;
+  }
 
-    if (symbol_type === "rect") {
-        y_pos2 = y_pos2 - max_size / 2;
-    }
+  legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
 
-    var last_pos = y_pos2;
-
-    if (nested == "false") {
-        if (symbol_type === "circle") {
-            legend_elems.append("circle").styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 }).attrs(function (d, i) {
-                last_pos = i * boxgap + d.size + last_pos + last_size;
-                last_size = d.size;
-                return {
-                    "cx": xpos + space_elem + boxgap + max_size / 2,
-                    "cy": last_pos,
-                    "r": d.size
-                };
-            });
-
-            last_pos = y_pos2;last_size = 0;
-            legend_elems.append("text").attrs(function (d, i) {
-                last_pos = i * boxgap + d.size + last_pos + last_size;
-                last_size = d.size;
-                return {
-                    "x": xpos + space_elem + boxgap + max_size * 1.5 + 5,
-                    "y": last_pos + i * 2 / 3
-                };
-            }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-                return round_value(d.value, rounding_precision).toLocaleString();
-            });
-        } else if (symbol_type === "rect") {
-            legend_elems.append("rect").styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 }).attrs(function (d, i) {
-                last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
-                last_size = d.size;
-                return {
-                    "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
-                    "y": last_pos,
-                    "width": last_size,
-                    "height": last_size
-                };
-            });
-
-            last_pos = y_pos2;last_size = 0;
-            var x_text_pos = xpos + space_elem + max_size * 1.25;
-            legend_elems.append("text").attr("x", x_text_pos).attr("y", function (d, i) {
-                last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
-                last_size = d.size;
-                return last_pos + d.size * 0.6;
-            }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-                return round_value(d.value, rounding_precision).toLocaleString();
-            });
-        }
-    } else if (nested == "true") {
-        if (symbol_type === "circle") {
-            legend_elems.append("circle").attrs(function (d) {
-                return {
-                    cx: xpos + space_elem + boxgap + max_size / 2,
-                    cy: ypos + 45 + max_size + max_size / 2 - d.size,
-                    r: d.size
-                };
-            }).styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 });
-            last_pos = y_pos2;last_size = 0;
-            legend_elems.append("text").attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5).attr("y", function (d) {
-                return ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2;
-            }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-                return round_value(d.value, rounding_precision).toLocaleString();
-            });
-            last_pos = ypos + 30 + max_size + max_size / 2;
-        } else if (symbol_type === "rect") {
-            legend_elems.append("rect").attrs(function (d) {
-                return {
-                    x: xpos + space_elem + boxgap,
-                    y: ypos + 45 + max_size - d.size,
-                    width: d.size, height: d.size };
-            }).styles({ fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1 });
-            last_pos = y_pos2;last_size = 0;
-            legend_elems.append("text").attr("x", xpos + space_elem + max_size * 1.25).attr("y", function (d) {
-                return ypos + 46 + max_size - d.size;
-            }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-                return round_value(d.value, rounding_precision).toLocaleString();
-            });
-            last_pos = ypos + 30 + max_size;
-        }
-    }
-
-    if (current_layers[layer].break_val != undefined) {
-        var bottom_colors = legend_root.append("g");
-        bottom_colors.insert("text").attr("id", "col1_txt").attr("x", xpos + space_elem).attr("y", last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('< ' + current_layers[layer].break_val.toLocaleString());
-        bottom_colors.insert("rect").attr("id", "col1").attr("x", xpos + space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[0]);
-        bottom_colors.insert("text").attr("id", "col1_txt").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('> ' + current_layers[layer].break_val.toLocaleString());
-        bottom_colors.insert("rect").attr("id", "col2").attr("x", xpos + 3 * space_elem).attr("y", last_pos + 2 * space_elem).attrs({ "width": space_elem, "height": space_elem }).style("fill", current_layers[layer].fill_color.two[1]);
-        last_pos = last_pos + 2.5 * space_elem;
-    }
-    legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
-
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    if (parent == map) make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  if (parent == map) make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
-    var space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 = ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+  var space_elem = 18,
+      boxgap = 12,
+      xpos = 30,
+      ypos = 30,
+      y_pos2 = ypos + space_elem,
+      tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
 
-    var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-        type_param = "strokeWidth";
+  var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path");
+  var type_param = "strokeWidth";
 
-    var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
-        if (d.style[type_param] != "0") return true;
-    }),
-        size_max = +non_empty[0].style[type_param],
-        size_min = +non_empty[non_empty.length - 1].style[type_param],
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-        diff_size = size_max - size_min,
-        diff_val = val_max - val_min,
-        val_interm1 = val_min + diff_val / 3,
-        val_interm2 = val_interm1 + diff_val / 3,
-        size_interm1 = size_min + diff_size / 3,
-        size_interm2 = size_interm1 + diff_size / 3,
-        ref_symbols_params = [{ size: size_max, value: val_max }, { size: size_interm2, value: val_interm2 }, { size: size_interm1, value: val_interm1 }, { size: size_min, value: val_min }];
+  var non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+    if (d.style[type_param] != "0") return true;
+  }),
+      size_max = +non_empty[0].style[type_param],
+      size_min = +non_empty[non_empty.length - 1].style[type_param],
+      val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+      val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+      diff_size = size_max - size_min,
+      diff_val = val_max - val_min,
+      val_interm1 = val_min + diff_val / 3,
+      val_interm2 = val_interm1 + diff_val / 3,
+      size_interm1 = size_min + diff_size / 3,
+      size_interm2 = size_interm1 + diff_size / 3,
+      ref_symbols_params = [{ size: size_max, value: val_max }, { size: size_interm2, value: val_interm2 }, { size: size_interm1, value: val_interm1 }, { size: size_min, value: val_min }];
 
-    if (rounding_precision == undefined) {
-        rounding_precision = get_lgd_display_precision(ref_symbols_params.map(function (d) {
-            return d.value;
-        }));
-    }
+  if (rounding_precision == undefined) {
+    rounding_precision = get_lgd_display_precision(ref_symbols_params.map(function (d) {
+      return d.value;
+    }));
+  }
 
-    var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_symbol', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
+  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_symbol', class: tmp_class_name,
+    transform: 'translate(0,0)', rounding_precision: rounding_precision,
+    layer_field: field, layer_name: layer }).styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
-    var rect_under_legend = legend_root.insert("rect");
+  var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr("id", "legendtitle").text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
 
-    var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
-        return "lg legend_" + i;
-    });
+  var legend_elems = legend_root.selectAll('.legend').append("g").data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
+    return "lg legend_" + i;
+  });
 
-    var last_size = 0,
-        last_pos = y_pos2,
-        color = current_layers[layer].fill_color.single,
-        xrect = xpos + space_elem;
+  var last_size = 0;
+  var last_pos = y_pos2;
+  var color = current_layers[layer].fill_color.single;
+  var xrect = xpos + space_elem;
 
-    legend_elems.append("rect").styles({ fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0 }).attrs(function (d) {
-        last_pos = boxgap + last_pos + last_size;
-        last_size = d.size;
-        return { x: xrect, y: last_pos, width: 45, height: d.size };
-    });
+  legend_elems.append("rect").styles({ fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0 }).attrs(function (d) {
+    last_pos = boxgap + last_pos + last_size;
+    last_size = d.size;
+    return { x: xrect, y: last_pos, width: 45, height: d.size };
+  });
 
-    last_pos = y_pos2;last_size = 0;
-    var x_text_pos = xrect + 55;
-    legend_elems.append("text").attrs(function (d) {
-        last_pos = boxgap + last_pos + d.size;
-        return { x: x_text_pos, y: last_pos + 4 - d.size / 2 };
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-        return round_value(d.value, rounding_precision).toLocaleString();
-    });
+  last_pos = y_pos2;last_size = 0;
+  var x_text_pos = xrect + 55;
+  legend_elems.append("text").attrs(function (d) {
+    last_pos = boxgap + last_pos + d.size;
+    return { x: x_text_pos, y: last_pos + 4 - d.size / 2 };
+  }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+    return round_value(d.value, rounding_precision).toLocaleString();
+  });
 
-    legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+  legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + space_elem, y: last_pos + space_elem }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
 
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 var get_lgd_display_precision = function get_lgd_display_precision(breaks) {
-    // Set rounding precision to 0 if they are all integers :
-    if (breaks.filter(function (b) {
-        return (b | 0) == b;
-    }).length == breaks.length) {
-        return 0;
-    }
-    // Compute the difference between each break to set
-    // ... the rounding precision in order to differenciate each class :
-    var diff = void 0;
-    for (var i = 0; i < breaks.length - 1; i++) {
-        var d = +breaks[i + 1] - +breaks[i];
-        if (!diff) diff = d;else if (d < diff) diff = d;
-    }
-    if (diff > 1 || diff > 0.1) {
-        return 1;
-    } else if (diff > 0.01) {
-        return 2;
-    } else if (diff > 0.001) {
-        return 3;
-    } else if (diff > 0.0001) {
-        return 4;
-    } else if (diff > 0.00001) {
-        return 5;
-    } else if (diff > 0.000001) {
-        return 6;
-    } else if (diff > 0.0000001) {
-        return 7;
-    } else {
-        return undefined;
-    }
+  // Set rounding precision to 0 if they are all integers :
+  if (breaks.filter(function (b) {
+    return (b | 0) == b;
+  }).length == breaks.length) {
+    return 0;
+  }
+  // Compute the difference between each break to set
+  // ... the rounding precision in order to differenciate each class :
+  var diff = void 0;
+  for (var i = 0; i < breaks.length - 1; i++) {
+    var d = +breaks[i + 1] - +breaks[i];
+    if (!diff) diff = d;else if (d < diff) diff = d;
+  }
+  if (diff > 1 || diff > 0.1) {
+    return 1;
+  } else if (diff > 0.01) {
+    return 2;
+  } else if (diff > 0.001) {
+    return 3;
+  } else if (diff > 0.0001) {
+    return 4;
+  } else if (diff > 0.00001) {
+    return 5;
+  } else if (diff > 0.000001) {
+    return 6;
+  } else if (diff > 0.0000001) {
+    return 7;
+  } else {
+    return undefined;
+  }
 };
 
 function createLegend_choro(layer, field, title, subtitle) {
-    var boxgap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
-    var rect_fill_value = arguments[5];
-    var rounding_precision = arguments[6];
-    var no_data_txt = arguments[7];
-    var note_bottom = arguments[8];
+  var boxgap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 0;
+  var rect_fill_value = arguments[5];
+  var rounding_precision = arguments[6];
+  var no_data_txt = arguments[7];
+  var note_bottom = arguments[8];
 
-    var boxheight = 18,
-        boxwidth = 18,
-        xpos = 30,
-        ypos = 30,
-        last_pos = null,
-        y_pos2 = ypos + boxheight * 1.8,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        nb_class,
-        data_colors_label;
+  var boxheight = 18,
+      boxwidth = 18,
+      xpos = 30,
+      ypos = 30;
+  var last_pos = null,
+      y_pos2 = ypos + boxheight * 1.8,
+      tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
+      nb_class = void 0,
+      data_colors_label = void 0;
 
-    boxgap = +boxgap;
+  boxgap = +boxgap;
 
-    if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
-        data_colors_label = [];
-        current_layers[layer].color_map.forEach(function (v, k) {
-            data_colors_label.push({ value: v[1], color: v[0] });
-        });
-        nb_class = current_layers[layer].color_map.size;
-    } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
-        data_colors_label = [];
-        current_layers[layer].symbols_map.forEach(function (v, k) {
-            data_colors_label.push({ value: k, image: v });
-        });
-        nb_class = current_layers[layer].symbols_map.size;
-    } else {
-        data_colors_label = current_layers[layer].colors_breaks.map(function (obj) {
-            return { value: obj[0], color: obj[1] };
-        });
-        nb_class = current_layers[layer].colors_breaks.length;
-        if (rounding_precision == undefined) {
-            var breaks = current_layers[layer].options_disc.breaks;
-            rounding_precision = get_lgd_display_precision(breaks);
-        }
-    }
-
-    var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root', class: tmp_class_name, layer_field: field,
-        transform: 'translate(0,0)', 'boxgap': boxgap,
-        'rounding_precision': rounding_precision, layer_name: layer });
-
-    var rect_under_legend = legend_root.insert("rect");
-
-    legend_root.insert('text').attr("id", "legendtitle").text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
-
-    legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + boxheight, y: ypos + 15 });
-
-    var legend_elems = legend_root.selectAll('.legend').append("g").data(data_colors_label).enter().insert('g').attr('class', function (d, i) {
-        return "lg legend_" + i;
+  if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
+    data_colors_label = [];
+    current_layers[layer].color_map.forEach(function (v, k) {
+      data_colors_label.push({ value: v[1], color: v[0] });
     });
-
-    if (current_layers[layer].renderer.indexOf('TypoSymbols') == -1) legend_elems.append('rect').attr("x", xpos + boxwidth).attr("y", function (d, i) {
-        last_pos = y_pos2 + i * boxgap + i * boxheight;
-        return last_pos;
-    }).attr('width', boxwidth).attr('height', boxheight).styles(function (d) {
-        return {
-            "fill": d.color, "stroke": d.color
-        };
-    });else legend_elems.append('image').attrs(function (d, i) {
-        return {
-            "x": xpos + boxwidth,
-            "y": y_pos2 + i * boxgap + i * boxheight,
-            "width": boxwidth,
-            "height": boxheight,
-            "xlink:href": d.image[0]
-        };
+    nb_class = current_layers[layer].color_map.size;
+  } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
+    data_colors_label = [];
+    current_layers[layer].symbols_map.forEach(function (v, k) {
+      data_colors_label.push({ value: k, image: v });
     });
-
-    if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
-        var tmp_pos = void 0;
-        legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
-            tmp_pos = y_pos2 + i * boxheight + i * boxgap;
-            return tmp_pos;
-        }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-            return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
-        });
-
-        legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", xpos + boxwidth * 2 + 10).attr("y", tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-            return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
-        });
-    } else {
-        legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
-            return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
-        }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-            return d.value;
-        });
+    nb_class = current_layers[layer].symbols_map.size;
+  } else {
+    data_colors_label = current_layers[layer].colors_breaks.map(function (obj) {
+      return { value: obj[0], color: obj[1] };
+    });
+    nb_class = current_layers[layer].colors_breaks.length;
+    if (rounding_precision == undefined) {
+      var breaks = current_layers[layer].options_disc.breaks;
+      rounding_precision = get_lgd_display_precision(breaks);
     }
-    if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
-        var gp_no_data = legend_root.append("g");
-        gp_no_data.append('rect').attrs({ x: xpos + boxheight, y: last_pos + 2 * boxheight,
-            width: boxwidth, height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
+  }
 
-        gp_no_data.append('text').attrs({ x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt" }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : "No data");
+  var legend_root = map.insert('g').styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' }).attrs({ id: 'legend_root', class: tmp_class_name, layer_field: field,
+    transform: 'translate(0,0)', 'boxgap': boxgap,
+    'rounding_precision': rounding_precision, layer_name: layer });
 
-        last_pos = last_pos + 2 * boxheight;
-    }
+  var rect_under_legend = legend_root.insert("rect");
 
-    legend_root.append("g").insert("text").attr("id", "legend_bottom_note").attrs({ x: xpos + boxheight, y: last_pos + 2 * boxheight }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.insert('text').attr("id", "legendtitle").text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != "" ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
+
+  legend_root.insert('text').attr("id", "legendsubtitle").text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + boxheight, y: ypos + 15 });
+
+  var legend_elems = legend_root.selectAll('.legend').append("g").data(data_colors_label).enter().insert('g').attr('class', function (d, i) {
+    return "lg legend_" + i;
+  });
+
+  if (current_layers[layer].renderer.indexOf('TypoSymbols') == -1) {
+    legend_elems.append('rect').attr("x", xpos + boxwidth).attr("y", function (d, i) {
+      last_pos = y_pos2 + i * boxgap + i * boxheight;
+      return last_pos;
+    }).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
+      return { "fill": d.color, "stroke": d.color };
+    });
+  } else {
+    legend_elems.append('image').attrs(function (d, i) {
+      return {
+        "x": xpos + boxwidth,
+        "y": y_pos2 + i * boxgap + i * boxheight,
+        "width": boxwidth,
+        "height": boxheight,
+        "xlink:href": d.image[0]
+      };
+    });
+  }
+
+  if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
+    (function () {
+      var tmp_pos = void 0;
+      legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
+        tmp_pos = y_pos2 + i * boxheight + i * boxgap;
+        return tmp_pos;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
+      });
+
+      legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", xpos + boxwidth * 2 + 10).attr("y", tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+      });
+    })();
+  } else {
+    legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
+      return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
+    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+      return d.value;
+    });
+  }
+  if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
+    var gp_no_data = legend_root.append("g");
+    gp_no_data.append('rect').attrs({ x: xpos + boxheight, y: last_pos + 2 * boxheight,
+      width: boxwidth, height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
+
+    gp_no_data.append('text').attrs({ x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt" }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : "No data");
+
+    last_pos = last_pos + 2 * boxheight;
+  }
+
+  legend_root.append("g").insert("text").attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: last_pos + 2 * boxheight }).style("font", "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  // legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 function display_box_value_symbol(layer_name) {
-    var symbol_type = current_layers[layer_name].symbol,
-        field = current_layers[layer_name].rendered_field,
-        ref_symbols = document.getElementById(_app.layer_to_id.get(layer_name)).getElementsByTagName(symbol_type),
-        type_param = symbol_type === 'circle' ? 'r' : 'width',
-        non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
-        if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
-    }),
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]);
+  var symbol_type = current_layers[layer_name].symbol,
+      field = current_layers[layer_name].rendered_field,
+      ref_symbols = document.getElementById(_app.layer_to_id.get(layer_name)).getElementsByTagName(symbol_type),
+      type_param = symbol_type === 'circle' ? 'r' : 'width',
+      non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
+    if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
+  }),
+      val_max = Math.abs(+non_empty[0].__data__.properties[field]);
 
-    var redraw_sample_legend = function () {
-        var legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-        var rendered_field = current_layers[layer_name].rendered_field;
-        var nested = legend_node.getAttribute("nested");
-        var rounding_precision = legend_node.getAttribute("rounding_precision");
-        var lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
-            note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-        return function (values) {
-            if (values) {
-                current_layers[layer_name].size_legend_symbol = values.sort(function (a, b) {
-                    return b.value - a.value;
-                });
-                val1.node().value = values[0].value;
-                val2.node().value = values[1].value;
-                val3.node().value = values[2].value;
-                val4.node().value = values[3].value;
-            }
-            sample_svg.selectAll('g').remove();
-            createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
-            sample_svg.select('g').select('#under_rect').remove();
-            sample_svg.select('#legend_root_symbol').on('.drag', null);
-        };
-    }();
+  var redraw_sample_legend = function () {
+    var legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+    var rendered_field = current_layers[layer_name].rendered_field;
+    var nested = legend_node.getAttribute("nested");
+    var rounding_precision = legend_node.getAttribute("rounding_precision");
+    var lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+        note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+    return function (values) {
+      if (values) {
+        current_layers[layer_name].size_legend_symbol = values.sort(function (a, b) {
+          return b.value - a.value;
+        });
+        val1.node().value = values[0].value;
+        val2.node().value = values[1].value;
+        val3.node().value = values[2].value;
+        val4.node().value = values[3].value;
+      }
+      sample_svg.selectAll('g').remove();
+      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
+      sample_svg.select('g').select('#under_rect').remove();
+      sample_svg.select('#legend_root_symbol').on('.drag', null);
+    };
+  }();
 
-    var prom = make_confirm_dialog2("legend_symbol_values_box", layer_name + " - " + i18next.t("app_page.legend_symbol_values_box.title")).then(function (confirmed) {
-        current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
-        return Promise.resolve(confirmed);
-    });
+  var prom = make_confirm_dialog2("legend_symbol_values_box", layer_name + " - " + i18next.t("app_page.legend_symbol_values_box.title")).then(function (confirmed) {
+    current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
+    return Promise.resolve(confirmed);
+  });
 
-    var box_body = d3.select('.legend_symbol_values_box').select('.modal-content').style('width', '400px').select('.modal-body');
-    box_body.append('p').style('text-align', 'center').insert('h3');
-    // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
-    var sample_svg = box_body.append('div').attr('id', 'sample_svg').style('float', 'left').append('svg').attrs({ width: 200, height: 300, id: 'svg_sample_legend' });
+  var box_body = d3.select('.legend_symbol_values_box').select('.modal-content').style('width', '400px').select('.modal-body');
+  box_body.append('p').style('text-align', 'center').insert('h3');
+  // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
+  var sample_svg = box_body.append('div').attr('id', 'sample_svg').style('float', 'left').append('svg').attrs({ width: 200, height: 300, id: 'svg_sample_legend' });
 
-    var values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(function (f) {
-        return cloneObj(f);
-    })),
-        original_values = [].concat(values_to_use);
+  var values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(function (f) {
+    return cloneObj(f);
+  }));
+  var original_values = [].concat(values_to_use);
 
-    var _current_layers$layer2 = _slicedToArray(current_layers[layer_name].size, 2),
-        ref_value = _current_layers$layer2[0],
-        ref_size = _current_layers$layer2[1];
+  var _current_layers$layer2 = _slicedToArray(current_layers[layer_name].size, 2),
+      ref_value = _current_layers$layer2[0],
+      ref_size = _current_layers$layer2[1];
 
-    var propSize = new PropSizer(ref_value, ref_size, symbol_type);
+  var propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
-    var input_zone = box_body.append('div').styles({ 'float': 'right', 'top': '100px', right: '20px', position: 'relative' });
-    var a = input_zone.append('p');
-    var b = input_zone.append('p');
-    var c = input_zone.append('p');
-    var d = input_zone.append('p');
+  var input_zone = box_body.append('div').styles({ 'float': 'right', 'top': '100px', right: '20px', position: 'relative' });
+  var a = input_zone.append('p');
+  var b = input_zone.append('p');
+  var c = input_zone.append('p');
+  var d = input_zone.append('p');
 
-    var val1 = a.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: val_max }).on('change', function () {
-        var val = +this.value;
-        if (isNaN(val)) return;
-        values_to_use[0] = { size: propSize.scale(val), value: val };
-        val2.attr('max', val);
-        redraw_sample_legend(values_to_use);
-    });
-    var val2 = b.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[0].value, min: values_to_use[2] }).on('change', function () {
-        var val = +this.value;
-        if (isNaN(val)) return;
-        values_to_use[1] = { size: propSize.scale(val), value: val };
-        val1.attr('min', val);
-        val3.attr('max', val);
-        redraw_sample_legend(values_to_use);
-    });
-    var val3 = c.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[1].value, min: values_to_use[3].value }).on('change', function () {
-        var val = +this.value;
-        if (isNaN(val)) return;
-        values_to_use[2] = { size: propSize.scale(val), value: val };
-        val2.attr('min', val);
-        val4.attr('max', val);
-        redraw_sample_legend(values_to_use);
-    });
-    var val4 = d.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', min: 0, max: values_to_use[2].value }).on('change', function () {
-        var val = +this.value;
-        if (isNaN(val)) return;
-        values_to_use[3] = { size: propSize.scale(val), value: val };
-        val3.attr('min', val);
-        redraw_sample_legend(values_to_use);
-    });
-    box_body.append('div').styles({ 'clear': 'both', 'text-align': 'center' }).append('p').styles({ 'text-align': 'center' }).insert('span').attrs({ class: 'button_st3' }).html(i18next.t('app_page.legend_symbol_values_box.reset')).on('click', function () {
-        current_layers[layer_name].size_legend_symbol = undefined;
-        redraw_sample_legend();
-    });
-    val1.node().value = values_to_use[0].value;
-    val2.node().value = values_to_use[1].value;
-    val3.node().value = values_to_use[2].value;
-    val4.node().value = values_to_use[3].value;
+  var val1 = a.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: val_max }).on('change', function () {
+    var val = +this.value;
+    if (isNaN(val)) return;
+    values_to_use[0] = { size: propSize.scale(val), value: val };
+    val2.attr('max', val);
+    redraw_sample_legend(values_to_use);
+  });
+  var val2 = b.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[0].value, min: values_to_use[2] }).on('change', function () {
+    var val = +this.value;
+    if (isNaN(val)) return;
+    values_to_use[1] = { size: propSize.scale(val), value: val };
+    val1.attr('min', val);
+    val3.attr('max', val);
+    redraw_sample_legend(values_to_use);
+  });
+  var val3 = c.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', max: values_to_use[1].value, min: values_to_use[3].value }).on('change', function () {
+    var val = +this.value;
+    if (isNaN(val)) return;
+    values_to_use[2] = { size: propSize.scale(val), value: val };
+    val2.attr('min', val);
+    val4.attr('max', val);
+    redraw_sample_legend(values_to_use);
+  });
+  var val4 = d.insert('input').style('width', '80px').attrs({ class: "without_spinner", type: 'number', min: 0, max: values_to_use[2].value }).on('change', function () {
+    var val = +this.value;
+    if (isNaN(val)) return;
+    values_to_use[3] = { size: propSize.scale(val), value: val };
+    val3.attr('min', val);
+    redraw_sample_legend(values_to_use);
+  });
+  box_body.append('div').styles({ 'clear': 'both', 'text-align': 'center' }).append('p').styles({ 'text-align': 'center' }).insert('span').attrs({ class: 'button_st3' }).html(i18next.t('app_page.legend_symbol_values_box.reset')).on('click', function () {
+    current_layers[layer_name].size_legend_symbol = undefined;
     redraw_sample_legend();
-    return prom;
+  });
+  val1.node().value = values_to_use[0].value;
+  val2.node().value = values_to_use[1].value;
+  val3.node().value = values_to_use[2].value;
+  val4.node().value = values_to_use[3].value;
+  redraw_sample_legend();
+  return prom;
 }
 
 // Todo : find a better organization for the options in this box
 //       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name) {
-    function bind_selections() {
-        box_class = [layer_id, "_legend_popup"].join('');
-        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_id].join(''));
-        title_content = legend_node.querySelector("#legendtitle");
-        subtitle_content = legend_node.querySelector("#legendsubtitle");
-        note_content = legend_node.querySelector("#legend_bottom_note");
-        no_data_txt = legend_node.querySelector("#no_data_txt");
-        legend_node_d3 = d3.select(legend_node);
-        legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
+  function bind_selections() {
+    box_class = [layer_id, "_legend_popup"].join('');
+    legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_id].join(''));
+    title_content = legend_node.querySelector("#legendtitle");
+    subtitle_content = legend_node.querySelector("#legendsubtitle");
+    note_content = legend_node.querySelector("#legend_bottom_note");
+    no_data_txt = legend_node.querySelector("#no_data_txt");
+    legend_node_d3 = d3.select(legend_node);
+    legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
+  };
+  var layer_id = _app.layer_to_id.get(layer_name);
+  var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
+  var legend_node_d3,
+      legend_boxes,
+      no_data_txt,
+      rect_fill_value = {},
+      original_rect_fill_value;
+
+  bind_selections();
+  if (document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
+  var original_params = {
+    title_content: title_content.textContent,
+    y_title: title_content.y.baseVal[0].value,
+    subtitle_content: subtitle_content.textContent,
+    y_subtitle: subtitle_content.y.baseVal[0].value,
+    note_content: note_content.textContent,
+    no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
+  }; //, source_content: source_content.textContent ? source_content.textContent : ""
+
+  if (legend_node.getAttribute("visible_rect") == "true") {
+    rect_fill_value = {
+      color: legend_node.querySelector("#under_rect").style.fill,
+      opacity: legend_node.querySelector("#under_rect").style.fillOpacity
     };
-    var layer_id = _app.layer_to_id.get(layer_name);
-    var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
-    var legend_node_d3,
-        legend_boxes,
-        no_data_txt,
-        rect_fill_value = {},
-        original_rect_fill_value;
+    original_rect_fill_value = cloneObj(rect_fill_value);
+  }
 
+  make_confirm_dialog2(box_class, layer_name).then(function (confirmed) {
+    if (!confirmed) {
+      title_content.textContent = original_params.title_content;
+      title_content.y.baseVal[0].value = original_params.y_title;
+      subtitle_content.textContent = original_params.subtitle_content;
+      subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
+      note_content.textContent = original_params.note_content;
+      if (no_data_txt) {
+        no_data_txt.textContent = original_params.no_data_txt;
+      }
+      rect_fill_value = original_rect_fill_value;
+    }
+    make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
     bind_selections();
-    if (document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
-    var original_params = {
-        title_content: title_content.textContent,
-        y_title: title_content.y.baseVal[0].value,
-        subtitle_content: subtitle_content.textContent,
-        y_subtitle: subtitle_content.y.baseVal[0].value,
-        note_content: note_content.textContent,
-        no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
-    }; //, source_content: source_content.textContent ? source_content.textContent : ""
+  });
+  var container = document.getElementsByClassName(box_class)[0];
+  var box_body = d3.select(container).select('.modal-dialog').style('width', '375px').select(".modal-body");
+  var current_nb_dec = void 0;
 
-    if (legend_node.getAttribute("visible_rect") == "true") {
-        rect_fill_value = {
-            color: legend_node.querySelector("#under_rect").style.fill,
-            opacity: legend_node.querySelector("#under_rect").style.fillOpacity
-        };
-        original_rect_fill_value = cloneObj(rect_fill_value);
+  box_body.append('p').style('text-align', 'center').insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+
+  var a = box_body.append('p');
+  a.append('span').html(i18next.t("app_page.legend_style_box.lgd_title"));
+
+  a.append('input').styles({ float: "right" }).attr("value", title_content.textContent).on("keyup", function () {
+    title_content.textContent = this.value;
+  });
+
+  var b = box_body.append('p');
+  b.insert('span').html(i18next.t("app_page.legend_style_box.var_name"));
+  b.insert('input').attr("value", subtitle_content.textContent).styles({ float: "right" }).on("keyup", function () {
+    var empty = subtitle_content.textContent == "";
+    // Move up the title to its original position if the subtitle isn't empty :
+    if (empty && this.value != "") {
+      title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
     }
-
-    make_confirm_dialog2(box_class, layer_name).then(function (confirmed) {
-        if (!confirmed) {
-            title_content.textContent = original_params.title_content;
-            title_content.y.baseVal[0].value = original_params.y_title;
-            subtitle_content.textContent = original_params.subtitle_content;
-            subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
-            note_content.textContent = original_params.note_content;
-            if (no_data_txt) {
-                no_data_txt.textContent = original_params.no_data_txt;
-            }
-            rect_fill_value = original_rect_fill_value;
-        }
-        make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
-        bind_selections();
-    });
-    var container = document.getElementsByClassName(box_class)[0];
-    var box_body = d3.select(container).select('.modal-dialog').style('width', '375px').select(".modal-body");
-    var current_nb_dec;
-
-    box_body.append('p').style('text-align', 'center').insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
-
-    var a = box_body.append('p');
-    a.append('span').html(i18next.t("app_page.legend_style_box.lgd_title"));
-
-    a.append('input').styles({ float: "right" }).attr("value", title_content.textContent).on("keyup", function () {
-        title_content.textContent = this.value;
-    });
-
-    var b = box_body.append('p');
-    b.insert('span').html(i18next.t("app_page.legend_style_box.var_name"));
-    b.insert('input').attr("value", subtitle_content.textContent).styles({ float: "right" }).on("keyup", function () {
-        var empty = subtitle_content.textContent == "";
-        // Move up the title to its original position if the subtitle isn't empty :
-        if (empty && this.value != "") {
-            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
-        }
-        // Change the displayed content :
-        subtitle_content.textContent = this.value;
-        // Move down the title (if it wasn't already moved down), if the new subtitle is empty
-        if (!empty && subtitle_content.textContent == "") {
-            title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
-        }
-    });
-
-    var c = box_body.insert('p');
-    c.insert('span').html(i18next.t("app_page.legend_style_box.additionnal_notes"));
-    c.insert('input').attr("value", note_content.textContent).styles({ float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif" }).on("keyup", function () {
-        note_content.textContent = this.value;
-    });
-
-    if (no_data_txt) {
-        var d = box_body.insert('p');
-        d.insert('span').html(i18next.t("app_page.legend_style_box.no_data"));
-        d.insert('input').attr("value", no_data_txt.textContent).styles({ float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif" }).on("keyup", function () {
-            no_data_txt.textContent = this.value;
-        });
+    // Change the displayed content :
+    subtitle_content.textContent = this.value;
+    // Move down the title (if it wasn't already moved down), if the new subtitle is empty
+    if (!empty && subtitle_content.textContent == "") {
+      title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
     }
+  });
 
-    if (legend_id == "legend_root_symbol") {
-        var choice_break_value_section1 = box_body.insert('p');
-        choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
-            container.modal.hide();
-            display_box_value_symbol(layer_name).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-                }
-            });
-        });
-    } else if (current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols" && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))) {
-        // Float precision for label in the legend
-        // (actually it's not really the float precision but an estimation based on
-        // the string representation of only two values but it will most likely do the job in many cases)
-        var max_nb_decimals = 0,
-            max_nb_left = 0;
-        if (legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1) {
-            max_nb_decimals = get_max_nb_dec(layer_name);
-            max_nb_left = get_max_nb_left_sep(layer_name);
-        } else {
-            var nb_dec = [],
-                nb_left = [];
-            legend_boxes.each(function (d) {
-                nb_dec.push(get_nb_decimals(d.value));
-                nb_left.push(get_nb_left_separator(d.value));
-            });
-            max_nb_decimals = max_fast(nb_dec);
-            max_nb_left = min_fast(nb_left);
-        }
-        max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
-        if (max_nb_decimals > 0 || max_nb_left >= 2) {
-            if (legend_node.getAttribute("rounding_precision")) current_nb_dec = legend_node.getAttribute("rounding_precision");else {
-                var nbs = [],
-                    _nb_dec = [];
-                legend_boxes.each(function () {
-                    nbs.push(this.textContent);
-                });
-                for (var i = 0; i < nbs.length; i++) {
-                    _nb_dec.push(get_nb_decimals(nbs[i]));
-                }
-                current_nb_dec = max_fast(_nb_dec);
-            }
-            if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) max_nb_decimals = 18;
-            var e = box_body.append('p');
-            e.append('span').html(i18next.t("app_page.legend_style_box.float_rounding"));
+  var c = box_body.insert('p');
+  c.insert('span').html(i18next.t("app_page.legend_style_box.additionnal_notes"));
+  c.insert('input').attr("value", note_content.textContent).styles({ float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif" }).on("keyup", function () {
+    note_content.textContent = this.value;
+  });
 
-            e.append('input').attrs({ id: "precision_range", type: "range", min: -+max_nb_left, max: max_nb_decimals, step: 1, value: current_nb_dec }).styles({ float: "right", width: "90px", "vertical-align": "middle", "margin-left": "10px" }).on('change', function () {
-                var nb_float = +this.value;
-                d3.select("#precision_change_txt").html(nb_float);
-                legend_node.setAttribute("rounding_precision", nb_float);
-                if (legend_id === "legend_root") {
-                    for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
-                        var values = legend_boxes._groups[0][_i].__data__.value.split(' - ');
-                        legend_boxes._groups[0][_i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
-                    }
-                    var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
-                    legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
-                } else if (legend_id === "legend_root_symbol") {
-                    for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
-                        var value = legend_boxes._groups[0][_i2].__data__.value;
-                        legend_boxes._groups[0][_i2].innerHTML = round_value(+value, nb_float).toLocaleString();
-                    }
-                } else if (legend_id === "legend_root_lines_class") {
-                    for (var _i3 = 0; _i3 < legend_boxes._groups[0].length; _i3++) {
-                        var _value = legend_boxes._groups[0][_i3].__data__.value[1];
-                        legend_boxes._groups[0][_i3].innerHTML = round_value(+_value, nb_float).toLocaleString();
-                    }
-                    var _min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
-                    legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
-                }
-            });
-            e.append('span').styles({ float: 'right' }).attr("id", "precision_change_txt").html(current_nb_dec + "");
-        }
-    }
-
-    if (legend_id === "legend_root") {
-        var current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
-        var gap_section = box_body.insert("p");
-        gap_section.append("input").style('margin-left', '0px').attrs({ "type": "checkbox", id: 'style_lgd' }).on("change", function () {
-            var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-            legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-            var boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
-            var rounding_precision = legend_node.getAttribute("rounding_precision");
-            var transform_param = legend_node.getAttribute("transform"),
-                lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
-                note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-            var no_data_txt = legend_node.querySelector("#no_data_txt");
-            no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-            legend_node.remove();
-            createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
-            bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
-        });
-        gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
-
-        document.getElementById("style_lgd").checked = current_state;
-    } else if (legend_id == "legend_root_symbol") {
-        var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
-        var _gap_section = box_body.insert("p");
-        _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
-            legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-            var rendered_field = current_layers[layer_name].rendered_field;
-            var nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
-            var rounding_precision = legend_node.getAttribute("rounding_precision");
-            var transform_param = legend_node.getAttribute("transform"),
-                lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
-                note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-
-            legend_node.remove();
-            createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
-            bind_selections();
-            if (transform_param) svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
-        });
-        _gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t("app_page.legend_style_box.nested_symbols"));
-        document.getElementById("style_lgd").checked = _current_state;
-    }
-    // Todo : Reactivate this functionnality :
-    //    box_body.insert("p").html("Display features count ")
-    //            .insert("input").attr("type", "checkbox")
-    //            .on("change", function(){
-    //                alert("to be done!");
-    //            });
-
-    var rectangle_options1 = box_body.insert('p');
-    rectangle_options1.insert("input").style('margin-left', '0px').attrs({ type: "checkbox",
-        checked: rect_fill_value.color === undefined ? null : true,
-        id: "rect_lgd_checkbox" }).on("change", function () {
-        if (this.checked) {
-            rectangle_options2.style('display', "");
-            var _a = document.getElementById("choice_color_under_rect");
-            rect_fill_value = _a ? { color: _a.value, opacity: 1 } : { color: "#ffffff", opacity: 1 };
-        } else {
-            rectangle_options2.style("display", "none");
-            rect_fill_value = {};
-        }
-        make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
+  if (no_data_txt) {
+    var d = box_body.insert('p');
+    d.insert('span').html(i18next.t("app_page.legend_style_box.no_data"));
+    d.insert('input').attr("value", no_data_txt.textContent).styles({ float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif" }).on("keyup", function () {
+      no_data_txt.textContent = this.value;
     });
-    rectangle_options1.append('label').attrs({ for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' }).html(i18next.t("app_page.legend_style_box.under_rectangle"));
+  }
 
-    var rectangle_options2 = rectangle_options1.insert('span').styles({ 'float': 'right', 'display': rect_fill_value.color === undefined ? "none" : "" });
-    rectangle_options2.insert("input").attrs({ id: "choice_color_under_rect",
-        type: "color",
-        value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color) }).on("change", function () {
-        rect_fill_value = { color: this.value, opacity: 1 };
-        make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
+  if (legend_id == "legend_root_symbol") {
+    var choice_break_value_section1 = box_body.insert('p');
+    choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
+      container.modal.hide();
+      display_box_value_symbol(layer_name).then(function (confirmed) {
+        container.modal.show();
+        if (confirmed) {
+          redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+        }
+      });
     });
+  } else if (current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols" && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))) {
+    // Float precision for label in the legend
+    // (actually it's not really the float precision but an estimation based on
+    // the string representation of only two values but it will most likely do the job in many cases)
+    var max_nb_decimals = 0;
+    var max_nb_left = 0;
+    if (legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1) {
+      max_nb_decimals = get_max_nb_dec(layer_name);
+      max_nb_left = get_max_nb_left_sep(layer_name);
+    } else {
+      (function () {
+        var nb_dec = [],
+            nb_left = [];
+        legend_boxes.each(function (d) {
+          nb_dec.push(get_nb_decimals(d.value));
+          nb_left.push(get_nb_left_separator(d.value));
+        });
+        max_nb_decimals = max_fast(nb_dec);
+        max_nb_left = min_fast(nb_left);
+      })();
+    }
+    max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
+    if (max_nb_decimals > 0 || max_nb_left >= 2) {
+      if (legend_node.getAttribute("rounding_precision")) {
+        current_nb_dec = legend_node.getAttribute("rounding_precision");
+      } else {
+        (function () {
+          var nbs = [],
+              nb_dec = [];
+          legend_boxes.each(function () {
+            nbs.push(this.textContent);
+          });
+          for (var i = 0; i < nbs.length; i++) {
+            nb_dec.push(get_nb_decimals(nbs[i]));
+          }
+          current_nb_dec = max_fast(nb_dec);
+        })();
+      }
+      if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) max_nb_decimals = 18;
+      var e = box_body.append('p');
+      e.append('span').html(i18next.t("app_page.legend_style_box.float_rounding"));
+
+      e.append('input').attrs({ id: "precision_range", type: "range", min: -+max_nb_left, max: max_nb_decimals, step: 1, value: current_nb_dec }).styles({ float: "right", width: "90px", "vertical-align": "middle", "margin-left": "10px" }).on('change', function () {
+        var nb_float = +this.value;
+        d3.select("#precision_change_txt").html(nb_float);
+        legend_node.setAttribute("rounding_precision", nb_float);
+        if (legend_id === "legend_root") {
+          for (var i = 0; i < legend_boxes._groups[0].length; i++) {
+            var values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
+          }
+          var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
+          legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
+        } else if (legend_id === "legend_root_symbol") {
+          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
+            var value = legend_boxes._groups[0][_i].__data__.value;
+            legend_boxes._groups[0][_i].innerHTML = round_value(+value, nb_float).toLocaleString();
+          }
+        } else if (legend_id === "legend_root_lines_class") {
+          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
+            var _value = legend_boxes._groups[0][_i2].__data__.value[1];
+            legend_boxes._groups[0][_i2].innerHTML = round_value(+_value, nb_float).toLocaleString();
+          }
+          var _min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
+          legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
+        }
+      });
+      e.append('span').styles({ float: 'right' }).attr("id", "precision_change_txt").html(current_nb_dec + "");
+    }
+  }
+
+  if (legend_id === "legend_root") {
+    var current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
+    var gap_section = box_body.insert("p");
+    gap_section.append("input").style('margin-left', '0px').attrs({ "type": "checkbox", id: 'style_lgd' }).on("change", function () {
+      var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+      legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+      var boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
+      var rounding_precision = legend_node.getAttribute("rounding_precision");
+      var transform_param = legend_node.getAttribute("transform"),
+          lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+          lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+          note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+      var no_data_txt = legend_node.querySelector("#no_data_txt");
+      no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+      legend_node.remove();
+      createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+      bind_selections();
+      if (transform_param) {
+        svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
+      }
+    });
+    gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
+
+    document.getElementById("style_lgd").checked = current_state;
+  } else if (legend_id == "legend_root_symbol") {
+    var _current_state = legend_node.getAttribute("nested") == "true" ? true : false;
+    var _gap_section = box_body.insert("p");
+    _gap_section.append("input").style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).on("change", function () {
+      legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+      var rendered_field = current_layers[layer_name].rendered_field;
+      var nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
+      var rounding_precision = legend_node.getAttribute("rounding_precision");
+      var transform_param = legend_node.getAttribute("transform"),
+          lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+          lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+          note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+
+      legend_node.remove();
+      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
+      bind_selections();
+      if (transform_param) {
+        svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
+      }
+    });
+    _gap_section.append('label').attrs({ 'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t("app_page.legend_style_box.nested_symbols"));
+    document.getElementById("style_lgd").checked = _current_state;
+  }
+  // Todo : Reactivate this functionnality :
+  //    box_body.insert("p").html("Display features count ")
+  //            .insert("input").attr("type", "checkbox")
+  //            .on("change", function(){
+  //                alert("to be done!");
+  //            });
+
+  var rectangle_options1 = box_body.insert('p');
+  rectangle_options1.insert("input").style('margin-left', '0px').attrs({ type: "checkbox", id: "rect_lgd_checkbox",
+    checked: rect_fill_value.color === undefined ? null : true }).on("change", function () {
+    if (this.checked) {
+      rectangle_options2.style('display', "");
+      var _a = document.getElementById("choice_color_under_rect");
+      rect_fill_value = _a ? { color: _a.value, opacity: 1 } : { color: "#ffffff", opacity: 1 };
+    } else {
+      rectangle_options2.style("display", "none");
+      rect_fill_value = {};
+    }
+    make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
+  });
+  rectangle_options1.append('label').attrs({ for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' }).html(i18next.t("app_page.legend_style_box.under_rectangle"));
+
+  var rectangle_options2 = rectangle_options1.insert('span').styles({ 'float': 'right', 'display': rect_fill_value.color === undefined ? "none" : "" });
+  rectangle_options2.insert("input").attrs({ id: "choice_color_under_rect",
+    type: "color",
+    value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color) }).on("change", function () {
+    rect_fill_value = { color: this.value, opacity: 1 };
+    make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
+  });
 }
 
 function move_legends() {
-    var legends = [svg_map.querySelectorAll(".legend_feature"), svg_map.querySelectorAll('#scale_bar.legend')];
+  var xy0_map = get_map_xy0();
+  var dim_width = w + xy0_map.x;
+  var dim_heght = h + xy0_map.y;
+  var legends = [svg_map.querySelectorAll(".legend_feature"), svg_map.querySelectorAll('#scale_bar.legend')];
+  for (var j = 0; j < 2; ++j) {
+    var legends_type = legends[j];
+    for (var i = 0, i_len = legends_type.length; i < i_len; ++i) {
+      var legend_bbox = legends_type[i].getBoundingClientRect();
+      if (legend_bbox.left + legend_bbox.width > dim_width) {
+        var current_transform = legends_type[i].getAttribute("transform");
 
-    var xy0_map = get_map_xy0(),
-        dim_width = w + xy0_map.x,
-        dim_heght = h + xy0_map.y;
+        var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(","),
+            _$exec$1$split2 = _slicedToArray(_$exec$1$split, 2),
+            val_x = _$exec$1$split2[0],
+            val_y = _$exec$1$split2[1];
 
-    for (var j = 0; j < 2; ++j) {
-        var legends_type = legends[j];
-        for (var i = 0, i_len = legends_type.length; i < i_len; ++i) {
-            var legend_bbox = legends_type[i].getBoundingClientRect();
-            if (legend_bbox.left + legend_bbox.width > dim_width) {
-                var current_transform = legends_type[i].getAttribute("transform");
+        var trans_x = legend_bbox.left + legend_bbox.width - dim_width;
+        legends_type[i].setAttribute("transform", ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
+      }
+      if (legend_bbox.top + legend_bbox.height > dim_heght) {
+        var _current_transform = legends_type[i].getAttribute("transform");
 
-                var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(","),
-                    _$exec$1$split2 = _slicedToArray(_$exec$1$split, 2),
-                    val_x = _$exec$1$split2[0],
-                    val_y = _$exec$1$split2[1];
+        var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(","),
+            _$exec$1$split4 = _slicedToArray(_$exec$1$split3, 2),
+            _val_x = _$exec$1$split4[0],
+            _val_y = _$exec$1$split4[1];
 
-                var trans_x = legend_bbox.left + legend_bbox.width - dim_width;
-                legends_type[i].setAttribute("transform", ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
-            }
-            if (legend_bbox.top + legend_bbox.height > dim_heght) {
-                var _current_transform = legends_type[i].getAttribute("transform");
-
-                var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(","),
-                    _$exec$1$split4 = _slicedToArray(_$exec$1$split3, 2),
-                    _val_x = _$exec$1$split4[0],
-                    _val_y = _$exec$1$split4[1];
-
-                var trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
-                legends_type[i].setAttribute("transform", ["translate(", [_val_x, +_val_y - trans_y], ")"].join(''));
-            }
-        }
+        var trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
+        legends_type[i].setAttribute("transform", ["translate(", [_val_x, +_val_y - trans_y], ")"].join(''));
+      }
     }
+  }
 }
 
 var get_max_nb_dec = function get_max_nb_dec(layer_name) {
-    if (!current_layers[layer_name] || !current_layers[layer_name].colors_breaks) return;
-    var max = 0;
-    current_layers[layer_name].colors_breaks.forEach(function (el) {
-        var tmp = el[0].split(' - ');
-        var p1 = tmp[0].indexOf("."),
-            p2 = tmp[1].indexOf(".");
-        if (p1 > -1) if (tmp[0].length - 1 - p1 > max) max = tmp[0].length - 1 - tmp[0].indexOf('.');
-        if (p2 > -1) if (tmp[1].length - 1 - p2 > max) max = tmp[1].length - 1 - tmp[1].indexOf('.');
-    });
-    return max;
+  if (!current_layers[layer_name] || !current_layers[layer_name].colors_breaks) return;
+  var max = 0;
+  current_layers[layer_name].colors_breaks.forEach(function (el) {
+    var tmp = el[0].split(' - ');
+    var p1 = tmp[0].indexOf("."),
+        p2 = tmp[1].indexOf(".");
+    if (p1 > -1) {
+      if (tmp[0].length - 1 - p1 > max) max = tmp[0].length - 1 - tmp[0].indexOf('.');
+    }
+    if (p2 > -1) {
+      if (tmp[1].length - 1 - p2 > max) max = tmp[1].length - 1 - tmp[1].indexOf('.');
+    }
+  });
+  return max;
 };
 
 function _get_max_nb_left_sep(values) {
-    return max_fast(values.map(function (d) {
-        return ('' + d).split('.')[0].length;
-    }));
+  return max_fast(values.map(function (d) {
+    return ('' + d).split('.')[0].length;
+  }));
 }
 
 var get_max_nb_left_sep = function get_max_nb_left_sep(layer_name) {
-    if (!current_layers[layer_name] || !current_layers[layer_name].colors_breaks) return;
-    var nb_left = [];
-    current_layers[layer_name].colors_breaks.forEach(function (el) {
-        var tmp = el[0].split(' - ');
-        var p1 = tmp[0].indexOf("."),
-            p2 = tmp[1].indexOf(".");
-        nb_left.push(p1);
-        nb_left.push(p2);
-    });
-    return min_fast(nb_left);
+  if (!current_layers[layer_name] || !current_layers[layer_name].colors_breaks) return;
+  var nb_left = [];
+  current_layers[layer_name].colors_breaks.forEach(function (el) {
+    var tmp = el[0].split(' - ');
+    var p1 = tmp[0].indexOf("."),
+        p2 = tmp[1].indexOf(".");
+    nb_left.push(p1);
+    nb_left.push(p2);
+  });
+  return min_fast(nb_left);
 };
 "use strict";
 
@@ -15466,17 +15560,19 @@ function apply_user_preferences(json_pref) {
                             };
                         });
                     } else if (_layer.renderer == "DiscLayer") {
-                        current_layer_prop.min_display = _layer.min_display || 0;
-                        current_layer_prop.breaks = _layer.breaks;
-                        var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
-                        layer_selec.selectAll("path").styles(function (d, j) {
-                            return {
-                                fill: "none",
-                                stroke: _layer.fill_color.single,
-                                display: j <= lim ? null : 'none',
-                                'stroke-width': d.properties.prop_val
-                            };
-                        });
+                        (function () {
+                            current_layer_prop.min_display = _layer.min_display || 0;
+                            current_layer_prop.breaks = _layer.breaks;
+                            var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
+                            layer_selec.selectAll("path").styles(function (d, j) {
+                                return {
+                                    fill: "none",
+                                    stroke: _layer.fill_color.single,
+                                    display: j <= lim ? null : 'none',
+                                    'stroke-width': d.properties.prop_val
+                                };
+                            });
+                        })();
                     } else if (_layer.renderer && _layer.renderer.startsWith("Categorical")) {
                         var rendering_params = {
                             colorByFeature: _layer.color_by_id,
@@ -15594,61 +15690,63 @@ function apply_user_preferences(json_pref) {
                 };
                 render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
             } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")) {
-                var symbols_map = new Map(_layer.symbols_map);
-                var new_layer_data = {
-                    type: "FeatureCollection",
-                    features: _layer.current_state.map(function (d) {
-                        return d.data;
-                    })
-                };
-
-                var nb_features = new_layer_data.features.length;
-                var context_menu = new ContextMenu(),
-                    getItems = function getItems(self_parent) {
-                    return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-                            make_style_box_indiv_symbol(self_parent);
-                        } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-                            self_parent.style.display = "none";
-                        } }];
-                };
-                var layer_id = encodeId(layer_name);
-                _app.layer_to_id.set(layer_name, layer_id);
-                _app.id_to_layer.set(layer_id, layer_name);
-                // Add the features at there original positions :
-                map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
-                    var symb = symbols_map.get(d.properties.symbol_field),
-                        prop = _layer.current_state[j],
-                        coords = prop.pos;
-                    return {
-                        "x": coords[0] - symb[1] / 2,
-                        "y": coords[1] - symb[1] / 2,
-                        "width": prop.size,
-                        "height": prop.size,
-                        "xlink:href": symb[0]
+                (function () {
+                    var symbols_map = new Map(_layer.symbols_map);
+                    var new_layer_data = {
+                        type: "FeatureCollection",
+                        features: _layer.current_state.map(function (d) {
+                            return d.data;
+                        })
                     };
-                }).style('display', function (d, j) {
-                    return _layer.current_state[j].display;
-                }).on("mouseover", function () {
-                    this.style.cursor = "pointer";
-                }).on("mouseout", function () {
-                    this.style.cursor = "initial";
-                }).on("contextmenu dblclick", function () {
-                    context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-                }).call(drag_elem_geo);
 
-                create_li_layer_elem(layer_name, nb_features, ["Point", "symbol"], "result");
-                current_layers[layer_name] = {
-                    "n_features": nb_features,
-                    "renderer": "TypoSymbols",
-                    "symbols_map": symbols_map,
-                    "rendered_field": _layer.rendered_field,
-                    "is_result": true,
-                    "symbol": "image",
-                    "ref_layer_name": _layer.ref_layer_name
-                };
-                if (_layer.legend) {
-                    rehandle_legend(layer_name, _layer.legend);
-                }
+                    var nb_features = new_layer_data.features.length;
+                    var context_menu = new ContextMenu(),
+                        getItems = function getItems(self_parent) {
+                        return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
+                                make_style_box_indiv_symbol(self_parent);
+                            } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
+                                self_parent.style.display = "none";
+                            } }];
+                    };
+                    var layer_id = encodeId(layer_name);
+                    _app.layer_to_id.set(layer_name, layer_id);
+                    _app.id_to_layer.set(layer_id, layer_name);
+                    // Add the features at there original positions :
+                    map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
+                        var symb = symbols_map.get(d.properties.symbol_field),
+                            prop = _layer.current_state[j],
+                            coords = prop.pos;
+                        return {
+                            "x": coords[0] - symb[1] / 2,
+                            "y": coords[1] - symb[1] / 2,
+                            "width": prop.size,
+                            "height": prop.size,
+                            "xlink:href": symb[0]
+                        };
+                    }).style('display', function (d, j) {
+                        return _layer.current_state[j].display;
+                    }).on("mouseover", function () {
+                        this.style.cursor = "pointer";
+                    }).on("mouseout", function () {
+                        this.style.cursor = "initial";
+                    }).on("contextmenu dblclick", function () {
+                        context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+                    }).call(drag_elem_geo);
+
+                    create_li_layer_elem(layer_name, nb_features, ["Point", "symbol"], "result");
+                    current_layers[layer_name] = {
+                        "n_features": nb_features,
+                        "renderer": "TypoSymbols",
+                        "symbols_map": symbols_map,
+                        "rendered_field": _layer.rendered_field,
+                        "is_result": true,
+                        "symbol": "image",
+                        "ref_layer_name": _layer.ref_layer_name
+                    };
+                    if (_layer.legend) {
+                        rehandle_legend(layer_name, _layer.legend);
+                    }
+                })();
             } else {
                 null;
             }
@@ -16447,22 +16545,22 @@ d3.geoHatano = function () {
 */
 
 function get_fun_operator(operator) {
-    var operators = new Map([["+", function (a, b) {
-        return a + b;
-    }], ["-", function (a, b) {
-        return a - b;
-    }], ["/", function (a, b) {
-        if (b === 0) {
-            return "";
-        } else {
-            return a / b;
-        }
-    }], ["*", function (a, b) {
-        return a * b;
-    }], ["^", function (a, b) {
-        return Math.pow(a, b);
-    }]]);
-    return operators.get(operator);
+  var operators = new Map([["+", function (a, b) {
+    return a + b;
+  }], ["-", function (a, b) {
+    return a - b;
+  }], ["/", function (a, b) {
+    if (b === 0) {
+      return "";
+    } else {
+      return a / b;
+    }
+  }], ["*", function (a, b) {
+    return a * b;
+  }], ["^", function (a, b) {
+    return Math.pow(a, b);
+  }]]);
+  return operators.get(operator);
 }
 
 /**
@@ -16474,437 +16572,442 @@ function get_fun_operator(operator) {
 *
 */
 function add_field_table(table, layer_name, parent) {
-    function check_name() {
-        if (regexp_name.test(this.value) || this.value == "") chooses_handler.new_name = this.value;else {
-            // Rollback to the last correct name  :
-            this.value = chooses_handler.new_name;
-            swal({ title: i18next.t("Error") + "!",
-                text: i18next.t("Unauthorized character!"),
-                type: "error",
-                allowOutsideClick: false });
-        }
-    };
-
-    function compute_and_add() {
-        var options = chooses_handler,
-            fi1 = options.field1,
-            fi2 = options.field2,
-            new_name_field = options.new_name,
-            operation = options.operator,
-            opt_val = options.opt_val;
-
-        if (!regexp_name.test(new_name_field)) {
-            swal({ title: "",
-                text: i18next.t("app_page.explore_box.add_field_box.invalid_name"),
-                type: "error",
-                allowOutsideClick: false });
-            return Promise.reject("Invalid name");
-        }
-
-        if (options.type_operation === "math_compute" && table.length > 3200) {
-            var formToSend = new FormData();
-            var var1 = [],
-                var2 = fi2 == "user_const_value" ? +opt_val : [];
-            for (var i = 0; i < table.length; i++) {
-                var1.push(+table[i][fi1]);
-            }
-            if (fi2 != "user_const_value") {
-                for (var _i = 0; _i < table.length; _i++) {
-                    var2.push(+table[_i][fi2]);
-                }
-            }
-            formToSend.append('var1', JSON.stringify(var1));
-            formToSend.append('var2', JSON.stringify(var2));
-            formToSend.append('operator', operation);
-            return xhrequest("POST", "/helpers/calc", formToSend, false).then(function (data) {
-                data = JSON.parse(data);
-                for (var _i2 = 0; _i2 < table.length; _i2++) {
-                    table[_i2][new_name_field] = data[_i2];
-                }return true;
-            });
-        } else if (options.type_operation === "math_compute") {
-            var math_func = get_fun_operator(operation);
-            if (fi2 != "user_const_value") {
-                for (var _i3 = 0; _i3 < table.length; _i3++) {
-                    if (table[_i3][fi1] != null && table[_i3][fi1] != "" && table[_i3][fi2] != null && table[_i3][fi2] != "") {
-                        table[_i3][new_name_field] = math_func(+table[_i3][fi1], +table[_i3][fi2]);
-                    } else {
-                        table[_i3][new_name_field] = "";
-                    }
-                }
-            } else {
-                opt_val = +opt_val;
-                for (var _i4 = 0; _i4 < table.length; _i4++) {
-                    if (table[_i4][fi1] != null && table[_i4][fi1] != "") {
-                        table[_i4][new_name_field] = math_func(+table[_i4][fi1], opt_val);
-                    } else {
-                        table[_i4][new_name_field] = "";
-                    }
-                }
-            }
-            return Promise.resolve(true);
-        } else {
-            if (operation == "truncate") {
-                opt_val = +opt_val;
-                if (opt_val >= 0) {
-                    for (var _i5 = 0; _i5 < table.length; _i5++) {
-                        table[_i5][new_name_field] = table[_i5][fi1].substring(0, opt_val);
-                    }
-                } else {
-                    for (var _i6 = 0; _i6 < table.length; _i6++) {
-                        table[_i6][new_name_field] = table[_i6][fi1].substr(opt_val);
-                    }
-                }
-            } else if (operation == "concatenate") {
-                for (var _i7 = 0; _i7 < table.length; _i7++) {
-                    table[_i7][new_name_field] = [table[_i7][fi1], table[_i7][fi2]].join(opt_val);
-                }
-            }
-            return Promise.resolve(true);
-        }
-        return Promise.reject("Unknown error");
-    };
-
-    function refresh_type_content(type) {
-        field1.node().remove();operator.node().remove();field2.node().remove();
-        field1 = div1.append("select").on("change", function () {
-            chooses_handler.field1 = this.value;
-        });
-        operator = div1.append("select").on("change", function () {
-            chooses_handler.operator = this.value;
-            refresh_subtype_content(chooses_handler.type_operation, this.value);
-        });
-        field2 = div1.append("select").on("change", function () {
-            chooses_handler.field2 = this.value;
-            if (this.value == "user_const_value") {
-                val_opt.style("display", null);
-            }
-        });
-        if (type == "math_compute") {
-            math_operation.forEach(function (op) {
-                operator.append("option").text(op).attr("value", op);
-            });
-            for (var k in fields_type) {
-                if (fields_type[k] == "number") {
-                    field1.append("option").text(k).attr("value", k);
-                    field2.append("option").text(k).attr("value", k);
-                }
-            }
-            field2.append("option").attr("value", "user_const_value").text(i18next.t("app_page.explore_box.add_field_box.constant_value"));
-            val_opt.style("display", "none");
-            txt_op.text("");
-            chooses_handler.operator = math_operation[0];
-        } else {
-            string_operation.forEach(function (op) {
-                operator.append("option").text(op[0]).attr("value", op[1]);
-            });
-            for (var _k in fields_type) {
-                if (fields_type[_k] == "string") {
-                    field1.append("option").text(_k).attr("value", _k);
-                    field2.append("option").text(_k).attr("value", _k);
-                }
-            }
-            val_opt.style("display", null);
-            txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
-            chooses_handler.operator = string_operation[0];
-        }
-        chooses_handler.field1 = field1.node().value;
-        chooses_handler.field2 = field2.node().value;
-    };
-
-    function refresh_subtype_content(type, subtype) {
-        if (type != "string_field") {
-            if (field2.node().value != "user_const_value") {
-                val_opt.style("display", "none");
-                txt_op.text("");
-            }
-        } else {
-            if (subtype == "truncate") {
-                txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
-                field2.attr("disabled", true);
-            } else {
-                txt_op.html("app_page.explore_box.add_field_box.join_char");
-                field2.attr("disabled", null);
-            }
-        }
-    };
-
-    var chooses_handler = {
-        field1: undefined, field2: undefined,
-        operator: undefined, type_operation: undefined,
-        opt_val: undefined, new_name: 'NewFieldName'
-    };
-
-    make_confirm_dialog2("addFieldBox", i18next.t("app_page.explore_box.button_add_field"), { width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined }).then(function (valid) {
-        reOpenParent("#browse_data_box");
-        if (valid) {
-            document.querySelector("body").style.cursor = "wait";
-            compute_and_add(chooses_handler).then(function (resolved) {
-                if (current_layers[layer_name].targeted) {
-                    current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
-                    if (window.fields_handler) {
-                        fields_handler.unfill();
-                        fields_handler.fill(layer_name);
-                    }
-                }
-                if (parent) {
-                    parent.modal_box.show();
-                    parent.display_table(layer_name);
-                }
-            }, function (error) {
-                if (error != "Invalid name") display_error_during_computation();
-                console.log(error);
-                document.querySelector("body").style.cursor = "";
-            }).done(function () {
-                document.querySelector("body").style.cursor = "";
-            });
-        }
-    });
-
-    var current_fields = Object.getOwnPropertyNames(table),
-        fields_type = type_col(layer_name),
-        regexp_name = new RegExp(/^[a-z0-9_]+$/i),
-        // Only allow letters (lower & upper cases), number and underscore in the field name
-    container = document.querySelector(".twbs > .addFieldBox"),
-        box_content = d3.select(container).select(".modal-body").append("div"),
-        div1 = box_content.append("div").attr("id", "field_div1"),
-        div2 = box_content.append("div").attr("id", "field_div2");
-
-    var new_name = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_name")).insert("input").attr('value', 'NewFieldName').on("keyup", check_name);
-    var type_content = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_content")).insert("select").attr("id", "type_content_select").on("change", function () {
-        chooses_handler.type_operation = this.value;
-        refresh_type_content(this.value);
-    });
-
-    [[i18next.t("app_page.explore_box.add_field_box.between_numerical"), "math_compute"], [i18next.t("app_page.explore_box.add_field_box.between_string"), "string_field"]].forEach(function (d, i) {
-        type_content.append("option").text(d[0]).attr("value", d[1]);
-    });
-
-    var field1 = div1.append("select").on("change", function () {
-        chooses_handler.field1 = this.value;
-    }),
-        operator = div1.append("select").on("change", function () {
-        chooses_handler.operator = this.value;
-        refresh_subtype_content(chooses_handler.type_operation, this.value);
-    }),
-        field2 = div1.append("select").on("change", function () {
-        chooses_handler.field2 = this.value;
-    });
-
-    var txt_op = div2.append("p").attr("id", "txt_opt").text(""),
-        val_opt = div2.append("input").attr("id", "val_opt").style("display", "none").on("change", function () {
-        chooses_handler.opt_val = this.value;
-    });
-
-    var math_operation = ["+", "-", "*", "/", "^"];
-
-    var string_operation = [[i18next.t("app_page.explore_box.add_field_box.concatenate"), "concatenate"], [i18next.t("app_page.explore_box.add_field_box.truncate"), "truncate"]];
-    {
-        var a = type_content.node(),
-            b = false;
-        for (var fi in fields_type) {
-            if (fields_type[fi] == "number") {
-                b = true;
-                break;
-            }
-        }
-        a.value = b ? "math_compute" : "string_field";
-        a.dispatchEvent(new Event('change'));
+  function check_name() {
+    if (regexp_name.test(this.value) || this.value == "") {
+      chooses_handler.new_name = this.value;
+    } else {
+      // Rollback to the last correct name  :
+      this.value = chooses_handler.new_name;
+      swal({ title: i18next.t("Error") + "!",
+        text: i18next.t("Unauthorized character!"),
+        type: "error",
+        allowOutsideClick: false });
     }
-    return;
+  };
+
+  function compute_and_add() {
+    var options = chooses_handler,
+        fi1 = options.field1,
+        fi2 = options.field2,
+        new_name_field = options.new_name,
+        operation = options.operator,
+        opt_val = options.opt_val;
+
+    if (!regexp_name.test(new_name_field)) {
+      swal({ title: "",
+        text: i18next.t("app_page.explore_box.add_field_box.invalid_name"),
+        type: "error",
+        allowOutsideClick: false });
+      return Promise.reject("Invalid name");
+    }
+
+    if (options.type_operation === "math_compute" && table.length > 3200) {
+      var formToSend = new FormData();
+      var var1 = [],
+          var2 = fi2 == "user_const_value" ? +opt_val : [];
+      for (var i = 0; i < table.length; i++) {
+        var1.push(+table[i][fi1]);
+      }
+      if (fi2 != "user_const_value") {
+        for (var _i = 0; _i < table.length; _i++) {
+          var2.push(+table[_i][fi2]);
+        }
+      }
+      formToSend.append('var1', JSON.stringify(var1));
+      formToSend.append('var2', JSON.stringify(var2));
+      formToSend.append('operator', operation);
+      return xhrequest("POST", "/helpers/calc", formToSend, false).then(function (data) {
+        data = JSON.parse(data);
+        for (var _i2 = 0; _i2 < table.length; _i2++) {
+          table[_i2][new_name_field] = data[_i2];
+        }return true;
+      });
+    } else if (options.type_operation === "math_compute") {
+      var math_func = get_fun_operator(operation);
+      if (fi2 != "user_const_value") {
+        for (var _i3 = 0; _i3 < table.length; _i3++) {
+          if (table[_i3][fi1] != null && table[_i3][fi1] != "" && table[_i3][fi2] != null && table[_i3][fi2] != "") {
+            table[_i3][new_name_field] = math_func(+table[_i3][fi1], +table[_i3][fi2]);
+          } else {
+            table[_i3][new_name_field] = "";
+          }
+        }
+      } else {
+        opt_val = +opt_val;
+        for (var _i4 = 0; _i4 < table.length; _i4++) {
+          if (table[_i4][fi1] != null && table[_i4][fi1] != "") {
+            table[_i4][new_name_field] = math_func(+table[_i4][fi1], opt_val);
+          } else {
+            table[_i4][new_name_field] = "";
+          }
+        }
+      }
+      return Promise.resolve(true);
+    } else {
+      if (operation == "truncate") {
+        opt_val = +opt_val;
+        if (opt_val >= 0) {
+          for (var _i5 = 0; _i5 < table.length; _i5++) {
+            table[_i5][new_name_field] = table[_i5][fi1].substring(0, opt_val);
+          }
+        } else {
+          for (var _i6 = 0; _i6 < table.length; _i6++) {
+            table[_i6][new_name_field] = table[_i6][fi1].substr(opt_val);
+          }
+        }
+      } else if (operation == "concatenate") {
+        for (var _i7 = 0; _i7 < table.length; _i7++) {
+          table[_i7][new_name_field] = [table[_i7][fi1], table[_i7][fi2]].join(opt_val);
+        }
+      }
+      return Promise.resolve(true);
+    }
+    return Promise.reject("Unknown error");
+  };
+
+  function refresh_type_content(type) {
+    field1.node().remove();operator.node().remove();field2.node().remove();
+    field1 = div1.append("select").on("change", function () {
+      chooses_handler.field1 = this.value;
+    });
+    operator = div1.append("select").on("change", function () {
+      chooses_handler.operator = this.value;
+      refresh_subtype_content(chooses_handler.type_operation, this.value);
+    });
+    field2 = div1.append("select").on("change", function () {
+      chooses_handler.field2 = this.value;
+      if (this.value == "user_const_value") {
+        val_opt.style("display", null);
+      }
+    });
+    if (type == "math_compute") {
+      math_operation.forEach(function (op) {
+        operator.append("option").text(op).attr("value", op);
+      });
+      for (var k in fields_type) {
+        if (fields_type[k] == "number") {
+          field1.append("option").text(k).attr("value", k);
+          field2.append("option").text(k).attr("value", k);
+        }
+      }
+      field2.append("option").attr("value", "user_const_value").text(i18next.t("app_page.explore_box.add_field_box.constant_value"));
+      val_opt.style("display", "none");
+      txt_op.text("");
+      chooses_handler.operator = math_operation[0];
+    } else {
+      string_operation.forEach(function (op) {
+        operator.append("option").text(op[0]).attr("value", op[1]);
+      });
+      for (var _k in fields_type) {
+        if (fields_type[_k] == "string") {
+          field1.append("option").text(_k).attr("value", _k);
+          field2.append("option").text(_k).attr("value", _k);
+        }
+      }
+      val_opt.style("display", null);
+      txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
+      chooses_handler.operator = string_operation[0];
+    }
+    chooses_handler.field1 = field1.node().value;
+    chooses_handler.field2 = field2.node().value;
+  };
+
+  function refresh_subtype_content(type, subtype) {
+    if (type !== "string_field") {
+      if (field2.node().value != "user_const_value") {
+        val_opt.style("display", "none");
+        txt_op.text("");
+      }
+    } else {
+      if (subtype === "truncate") {
+        txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
+        field2.attr("disabled", true);
+      } else {
+        txt_op.html("app_page.explore_box.add_field_box.join_char");
+        field2.attr("disabled", null);
+      }
+    }
+  };
+
+  var math_operation = ["+", "-", "*", "/", "^"];
+
+  var string_operation = [[i18next.t("app_page.explore_box.add_field_box.concatenate"), "concatenate"], [i18next.t("app_page.explore_box.add_field_box.truncate"), "truncate"]];
+
+  var chooses_handler = {
+    field1: undefined, field2: undefined,
+    operator: undefined, type_operation: undefined,
+    opt_val: undefined, new_name: 'NewFieldName'
+  };
+
+  make_confirm_dialog2("addFieldBox", i18next.t("app_page.explore_box.button_add_field"), { width: 430 < w ? 430 : undefined, height: 280 < h ? 280 : undefined }).then(function (valid) {
+    reOpenParent("#browse_data_box");
+    if (valid) {
+      document.querySelector("body").style.cursor = "wait";
+      compute_and_add(chooses_handler).then(function (resolved) {
+        if (current_layers[layer_name].targeted) {
+          current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
+          if (window.fields_handler) {
+            fields_handler.unfill();
+            fields_handler.fill(layer_name);
+          }
+        }
+        if (parent) {
+          parent.modal_box.show();
+          parent.display_table(layer_name);
+        }
+      }, function (error) {
+        if (error != "Invalid name") display_error_during_computation();
+        console.log(error);
+        document.querySelector("body").style.cursor = "";
+      }).done(function () {
+        document.querySelector("body").style.cursor = "";
+      });
+    }
+  });
+
+  var current_fields = Object.getOwnPropertyNames(table),
+      fields_type = type_col(layer_name),
+      regexp_name = new RegExp(/^[a-z0-9_]+$/i),
+      // Only allow letters (lower & upper cases), number and underscore in the field name
+  container = document.querySelector(".twbs > .addFieldBox"),
+      box_content = d3.select(container).select(".modal-body").append("div"),
+      div1 = box_content.append("div").attr("id", "field_div1"),
+      div2 = box_content.append("div").attr("id", "field_div2");
+
+  var new_name = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_name")).insert("input").attr('value', 'NewFieldName').on("keyup", check_name);
+
+  var type_content = div1.append("p").html(i18next.t("app_page.explore_box.add_field_box.new_content")).insert("select").attr("id", "type_content_select").on("change", function () {
+    chooses_handler.type_operation = this.value;
+    refresh_type_content(this.value);
+  });
+
+  [[i18next.t("app_page.explore_box.add_field_box.between_numerical"), "math_compute"], [i18next.t("app_page.explore_box.add_field_box.between_string"), "string_field"]].forEach(function (d, i) {
+    type_content.append("option").text(d[0]).attr("value", d[1]);
+  });
+
+  var field1 = div1.append("select").on("change", function () {
+    chooses_handler.field1 = this.value;
+  });
+  var operator = div1.append("select").on("change", function () {
+    chooses_handler.operator = this.value;
+    refresh_subtype_content(chooses_handler.type_operation, this.value);
+  });
+  var field2 = div1.append("select").on("change", function () {
+    chooses_handler.field2 = this.value;
+  });
+
+  var txt_op = div2.append("p").attr("id", "txt_opt").text("");
+  var val_opt = div2.append("input").attr("id", "val_opt").style("display", "none").on("change", function () {
+    chooses_handler.opt_val = this.value;
+  });
+
+  {
+    var a = type_content.node();
+    var b = false;
+    for (var fi in fields_type) {
+      if (fields_type[fi] == "number") {
+        b = true;
+        break;
+      }
+    }
+    a.value = b ? "math_compute" : "string_field";
+    a.dispatchEvent(new Event('change'));
+  }
+  return;
 }
 
 function createTableDOM(data, options) {
-    options = options || {};
-    options.id = options.id || "myTable";
-    var doc = document,
-        nb_features = data.length,
-        column_names = Object.getOwnPropertyNames(data[0]),
-        nb_columns = column_names.length;
-    var myTable = doc.createElement("table"),
-        headers = doc.createElement("thead"),
-        body = doc.createElement("tbody"),
-        headers_row = doc.createElement("tr");
-    for (var i = 0; i < nb_columns; i++) {
-        var cell = doc.createElement("th");
-        cell.innerHTML = column_names[i];
-        headers_row.appendChild(cell);
+  options = options || {};
+  options.id = options.id || "myTable";
+  var doc = document,
+      nb_features = data.length,
+      column_names = Object.getOwnPropertyNames(data[0]),
+      nb_columns = column_names.length;
+  var myTable = doc.createElement("table"),
+      headers = doc.createElement("thead"),
+      body = doc.createElement("tbody"),
+      headers_row = doc.createElement("tr");
+  for (var i = 0; i < nb_columns; i++) {
+    var cell = doc.createElement("th");
+    cell.innerHTML = column_names[i];
+    headers_row.appendChild(cell);
+  }
+  headers.appendChild(headers_row);
+  myTable.appendChild(headers);
+  for (var _i8 = 0; _i8 < nb_features; _i8++) {
+    var row = doc.createElement("tr");
+    for (var j = 0; j < nb_columns; j++) {
+      var _cell = doc.createElement("td");
+      _cell.innerHTML = data[_i8][column_names[j]];
+      row.appendChild(_cell);
     }
-    headers.appendChild(headers_row);
-    myTable.appendChild(headers);
-    for (var _i8 = 0; _i8 < nb_features; _i8++) {
-        var row = doc.createElement("tr");
-        for (var j = 0; j < nb_columns; j++) {
-            var _cell = doc.createElement("td");
-            _cell.innerHTML = data[_i8][column_names[j]];
-            row.appendChild(_cell);
-        }
-        body.appendChild(row);
-    }
-    myTable.appendChild(body);
-    myTable.setAttribute("id", options.id);
-    return myTable;
+    body.appendChild(row);
+  }
+  myTable.appendChild(body);
+  myTable.setAttribute("id", options.id);
+  return myTable;
 }
 
 function make_table(layer_name) {
-    var features = svg_map.querySelector("#" + _app.layer_to_id.get(layer_name)).childNodes,
-        table = [];
-    if (!features[0].__data__.properties || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0) {
-        for (var i = 0, nb_ft = features.length; i < nb_ft; i++) {
-            table.push({ id: features[i].__data__.id || i });
-        }
-    } else {
-        for (var _i9 = 0, _nb_ft = features.length; _i9 < _nb_ft; _i9++) {
-            table.push(features[_i9].__data__.properties);
-        }
+  var features = svg_map.querySelector("#" + _app.layer_to_id.get(layer_name)).childNodes;
+  var table = [];
+  if (!features[0].__data__.properties || Object.getOwnPropertyNames(features[0].__data__.properties).length === 0) {
+    for (var i = 0, nb_ft = features.length; i < nb_ft; i++) {
+      table.push({ id: features[i].__data__.id || i });
     }
-    return table;
+  } else {
+    for (var _i9 = 0, _nb_ft = features.length; _i9 < _nb_ft; _i9++) {
+      table.push(features[_i9].__data__.properties);
+    }
+  }
+  return table;
 }
 
 var boxExplore2 = {
-    display_table: function display_table(table_name) {
-        var _this = this;
+  display_table: function display_table(table_name) {
+    var _this = this;
 
-        document.querySelector("body").style.cursor = "";
-        var the_table = this.tables.get(table_name);
-        the_table = the_table ? the_table[1] : make_table(table_name);
+    document.querySelector("body").style.cursor = "";
+    var the_table = this.tables.get(table_name);
+    the_table = the_table ? the_table[1] : make_table(table_name);
 
-        this.nb_features = the_table.length;
-        this.columns_names = Object.getOwnPropertyNames(the_table[0]);
-        this.columns_headers = [];
-        for (var i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
-            this.columns_headers.push({ data: col[i], title: col[i] });
-        }if (this.top_buttons.select("#add_field_button").node()) {
-            this.top_buttons.select("#add_field_button").remove();
-            document.getElementById("table_intro").remove();
-            document.querySelector(".dataTable-wrapper").remove();
-        }
-
-        // TODO : allow to add_field on all the layer instead of just targeted / result layers :
-        if (this.tables.get(table_name)) {
-            this.top_buttons.insert("button").attrs({ id: "add_field_button", class: "button_st3" }).html(i18next.t("app_page.explore_box.button_add_field")).on('click', function () {
-                _this.modal_box.hide();
-                add_field_table(the_table, table_name, _this);
-            });
-        }
-        var txt_intro = ["<b>", table_name, "</b><br>", this.nb_features, " ", i18next.t("app_page.common.feature", { count: this.nb_features }), " - ", this.columns_names.length, " ", i18next.t("app_page.common.field", { count: this.columns_names.length })].join('');
-        this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
-        this.box_table.node().appendChild(createTableDOM(the_table, { id: "myTable" }));
-
-        var myTable = document.getElementById("myTable");
-        this.datatable = new DataTable(myTable, {
-            sortable: true,
-            searchable: true,
-            fixedHeight: true
-        });
-        // Adjust the size of the box (on opening and after adding a new field)
-        // and/or display scrollbar if its overflowing the size of the window minus a little margin :
-        setTimeout(function () {
-            var box = document.getElementById("browse_data_box");
-            // box.querySelector(".dataTable-pagination").style.width = "80%";
-            var bbox = box.querySelector("#myTable").getBoundingClientRect(),
-                new_width = bbox.width,
-                new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
-
-            if (new_width > window.innerWidth * 0.85) {
-                box.querySelector(".modal-content").style.overflow = "auto";
-                box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
-            } else if (new_width > 560) {
-                box.querySelector(".modal-dialog").style.width = new_width + 80 + "px";
-            }
-
-            if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-                box.querySelector(".modal-body").style.height = new_height + 175 + "px";
-                box.querySelector(".modal-body").style.overflow = "auto";
-            }
-            setSelected(document.querySelector(".dataTable-selector"), "10");
-            // let datatable_info = box.querySelector(".dataTable-bottom");
-            // box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
-        }, 225);
-    },
-    get_available_tables: function get_available_tables() {
-        var target_layer = Object.getOwnPropertyNames(user_data),
-            ext_dataset = dataset_name,
-            result_layers = Object.getOwnPropertyNames(result_data),
-            available = new Map();
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
-
-        try {
-            for (var _iterator = target_layer[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var lyr_name = _step.value;
-
-                available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
-        }
-
-        if (ext_dataset) available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
-
-        try {
-            for (var _iterator2 = result_layers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var _lyr_name = _step2.value;
-
-                available.set(_lyr_name, [i18next.t("app_page.common.result_layer"), result_data[_lyr_name]]);
-            }
-        } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                    _iterator2.return();
-                }
-            } finally {
-                if (_didIteratorError2) {
-                    throw _iteratorError2;
-                }
-            }
-        }
-
-        return available;
-    },
-    create: function create(layer_name) {
-        this.columns_headers = [];
-        this.nb_features = undefined;
-        this.columns_names = undefined;
-        this.tables = this.get_available_tables();
-        this.modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
-        var container = document.getElementById("browse_data_box");
-        this.box_table = d3.select(container).select(".modal-body");
-        this.top_buttons = this.box_table.append('p').styles({ "margin-left": "15px", "display": "inline", "font-size": "12px" });
-
-        var fn_cb = function fn_cb(evt) {
-            helper_esc_key_twbs_cb(evt, _onclose);
-        },
-            _onclose = function _onclose() {
-            container.remove();
-            overlay_under_modal.hide();
-            document.removeEventListener('keydown', fn_cb);
-        };
-        container.querySelector(".btn_cancel").onclick = _onclose;
-        container.querySelector("#xclose").onclick = _onclose;
-        container.querySelector(".btn_ok").onclick = _onclose;
-        document.addEventListener('keydown', fn_cb);
-        overlay_under_modal.display();
-        this.display_table(layer_name);
+    this.nb_features = the_table.length;
+    this.columns_names = Object.getOwnPropertyNames(the_table[0]);
+    this.columns_headers = [];
+    for (var i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
+      this.columns_headers.push({ data: col[i], title: col[i] });
     }
+    if (this.top_buttons.select("#add_field_button").node()) {
+      this.top_buttons.select("#add_field_button").remove();
+      document.getElementById("table_intro").remove();
+      document.querySelector(".dataTable-wrapper").remove();
+    }
+
+    // TODO : allow to add_field on all the layer instead of just targeted / result layers :
+    if (this.tables.get(table_name)) {
+      this.top_buttons.insert("button").attrs({ id: "add_field_button", class: "button_st3" }).html(i18next.t("app_page.explore_box.button_add_field")).on('click', function () {
+        _this.modal_box.hide();
+        add_field_table(the_table, table_name, _this);
+      });
+    }
+    var txt_intro = ["<b>", table_name, "</b><br>", this.nb_features, " ", i18next.t("app_page.common.feature", { count: this.nb_features }), " - ", this.columns_names.length, " ", i18next.t("app_page.common.field", { count: this.columns_names.length })].join('');
+    this.box_table.append("p").attr('id', 'table_intro').html(txt_intro);
+    this.box_table.node().appendChild(createTableDOM(the_table, { id: "myTable" }));
+
+    var myTable = document.getElementById("myTable");
+    this.datatable = new DataTable(myTable, {
+      sortable: true,
+      searchable: true,
+      fixedHeight: true
+    });
+    // Adjust the size of the box (on opening and after adding a new field)
+    // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+    setTimeout(function () {
+      var box = document.getElementById("browse_data_box");
+      // box.querySelector(".dataTable-pagination").style.width = "80%";
+      var bbox = box.querySelector("#myTable").getBoundingClientRect(),
+          new_width = bbox.width,
+          new_height = bbox.height + box.querySelector(".dataTable-pagination").getBoundingClientRect().height;
+
+      if (new_width > window.innerWidth * 0.85) {
+        box.querySelector(".modal-content").style.overflow = "auto";
+        box.querySelector(".modal-dialog").style.width = window.innerWidth * 0.9 + "px";
+      } else if (new_width > 560) {
+        box.querySelector(".modal-dialog").style.width = new_width + 80 + "px";
+      }
+
+      if (new_height > 350 || new_height > window.innerHeight * 0.80) {
+        box.querySelector(".modal-body").style.height = new_height + 175 + "px";
+        box.querySelector(".modal-body").style.overflow = "auto";
+      }
+      setSelected(document.querySelector(".dataTable-selector"), "10");
+      // let datatable_info = box.querySelector(".dataTable-bottom");
+      // box.querySelector(".modal-footer").insertBefore(datatable_info, box.querySelector(".btn_ok"));
+    }, 225);
+  },
+  get_available_tables: function get_available_tables() {
+    var target_layer = Object.getOwnPropertyNames(user_data),
+        ext_dataset = dataset_name,
+        result_layers = Object.getOwnPropertyNames(result_data),
+        available = new Map();
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = target_layer[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var lyr_name = _step.value;
+
+        available.set(lyr_name, [i18next.t("app_page.common.target_layer"), user_data[lyr_name]]);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+
+    if (ext_dataset) available.set(dataset_name, [i18next.t("app_page.common.ext_dataset"), joined_dataset[0]]);
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = result_layers[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var _lyr_name = _step2.value;
+
+        available.set(_lyr_name, [i18next.t("app_page.common.result_layer"), result_data[_lyr_name]]);
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+
+    return available;
+  },
+  create: function create(layer_name) {
+    this.columns_headers = [];
+    this.nb_features = undefined;
+    this.columns_names = undefined;
+    this.tables = this.get_available_tables();
+    this.modal_box = make_dialog_container("browse_data_box", i18next.t("app_page.explore_box.title"), "discretiz_charts_dialog");
+    var container = document.getElementById("browse_data_box");
+    this.box_table = d3.select(container).select(".modal-body");
+    this.top_buttons = this.box_table.append('p').styles({ "margin-left": "15px", "display": "inline", "font-size": "12px" });
+
+    var fn_cb = function fn_cb(evt) {
+      helper_esc_key_twbs_cb(evt, _onclose);
+    };
+    var _onclose = function _onclose() {
+      container.remove();
+      overlay_under_modal.hide();
+      document.removeEventListener('keydown', fn_cb);
+    };
+    container.querySelector(".btn_cancel").onclick = _onclose;
+    container.querySelector("#xclose").onclick = _onclose;
+    container.querySelector(".btn_ok").onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
+    overlay_under_modal.display();
+    this.display_table(layer_name);
+  }
 };
 "use strict";
 

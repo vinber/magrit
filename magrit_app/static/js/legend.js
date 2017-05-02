@@ -7,39 +7,40 @@
 *
 */
 function handle_legend(layer){
-    let state = current_layers[layer].renderer;
-    if(state != undefined){
-        let class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
-        let legends = svg_map.getElementsByClassName(class_name);
-        if(legends.length > 0){
-            if(legends[0].getAttribute('display') == null)
-                Array.prototype.forEach.call(legends, el => el.setAttribute('display', 'none'));
-            else {
-                Array.prototype.forEach.call(legends, el => el.removeAttribute('display'));
-                // Redisplay the legend(s) and also
-                // verify if still in the visible part
-                // of the map, if not, move them in:
-                // .. so it's actually a feature if the legend is redrawn on its origin location
-                // after being moved too close to the outer border of the map :
-                let tol = 7.5,
-                    map_xy0 = get_map_xy0(),
-                    limit_left = map_xy0.x - tol,
-                    limit_right = map_xy0.x + +w + tol,
-                    limit_top = map_xy0.y - tol,
-                    limit_bottom = map_xy0.y + +h + tol;
+  let state = current_layers[layer].renderer;
+  if (state != undefined) {
+    let class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
+    let legends = svg_map.getElementsByClassName(class_name);
+    if (legends.length > 0) {
+      if (legends[0].getAttribute('display') == null) {
+        Array.prototype.forEach.call(legends, el => el.setAttribute('display', 'none'));
+      } else {
+        Array.prototype.forEach.call(legends, el => el.removeAttribute('display'));
+        // Redisplay the legend(s) and also
+        // verify if still in the visible part
+        // of the map, if not, move them in:
+        // .. so it's actually a feature if the legend is redrawn on its origin location
+        // after being moved too close to the outer border of the map :
+        let tol = 7.5,
+          map_xy0 = get_map_xy0(),
+          limit_left = map_xy0.x - tol,
+          limit_right = map_xy0.x + +w + tol,
+          limit_top = map_xy0.y - tol,
+          limit_bottom = map_xy0.y + +h + tol;
 
-                for(let i = 0; i < legends.length; i++){
-                    let bbox_legend = legends[i].getBoundingClientRect();
-                    if(bbox_legend.left < limit_left || bbox_legend.left > limit_right
-                            || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom)
-                        legends[i].setAttribute("transform", "translate(0, 0)");
-                }
-            }
-        } else {
-            createLegend(layer, "");
-            up_legends();
+        for(let i = 0; i < legends.length; i++){
+          let bbox_legend = legends[i].getBoundingClientRect();
+          if(bbox_legend.left < limit_left || bbox_legend.left > limit_right
+                  || bbox_legend.top < limit_top || bbox_legend.top > limit_bottom) {
+            legends[i].setAttribute("transform", "translate(0, 0)");
+          }
         }
+      }
+    } else {
+      createLegend(layer, "");
+      up_legends();
     }
+  }
 }
 
 /**
@@ -51,125 +52,125 @@ function handle_legend(layer){
 *
 */
 function createLegend(layer, title){
-    var renderer = current_layers[layer].renderer,
-        field = current_layers[layer].rendered_field,
-        field2 = current_layers[layer].rendered_field2,
-        type_layer = current_layers[layer].type,
-        el, el2, lgd_pos, lgd_pos2;
+  let renderer = current_layers[layer].renderer,
+    field = current_layers[layer].rendered_field,
+    field2 = current_layers[layer].rendered_field2,
+    type_layer = current_layers[layer].type,
+    el, el2, lgd_pos, lgd_pos2;
 
-    lgd_pos = getTranslateNewLegend();
+  lgd_pos = getTranslateNewLegend();
 
-    if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1
-              || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1){
-        el = createLegend_choro(layer, field, title, field, 0);
+  if (renderer.indexOf("Choropleth") > -1 || renderer.indexOf('Gridded') > -1
+            || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
+    el = createLegend_choro(layer, field, title, field, 0);
 
-    } else if (renderer.indexOf('Categorical') > -1){
-        el = createLegend_choro(layer, field, title, field, 4);
+  } else if (renderer.indexOf('Categorical') > -1) {
+    el = createLegend_choro(layer, field, title, field, 4);
 
-    } else if (renderer.indexOf("Links") != -1
-            || renderer.indexOf("DiscLayer") != -1){
-        el = createLegend_discont_links(layer, field, title, field);
+  } else if (renderer.indexOf("Links") != -1
+          || renderer.indexOf("DiscLayer") != -1) {
+    el = createLegend_discont_links(layer, field, title, field);
 
-    } else if(renderer.indexOf("PropSymbolsChoro") != -1){
-        el = createLegend_choro(layer, field2, title, field2, 0);
-        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
-                                    : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf("PropSymbolsChoro") != -1) {
+    el = createLegend_choro(layer, field2, title, field2, 0);
+    el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                                : createLegend_symbol(layer, field, title, field);
 
-    } else if (renderer.indexOf("PropSymbolsTypo") != -1){
-        el = createLegend_choro(layer, field2, title, field2, 4);
-        el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
-                                    : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf("PropSymbolsTypo") != -1) {
+    el = createLegend_choro(layer, field2, title, field2, 4);
+    el2 = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                                : createLegend_symbol(layer, field, title, field);
 
+  } else if (renderer.indexOf("PropSymbols") != -1) {
+    el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
+                               : createLegend_symbol(layer, field, title, field);
+
+  } else {
+    swal("Oops..",
+         i18next.t("No legend available for this representation") + ".<br>"
+         + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
+         "warning");
+    return;
+  }
+
+  if(el && lgd_pos && lgd_pos.x){
+    el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
+  }
+  pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect())
+  if(el2){
+    let lgd_pos2 = getTranslateNewLegend(),
+      prev_bbox = el.node().getBoundingClientRect(),
+      dim_h = lgd_pos.y + prev_bbox.height,
+      dim_w = lgd_pos.x + prev_bbox.width;
+    if(lgd_pos2.x != lgd_pos.x || lgd_pos2.y != lgd_pos.y){
+      el2.attr('transform', 'translate(' + lgd_pos2.x + ',' + lgd_pos2.y + ')');
+    } else if (dim_h < h){
+      el2.attr('transform', 'translate(' + lgd_pos.x + ',' + dim_h + ')');
+    } else if(dim_w < w){
+      el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
     }
-    else if(renderer.indexOf("PropSymbols") != -1) {
-        el = type_layer === "Line" ? createLegend_line_symbol(layer, field, title, field)
-                                   : createLegend_symbol(layer, field, title, field);
-    } else {
-        swal("Oops..",
-             i18next.t("No legend available for this representation") + ".<br>"
-             + i18next.t("Want to make a <a href='/'>suggestion</a> ?"),
-             "warning");
-        return;
-    }
-
-    if(el && lgd_pos && lgd_pos.x){
-        el.attr('transform', 'translate(' + lgd_pos.x + ',' + lgd_pos.y + ')');
-    }
-    pos_lgds_elem.set(el.attr('id') + ' ' + el.attr('class'), el.node().getBoundingClientRect())
-    if(el2){
-        let lgd_pos2 = getTranslateNewLegend(),
-            prev_bbox = el.node().getBoundingClientRect(),
-            dim_h = lgd_pos.y + prev_bbox.height,
-            dim_w = lgd_pos.x + prev_bbox.width;
-        if(lgd_pos2.x != lgd_pos.x || lgd_pos2.y != lgd_pos.y){
-            el2.attr('transform', 'translate(' + lgd_pos2.x + ',' + lgd_pos2.y + ')');
-        } else if (dim_h < h){
-            el2.attr('transform', 'translate(' + lgd_pos.x + ',' + dim_h + ')');
-        } else if(dim_w < w){
-            el2.attr('transform', 'translate(' + dim_w + ',' + lgd_pos.y + ')');
-        }
-        pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect())
-    }
+    pos_lgds_elem.set(el2.attr('id') + ' ' + el2.attr('class'), el2.node().getBoundingClientRect())
+  }
 }
 
 function up_legend(legend_node){
-    let lgd_features = svg_map.getElementsByClassName("legend"),
-        nb_lgd_features = +lgd_features.length,
-        self_position;
-    for(let i=0; i<nb_lgd_features; i++){
-        if(lgd_features[i].id == legend_node.id
-            && lgd_features[i].classList == legend_node.classList){
-                self_position = i;
-        }
+  let lgd_features = svg_map.getElementsByClassName("legend"),
+    nb_lgd_features = +lgd_features.length,
+    self_position;
+
+  for (let i=0; i<nb_lgd_features; i++) {
+    if(lgd_features[i].id == legend_node.id
+          && lgd_features[i].classList == legend_node.classList){
+      self_position = i;
     }
-    if(self_position == nb_lgd_features - 1){
-        return;
-    } else {
-        svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position]);
-    }
+  }
+  if (self_position == nb_lgd_features - 1) {
+    return;
+  } else {
+    svg_map.insertBefore(lgd_features[self_position + 1], lgd_features[self_position]);
+  }
 }
 
 function down_legend(legend_node){
-    let lgd_features = svg_map.getElementsByClassName("legend"),
-        nb_lgd_features = +lgd_features.length,
-        self_position;
-    for(let i=0; i<nb_lgd_features; i++){
-        if(lgd_features[i].id == legend_node.id
-            && lgd_features[i].classList == legend_node.classList){
-                self_position = i;
-        }
+  let lgd_features = svg_map.getElementsByClassName("legend"),
+    nb_lgd_features = +lgd_features.length,
+    self_position;
+
+  for(let i=0; i<nb_lgd_features; i++){
+    if(lgd_features[i].id == legend_node.id
+        && lgd_features[i].classList == legend_node.classList){
+      self_position = i;
     }
-    if(self_position == 0){
-        return;
-    } else {
-        svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
-    }
+  }
+  if(self_position == 0){
+    return;
+  } else {
+    svg_map.insertBefore(lgd_features[self_position], lgd_features[self_position - 1]);
+  }
 }
 
 function make_legend_context_menu(legend_node, layer){
-   let context_menu = new ContextMenu(),
-       getItems = () =>  [
-        {"name": i18next.t("app_page.common.edit_style"), "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
-        {"name": i18next.t("app_page.common.up_element"), "action": () => {  up_legend(legend_node.node());  }},
-        {"name": i18next.t("app_page.common.down_element"), "action": () => { down_legend(legend_node.node()); }},
-        {"name": i18next.t("app_page.common.hide"), "action": () => {
-            if(!(legend_node.attr("display") == "none"))
-                legend_node.attr("display", "none");
-            else
-                legend_node.attr("display", null);
-        }}
+  let context_menu = new ContextMenu(),
+    getItems = () =>  [
+      {"name": i18next.t("app_page.common.edit_style"), "action": () => {  createlegendEditBox(legend_node.attr("id"), layer);  }},
+      {"name": i18next.t("app_page.common.up_element"), "action": () => {  up_legend(legend_node.node());  }},
+      {"name": i18next.t("app_page.common.down_element"), "action": () => { down_legend(legend_node.node()); }},
+      {"name": i18next.t("app_page.common.hide"), "action": () => {
+          if(!(legend_node.attr("display") == "none")) legend_node.attr("display", "none");
+          else legend_node.attr("display", null);
+      }}
     ];
-    legend_node.on("dblclick", () => {
-        d3.event.stopPropagation();
-        d3.event.preventDefault();
-        createlegendEditBox(legend_node.attr("id"), layer);
-        });
+  legend_node.on("dblclick", () => {
+    d3.event.stopPropagation();
+    d3.event.preventDefault();
+    createlegendEditBox(legend_node.attr("id"), layer);
+    });
 
-    legend_node.on("contextmenu", () => {
-        context_menu.showMenu(d3.event,
-                              document.querySelector("body"),
-                              getItems());
-        });
+  legend_node.on("contextmenu", () => {
+    context_menu.showMenu(d3.event,
+                          document.querySelector("body"),
+                          getItems());
+    });
 }
 
 const make_red_line_snap = function(x1, x2, y1, y2, timeout=750){
@@ -282,112 +283,114 @@ const drag_legend_func = function(legend_group){
 }
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
-    var space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 =  ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        breaks = current_layers[layer].breaks,
-        nb_class = breaks.length;
+  let space_elem = 18,
+    boxgap = 12,
+    xpos = 30,
+    ypos = 30,
+    y_pos2 =  ypos + space_elem,
+    tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
+    breaks = current_layers[layer].breaks,
+    nb_class = breaks.length;
 
-    if(rounding_precision == undefined){
-        let b_val = breaks.map( (v,i) => v[0][0]).concat(breaks[nb_class - 1][0][1]);
-        rounding_precision = get_lgd_display_precision(b_val);
+  if(rounding_precision == undefined){
+    let b_val = breaks.map( (v,i) => v[0][0]).concat(breaks[nb_class - 1][0][1]);
+    rounding_precision = get_lgd_display_precision(b_val);
+  }
+
+  var legend_root = map.insert('g')
+    .attrs({id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer})
+    .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'});
+
+  var rect_under_legend = legend_root.insert("rect");
+
+  legend_root.insert('text').attr("id","legendtitle")
+    .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
+    .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
+
+  legend_root.insert('text').attr("id","legendsubtitle")
+    .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
+    .attrs({x: xpos + space_elem, y: ypos + 15});
+
+  let ref_symbols_params = [];
+
+  // Prepare symbols for the legend, taking care of not representing values
+  // under the display threshold defined by the user (if any) :
+  var current_min_value = +current_layers[layer].min_display;
+  if(current_layers[layer].renderer == "DiscLayer") {
+  // Todo use the same way to store the threshold for links and disclayer
+  // in order to avoid theses condition
+    let values = Array.prototype.map.call(
+      svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'),
+      d => +d.__data__.properties["disc_value"]);
+    current_min_value = current_min_value != 1
+                ? values[Math.round(current_min_value * current_layers[layer].n_features)]
+                : values[values.length - 1];
+  }
+  for(let b_val of breaks){
+    if (b_val[1] != 0) {
+      if(current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {
+        ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
+      } else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1]) {
+        ref_symbols_params.push({value:b_val[0], size:b_val[1]});
+      }
     }
+  }
 
-    var legend_root = map.insert('g')
-        .attrs({id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer})
-        .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'});
+  ref_symbols_params.reverse();
 
-    var rect_under_legend = legend_root.insert("rect");
+  var legend_elems = legend_root.selectAll('.legend')
+    .append("g")
+    .data(ref_symbols_params)
+    .enter().insert('g')
+    .attr('class', (d, i) => "lg legend_" + i);
 
-    legend_root.insert('text').attr("id","legendtitle")
-            .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
+  let max_size = current_layers[layer].size[1],
+    last_size = 0,
+    last_pos = y_pos2,
+    color = current_layers[layer].fill_color.single,
+    xrect = xpos + space_elem + max_size / 2;
 
-    legend_root.insert('text').attr("id","legendsubtitle")
-            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attrs({x: xpos + space_elem, y: ypos + 15});
+  legend_elems
+    .append("rect")
+    .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
+    .attrs(d => {
+        last_pos = boxgap + last_pos + last_size;
+        last_size = d.size;
+        return { x: xrect, y: last_pos, width: 45, height: d.size };
+    });
 
-    let ref_symbols_params = [];
+  last_pos = y_pos2;
+  last_size = 0;
 
-    // Prepare symbols for the legend, taking care of not representing values
-    // under the display threshold defined by the user (if any) :
-    var current_min_value = +current_layers[layer].min_display;
-    if(current_layers[layer].renderer == "DiscLayer") {
-    // Todo use the same way to store the threshold for links and disclayer
-    // in order to avoid theses condition
-        let values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'),
-            d => +d.__data__.properties["disc_value"]);
-        current_min_value = current_min_value != 1
-                    ? values[Math.round(current_min_value * current_layers[layer].n_features)]
-                    : values[values.length - 1];
-    }
-    for(let b_val of breaks){
-        if (b_val[1] != 0) {
-            if(current_min_value >= +b_val[0][0] && current_min_value < +b_val[0][1]) {
-                ref_symbols_params.push({value:[current_min_value, b_val[0][1]], size:b_val[1]});
-            } else if(current_min_value < +b_val[0][0] && current_min_value < +b_val[0][1]) {
-                ref_symbols_params.push({value:b_val[0], size:b_val[1]});
-            }
-        }
-    }
+  let x_text_pos = xpos + space_elem + max_size * 1.5 + 45;
+  let tmp_pos;
+  legend_elems.append("text")
+    .attrs(d => {
+      last_pos = boxgap + last_pos + last_size;
+      last_size = d.size;
+      tmp_pos = last_pos - (d.size / 4)
+      return {x: x_text_pos, y: tmp_pos};
+    })
+    .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+    .text(d => round_value(d.value[1], rounding_precision).toLocaleString());
 
-    ref_symbols_params.reverse();
+  legend_root.insert('text').attr("id", "lgd_choro_min_val")
+    .attr("x", x_text_pos)
+    .attr("y", tmp_pos + boxgap)
+    .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+    .text(round_value(ref_symbols_params[ref_symbols_params.length -1].value[0], rounding_precision).toLocaleString());
 
-    var legend_elems = legend_root.selectAll('.legend')
-                                  .append("g")
-                                  .data(ref_symbols_params)
-                                  .enter().insert('g')
-                                  .attr('class', (d, i) => "lg legend_" + i);
+  legend_root.call(drag_legend_func(legend_root));
 
-    let max_size = current_layers[layer].size[1],
-        last_size = 0,
-        last_pos = y_pos2,
-        color = current_layers[layer].fill_color.single,
-        xrect = xpos + space_elem + max_size / 2;
-
-    legend_elems
-          .append("rect")
-          .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
-          .attrs(d => {
-              last_pos = boxgap + last_pos + last_size;
-              last_size = d.size;
-              return {x: xrect, y: last_pos, width: 45, height: d.size};})
-
-    last_pos = y_pos2;
-    last_size = 0;
-
-    let x_text_pos = xpos + space_elem + max_size * 1.5 + 45;
-    let tmp_pos;
-    legend_elems.append("text")
-        .attrs(d => {
-            last_pos = boxgap + last_pos + last_size;
-            last_size = d.size;
-            tmp_pos = last_pos - (d.size / 4)
-            return {x: x_text_pos, y: tmp_pos};
-            })
-        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(d => round_value(d.value[1], rounding_precision).toLocaleString());
-
-    legend_root.insert('text').attr("id", "lgd_choro_min_val")
-        .attr("x", x_text_pos)
-        .attr("y", tmp_pos + boxgap)
-        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(round_value(ref_symbols_params[ref_symbols_params.length -1].value[0], rounding_precision).toLocaleString());
-
-    legend_root.call(drag_legend_func(legend_root));
-
-    legend_root.append("g")
-            .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x: xpos + space_elem, y: last_pos + 2*space_elem})
-            .style("font", "11px 'Enriqueta', arial, serif")
-            .text(note_bottom != null ? note_bottom : '');
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.append("g")
+    .insert("text").attr("id", "legend_bottom_note")
+    .attrs({x: xpos + space_elem, y: last_pos + 2*space_elem})
+    .style("font", "11px 'Enriqueta', arial, serif")
+    .text(note_bottom != null ? note_bottom : '');
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  // legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 /**
@@ -397,513 +400,515 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 *
 */
 function make_underlying_rect(legend_root, under_rect, fill){
-    under_rect.attrs({"width": 0, height: 0});
-    let bbox_legend = legend_root.node().getBoundingClientRect(),
-        translate = legend_root.attr("transform"),
-        map_xy0 = get_map_xy0();
+  under_rect.attrs({"width": 0, height: 0});
+  let bbox_legend = legend_root.node().getBoundingClientRect();
+  let translate = legend_root.attr("transform");
+  let map_xy0 = get_map_xy0();
 
-    translate = translate
-            ? translate.split("translate(")[1].split(")")[0].split(",").map(d => +d)
-            : [0, 0];
+  translate = translate
+          ? translate.split("translate(")[1].split(")")[0].split(",").map(d => +d)
+          : [0, 0];
 
-    let x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
-        y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
-        x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
-        y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
+  let x_top_left = bbox_legend.left - map_xy0.x - 12.5 - translate[0],
+    y_top_left = bbox_legend.top - map_xy0.y - 12.5 - translate[1],
+    x_top_right = bbox_legend.right - map_xy0.x + 12.5 - translate[0],
+    y_bottom_left = bbox_legend.bottom - map_xy0.y + 12.5 - translate[1];
 
-    let rect_height = y_bottom_left - y_top_left,
-        rect_width = x_top_right - x_top_left;
+  let rect_height = y_bottom_left - y_top_left;
+  let rect_width = x_top_right - x_top_left;
 
-    under_rect.attrs({id: "under_rect", x: x_top_left, y: y_top_left,
-                      height: rect_height, width: rect_width});
+  under_rect.attrs({
+    id: "under_rect", x: x_top_left, y: y_top_left,
+    height: rect_height, width: rect_width });
 
-    if(!fill || (!fill.color || !fill.opacity)){
-        under_rect.style("fill", "green")
-                  .style("fill-opacity", 0);
-        legend_root.attr("visible_rect", "false");
-        legend_root.on("mouseover", ()=>{ under_rect.style("fill-opacity", 0.1); })
-                   .on("mouseout", ()=>{ under_rect.style("fill-opacity", 0); });
-    } else {
-        under_rect.style("fill", fill.color)
-                  .style("fill-opacity", fill.opacity);
-        legend_root.attr("visible_rect", "true");
-        legend_root.on("mouseover", null).on("mouseout", null);
-
-    }
+  if(!fill || (!fill.color || !fill.opacity)){
+    under_rect.styles({ fill: 'green', 'fill-opacity': 0 });
+    legend_root.attr("visible_rect", "false");
+    legend_root.on("mouseover", () => { under_rect.style("fill-opacity", 0.1); })
+               .on("mouseout", () => { under_rect.style("fill-opacity", 0); });
+  } else {
+    under_rect.styles({ fill: fill.color, 'fill-opacity': fill.opacity });
+    legend_root.attr("visible_rect", "true");
+    legend_root.on("mouseover", null).on("mouseout", null);
+  }
 }
 
 function createLegend_symbol(layer, field, title, subtitle, nested = "false", rect_fill_value, rounding_precision, note_bottom, options = {}){
-    let parent = options.parent || window.map;
-    var space_elem = 18,
-        boxgap = 4,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 =  ypos + space_elem * 1.5,
-        nb_features = current_layers[layer].n_features,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        symbol_type = current_layers[layer].symbol;
+  let parent = options.parent || window.map;
+  let space_elem = 18;
+  let boxgap = 4;
+  let xpos = 30;
+  let ypos = 30;
+  let y_pos2 =  ypos + space_elem * 1.5;
+  let nb_features = current_layers[layer].n_features;
+  let tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+  let symbol_type = current_layers[layer].symbol;
 
-    var color_symb_lgd = (current_layers[layer].renderer === "PropSymbolsChoro" || current_layers[layer].renderer === "PropSymbolsTypo" || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined)
-                        ? "#FFF" : current_layers[layer].fill_color.single;
+  let color_symb_lgd = (
+    current_layers[layer].renderer === "PropSymbolsChoro"
+      || current_layers[layer].renderer === "PropSymbolsTypo"
+      || current_layers[layer].fill_color.two !== undefined
+      || current_layers[layer].fill_color.random !== undefined )
+    ? "#FFF" : current_layers[layer].fill_color.single;
 
-    var legend_root = parent.insert('g')
-        .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
-        .attrs({id: 'legend_root_symbol', class: tmp_class_name, transform: 'translate(0,0)', layer_name: layer,
-                nested: nested, rounding_precision: rounding_precision, layer_field: field});
+  let legend_root = parent.insert('g')
+    .styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' })
+    .attrs({ id: 'legend_root_symbol', class: tmp_class_name,
+      transform: 'translate(0,0)', layer_name: layer,
+      nested: nested, rounding_precision: rounding_precision,
+      layer_field: field });
 
-    var rect_under_legend = legend_root.insert("rect");
-    legend_root.insert('text').attr("id","legendtitle")
-        .text(title)
-        .style("font", "bold 12px 'Enriqueta', arial, serif")
-        .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
-    legend_root.insert('text').attr("id","legendsubtitle")
-        .text(subtitle)
-        .style("font", "italic 12px 'Enriqueta', arial, serif")
-        .attrs({x: xpos + space_elem, y: ypos + 15});
+  var rect_under_legend = legend_root.insert("rect");
+  legend_root.insert('text').attr("id","legendtitle")
+    .text(title)
+    .style("font", "bold 12px 'Enriqueta', arial, serif")
+    .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
+  legend_root.insert('text').attr("id","legendsubtitle")
+    .text(subtitle)
+    .style("font", "italic 12px 'Enriqueta', arial, serif")
+    .attrs({x: xpos + space_elem, y: ypos + 15});
 
-    let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type),
-        type_param = symbol_type === 'circle' ? 'r' : 'width',
-        z_scale = +d3.zoomTransform(map.node()).k,
-        [ref_value, ref_size] = current_layers[layer].size,
-        propSize = new PropSizer(ref_value, ref_size, symbol_type);
+  let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
+  let type_param = symbol_type === 'circle' ? 'r' : 'width';
+  let z_scale = +d3.zoomTransform(map.node()).k;
+  let [ref_value, ref_size] = current_layers[layer].size;
+  let propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
-    if(!current_layers[layer].size_legend_symbol){
-        let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
-            size_max = +non_empty[0].getAttribute(type_param),
-            size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
-            sqrt = Math.sqrt,
-            val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-            val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-            r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
-            diff_size = sqrt(size_max) - sqrt(size_min),
-            size_interm1 = sqrt(size_min) + diff_size / 3,
-            size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
-        size_interm1 = Math.pow(size_interm1, 2);
-        current_layers[layer].size_legend_symbol = [
-                   {value: val_max},
-                   {value: round_value(propSize.get_value(size_interm2), r)},
-                   {value: round_value(propSize.get_value(size_interm1), r)},
-                   {value: val_min}
-                  ];
-    }
-    let t = current_layers[layer].size_legend_symbol;
-    let ref_symbols_params = [
-      {size: propSize.scale(t[0].value) * z_scale, value: t[0].value},
-      {size: propSize.scale(t[1].value) * z_scale, value: t[1].value},
-      {size: propSize.scale(t[2].value) * z_scale, value: t[2].value},
-      {size: propSize.scale(t[3].value) * z_scale, value: t[3].value}
+  if(!current_layers[layer].size_legend_symbol){
+    let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
+      size_max = +non_empty[0].getAttribute(type_param),
+      size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
+      sqrt = Math.sqrt,
+      val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+      val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+      r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
+      diff_size = sqrt(size_max) - sqrt(size_min),
+      size_interm1 = sqrt(size_min) + diff_size / 3,
+      size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
+    size_interm1 = Math.pow(size_interm1, 2);
+    current_layers[layer].size_legend_symbol = [
+      {value: val_max},
+      {value: round_value(propSize.get_value(size_interm2), r)},
+      {value: round_value(propSize.get_value(size_interm1), r)},
+      {value: val_min}
     ];
-    if(ref_symbols_params[3].value == 0){
-        ref_symbols_params.pop();
+  }
+
+  let t = current_layers[layer].size_legend_symbol;
+  let ref_symbols_params = [
+    {size: propSize.scale(t[0].value) * z_scale, value: t[0].value},
+    {size: propSize.scale(t[1].value) * z_scale, value: t[1].value},
+    {size: propSize.scale(t[2].value) * z_scale, value: t[2].value},
+    {size: propSize.scale(t[3].value) * z_scale, value: t[3].value}
+  ];
+  if (ref_symbols_params[3].value == 0) {
+      ref_symbols_params.pop();
+  }
+  let legend_elems = legend_root.selectAll('.legend')
+    .append("g")
+    .data(ref_symbols_params)
+    .enter().insert('g')
+    .attr('class', (d,i) => "lg legend_" + i );
+
+  let max_size = ref_symbols_params[0].size;
+  let last_size = 0;
+
+  if (symbol_type === "rect") {
+      y_pos2 = y_pos2 - max_size / 2;
+  }
+
+  let last_pos = y_pos2;
+
+  if (nested == "false") {
+    if (symbol_type === "circle") {
+      legend_elems
+          .append("circle")
+          .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+          .attrs( (d, i) => {
+              last_pos = (i * boxgap) + d.size + last_pos + last_size;
+              last_size = d.size;
+              return {
+                "cx": xpos + space_elem + boxgap + max_size / 2,
+                "cy": last_pos,
+                "r": d.size
+              };
+            });
+
+      last_pos = y_pos2; last_size = 0;
+      legend_elems.append("text")
+          .attrs( (d, i) => {
+            last_pos = (i * boxgap) + d.size + last_pos + last_size;
+            last_size = d.size;
+            return {
+              "x": xpos + space_elem + boxgap + max_size * 1.5 + 5,
+              "y": last_pos + (i * 2/3)
+            };
+          })
+          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text(d => round_value(d.value, rounding_precision).toLocaleString());
+
+    } else if (symbol_type === "rect") {
+      legend_elems
+          .append("rect")
+          .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
+          .attrs( (d,i) => {
+            last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+            last_size = d.size;
+            return {
+              "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
+              "y": last_pos,
+              "width": last_size,
+              "height": last_size
+            };
+          });
+
+      last_pos = y_pos2; last_size = 0;
+      let x_text_pos = xpos + space_elem + max_size * 1.25;
+      legend_elems.append("text")
+          .attr("x", x_text_pos)
+          .attr("y", (d,i) => {
+            last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
+            last_size = d.size;
+            return last_pos + (d.size * 0.6);
+          })
+          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+          .text(d => round_value(d.value, rounding_precision).toLocaleString());
     }
-    var legend_elems = legend_root.selectAll('.legend')
-                                  .append("g")
-                                  .data(ref_symbols_params)
-                                  .enter().insert('g')
-                                  .attr('class', (d,i) => "lg legend_" + i );
-
-    let max_size = ref_symbols_params[0].size,
-        last_size = 0;
-
-    if(symbol_type === "rect"){
-        y_pos2 = y_pos2 - max_size / 2;
+  } else if (nested == "true") {
+    if (symbol_type === "circle") {
+      legend_elems
+        .append("circle")
+        .attrs(d => ({
+          cx: xpos + space_elem + boxgap + max_size / 2,
+          cy: ypos + 45 + max_size + (max_size / 2) - d.size,
+          r: d.size
+        }))
+        .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
+      last_pos = y_pos2; last_size = 0;
+      legend_elems.append("text")
+        .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
+        .attr("y", d => ypos + 45 + max_size * 2 - (max_size / 2) - d.size * 2)
+        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+        .text(d => round_value(d.value, rounding_precision).toLocaleString());
+      last_pos = ypos + 30 + max_size + (max_size / 2);
+    } else if (symbol_type === "rect") {
+      legend_elems
+        .append("rect")
+        .attrs(d => ({
+            x: xpos + space_elem + boxgap,
+            y: ypos + 45 + max_size - d.size,
+            width: d.size, height: d.size}))
+        .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
+      last_pos = y_pos2; last_size = 0;
+      legend_elems.append("text")
+        .attr("x", xpos + space_elem + max_size * 1.25)
+        .attr("y", d => ypos + 46 + max_size - d.size)
+        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+        .text(d => round_value(d.value, rounding_precision).toLocaleString());
+      last_pos = ypos + 30 + max_size;
     }
+  }
 
-    let last_pos = y_pos2;
+  if (current_layers[layer].break_val != undefined) {
+    let bottom_colors  = legend_root.append("g");
+    bottom_colors.insert("text").attr("id", "col1_txt")
+      .attr("x", xpos + space_elem)
+      .attr("y", last_pos + 1.75 * space_elem)
+      .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+      .html('< ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors
+      .insert("rect").attr("id", "col1")
+      .attr("x", xpos + space_elem)
+      .attr("y", last_pos + 2 * space_elem)
+      .attrs({"width": space_elem, "height": space_elem})
+      .style("fill", current_layers[layer].fill_color.two[0]);
+    bottom_colors.insert("text").attr("id", "col1_txt")
+      .attr("x", xpos + 3 * space_elem)
+      .attr("y", last_pos + 1.75 * space_elem)
+      .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+      .html('> ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors
+      .insert("rect").attr("id", "col2")
+      .attr("x", xpos + 3 * space_elem)
+      .attr("y", last_pos + 2 * space_elem)
+      .attrs({"width": space_elem, "height": space_elem})
+      .style("fill", current_layers[layer].fill_color.two[1]);
+    last_pos = last_pos + 2.5 * space_elem;
+  }
 
-    if(nested == "false"){
-        if(symbol_type === "circle"){
-            legend_elems
-                .append("circle")
-                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
-                .attrs( (d, i) => {
-                    last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                    last_size = d.size;
-                    return {
-                      "cx": xpos + space_elem + boxgap + max_size / 2,
-                      "cy": last_pos,
-                      "r": d.size
-                    };
-                  });
+  legend_root.append("g")
+    .insert("text").attr("id", "legend_bottom_note")
+    .attrs({x:  xpos + space_elem, y: last_pos + 2 * space_elem})
+    .style("font", "11px 'Enriqueta', arial, serif")
+    .text(note_bottom != null ? note_bottom : '');
 
-            last_pos = y_pos2; last_size = 0;
-            legend_elems.append("text")
-                .attrs( (d, i) => {
-                  last_pos = (i * boxgap) + d.size + last_pos + last_size;
-                  last_size = d.size;
-                  return {
-                    "x": xpos + space_elem + boxgap + max_size * 1.5 + 5,
-                    "y": last_pos + (i * 2/3)
-                  };
-                })
-                .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision).toLocaleString());
-
-        } else if(symbol_type === "rect"){
-            legend_elems
-                .append("rect")
-                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1})
-                .attrs( (d,i) => {
-                  last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
-                  last_size = d.size;
-                  return {
-                    "x": xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
-                    "y": last_pos,
-                    "width": last_size,
-                    "height": last_size
-                  };
-                });
-
-            last_pos = y_pos2; last_size = 0;
-            let x_text_pos = xpos + space_elem + max_size * 1.25;
-            legend_elems.append("text")
-                .attr("x", x_text_pos)
-                .attr("y", (d,i) => {
-                        last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
-                        last_size = d.size;
-                        return last_pos + (d.size * 0.6);
-                        })
-                .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision).toLocaleString());
-        }
-    } else if (nested == "true"){
-        if(symbol_type === "circle"){
-            legend_elems
-                .append("circle")
-                .attrs(d => ({
-                  cx: xpos + space_elem + boxgap + max_size / 2,
-                  cy: ypos + 45 + max_size + (max_size / 2) - d.size,
-                  r: d.size
-                  }))
-                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
-            last_pos = y_pos2; last_size = 0;
-            legend_elems.append("text")
-                .attr("x", xpos + space_elem + boxgap + max_size * 1.5 + 5)
-                .attr("y", d => ypos + 45 + max_size * 2 - (max_size / 2) - d.size * 2)
-                .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision).toLocaleString());
-            last_pos = ypos + 30 + max_size + (max_size / 2);
-        } else if(symbol_type === "rect"){
-            legend_elems
-                .append("rect")
-                .attrs(d => ({
-                    x: xpos + space_elem + boxgap,
-                    y: ypos + 45 + max_size - d.size,
-                    width: d.size, height: d.size}))
-                .styles({fill: color_symb_lgd, stroke: "rgb(0, 0, 0)", "fill-opacity": 1});
-            last_pos = y_pos2; last_size = 0;
-            legend_elems.append("text")
-                .attr("x", xpos + space_elem + max_size * 1.25)
-                .attr("y", d => ypos + 46 + max_size - d.size)
-                .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-                .text(d => round_value(d.value, rounding_precision).toLocaleString());
-            last_pos = ypos + 30 + max_size;
-        }
-    }
-
-    if(current_layers[layer].break_val != undefined){
-        let bottom_colors  = legend_root.append("g");
-        bottom_colors.insert("text").attr("id", "col1_txt")
-            .attr("x", xpos + space_elem)
-            .attr("y", last_pos + 1.75 * space_elem)
-            .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-            .html('< ' + current_layers[layer].break_val.toLocaleString());
-        bottom_colors
-            .insert("rect").attr("id", "col1")
-            .attr("x", xpos + space_elem)
-            .attr("y", last_pos + 2 * space_elem)
-            .attrs({"width": space_elem, "height": space_elem})
-            .style("fill", current_layers[layer].fill_color.two[0]);
-        bottom_colors.insert("text").attr("id", "col1_txt")
-            .attr("x", xpos + 3 * space_elem)
-            .attr("y", last_pos + 1.75 * space_elem)
-            .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-            .html('> ' + current_layers[layer].break_val.toLocaleString());
-        bottom_colors
-            .insert("rect").attr("id", "col2")
-            .attr("x", xpos + 3 * space_elem)
-            .attr("y", last_pos + 2 * space_elem)
-            .attrs({"width": space_elem, "height": space_elem})
-            .style("fill", current_layers[layer].fill_color.two[1]);
-        last_pos = last_pos + 2.5 * space_elem;
-    }
-    legend_root.append("g")
-        .insert("text").attr("id", "legend_bottom_note")
-        .attrs({x:  xpos + space_elem, y: last_pos + 2 * space_elem})
-        .style("font", "11px 'Enriqueta', arial, serif")
-        .text(note_bottom != null ? note_bottom : '');
-
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    if(parent == map)
-        make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  if(parent == map) make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom){
-    var space_elem = 18,
-        boxgap = 12,
-        xpos = 30,
-        ypos = 30,
-        y_pos2 =  ypos + space_elem,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
+  const space_elem = 18,
+    boxgap = 12,
+    xpos = 30,
+    ypos = 30,
+    y_pos2 =  ypos + space_elem,
+    tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' ');
 
-    let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-        type_param = "strokeWidth";
+  let ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path");
+  let type_param = "strokeWidth";
 
-    let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d.style[type_param] != "0") return true }),
-        size_max = +non_empty[0].style[type_param],
-        size_min = +non_empty[non_empty.length - 1].style[type_param],
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-        diff_size = size_max - size_min,
-        diff_val = val_max - val_min,
-        val_interm1 = val_min + diff_val / 3,
-        val_interm2 = val_interm1 + diff_val / 3,
-        size_interm1 = size_min + diff_size / 3,
-        size_interm2 = size_interm1 + diff_size / 3,
-        ref_symbols_params = [
-            {size: size_max, value: val_max},
-            {size: size_interm2, value: val_interm2},
-            {size: size_interm1, value: val_interm1},
-            {size: size_min, value: val_min}
-        ];
+  let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d.style[type_param] != "0") return true }),
+    size_max = +non_empty[0].style[type_param],
+    size_min = +non_empty[non_empty.length - 1].style[type_param],
+    val_max = Math.abs(+non_empty[0].__data__.properties[field]),
+    val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+    diff_size = size_max - size_min,
+    diff_val = val_max - val_min,
+    val_interm1 = val_min + diff_val / 3,
+    val_interm2 = val_interm1 + diff_val / 3,
+    size_interm1 = size_min + diff_size / 3,
+    size_interm2 = size_interm1 + diff_size / 3,
+    ref_symbols_params = [
+        {size: size_max, value: val_max},
+        {size: size_interm2, value: val_interm2},
+        {size: size_interm1, value: val_interm1},
+        {size: size_min, value: val_min}
+    ];
 
+  if (rounding_precision == undefined) {
+      rounding_precision = get_lgd_display_precision(ref_symbols_params.map(d => d.value));
+  }
 
-    if(rounding_precision == undefined){
-        rounding_precision = get_lgd_display_precision(ref_symbols_params.map(d => d.value));
-    }
+  let legend_root = map.insert('g')
+      .attrs({ id: 'legend_root_lines_symbol', class: tmp_class_name,
+          transform: 'translate(0,0)', rounding_precision: rounding_precision,
+          layer_field: field, layer_name: layer })
+      .styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' });
 
-    var legend_root = map.insert('g')
-        .attrs({id: 'legend_root_lines_symbol', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer})
-        .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'});
+  let rect_under_legend = legend_root.insert("rect");
 
-    var rect_under_legend = legend_root.insert("rect");
+  legend_root.insert('text').attr("id","legendtitle")
+    .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
+    .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
 
-    legend_root.insert('text').attr("id","legendtitle")
-            .text(title || "Title").style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attrs(subtitle != "" ? {x: xpos + space_elem, y: ypos} : {x: xpos + space_elem, y: ypos + 15});
+  legend_root.insert('text').attr("id","legendsubtitle")
+    .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
+    .attrs({x: xpos + space_elem, y: ypos + 15});
 
-    legend_root.insert('text').attr("id","legendsubtitle")
-            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attrs({x: xpos + space_elem, y: ypos + 15});
+  let legend_elems = legend_root.selectAll('.legend')
+    .append("g")
+    .data(ref_symbols_params)
+    .enter().insert('g')
+    .attr('class', (d, i) => "lg legend_" + i);
 
-    var legend_elems = legend_root.selectAll('.legend')
-                                  .append("g")
-                                  .data(ref_symbols_params)
-                                  .enter().insert('g')
-                                  .attr('class', (d, i) => "lg legend_" + i);
+  let last_size = 0;
+  let last_pos = y_pos2;
+  let color = current_layers[layer].fill_color.single;
+  let xrect = xpos + space_elem;
 
-    let last_size = 0,
-        last_pos = y_pos2,
-        color = current_layers[layer].fill_color.single,
-        xrect = xpos + space_elem;
+  legend_elems
+    .append("rect")
+    .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
+    .attrs(d => {
+        last_pos = boxgap + last_pos + last_size;
+        last_size = d.size;
+        return { x: xrect, y: last_pos, width: 45, height: d.size };
+    });
 
-    legend_elems
-        .append("rect")
-        .styles({fill: color, stroke: "rgb(0, 0, 0)", "fill-opacity": 1, "stroke-width": 0})
-        .attrs(d => {
-            last_pos = boxgap + last_pos + last_size;
-            last_size = d.size;
-            return {x: xrect, y: last_pos, width: 45, height: d.size};})
+  last_pos = y_pos2; last_size = 0;
+  let x_text_pos = xrect + 55;
+  legend_elems.append("text")
+    .attrs(d => {
+      last_pos = boxgap + last_pos + d.size;
+      return { x: x_text_pos, y: last_pos + 4 - d.size / 2 };
+    })
+    .styles({ 'alignment-baseline': 'middle' , 'font-size':'10px' })
+    .text(d => round_value(d.value, rounding_precision).toLocaleString());
 
-    last_pos = y_pos2; last_size = 0;
-    let x_text_pos = xrect + 55;
-    legend_elems.append("text")
-        .attrs(d => {
-            last_pos = boxgap + last_pos + d.size;
-            return {x: x_text_pos, y: last_pos + 4 - d.size / 2};
-            })
-        .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-        .text(d => round_value(d.value, rounding_precision).toLocaleString());
+  legend_root.append("g")
+    .insert("text").attr("id", "legend_bottom_note")
+    .attrs({ x: xpos + space_elem, y: last_pos + space_elem })
+    .style("font", "11px 'Enriqueta', arial, serif")
+    .text(note_bottom != null ? note_bottom : '');
 
-    legend_root.append("g")
-        .insert("text").attr("id", "legend_bottom_note")
-        .attrs({x: xpos + space_elem, y: last_pos + space_elem})
-        .style("font", "11px 'Enriqueta', arial, serif")
-        .text(note_bottom != null ? note_bottom : '');
-
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 
 const get_lgd_display_precision = function(breaks){
-    // Set rounding precision to 0 if they are all integers :
-    if(breaks.filter(b => (b | 0) == b).length == breaks.length){
-        return 0;
-    }
-    // Compute the difference between each break to set
-    // ... the rounding precision in order to differenciate each class :
-    let diff;
-    for(let i = 0; i < (breaks.length - 1); i++){
-        let d = +breaks[i+1] - +breaks[i];
-        if(!diff) diff = d;
-        else if(d < diff) diff = d;
-    }
-    if(diff > 1 || diff > 0.1){
-        return 1;
-    } else if (diff > 0.01){
-      return 2;
-    } else if (diff > 0.001){
-      return 3;
-    } else if (diff > 0.0001) {
-      return 4;
-    } else if (diff > 0.00001) {
-      return 5;
-    } else if (diff > 0.000001) {
-      return 6;
-    } else if (diff > 0.0000001) {
-      return 7;
-    } else {
-      return undefined;
-    }
+  // Set rounding precision to 0 if they are all integers :
+  if (breaks.filter(b => (b | 0) == b).length == breaks.length) {
+    return 0;
+  }
+  // Compute the difference between each break to set
+  // ... the rounding precision in order to differenciate each class :
+  let diff;
+  for (let i = 0; i < (breaks.length - 1); i++) {
+    let d = +breaks[i+1] - +breaks[i];
+    if (!diff) diff = d;
+    else if (d < diff) diff = d;
+  }
+  if (diff > 1 || diff > 0.1) {
+    return 1;
+  } else if (diff > 0.01) {
+    return 2;
+  } else if (diff > 0.001) {
+    return 3;
+  } else if (diff > 0.0001) {
+    return 4;
+  } else if (diff > 0.00001) {
+    return 5;
+  } else if (diff > 0.000001) {
+    return 6;
+  } else if (diff > 0.0000001) {
+    return 7;
+  } else {
+    return undefined;
+  }
 }
 
 function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom){
-    var boxheight = 18,
-        boxwidth = 18,
-        xpos = 30,
-        ypos = 30,
-        last_pos = null,
-        y_pos2 =  ypos + boxheight * 1.8,
-        tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
-        nb_class,
-        data_colors_label;
+  const boxheight = 18,
+    boxwidth = 18,
+    xpos = 30,
+    ypos = 30;
+  let last_pos = null,
+    y_pos2 =  ypos + boxheight * 1.8,
+    tmp_class_name = ["legend", "legend_feature", "lgdf_" + _app.layer_to_id.get(layer)].join(' '),
+    nb_class,
+    data_colors_label;
 
-    boxgap = +boxgap;
+  boxgap = +boxgap;
 
-    if(current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1){
-        data_colors_label = [];
-        current_layers[layer].color_map.forEach( (v,k) => {
-            data_colors_label.push({value: v[1], color: v[0]}); } );
-        nb_class = current_layers[layer].color_map.size;
-    } else if(current_layers[layer].renderer.indexOf('TypoSymbols') > -1){
-        data_colors_label = [];
-        current_layers[layer].symbols_map.forEach( (v,k) => {
-            data_colors_label.push({value: k, image: v}); } );
-        nb_class = current_layers[layer].symbols_map.size;
-    } else {
-        data_colors_label = current_layers[layer].colors_breaks.map(obj => {
-            return {value: obj[0], color: obj[1]};
-        });
-        nb_class = current_layers[layer].colors_breaks.length;
-        if(rounding_precision == undefined){
-            let breaks = current_layers[layer].options_disc.breaks;
-            rounding_precision = get_lgd_display_precision(breaks)
-        }
+  if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
+    data_colors_label = [];
+    current_layers[layer].color_map.forEach( (v,k) => {
+        data_colors_label.push({value: v[1], color: v[0]}); } );
+    nb_class = current_layers[layer].color_map.size;
+  } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
+    data_colors_label = [];
+    current_layers[layer].symbols_map.forEach( (v,k) => {
+        data_colors_label.push({value: k, image: v}); } );
+    nb_class = current_layers[layer].symbols_map.size;
+  } else {
+    data_colors_label = current_layers[layer].colors_breaks.map(obj => ({ value: obj[0], color: obj[1] }));
+    nb_class = current_layers[layer].colors_breaks.length;
+    if(rounding_precision == undefined){
+      let breaks = current_layers[layer].options_disc.breaks;
+      rounding_precision = get_lgd_display_precision(breaks)
     }
+  }
 
-    var legend_root = map.insert('g')
-        .styles({cursor: 'grab', font: '11px "Enriqueta",arial,serif'})
-        .attrs({id: 'legend_root', class: tmp_class_name, layer_field: field,
-                transform: 'translate(0,0)', 'boxgap': boxgap,
-                'rounding_precision': rounding_precision, layer_name: layer})
+  let legend_root = map.insert('g')
+    .styles({ cursor: 'grab', font: '11px "Enriqueta",arial,serif' })
+    .attrs({ id: 'legend_root', class: tmp_class_name, layer_field: field,
+             transform: 'translate(0,0)', 'boxgap': boxgap,
+             'rounding_precision': rounding_precision, layer_name: layer });
 
-    var rect_under_legend = legend_root.insert("rect");
+  let rect_under_legend = legend_root.insert("rect");
 
-    legend_root.insert('text').attr("id","legendtitle")
-            .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
-            .attrs(subtitle != "" ? {x: xpos + boxheight, y: ypos} : {x: xpos + boxheight, y: ypos + 15});
+  legend_root.insert('text').attr("id","legendtitle")
+    .text(title || '').style("font", "bold 12px 'Enriqueta', arial, serif")
+    .attrs(subtitle != "" ? {x: xpos + boxheight, y: ypos} : {x: xpos + boxheight, y: ypos + 15});
 
-    legend_root.insert('text').attr("id","legendsubtitle")
-            .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
-            .attrs({x: xpos + boxheight, y: ypos + 15});
+  legend_root.insert('text').attr("id","legendsubtitle")
+    .text(subtitle).style("font", "italic 12px 'Enriqueta', arial, serif")
+    .attrs({x: xpos + boxheight, y: ypos + 15});
 
-    var legend_elems = legend_root.selectAll('.legend')
-                                  .append("g")
-                                  .data(data_colors_label)
-                                  .enter().insert('g')
-                                  .attr('class', (d,i) => "lg legend_" + i);
+  var legend_elems = legend_root.selectAll('.legend')
+    .append("g")
+    .data(data_colors_label)
+    .enter().insert('g')
+    .attr('class', (d,i) => "lg legend_" + i);
 
-    if(current_layers[layer].renderer.indexOf('TypoSymbols') == -1)
-        legend_elems
-              .append('rect')
-              .attr("x", xpos + boxwidth)
-              .attr("y", (d, i) => {
-                last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
-                return last_pos;
-                })
-              .attr('width', boxwidth)
-              .attr('height', boxheight)
-              .styles( d => ({
-                "fill": d.color, "stroke": d.color
-              }));
+  if (current_layers[layer].renderer.indexOf('TypoSymbols') == -1) {
+    legend_elems
+      .append('rect')
+      .attr("x", xpos + boxwidth)
+      .attr("y", (d, i) => {
+        last_pos = y_pos2 + (i * boxgap) + (i * boxheight);
+        return last_pos;
+      })
+      .attrs({ width: boxwidth, height: boxheight })
+      .styles( d => ({ "fill": d.color, "stroke": d.color }));
 
-    else
-        legend_elems
-              .append('image')
-              .attrs( (d, i) => ({
-                  "x": xpos + boxwidth,
-                  "y": y_pos2 + (i * boxgap) + (i * boxheight),
-                  "width": boxwidth,
-                  "height": boxheight,
-                  "xlink:href": d.image[0]
-                })
-              );
+  } else {
+    legend_elems
+      .append('image')
+      .attrs( (d, i) => ({
+          "x": xpos + boxwidth,
+          "y": y_pos2 + (i * boxgap) + (i * boxheight),
+          "width": boxwidth,
+          "height": boxheight,
+          "xlink:href": d.image[0]
+      }));
+  }
 
-    if(current_layers[layer].renderer.indexOf('Choropleth') > -1
-          || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
-          || current_layers[layer].renderer.indexOf('Gridded') > -1
-          || current_layers[layer].renderer.indexOf('Stewart') > -1){
-        let tmp_pos;
-        legend_elems
-          .append('text')
-          .attr("x", xpos + boxwidth * 2 + 10)
-          .attr("y", function(d, i){
-            tmp_pos = y_pos2 + i * boxheight + (i * boxgap);
-            return tmp_pos;
-            })
-          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text( d => round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString() );
+  if (current_layers[layer].renderer.indexOf('Choropleth') > -1
+        || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
+        || current_layers[layer].renderer.indexOf('Gridded') > -1
+        || current_layers[layer].renderer.indexOf('Stewart') > -1) {
+    let tmp_pos;
+    legend_elems
+      .append('text')
+      .attr("x", xpos + boxwidth * 2 + 10)
+      .attr("y", function(d, i){
+        tmp_pos = y_pos2 + i * boxheight + (i * boxgap);
+        return tmp_pos;
+      })
+      .styles({ 'alignment-baseline': 'middle' , 'font-size':'10px' })
+      .text( d => round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString() );
 
-        legend_root
-          .insert('text').attr("id", "lgd_choro_min_val")
-          .attr("x", xpos + boxwidth * 2 + 10)
-          .attr("y", tmp_pos + boxheight + boxgap)
-          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text(d => round_value(data_colors_label[data_colors_label.length -1].value.split(' - ')[0], rounding_precision).toLocaleString() );
+    legend_root
+      .insert('text').attr("id", "lgd_choro_min_val")
+      .attr("x", xpos + boxwidth * 2 + 10)
+      .attr("y", tmp_pos + boxheight + boxgap)
+      .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+      .text(d => round_value(data_colors_label[data_colors_label.length -1].value.split(' - ')[0], rounding_precision).toLocaleString() );
 
-    } else {
-        legend_elems
-          .append('text')
-          .attr("x", xpos + boxwidth * 2 + 10)
-          .attr("y", (d, i) => y_pos2 + i * boxheight + (i * boxgap) + (boxheight * 2/3) )
-          .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-          .text(d => d.value);
-    }
-    if(current_layers[layer].options_disc && current_layers[layer].options_disc.no_data){
-        let gp_no_data = legend_root.append("g");
-        gp_no_data
-            .append('rect')
-            .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight,
-                    width: boxwidth, height: boxheight})
-            .style('fill', current_layers[layer].options_disc.no_data)
-            .style('stroke', current_layers[layer].options_disc.no_data);
+  } else {
+    legend_elems
+      .append('text')
+      .attr("x", xpos + boxwidth * 2 + 10)
+      .attr("y", (d, i) => y_pos2 + i * boxheight + (i * boxgap) + (boxheight * 2/3) )
+      .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
+      .text(d => d.value);
 
-        gp_no_data
-            .append('text')
-            .attrs({x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt"})
-            .styles({'alignment-baseline': 'middle' , 'font-size':'10px'})
-            .text(no_data_txt != null ? no_data_txt : "No data");
+  }
+  if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
+    let gp_no_data = legend_root.append("g");
+    gp_no_data
+      .append('rect')
+      .attrs({ x:  xpos + boxheight, y: last_pos + 2 * boxheight,
+              width: boxwidth, height: boxheight })
+      .style('fill', current_layers[layer].options_disc.no_data)
+      .style('stroke', current_layers[layer].options_disc.no_data);
 
-        last_pos = last_pos + 2 * boxheight;
-    }
+    gp_no_data
+      .append('text')
+      .attrs({ x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: "no_data_txt" })
+      .styles({ 'alignment-baseline': 'middle' , 'font-size':'10px' })
+      .text(no_data_txt != null ? no_data_txt : "No data");
 
-    legend_root.append("g")
-            .insert("text").attr("id", "legend_bottom_note")
-            .attrs({x:  xpos + boxheight, y: last_pos + 2 * boxheight})
-            .style("font", "11px 'Enriqueta', arial, serif")
-            .text(note_bottom != null ? note_bottom : '');
-    legend_root.call(drag_legend_func(legend_root));
-    make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-    // legend_root.select('#legendtitle').text(title || "");
-    make_legend_context_menu(legend_root, layer);
-    return legend_root;
+    last_pos = last_pos + 2 * boxheight;
+  }
+
+  legend_root.append("g")
+    .insert("text")
+    .attrs({ id: 'legend_bottom_note', x:  xpos + boxheight, y: last_pos + 2 * boxheight})
+    .style("font", "11px 'Enriqueta', arial, serif")
+    .text(note_bottom != null ? note_bottom : '');
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  // legend_root.select('#legendtitle').text(title || "");
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
 }
 
 function display_box_value_symbol(layer_name){
@@ -914,7 +919,7 @@ function display_box_value_symbol(layer_name){
       non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if(d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
       val_max = Math.abs(+non_empty[0].__data__.properties[field]);
 
-  let redraw_sample_legend = (() => {
+  const redraw_sample_legend = (() => {
       let legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''))
       let rendered_field = current_layers[layer_name].rendered_field;
       let nested = legend_node.getAttribute("nested");
@@ -922,39 +927,39 @@ function display_box_value_symbol(layer_name){
       let lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
           lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
           note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-          return (values) => {
-              if(values){
-                  current_layers[layer_name].size_legend_symbol = values.sort((a,b) => b.value - a.value);
-                  val1.node().value = values[0].value;
-                  val2.node().value = values[1].value;
-                  val3.node().value = values[2].value;
-                  val4.node().value = values[3].value;
-              }
-              sample_svg.selectAll('g').remove();
-              createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, {parent: sample_svg});
-              sample_svg.select('g').select('#under_rect').remove();
-              sample_svg.select('#legend_root_symbol').on('.drag', null);
-          }
+      return (values) => {
+        if (values) {
+          current_layers[layer_name].size_legend_symbol = values.sort((a,b) => b.value - a.value);
+          val1.node().value = values[0].value;
+          val2.node().value = values[1].value;
+          val3.node().value = values[2].value;
+          val4.node().value = values[3].value;
+        }
+        sample_svg.selectAll('g').remove();
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, {parent: sample_svg});
+        sample_svg.select('g').select('#under_rect').remove();
+        sample_svg.select('#legend_root_symbol').on('.drag', null);
+      };
   })();
 
   let prom = make_confirm_dialog2("legend_symbol_values_box", layer_name + " - " + i18next.t("app_page.legend_symbol_values_box.title"))
-      .then(confirmed => {
-          current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
-          return Promise.resolve(confirmed);
-      });
+    .then(confirmed => {
+      current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
+      return Promise.resolve(confirmed);
+    });
 
   let box_body = d3.select('.legend_symbol_values_box')
-      .select('.modal-content').style('width', '400px')
-      .select('.modal-body');
+    .select('.modal-content').style('width', '400px')
+    .select('.modal-body');
   box_body.append('p').style('text-align', 'center')
-      .insert('h3');
-      // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
+    .insert('h3');
+    // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
   let sample_svg = box_body.append('div').attr('id', 'sample_svg').style('float', 'left')
-      .append('svg')
-      .attrs({width: 200, height: 300, id: 'svg_sample_legend'});
+    .append('svg')
+    .attrs({width: 200, height: 300, id: 'svg_sample_legend'});
 
-  let values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(f => cloneObj(f))),
-      original_values = [].concat(values_to_use);
+  let values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(f => cloneObj(f)));
+  let original_values = [].concat(values_to_use);
 
   let [ref_value, ref_size] = current_layers[layer_name].size;
 
@@ -968,58 +973,58 @@ function display_box_value_symbol(layer_name){
   let d = input_zone.append('p');
 
   let val1 = a.insert('input')
-      .style('width', '80px')
-      .attrs({class: "without_spinner", type: 'number', max: val_max})
-      .on('change', function(){
-          let val = +this.value;
-          if(isNaN(val)) return;
-          values_to_use[0] = {size: propSize.scale(val), value: val};
-          val2.attr('max', val);
-          redraw_sample_legend(values_to_use);
-      });
+    .style('width', '80px')
+    .attrs({class: "without_spinner", type: 'number', max: val_max})
+    .on('change', function(){
+      let val = +this.value;
+      if(isNaN(val)) return;
+      values_to_use[0] = {size: propSize.scale(val), value: val};
+      val2.attr('max', val);
+      redraw_sample_legend(values_to_use);
+    });
   let val2 = b.insert('input')
-      .style('width', '80px')
-      .attrs({class: "without_spinner", type: 'number', max: values_to_use[0].value, min: values_to_use[2]})
-      .on('change', function(){
-          let val = +this.value;
-          if(isNaN(val)) return;
-          values_to_use[1] = {size: propSize.scale(val), value: val};
-          val1.attr('min', val);
-          val3.attr('max', val);
-          redraw_sample_legend(values_to_use);
-      });
+    .style('width', '80px')
+    .attrs({class: "without_spinner", type: 'number', max: values_to_use[0].value, min: values_to_use[2]})
+    .on('change', function(){
+      let val = +this.value;
+      if(isNaN(val)) return;
+      values_to_use[1] = {size: propSize.scale(val), value: val};
+      val1.attr('min', val);
+      val3.attr('max', val);
+      redraw_sample_legend(values_to_use);
+    });
   let val3 = c.insert('input')
-      .style('width', '80px')
-      .attrs({class: "without_spinner", type: 'number', max: values_to_use[1].value, min: values_to_use[3].value})
-      .on('change', function(){
-          let val = +this.value;
-          if(isNaN(val)) return;
-          values_to_use[2] = {size: propSize.scale(val), value: val};
-          val2.attr('min', val);
-          val4.attr('max', val);
-          redraw_sample_legend(values_to_use);
-      });
+    .style('width', '80px')
+    .attrs({class: "without_spinner", type: 'number', max: values_to_use[1].value, min: values_to_use[3].value})
+    .on('change', function(){
+      let val = +this.value;
+      if(isNaN(val)) return;
+      values_to_use[2] = {size: propSize.scale(val), value: val};
+      val2.attr('min', val);
+      val4.attr('max', val);
+      redraw_sample_legend(values_to_use);
+    });
   let val4 = d.insert('input')
-      .style('width', '80px')
-      .attrs({class: "without_spinner", type: 'number', min: 0, max: values_to_use[2].value})
-      .on('change', function(){
-          let val = +this.value;
-          if(isNaN(val)) return;
-          values_to_use[3] = {size: propSize.scale(val), value: val};
-          val3.attr('min', val);
-          redraw_sample_legend(values_to_use);
-      });
+    .style('width', '80px')
+    .attrs({class: "without_spinner", type: 'number', min: 0, max: values_to_use[2].value})
+    .on('change', function(){
+      let val = +this.value;
+      if(isNaN(val)) return;
+      values_to_use[3] = {size: propSize.scale(val), value: val};
+      val3.attr('min', val);
+      redraw_sample_legend(values_to_use);
+    });
   box_body.append('div')
-      .styles({'clear': 'both', 'text-align': 'center'})
-      .append('p')
-      .styles({'text-align': 'center'})
-      .insert('span')
-      .attrs({class: 'button_st3'})
-      .html(i18next.t('app_page.legend_symbol_values_box.reset'))
-      .on('click', function(){
-          current_layers[layer_name].size_legend_symbol = undefined;
-          redraw_sample_legend();
-      });
+    .styles({'clear': 'both', 'text-align': 'center'})
+    .append('p')
+    .styles({'text-align': 'center'})
+    .insert('span')
+    .attrs({class: 'button_st3'})
+    .html(i18next.t('app_page.legend_symbol_values_box.reset'))
+    .on('click', () => {
+      current_layers[layer_name].size_legend_symbol = undefined;
+      redraw_sample_legend();
+  });
   val1.node().value =  values_to_use[0].value;
   val2.node().value =  values_to_use[1].value;
   val3.node().value =  values_to_use[2].value;
@@ -1031,263 +1036,264 @@ function display_box_value_symbol(layer_name){
 // Todo : find a better organization for the options in this box
 //       (+ better alignement)
 function createlegendEditBox(legend_id, layer_name){
-    function bind_selections(){
-        box_class = [layer_id, "_legend_popup"].join('');
-        legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_id].join(''));
-        title_content = legend_node.querySelector("#legendtitle");
-        subtitle_content = legend_node.querySelector("#legendsubtitle");
-        note_content = legend_node.querySelector("#legend_bottom_note");
-        no_data_txt = legend_node.querySelector("#no_data_txt");
-        legend_node_d3 = d3.select(legend_node);
-        legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
-    };
-    var layer_id = _app.layer_to_id.get(layer_name);
-    var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
-    var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {}, original_rect_fill_value;
+  function bind_selections(){
+      box_class = [layer_id, "_legend_popup"].join('');
+      legend_node = svg_map.querySelector(["#", legend_id, ".lgdf_", layer_id].join(''));
+      title_content = legend_node.querySelector("#legendtitle");
+      subtitle_content = legend_node.querySelector("#legendsubtitle");
+      note_content = legend_node.querySelector("#legend_bottom_note");
+      no_data_txt = legend_node.querySelector("#no_data_txt");
+      legend_node_d3 = d3.select(legend_node);
+      legend_boxes = legend_node_d3.selectAll(["#", legend_id, " .lg"].join('')).select("text");
+  };
+  var layer_id = _app.layer_to_id.get(layer_name);
+  var box_class, legend_node, title_content, subtitle_content, note_content, source_content;
+  var legend_node_d3, legend_boxes, no_data_txt, rect_fill_value = {}, original_rect_fill_value;
 
-    bind_selections();
-    if(document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
-    let original_params = {
-        title_content: title_content.textContent,
-        y_title: title_content.y.baseVal[0].value,
-        subtitle_content: subtitle_content.textContent,
-        y_subtitle: subtitle_content.y.baseVal[0].value,
-        note_content: note_content.textContent,
-        no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
-        }; //, source_content: source_content.textContent ? source_content.textContent : ""
+  bind_selections();
+  if(document.querySelector("." + box_class)) document.querySelector("." + box_class).remove();
+  let original_params = {
+      title_content: title_content.textContent,
+      y_title: title_content.y.baseVal[0].value,
+      subtitle_content: subtitle_content.textContent,
+      y_subtitle: subtitle_content.y.baseVal[0].value,
+      note_content: note_content.textContent,
+      no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
+      }; //, source_content: source_content.textContent ? source_content.textContent : ""
 
-    if(legend_node.getAttribute("visible_rect") == "true"){
-        rect_fill_value = {
-            color: legend_node.querySelector("#under_rect").style.fill,
-            opacity: legend_node.querySelector("#under_rect").style.fillOpacity
+  if(legend_node.getAttribute("visible_rect") == "true"){
+      rect_fill_value = {
+          color: legend_node.querySelector("#under_rect").style.fill,
+          opacity: legend_node.querySelector("#under_rect").style.fillOpacity
+      }
+      original_rect_fill_value = cloneObj(rect_fill_value);
+  }
+
+  make_confirm_dialog2(box_class, layer_name)
+    .then(confirmed => {
+      if (!confirmed) {
+        title_content.textContent = original_params.title_content;
+        title_content.y.baseVal[0].value = original_params.y_title;
+        subtitle_content.textContent = original_params.subtitle_content;
+        subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
+        note_content.textContent = original_params.note_content;
+        if (no_data_txt) {
+            no_data_txt.textContent = original_params.no_data_txt;
         }
-        original_rect_fill_value = cloneObj(rect_fill_value);
+        rect_fill_value = original_rect_fill_value;
+      }
+      make_underlying_rect(legend_node_d3,
+                           legend_node_d3.select("#under_rect"),
+                           rect_fill_value);
+      bind_selections();
+    });
+  let container = document.getElementsByClassName(box_class)[0];
+  let box_body = d3.select(container)
+    .select('.modal-dialog').style('width', '375px')
+    .select(".modal-body");
+  let current_nb_dec;
+
+  box_body.append('p').style('text-align', 'center')
+    .insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
+
+  let a = box_body.append('p');
+  a.append('span')
+    .html(i18next.t("app_page.legend_style_box.lgd_title"));
+
+  a.append('input')
+    .styles({float: "right"})
+    .attr("value", title_content.textContent)
+    .on("keyup", function(){
+        title_content.textContent = this.value;
+    });
+
+  let b = box_body.append('p');
+  b.insert('span')
+    .html(i18next.t("app_page.legend_style_box.var_name"));
+  b.insert('input')
+    .attr("value", subtitle_content.textContent)
+    .styles({float: "right"})
+    .on("keyup", function(){
+      let empty = subtitle_content.textContent == "";
+      // Move up the title to its original position if the subtitle isn't empty :
+      if (empty && this.value != "") {
+          title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+      }
+      // Change the displayed content :
+      subtitle_content.textContent = this.value;
+      // Move down the title (if it wasn't already moved down), if the new subtitle is empty
+      if(!empty && subtitle_content.textContent == ""){
+          title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+      }
+    });
+
+  let c = box_body.insert('p');
+  c.insert('span')
+    .html(i18next.t("app_page.legend_style_box.additionnal_notes"));
+  c.insert('input')
+    .attr("value", note_content.textContent)
+    .styles({float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif"})
+    .on("keyup", function(){
+        note_content.textContent = this.value;
+    });
+
+  if (no_data_txt) {
+    let d = box_body.insert('p');
+    d.insert('span')
+      .html(i18next.t("app_page.legend_style_box.no_data"));
+    d.insert('input')
+      .attr("value", no_data_txt.textContent)
+      .styles({float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif"})
+      .on("keyup", function(){
+          no_data_txt.textContent = this.value;
+      });
+  }
+
+  if (legend_id == "legend_root_symbol") {
+    let choice_break_value_section1 = box_body.insert('p');
+    choice_break_value_section1.append('span')
+      .styles({cursor: 'pointer'})
+      .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+      .on('click', function(){
+        container.modal.hide();
+        display_box_value_symbol(layer_name).then(confirmed => {
+          container.modal.show();
+          if (confirmed) {
+            redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
+          }
+        });
+      });
+  } else if ((current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols")
+      && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))) {
+    // Float precision for label in the legend
+    // (actually it's not really the float precision but an estimation based on
+    // the string representation of only two values but it will most likely do the job in many cases)
+    let max_nb_decimals = 0;
+    let max_nb_left = 0;
+    if (legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1) {
+        max_nb_decimals = get_max_nb_dec(layer_name);
+        max_nb_left = get_max_nb_left_sep(layer_name);
+    } else {
+        let nb_dec = [],
+            nb_left = [];
+        legend_boxes.each( d => {
+            nb_dec.push(get_nb_decimals(d.value));
+            nb_left.push(get_nb_left_separator(d.value));
+        });
+        max_nb_decimals = max_fast(nb_dec);
+        max_nb_left = min_fast(nb_left);
     }
+    max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
+    if (max_nb_decimals > 0 || max_nb_left >= 2) {
+      if (legend_node.getAttribute("rounding_precision")) {
+          current_nb_dec = legend_node.getAttribute("rounding_precision");
+      } else {
+          let nbs = [],
+              nb_dec = [];
+          legend_boxes.each(function(){ nbs.push(this.textContent); });
+          for (let i=0; i < nbs.length; i++) {
+              nb_dec.push(get_nb_decimals(nbs[i]));
+          }
+          current_nb_dec = max_fast(nb_dec);
+      }
+      if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18)
+          max_nb_decimals = 18;
+      let e = box_body.append('p');
+      e.append('span')
+        .html(i18next.t("app_page.legend_style_box.float_rounding"));
 
-    make_confirm_dialog2(box_class, layer_name)
-        .then(function(confirmed){
-            if(!confirmed){
-                title_content.textContent = original_params.title_content;
-                title_content.y.baseVal[0].value = original_params.y_title;
-                subtitle_content.textContent = original_params.subtitle_content;
-                subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
-                note_content.textContent = original_params.note_content;
-                if(no_data_txt){
-                    no_data_txt.textContent = original_params.no_data_txt;
-                }
-                rect_fill_value = original_rect_fill_value;
-            }
-            make_underlying_rect(legend_node_d3,
-                                 legend_node_d3.select("#under_rect"),
-                                 rect_fill_value);
-            bind_selections();
+      e.append('input')
+        .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
+        .styles({float: "right", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
+        .on('change', function(){
+          let nb_float = +this.value;
+          d3.select("#precision_change_txt").html(nb_float);
+          legend_node.setAttribute("rounding_precision", nb_float);
+          if (legend_id === "legend_root") {
+              for (let i = 0; i < legend_boxes._groups[0].length; i++) {
+                  let values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+                  legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
+              }
+              let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
+              legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
+          } else if (legend_id === "legend_root_symbol") {
+              for (let i = 0; i < legend_boxes._groups[0].length; i++) {
+                  let value = legend_boxes._groups[0][i].__data__.value;
+                  legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
+              }
+          } else if (legend_id === "legend_root_lines_class") {
+              for (let i = 0; i < legend_boxes._groups[0].length; i++) {
+                  let value = legend_boxes._groups[0][i].__data__.value[1];
+                  legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
+              }
+              let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
+              legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
+          }
         });
-    var container = document.getElementsByClassName(box_class)[0];
-    var box_body = d3.select(container)
-        .select('.modal-dialog').style('width', '375px')
-        .select(".modal-body");
-    var current_nb_dec;
-
-    box_body.append('p').style('text-align', 'center')
-        .insert('h3').html(i18next.t("app_page.legend_style_box.subtitle"));
-
-    let a = box_body.append('p');
-    a.append('span')
-        .html(i18next.t("app_page.legend_style_box.lgd_title"));
-
-    a.append('input')
-        .styles({float: "right"})
-        .attr("value", title_content.textContent)
-        .on("keyup", function(){
-            title_content.textContent = this.value;
-        });
-
-    let b = box_body.append('p');
-    b.insert('span')
-        .html(i18next.t("app_page.legend_style_box.var_name"));
-    b.insert('input')
-            .attr("value", subtitle_content.textContent)
-            .styles({float: "right"})
-            .on("keyup", function(){
-                let empty = subtitle_content.textContent == "";
-                // Move up the title to its original position if the subtitle isn't empty :
-                if(empty && this.value != ""){
-                    title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
-                }
-                // Change the displayed content :
-                subtitle_content.textContent = this.value;
-                // Move down the title (if it wasn't already moved down), if the new subtitle is empty
-                if(!empty && subtitle_content.textContent == ""){
-                    title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
-                }
-            });
-
-    let c = box_body.insert('p');
-    c.insert('span')
-        .html(i18next.t("app_page.legend_style_box.additionnal_notes"));
-    c.insert('input')
-        .attr("value", note_content.textContent)
-        .styles({float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif"})
-        .on("keyup", function(){
-            note_content.textContent = this.value;
-        });
-
-    if(no_data_txt){
-        let d = box_body.insert('p');
-        d.insert('span')
-            .html(i18next.t("app_page.legend_style_box.no_data"));
-        d.insert('input')
-            .attr("value", no_data_txt.textContent)
-            .styles({float: "right", "font-family": "12px Gill Sans Extrabold, sans-serif"})
-            .on("keyup", function(){
-                no_data_txt.textContent = this.value;
-            });
+      e.append('span')
+        .styles({float: 'right'})
+        .attr("id", "precision_change_txt")
+        .html(current_nb_dec + "");
     }
+  }
 
-    if(legend_id == "legend_root_symbol"){
-        let choice_break_value_section1 = box_body.insert('p');
-        choice_break_value_section1.append('span')
-            .styles({cursor: 'pointer'})
-            .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
-            .on('click', function(){
-                container.modal.hide();
-                display_box_value_symbol(layer_name).then(confirmed => {
-                    container.modal.show();
-                    if(confirmed){
-                        redraw_legends_symbols(svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')));
-                    }
-                });
-            });
-    } else if((current_layers[layer_name].renderer != "Categorical" && current_layers[layer_name].renderer != "TypoSymbols")
-        && !(current_layers[layer_name].renderer == "PropSymbolsTypo" && legend_id.indexOf("2"))){
-        // Float precision for label in the legend
-        // (actually it's not really the float precision but an estimation based on
-        // the string representation of only two values but it will most likely do the job in many cases)
-        let max_nb_decimals = 0,
-            max_nb_left = 0;
-        if(legend_id.indexOf("2") === -1 && legend_id.indexOf("links") === -1){
-            max_nb_decimals = get_max_nb_dec(layer_name);
-            max_nb_left = get_max_nb_left_sep(layer_name);
-        } else {
-            let nb_dec = [],
-                nb_left = [];
-            legend_boxes.each( d => {
-                nb_dec.push(get_nb_decimals(d.value));
-                nb_left.push(get_nb_left_separator(d.value));
-            });
-            max_nb_decimals = max_fast(nb_dec);
-            max_nb_left = min_fast(nb_left);
+  if(legend_id === "legend_root"){
+    let current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
+    let gap_section = box_body.insert("p");
+    gap_section.append("input")
+      .style('margin-left', '0px')
+      .attrs({"type": "checkbox", id: 'style_lgd'})
+      .on("change", function(){
+          let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
+          legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
+          let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
+          let rounding_precision = legend_node.getAttribute("rounding_precision");
+          let transform_param = legend_node.getAttribute("transform"),
+              lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+              lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+              note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+          let no_data_txt = legend_node.querySelector("#no_data_txt");
+          no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+          legend_node.remove();
+          createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+          bind_selections();
+          if (transform_param) {
+            svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
+          }
+      });
+    gap_section.append('label')
+        .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes'})
+        .html(i18next.t('app_page.legend_style_box.gap_boxes'));
+
+    document.getElementById("style_lgd").checked = current_state;
+  } else if (legend_id == "legend_root_symbol") {
+    let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
+    let gap_section = box_body.insert("p");
+    gap_section.append("input")
+      .style('margin-left', '0px')
+      .attrs({id: 'style_lgd', type: 'checkbox'})
+      .on("change", function(){
+        legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''))
+        let rendered_field = current_layers[layer_name].rendered_field;
+        let nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
+        let rounding_precision = legend_node.getAttribute("rounding_precision");
+        let transform_param = legend_node.getAttribute("transform"),
+            lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
+            lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
+            note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+
+        legend_node.remove();
+        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
+        bind_selections();
+        if (transform_param) {
+          svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
         }
-        max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
-        if(max_nb_decimals > 0 || max_nb_left >= 2){
-            if(legend_node.getAttribute("rounding_precision"))
-                current_nb_dec = legend_node.getAttribute("rounding_precision");
-            else {
-                let nbs = [],
-                    nb_dec = [];
-                legend_boxes.each(function(){ nbs.push(this.textContent); });
-                for(let i=0; i < nbs.length; i++){
-                    nb_dec.push(get_nb_decimals(nbs[i]));
-                }
-                current_nb_dec = max_fast(nb_dec);
-            }
-            if(max_nb_decimals > +current_nb_dec && max_nb_decimals > 18)
-                max_nb_decimals = 18;
-            let e = box_body.append('p');
-            e.append('span')
-                .html(i18next.t("app_page.legend_style_box.float_rounding"));
-
-
-            e.append('input')
-                .attrs({id: "precision_range", type: "range", min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec})
-                .styles({float: "right", width: "90px", "vertical-align": "middle", "margin-left": "10px"})
-                .on('change', function(){
-                    let nb_float = +this.value;
-                    d3.select("#precision_change_txt").html(nb_float);
-                    legend_node.setAttribute("rounding_precision", nb_float);
-                    if(legend_id === "legend_root"){
-                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
-                            let values = legend_boxes._groups[0][i].__data__.value.split(' - ');
-                            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
-                        }
-                        let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
-                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
-                    } else if (legend_id === "legend_root_symbol") {
-                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
-                            let value = legend_boxes._groups[0][i].__data__.value;
-                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
-                        }
-                    } else if (legend_id === "legend_root_lines_class") {
-                        for(let i = 0; i < legend_boxes._groups[0].length; i++){
-                            let value = legend_boxes._groups[0][i].__data__.value[1];
-                            legend_boxes._groups[0][i].innerHTML = round_value(+value, nb_float).toLocaleString();
-                        }
-                        let min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
-                        legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
-                    }
-                });
-            e.append('span')
-                .styles({float: 'right'})
-                .attr("id", "precision_change_txt")
-                .html(current_nb_dec + "");
-        }
-    }
-
-    if(legend_id === "legend_root"){
-        let current_state = +legend_node.getAttribute("boxgap") == 0 ? true : false;
-        let gap_section = box_body.insert("p");
-        gap_section.append("input")
-            .style('margin-left', '0px')
-            .attrs({"type": "checkbox", id: 'style_lgd'})
-            .on("change", function(){
-                let rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 :  current_layers[layer_name].rendered_field;
-                legend_node = svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''));
-                let boxgap = +legend_node.getAttribute("boxgap") == 0 ? 4 : 0;
-                let rounding_precision = legend_node.getAttribute("rounding_precision");
-                let transform_param = legend_node.getAttribute("transform"),
-                    lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                    lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
-                    note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-                let no_data_txt = legend_node.querySelector("#no_data_txt");
-                no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
-                legend_node.remove();
-                createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
-                bind_selections();
-                if(transform_param)
-                    svg_map.querySelector(["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
-            });
-        gap_section.append('label')
-            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes'})
-            .html(i18next.t('app_page.legend_style_box.gap_boxes'));
-
-        document.getElementById("style_lgd").checked = current_state;
-    } else if (legend_id == "legend_root_symbol"){
-        let current_state = legend_node.getAttribute("nested") == "true" ? true : false;
-        let gap_section = box_body.insert("p");
-        gap_section.append("input")
-                .style('margin-left', '0px')
-                .attrs({id: 'style_lgd', type: 'checkbox'})
-                .on("change", function(){
-                    legend_node = svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''))
-                    let rendered_field = current_layers[layer_name].rendered_field;
-                    let nested = legend_node.getAttribute("nested") == "true" ? "false" : "true";
-                    let rounding_precision = legend_node.getAttribute("rounding_precision");
-                    let transform_param = legend_node.getAttribute("transform"),
-                        lgd_title = legend_node.querySelector("#legendtitle").innerHTML,
-                        lgd_subtitle = legend_node.querySelector("#legendsubtitle").innerHTML,
-                        note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-
-                    legend_node.remove();
-                    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
-                    bind_selections();
-                    if(transform_param)
-                        svg_map.querySelector(["#legend_root_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join('')).setAttribute("transform", transform_param);
-                });
-        gap_section.append('label')
-            .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
-            .html(i18next.t("app_page.legend_style_box.nested_symbols"));
-        document.getElementById("style_lgd").checked = current_state;
-    }
+      });
+    gap_section.append('label')
+      .attrs({'for': 'style_lgd', 'class': 'i18n', 'data-i18n' : '[html]app_page.legend_style_box.nested_symbols'})
+      .html(i18next.t("app_page.legend_style_box.nested_symbols"));
+    document.getElementById("style_lgd").checked = current_state;
+  }
 // Todo : Reactivate this functionnality :
 //    box_body.insert("p").html("Display features count ")
 //            .insert("input").attr("type", "checkbox")
@@ -1295,106 +1301,103 @@ function createlegendEditBox(legend_id, layer_name){
 //                alert("to be done!");
 //            });
 
-    let rectangle_options1 = box_body.insert('p');
-    rectangle_options1.insert("input")
-        .style('margin-left', '0px')
-        .attrs({type: "checkbox",
-                checked: rect_fill_value.color === undefined ? null : true,
-                id: "rect_lgd_checkbox"})
-        .on("change", function(){
-            if(this.checked){
-                rectangle_options2.style('display', "");
-                let a = document.getElementById("choice_color_under_rect");
-                rect_fill_value = a ? {color: a.value, opacity: 1} : {color: "#ffffff", opacity: 1};
-            } else {
-                rectangle_options2.style("display", "none");
-                rect_fill_value = {};
-            }
-            make_underlying_rect(legend_node_d3,
-                                 legend_node_d3.select("#under_rect"),
-                                 rect_fill_value
-                                 );
-        });
-    rectangle_options1.append('label')
-        .attrs({for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle'})
-        .html(i18next.t("app_page.legend_style_box.under_rectangle"));
+  let rectangle_options1 = box_body.insert('p');
+  rectangle_options1.insert("input")
+    .style('margin-left', '0px')
+    .attrs({ type: "checkbox", id: "rect_lgd_checkbox",
+             checked: rect_fill_value.color === undefined ? null : true })
+    .on("change", function(){
+      if (this.checked) {
+          rectangle_options2.style('display', "");
+          let a = document.getElementById("choice_color_under_rect");
+          rect_fill_value = a ? {color: a.value, opacity: 1} : {color: "#ffffff", opacity: 1};
+      } else {
+          rectangle_options2.style("display", "none");
+          rect_fill_value = {};
+      }
+      make_underlying_rect(legend_node_d3,
+                           legend_node_d3.select("#under_rect"),
+                           rect_fill_value);
+    });
+  rectangle_options1.append('label')
+    .attrs({for: "rect_lgd_checkbox", class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle'})
+    .html(i18next.t("app_page.legend_style_box.under_rectangle"));
 
-    let rectangle_options2 = rectangle_options1.insert('span').styles({'float': 'right', 'display': rect_fill_value.color === undefined ? "none" : ""});
-    rectangle_options2.insert("input")
-        .attrs({id: "choice_color_under_rect",
-                type: "color",
-                value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color)})
-        .on("change", function(){
-            rect_fill_value = {color: this.value, opacity: 1};
-            make_underlying_rect(legend_node_d3,
-                                 legend_node_d3.select("#under_rect"),
-                                 rect_fill_value
-                                 );
-        });
+  let rectangle_options2 = rectangle_options1.insert('span').styles({'float': 'right', 'display': rect_fill_value.color === undefined ? "none" : ""});
+  rectangle_options2.insert("input")
+    .attrs({id: "choice_color_under_rect",
+            type: "color",
+            value: rect_fill_value.color === undefined ? "#ffffff" : rgb2hex(rect_fill_value.color)})
+    .on("change", function(){
+      rect_fill_value = {color: this.value, opacity: 1};
+      make_underlying_rect(legend_node_d3,
+                           legend_node_d3.select("#under_rect"),
+                           rect_fill_value);
+    });
 }
 
 function move_legends(){
-    let legends = [
-        svg_map.querySelectorAll(".legend_feature"),
-        svg_map.querySelectorAll('#scale_bar.legend')
-        ];
-
-    let xy0_map = get_map_xy0(),
-        dim_width = w + xy0_map.x,
-        dim_heght = h + xy0_map.y;
-
-    for(let j=0; j < 2; ++j){
-        let legends_type = legends[j];
-        for(let i=0, i_len = legends_type.length; i < i_len; ++i){
-            let legend_bbox = legends_type[i].getBoundingClientRect();
-            if((legend_bbox.left + legend_bbox.width) > dim_width){
-                let current_transform = legends_type[i].getAttribute("transform");
-                let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_x = legend_bbox.left + legend_bbox.width - dim_width;
-                legends_type[i].setAttribute("transform",
-                    ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
-            }
-            if((legend_bbox.top + legend_bbox.height) > dim_heght){
-                let current_transform = legends_type[i].getAttribute("transform");
-                let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
-                let trans_y = legend_bbox.top +legend_bbox.height - dim_heght;
-                legends_type[i].setAttribute("transform",
-                    ["translate(", [val_x, +val_y - trans_y], ")"].join(''));
-            }
-        }
+  const xy0_map = get_map_xy0();
+  const dim_width = w + xy0_map.x;
+  const dim_heght = h + xy0_map.y;
+  const legends = [
+    svg_map.querySelectorAll(".legend_feature"),
+    svg_map.querySelectorAll('#scale_bar.legend')
+  ];
+  for (let j=0; j < 2; ++j) {
+    let legends_type = legends[j];
+    for (let i=0, i_len = legends_type.length; i < i_len; ++i) {
+      let legend_bbox = legends_type[i].getBoundingClientRect();
+      if ((legend_bbox.left + legend_bbox.width) > dim_width) {
+        let current_transform = legends_type[i].getAttribute("transform");
+        let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
+        let trans_x = legend_bbox.left + legend_bbox.width - dim_width;
+        legends_type[i].setAttribute("transform",
+            ["translate(", [+val_x - trans_x, val_y], ")"].join(''));
+      }
+      if ((legend_bbox.top + legend_bbox.height) > dim_heght) {
+        let current_transform = legends_type[i].getAttribute("transform");
+        let [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(",");
+        let trans_y = legend_bbox.top +legend_bbox.height - dim_heght;
+        legends_type[i].setAttribute("transform",
+            ["translate(", [val_x, +val_y - trans_y], ")"].join(''));
+      }
     }
+  }
 }
 
 var get_max_nb_dec = function(layer_name){
-    if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
-        return;
-    let max = 0;
-    current_layers[layer_name].colors_breaks.forEach( el => {
-        let tmp = el[0].split(' - ');
-        let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
-        if(p1 > -1)
-            if(tmp[0].length - 1 - p1 > max)
-                max = tmp[0].length - 1 - tmp[0].indexOf('.');
-        if(p2 > -1)
-            if(tmp[1].length - 1 - p2 > max)
-                max = tmp[1].length - 1 - tmp[1].indexOf('.');
-        });
-    return max;
+  if (!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
+      return;
+  let max = 0;
+  current_layers[layer_name].colors_breaks.forEach(el => {
+    let tmp = el[0].split(' - ');
+    let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
+    if (p1 > -1) {
+      if (tmp[0].length - 1 - p1 > max)
+        max = tmp[0].length - 1 - tmp[0].indexOf('.');
+    }
+    if (p2 > -1) {
+      if(tmp[1].length - 1 - p2 > max)
+        max = tmp[1].length - 1 - tmp[1].indexOf('.');
+    }
+  });
+  return max;
 }
 
 function _get_max_nb_left_sep(values){
-    return max_fast(values.map(d => (''+d).split('.')[0].length));
+  return max_fast(values.map(d => (''+d).split('.')[0].length));
 }
 
 var get_max_nb_left_sep = function(layer_name){
-    if(!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
-        return;
-    let nb_left = [];
-    current_layers[layer_name].colors_breaks.forEach( el => {
-        let tmp = el[0].split(' - ');
-        let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
-        nb_left.push(p1);
-        nb_left.push(p2);
-        });
-    return min_fast(nb_left);
+  if (!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks))
+      return;
+  let nb_left = [];
+  current_layers[layer_name].colors_breaks.forEach( el => {
+    let tmp = el[0].split(' - ');
+    let p1 = tmp[0].indexOf("."), p2 = tmp[1].indexOf(".");
+    nb_left.push(p1);
+    nb_left.push(p2);
+  });
+  return min_fast(nb_left);
 }

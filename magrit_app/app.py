@@ -223,6 +223,8 @@ def get_user_id(session_redis, app_users, app=None):
             app_users.add(user_id)
         return user_id
 
+def convert_error(message='Error converting input file'):
+    return web.Response(text='{{"Error": "{}"}}'.format(message))
 
 async def convert(request):
     posted_data, session_redis = \
@@ -256,7 +258,7 @@ async def convert(request):
             filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
             print("posted data :\n", posted_data, "\nerr\n", err)
-            return web.Response(text='{"Error": "Incorrect datatype"}')
+            return convert_error('Incorrect datatype')
 
     f_name = '_'.join([user_id, str(hashed_input)])
 
@@ -273,21 +275,31 @@ async def convert(request):
             ))
 
     if "shp" in datatype:
+        clean_files = lambda: [os.remove(_file) for _file in list_files]
         res = await request.app.loop.run_in_executor(
             request.app["ProcessPool"],
             ogr_to_geojson, shp_path)
-
+        if not res:
+            clean_files()
+            return convert_error()
         result = await geojson_to_topojson2(res, layer_name)
-        # result = result.replace(''.join([user_id, '_']), '')
+        if not result:
+            clean_files()
+            return convert_error()
+
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_name, result, pexpire=86400000))
         with open('/tmp/' + name.replace('.shp', '.prj'), 'r') as f:
             proj_info_str = f.read()
-        [os.remove(_file) for _file in list_files]
+        clean_files()
 
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
         dir_path = '/tmp/{}{}/'.format(user_id, hashed_input)
+        def clean_files():
+            [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
+            os.removedirs(dir_path)
+
         with ZipFile(dataZip) as myzip:
             list_files = myzip.namelist()
             list_files = [dir_path + i for i in list_files]
@@ -313,25 +325,29 @@ async def convert(request):
             except Exception as err:
                 request.app['logger'].info(
                     'Error with content of zip file : {}'.format(err))
-                return web.Response(text='{"Error": "Incorrect datatype"}')
+                return convert_error('Error with zip file content')
 
             os.mkdir(dir_path)
             myzip.extractall(path=dir_path)
             res = await request.app.loop.run_in_executor(
                 request.app["ProcessPool"],
                 ogr_to_geojson, slots['shp'])
-            with open(slots['prj'], 'r') as f:
-                proj_info_str = f.read()
+            if not res:
+                clean_files()
+                return convert_error()
+
             result = await geojson_to_topojson2(res, layer_name)
             if not result:
-                return web.Response(
-                    text='{"Error": "Error converting input file"}')
-            # result = result.replace(''.join([user_id, '_']), '')
+                clean_files()
+                return convert_error()
+
+            with open(slots['prj'], 'r') as f:
+                proj_info_str = f.read()
+
             asyncio.ensure_future(
                 request.app['redis_conn'].set(
                     f_name, result, pexpire=86400000))
-        [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
-        os.removedirs(dir_path)
+        clean_files()
 
     elif ('octet-stream' in datatype or 'text/json' in datatype
             or 'application/geo+json' in datatype
@@ -344,23 +360,20 @@ async def convert(request):
         res = await request.app.loop.run_in_executor(
             request.app["ThreadPool"],
             ogr_to_geojson, filepath)
-        if len(res) == 0:
-            return web.Response(text=json.dumps(
-                {'Error': 'Error reading the input file'}))
-        if 'gml' in name.lower():
-            os.remove(filepath.replace('gml', 'gfs'))
+
+        if not res:
+            return convert_error('Error reading the input file')
+
         result = await geojson_to_topojson2(res, layer_name)
         if not result:
-            return web.Response(
-                text='{"Error": "Error converting input file"}')
-        else:
-            # result = result.replace(''.join([user_id, '_']), '')
-            asyncio.ensure_future(
-                request.app['redis_conn'].set(
-                    f_name, result, pexpire=86400000))
+            return convert_error('Error reading the input file')
+
+        asyncio.ensure_future(
+            request.app['redis_conn'].set(
+                f_name, result, pexpire=86400000))
     else:
         print(datatype, name)
-        return web.Response(text='{"Error": "Incorrect datatype"}')
+        return convert_error('Incorrect datatype')
 
     request.app['logger'].info(
         '{} - Converted, stored in redis and sent back to client'

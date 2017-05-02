@@ -37,593 +37,602 @@ Function.prototype.memoize = function() {
 */
 function setUpInterface(reload_project)
 {
-    // Only ask for confirmation before leaving page if things have been done
-    // (layer added, etc..)
-    window.addEventListener("beforeunload", beforeUnloadWindow);
+  // Only ask for confirmation before leaving page if things have been done
+  // (layer added, etc..)
+  window.addEventListener("beforeunload", beforeUnloadWindow);
 
-    // Remove some layers from the server when user leave the page
-    // (ie. result layers are removed but targeted layer and layout layers stay
-    // in cache as they have more chance to be added again)
-    window.addEventListener("unload", function(){
-        let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-            if(sample_no_values.has(name) || !(current_layers[name].hasOwnProperty("key_name")))
-                return 0;
-            else if(current_layers[name].targeted)
-                return 0;
-            else if(current_layers[name].renderer
-                    && (current_layers[name].renderer.indexOf("PropSymbols") > -1
-                        || current_layers[name].renderer.indexOf("Dorling") > -1
-                        || current_layers[name].renderer.indexOf("Choropleth") > -1
-                        || current_layers[name].renderer.indexOf("Categorical") > -1))
-                return 0;
-            return 1;
+  // Remove some layers from the server when user leave the page
+  // (ie. result layers are removed but targeted layer and layout layers stay
+  // in cache as they have more chance to be added again)
+  window.addEventListener("unload", function(){
+    let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
+      if (sample_no_values.has(name) || !(current_layers[name].hasOwnProperty("key_name")))
+        return 0;
+      else if (current_layers[name].targeted)
+        return 0;
+      else if (current_layers[name].renderer
+            && (current_layers[name].renderer.indexOf("PropSymbols") > -1
+              || current_layers[name].renderer.indexOf("Dorling") > -1
+              || current_layers[name].renderer.indexOf("Choropleth") > -1
+              || current_layers[name].renderer.indexOf("Categorical") > -1))
+          return 0;
+      return 1;
+    });
+    if(layer_names.length){
+        let formToSend = new FormData();
+        layer_names.forEach(function(name){
+            formToSend.append("layer_name", current_layers[name].key_name);
         });
-        if(layer_names.length){
-            let formToSend = new FormData();
-            layer_names.forEach(function(name){
-                formToSend.append("layer_name", current_layers[name].key_name);
-            });
-            navigator.sendBeacon("/layers/delete", formToSend);
-        }
-    }, false);
-    let bg = document.createElement('div');
-    bg.id = 'overlay';
-    bg.style.display = "none";
-    bg.style.textAlign = "center";
-    bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
-                   '<span style="color: white; z-index: 2;">...<br></span>' +
-                   '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
-                   '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
-                   '<div class="line"></div><div class="line"></div></div></div>';
-    let btn = document.createElement("button");
-    btn.style.fontSize = '13px';
-    btn.style.background = '#4b9cdb';
-    btn.style.border = '1px solid #298cda';
-    btn.style.fontWeight = 'bold';
-    btn.className = "button_st3 i18n"
-    btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
-    bg.appendChild(btn)
-    document.body.appendChild(bg);
-
-    btn.onclick = function(){
-        if(_app.xhr_to_cancel){
-          _app.xhr_to_cancel.abort();
-          _app.xhr_to_cancel = undefined;
-        }
-        if(_app.webworker_to_cancel){
-          _app.webworker_to_cancel.onmessage = null;
-          _app.webworker_to_cancel.terminate();
-          _app.webworker_to_cancel = undefined;
-        }
-        document.getElementById('overlay').style.display = 'none';
-    };
-
-
-    let bg_drop = document.createElement('div');
-    bg_drop.className = "overlay_drop";
-    bg_drop.id = 'overlay_drop';
-    bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
-    let inner_div = document.createElement("div");
-    inner_div.style.border = "dashed 2px white";
-    inner_div.style.margin = "10px";
-    inner_div.style.background = "rgba(0, 0, 0, 0.33)";
-    inner_div.style.borderRadius = "1%";
-    inner_div.className = "overlay_drop";
-    let inner_p = document.createElement("p");
-    inner_p.style = "position: fixed;top: 50%;left: 50%;transform: translateX(-50%)translateY(-50%);font-size: 14px;width: auto;bottom: 0px;opacity: 0.85;text-align: center;color: white;padding: 0.5em;"
-    inner_p.innerHTML = "Drop your file(s) in the window ...";
-    inner_div.appendChild(inner_p);
-    bg_drop.appendChild(inner_div);
-    document.body.appendChild(bg_drop);
-
-    let proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
-
-    let proj_select2 = proj_options.append("div")
-        .attrs({class: 'styled-select'})
-        .insert("select")
-        .attrs({class: 'i18n', 'id': 'form_projection2'})
-        .styles({"width": "calc(100% + 20px)"})
-        .on('change', function(){
-            let val = this.value,
-                tmp = this.querySelector('[value="last_projection"]');
-
-            if(val == 'more'){
-                this.value = (tmp && current_proj_name == tmp.name) ? "last_projection" : current_proj_name;
-                createBoxCustomProjection();
-                return;
-            } else if (val == 'proj4'){
-                this.value = (tmp && current_proj_name == tmp.name) ? "last_projection" : current_proj_name;
-                createBoxProj4();
-                return;
-            }  else if (val == 'last_projection'){
-                val = tmp.name;
-            }
-
-            if(val == 'def_proj4'){
-                current_proj_name = val;
-                change_projection_4(proj4(_app.last_projection));
-            } else {
-                current_proj_name = val;
-                change_projection(current_proj_name);
-            }
-        });
-
-    for(let i=0; i < shortListContent.length; i++){
-        let option = shortListContent[i];
-        proj_select2.append('option').attrs({class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option}).text(i18next.t('app_page.projection_name.' + option));
+        navigator.sendBeacon("/layers/delete", formToSend);
     }
-    proj_select2.node().value = "NaturalEarth2";
+  }, false);
+  let bg = document.createElement('div');
+  bg.id = 'overlay';
+  bg.style.display = "none";
+  bg.style.textAlign = "center";
+  bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
+                 '<span style="color: white; z-index: 2;">...<br></span>' +
+                 '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
+                 '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
+                 '<div class="line"></div><div class="line"></div></div></div>';
+  let btn = document.createElement("button");
+  btn.style.fontSize = '13px';
+  btn.style.background = '#4b9cdb';
+  btn.style.border = '1px solid #298cda';
+  btn.style.fontWeight = 'bold';
+  btn.className = "button_st3 i18n"
+  btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
+  bg.appendChild(btn)
+  document.body.appendChild(bg);
 
-    let const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
+  btn.onclick = function(){
+    if(_app.xhr_to_cancel){
+      _app.xhr_to_cancel.abort();
+      _app.xhr_to_cancel = undefined;
+    }
+    if(_app.webworker_to_cancel){
+      _app.webworker_to_cancel.onmessage = null;
+      _app.webworker_to_cancel.terminate();
+      _app.webworker_to_cancel = undefined;
+    }
+    document.getElementById('overlay').style.display = 'none';
+  };
 
-    const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom'})
-        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
-        .on('click', function(){
-            window.localStorage.removeItem("magrit_project");
-            window.removeEventListener("beforeunload", beforeUnloadWindow);
-            location.reload();
-        });
+  let bg_drop = document.createElement('div');
+  bg_drop.className = "overlay_drop";
+  bg_drop.id = 'overlay_drop';
+  bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
+  let inner_div = document.createElement("div");
+  inner_div.style.border = "dashed 2px white";
+  inner_div.style.margin = "10px";
+  inner_div.style.background = "rgba(0, 0, 0, 0.33)";
+  inner_div.style.borderRadius = "1%";
+  inner_div.className = "overlay_drop";
+  let inner_p = document.createElement("p");
+  inner_p.style = "position: fixed;top: 50%;left: 50%;transform: translateX(-50%)translateY(-50%);font-size: 14px;width: auto;bottom: 0px;opacity: 0.85;text-align: center;color: white;padding: 0.5em;"
+  inner_p.innerHTML = "Drop your file(s) in the window ...";
+  inner_div.appendChild(inner_p);
+  bg_drop.appendChild(inner_div);
+  document.body.appendChild(bg_drop);
 
-    const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom'})
-        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
-        .on('click', load_map_template);
+  let proj_options = d3.select(".header_options_projection")
+    .append("div")
+    .attr("id", "const_options_projection")
+    .style("display", "inline-flex");
 
-    const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom'})
-        .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
-        .html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
-        .on('click', save_map_template)
+  let proj_select2 = proj_options.append("div")
+    .attrs({class: 'styled-select'})
+    .insert("select")
+    .attrs({class: 'i18n', 'id': 'form_projection2'})
+    .styles({"width": "calc(100% + 20px)"})
+    .on('change', function(){
+      let val = this.value,
+          tmp = this.querySelector('[value="last_projection"]');
 
-    const_options.append('button')
-        .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom'})
-        .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
-        .html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
-        .on('click', function(){
-            window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-        });
+      if (val === 'more') {
+          this.value = (tmp && current_proj_name === tmp.name) ? "last_projection" : current_proj_name;
+          createBoxCustomProjection();
+          return;
+      } else if (val == 'proj4') {
+          this.value = (tmp && current_proj_name === tmp.name) ? "last_projection" : current_proj_name;
+          createBoxProj4();
+          return;
+      }  else if (val == 'last_projection') {
+          val = tmp.name;
+      }
 
-    const_options.append("button")
-        .attrs({id: "help_btn", class: "const_buttons i18n",
-                "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-                "data-placement": "bottom"})
-        .styles({cursor: "pointer", background: "transparent"})
-        .html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
-        .on("click", function(){
-            if(document.getElementById("menu_lang"))
-                document.getElementById("menu_lang").remove();
-            let click_func = function(window_name, target_url){
-                    window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-            }
-            let box_content = '<div class="about_content">' +
-                '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.2.0"}) + '</span></p>' +
-                '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-                // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-                '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
-                '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
-                '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
-                '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
-            swal({
-                title: i18next.t("app_page.help_box.title"),
-                html: box_content,
-                showCancelButton: true,
-                showConfirmButton: false,
-                cancelButtonText: i18next.t('app_page.common.close'),
-                animation: "slide-from-top",
-                onOpen: function(){
-                    let content = document.getElementsByClassName('about_content')[0];
-                    let credit_link = content.querySelector('#credit_link');
-                    credit_link.style.fontWeight = "bold";
-                    credit_link.style.cursor = "pointer";
-                    credit_link.color = "#000";
-                    credit_link.onclick = function(){
-                        window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                    };
-                    content.querySelector('.btn_doc').onclick = function(){
-                        window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                    };
-                    content.querySelector('.btn_contact').onclick = function(){
-                        window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                    };
-                    content.querySelector('.btn_gh').onclick = function(){
-                        window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                    };
-                }
-             }).then(inputValue => { null; },
-                     dismissValue => { null; });
-        });
+      if (val == 'def_proj4') {
+        current_proj_name = val;
+        change_projection_4(proj4(_app.last_projection));
+      } else {
+        current_proj_name = val;
+        change_projection(current_proj_name);
+      }
+    });
 
-        const_options.append("button")
-            .attrs({id: "current_app_lang", class: "const_buttons"})
-            .styles({color: "white", cursor: 'pointer',
-                     "font-size": "14px", "vertical-align": "super",
-                     background: "transparent", "font-weight": "bold"})
-            .html(i18next.language)
-            .on("click", function(){
-                if(document.getElementById("menu_lang"))
-                    document.getElementById("menu_lang").remove();
-                else {
-                    let current_lang = i18next.language;
-                    let other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
-                    let actions = [
-                        {"name": current_lang, "callback": change_lang},
-                        {"name": other_langs[0], "callback": change_lang},
-                        {"name": other_langs[1], "callback": change_lang}
-                        ];
-                    let menu = document.createElement("div");
-                    menu.style.top = "40px";
-                    menu.style.right = "0px";
-                    menu.className = "context-menu";
-                    menu.id = "menu_lang";
-                    menu.style.minWidth = "30px";
-                    menu.style.width = "50px";
-                    menu.style.background = "#000";
-                    let list_elems = document.createElement("ul");
-                    menu.appendChild(list_elems);
-                    for (let i = 0; i < actions.length; i++) {
-                        let item = document.createElement("li"),
-                            name = document.createElement("span");
-                        list_elems.appendChild(item);
-                        item.setAttribute("data-index", i);
-                        item.style.textAlign = "right";
-                        item.style.paddingRight = "16px";
-                        name.className = "context-menu-item-name";
-                        name.style.color = "white";
-                        name.textContent = actions[i].name;
-                        item.appendChild(name);
-                        item.onclick = () => {
-                            actions[i].callback();
-                            menu.remove();
-                        };
-                    }
-                    document.querySelector("body").appendChild(menu);
-                }
-            });
+  for (let i=0; i < shortListContent.length; i++) {
+      let option = shortListContent[i];
+      proj_select2.append('option')
+        .attrs({class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option})
+        .text(i18next.t('app_page.projection_name.' + option));
+  }
+  proj_select2.node().value = "NaturalEarth2";
 
-    let menu = d3.select("#menu"),
-        b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
-        accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
-        b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
-        accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
-        accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
-        b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
-        accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
-        b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
-        accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
-        b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
-        accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
+  let const_options = d3.select(".header_options_right")
+    .append("div")
+    .attr("id", "const_options")
+    .style("display", "inline");
 
-    let section1 =  accordion1.append("div")
-      .attr("id","section1")
-      .attr("class", "i18n")
-      .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
-      .attr("data-placement", "right");
-    window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
-    window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div").attrs({id: "section3"}),
-    accordion4.append("div").attr("id","section4");
-    accordion5.append("div").attr("id","section5");
+  const_options.append('button')
+    .attrs({class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom'})
+    .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+    .html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>')
+    .on('click', function(){
+      window.localStorage.removeItem("magrit_project");
+      window.removeEventListener("beforeunload", beforeUnloadWindow);
+      location.reload();
+    });
 
-    let dv1 = section1.append("div"),
-        dv11 = dv1.append("div").style("width", "auto");
+  const_options.append('button')
+    .attrs({class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom'})
+    .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+    .html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>')
+    .on('click', load_map_template);
 
-    dv11.append("img")
-        .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
-        .style("cursor", "pointer")
-        .on('click',  click_button_add_layer);
+  const_options.append('button')
+    .attrs({class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom'})
+    .styles({cursor: 'pointer', background: 'transparent', 'margin': 'auto'})
+    .html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>')
+    .on('click', save_map_template)
 
-    dv11.append("p")
-        .attrs({id: "input_geom", class: "user_panel i18n"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
-        .attr("data-i18n", "[html]app_page.section1.add_geom")
-        .on('click',  click_button_add_layer);
+  const_options.append('button')
+    .attrs({class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom'})
+    .styles({cursor: 'pointer', background: 'transparent', 'margin-top': '5px'})
+    .html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
+    .on('click', function(){
+      window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    });
 
-    let dv12 = dv1.append("div");
-    dv12.append("img")
-        .attrs({"id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
-        .style("cursor", "pointer")
-        .on('click',  click_button_add_layer);
+  const_options.append("button")
+    .attrs({id: "help_btn", class: "const_buttons i18n",
+            "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+            "data-placement": "bottom"})
+    .styles({cursor: "pointer", background: "transparent"})
+    .html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
+    .on("click", function(){
+      if(document.getElementById("menu_lang"))
+        document.getElementById("menu_lang").remove();
+      let click_func = function(window_name, target_url) {
+        window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+      };
+      let box_content = '<div class="about_content">' +
+        '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', {version: "0.2.0"}) + '</span></p>' +
+        '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' +
+        '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' +
+        '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+      swal({
+        title: i18next.t("app_page.help_box.title"),
+        html: box_content,
+        showCancelButton: true,
+        showConfirmButton: false,
+        cancelButtonText: i18next.t('app_page.common.close'),
+        animation: "slide-from-top",
+        onOpen: function(){
+            let content = document.getElementsByClassName('about_content')[0];
+            let credit_link = content.querySelector('#credit_link');
+            credit_link.style.fontWeight = "bold";
+            credit_link.style.cursor = "pointer";
+            credit_link.color = "#000";
+            credit_link.onclick = function(){
+                window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            };
+            content.querySelector('.btn_doc').onclick = function(){
+                window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            };
+            content.querySelector('.btn_contact').onclick = function(){
+                window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            };
+            content.querySelector('.btn_gh').onclick = function(){
+                window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+            };
+        }
+     }).then(inputValue => { null; },
+        dismissValue => { null; });
+    });
 
-    dv12.append("p")
-        .attrs({"id": "data_ext", "class": "user_panel i18n", "data-i18n": "[html]app_page.section1.add_ext_dataset"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
-        .on('click',  click_button_add_layer);
+  const_options.append("button")
+    .attrs({id: "current_app_lang", class: "const_buttons"})
+    .styles({color: "white", cursor: 'pointer',
+             "font-size": "14px", "vertical-align": "super",
+             background: "transparent", "font-weight": "bold"})
+    .html(i18next.language)
+    .on("click", function(){
+      if(document.getElementById("menu_lang"))
+        document.getElementById("menu_lang").remove();
+      else {
+        let current_lang = i18next.language;
+        let other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+        let actions = [
+            {"name": current_lang, "callback": change_lang},
+            {"name": other_langs[0], "callback": change_lang},
+            {"name": other_langs[1], "callback": change_lang}
+            ];
+        let menu = document.createElement("div");
+        menu.style.top = "40px";
+        menu.style.right = "0px";
+        menu.className = "context-menu";
+        menu.id = "menu_lang";
+        menu.style.minWidth = "30px";
+        menu.style.width = "50px";
+        menu.style.background = "#000";
+        let list_elems = document.createElement("ul");
+        menu.appendChild(list_elems);
+        for (let i = 0; i < actions.length; i++) {
+            let item = document.createElement("li"),
+                name = document.createElement("span");
+            list_elems.appendChild(item);
+            item.setAttribute("data-index", i);
+            item.style.textAlign = "right";
+            item.style.paddingRight = "16px";
+            name.className = "context-menu-item-name";
+            name.style.color = "white";
+            name.textContent = actions[i].name;
+            item.appendChild(name);
+            item.onclick = () => {
+                actions[i].callback();
+                menu.remove();
+            };
+        }
+        document.querySelector("body").appendChild(menu);
+      }
+    });
 
-    let div_sample = dv1.append("div").attr("id", "sample_zone");
-    div_sample.append("img")
-        .attrs({"id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
-        .style("cursor", "pointer")
-        .on('click', add_sample_layer);
+  let menu = d3.select("#menu"),
+    b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
+    accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
+    b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
+    accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
+    b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
+    accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
+    b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
+    accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
+    b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
+    accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
+    b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
+    accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
 
-    div_sample.append("span")
-        .attrs({"id": "sample_link", "class": "user_panel i18n"})
-        .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
-        .attr("data-i18n", "[html]app_page.section1.add_sample_data")
-        .on('click', add_sample_layer);
+  let section1 =  accordion1.append("div")
+    .attr("id","section1")
+    .attr("class", "i18n")
+    .attr("data-i18n", "[tooltip-title]app_page.tooltips.section1")
+    .attr("data-placement", "right");
+  window.section2_pre =  accordion2_pre.append("div").attr("id","section2_pre");
+  window.section2 = accordion2.append('div').attr('id', 'section2');
+  accordion3.append("div").attrs({id: "section3"}),
+  accordion4.append("div").attr("id","section4");
+  accordion5.append("div").attr("id","section5");
 
-    dv1.append("p")
-        .attr("id", "join_section")
-        .styles({"text-align": "center", "margin-top": "2px"})
-        .html("");
+  let dv1 = section1.append("div"),
+      dv11 = dv1.append("div").style("width", "auto");
 
-    dv1.append('p')
-        .styles({'text-align': 'center','margin': '5px'})
-        .insert('button')
-        .attrs({'id': 'btn_type_fields', 'class': 'i18n',
-                'data-i18n': '[html]app_page.box_type_fields.title',
-                'disabled': true})
-        .styles({cursor: 'pointer',
-                 'border-radius': '4px',
-                 'border': '1px solid lightgrey',
-                 'padding': '3.5px'})
-        .html(i18next.t('app_page.box_type_fields.title'))
-        .on('click', function(){
-            let layer_name = Object.getOwnPropertyNames(user_data)[0];
-            make_box_type_fields(layer_name);
+  dv11.append("img")
+    .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
+    .style("cursor", "pointer")
+    .on('click',  click_button_add_layer);
+
+  dv11.append("p")
+    .attrs({id: "input_geom", class: "user_panel i18n"})
+    .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+    .attr("data-i18n", "[html]app_page.section1.add_geom")
+    .on('click',  click_button_add_layer);
+
+  let dv12 = dv1.append("div");
+  dv12.append("img")
+    .attrs({"id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26",  "alt": "Additional dataset"})
+    .style("cursor", "pointer")
+    .on('click',  click_button_add_layer);
+
+  dv12.append("p")
+    .attrs({"id": "data_ext", "class": "user_panel i18n", "data-i18n": "[html]app_page.section1.add_ext_dataset"})
+    .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+    .on('click',  click_button_add_layer);
+
+  let div_sample = dv1.append("div").attr("id", "sample_zone");
+  div_sample.append("img")
+    .attrs({"id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26",  "alt": "Sample layers"})
+    .style("cursor", "pointer")
+    .on('click', add_sample_layer);
+
+  div_sample.append("span")
+    .attrs({"id": "sample_link", "class": "user_panel i18n"})
+    .styles({display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold"})
+    .attr("data-i18n", "[html]app_page.section1.add_sample_data")
+    .on('click', add_sample_layer);
+
+  dv1.append("p")
+    .attr("id", "join_section")
+    .styles({"text-align": "center", "margin-top": "2px"})
+    .html("");
+
+  dv1.append('p')
+    .styles({'text-align': 'center','margin': '5px'})
+    .insert('button')
+    .attrs({'id': 'btn_type_fields', 'class': 'i18n',
+            'data-i18n': '[html]app_page.box_type_fields.title',
+            'disabled': true})
+    .styles({cursor: 'pointer',
+             'border-radius': '4px',
+             'border': '1px solid lightgrey',
+             'padding': '3.5px'})
+    .html(i18next.t('app_page.box_type_fields.title'))
+    .on('click', function(){
+        let layer_name = Object.getOwnPropertyNames(user_data)[0];
+        make_box_type_fields(layer_name);
+    });
+
+  make_ico_choice();
+  add_simplified_land_layer();
+
+  let section3 = d3.select("#section3");
+
+  window.layer_list = section3.append("div")
+    .attrs({ class: "i18n",
+            "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+            "data-placement": "right"})
+    .append("ul").attrs({id: "sortable", class: "layer_list"});
+
+  let dv3 = section3.append("div")
+    .style("padding-top", "10px").html('');
+
+  dv3.append("img")
+    .attrs({"src": "static/img/b/addsample_t.png", class: 'i18n',
+            "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+            "data-placement": "right"})
+    .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
+    .on('click', add_layout_layers);
+  dv3.append("img")
+    .attrs({"src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+            "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+            "data-placement": "right"})
+    .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
+    .on("click", click_button_add_layer);
+
+  let section4 = d3.select("#section4");
+  let dv4 = section4.append("div")
+    .attr("class", "form-item")
+    .style("margin", "auto")
+    .append("ul")
+    .styles({"list-style": "outside none none",
+             display: "inline-block",
+             padding: "0px",
+             width: "100%",
+             "margin-top": "0px"});
+
+  let e = dv4.append("li").styles({margin: "1px", padding: "4px", "text-align": "center"});
+  e.append("input")
+    .attrs({"id": "title", "class": "list_elem_section4 i18n",
+            "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
+    .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
+    .on("keyup", function(){ handle_title(this.value); });
+  e.append("span")
+    .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
+    .html(sys_run_button.replace("submit", "Title properties"))
+    .on("click", handle_title_properties);
+
+  let f = dv4.append("li").styles({margin: "1px", padding: "4px"});
+  f.append("p").attr("class", "list_elem_section4 i18n")
+    .attr("data-i18n", "[html]app_page.section4.background_color");
+  f.append("input")
+    .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
+    .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
+    .on("change", function(){
+        handle_bg_color(this.value);
+    });
+
+  let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+  a1.append("p").attr("class", "list_elem_section4 i18n")
+    .attr("data-i18n", "[html]app_page.section4.map_width");
+  a1.append("input")
+    .attrs({id: "input-width", type: "number", value: w, "class": "list_elem_section4 m_elem_right"})
+    .on("change", function(){
+        let new_width = +this.value;
+        if(new_width == 0 || isNaN(new_width)){
+            this.value = w;
+            return;
+        }
+        let ratio_type = document.getElementById("map_ratio_select").value;
+        if(ratio_type == "portrait"){
+            h = round_value(new_width / 0.70707, 0);
+            canvas_mod_size([new_width, h]);
+        } else if (ratio_type == "landscape"){
+            h = round_value(new_width * 0.70707, 0);
+            canvas_mod_size([new_width, h]);
+        } else {
+            canvas_mod_size([new_width, null]);
+        }
+        document.getElementById("input-height").value = h;
+    });
+
+
+  let a2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+  a2.append("p").attr("class", "list_elem_section4 i18n")
+    .attr("data-i18n", "[html]app_page.section4.map_height");
+  a2.append("input")
+    .attrs({id: "input-height", type: "number", "value": h, class: "m_elem_right list_elem_section4"})
+    .on("change", function(){
+        let new_height = +this.value;
+        if(new_height == 0 || isNaN(new_height)){
+            this.value = h;
+            return;
+        }
+        let ratio_type = document.getElementById("map_ratio_select").value;
+        if(ratio_type == "portrait"){
+            w = round_value(new_height * 0.70707, 0);
+            canvas_mod_size([w, new_height]);
+        } else if (ratio_type == "landscape"){
+            w = round_value(new_height / 0.70707, 0);
+            canvas_mod_size([w, new_height]);
+        } else {
+            canvas_mod_size([null, new_height]);
+        }
+        document.getElementById("input-width").value = w;
+    });
+
+  let b = dv4.append("li").styles({margin: "1px", padding: "4px 0"});
+  b.append("p").attr("class", "list_elem_section4 i18n")
+    .style("padding", "4px")
+    .attr("data-i18n", "[html]app_page.section4.map_ratio");
+  let ratio_select = b.append("select")
+    .attrs({"class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select"});
+
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
+  ratio_select.on("change", function(){
+    let map_xy = get_map_xy0();
+    let dispo_w = document.innerWidth - map_xy.x - 1;
+    let dispo_h = document.innerHeight - map_xy.y - 1;
+    let diff_w = dispo_w - w;
+    let diff_h = dispo_h - h;
+    if(this.value == "portrait"){
+        if(round_value(w / h, 1) == 1.4){
+          let tmp = h;
+          h = w;
+          w = tmp;
+        } else if(diff_h >= diff_w){
+            w = round_value(h * 0.70707, 0);
+        } else {
+            h = round_value(w / 0.70707, 0);
+        }
+    } else if (this.value == "landscape"){
+        if(round_value(h / w, 1) == 1.4){
+          let tmp = h;
+          h = w;
+          w = tmp;
+        } else if(diff_h <= diff_w){
+            w = round_value(h / 0.70707, 0);
+        } else {
+            h = round_value(w * 0.70707, 0);
+        }
+    }
+    canvas_mod_size([w, h]);
+    document.getElementById("input-width").value = w;
+    document.getElementById("input-height").value = h;
+    fill_export_png_options(this.value);
+  });
+  let zoom_prop = svg_map.__zoom;
+
+  let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
+  d2.append("p").attr("class", "list_elem_section4 i18n")
+    .attr("data-i18n", "[html]app_page.section4.resize_fit");
+  d2.append("button")
+    .styles({margin: 0, padding: 0})
+    .attrs({id: "resize_fit",
+            class: "m_elem_right list_elem_section4 button_st4 i18n",
+            'data-i18n': '[html]app_page.common.ok'})
+    .on('click', function(){
+        document.getElementById('btn_s4').click();
+        window.scrollTo(0, 0);
+        w = Math.round(window.innerWidth - 361);
+        h = window.innerHeight - 55;
+        canvas_mod_size([w, h]);
+        document.getElementById('map_ratio_select').value = "ratio_user";
+    });
+
+  let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
+  c.append("p").attr("class", "list_elem_section4 i18n")
+    .attr("data-i18n", "[html]app_page.section4.map_center_menu")
+    .style("cursor", "pointer");
+  c.append("span").attr("id", "map_center_menu_ico")
+    .style("display", "inline-table")
+    .style("cursor", "pointer");
+  c.on("click", function(){
+    let sections = document.getElementsByClassName("to_hide"),
+        arg;
+    if(sections[0].style.display == "none"){
+        arg = "";
+        document.getElementById("map_center_menu_ico").classList = "active";
+    } else {
+        arg = "none";
+        document.getElementById("map_center_menu_ico").classList = "";
+    }
+    sections[0].style.display = arg;
+    sections[1].style.display = arg;
+    sections[2].style.display = arg;
+    sections[3].style.display = arg;
+  });
+
+  let c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  c1.append("p").attr("class", "list_elem_section4 i18n")
+          .attr("data-i18n", "[html]app_page.section4.map_center_x");
+  c1.append("input")
+          .style("width", "80px")
+          .attrs({id: "input-center-x", class: "m_elem_right",
+                  type: "number", value: round_value(zoom_prop.x, 2), step: "any"})
+          .on("change", function(){
+              svg_map.__zoom.x = +this.value;
+              zoom_without_redraw();
           });
 
-    make_ico_choice();
-    add_simplified_land_layer();
+  let c2 = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  c2.append("p").attr("class", "list_elem_section4 i18n")
+          .attr("data-i18n", "[html]app_page.section4.map_center_y");
 
-    let section3 = d3.select("#section3");
+  c2.append("input")
+          .attrs({id: "input-center-y", class: "list_elem_section4 m_elem_right",
+                  type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
+          .style("width", "80px")
+          .on("change", function(){
+                          svg_map.__zoom.y = +this.value;
+                          zoom_without_redraw();
+                      });;
 
-    window.layer_list = section3.append("div")
-        .attrs({ class: "i18n",
-                "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-                "data-placement": "right"})
-        .append("ul").attrs({id: "sortable", class: "layer_list"});
+  let d = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  d.append("p").attr("class", "list_elem_section4 i18n")
+          .attr("data-i18n", "[html]app_page.section4.map_scale_k");
+  d.append("input")
+          .attrs({id: "input-scale-k",
+                  class: "list_elem_section4 m_elem_right",
+                  type: "number",
+                  value: round_value(zoom_prop.k * proj.scale(), 2),
+                  step: "any"})
+          .style("width", "80px")
+          .on("change", function(){
+              svg_map.__zoom.k = +this.value / proj.scale();
+              zoom_without_redraw();
+          });
 
-    let dv3 = section3.append("div")
-        .style("padding-top", "10px").html('');
+  let g = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  g.append("p").attr("class", "list_elem_section4 i18n")
+          .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
 
-    dv3.append("img")
-        .attrs({"src": "static/img/b/addsample_t.png", class: 'i18n',
-                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
-                "data-placement": "right"})
-        .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
-        .on('click', add_layout_layers);
-    dv3.append("img")
-        .attrs({"src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
-                "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
-                "data-placement": "right"})
-        .styles({cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%"})
-        .on("click", click_button_add_layer);
+  g.append("span")
+      .style("float", "right")
+      .html("°");
 
-    let section4 = d3.select("#section4");
-    let dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto")
-                    .append("ul")
-                    .styles({"list-style": "outside none none",
-                             display: "inline-block",
-                             padding: "0px",
-                             width: "100%",
-                             "margin-top": "0px"});
-
-    let e = dv4.append("li").styles({margin: "1px", padding: "4px", "text-align": "center"});
-    e.append("input")
-            .attrs({"id": "title", "class": "list_elem_section4 i18n",
-                    "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title"})
-            .styles({"margin": "0px 0px 0px 3px", "width": "160px"})
-            .on("keyup", function(){ handle_title(this.value); });
-    e.append("span")
-            .styles({display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub"})
-            .html(sys_run_button.replace("submit", "Title properties"))
-            .on("click", handle_title_properties);
-
-    let f = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    f.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.background_color");
-    f.append("input")
-            .styles({position: "absolute", right: "20px", "width": "60px", "margin-left": "15px"})
-            .attrs({type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right"})
-            .on("change", function(){
-                handle_bg_color(this.value);
-            });
-
-    let a1 = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    a1.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_width");
-    a1.append("input")
-            .attrs({id: "input-width", type: "number", value: w, "class": "list_elem_section4 m_elem_right"})
-            .on("change", function(){
-                let new_width = +this.value;
-                if(new_width == 0 || isNaN(new_width)){
-                    this.value = w;
-                    return;
-                }
-                let ratio_type = document.getElementById("map_ratio_select").value;
-                if(ratio_type == "portrait"){
-                    h = round_value(new_width / 0.70707, 0);
-                    canvas_mod_size([new_width, h]);
-                } else if (ratio_type == "landscape"){
-                    h = round_value(new_width * 0.70707, 0);
-                    canvas_mod_size([new_width, h]);
-                } else {
-                    canvas_mod_size([new_width, null]);
-                }
-                document.getElementById("input-height").value = h;
-            });
-
-
-    let a2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    a2.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_height");
-    a2.append("input")
-            .attrs({id: "input-height", type: "number", "value": h, class: "m_elem_right list_elem_section4"})
-            .on("change", function(){
-                let new_height = +this.value;
-                if(new_height == 0 || isNaN(new_height)){
-                    this.value = h;
-                    return;
-                }
-                let ratio_type = document.getElementById("map_ratio_select").value;
-                if(ratio_type == "portrait"){
-                    w = round_value(new_height * 0.70707, 0);
-                    canvas_mod_size([w, new_height]);
-                } else if (ratio_type == "landscape"){
-                    w = round_value(new_height / 0.70707, 0);
-                    canvas_mod_size([w, new_height]);
-                } else {
-                    canvas_mod_size([null, new_height]);
-                }
-                document.getElementById("input-width").value = w;
-            });
-
-    let b = dv4.append("li").styles({margin: "1px", padding: "4px 0"});
-    b.append("p").attr("class", "list_elem_section4 i18n")
-            .style("padding", "4px")
-            .attr("data-i18n", "[html]app_page.section4.map_ratio");
-    let ratio_select = b.append("select")
-            .attrs({"class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select"});
-
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
-    ratio_select.on("change", function(){
-        let map_xy = get_map_xy0();
-        let dispo_w = document.innerWidth - map_xy.x - 1;
-        let dispo_h = document.innerHeight - map_xy.y - 1;
-        let diff_w = dispo_w - w;
-        let diff_h = dispo_h - h;
-        if(this.value == "portrait"){
-            if(round_value(w / h, 1) == 1.4){
-              let tmp = h;
-              h = w;
-              w = tmp;
-            } else if(diff_h >= diff_w){
-                w = round_value(h * 0.70707, 0);
-            } else {
-                h = round_value(w / 0.70707, 0);
-            }
-        } else if (this.value == "landscape"){
-            if(round_value(h / w, 1) == 1.4){
-              let tmp = h;
-              h = w;
-              w = tmp;
-            } else if(diff_h <= diff_w){
-                w = round_value(h / 0.70707, 0);
-            } else {
-                h = round_value(w * 0.70707, 0);
-            }
-        }
-        canvas_mod_size([w, h]);
-        document.getElementById("input-width").value = w;
-        document.getElementById("input-height").value = h;
-        fill_export_png_options(this.value);
-    });
-    let zoom_prop = svg_map.__zoom;
-
-    let d2 = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    d2.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button")
-            .styles({margin: 0, padding: 0})
-            .attrs({id: "resize_fit",
-                    class: "m_elem_right list_elem_section4 button_st4 i18n",
-                    'data-i18n': '[html]app_page.common.ok'})
-            .on('click', function(){
-                document.getElementById('btn_s4').click();
-                window.scrollTo(0, 0);
-                w = Math.round(window.innerWidth - 361);
-                h = window.innerHeight - 55;
-                canvas_mod_size([w, h]);
-                document.getElementById('map_ratio_select').value = "ratio_user";
-            });
-
-    let c = dv4.append("li").styles({margin: "1px", padding: "4px"});
-    c.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_center_menu")
-            .style("cursor", "pointer");
-    c.append("span").attr("id", "map_center_menu_ico")
-        .style("display", "inline-table")
-        .style("cursor", "pointer");
-    c.on("click", function(){
-        let sections = document.getElementsByClassName("to_hide"),
-            arg;
-        if(sections[0].style.display == "none"){
-            arg = "";
-            document.getElementById("map_center_menu_ico").classList = "active";
-        } else {
-            arg = "none";
-            document.getElementById("map_center_menu_ico").classList = "";
-        }
-        sections[0].style.display = arg;
-        sections[1].style.display = arg;
-        sections[2].style.display = arg;
-        sections[3].style.display = arg;
-    });
-
-    let c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    c1.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_center_x");
-    c1.append("input")
-            .style("width", "80px")
-            .attrs({id: "input-center-x", class: "m_elem_right",
-                    type: "number", value: round_value(zoom_prop.x, 2), step: "any"})
-            .on("change", function(){
-                svg_map.__zoom.x = +this.value;
-                zoom_without_redraw();
-            });
-
-    let c2 = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    c2.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_center_y");
-
-    c2.append("input")
-            .attrs({id: "input-center-y", class: "list_elem_section4 m_elem_right",
-                    type: "number", "value": round_value(zoom_prop.y, 2), step: "any"})
-            .style("width", "80px")
-            .on("change", function(){
-                            svg_map.__zoom.y = +this.value;
-                            zoom_without_redraw();
-                        });;
-
-    let d = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    d.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.map_scale_k");
-    d.append("input")
-            .attrs({id: "input-scale-k",
-                    class: "list_elem_section4 m_elem_right",
-                    type: "number",
-                    value: round_value(zoom_prop.k * proj.scale(), 2),
-                    step: "any"})
-            .style("width", "80px")
-            .on("change", function(){
-                svg_map.__zoom.k = +this.value / proj.scale();
-                zoom_without_redraw();
-            });
-
-    let g = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    g.append("p").attr("class", "list_elem_section4 i18n")
-            .attr("data-i18n", "[html]app_page.section4.canvas_rotation");
-
-    g.append("span")
-        .style("float", "right")
-        .html("°");
-
-    g.append("input")
-        .attrs({id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
-                value: 0, min: 0, max: 360, step: "any"})
-        .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
-        .on("change", function(){
-            let val = +this.value,
-                old_value = document.getElementById("form_rotate").value;
-            if(isNaN(val) || val < -361){
-                this.value = old_value;
-                return;
-            } else if(val < 0 && val > -361) {
-                this.value = 360 + val;
-            } else if(val > 360) {
-                this.value = 360;
-            } else { // Should remove trailing zeros (right/left) if any :
-              this.value = +this.value;
-            }
-            rotate_global(this.value);
-            document.getElementById("form_rotate").value = this.value;
-        });
+  g.append("input")
+      .attrs({id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
+              value: 0, min: 0, max: 360, step: "any"})
+      .styles({width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px"})
+      .on("change", function(){
+          let val = +this.value,
+              old_value = document.getElementById("form_rotate").value;
+          if(isNaN(val) || val < -361){
+              this.value = old_value;
+              return;
+          } else if(val < 0 && val > -361) {
+              this.value = 360 + val;
+          } else if(val > 360) {
+              this.value = 360;
+          } else { // Should remove trailing zeros (right/left) if any :
+            this.value = +this.value;
+          }
+          rotate_global(this.value);
+          document.getElementById("form_rotate").value = this.value;
+      });
 
       g.append("input")
           .attrs({type: "range", id: "form_rotate", min: 0, max: 360, step: 1})

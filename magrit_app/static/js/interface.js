@@ -59,6 +59,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.dbf') > -1
                 || f.name.indexOf('.shx') > -1
                 || f.name.indexOf('.prj') > -1
+                || f.name.indexOf('.cpg') > -1
                 ? files_to_send.push(f) : null)
         elem.style.border = '';
         if(target_layer_on_add && _app.targeted_layer_added){
@@ -68,7 +69,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                       type: "error",
                       allowEscapeKey: false,
                       allowOutsideClick: false});
-        } else if(files_to_send.length == 4){
+        } else if(files_to_send.length >= 4 && files_to_send.length <= 6){
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3.6
 # -*- coding: utf-8 -*-
+import re
 import numpy as np
 import ujson as json
+import cchardet as chardet
 from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
@@ -14,8 +16,6 @@ from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
-import re
-
 
 
 def _compute_centroids(geometries, argmax=np.argmax):
@@ -42,15 +42,7 @@ def get_proj4_string(wkt_proj):
             else res
 
 
-def ogr_to_geojson(file_path):
-    if 'kml' in file_path:
-        file_format = "KML"
-    elif 'gml' in file_path:
-        file_format = "GML"
-    elif 'geojson' in file_path:
-        file_format = "GeoJSON"
-    else:
-        file_format = "ESRI ShapeFile"
+def convert_ogr_to_geojson(file_path, file_format):
 
     regex_field_name = re.compile("[^a-zA-Z0-9_-ëêàáâãæêéèñòóô]+")
 
@@ -78,6 +70,7 @@ def ogr_to_geojson(file_path):
     nb_field = output_lyr_defn.GetFieldCount()
     field_names = [output_lyr_defn.GetFieldDefn(i).GetNameRef()
                    for i in range(nb_field)]
+
     res = []
     for inFeature in input_layer:
         geom = inFeature.GetGeometryRef()
@@ -85,13 +78,14 @@ def ogr_to_geojson(file_path):
         outFeature = OgrFeature(output_lyr_defn)
         outFeature.SetGeometry(geom)
         outFeature.SetFID(inFeature.GetFID())
-        for i in range(nb_field):
+        for i in range(output_lyr_defn.GetFieldCount()):
             outFeature.SetField(
                 field_names[i],
                 inFeature.GetField(i))
         res.append(outFeature.ExportToJson())
         outFeature.Destroy()
         inFeature.Destroy()
+
     f_in.Destroy()
     f_out.Destroy()
 
@@ -100,6 +94,34 @@ def ogr_to_geojson(file_path):
         ','.join(res),
         ''']}'''
         ]).encode()
+
+
+def ogr_to_geojson(file_path):
+    if 'kml' in file_path:
+        file_format = "KML"
+    elif 'gml' in file_path:
+        file_format = "GML"
+    elif 'geojson' in file_path:
+        file_format = "GeoJSON"
+    else:
+        file_format = "ESRI ShapeFile"
+
+    result = None
+    try:
+        result = convert_ogr_to_geojson(file_path, file_format)
+    except:
+        if file_format == "ESRI ShapeFile":
+            file_path_cpg = file_path.replace('.shp', '.cpg')
+            file_path_dbf = file_path.replace('.shp', '.dbf')
+            with open(file_path_dbf, 'rb') as f:
+                content = f.read()
+            encoding = chardet.detect(content[170:])
+            print(encoding)
+            with open(file_path_cpg, 'wb') as f:
+                f.write(encoding['encoding'].encode())
+            result = convert_ogr_to_geojson(file_path, file_format)
+    finally:
+        return result
 
 #def ogr_to_geojson(filepath):
 #    res = []
