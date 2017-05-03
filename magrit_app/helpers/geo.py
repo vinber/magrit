@@ -12,8 +12,10 @@ from shapely.geos import TopologicalError
 from shapely.geometry import shape, mapping, MultiPolygon
 from shapely.ops import transform
 from shapely.affinity import scale
+from os.path import exists
 from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
+from struct import unpack
 from subprocess import Popen, PIPE
 from .cartogram_doug import make_cartogram
 
@@ -96,6 +98,14 @@ def convert_ogr_to_geojson(file_path, file_format):
         ]).encode()
 
 
+def get_encoding_dbf(file_path):
+    with open(file_path, 'rb') as f:
+        nb_records, len_header = unpack('<xxxxLH22x', f.read(32))
+        f.seek(len_header)
+        encoding = chardet.detect(f.read())
+    return encoding['encoding']
+
+
 def ogr_to_geojson(file_path):
     if 'kml' in file_path:
         file_format = "KML"
@@ -103,25 +113,34 @@ def ogr_to_geojson(file_path):
         file_format = "GML"
     elif 'geojson' in file_path:
         file_format = "GeoJSON"
-    else:
+    elif 'shp' in file_path:
         file_format = "ESRI ShapeFile"
+    else:
+        return None
 
-    result = None
+    if file_format == "ESRI ShapeFile" \
+            and not exists(file_path.replace('.shp', '.cpg')):
+        file_path_cpg = file_path.replace('.shp', '.cpg')
+        encoding = get_encoding_dbf(file_path.replace('.shp', '.dbf'))
+
+        with open(file_path_cpg, 'wb') as f:
+            f.write(encoding.encode())
+
+    elif file_format == "GeoJSON":
+        with open(file_path, 'rb') as f:
+            raw_content = f.read()
+        encoding = chardet.detect(raw_content)
+        if encoding['encoding'] is not 'UTF-8':
+            content = raw_content.decode(encoding['encoding'])
+            with open(file_path, 'wb') as f:
+                f.write(content.encode())
+
     try:
         result = convert_ogr_to_geojson(file_path, file_format)
-    except:
-        if file_format == "ESRI ShapeFile":
-            file_path_cpg = file_path.replace('.shp', '.cpg')
-            file_path_dbf = file_path.replace('.shp', '.dbf')
-            with open(file_path_dbf, 'rb') as f:
-                content = f.read()
-            encoding = chardet.detect(content[170:])
-            print(encoding)
-            with open(file_path_cpg, 'wb') as f:
-                f.write(encoding['encoding'].encode())
-            result = convert_ogr_to_geojson(file_path, file_format)
-    finally:
-        return result
+    except Exception as err:
+        print(err)
+        result = None
+    return result
 
 #def ogr_to_geojson(filepath):
 #    res = []
