@@ -16,4 +16,5 @@ async def error_middleware(app, handler):
             if ex.status == 404:
                 return await handle_404(request, ex)
             raise
+
     return middleware_handler

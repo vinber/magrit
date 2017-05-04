@@ -516,37 +516,35 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
         });
 };
 
-
 function handle_reload_TopoJSON(text, param_add_func){
     var ajaxData = new FormData();
     var f = new Blob([text], {type: "application/json"});
     ajaxData.append('file[]', f);
 
-    return xhrequest("POST", 'cache_topojson/user', ajaxData, false).then(function(response){
-        let res = response,
-            key = JSON.parse(res).key,
-            topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
-        let layer_name = add_layer_topojson(topoObjText, param_add_func);
-        return layer_name;
+    // let topoObjText = ['{"key":null,"file":', text, '}'].join('');
+    let layer_name = add_layer_topojson(['{"key":null,"file":', text, '}'].join(''), param_add_func);
+    xhrequest("POST", 'cache_topojson/user', ajaxData, false)
+      .then(function(response){
+        let res = response;
+        let key = JSON.parse(res).key;
+        current_layers[layer_name].key_name = key;
     });
+    return layer_name;
 }
 
-//var UTF8 = {
-//    encode: function(s){
-//        for(let c, i = -1, l = (s = s.split("")).length, o = String.fromCharCode; ++i < l;
-//            s[i] = (c = s[i].charCodeAt(0)) >= 127 ? o(0xc0 | (c >>> 6)) + o(0x80 | (c & 0x3f)) : s[i]
-//		);
-//		return s.join("");
-//    },
-//    decode: function(s){
-//        for(let a, b, i = -1, l = (s = s.split("")).length, o = String.fromCharCode, c = "charCodeAt"; ++i < l;
-//            ((a = s[i][c](0)) & 0x80) &&
-//            (s[i] = (a & 0xfc) == 0xc0 && ((b = s[i + 1][c](0)) & 0xc0) == 0x80 ?
-//            o(((a & 0x03) << 6) + (b & 0x3f)) : o(128), s[++i] = "")
-//            );
-//		return s.join("");
-//	}
-//};
+// function handle_reload_TopoJSON(text, param_add_func){
+//     var ajaxData = new FormData();
+//     var f = new Blob([text], {type: "application/json"});
+//     ajaxData.append('file[]', f);
+//
+//     return xhrequest("POST", 'cache_topojson/user', ajaxData, false).then(function(response){
+//         let res = response,
+//             key = JSON.parse(res).key,
+//             topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
+//         let layer_name = add_layer_topojson(topoObjText, param_add_func);
+//         return layer_name;
+//     });
+// }
 
 /**
 * Handle a csv dataset by parsing it as an array of Object (ie features) or by
