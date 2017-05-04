@@ -342,7 +342,8 @@ function get_map_template() {
       layer_style_i.fill_opacity = selection.style("fill-opacity");
     }
 
-    return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
+    // return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
+    return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? serialize_layer_to_topojson(obj.layer_name) : null))
       .then((result) => {
         for (let i = 0; i < layers_style.length; i++) {
           if (result[i]) {
@@ -918,4 +919,16 @@ function rehandle_legend(layer_name, properties){
         if(prop.display == "none")
             lgd.setAttribute('display', "none");
     }
+}
+
+const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
+  let layer = svg_map.querySelector('#' + _app.layer_to_id.get(layer_name)).querySelectorAll('path');
+  let n_features = layer.length;
+  let result_features = [];
+  for (let i = 0; i < n_features; i++) {
+    result_features.push(layer[i].__data__);
+  }
+  let to_convert = {};
+  to_convert[layer_name] = { type: 'FeatureCollection', features: result_features };
+  return Promise.resolve(JSON.stringify(topojson.topology(to_convert)));
 }
