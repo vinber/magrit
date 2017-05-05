@@ -828,7 +828,7 @@ function add_layer_topojson(text, options = {}){
         skip_rescale = options.skip_rescale === true ? true : false,
         fields_type = options.fields_type ? options.fields_type : undefined;
 
-    let type = "",
+    let type,
         topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects),
@@ -854,21 +854,31 @@ function add_layer_topojson(text, options = {}){
         return;
     }
 
-    if(_app.first_layer){
-        // remove_layer_cleanup('World');
-        let q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
-        if(q) q.click();
-        delete _app.first_layer;
-        if(parsedJSON.proj){
-            try { _proj = proj4(parsedJSON.proj) } catch (e){ _proj = undefined; console.log(e); }
-        }
+    for (let _t_ix = 0; _t_ix < nb_ft; _t_ix++) {
+      if (topoObj_objects.geometries[_t_ix] && topoObj_objects.geometries[_t_ix].type) {
+        if(topoObj_objects.geometries[_t_ix].type.indexOf('Point') > -1) type = 'Point';
+        else if(topoObj_objects.geometries[_t_ix].type.indexOf('LineString') > -1) type = 'Line';
+        else if(topoObj_objects.geometries[_t_ix].type.indexOf('Polygon') > -1) type = 'Polygon';
+        break;
+      }
+    }
+
+    if (!type) {
+      display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+      return;
+    }
+
+    if( _app.first_layer) {
+      // remove_layer_cleanup('World');
+      let q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
+      if(q) q.click();
+      delete _app.first_layer;
+      if (parsedJSON.proj) {
+        try { _proj = proj4(parsedJSON.proj) } catch (e) { _proj = undefined; console.log(e); }
+      }
     }
 
     let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
-
-    if(topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';
-    else if(topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';
-    else if(topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
     current_layers[lyr_name_to_add] = {
         "type": type,
@@ -1325,7 +1335,7 @@ function add_layout_feature(selected_feature, options = {}){
 //     draw_calc.call(drag);
 // }
 
-function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
+function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px", symbol_id=null) {
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.options"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
@@ -1339,8 +1349,8 @@ function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px"){
     return map.append("g")
         .attrs({class: "legend single_symbol"})
         .insert("image")
-        .attrs({"x": x, "y": y, "width": width, "height": width,
-                "xlink:href": symbol_dataurl})
+        .attrs({ x: x, y: y, width: width, height: width,
+                 id: symbol_id, "xlink:href": symbol_dataurl })
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){
@@ -1587,6 +1597,10 @@ const getIdLayoutFeature = (type) => {
     class_name = 'arrow';
     id_prefix = 'arrow_';
     error_name = 'error_max_arrows';
+  } else if (type === 'single_symbol') {
+    class_name = 'single_symbol';
+    id_prefix = 'single_symbol_';
+    error_name = 'error_max_symbols';
   }
   let features = document.getElementsByClassName(class_name);
   if(!features){
@@ -1659,7 +1673,7 @@ function handleClickAddOther(type){
 function handleClickAddEllipse(){
   let start_point,
       tmp_start_point,
-      ellipse_id = getIdLayoutFeature('ellispe');
+      ellipse_id = getIdLayoutFeature('ellipse');
   if(ellipse_id === null){
     return;
   }
@@ -1699,6 +1713,11 @@ function handleClickAddPicto(){
         prep_symbols,
         available_symbols = false,
         msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    let symbol_id = getIdLayoutFeature('single_symbol');
+    if(symbol_id === null){
+      return;
+    }
+
     if(!window.default_symbols){
         window.default_symbols = [];
         prep_symbols = prepare_available_symbols();
@@ -1723,12 +1742,12 @@ function handleClickAddPicto(){
               if(!available_symbols){
                   prep_symbols.then(confirmed => {
                       box_choice_symbol(window.default_symbols).then( result => {
-                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1]); }
+                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], symbol_id); }
                       });
                   });
               } else {
                   box_choice_symbol(window.default_symbols).then( result => {
-                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1]); }
+                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], symbol_id); }
                   });
               }
         });

@@ -67,6 +67,8 @@ function get_map_template() {
     map_config.dataset_name = dataset_name;
   }
 
+  map_config.global_order = Array.from(svg_map.querySelectorAll('.legend,.layer')).map(ft => ['#', ft.id, '.', ft.className.baseVal.split(' ').join('.')].join(''));
+
   map_config.layout_features = {};
   if (layout_features) {
     for (let i = 0; i < layout_features.length; i++) {
@@ -447,14 +449,20 @@ function apply_user_preferences(json_pref){
       map.selectAll(".layer").selectAll("path").attr("d", path);
       handleClipPath(current_proj_name);
       reproj_symbol_layer();
-      if(layers.length > 1){
-        let desired_order = layers.map( i => i.layer_name);
-        reorder_elem_list_layer(desired_order);
-        desired_order.reverse();
-        reorder_layers(desired_order);
-      }
       apply_layout_lgd_elem();
-      if(map_config.canvas_rotation){
+      if (!map_config.global_order) { // Old method to reorder layers :
+        if (layers.length > 1) {
+          let desired_order = layers.map( i => i.layer_name);
+          reorder_elem_list_layer(desired_order);
+          desired_order.reverse();
+          reorder_layers(desired_order);
+        }
+      } else if (map_config.global_order && map_config.global_order.length > 1) {
+        let order = layers.map( i => i.layer_name);
+        reorder_elem_list_layer(order);
+        reorder_layers_elem_legends(map_config.global_order);
+      }
+      if (map_config.canvas_rotation) {
         document.getElementById("form_rotate").value = map_config.canvas_rotation;
         document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
         rotate_global(map_config.canvas_rotation);
@@ -757,13 +765,13 @@ function apply_user_preferences(json_pref){
             ref_layer_name: _layer.ref_layer_name,
             renderer: _layer.renderer,
         };
-        if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo")
+        if (_layer.renderer === "PropSymbolsChoro" || _layer.renderer === "PropSymbolsTypo")
           rendering_params.fill_color = _layer.fill_color.class;
         else if(_layer.fill_color.random)
           rendering_params.fill_color = "#fff";
         else if(_layer.fill_color.single != undefined)
           rendering_params.fill_color = _layer.fill_color.single;
-        else if(_layer.fill_color.two){
+        else if(_layer.fill_color.two) {
           rendering_params.fill_color = _layer.fill_color;
           rendering_params.break_val = _layer.break_val;
         }
@@ -863,7 +871,7 @@ function apply_user_preferences(json_pref){
             "symbol": "image",
             "ref_layer_name": _layer.ref_layer_name
             };
-        if(_layer.legend){
+        if (_layer.legend) {
           rehandle_legend(layer_name, _layer.legend);
         }
       } else {
@@ -876,7 +884,7 @@ function apply_user_preferences(json_pref){
       // This function is called on each layer added
       //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
       done += 1;
-      if(done == map_config.n_layers) set_final_param();
+      if (done == map_config.n_layers) set_final_param();
     }
   }
 }
@@ -901,6 +909,17 @@ function reorder_elem_list_layer(desired_order){
       let selec = "li." + _app.layer_to_id.get(desired_order[i]);
       if(parent.querySelector(selec))
         parent.insertBefore(parent.querySelector(selec), parent.firstChild);
+  }
+}
+
+function reorder_layers_elem_legends(desired_order){
+  let elems = svg_map.querySelectorAll('.legend,.layer');
+  let parent = elems[0].parentNode;
+  let nb_elems = desired_order.length;
+  for (let i = nb_elems - 1; i > -1; i--) {
+    if (svg_map.querySelector(desired_order[i])) {
+      parent.insertBefore(svg_map.querySelector(desired_order[i]), parent.firstChild);
+    }
   }
 }
 

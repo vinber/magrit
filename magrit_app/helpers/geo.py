@@ -76,9 +76,13 @@ def convert_ogr_to_geojson(file_path, file_format):
     res = []
     for inFeature in input_layer:
         geom = inFeature.GetGeometryRef()
-        geom.Transform(coords_transform)
         outFeature = OgrFeature(output_lyr_defn)
-        outFeature.SetGeometry(geom)
+        # Don't try to transform empty geometry :
+        if geom:
+            geom.Transform(coords_transform)
+            outFeature.SetGeometry(geom)
+        else:
+            outFeature.SetGeometry(None)
         outFeature.SetFID(inFeature.GetFID())
         for i in range(output_lyr_defn.GetFieldCount()):
             outFeature.SetField(
@@ -292,9 +296,13 @@ def reproj_convert_layer(geojson_path, output_path,
 
     for inFeature in input_layer:
         geom = inFeature.GetGeometryRef()
-        geom.Transform(coords_transform)
         outFeature = OgrFeature(output_lyr_defn)
-        outFeature.SetGeometry(geom)
+        if geom:
+            geom.Transform(coords_transform)
+            outFeature.SetGeometry(geom)
+        else:
+            outFeature.SetGeometry(None)
+
         for i in range(output_lyr_defn.GetFieldCount()):
             outFeature.SetField(output_lyr_defn.GetFieldDefn(i).GetNameRef(),
                                 inFeature.GetField(i))

@@ -54,7 +54,6 @@ function add_field_table(table, layer_name, parent){
             allowOutsideClick: false});
       return Promise.reject("Invalid name");
     }
-
     if (options.type_operation === "math_compute" && table.length > 3200) {
       let formToSend = new FormData();
       let var1 = [],
@@ -177,7 +176,7 @@ function add_field_table(table, layer_name, parent){
         txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
         field2.attr("disabled", true);
       } else {
-        txt_op.html("app_page.explore_box.add_field_box.join_char");
+        txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
         field2.attr("disabled", null);
       }
     }

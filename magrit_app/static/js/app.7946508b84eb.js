@@ -1083,7 +1083,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.b5492f8e0292.json'
+            loadPath: 'static/locales/{{lng}}/translation.7946508b84eb.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -9245,7 +9245,7 @@ function add_layer_topojson(text) {
         skip_rescale = options.skip_rescale === true ? true : false,
         fields_type = options.fields_type ? options.fields_type : undefined;
 
-    var type = "",
+    var type = void 0,
         topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
         data_to_load = false,
         layers_names = Object.getOwnPropertyNames(topoObj.objects),
@@ -9271,6 +9271,18 @@ function add_layer_topojson(text) {
         return;
     }
 
+    for (var _t_ix = 0; _t_ix < nb_ft; _t_ix++) {
+        if (topoObj_objects.geometries[_t_ix] && topoObj_objects.geometries[_t_ix].type) {
+            if (topoObj_objects.geometries[_t_ix].type.indexOf('Point') > -1) type = 'Point';else if (topoObj_objects.geometries[_t_ix].type.indexOf('LineString') > -1) type = 'Line';else if (topoObj_objects.geometries[_t_ix].type.indexOf('Polygon') > -1) type = 'Polygon';
+            break;
+        }
+    }
+
+    if (!type) {
+        display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+        return;
+    }
+
     if (_app.first_layer) {
         // remove_layer_cleanup('World');
         var q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
@@ -9286,8 +9298,6 @@ function add_layer_topojson(text) {
     }
 
     var field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
-
-    if (topoObj_objects.geometries[0].type.indexOf('Point') > -1) type = 'Point';else if (topoObj_objects.geometries[0].type.indexOf('LineString') > -1) type = 'Line';else if (topoObj_objects.geometries[0].type.indexOf('Polygon') > -1) type = 'Polygon';
 
     current_layers[lyr_name_to_add] = {
         "type": type,
@@ -9709,6 +9719,7 @@ function add_layout_feature(selected_feature) {
 function add_single_symbol(symbol_dataurl, x, y) {
     var width = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "30px";
     var height = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : "30px";
+    var symbol_id = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
 
     var context_menu = new ContextMenu(),
         getItems = function getItems(self_parent) {
@@ -9725,8 +9736,8 @@ function add_single_symbol(symbol_dataurl, x, y) {
 
     x = x || w / 2;
     y = y || h / 2;
-    return map.append("g").attrs({ class: "legend single_symbol" }).insert("image").attrs({ "x": x, "y": y, "width": width, "height": width,
-        "xlink:href": symbol_dataurl }).on("mouseover", function () {
+    return map.append("g").attrs({ class: "legend single_symbol" }).insert("image").attrs({ x: x, y: y, width: width, height: width,
+        id: symbol_id, "xlink:href": symbol_dataurl }).on("mouseover", function () {
         this.style.cursor = "pointer";
     }).on("mouseout", function () {
         this.style.cursor = "initial";
@@ -9945,6 +9956,10 @@ var getIdLayoutFeature = function getIdLayoutFeature(type) {
         class_name = 'arrow';
         id_prefix = 'arrow_';
         error_name = 'error_max_arrows';
+    } else if (type === 'single_symbol') {
+        class_name = 'single_symbol';
+        id_prefix = 'single_symbol_';
+        error_name = 'error_max_symbols';
     }
     var features = document.getElementsByClassName(class_name);
     if (!features) {
@@ -10012,7 +10027,7 @@ function handleClickAddOther(type) {
 function handleClickAddEllipse() {
     var start_point = void 0,
         tmp_start_point = void 0,
-        ellipse_id = getIdLayoutFeature('ellispe');
+        ellipse_id = getIdLayoutFeature('ellipse');
     if (ellipse_id === null) {
         return;
     }
@@ -10052,6 +10067,11 @@ function handleClickAddPicto() {
         prep_symbols = void 0,
         available_symbols = false,
         msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    var symbol_id = getIdLayoutFeature('single_symbol');
+    if (symbol_id === null) {
+        return;
+    }
+
     if (!window.default_symbols) {
         window.default_symbols = [];
         prep_symbols = prepare_available_symbols();
@@ -10073,14 +10093,14 @@ function handleClickAddPicto() {
             prep_symbols.then(function (confirmed) {
                 box_choice_symbol(window.default_symbols).then(function (result) {
                     if (result) {
-                        add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1]);
+                        add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], symbol_id);
                     }
                 });
             });
         } else {
             box_choice_symbol(window.default_symbols).then(function (result) {
                 if (result) {
-                    add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1]);
+                    add_single_symbol(result.split("url(")[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], symbol_id);
                 }
             });
         }
@@ -14894,6 +14914,10 @@ function get_map_template() {
     map_config.dataset_name = dataset_name;
   }
 
+  map_config.global_order = Array.from(svg_map.querySelectorAll('.legend,.layer')).map(function (ft) {
+    return ['#', ft.id, '.', ft.className.baseVal.split(' ').join('.')].join('');
+  });
+
   map_config.layout_features = {};
   if (layout_features) {
     for (var i = 0; i < layout_features.length; i++) {
@@ -15279,15 +15303,24 @@ function apply_user_preferences(json_pref) {
       map.selectAll(".layer").selectAll("path").attr("d", path);
       handleClipPath(current_proj_name);
       reproj_symbol_layer();
-      if (layers.length > 1) {
-        var desired_order = layers.map(function (i) {
+      apply_layout_lgd_elem();
+      if (!map_config.global_order) {
+        // Old method to reorder layers :
+        if (layers.length > 1) {
+          var desired_order = layers.map(function (i) {
+            return i.layer_name;
+          });
+          reorder_elem_list_layer(desired_order);
+          desired_order.reverse();
+          reorder_layers(desired_order);
+        }
+      } else if (map_config.global_order && map_config.global_order.length > 1) {
+        var order = layers.map(function (i) {
           return i.layer_name;
         });
-        reorder_elem_list_layer(desired_order);
-        desired_order.reverse();
-        reorder_layers(desired_order);
+        reorder_elem_list_layer(order);
+        reorder_layers_elem_legends(map_config.global_order);
       }
-      apply_layout_lgd_elem();
       if (map_config.canvas_rotation) {
         document.getElementById("form_rotate").value = map_config.canvas_rotation;
         document.getElementById("canvas_rotation_value_txt").value = map_config.canvas_rotation;
@@ -15579,7 +15612,7 @@ function apply_user_preferences(json_pref) {
           ref_layer_name: _layer.ref_layer_name,
           renderer: _layer.renderer
         };
-        if (_layer.renderer == "PropSymbolsChoro" || _layer.renderer == "PropSymbolsTypo") _rendering_params.fill_color = _layer.fill_color.class;else if (_layer.fill_color.random) _rendering_params.fill_color = "#fff";else if (_layer.fill_color.single != undefined) _rendering_params.fill_color = _layer.fill_color.single;else if (_layer.fill_color.two) {
+        if (_layer.renderer === "PropSymbolsChoro" || _layer.renderer === "PropSymbolsTypo") _rendering_params.fill_color = _layer.fill_color.class;else if (_layer.fill_color.random) _rendering_params.fill_color = "#fff";else if (_layer.fill_color.single != undefined) _rendering_params.fill_color = _layer.fill_color.single;else if (_layer.fill_color.two) {
           _rendering_params.fill_color = _layer.fill_color;
           _rendering_params.break_val = _layer.break_val;
         }
@@ -15722,6 +15755,17 @@ function reorder_elem_list_layer(desired_order) {
   for (var i = 0; i < nb_layers; i++) {
     var selec = "li." + _app.layer_to_id.get(desired_order[i]);
     if (parent.querySelector(selec)) parent.insertBefore(parent.querySelector(selec), parent.firstChild);
+  }
+}
+
+function reorder_layers_elem_legends(desired_order) {
+  var elems = svg_map.querySelectorAll('.legend,.layer');
+  var parent = elems[0].parentNode;
+  var nb_elems = desired_order.length;
+  for (var i = nb_elems - 1; i > -1; i--) {
+    if (svg_map.querySelector(desired_order[i])) {
+      parent.insertBefore(svg_map.querySelector(desired_order[i]), parent.firstChild);
+    }
   }
 }
 
@@ -16548,7 +16592,6 @@ function add_field_table(table, layer_name, parent) {
         allowOutsideClick: false });
       return Promise.reject("Invalid name");
     }
-
     if (options.type_operation === "math_compute" && table.length > 3200) {
       var formToSend = new FormData();
       var var1 = [],
@@ -16671,7 +16714,7 @@ function add_field_table(table, layer_name, parent) {
         txt_op.html(i18next.t("app_page.explore_box.add_field_box.keep_char"));
         field2.attr("disabled", true);
       } else {
-        txt_op.html("app_page.explore_box.add_field_box.join_char");
+        txt_op.html(i18next.t("app_page.explore_box.add_field_box.join_char"));
         field2.attr("disabled", null);
       }
     }
