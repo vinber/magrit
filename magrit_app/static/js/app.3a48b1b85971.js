@@ -1083,7 +1083,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.7946508b84eb.json'
+            loadPath: 'static/locales/{{lng}}/translation.3a48b1b85971.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -15762,10 +15762,12 @@ function reorder_layers_elem_legends(desired_order) {
   var elems = svg_map.querySelectorAll('.legend,.layer');
   var parent = elems[0].parentNode;
   var nb_elems = desired_order.length;
-  for (var i = nb_elems - 1; i > -1; i--) {
-    if (svg_map.querySelector(desired_order[i])) {
-      parent.insertBefore(svg_map.querySelector(desired_order[i]), parent.firstChild);
+  for (var i = 0; i < nb_elems; i++) {
+    var _t = svg_map.querySelector(desired_order[i]);
+    if (_t) {
+      parent.appendChild(_t);
     }
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
   }
 }
 

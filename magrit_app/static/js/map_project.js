@@ -916,10 +916,12 @@ function reorder_layers_elem_legends(desired_order){
   let elems = svg_map.querySelectorAll('.legend,.layer');
   let parent = elems[0].parentNode;
   let nb_elems = desired_order.length;
-  for (let i = nb_elems - 1; i > -1; i--) {
-    if (svg_map.querySelector(desired_order[i])) {
-      parent.insertBefore(svg_map.querySelector(desired_order[i]), parent.firstChild);
+  for (let i = 0; i < nb_elems; i++) {
+    let t = svg_map.querySelector(desired_order[i]);
+    if (t) {
+      parent.appendChild(t);
     }
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
   }
 }
 
