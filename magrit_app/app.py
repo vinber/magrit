@@ -1074,7 +1074,7 @@ async def get_extrabasemaps(request):
 
 
 def prepare_list_svg_symbols():
-    symbols = os.listdir("static/img/svg_symbols/")
+    symbols = [i for i in os.listdir("static/img/svg_symbols/") if '.png' in i]
     with open("static/json/list_symbols.json", "w") as f:
         f.write(json.dumps(symbols))
 

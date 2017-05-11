@@ -1335,7 +1335,7 @@ function add_layout_feature(selected_feature, options = {}){
 //     draw_calc.call(drag);
 // }
 
-function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px", symbol_id=null) {
+function add_single_symbol(symbol_dataurl, x, y, width = "30", height = "30", symbol_id = null) {
     let context_menu = new ContextMenu(),
         getItems = (self_parent) => [
             {"name": i18next.t("app_page.common.options"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
@@ -1347,10 +1347,10 @@ function add_single_symbol(symbol_dataurl, x, y, width="30px", height="30px", sy
     x = x || w / 2;
     y = y || h / 2;
     return map.append("g")
-        .attrs({class: "legend single_symbol"})
+        .attrs({ class: "legend single_symbol", id: symbol_id })
         .insert("image")
-        .attrs({ x: x, y: y, width: width, height: width,
-                 id: symbol_id, "xlink:href": symbol_dataurl })
+        .attrs({ x: x, y: y, width: width, height: height,
+                 "xlink:href": symbol_dataurl })
         .on("mouseover", function(){ this.style.cursor = "pointer";})
         .on("mouseout", function(){ this.style.cursor = "initial";})
         .on("dblclick contextmenu", function(){
@@ -1716,6 +1716,8 @@ function handleClickAddPicto(){
     let symbol_id = getIdLayoutFeature('single_symbol');
     if(symbol_id === null){
       return;
+    } else {
+      symbol_id = 'single_symbol_' + symbol_id;
     }
 
     if(!window.default_symbols){
@@ -1742,12 +1744,12 @@ function handleClickAddPicto(){
               if(!available_symbols){
                   prep_symbols.then(confirmed => {
                       box_choice_symbol(window.default_symbols).then( result => {
-                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], symbol_id); }
+                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
                       });
                   });
               } else {
                   box_choice_symbol(window.default_symbols).then( result => {
-                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], symbol_id); }
+                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
                   });
               }
         });
@@ -1826,16 +1828,16 @@ function handleClickAddArrow(){
 }
 
 function prepare_available_symbols(){
-    return xhrequest('GET', 'static/json/list_symbols.json', null)
-            .then( list_res => {
-               list_res = JSON.parse(list_res);
-               return Promise.all(list_res.map(name => xhrequest('GET', "static/img/svg_symbols/" + name, null)))
-                .then( symbols => {
-                    for(let i=0; i<list_res.length; i++){
-                        default_symbols.push([list_res[i], symbols[i]]);
-                    }
-                });
-            })
+  return xhrequest('GET', 'static/json/list_symbols.json', null)
+    .then( list_res => {
+      list_res = JSON.parse(list_res);
+      return Promise.all(list_res.map(name => getImgDataUrl('static/img/svg_symbols/' + name)))
+        .then((symbols) => {
+          for (let i=0; i<list_res.length; i++) {
+            default_symbols.push([list_res[i], symbols[i]]);
+          }
+        });
+    });
 }
 
 function accordionize(css_selector=".accordion", parent){

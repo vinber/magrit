@@ -2841,8 +2841,8 @@ function render_TypoSymbols(rendering_params, new_name){
           return {
             "x":coords[0] - symb[1] / 2,
             "y": coords[1] - symb[1] / 2,
-            "width": symb[1] + "px",
-            "height": symb[1] + "px",
+            "width": symb[1],
+            "height": symb[1],
             "xlink:href": symb[0]
           };
         })

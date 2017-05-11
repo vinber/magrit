@@ -110,6 +110,21 @@ function xhrequest(method, url, data, waiting_message){
     });
 }
 
+function getImgDataUrl(url){
+  return new Promise((resolve, reject) => {
+    let request = new XMLHttpRequest();
+    request.onload = () => {
+        let reader = new FileReader();
+        reader.onloadend = () => { resolve(reader.result); };
+        reader.readAsDataURL(request.response);
+    };
+    request.onerror = (err) => { reject(err); };
+    request.open('GET', url, true);
+    request.responseType = 'blob';
+    request.send();
+  });
+}
+
 function make_content_summary(serie, precision=6){
     return [
         i18next.t("app_page.stat_summary.population"), " : ", round_value(serie.pop(), precision), "<br>",
