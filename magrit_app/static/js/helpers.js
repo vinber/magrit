@@ -557,7 +557,7 @@ const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
   return fetch(url)
     .then(res => res.blob())
     .then((blob) => {
-      const blobUrl = URL.createObjectURL(blob, {oneTimeOnly: true});
+      const blobUrl = URL.createObjectURL(blob);
       const dlAnchorElem = document.createElement('a');
       dlAnchorElem.style.display = 'none';
       dlAnchorElem.setAttribute('href', blobUrl);
