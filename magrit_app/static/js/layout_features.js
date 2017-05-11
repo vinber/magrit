@@ -429,9 +429,19 @@ class Textbox {
     const inner_p = document.createElement('p');
     inner_p.setAttribute('id', `in_${new_id_txt_annot}`);
     inner_p.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    inner_p.style = 'display:table-cell;padding:10px;color:#000;'
-            + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
-            + 'word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;';
+    // inner_p.style = 'display:table-cell;padding:10px;color:#000;'
+    //         + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
+    //         + 'word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;';
+    inner_p.style.display = 'table-cell';
+    inner_p.style.padding = '10px';
+    inner_p.style.color = '#000';
+    inner_p.style.opacity = '1';
+    inner_p.style.fontFamily = 'Verdana,Geneva,sans-serif';
+    inner_p.style.whiteSpace = 'pre';
+    inner_p.style.wordWrap = 'normal';
+    inner_p.style.overflow = 'visible';
+    inner_p.style.overflowY = 'visible';
+    inner_p.style.overflowX = 'visible';
     inner_p.innerHTML = i18next.t('app_page.text_box_edit_box.constructor_default');
     foreign_obj.appendChild(inner_p);
     parent.appendChild(foreign_obj);

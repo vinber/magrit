@@ -297,10 +297,14 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     }
 
     let parent_nd = document.getElementById(id_parent);
-    parent_nd.style = "margin-top: 3px; amargin-bottom: 3px;"
+    parent_nd.style.marginTop = '3px';
+    parent_nd.style.marginBottom = '3px';
+    // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
 
     let title = document.createElement('p');
-    title.style = "margin: 1px; word-spacing: 1.8em;";
+    // title.style = "margin: 1px; word-spacing: 1.8em;";
+    title.style.margin = '1px';
+    title.style.wordSpacing = '1.8em';
     title.innerHTML = "Min - Max - Size";
     parent_nd.appendChild(title);
 
@@ -310,14 +314,17 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         let inner_line = document.createElement('p');
         inner_line.setAttribute('class', 'breaks_vals');
         inner_line.id = ["line", i].join('_');
-        inner_line.style = "margin: 0px;"
+        inner_line.style.margin = '0px';
+        // inner_line.style = "margin: 0px;"
 
         let input1 = document.createElement('input');
         input1.setAttribute('type', 'number');
         input1.setAttribute('class', 'min_class');
         input1.setAttribute('step', 'any');
         input1.value = (+breaks[i][0][0]).toFixed(2);
-        input1.style = 'width: 60px; position: unset;'
+        // input1.style = 'width: 60px; position: unset;'
+        input1.style.width = '60px';
+        input1.style.position = 'unset';
         inner_line.appendChild(input1);
 
         let input2 = document.createElement('input');
@@ -325,7 +332,9 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         input2.setAttribute('class', 'max_class');
         input2.setAttribute('step', 'any');
         input2.value = (+breaks[i][0][1]).toFixed(2);
-        input2.style = 'width: 60px; position: unset;'
+        // input2.style = 'width: 60px; position: unset;'
+        input2.style.width = '60px';
+        input2.style.position = 'unset';
         inner_line.appendChild(input2);
 
         let input3 = document.createElement('input');
@@ -333,7 +342,10 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         input3.setAttribute('class', 'size_class');
         input3.setAttribute('step', 'any');
         input3.value = (+breaks[i][1]).toFixed(2);
-        input3.style = 'margin-left: 20px; width: 55px; position: unset;'
+        // input3.style = 'margin-left: 20px; width: 55px; position: unset;'
+        input3.style.marginLeft = '20px';
+        input3.style.width = '55px';
+        input3.style.position = 'unset';
         inner_line.appendChild(input3);
 
         let px = document.createElement('span');
@@ -342,8 +354,8 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         div_table.appendChild(inner_line);
     }
 
-    let mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
-        maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
+    let mins = document.getElementById(id_parent).querySelectorAll(".min_class"),
+        maxs = document.getElementById(id_parent).querySelectorAll(".max_class");
 
     for(let i = 0; i < mins.length; i++){
         if(i > 0){
@@ -362,7 +374,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         }
     }
     if(callback){
-      let sizes = document.getElementById(id_parent).getElementsByClassName("size_class")
+      let sizes = document.getElementById(id_parent).querySelectorAll(".size_class")
       for(let i = 0; i < sizes.length; i++){
         sizes[i].onchange = callback;
       }
@@ -377,9 +389,9 @@ function fetch_min_max_table_value(parent_id){
 
     if(!parent_node) return;
 
-    let mins = Array.prototype.map.call(parent_node.getElementsByClassName("min_class"), el => +el.value),
-        maxs = Array.prototype.map.call(parent_node.getElementsByClassName("max_class"), el => +el.value),
-        sizes = Array.prototype.map.call(parent_node.getElementsByClassName("size_class"), el => +el.value),
+    let mins = Array.prototype.map.call(parent_node.querySelectorAll(".min_class"), el => +el.value),
+        maxs = Array.prototype.map.call(parent_node.querySelectorAll(".max_class"), el => +el.value),
+        sizes = Array.prototype.map.call(parent_node.querySelectorAll(".size_class"), el => +el.value),
         nb_class = mins.length,
         comp_fun = (a,b) => a - b;
 
@@ -1977,7 +1989,7 @@ function render_mini_chart_serie(values, parent, cap, bins){
 
   let old = parent.querySelector("canvas");
   if(old) old.remove();
-  parent.append(canvas);
+  parent.appendChild(canvas);
 
   var ctx = canvas.getContext('2d');
   ctx.fillStyle = background;

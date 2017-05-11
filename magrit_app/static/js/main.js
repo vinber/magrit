@@ -101,7 +101,10 @@ function setUpInterface(reload_project)
   let bg_drop = document.createElement('div');
   bg_drop.className = "overlay_drop";
   bg_drop.id = 'overlay_drop';
-  bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
+  bg_drop.style.background = 'black';
+  bg_drop.style.opacity = '0.6';
+  bg_drop.style.display= 'none';
+  bg_drop.style.padding = '10px';
   let inner_div = document.createElement("div");
   inner_div.style.border = "dashed 2px white";
   inner_div.style.margin = "10px";
@@ -109,7 +112,17 @@ function setUpInterface(reload_project)
   inner_div.style.borderRadius = "1%";
   inner_div.className = "overlay_drop";
   let inner_p = document.createElement("p");
-  inner_p.style = "position: fixed;top: 50%;left: 50%;transform: translateX(-50%)translateY(-50%);font-size: 14px;width: auto;bottom: 0px;opacity: 0.85;text-align: center;color: white;padding: 0.5em;"
+  inner_p.style.position = 'fixed';
+  inner_p.style.top = '50%';
+  inner_p.style.left = '50%'
+  inner_p.style.transform = 'translateX(-50%)translateY(-50%)';
+  inner_p.style.fontSize = '14px';
+  inner_p.style.width = 'auto';
+  inner_p.style.bottom = '0px';
+  inner_p.style.opacity = '0.85';
+  inner_p.style.textAlign = 'center';
+  inner_p.style.color = 'white';
+  inner_p.style.padding = '0.5em';
   inner_p.innerHTML = "Drop your file(s) in the window ...";
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
@@ -955,7 +968,7 @@ function setUpInterface(reload_project)
           }
           let desired_order = [],
               actual_order = [],
-              layers = svg_map.getElementsByClassName("layer");
+              layers = svg_map.querySelectorAll(".layer");
 
           for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
               let n = a.target.childNodes[i].getAttribute("layer_name");
@@ -1354,7 +1367,7 @@ function parseQuery(search) {
 })();
 
 function up_legends(){
-    let legend_features = svg_map.getElementsByClassName('legend');
+    let legend_features = svg_map.querySelectorAll('.legend');
     for(let i = 0; i < legend_features.length; i++){
         svg_map.appendChild(legend_features[i], null);
     }
@@ -1401,7 +1414,7 @@ function displayInfoOnMove(){
         svg_map.style.cursor = "";
     } else {
         map.select('.brush').remove();
-        let layers = svg_map.getElementsByClassName("layer"),
+        let layers = svg_map.querySelectorAll(".layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
 
@@ -2071,7 +2084,7 @@ function change_projection(new_proj_name) {
     if(!layer_name && def_proj.bounds){
         scale_to_bbox(def_proj.bounds);
     } else if (!layer_name){
-      let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
+      let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
       layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
     if(layer_name){
@@ -2115,7 +2128,7 @@ function change_projection_4(_proj) {
     // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     if(!layer_name){
-      let layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), f => f.style.visibility != "hidden");
+      let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
       layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
     }
     if(!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule"){
@@ -2517,6 +2530,9 @@ function export_compo_svg(output_name){
         unpatchSvgForFonts();
         unpatchSvgForForeignObj(dimensions_foreign_obj);
         unpatchSvgForInkscape();
+    }).catch( err => {
+        display_error_during_computation();
+        console.log(err);
     });
 }
 
@@ -2541,6 +2557,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         ctx = targetCanvas.getContext('2d'),
         img = new Image();
     } catch(err) {
+        targetCanvas.remove();
         document.getElementById("overlay").style.display = "none";
         display_error_during_computation(String(err));
         return;
@@ -2549,6 +2566,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
+            targetCanvas.remove();
             document.getElementById("overlay").style.display = "none";
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
@@ -2570,7 +2588,10 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
                 unpatchSvgForForeignObj(dimensions_foreign_obj);
                 document.getElementById("overlay").style.display = "none";
                 targetCanvas.remove();
-            });
+            }).catch( err => {
+                display_error_during_computation();
+                console.log(err);
+            });;
     }
 }
 

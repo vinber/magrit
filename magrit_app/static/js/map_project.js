@@ -546,7 +546,8 @@ function apply_user_preferences(json_pref){
           let new_txt_box = new Textbox(svg_map, ft.id, [ft.position_x, ft.position_y]);
           let inner_p = new_txt_box.text_annot.select("p").node();
           inner_p.innerHTML = ft.content;
-          inner_p.style = ft.style;
+          // inner_p.style = ft.style;
+          inner_p.setAttribute('style', ft.style);
           new_txt_box.text_annot.attr('transform', ft.transform);
           new_txt_box.fontsize = +ft.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.font_family = ft.style.split('font-family: ')[1].split(';')[0];
@@ -890,7 +891,7 @@ function apply_user_preferences(json_pref){
 }
 
 function reorder_layers(desired_order){
-    let layers = svg_map.getElementsByClassName('layer'),
+    let layers = svg_map.querySelectorAll('.layer'),
         parent = layers[0].parentNode,
         nb_layers = desired_order.length;
     desired_order = desired_order.map(el => _app.layer_to_id.get(el))

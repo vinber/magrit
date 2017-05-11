@@ -100,12 +100,12 @@ function ContextMenu() {
 				this.items[i]["menu"].DOMObj.style.display = "none";
 				item.onmouseover = function() {
 					setTimeout(() => {
-						this.getElementsByClassName("context-menu")[0].style.display = "";
+						this.querySelectorAll(".context-menu")[0].style.display = "";
 					}, 500);
 				};
 				item.onmouseout = function() {
 					setTimeout(() => {
-						this.getElementsByClassName("context-menu")[0].style.display = "none";
+						this.querySelectorAll(".context-menu")[0].style.display = "none";
 					}, 500);
 				};
 			}

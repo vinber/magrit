@@ -91,7 +91,10 @@ function setUpInterface(reload_project) {
     var bg_drop = document.createElement('div');
     bg_drop.className = "overlay_drop";
     bg_drop.id = 'overlay_drop';
-    bg_drop.style = "background: black; opacity:0.6;display: none;padding: 10px;";
+    bg_drop.style.background = 'black';
+    bg_drop.style.opacity = '0.6';
+    bg_drop.style.display = 'none';
+    bg_drop.style.padding = '10px';
     var inner_div = document.createElement("div");
     inner_div.style.border = "dashed 2px white";
     inner_div.style.margin = "10px";
@@ -99,7 +102,17 @@ function setUpInterface(reload_project) {
     inner_div.style.borderRadius = "1%";
     inner_div.className = "overlay_drop";
     var inner_p = document.createElement("p");
-    inner_p.style = "position: fixed;top: 50%;left: 50%;transform: translateX(-50%)translateY(-50%);font-size: 14px;width: auto;bottom: 0px;opacity: 0.85;text-align: center;color: white;padding: 0.5em;";
+    inner_p.style.position = 'fixed';
+    inner_p.style.top = '50%';
+    inner_p.style.left = '50%';
+    inner_p.style.transform = 'translateX(-50%)translateY(-50%)';
+    inner_p.style.fontSize = '14px';
+    inner_p.style.width = 'auto';
+    inner_p.style.bottom = '0px';
+    inner_p.style.opacity = '0.85';
+    inner_p.style.textAlign = 'center';
+    inner_p.style.color = 'white';
+    inner_p.style.padding = '0.5em';
     inner_p.innerHTML = "Drop your file(s) in the window ...";
     inner_div.appendChild(inner_p);
     bg_drop.appendChild(inner_div);
@@ -761,7 +774,7 @@ function setUpInterface(reload_project) {
             }
             var desired_order = [],
                 actual_order = [],
-                layers = svg_map.getElementsByClassName("layer");
+                layers = svg_map.querySelectorAll(".layer");
 
             for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
                 var n = a.target.childNodes[_i3].getAttribute("layer_name");
@@ -1083,7 +1096,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.184e958189a2.json'
+            loadPath: 'static/locales/{{lng}}/translation.2642e1872c72.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -1098,7 +1111,7 @@ function parseQuery(search) {
 })();
 
 function up_legends() {
-    var legend_features = svg_map.getElementsByClassName('legend');
+    var legend_features = svg_map.querySelectorAll('.legend');
     for (var i = 0; i < legend_features.length; i++) {
         svg_map.appendChild(legend_features[i], null);
     }
@@ -1161,7 +1174,7 @@ function displayInfoOnMove() {
         svg_map.style.cursor = "";
     } else {
         map.select('.brush').remove();
-        var layers = svg_map.getElementsByClassName("layer"),
+        var layers = svg_map.querySelectorAll(".layer"),
             nb_layer = layers.length,
             top_visible_layer = null;
 
@@ -1762,7 +1775,7 @@ function change_projection(new_proj_name) {
     if (!layer_name && def_proj.bounds) {
         scale_to_bbox(def_proj.bounds);
     } else if (!layer_name) {
-        var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
+        var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
             return f.style.visibility != "hidden";
         });
         layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
@@ -1808,7 +1821,7 @@ function change_projection_4(_proj) {
     // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
     if (!layer_name) {
-        var layers_active = Array.prototype.filter.call(svg_map.getElementsByClassName('layer'), function (f) {
+        var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
             return f.style.visibility != "hidden";
         });
         layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
@@ -2186,6 +2199,9 @@ function export_compo_svg(output_name) {
         unpatchSvgForFonts();
         unpatchSvgForForeignObj(dimensions_foreign_obj);
         unpatchSvgForInkscape();
+    }).catch(function (err) {
+        display_error_during_computation();
+        console.log(err);
     });
 }
 
@@ -2212,6 +2228,7 @@ function _export_compo_png() {
     try {
         svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
     } catch (err) {
+        targetCanvas.remove();
         document.getElementById("overlay").style.display = "none";
         display_error_during_computation(String(err));
         return;
@@ -2220,6 +2237,7 @@ function _export_compo_png() {
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
+            targetCanvas.remove();
             document.getElementById("overlay").style.display = "none";
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
@@ -2240,7 +2258,10 @@ function _export_compo_png() {
             unpatchSvgForForeignObj(dimensions_foreign_obj);
             document.getElementById("overlay").style.display = "none";
             targetCanvas.remove();
-        });
+        }).catch(function (err) {
+            display_error_during_computation();
+            console.log(err);
+        });;
     };
 }
 
@@ -2627,14 +2648,14 @@ function ContextMenu() {
 					var _this = this;
 
 					setTimeout(function () {
-						_this.getElementsByClassName("context-menu")[0].style.display = "";
+						_this.querySelectorAll(".context-menu")[0].style.display = "";
 					}, 500);
 				};
 				item.onmouseout = function () {
 					var _this2 = this;
 
 					setTimeout(function () {
-						_this2.getElementsByClassName("context-menu")[0].style.display = "none";
+						_this2.querySelectorAll(".context-menu")[0].style.display = "none";
 					}, 500);
 				};
 			}
@@ -4241,10 +4262,14 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     }
 
     var parent_nd = document.getElementById(id_parent);
-    parent_nd.style = "margin-top: 3px; amargin-bottom: 3px;";
+    parent_nd.style.marginTop = '3px';
+    parent_nd.style.marginBottom = '3px';
+    // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
 
     var title = document.createElement('p');
-    title.style = "margin: 1px; word-spacing: 1.8em;";
+    // title.style = "margin: 1px; word-spacing: 1.8em;";
+    title.style.margin = '1px';
+    title.style.wordSpacing = '1.8em';
     title.innerHTML = "Min - Max - Size";
     parent_nd.appendChild(title);
 
@@ -4254,14 +4279,17 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         var inner_line = document.createElement('p');
         inner_line.setAttribute('class', 'breaks_vals');
         inner_line.id = ["line", i].join('_');
-        inner_line.style = "margin: 0px;";
+        inner_line.style.margin = '0px';
+        // inner_line.style = "margin: 0px;"
 
         var input1 = document.createElement('input');
         input1.setAttribute('type', 'number');
         input1.setAttribute('class', 'min_class');
         input1.setAttribute('step', 'any');
         input1.value = (+breaks[i][0][0]).toFixed(2);
-        input1.style = 'width: 60px; position: unset;';
+        // input1.style = 'width: 60px; position: unset;'
+        input1.style.width = '60px';
+        input1.style.position = 'unset';
         inner_line.appendChild(input1);
 
         var input2 = document.createElement('input');
@@ -4269,7 +4297,9 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         input2.setAttribute('class', 'max_class');
         input2.setAttribute('step', 'any');
         input2.value = (+breaks[i][0][1]).toFixed(2);
-        input2.style = 'width: 60px; position: unset;';
+        // input2.style = 'width: 60px; position: unset;'
+        input2.style.width = '60px';
+        input2.style.position = 'unset';
         inner_line.appendChild(input2);
 
         var input3 = document.createElement('input');
@@ -4277,7 +4307,10 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         input3.setAttribute('class', 'size_class');
         input3.setAttribute('step', 'any');
         input3.value = (+breaks[i][1]).toFixed(2);
-        input3.style = 'margin-left: 20px; width: 55px; position: unset;';
+        // input3.style = 'margin-left: 20px; width: 55px; position: unset;'
+        input3.style.marginLeft = '20px';
+        input3.style.width = '55px';
+        input3.style.position = 'unset';
         inner_line.appendChild(input3);
 
         var px = document.createElement('span');
@@ -4286,8 +4319,8 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         div_table.appendChild(inner_line);
     }
 
-    var mins = document.getElementById(id_parent).getElementsByClassName("min_class"),
-        maxs = document.getElementById(id_parent).getElementsByClassName("max_class");
+    var mins = document.getElementById(id_parent).querySelectorAll(".min_class"),
+        maxs = document.getElementById(id_parent).querySelectorAll(".max_class");
 
     for (var _i = 0; _i < mins.length; _i++) {
         if (_i > 0) {
@@ -4310,7 +4343,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
         }
     }
     if (callback) {
-        var sizes = document.getElementById(id_parent).getElementsByClassName("size_class");
+        var sizes = document.getElementById(id_parent).querySelectorAll(".size_class");
         for (var _i2 = 0; _i2 < sizes.length; _i2++) {
             sizes[_i2].onchange = callback;
         }
@@ -4322,13 +4355,13 @@ function fetch_min_max_table_value(parent_id) {
 
     if (!parent_node) return;
 
-    var mins = Array.prototype.map.call(parent_node.getElementsByClassName("min_class"), function (el) {
+    var mins = Array.prototype.map.call(parent_node.querySelectorAll(".min_class"), function (el) {
         return +el.value;
     }),
-        maxs = Array.prototype.map.call(parent_node.getElementsByClassName("max_class"), function (el) {
+        maxs = Array.prototype.map.call(parent_node.querySelectorAll(".max_class"), function (el) {
         return +el.value;
     }),
-        sizes = Array.prototype.map.call(parent_node.getElementsByClassName("size_class"), function (el) {
+        sizes = Array.prototype.map.call(parent_node.querySelectorAll(".size_class"), function (el) {
         return +el.value;
     }),
         nb_class = mins.length,
@@ -5946,7 +5979,7 @@ function render_mini_chart_serie(values, parent, cap, bins) {
 
     var old = parent.querySelector("canvas");
     if (old) old.remove();
-    parent.append(canvas);
+    parent.appendChild(canvas);
 
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = background;
@@ -7882,7 +7915,7 @@ var clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
   return fetch(url).then(function (res) {
     return res.blob();
   }).then(function (blob) {
-    var blobUrl = URL.createObjectURL(blob);
+    var blobUrl = URL.createObjectURL(blob, { oneTimeOnly: true });
     var dlAnchorElem = document.createElement('a');
     dlAnchorElem.style.display = 'none';
     dlAnchorElem.setAttribute('href', blobUrl);
@@ -8431,7 +8464,12 @@ function getTranslateNewLegend() {
   if (legends.length === 0) {
     return [0, 0];
   }
-  return getMaximalAvailableRectangle(legends);
+  try {
+    return getMaximalAvailableRectangle(legends);
+  } catch (e) {
+    console.log(e);
+    return [0, 0];
+  }
 }
 
 var pidegrad = 0.017453292519943295;
@@ -8442,8 +8480,6 @@ var degreesToRadians = function degreesToRadians(degrees) {
 var radiansToDegrees = function radiansToDegrees(radians) {
   return radians * piraddeg;
 };
-// const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
-// const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
 
 function scale_to_bbox(bbox) {
   var _bbox = _slicedToArray(bbox, 4),
@@ -12451,7 +12487,19 @@ var Textbox = function () {
     var inner_p = document.createElement('p');
     inner_p.setAttribute('id', 'in_' + new_id_txt_annot);
     inner_p.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    inner_p.style = 'display:table-cell;padding:10px;color:#000;' + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;" + 'word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;';
+    // inner_p.style = 'display:table-cell;padding:10px;color:#000;'
+    //         + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
+    //         + 'word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;';
+    inner_p.style.display = 'table-cell';
+    inner_p.style.padding = '10px';
+    inner_p.style.color = '#000';
+    inner_p.style.opacity = '1';
+    inner_p.style.fontFamily = 'Verdana,Geneva,sans-serif';
+    inner_p.style.whiteSpace = 'pre';
+    inner_p.style.wordWrap = 'normal';
+    inner_p.style.overflow = 'visible';
+    inner_p.style.overflowY = 'visible';
+    inner_p.style.overflowX = 'visible';
     inner_p.innerHTML = i18next.t('app_page.text_box_edit_box.constructor_default');
     foreign_obj.appendChild(inner_p);
     parent.appendChild(foreign_obj);
@@ -13685,8 +13733,8 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 function handle_legend(layer) {
   var state = current_layers[layer].renderer;
   if (state != undefined) {
-    var class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
-    var legends = svg_map.getElementsByClassName(class_name);
+    var class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
+    var legends = svg_map.querySelectorAll(class_name);
     if (legends.length > 0) {
       if (legends[0].getAttribute('display') == null) {
         Array.prototype.forEach.call(legends, function (el) {
@@ -13782,7 +13830,7 @@ function createLegend(layer, title) {
 }
 
 function up_legend(legend_node) {
-  var lgd_features = svg_map.getElementsByClassName("legend"),
+  var lgd_features = svg_map.querySelectorAll(".legend"),
       nb_lgd_features = +lgd_features.length,
       self_position = void 0;
 
@@ -13799,7 +13847,7 @@ function up_legend(legend_node) {
 }
 
 function down_legend(legend_node) {
-  var lgd_features = svg_map.getElementsByClassName("legend"),
+  var lgd_features = svg_map.querySelectorAll(".legend"),
       nb_lgd_features = +lgd_features.length,
       self_position = void 0;
 
@@ -14652,7 +14700,7 @@ function createlegendEditBox(legend_id, layer_name) {
     make_underlying_rect(legend_node_d3, legend_node_d3.select("#under_rect"), rect_fill_value);
     bind_selections();
   });
-  var container = document.getElementsByClassName(box_class)[0];
+  var container = document.querySelectorAll('.' + box_class)[0];
   var box_body = d3.select(container).select('.modal-dialog').style('width', '375px').select(".modal-body");
   var current_nb_dec = void 0;
 
@@ -15483,7 +15531,8 @@ function apply_user_preferences(json_pref) {
           var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
           var inner_p = new_txt_box.text_annot.select("p").node();
           inner_p.innerHTML = _ft4.content;
-          inner_p.style = _ft4.style;
+          // inner_p.style = ft.style;
+          inner_p.setAttribute('style', _ft4.style);
           new_txt_box.text_annot.attr('transform', _ft4.transform);
           new_txt_box.fontsize = +_ft4.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.font_family = _ft4.style.split('font-family: ')[1].split(';')[0];
@@ -15814,7 +15863,7 @@ function apply_user_preferences(json_pref) {
 }
 
 function reorder_layers(desired_order) {
-  var layers = svg_map.getElementsByClassName('layer'),
+  var layers = svg_map.querySelectorAll('.layer'),
       parent = layers[0].parentNode,
       nb_layers = desired_order.length;
   desired_order = desired_order.map(function (el) {

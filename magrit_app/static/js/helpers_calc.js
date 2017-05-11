@@ -498,15 +498,18 @@ function getTranslateNewLegend(){
   if (legends.length === 0) {
     return [0, 0];
   }
-  return getMaximalAvailableRectangle(legends);
+  try {
+    return getMaximalAvailableRectangle(legends);
+  } catch (e) {
+    console.log(e);
+    return [0, 0];
+  }
 }
 
 const pidegrad = 0.017453292519943295;
 const piraddeg = 57.29577951308232;
 const degreesToRadians = function degreesToRadians(degrees) { return degrees * pidegrad; }
 const radiansToDegrees = function radiansToDegrees(radians) { return radians * piraddeg; }
-// const degreesToRadians = function(degrees) { return degrees * Math.PI / 180; }
-// const radiansToDegrees = function(radians) { return radians * 180 / Math.PI; }
 
 function scale_to_bbox(bbox){
 	let [xmin, ymin, xmax, ymax] = bbox;

@@ -9,8 +9,8 @@
 function handle_legend(layer){
   let state = current_layers[layer].renderer;
   if (state != undefined) {
-    let class_name = ["lgdf", _app.layer_to_id.get(layer)].join('_');
-    let legends = svg_map.getElementsByClassName(class_name);
+    let class_name = [".lgdf", _app.layer_to_id.get(layer)].join('_');
+    let legends = svg_map.querySelectorAll(class_name);
     if (legends.length > 0) {
       if (legends[0].getAttribute('display') == null) {
         Array.prototype.forEach.call(legends, el => el.setAttribute('display', 'none'));
@@ -114,7 +114,7 @@ function createLegend(layer, title){
 }
 
 function up_legend(legend_node){
-  let lgd_features = svg_map.getElementsByClassName("legend"),
+  let lgd_features = svg_map.querySelectorAll(".legend"),
     nb_lgd_features = +lgd_features.length,
     self_position;
 
@@ -132,7 +132,7 @@ function up_legend(legend_node){
 }
 
 function down_legend(legend_node){
-  let lgd_features = svg_map.getElementsByClassName("legend"),
+  let lgd_features = svg_map.querySelectorAll(".legend"),
     nb_lgd_features = +lgd_features.length,
     self_position;
 
@@ -1087,7 +1087,7 @@ function createlegendEditBox(legend_id, layer_name){
                            rect_fill_value);
       bind_selections();
     });
-  let container = document.getElementsByClassName(box_class)[0];
+  let container = document.querySelectorAll('.' + box_class)[0];
   let box_body = d3.select(container)
     .select('.modal-dialog').style('width', '375px')
     .select(".modal-body");
