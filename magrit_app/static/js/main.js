@@ -672,7 +672,9 @@ function setUpInterface(reload_project)
     p1.insert('span').insert('img').attrs({id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow'}).on('click', () => add_layout_feature('arrow'));
     // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: 'static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
     p1.insert('span').insert('img').attrs({id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot'}).on('click', () => add_layout_feature('text_annot'));
-    p1.insert('span').insert('img').attrs({id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    if (!window.isIE) {
+      p1.insert('span').insert('img').attrs({id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol'}).on('click', () => add_layout_feature('symbol'));
+    }
     p1.insert('span').insert('img').attrs({id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle'}).on('click', () => add_layout_feature('rectangle'));
     p1.insert('span').insert('img').attrs({id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse'}).on('click', () => add_layout_feature('ellipse'));
 

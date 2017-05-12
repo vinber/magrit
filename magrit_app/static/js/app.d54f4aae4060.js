@@ -530,9 +530,11 @@ function setUpInterface(reload_project) {
     p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
         return add_layout_feature('text_annot');
     });
-    p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
-        return add_layout_feature('symbol');
-    });
+    if (!window.isIE) {
+        p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
+            return add_layout_feature('symbol');
+        });
+    }
     p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
         return add_layout_feature('rectangle');
     });
@@ -1099,7 +1101,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.b143e284d6a8.json'
+            loadPath: 'static/locales/{{lng}}/translation.d54f4aae4060.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -12524,6 +12526,7 @@ var Textbox = function () {
     inner_p.style.color = '#000';
     inner_p.style.opacity = '1';
     inner_p.style.fontFamily = 'Verdana,Geneva,sans-serif';
+    inner_p.style.fontSize = "14px";
     inner_p.style.whiteSpace = 'pre';
     inner_p.style.wordWrap = 'normal';
     inner_p.style.overflow = 'visible';

@@ -317,7 +317,7 @@ def reproj_convert_layer(geojson_path, output_path,
         with open(output_path.replace(".shp", ".prj"), 'w') as file_proj:
             file_proj.write(outSpRef.ExportToWkt())
         with open(output_path.replace(".shp", ".cpg"), "w") as encoding_file:
-            encoding_file.write("UTF-8")
+            encoding_file.write("ISO-8859-1")
     return 0
 
 

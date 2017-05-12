@@ -437,6 +437,7 @@ class Textbox {
     inner_p.style.color = '#000';
     inner_p.style.opacity = '1';
     inner_p.style.fontFamily = 'Verdana,Geneva,sans-serif';
+    inner_p.style.fontSize = "14px";
     inner_p.style.whiteSpace = 'pre';
     inner_p.style.wordWrap = 'normal';
     inner_p.style.overflow = 'visible';
