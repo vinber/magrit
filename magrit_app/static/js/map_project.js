@@ -899,7 +899,7 @@ function reorder_layers(desired_order){
         if(document.getElementById(desired_order[i]))
           parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
     }
-    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+    // svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
 }
 
 function reorder_elem_list_layer(desired_order){

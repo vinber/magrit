@@ -559,13 +559,35 @@ const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
     .then((blob) => {
       const blobUrl = URL.createObjectURL(blob);
       const dlAnchorElem = document.createElement('a');
-      dlAnchorElem.style.display = 'none';
       dlAnchorElem.setAttribute('href', blobUrl);
       dlAnchorElem.setAttribute('download', filename);
-      document.body.appendChild(dlAnchorElem);
-      dlAnchorElem.click();
-      dlAnchorElem.remove();
-      URL.revokeObjectURL(blobUrl);
+      if(window.isIE){
+        swal({
+          title: "",
+          html: '<div class="link_download"><p>' + i18next.t('app_page.common.download_link') + '</p></div>',
+          showCancelButton: true,
+          showConfirmButton: false,
+          allowEscapeKey: false,
+          allowOutsideClick: false,
+          cancelButtonText: i18next.t('app_page.common.close'),
+          animation: "slide-from-top",
+          onOpen: function() {
+              dlAnchorElem.innerHTML = filename;
+              let content = document.getElementsByClassName('link_download')[0];
+              content.appendChild(dlAnchorElem);
+          },
+          onClose: function() {
+            URL.revokeObjectURL(blobUrl);
+          }
+        }).then(inputValue => { null; },
+            dismissValue => { null; });
+      } else {
+        dlAnchorElem.style.display = 'none';
+        document.body.appendChild(dlAnchorElem);
+        dlAnchorElem.click();
+        dlAnchorElem.remove();
+        URL.revokeObjectURL(blobUrl);
+      }
   });
 }
 

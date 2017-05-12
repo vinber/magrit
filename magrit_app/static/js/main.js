@@ -1334,7 +1334,10 @@ function parseQuery(search) {
   let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
   let params = {};
   document.querySelector('noscript').remove();
-
+  window.isIE = (() => (/MSIE/i.test(navigator.userAgent)
+    || /Trident\/\d./i.test(navigator.userAgent)
+    || /Edge\/\d./i.test(navigator.userAgent)) ? true : false
+  )();
   if (window.location.search) {
     let parsed_querystring = parseQuery(window.location.search);
     params.reload = parsed_querystring.reload;
@@ -2557,8 +2560,8 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         ctx = targetCanvas.getContext('2d'),
         img = new Image();
     } catch(err) {
-        targetCanvas.remove();
         document.getElementById("overlay").style.display = "none";
+        targetCanvas.remove();
         display_error_during_computation(String(err));
         return;
     }
@@ -2566,8 +2569,8 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            targetCanvas.remove();
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
@@ -2579,6 +2582,7 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
             var imgUrl = targetCanvas.toDataURL(mime_type);
         } catch (err) {
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
             display_error_during_computation(String(err));
             return;
         }
@@ -2588,11 +2592,11 @@ function _export_compo_png(type="web", scalefactor=1, output_name){
                 unpatchSvgForForeignObj(dimensions_foreign_obj);
                 document.getElementById("overlay").style.display = "none";
                 targetCanvas.remove();
-            }).catch( err => {
+            }).catch(err => {
                 display_error_during_computation();
                 console.log(err);
             });;
-    }
+    };
 }
 
 function export_layer_geo(layer, type, projec, proj4str){

@@ -91,7 +91,8 @@
             "resume_last_project": "Resume last project ?",
             "new_project": "New project",
             "resume_last": "Resume last project",
-            "class": "{{count}} class"
+            "class": "{{count}} class",
+            "download_link": "Download link"
         },
         "notification":{
             "success_sphere_added": "Success: sphere added!",

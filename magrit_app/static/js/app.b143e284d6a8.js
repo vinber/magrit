@@ -1079,7 +1079,10 @@ function parseQuery(search) {
     var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
     var params = {};
     document.querySelector('noscript').remove();
-
+    window.isIE = function () {
+        return (/MSIE/i.test(navigator.userAgent) || /Trident\/\d./i.test(navigator.userAgent) || /Edge\/\d./i.test(navigator.userAgent) ? true : false
+        );
+    }();
     if (window.location.search) {
         var parsed_querystring = parseQuery(window.location.search);
         params.reload = parsed_querystring.reload;
@@ -1096,7 +1099,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.2642e1872c72.json'
+            loadPath: 'static/locales/{{lng}}/translation.b143e284d6a8.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -2228,8 +2231,8 @@ function _export_compo_png() {
     try {
         svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
     } catch (err) {
-        targetCanvas.remove();
         document.getElementById("overlay").style.display = "none";
+        targetCanvas.remove();
         display_error_during_computation(String(err));
         return;
     }
@@ -2237,8 +2240,8 @@ function _export_compo_png() {
         try {
             changeResolution(targetCanvas, scalefactor);
         } catch (err) {
-            targetCanvas.remove();
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
             display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
             return;
         }
@@ -2250,6 +2253,7 @@ function _export_compo_png() {
             var imgUrl = targetCanvas.toDataURL(mime_type);
         } catch (err) {
             document.getElementById("overlay").style.display = "none";
+            targetCanvas.remove();
             display_error_during_computation(String(err));
             return;
         }
@@ -7915,15 +7919,40 @@ var clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
   return fetch(url).then(function (res) {
     return res.blob();
   }).then(function (blob) {
-    var blobUrl = URL.createObjectURL(blob, { oneTimeOnly: true });
+    var blobUrl = URL.createObjectURL(blob);
     var dlAnchorElem = document.createElement('a');
-    dlAnchorElem.style.display = 'none';
     dlAnchorElem.setAttribute('href', blobUrl);
     dlAnchorElem.setAttribute('download', filename);
-    document.body.appendChild(dlAnchorElem);
-    dlAnchorElem.click();
-    dlAnchorElem.remove();
-    URL.revokeObjectURL(blobUrl);
+    if (window.isIE) {
+      swal({
+        title: "",
+        html: '<div class="link_download"><p>' + i18next.t('app_page.common.download_link') + '</p></div>',
+        showCancelButton: true,
+        showConfirmButton: false,
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        cancelButtonText: i18next.t('app_page.common.close'),
+        animation: "slide-from-top",
+        onOpen: function onOpen() {
+          dlAnchorElem.innerHTML = filename;
+          var content = document.getElementsByClassName('link_download')[0];
+          content.appendChild(dlAnchorElem);
+        },
+        onClose: function onClose() {
+          URL.revokeObjectURL(blobUrl);
+        }
+      }).then(function (inputValue) {
+        null;
+      }, function (dismissValue) {
+        null;
+      });
+    } else {
+      dlAnchorElem.style.display = 'none';
+      document.body.appendChild(dlAnchorElem);
+      dlAnchorElem.click();
+      dlAnchorElem.remove();
+      URL.revokeObjectURL(blobUrl);
+    }
   });
 };
 
@@ -15872,7 +15901,7 @@ function reorder_layers(desired_order) {
   for (var i = 0; i < nb_layers; i++) {
     if (document.getElementById(desired_order[i])) parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
   }
-  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+  // svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
 }
 
 function reorder_elem_list_layer(desired_order) {
