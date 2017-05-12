@@ -92,7 +92,8 @@
             "new_project": "Proyecto nuevo",
             "resume_last": "Continuar con el último proyecto...",
             "class": "{{count}} clase",
-            "class_plural": "{{count}} clases"
+            "class_plural": "{{count}} clases",
+            "download_link": "Enlace para descargar"
         },
         "notification":{
           "instruction_click_map": "Seleccionar una parte del mapa para agregar el objeto",
