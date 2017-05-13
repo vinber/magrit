@@ -1194,7 +1194,7 @@ var w = Math.round(window.innerWidth - 361),
 
 var existing_lang = ["en", "es", "fr"];
 
-var proj = d3.geoNaturalEarth().scale(1).translate([0,0]);
+var proj = d3.geoNaturalEarth2().scale(1).translate([0,0]);
 
 var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
