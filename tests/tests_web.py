@@ -501,6 +501,24 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         for name in layers:
             self.assertIn(name, expected_layers)
 
+    def test_project_reload_from_url(self):
+        driver = self.driver
+        driver.get(
+            self.base_url + "?reload=mthh/dac7915b55a3d0704af0a04ebe43fe04")
+        if not self.wait_until_overlay_disapear(5):
+            self.fail("Overlay not hiding / Project reloading")
+        layers = driver.find_elements_by_css_selector('#svg_map > .layer')
+        map_elems = driver.find_elements_by_css_selector('#svg_map > *')
+        expected_results = [
+            'Sphere', 'World', 'wordl_data',
+            'Typo_has_data_world_data', 'Graticule']
+        self.assertEqual(len(layers), 5)
+        for expected_name, layer in zip(expected_results, layers):
+            self.assertEqual(expected_name, layer.get_attribute('id'))
+
+        self.assertEqual(len(map_elems), 8)
+        self.assertEqual(map_elems[7].id, 'map_title')
+
     def test_downloads(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -1307,6 +1325,16 @@ class MainFunctionnalitiesTest(unittest.TestCase):
             except:
                 pass
             time.sleep(1)
+        return False
+
+    def wait_until_overlay_disapear(self, delay=10):
+        for i in range(delay):
+            try:
+                if self.driver.find_element_by_id(
+                        'overlay').value_of_css_property('display') != 'none':
+                    continue
+            except:
+                return True
         return False
 
     def close_alert_and_get_its_text(self):
