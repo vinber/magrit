@@ -510,14 +510,14 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         layers = driver.find_elements_by_css_selector('#svg_map > .layer')
         map_elems = driver.find_elements_by_css_selector('#svg_map > *')
         expected_results = [
-            'Sphere', 'World', 'wordl_data',
+            'Sphere', 'World', 'world_data',
             'Typo_has_data_world_data', 'Graticule']
         self.assertEqual(len(layers), 5)
         for expected_name, layer in zip(expected_results, layers):
             self.assertEqual(expected_name, layer.get_attribute('id'))
 
         self.assertEqual(len(map_elems), 8)
-        self.assertEqual(map_elems[7].id, 'map_title')
+        self.assertEqual(map_elems[7].get_attribute('id'), 'map_title')
 
     def test_downloads(self):
         driver = self.driver
@@ -1328,13 +1328,15 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         return False
 
     def wait_until_overlay_disapear(self, delay=10):
+        time.sleep(1)
         for i in range(delay):
             try:
                 if self.driver.find_element_by_id(
-                        'overlay').value_of_css_property('display') != 'none':
-                    continue
+                        'overlay').value_of_css_property('display') == 'none':
+                    return True
             except:
-                return True
+                continue
+            time.sleep(1)
         return False
 
     def close_alert_and_get_its_text(self):
