@@ -1731,9 +1731,15 @@ function remove_layer_cleanup(name){
            && current_layers[name].renderer.indexOf("Categorical") < 0)
             send_remove_server(name);
     }
+    // Is the layer using a filter ? If yes, remove it:
+    let filter_id = map.select('#' + layer_id).attr('filter');
+    if (filter_id) {
+      svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
+    }
+
     // Remove the layer from the map and from the layer manager :
     map.select('#' + layer_id).remove();
-    document.querySelector('#sortable .' + _app.layer_to_id.get(name)).remove()
+    document.querySelector('#sortable .' + layer_id).remove()
 
     // Remove the layer from the "geo export" menu :
     let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');

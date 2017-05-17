@@ -557,7 +557,8 @@
             "graticule_dasharray": "Length of dashes<br>",
             "graticule_clip": "Clip graticule to layer extent",
             "generate_labels": "Generate labels for this layer ...",
-            "field_label": "Select a field to use"
+            "field_label": "Select a field to use",
+            "layer_shadow": "Add a shadow"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

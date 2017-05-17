@@ -174,7 +174,10 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy){
       result_data[new_name].push(selec_dest[i].__data__.properties);
     }
   }
+  // Reset visibility and filter attributes to default values:
   node_new_layer.style.visibility = "";
+  node_new_layer.removeAttribute('filter');
+  // Create an entry in the layer manager:
   create_li_layer_elem(new_name, current_layers[new_name].n_features, [current_layers[new_name].type, type_result], "result");
 }
 

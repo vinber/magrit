@@ -559,7 +559,8 @@
             "graticule_dasharray": "Tamaño de los guiones<br>",
             "generate_labels": "Generar etiquetas para esta capa...",
             "field_label": "Seleccionar campo",
-            "graticule_clip": "Usar los límites de la capa de referencia para la cuadrícula"
+            "graticule_clip": "Usar los límites de la capa de referencia para la cuadrícula",
+            "layer_shadow": "Añadir una sombra"
         },
         "lm_buttons":{
             "zoom+": "Acercar",

@@ -1244,6 +1244,26 @@ function createStyleBox(layer_name){
             map.select(g_lyr_name).style("stroke-width", (val / zoom_scale) + "px");
             current_layers[layer_name]['stroke-width-const'] = val;
           });
+
+    let shadow_section = popup.append('p');
+    let chkbx = shadow_section.insert('input')
+      .style('margin', '0')
+      .attrs({
+        type: 'checkbox',
+        id: 'checkbox_shadow_layer',
+        checked: map.select(g_lyr_name).attr('filter') ? true : null });
+    shadow_section.insert('label')
+      .attr('for', 'checkbox_shadow_layer')
+      .html(i18next.t('app_page.layer_style_popup.layer_shadow'));
+    chkbx.on('change', function(){
+      if (this.checked) {
+        createDropShadow(_app.layer_to_id.get(layer_name));
+      } else {
+        let filter_id = map.select(g_lyr_name).attr('filter');
+        svg_map.querySelector(filter_id.substring(4).replace(')', '')).remove();
+        map.select(g_lyr_name).attr('filter', null);
+      }
+    });
     make_generate_labels_section(popup, layer_name);
 }
 
@@ -1777,32 +1797,59 @@ function make_style_box_indiv_label(label_node){
     selec_fonts.node().value = label_node.style.fontFamily;
 };
 
-/**
-* Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
-* if one with the same param already exists, its id is returned,
-* otherwise a new one is created, and its id is returned
-*/
-var getBlurFilter = (function(size){
-    var count = 0;
-    return function(size) {
-        let blur_filts = defs.node().getElementsByClassName("blur");
-        let blur_filt_to_use;
-        for(let i=0; i < blur_filts.length; i++){
-            if(blur_filts[i].querySelector("feGaussianBlur").getAttributeNS(null, "stdDeviation") == size){
-                blur_filt_to_use = blur_filts[i];
-            }
-        }
-        if(!blur_filt_to_use){
-            count = count + 1;
-            blur_filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
-            blur_filt_to_use.setAttribute("id","blurfilt" + count);
-            blur_filt_to_use.setAttribute("class", "blur");
-            var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
-            gaussianFilter.setAttributeNS(null, "in", "SourceGraphic");
-            gaussianFilter.setAttributeNS(null, "stdDeviation", size);
-            blur_filt_to_use.appendChild(gaussianFilter);
-            defs.node().appendChild(blur_filt_to_use);
-        }
-        return blur_filt_to_use.id;
-    };
-})();
+const createDropShadow = function createDropShadow(layer_id) {
+  const filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+  filt_to_use.setAttribute("id", 'filt_' + layer_id);
+  // filt_to_use.setAttribute("x", 0);
+  // filt_to_use.setAttribute("y", 0);
+  filt_to_use.setAttribute("width", "200%");
+  filt_to_use.setAttribute("height", "200%");
+  const offset = document.createElementNS("http://www.w3.org/2000/svg", "feOffset");
+  offset.setAttributeNS(null, "result", "offOut");
+  offset.setAttributeNS(null, "in", "SourceAlpha");
+  offset.setAttributeNS(null, "dx", "5");
+  offset.setAttributeNS(null, "dy", "5");
+  const gaussian_blur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+  gaussian_blur.setAttributeNS(null, 'result', 'blurOut');
+  gaussian_blur.setAttributeNS(null, 'in', 'offOut');
+  gaussian_blur.setAttributeNS(null, 'stdDeviation', 10);
+  const blend = document.createElementNS("http://www.w3.org/2000/svg", "feBlend");
+  blend.setAttributeNS(null, 'in', 'SourceGraphic');
+  blend.setAttributeNS(null, 'in2', 'blurOut');
+  blend.setAttributeNS(null, 'mode', 'normal');
+  filt_to_use.appendChild(offset);
+  filt_to_use.appendChild(gaussian_blur);
+  filt_to_use.appendChild(blend);
+  defs.node().appendChild(filt_to_use);
+  svg_map.querySelector('#' + layer_id).setAttribute('filter', 'url(#filt_' + layer_id + ')');
+};
+
+// /**
+// * Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
+// * if one with the same param already exists, its id is returned,
+// * otherwise a new one is created, and its id is returned
+// */
+// var getBlurFilter = (function(size){
+//     var count = 0;
+//     return function(size) {
+//         let blur_filts = defs.node().getElementsByClassName("blur");
+//         let blur_filt_to_use;
+//         for(let i=0; i < blur_filts.length; i++){
+//             if(blur_filts[i].querySelector("feGaussianBlur").getAttributeNS(null, "stdDeviation") == size){
+//                 blur_filt_to_use = blur_filts[i];
+//             }
+//         }
+//         if(!blur_filt_to_use){
+//             count = count + 1;
+//             blur_filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+//             blur_filt_to_use.setAttribute("id","blurfilt" + count);
+//             blur_filt_to_use.setAttribute("class", "blur");
+//             var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+//             gaussianFilter.setAttributeNS(null, "in", "SourceGraphic");
+//             gaussianFilter.setAttributeNS(null, "stdDeviation", size);
+//             blur_filt_to_use.appendChild(gaussianFilter);
+//             defs.node().appendChild(blur_filt_to_use);
+//         }
+//         return blur_filt_to_use.id;
+//     };
+// })();
