@@ -1101,7 +1101,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.d14422bd0b44.json'
+            loadPath: 'static/locales/{{lng}}/translation.634beb8c7a05.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -9085,9 +9085,11 @@ function handle_dataset(f, target_layer_on_add) {
             }
 
             var tmp_dataset = d3.dsvFormat(sep).parse(data);
-            var field_name = Object.getOwnPropertyNames(tmp_dataset[0]);
-            if (field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1) {
-                if (field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1) {
+            var field_names = Object.getOwnPropertyNames(tmp_dataset[0]).map(function (el) {
+                return el.toLowerCase ? el.toLowerCase() : el;
+            });
+            if (field_names.indexOf("x") > -1 || field_names.indexOf("lat") > -1 || field_names.indexOf("latitude") > -1) {
+                if (field_names.indexOf("y") > -1 || field_names.indexOf("lon") > -1 || field_names.indexOf("longitude") > -1 || field_names.indexOf("long") > -1 || field_names.indexOf("lng") > -1) {
                     if (target_layer_on_add && _app.targeted_layer_added) {
                         swal({ title: i18next.t("app_page.common.error") + "!",
                             text: i18next.t('app_page.common.error_only_one'),

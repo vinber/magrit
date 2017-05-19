@@ -898,7 +898,7 @@ async def rawcsv_to_geo(data):
     geo_col_x = [colnb for colnb, col in enumerate(df.columns)
                  if col.lower() in {"x", "longitude", "lon", "lng", "long"}
                  ][0] + 1
-    col_names = df.columns = (i.replace(' ', '_') for i in df.columns)
+    col_names = df.columns = [i.replace(' ', '_') for i in df.columns]
     # Ugly minified geojson construction "by hand" :
     ft_template_start = \
         '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
