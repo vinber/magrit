@@ -175,6 +175,10 @@ function get_map_template() {
       layer_style_i.legend = lgd[0].id === "legend_root" ? [get_legend_info(lgd[0]), get_legend_info(lgd[1])] : [get_legend_info(lgd[1]), get_legend_info(lgd[0])];
     }
 
+    if (map.select("#" + layer_id).attr('filter')) {
+      layer_style_i.filter_shadow = true;
+    }
+
     if (current_layer_prop["stroke-width-const"])
       layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
 
@@ -724,10 +728,14 @@ function apply_user_preferences(json_pref){
             .selectAll('path')
             .style(current_layer_prop.type != "Line" ? "fill" : "stroke", () => Colors.names[Colors.random()]);
       }
+
       layer_selec.selectAll('path')
         .styles({ 'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
       if(_layer.visible == 'hidden'){
         handle_active_layer(layer_name);
+      }
+      if (_layer.filter_shadow) {
+        createDropShadow(layer_id);
       }
       done += 1;
       if(done == map_config.n_layers) set_final_param();
@@ -877,6 +885,10 @@ function apply_user_preferences(json_pref){
         }
       } else {
         null;
+      }
+      // Had the layer a shadow effect ?
+      if (_layer.filter_shadow) {
+        createDropShadow(layer_id);
       }
       // Was the layer visible when the project was saved :
       if(_layer.visible === 'hidden' && layer_name !== "World"){

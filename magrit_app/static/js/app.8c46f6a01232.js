@@ -1101,7 +1101,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.634beb8c7a05.json'
+            loadPath: 'static/locales/{{lng}}/translation.8c46f6a01232.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -15217,8 +15217,8 @@ function get_map_template() {
   for (var _i = map_config.n_layers - 1; _i > -1; --_i) {
     layers_style[_i] = {};
     var layer_style_i = layers_style[_i],
-        layer_id = layers._groups[0][_i].id,
-        layer_name = _app.id_to_layer.get(layer_id),
+        _layer_id = layers._groups[0][_i].id,
+        layer_name = _app.id_to_layer.get(_layer_id),
         current_layer_prop = current_layers[layer_name],
         nb_ft = current_layer_prop.n_features,
         selection = void 0;
@@ -15226,13 +15226,17 @@ function get_map_template() {
     layer_style_i.layer_name = layer_name;
     layer_style_i.n_features = nb_ft;
     layer_style_i.visible = layers._groups[0][_i].style.visibility;
-    var lgd = document.getElementsByClassName('lgdf_' + layer_id);
+    var lgd = document.getElementsByClassName('lgdf_' + _layer_id);
     if (lgd.length == 0) {
       layer_style_i.legend = undefined;
     } else if (lgd.length == 1) {
       layer_style_i.legend = [get_legend_info(lgd[0])];
     } else if (lgd.length == 2) {
       layer_style_i.legend = lgd[0].id === "legend_root" ? [get_legend_info(lgd[0]), get_legend_info(lgd[1])] : [get_legend_info(lgd[1]), get_legend_info(lgd[0])];
+    }
+
+    if (map.select("#" + _layer_id).attr('filter')) {
+      layer_style_i.filter_shadow = true;
     }
 
     if (current_layer_prop["stroke-width-const"]) layer_style_i["stroke-width-const"] = current_layer_prop["stroke-width-const"];
@@ -15246,7 +15250,7 @@ function get_map_template() {
     if (current_layer_prop.options_disc !== undefined) layer_style_i.options_disc = current_layer_prop.options_disc;
 
     if (current_layer_prop.targeted) {
-      selection = map.select("#" + layer_id).selectAll("path");
+      selection = map.select("#" + _layer_id).selectAll("path");
       layer_style_i.fill_opacity = selection.style("fill-opacity");
       layer_style_i.targeted = true;
       layer_style_i.topo_geom = true;
@@ -15263,7 +15267,7 @@ function get_map_template() {
         layer_style_i.step = current_layers.Graticule.step;
       }
     } else if (!current_layer_prop.renderer) {
-      selection = map.select("#" + layer_id).selectAll("path");
+      selection = map.select("#" + _layer_id).selectAll("path");
       layer_style_i.fill_opacity = selection.style("fill-opacity");
       layer_style_i.fill_color = current_layer_prop.fill_color;
       layer_style_i.topo_geom = true;
@@ -15271,8 +15275,8 @@ function get_map_template() {
       layer_style_i.stroke_color = selection.style("stroke");
     } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type != "Line") {
       var type_symbol = current_layer_prop.symbol;
-      selection = map.select("#" + layer_id).selectAll(type_symbol);
-      var features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName(type_symbol), function (d) {
+      selection = map.select("#" + _layer_id).selectAll(type_symbol);
+      var features = Array.prototype.map.call(svg_map.querySelector("#" + _layer_id).getElementsByTagName(type_symbol), function (d) {
         return d.__data__;
       });
       layer_style_i.symbol = type_symbol;
@@ -15294,8 +15298,8 @@ function get_map_template() {
       if (current_layer_prop.break_val) layer_style_i.break_val = current_layer_prop.break_val;
     } else if (current_layer_prop.renderer.indexOf("PropSymbols") > -1 && current_layer_prop.type === "Line") {
       var _type_symbol = current_layer_prop.symbol;
-      selection = map.select("#" + layer_id).selectAll('path');
-      var _features = Array.prototype.map.call(svg_map.querySelector("#" + layer_id).getElementsByTagName('path'), function (d) {
+      selection = map.select("#" + _layer_id).selectAll('path');
+      var _features = Array.prototype.map.call(svg_map.querySelector("#" + _layer_id).getElementsByTagName('path'), function (d) {
         return d.__data__;
       });
       layer_style_i.symbol = _type_symbol;
@@ -15322,7 +15326,7 @@ function get_map_template() {
       //             || current_layer_prop.renderer == "OlsonCarto") {
     } else if (['Stewart', 'Gridded', 'Choropleth', 'Categorical', 'Carto_doug', 'OlsonCarto'].indexOf(current_layer_prop.renderer) > -1) {
       (function () {
-        selection = map.select("#" + layer_id).selectAll("path");
+        selection = map.select("#" + _layer_id).selectAll("path");
         layer_style_i.renderer = current_layer_prop.renderer;
         layer_style_i.topo_geom = true;
         // layer_style_i.topo_geom = String(current_layer_prop.key_name);
@@ -15350,7 +15354,7 @@ function get_map_template() {
         }
       })();
     } else if (current_layer_prop.renderer === "Links" || current_layer_prop.renderer === "DiscLayer") {
-      selection = map.select("#" + layer_id).selectAll("path");
+      selection = map.select("#" + _layer_id).selectAll("path");
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.fill_color = current_layer_prop.fill_color;
       layer_style_i.topo_geom = true;
@@ -15365,7 +15369,7 @@ function get_map_template() {
         layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
       }
     } else if (current_layer_prop.renderer === "TypoSymbols") {
-      selection = map.select("#" + layer_id).selectAll("image");
+      selection = map.select("#" + _layer_id).selectAll("image");
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.symbols_map = [].concat(_toConsumableArray(current_layer_prop.symbols_map));
       layer_style_i.rendered_field = current_layer_prop.rendered_field;
@@ -15383,8 +15387,8 @@ function get_map_template() {
       }
       layer_style_i.current_state = state_to_save;
     } else if (current_layer_prop.renderer === "Label") {
-      selection = map.select("#" + layer_id).selectAll("text");
-      var _selec = document.getElementById(layer_id).getElementsByTagName('text');
+      selection = map.select("#" + _layer_id).selectAll("text");
+      var _selec = document.getElementById(_layer_id).getElementsByTagName('text');
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.rendered_field = current_layer_prop.rendered_field;
       layer_style_i.default_font = current_layer_prop.default_font;
@@ -15400,7 +15404,7 @@ function get_map_template() {
       layer_style_i.data_labels = _features2;
       layer_style_i.current_position = current_position;
     } else {
-      selection = map.select("#" + layer_id).selectAll("path");
+      selection = map.select("#" + _layer_id).selectAll("path");
     }
     layer_style_i.stroke_opacity = selection.style("stroke-opacity");
     layer_style_i.fill_opacity = selection.style("fill-opacity");
@@ -15714,8 +15718,8 @@ function apply_user_preferences(json_pref) {
         current_layer_prop.fields_type = _layer.fields_type;
         document.getElementById('btn_type_fields').removeAttribute('disabled');
       }
-      var layer_id = _app.layer_to_id.get(layer_name);
-      var layer_selec = map.select("#" + layer_id);
+      var _layer_id2 = _app.layer_to_id.get(layer_name);
+      var layer_selec = map.select("#" + _layer_id2);
 
       current_layer_prop.rendered_field = _layer.rendered_field;
 
@@ -15784,9 +15788,13 @@ function apply_user_preferences(json_pref) {
           return Colors.names[Colors.random()];
         });
       }
+
       layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
       if (_layer.visible == 'hidden') {
         handle_active_layer(layer_name);
+      }
+      if (_layer.filter_shadow) {
+        createDropShadow(_layer_id2);
       }
       done += 1;
       if (done == map_config.n_layers) set_final_param();
@@ -15891,11 +15899,11 @@ function apply_user_preferences(json_pref) {
               self_parent.style.display = "none";
             } }];
         };
-        var _layer_id = encodeId(layer_name);
-        _app.layer_to_id.set(layer_name, _layer_id);
-        _app.id_to_layer.set(_layer_id, layer_name);
+        var _layer_id3 = encodeId(layer_name);
+        _app.layer_to_id.set(layer_name, _layer_id3);
+        _app.id_to_layer.set(_layer_id3, layer_name);
         // Add the features at there original positions :
-        map.append("g").attrs({ id: _layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
+        map.append("g").attrs({ id: _layer_id3, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
           var symb = symbols_map.get(d.properties.symbol_field),
               prop = _layer.current_state[j],
               coords = prop.pos;
@@ -15931,6 +15939,10 @@ function apply_user_preferences(json_pref) {
         }
       } else {
         null;
+      }
+      // Had the layer a shadow effect ?
+      if (_layer.filter_shadow) {
+        createDropShadow(layer_id);
       }
       // Was the layer visible when the project was saved :
       if (_layer.visible === 'hidden' && layer_name !== "World") {
