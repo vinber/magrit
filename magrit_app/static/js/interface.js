@@ -2,8 +2,15 @@
 ////////////////////////////////////////////////////////////////////////
 // Browse and upload buttons + related actions (conversion + displaying)
 ////////////////////////////////////////////////////////////////////////
-const MAX_INPUT_SIZE = 20200000; // max allowed input size in bytes
-// const ALERT_INPUT_SIZE = 870400; // If the input is larger than this size, the user will receive an alert
+
+/**
+* Maxium allowed input size in bytes. If the input file is larger than
+* this size, the user will receive an alert.
+* In the case of sending multiple files unziped, this limit corresponds
+* to the sum of the size of each file.
+*/
+const MAX_INPUT_SIZE = 25200000;
+
 /**
 * Function triggered when some images of the interface are clicked
 * in order to create an <input> element, simulate a click on it, let the user
@@ -38,18 +45,17 @@ function click_button_add_layer(){
 }
 
 function handle_upload_files(files, target_layer_on_add, elem){
+    const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
 
-    for(let i=0; i < files.length; i++){
-        if(files[i].size > MAX_INPUT_SIZE){
-            // elem.style.border = '3px dashed red';
-            elem.style.border = '';
-            return swal({title: i18next.t("app_page.common.error") + "!",
-                  text: i18next.t("app_page.common.too_large_input"),
-                  type: "error",
-                  customClass: 'swal2_custom',
-                  allowEscapeKey: false,
-                  allowOutsideClick: false});
-        }
+    if (tot_size > MAX_INPUT_SIZE) {
+      // elem.style.border = '3px dashed red';
+      elem.style.border = '';
+      return swal({ title: i18next.t("app_page.common.error") + "!",
+        text: i18next.t("app_page.common.too_large_input"),
+        type: "error",
+        customClass: 'swal2_custom',
+        allowEscapeKey: false,
+        allowOutsideClick: false});
     }
 
     if(!(files.length == 1)){
