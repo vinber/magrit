@@ -342,156 +342,123 @@ class UserArrow {
 }
 
 class Textbox {
-  constructor(parent, new_id_txt_annot, position = [10, 30]) {
+  constructor(parent, id_text_annot, position=[10, 30]) {
+    const self = this;
     this.x = position[0];
     this.y = position[1];
-    this.fontsize = 14;
+    this.fontSize = 14;
+    let context_menu = new ContextMenu();
+    let getItems = () => [
+      { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+    ];
+    const drag_txt_annot = d3.drag().subject(function () {
+       const t = d3.select(this);
+       const snap_lines = get_coords_snap_lines(this.id);
+       return {
+         x: t.attr('x'),
+         y: t.attr('y'),
+         map_locked: !!map_div.select('#hand_button').classed('locked'),
+         snap_lines,
+       };
+     })
+    .on('start', () => {
+      d3.event.sourceEvent.stopPropagation();
+      handle_click_hand('lock');
+    })
+    .on('end', function () {
+      if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
+      pos_lgds_elem.set(this.id, this.getBoundingClientRect());
+    })
+    .on('drag', function () {
+      d3.event.sourceEvent.preventDefault();
+      let elem = d3.select(this).attrs({ x: +d3.event.x, y: +d3.event.y });
+      elem.selectAll('tspan').attr('x', +d3.event.x);
 
-    let current_timeout;
-    let context_menu = new ContextMenu(),
-      getItems = () => [
-                { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-                { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-                { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-                { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
-      ];
-
-    const drag_txt_annot = d3.drag()
-             .subject(function () {
-               const t = d3.select(this.parentElement);
-               const snap_lines = get_coords_snap_lines(this.parentElement.id);
-               return {
-                 x: t.attr('x'),
-                 y: t.attr('y'),
-                 map_locked: !!map_div.select('#hand_button').classed('locked'),
-                 snap_lines,
-               };
-             })
-            .on('start', () => {
-              d3.event.sourceEvent.stopPropagation();
-              handle_click_hand('lock');
-            })
-            .on('end', function () {
-              if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
-              pos_lgds_elem.set(this.parentElement.id, this.getBoundingClientRect());
-            })
-            .on('drag', function () {
-              d3.event.sourceEvent.preventDefault();
-              d3.select(this.parentElement).attrs({ x: +d3.event.x, y: +d3.event.y });
-
-              if (_app.autoalign_features) {
-                let bbox = this.getBoundingClientRect(),
-                  xmin = this.parentElement.x.baseVal.value,
-                  xmax = xmin + bbox.width,
-                  ymin = this.parentElement.y.baseVal.value,
-                  ymax = ymin + bbox.height,
-                  snap_lines_x = d3.event.subject.snap_lines.x,
-                  snap_lines_y = d3.event.subject.snap_lines.y;
-                for (let i = 0; i < snap_lines_x.length; i++) {
-                  if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
-                    const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-                    this.parentElement.x.baseVal.value = snap_lines_x[i][0];
-                  }
-                  if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
-                    const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-                    make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-                    this.parentElement.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
-                  }
-                  if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
-                    const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    this.parentElement.y.baseVal.value = snap_lines_y[i][0];
-                  }
-                  if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-                    const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-                    make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-                    this.parentElement.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
-                  }
-                }
-              }
+      if (_app.autoalign_features) {
+        let bbox = this.getBoundingClientRect(),
+          xmin = this.x.baseVal.value,
+          xmax = xmin + bbox.width,
+          ymin = this.y.baseVal.value,
+          ymax = ymin + bbox.height,
+          snap_lines_x = d3.event.subject.snap_lines.x,
+          snap_lines_y = d3.event.subject.snap_lines.y;
+        for (let i = 0; i < snap_lines_x.length; i++) {
+          if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+            const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+            Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+              el.x.baseVal.value = snap_lines_x[i][0];
             });
-
-    const foreign_obj = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-    foreign_obj.setAttributeNS(null, 'x', this.x);
-    foreign_obj.setAttributeNS(null, 'y', this.y);
-    foreign_obj.setAttributeNS(null, 'overflow', 'visible');
-    foreign_obj.setAttributeNS(null, 'width', '100%');
-    foreign_obj.setAttributeNS(null, 'height', '100%');
-    foreign_obj.setAttributeNS(null, 'class', 'legend txt_annot');
-    foreign_obj.id = new_id_txt_annot;
-    foreign_obj.style.cursor = 'pointer';
-
-    const inner_p = document.createElement('p');
-    inner_p.setAttribute('id', `in_${new_id_txt_annot}`);
-    inner_p.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
-    // inner_p.style = 'display:table-cell;padding:10px;color:#000;'
-    //         + "opacity:1;font-family:'Verdana,Geneva,sans-serif';font-size:14px;white-space: pre;"
-    //         + 'word-wrap: normal; overflow: visible; overflow-y: visible; overflow-x: visible;';
-    inner_p.style.display = 'table-cell';
-    inner_p.style.padding = '10px';
-    inner_p.style.color = '#000';
-    inner_p.style.opacity = '1';
-    inner_p.style.fontFamily = 'Verdana,Geneva,sans-serif';
-    inner_p.style.fontSize = "14px";
-    inner_p.style.whiteSpace = 'pre';
-    inner_p.style.wordWrap = 'normal';
-    inner_p.style.overflow = 'visible';
-    inner_p.style.overflowY = 'visible';
-    inner_p.style.overflowX = 'visible';
-    inner_p.innerHTML = i18next.t('app_page.text_box_edit_box.constructor_default');
-    foreign_obj.appendChild(inner_p);
-    parent.appendChild(foreign_obj);
-
-        // foreignObj size was set to 100% for fully rendering its content,
-        // now we can reduce its size to the inner content
-        // (it will avoid it to overlay some other svg elements)
-    {
-      const inner_bbox = inner_p.getBoundingClientRect();
-      foreign_obj.setAttributeNS(null, 'width', [inner_bbox.width + 2, 'px'].join('')); // +2px are for the border
-      foreign_obj.setAttributeNS(null, 'height', [inner_bbox.height + 2, 'px'].join(''));
-    }
-
-    let frgn_obj = map.select(`#${new_id_txt_annot}`),
-      inner_ft = frgn_obj.select('p');
-    inner_ft.call(drag_txt_annot);
-
-    inner_ft.on('contextmenu', () => {
-      context_menu.showMenu(d3.event,
-                                  document.querySelector('body'),
-                                  getItems());
+          }
+          if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+            const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+            Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+              el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
+            });
+          }
+          if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+            const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+            this.y.baseVal.value = snap_lines_y[i][0];
+          }
+          if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+            const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+            this.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+          }
+        }
+      }
+      elem.attr('x', elem.select('span').attr('x'));
+      self.x = elem.attr('x');
+      self.y = elem.attr('y');
+    });
+    let text_elem = map.append('text')
+      .attr('id', id_text_annot)
+      .attr('x', this.x)
+      .attr('y', this.y)
+      .styles({
+        'font-size': this.fontSize + 'px',
+        'text-anchor': 'start'
+      });
+    text_elem.append('tspan')
+      .attr('x', this.x)
+      .text('Enter your text...');
+    text_elem.on('mouseover', () => {
+      text_elem.style('background-color', 'green');
+    });
+    text_elem.on('mouseout', () => {
+      text_elem.style('background-color', 'transparent');
     });
 
-    inner_ft.on('dblclick', () => {
+    text_elem.call(drag_txt_annot);
+
+    text_elem.on('contextmenu', () => {
+      context_menu.showMenu(d3.event,
+                            document.querySelector('body'),
+                            getItems());
+    });
+
+    text_elem.on('dblclick', () => {
       d3.event.preventDefault();
       d3.event.stopPropagation();
       this.editStyle();
     });
 
-    inner_ft.on('mouseover', () => {
-      inner_ft.style('background-color', 'rgba(0, 128, 0, 0.1)');
-            // toogle the size of the container to 100% while we are using it :
-      foreign_obj.setAttributeNS(null, 'width', '100%');
-      foreign_obj.setAttributeNS(null, 'height', '100%');
-    });
-
-    inner_ft.on('mouseout', () => {
-      inner_ft.style('background-color', null);
-            // Recompute the size of the p inside the foreignObj
-      const inner_bbox = inner_p.getBoundingClientRect();
-      foreign_obj.setAttributeNS(null, 'width', [inner_bbox.width + 2, 'px'].join('')); // +2px are for the border
-      foreign_obj.setAttributeNS(null, 'height', [inner_bbox.height + 2, 'px'].join(''));
-    });
-
-    this.text_annot = frgn_obj;
-    this.font_family = 'Verdana,Geneva,sans-serif';
+    this.lineHeight = Math.round(this.fontSize * 1.4);
+    this.textAnnot = text_elem;
+    this.fontFamily = 'Verdana,Geneva,sans-serif';
+    this.anchor = "start";
     this.buffer = undefined;
-    this.id = new_id_txt_annot;
-    pos_lgds_elem.set(this.id, foreign_obj.getBoundingClientRect());
+    this.id = id_text_annot;
+    pos_lgds_elem.set(this.id, text_elem.node().getBoundingClientRect());
     return this;
   }
 
@@ -500,49 +467,75 @@ class Textbox {
     this.text_annot.remove();
   }
 
+  update_text(new_content) {
+    const split = new_content.split('\n');
+    this.textAnnot.selectAll('tspan').remove();
+    for (let i=0; i < split.length; i++) {
+      this.textAnnot.append('tspan')
+        .attr('x', this.x)
+        .attr('dy', i === 0 ? null : this.lineHeight)
+        .html(split[i]);
+    }
+  }
+
+  get_text_content() {
+    const content = [];
+    this.textAnnot.selectAll('tspan')
+      .each(function(){
+        content.push(this.innerHTML);
+      });
+    return content.join('\n');
+  }
+
   editStyle() {
     const map_xy0 = get_map_xy0();
-    let self = this,
-      inner_p = this.text_annot.select('p');
+    let self = this;
+    let text_elem = self.textAnnot;
 
     const existing_box = document.querySelector('.styleTextAnnotation');
     if (existing_box) existing_box.remove();
 
     const current_options = {
-      size: inner_p.style('font-size').split('px')[0],
-      color: inner_p.style('color'),
-      content: unescape(inner_p.html()),
-      transform_rotate: this.text_annot.attr('transform'),
-      x: this.text_annot.attr('x'),
-      y: this.text_annot.attr('y'),
-      font_weight: inner_p.style('font-weight'),
-      font_style: inner_p.style('font-style'),
-      text_decoration: inner_p.style('text-decoration'),
+      size: self.fontSize,
+      color: text_elem.style('fill'),
+      content: unescape(this.get_text_content()),
+      transform_rotate: text_elem.attr('transform'),
+      x: text_elem.attr('x'),
+      y: text_elem.attr('y'),
+      font_weight: text_elem.style('font-weight'),
+      font_style: text_elem.style('font-style'),
+      text_decoration: text_elem.style('text-decoration'),
       buffer: self.buffer != undefined ? cloneObj(self.buffer) : undefined,
-      text_shadow: inner_p.style('text-shadow'),
-      font_family: self.font_family,
+      text_shadow: text_elem.style('text-shadow'),
+      font_family: self.fontFamily,
     };
     current_options.font_weight = (current_options.font_weight == '400' || current_options.font_weight == '') ? '' : 'bold';
     make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.text_box_edit_box.title'), { widthFitContent: true })
-            .then((confirmed) => {
-              if (!confirmed) {
-                self.text_annot.select('p')
-                        .text(current_options.content)
-                        .styles({ color: current_options.color,
-                          'font-size': `${current_options.size}px`,
-                          'font-weight': current_options.font_weight,
-                          'text-decoration': current_options.text_decoration,
-                          'font-style': current_options.font_style,
-                          'text-shadow': current_options.text_shadow });
-                self.fontsize = current_options.size;
-                self.font_family = current_options.font_family;
-                self.text_annot.attr('transform', current_options.transform_rotate);
-                self.buffer = current_options.buffer;
-              } else if (!buffer_txt_chk.node().checked) {
-                self.buffer = undefined;
-              }
+      .then((confirmed) => {
+        if (!confirmed) {
+          text_elem
+            .text(current_options.content)
+            .styles({
+              color: current_options.color,
+              'font-size': `${current_options.size}px`,
+              'font-weight': current_options.font_weight,
+              'text-decoration': current_options.text_decoration,
+              'font-style': current_options.font_style,
+              'text-shadow': current_options.text_shadow
             });
-    const box_content = d3.select('.styleTextAnnotation').select('.modal-body').style('width', '295px').insert('div').attr('id', 'styleTextAnnotation');
+          self.fontSize = current_options.size;
+          self.fontFamily = current_options.font_family;
+          text_elem.attr('transform', current_options.transform_rotate);
+          self.buffer = current_options.buffer;
+        } else if (!buffer_txt_chk.node().checked) {
+          self.buffer = undefined;
+        }
+      });
+    const box_content = d3.select('.styleTextAnnotation')
+      .select('.modal-body')
+      .style('width', '295px')
+      .insert('div')
+      .attr('id', 'styleTextAnnotation');
 
     let current_rotate = typeof current_options.transform_rotate === 'string' ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
     if (current_rotate && current_rotate.length == 3) {
@@ -551,7 +544,7 @@ class Textbox {
       current_rotate = 0;
     }
 
-    let bbox = inner_p.node().getBoundingClientRect(),
+    let bbox = text_elem.node().getBoundingClientRect(),
       nx = bbox.left - map_xy0.x,
       ny = bbox.top - map_xy0.y,
       x_center = nx + bbox.width / 2,
@@ -561,57 +554,67 @@ class Textbox {
     option_rotation.append('span').html(i18next.t('app_page.text_box_edit_box.rotation'));
     option_rotation.append('span').style('float', 'right').html(' °');
     option_rotation.append('input')
-            .attrs({ type: 'number',
-              min: 0,
-              max: 360,
-              step: 'any',
-              value: current_rotate,
-              class: 'without_spinner',
-              id: 'textbox_txt_rotate' })
-            .styles({ width: '40px', float: 'right' })
-            .on('change', function () {
-              const rotate_value = +this.value;
-              self.text_annot
-                  .attrs({ x: nx, y: ny, transform: `rotate(${[rotate_value, x_center, y_center]})` });
-              document.getElementById('textbox_range_rotate').value = rotate_value;
-            });
+      .attrs({
+        type: 'number',
+        min: 0,
+        max: 360,
+        step: 'any',
+        value: current_rotate,
+        class: 'without_spinner',
+        id: 'textbox_txt_rotate' })
+      .styles({ width: '40px', float: 'right' })
+      .on('change', function () {
+        const rotate_value = +this.value;
+        text_elem.attrs({ x: nx, y: ny, transform: `rotate(${[rotate_value, x_center, y_center]})` });
+        text_elem.selectAll('tspan')
+          .attr('x', nx);
+        document.getElementById('textbox_range_rotate').value = rotate_value;
+      });
 
     option_rotation.append('input')
-            .attrs({ type: 'range', min: 0, max: 360, step: 0.1, id: 'textbox_range_rotate', value: current_rotate })
-            .styles({ 'vertical-align': 'middle', width: '100px', float: 'right', margin: 'auto 10px' })
-            .on('change', function () {
-              const rotate_value = +this.value;
-              self.text_annot
-                  .attrs({ x: nx, y: ny, transform: `rotate(${[rotate_value, x_center, y_center]})` });
-              document.getElementById('textbox_txt_rotate').value = rotate_value;
-            });
+      .attrs({ type: 'range', min: 0, max: 360, step: 0.1, id: 'textbox_range_rotate', value: current_rotate })
+      .styles({ 'vertical-align': 'middle', width: '100px', float: 'right', margin: 'auto 10px' })
+      .on('change', function () {
+        const rotate_value = +this.value;
+        text_elem
+          .attrs({ x: nx, y: ny, transform: `rotate(${[rotate_value, x_center, y_center]})` });
+        text_elem.selectAll('tspan')
+          .attr('x', nx);
+        document.getElementById('textbox_txt_rotate').value = rotate_value;
+      });
 
-    let options_font = box_content.append('p'),
-      font_select = options_font.insert('select')
-                  .on('change', function () {
-                    inner_p.style('font-family', this.value);
-                    self.font_family = this.value;
-                  });
+    let options_font = box_content.append('p');
+    let font_select = options_font.insert('select')
+      .on('change', function () {
+        text_elem.style('font-family', this.value);
+        self.fontFamily = this.value;
+      });
 
     available_fonts.forEach((font) => {
       font_select.append('option').text(font[0]).attr('value', font[1]);
     });
-    font_select.node().selectedIndex = available_fonts.map(d => d[1] == this.font_family ? '1' : '0').indexOf('1');
+    font_select.node().selectedIndex = available_fonts.map(d => d[1] == self.fontFamily ? '1' : '0').indexOf('1');
 
     options_font.append('input')
-            .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 0.1, value: this.fontsize })
-            .style('width', '60px')
-            .on('change', function () {
-              self.fontsize = +this.value;
-              inner_p.style('font-size', `${self.fontsize}px`);
-            });
+      .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 0.1, value: self.fontSize })
+      .styles({ width: '60px', margin: '0 15px' })
+      .on('change', function () {
+        self.fontSize = +this.value;
+        self.lineHeight = Math.round(self.fontSize * 1.4);
+        text_elem.style('font-size', `${self.fontSize}px`);
+        text_elem.selectAll('tspan').each(function(d, i){
+          if (i !== 0) {
+            d3.select(this).attr('dy', self.lineHeight);
+          }
+        });
+      });
 
     options_font.append('input')
-            .attrs({ type: 'color', id: 'font_color', value: rgb2hex(current_options.color) })
-            .style('width', '60px')
-            .on('change', function () {
-              inner_p.style('color', this.value);
-            });
+      .attrs({ type: 'color', id: 'font_color', value: rgb2hex(current_options.color) })
+      .style('width', '60px')
+      .on('change', function () {
+        text_elem.style('fill', this.value);
+      });
 
     let options_format = box_content.append('p').style('text-align', 'center'),
       btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
@@ -620,91 +623,129 @@ class Textbox {
 
     const content_modif_zone = box_content.append('p');
     content_modif_zone.append('span')
-                .html(i18next.t('app_page.text_box_edit_box.content'));
+      .html(i18next.t('app_page.text_box_edit_box.content'));
+    // let align_zone = box_content.append('p');
+    let right = content_modif_zone.append('span')
+      .attr('class', 'align-option')
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+      .html('right')
+      .on('click', () => {
+        content_modif_zone.selectAll('.align-option').style('font-weight', '');
+        right.style('font-weight', 'bold')
+          .style("font-size", '12px');
+        text_elem.style('text-anchor', 'end');
+      });
+    let center = content_modif_zone.append('span')
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+      .attr('class', 'align-option')
+      .html('center')
+      .on('click', () => {
+        content_modif_zone.selectAll('.align-option').style('font-weight', '');
+        center.style('font-weight', 'bold')
+          .style('font-size', '12px');
+        text_elem.style('text-anchor', 'middle');
+      });
+    let left = content_modif_zone.append('span')
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+      .attr('class', 'align-option')
+      .html('left')
+      .on('click', () => {
+        content_modif_zone.selectAll('.align-option')
+          .style('font-weight', '')
+          .style('font-size', '11px');
+        left.style('font-weight', 'bold')
+          .style('font-size', '12px');
+        text_elem.style('text-anchor', 'start');
+      });
+    let selected = self.anchor === 'start' ? left : self.anchor === 'middle' ? center : right;
+    selected.style('font-weight', 'bold')
+      .style('font-size', '12px');
+
     content_modif_zone.append('span')
-                .html('<br>');
+      .html('<br>');
         // let textarea = content_modif_zone.append("textarea")
     content_modif_zone.append('textarea')
-                .attr('id', 'annotation_content')
-                .styles({ margin: '5px 0px 0px', width: '100%' })
-                .on('keyup', function () {
-                  inner_p.html(this.value);
-                });
+      .attr('id', 'annotation_content')
+      .styles({ margin: '5px 0px 0px', width: '100%' })
+      .on('keyup', function () {
+        self.update_text(this.value);
+      });
         // textarea = textarea.node();
     document.getElementById('annotation_content').value = current_options.content;
 
     const buffer_text_zone = box_content.append('p');
     let buffer_txt_chk = buffer_text_zone.append('input')
-            .attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null })
-            .on('change', function () {
-              if (this.checked) {
-                buffer_color.style('display', '');
-                if (self.buffer == undefined) {
-                  self.buffer = { color: '#fff', size: 1 };
-                } else {
-                  let color = self.buffer.color,
-                    size = self.buffer.size;
-                  inner_p.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
-                }
-              } else {
-                buffer_color.style('display', 'none');
-                inner_p.style('text-shadow', 'none');
-              }
-            });
+      .attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null })
+      .on('change', function () {
+        if (this.checked) {
+          buffer_color.style('display', '');
+          if (self.buffer === undefined) {
+            self.buffer = { color: '#FFFFFF', size: 1 };
+          }
+          const color = self.buffer.color,
+            size = self.buffer.size;
+          text_elem.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
+        } else {
+          buffer_color.style('display', 'none');
+          text_elem.style('text-shadow', 'none');
+        }
+      });
 
     buffer_text_zone.append('label')
-            .attrs({ for: 'buffer_txt_chk' })
-            .text(i18next.t('app_page.text_box_edit_box.buffer'));
+      .attrs({ for: 'buffer_txt_chk' })
+      .text(i18next.t('app_page.text_box_edit_box.buffer'));
 
     let buffer_color = buffer_text_zone.append('input')
-            .style('float', 'right')
-            .style('display', current_options.buffer != undefined ? '' : 'none')
-            .attrs({ type: 'color', value: current_options.buffer != undefined ? current_options.buffer.color : '#fff' })
-            .on('change', function () {
-              self.buffer.color = this.value;
-              let color = self.buffer.color,
-                size = self.buffer.size;
-              inner_p.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
-            });
+      .style('float', 'right')
+      .style('display', current_options.buffer !== undefined ? '' : 'none')
+      .attrs({ type: 'color', value: current_options.buffer !== undefined ? current_options.buffer.color : '#FFFFFF' })
+      .on('change', function () {
+        self.buffer.color = this.value;
+        let color = self.buffer.color,
+          size = self.buffer.size;
+        text_elem.style('text-shadow', `-${size}px 0px 0px ${color}, 0px ${size}px 0px ${color}, ${size}px 0px 0px ${color}, 0px -${size}px 0px ${color}`);
+      });
 
     btn_bold.on('click', function () {
       if (this.classList.contains('active')) {
         this.classList.remove('active');
-        inner_p.style('font-weight', '');
+        text_elem.style('font-weight', '');
       } else {
         this.classList.add('active');
-        inner_p.style('font-weight', 'bold');
+        text_elem.style('font-weight', 'bold');
       }
     });
 
     btn_italic.on('click', function () {
       if (this.classList.contains('active')) {
         this.classList.remove('active');
-        inner_p.style('font-style', '');
+        text_elem.style('font-style', '');
       } else {
         this.classList.add('active');
-        inner_p.style('font-style', 'italic');
+        text_elem.style('font-style', 'italic');
       }
     });
+
     btn_underline.on('click', function () {
       if (this.classList.contains('active')) {
         this.classList.remove('active');
-        inner_p.style('text-decoration', '');
+        text_elem.style('text-decoration', '');
       } else {
         this.classList.add('active');
-        inner_p.style('text-decoration', 'underline');
+        text_elem.style('text-decoration', 'underline');
       }
     });
   }
 
   up_element() {
-    up_legend(this.text_annot.node());
+    up_legend(this.textAnnot.node());
   }
 
   down_element() {
-    down_legend(this.text_annot.node());
+    down_legend(this.textAnnot.node());
   }
 }
+
 
 /**
 * Handler for the scale bar (only designed for one scale bar)
