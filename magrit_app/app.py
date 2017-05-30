@@ -1149,6 +1149,7 @@ async def init(loop, port=None, watch_change=False):
     app['redis_conn'] = redis_conn
     app['app_users'] = set()
     app['logger'] = logger
+    app['version'] = get_version()
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
     app['ThreadPool'] = ThreadPoolExecutor(4)
@@ -1176,9 +1177,7 @@ def _init(loop):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
-    app = init(loop)
-    app['version'] = get_version()
-    return app
+    return init(loop)
 
 
 def get_version():
@@ -1199,7 +1198,6 @@ def create_app(app_name="Magrit"):
     loop = asyncio.get_event_loop()
     app = loop.run_until_complete(init(loop, None))
     app['app_name'] = app_name
-    app['version'] = get_version()
     return app
 
 def main():
@@ -1228,7 +1226,6 @@ def main():
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(init(loop, port, watch_change))
     app['app_name'] = arguments["--name-app"]
-    app['version'] = version
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
     try:
         loop.run_forever()
