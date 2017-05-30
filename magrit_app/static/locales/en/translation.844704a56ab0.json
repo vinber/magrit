@@ -5,7 +5,7 @@
             "long_computation": "(might require few seconds/minutes)",
             "save_preferences": "Save your preferences",
             "load_preferences": "Load a preference JSON",
-            "too_large_input": "Too large input file (maximum 24Mb)",
+            "too_large_input": "Too large input file (should currently be under 16Mb)",
             "alert_upload1": "Layers have to be uploaded one by one and all mandatory files (.shp, .dbf, .shx, .prj) have to be provided for reading a Shapefile",
             "alert_upload_shp": "All mandatory files (.shp, .dbf, .shx, .prj) have to be provided for shapefile upload",
             "alert_upload_invalid": "Invalid datasource (No GeoJSON/TopoJSON/zip/Shapefile/KML/GML detected)",
