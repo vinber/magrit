@@ -32,13 +32,19 @@ if __name__ == '__main__':
     os.chdir('../magrit_app')
     old_version = get_version()
     current_version = list(map(int, old_version.split('.')))
+    if len(sys.argv) < 2 or sys.argv[1] not in ('patch', 'minor', 'major'):
+        sys.exit(-1)
+
     if 'patch' in sys.argv[1]:
         current_version[2] += 1
     elif 'minor' in sys.argv[1]:
+        current_version[2] = 0
         current_version[1] += 1
     elif 'major' in sys.argv[1]:
+        current_version[2] = 0
+        current_version[1] = 0
         current_version[0] += 1
     current_version_txt = '.'.join(map(str, current_version))
     save_version(current_version_txt)
     replace_version_docker_file(old_version, current_version_txt)
-    print(old_version, current_version_txt)
+    print(old_version, ' -> ', current_version_txt)

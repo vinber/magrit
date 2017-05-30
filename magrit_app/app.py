@@ -1176,13 +1176,17 @@ def _init(loop):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
-    return init(loop)
+    app = init(loop)
+    app['version'] = get_version()
+    return app
+
 
 def get_version():
     with open('__init__.py', 'r') as f:
         ver = f.read()
     ix = ver.find("'")
     return ver[ix+1:ix + ver[ix+1:].find("'")+1]
+
 
 def create_app(app_name="Magrit"):
     # Entry point when using Gunicorn to run the application with something like :
