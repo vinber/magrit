@@ -1,4 +1,11 @@
-
+const max = Math.max;
+const min = Math.min;
+const abs = Math.abs;
+const sin = Math.sin;
+const cos = Math.cos;
+const PI = Math.PI;
+const atan2 = Math.atan2;
+const sqrt = Math.sqrt;
 
 class UserArrow {
   constructor(id, origin_pt, destination_pt, parent = undefined, untransformed = false) {
@@ -18,75 +25,75 @@ class UserArrow {
     }
     const self = this;
     this.drag_behavior = d3.drag()
-             .subject(function () {
-                    // let snap_lines = get_coords_snap_lines(this.id + this.className);
-               const t = d3.select(this.querySelector('line'));
-               return { x: +t.attr('x2') - +t.attr('x1'),
-                 y: +t.attr('y2') - +t.attr('y1'),
-                 x1: t.attr('x1'),
-                 x2: t.attr('x2'),
-                 y1: t.attr('y1'),
-                 y2: t.attr('y2'),
-                 map_locked: !!map_div.select('#hand_button').classed('locked'),
-                            //  , snap_lines: snap_lines
-               };
-             })
-            .on('start', () => {
-              d3.event.sourceEvent.stopPropagation();
-              handle_click_hand('lock');
-            })
-            .on('end', () => {
-              if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }  // zoom.on("zoom", zoom_without_redraw);
-                // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
-            })
-            .on('drag', function () {
-              d3.event.sourceEvent.preventDefault();
-              let _t = this.querySelector('line'),
-                arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
-                subject = d3.event.subject,
-                tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
-                ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
-              self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
-              self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
-                // if(_app.autoalign_features){
-                //     let snap_lines_x = subject.snap_lines.x,
-                //         snap_lines_y = subject.snap_lines.y;
-                //     for(let i = 0; i < subject.snap_lines.x.length; i++){
-                //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
-                //         }
-                //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           if(self.pt2[0] < self.pt1[0])
-                //               arrow_head_size = -arrow_head_size;
-                //           self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
-                //         }
-                //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                //           let l = map.append('line')
-                //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
-                //         }
-                //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
-                //           let l = map.append('line')
-                //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
-                //           setTimeout(function(){ l.remove(); }, 1000);
-                //           if(self.pt2[1] < self.pt1[1])
-                //               arrow_head_size = -arrow_head_size;
-                //           self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
-                //         }
-                //     }
-                // }
-              _t.x1.baseVal.value = self.pt1[0];
-              _t.x2.baseVal.value = self.pt2[0];
-              _t.y1.baseVal.value = self.pt1[1];
-              _t.y2.baseVal.value = self.pt2[1];
-            });
+       .subject(function () {
+              // let snap_lines = get_coords_snap_lines(this.id + this.className);
+         const t = d3.select(this.querySelector('line'));
+         return { x: +t.attr('x2') - +t.attr('x1'),
+           y: +t.attr('y2') - +t.attr('y1'),
+           x1: t.attr('x1'),
+           x2: t.attr('x2'),
+           y1: t.attr('y1'),
+           y2: t.attr('y2'),
+           map_locked: !!map_div.select('#hand_button').classed('locked'),
+                      //  , snap_lines: snap_lines
+         };
+       })
+      .on('start', () => {
+        d3.event.sourceEvent.stopPropagation();
+        handle_click_hand('lock');
+      })
+      .on('end', () => {
+        if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }  // zoom.on("zoom", zoom_without_redraw);
+          // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+      })
+      .on('drag', function () {
+        d3.event.sourceEvent.preventDefault();
+        let _t = this.querySelector('line'),
+          arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
+          subject = d3.event.subject,
+          tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
+          ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
+        self.pt1 = [+subject.x1 + tx, +subject.y1 + ty];
+        self.pt2 = [+subject.x2 + tx, +subject.y2 + ty];
+          // if(_app.autoalign_features){
+          //     let snap_lines_x = subject.snap_lines.x,
+          //         snap_lines_y = subject.snap_lines.y;
+          //     for(let i = 0; i < subject.snap_lines.x.length; i++){
+          //         if(Math.abs(snap_lines_x[i] - (self.pt1[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+          //           let l = map.append('line')
+          //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+          //           setTimeout(function(){ l.remove(); }, 1000);
+          //           self.pt1[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k;
+          //         }
+          //         if(Math.abs(snap_lines_x[i] - (self.pt2[0] + svg_map.__zoom.x / svg_map.__zoom.k)) < 10){
+          //           let l = map.append('line')
+          //               .attrs({x1: snap_lines_x[i], x2: snap_lines_x[i], y1: 0, y2: h}).style('stroke', 'red');
+          //           setTimeout(function(){ l.remove(); }, 1000);
+          //           if(self.pt2[0] < self.pt1[0])
+          //               arrow_head_size = -arrow_head_size;
+          //           self.pt2[0] = snap_lines_x[i] - svg_map.__zoom.x / svg_map.__zoom.k + arrow_head_size;
+          //         }
+          //         if(Math.abs(snap_lines_y[i] - (self.pt1[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+          //           let l = map.append('line')
+          //               .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+          //           setTimeout(function(){ l.remove(); }, 1000);
+          //           self.pt1[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k;
+          //         }
+          //         if(Math.abs(snap_lines_y[i] - (self.pt2[1] + svg_map.__zoom.y / svg_map.__zoom.k)) < 10){
+          //           let l = map.append('line')
+          //                 .attrs({x1: 0, x2: w, y1: snap_lines_y[i], y2: snap_lines_y[i]}).style('stroke', 'red');
+          //           setTimeout(function(){ l.remove(); }, 1000);
+          //           if(self.pt2[1] < self.pt1[1])
+          //               arrow_head_size = -arrow_head_size;
+          //           self.pt2[1] = snap_lines_y[i] - svg_map.__zoom.y / svg_map.__zoom.k + arrow_head_size;
+          //         }
+          //     }
+          // }
+        _t.x1.baseVal.value = self.pt1[0];
+        _t.x2.baseVal.value = self.pt2[0];
+        _t.y1.baseVal.value = self.pt1[1];
+        _t.y2.baseVal.value = self.pt2[1];
+      });
 
     let defs = parent.querySelector('defs'),
       markers = defs ? defs.querySelector('marker') : null;
@@ -248,13 +255,13 @@ class UserArrow {
   calcAngle() {
     let dx = this.pt2[0] - this.pt1[0],
       dy = this.pt2[1] - this.pt1[1];
-    return Math.atan2(dy, dx) * (180 / Math.PI);
+    return atan2(dy, dx) * (180 / PI);
   }
 
   calcDestFromOAD(origin, angle, distance) {
-    let theta = angle / (180 / Math.PI),
-      dx = distance * Math.cos(theta),
-      dy = distance * Math.sin(theta);
+    let theta = angle / (180 / PI),
+      dx = distance * cos(theta),
+      dy = distance * sin(theta);
     return [origin[0] + dx, origin[1] + dy];
   }
 
@@ -272,28 +279,28 @@ class UserArrow {
     if (existing_box) existing_box.remove();
 
     make_confirm_dialog2('styleBoxArrow', i18next.t('app_page.arrow_edit_box.title'), { widthFitContent: true })
-            .then((confirmed) => {
-              if (confirmed) {
-                    // Store shorcut of useful values :
-                self.stroke_width = line.style.strokeWidth;
-                self.color = line.style.stroke;
-                self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
-                self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
-              } else {
-                    // Rollback on initials parameters :
-                line.x1.baseVal.value = current_options.pt1[0];
-                line.y1.baseVal.value = current_options.pt1[1];
-                line.x2.baseVal.value = current_options.pt2[0];
-                line.y2.baseVal.value = current_options.pt2[1];
-                self.pt1 = current_options.pt1.slice();
-                self.pt2 = current_options.pt2.slice();
-                line.style.strokeWidth = self.stroke_width;
-                line.style.stroke = self.color;
-              }
-              map.select('#arrow_start_pt').remove();
-              map.select('#arrow_end_pt').remove();
-              if (!map_locked) handle_click_hand('unlock');
-            });
+      .then((confirmed) => {
+        if (confirmed) {
+              // Store shorcut of useful values :
+          self.stroke_width = line.style.strokeWidth;
+          self.color = line.style.stroke;
+          self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
+          self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
+        } else {
+              // Rollback on initials parameters :
+          line.x1.baseVal.value = current_options.pt1[0];
+          line.y1.baseVal.value = current_options.pt1[1];
+          line.x2.baseVal.value = current_options.pt2[0];
+          line.y2.baseVal.value = current_options.pt2[1];
+          self.pt1 = current_options.pt1.slice();
+          self.pt2 = current_options.pt2.slice();
+          line.style.strokeWidth = self.stroke_width;
+          line.style.stroke = self.color;
+        }
+        map.select('#arrow_start_pt').remove();
+        map.select('#arrow_end_pt').remove();
+        if (!map_locked) handle_click_hand('unlock');
+      });
 
     const box_content = d3.select('.styleBoxArrow').select('.modal-body').style('width', '295px').insert('div').attr('id', 'styleBoxArrow');
     const s1 = box_content.append('p').attr('class', 'line_elem2');
@@ -320,24 +327,24 @@ class UserArrow {
     s2.append('span').html(i18next.t('app_page.arrow_edit_box.arrowAngle'));
     s2.insert('span').styles({ float: 'right', width: '13px' }).html('&nbsp;°');
     s2.insert('input')
-            .attrs({ id: 'arrow_angle_text', class: 'without_spinner', value: angle, min: 0, max: 1, step: 1 })
-            .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
-            .on('input', function () {
-              const elem = document.getElementById('arrow_angle');
-              elem.value = this.value;
-              elem.dispatchEvent(new Event('change'));
-            });
+      .attrs({ id: 'arrow_angle_text', class: 'without_spinner', value: angle, min: 0, max: 1, step: 1 })
+      .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+      .on('input', function () {
+        const elem = document.getElementById('arrow_angle');
+        elem.value = this.value;
+        elem.dispatchEvent(new Event('change'));
+      });
     s2.insert('input')
-            .attrs({ id: 'arrow_angle', type: 'range', value: angle, min: 0, max: 360, step: 1 })
-            .styles({ width: '80px', 'vertical-align': 'middle', float: 'right' })
-            .on('change', function () {
-              const distance = Math.sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
-              const angle = -(+this.value);
-              const [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
-              line.x2.baseVal.value = nx;
-              line.y2.baseVal.value = ny;
-              document.getElementById('arrow_angle_text').value = +this.value;
-            });
+      .attrs({ id: 'arrow_angle', type: 'range', value: angle, min: 0, max: 360, step: 1 })
+      .styles({ width: '80px', 'vertical-align': 'middle', float: 'right' })
+      .on('change', function () {
+        const distance = sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
+        const angle = -(+this.value);
+        const [nx, ny] = self.calcDestFromOAD(self.pt1, angle, distance);
+        line.x2.baseVal.value = nx;
+        line.y2.baseVal.value = ny;
+        document.getElementById('arrow_angle_text').value = +this.value;
+      });
   }
 }
 
@@ -347,79 +354,89 @@ class Textbox {
     this.x = position[0];
     this.y = position[1];
     this.fontSize = 14;
-    let context_menu = new ContextMenu();
-    let getItems = () => [
+    const context_menu = new ContextMenu();
+    const getItems = () => [
       { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
       { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
       { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
       { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
     ];
-    const drag_txt_annot = d3.drag().subject(function () {
-       const t = d3.select(this);
-       const snap_lines = get_coords_snap_lines(this.id);
-       return {
-         x: t.attr('x'),
-         y: t.attr('y'),
-         map_locked: !!map_div.select('#hand_button').classed('locked'),
-         snap_lines,
-       };
-     })
-    .on('start', () => {
-      d3.event.sourceEvent.stopPropagation();
-      handle_click_hand('lock');
-    })
-    .on('end', function () {
-      if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
-      pos_lgds_elem.set(this.id, this.getBoundingClientRect());
-    })
-    .on('drag', function () {
-      d3.event.sourceEvent.preventDefault();
-      let elem = d3.select(this).attrs({ x: +d3.event.x, y: +d3.event.y });
-      elem.selectAll('tspan').attr('x', +d3.event.x);
+    const drag_txt_annot = d3.drag()
+      .subject(function() {
+        const t = d3.select(this);
+        const snap_lines = get_coords_snap_lines(this.id);
+        return {
+          x: t.attr('x'),
+          y: t.attr('y'),
+          map_locked: !!map_div.select('#hand_button').classed('locked'),
+          snap_lines,
+        };
+      })
+      .on('start', () => {
+        d3.event.sourceEvent.stopPropagation();
+        handle_click_hand('lock');
+      })
+      .on('end', function() {
+        if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
+        pos_lgds_elem.set(this.id, this.getBoundingClientRect());
+      })
+      .on('drag', function() {
+        d3.event.sourceEvent.preventDefault();
+        let elem = d3.select(this).attrs({ x: +d3.event.x, y: +d3.event.y });
+        let transform = elem.attr('transform');
+        if (transform) {
+          let v = +transform.match(/[-.0-9]+/g)[0];
+          elem.attr('transform', `rotate(${v}, ${d3.event.x + self.width}, ${d3.event.y + self.height})`);
+        }
+        elem.selectAll('tspan').attr('x', +d3.event.x);
 
-      if (_app.autoalign_features) {
-        let bbox = this.getBoundingClientRect(),
-          xmin = this.x.baseVal.value,
-          xmax = xmin + bbox.width,
-          ymin = this.y.baseVal.value,
-          ymax = ymin + bbox.height,
-          snap_lines_x = d3.event.subject.snap_lines.x,
-          snap_lines_y = d3.event.subject.snap_lines.y;
-        for (let i = 0; i < snap_lines_x.length; i++) {
-          if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
-            const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-            const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-            Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
-              el.x.baseVal.value = snap_lines_x[i][0];
-            });
-          }
-          if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
-            const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-            const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-            Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
-              el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
-            });
-          }
-          if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
-            const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-            const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-            this.y.baseVal.value = snap_lines_y[i][0];
-          }
-          if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-            const x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-            const x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-            this.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+        if (_app.autoalign_features) {
+          let bbox = this.getBoundingClientRect(),
+            xmin = this.x.baseVal.value,
+            xmax = xmin + bbox.width,
+            ymin = this.y.baseVal.value,
+            ymax = ymin + bbox.height,
+            snap_lines_x = d3.event.subject.snap_lines.x,
+            snap_lines_y = d3.event.subject.snap_lines.y;
+          for (let i = 0; i < snap_lines_x.length; i++) {
+            if (abs(snap_lines_x[i][0] - xmin) < 10) {
+              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+              make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+              Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+                el.x.baseVal.value = snap_lines_x[i][0];
+              });
+            }
+            if (abs(snap_lines_x[i][0] - xmax) < 10) {
+              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+              make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+              Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+                el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
+              });
+            }
+            if (abs(snap_lines_y[i][0] - ymin) < 10) {
+              const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+              make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+              this.y.baseVal.value = snap_lines_y[i][0];
+            }
+            if (abs(snap_lines_y[i][0] - ymax) < 10) {
+              const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+              make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+              this.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+            }
           }
         }
-      }
-      elem.attr('x', elem.select('span').attr('x'));
-      self.x = elem.attr('x');
-      self.y = elem.attr('y');
-    });
+        elem.attr('x', elem.select('tspan').attr('x'));
+        self.x = elem.attr('x');
+        self.y = elem.attr('y');
+        if (transform) {
+          let v = +transform.match(/[-.0-9]+/g)[0];
+          elem.attr('transform', `rotate(${v}, ${self.x}, ${self.y})`);
+        }
+      });
     let text_elem = map.append('text')
       .attr('id', id_text_annot)
       .attr('x', this.x)
@@ -451,20 +468,22 @@ class Textbox {
       d3.event.stopPropagation();
       this.editStyle();
     });
-
     this.lineHeight = Math.round(this.fontSize * 1.4);
     this.textAnnot = text_elem;
     this.fontFamily = 'Verdana,Geneva,sans-serif';
     this.anchor = "start";
     this.buffer = undefined;
     this.id = id_text_annot;
+
+    this.update_bbox()
     pos_lgds_elem.set(this.id, text_elem.node().getBoundingClientRect());
+
     return this;
   }
 
   remove() {
-    pos_lgds_elem.delete(this.text_annot.attr('id'));
-    this.text_annot.remove();
+    pos_lgds_elem.delete(this.textAnnot.attr('id'));
+    this.textAnnot.remove();
   }
 
   update_text(new_content) {
@@ -476,6 +495,7 @@ class Textbox {
         .attr('dy', i === 0 ? null : this.lineHeight)
         .html(split[i]);
     }
+    this.update_bbox();
   }
 
   get_text_content() {
@@ -487,11 +507,16 @@ class Textbox {
     return content.join('\n');
   }
 
+  update_bbox() {
+    let bbox = this.textAnnot.node().getBoundingClientRect();
+    this.width = bbox.width;
+    this.height = bbox.height;
+  }
+
   editStyle() {
     const map_xy0 = get_map_xy0();
-    let self = this;
-    let text_elem = self.textAnnot;
-
+    const self = this;
+    const text_elem = self.textAnnot;
     const existing_box = document.querySelector('.styleTextAnnotation');
     if (existing_box) existing_box.remove();
 
@@ -505,11 +530,11 @@ class Textbox {
       font_weight: text_elem.style('font-weight'),
       font_style: text_elem.style('font-style'),
       text_decoration: text_elem.style('text-decoration'),
-      buffer: self.buffer != undefined ? cloneObj(self.buffer) : undefined,
+      buffer: self.buffer !== undefined ? cloneObj(self.buffer) : undefined,
       text_shadow: text_elem.style('text-shadow'),
       font_family: self.fontFamily,
     };
-    current_options.font_weight = (current_options.font_weight == '400' || current_options.font_weight == '') ? '' : 'bold';
+    current_options.font_weight = (current_options.font_weight === '400' || current_options.font_weight === '') ? '' : 'bold';
     make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.text_box_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (!confirmed) {
@@ -538,7 +563,7 @@ class Textbox {
       .attr('id', 'styleTextAnnotation');
 
     let current_rotate = typeof current_options.transform_rotate === 'string' ? current_options.transform_rotate.match(/[-.0-9]+/g) : 0;
-    if (current_rotate && current_rotate.length == 3) {
+    if (current_rotate && current_rotate.length === 3) {
       current_rotate = +current_rotate[0];
     } else {
       current_rotate = 0;
@@ -593,7 +618,7 @@ class Textbox {
     available_fonts.forEach((font) => {
       font_select.append('option').text(font[0]).attr('value', font[1]);
     });
-    font_select.node().selectedIndex = available_fonts.map(d => d[1] == self.fontFamily ? '1' : '0').indexOf('1');
+    font_select.node().selectedIndex = available_fonts.map(d => d[1] === self.fontFamily ? '1' : '0').indexOf('1');
 
     options_font.append('input')
       .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 0.1, value: self.fontSize })
@@ -616,7 +641,7 @@ class Textbox {
         text_elem.style('fill', this.value);
       });
 
-    let options_format = box_content.append('p').style('text-align', 'center'),
+    const options_format = box_content.append('p').style('text-align', 'center'),
       btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
       btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
       btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
@@ -624,8 +649,7 @@ class Textbox {
     const content_modif_zone = box_content.append('p');
     content_modif_zone.append('span')
       .html(i18next.t('app_page.text_box_edit_box.content'));
-    // let align_zone = box_content.append('p');
-    let right = content_modif_zone.append('span')
+    const right = content_modif_zone.append('span')
       .attr('class', 'align-option')
       .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
       .html('right')
@@ -663,19 +687,17 @@ class Textbox {
 
     content_modif_zone.append('span')
       .html('<br>');
-        // let textarea = content_modif_zone.append("textarea")
     content_modif_zone.append('textarea')
       .attr('id', 'annotation_content')
       .styles({ margin: '5px 0px 0px', width: '100%' })
       .on('keyup', function () {
         self.update_text(this.value);
       });
-        // textarea = textarea.node();
     document.getElementById('annotation_content').value = current_options.content;
 
     const buffer_text_zone = box_content.append('p');
     let buffer_txt_chk = buffer_text_zone.append('input')
-      .attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer != undefined ? true : null })
+      .attrs({ type: 'checkbox', id: 'buffer_txt_chk', checked: current_options.buffer !== undefined ? true : null })
       .on('change', function () {
         if (this.checked) {
           buffer_color.style('display', '');
@@ -759,8 +781,7 @@ const scaleBar = {
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
-      }).then(() => { null; },
-                          () => { null; });
+      }).then(() => { null; }, () => { null; });
       return;
     }
     let scale_gp = map.append('g').attr('id', 'scale_bar').attr('class', 'legend scale'),
@@ -1052,27 +1073,27 @@ const northArrow = {
                   snap_lines_x = d3.event.subject.snap_lines.x,
                   snap_lines_y = d3.event.subject.snap_lines.y;
                 for (let i = 0; i < snap_lines_x.length; i++) {
-                  if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
-                    const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                  if (abs(snap_lines_x[i][0] - xmin) < 10) {
+                    const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
                     make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                     tx = snap_lines_x[i][0] + 7.5;
                   }
-                  if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
-                    const _y1 = Math.min(Math.min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-                    const _y2 = Math.max(Math.max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+                  if (abs(snap_lines_x[i][0] - xmax) < 10) {
+                    const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+                    const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
                     make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
                     tx = snap_lines_x[i][0] - bbox.width + 7.5;
                   }
-                  if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
-                    const _x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    const _x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                  if (abs(snap_lines_y[i][0] - ymin) < 10) {
+                    const _x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    const _x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
                     make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
                     ty = snap_lines_y[i][0] + 7.5;
                   }
-                  if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
-                    const _x1 = Math.min(Math.min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-                    const _x2 = Math.max(Math.max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+                  if (abs(snap_lines_y[i][0] - ymax) < 10) {
+                    const _x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+                    const _x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
                     make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
                     ty = snap_lines_y[i][0] - bbox.height + 7.5;
                   }
@@ -1087,10 +1108,10 @@ const northArrow = {
             });
 
     const getItems = () => [
-            { name: i18next.t('app_page.common.options'), action: () => { this.editStyle(); } },
-            { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-            { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-            { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+      { name: i18next.t('app_page.common.options'), action: () => { this.editStyle(); } },
+      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
     ];
 
     const arrow_context_menu = new ContextMenu();
@@ -1099,9 +1120,9 @@ const northArrow = {
       xy0_map = get_map_xy0();
 
     this.under_rect = arrow_gp.append('g')
-            .insert('rect')
-            .styles({ fill: 'green', 'fill-opacity': 0 })
-            .attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
+      .insert('rect')
+      .styles({ fill: 'green', 'fill-opacity': 0 })
+      .attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
 
     this.x_center = bbox.left - xy0_map.x + bbox.width / 2;
     this.y_center = bbox.top - xy0_map.y + bbox.height / 2;
@@ -1109,17 +1130,17 @@ const northArrow = {
     arrow_gp.call(this.drag_behavior);
 
     arrow_gp
-            .on('mouseover', () => {
-              self.under_rect.style('fill-opacity', 0.1);
-            })
-            .on('mouseout', () => {
-              self.under_rect.style('fill-opacity', 0);
-            })
-            .on('contextmenu dblclick', (d, i) => {
-              d3.event.preventDefault();
-              return arrow_context_menu
-                   .showMenu(d3.event, document.querySelector('body'), getItems());
-            });
+      .on('mouseover', () => {
+        self.under_rect.style('fill-opacity', 0.1);
+      })
+      .on('mouseout', () => {
+        self.under_rect.style('fill-opacity', 0);
+      })
+      .on('contextmenu dblclick', () => {
+        d3.event.preventDefault();
+        return arrow_context_menu
+          .showMenu(d3.event, document.querySelector('body'), getItems());
+      });
   },
   up_element() {
     up_legend(this.svg_node.node());
@@ -1608,13 +1629,13 @@ class UserEllipse {
     let ellipse_elem = this.ellipse.node().querySelector('ellipse'),
       dx = ellipse_elem.rx.baseVal.value - this.pt1[0],
       dy = ellipse_elem.ry.baseVal.value - this.pt1[1];
-    return Math.atan2(dy, dx) * (180 / Math.PI);
+    return atan2(dy, dx) * (180 / PI);
   }
 
   calcDestFromOAD(origin, angle, distance) {
-    let theta = angle / (180 / Math.PI),
-      dx = distance * Math.cos(theta),
-      dy = distance * Math.sin(theta);
+    let theta = angle / (180 / PI),
+      dx = distance * cos(theta),
+      dy = distance * sin(theta);
     return [origin[0] + dx, origin[1] + dy];
   }
 
