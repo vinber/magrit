@@ -364,7 +364,7 @@ class Textbox {
     ];
     const drag_txt_annot = d3.drag()
       .subject(function() {
-        const t = d3.select(this);
+        const t = d3.select(this).select('text');
         const snap_lines = get_coords_snap_lines(this.id);
         return {
           x: t.attr('x'),
@@ -383,7 +383,7 @@ class Textbox {
       })
       .on('drag', function() {
         d3.event.sourceEvent.preventDefault();
-        let elem = d3.select(this).attrs({ x: +d3.event.x, y: +d3.event.y });
+        let elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
         let transform = elem.attr('transform');
         if (transform) {
           let v = +transform.match(/[-.0-9]+/g)[0];
@@ -437,52 +437,55 @@ class Textbox {
           let v = +transform.match(/[-.0-9]+/g)[0];
           elem.attr('transform', `rotate(${v}, ${self.x}, ${self.y})`);
         }
+        self.update_bbox();
       });
-    let text_elem = map.append('text')
-      .attrs({ id: id_text_annot, x: this.x, y: this.y })
+    let group_elem = map.append('g')
+      .attrs({ id: id_text_annot, class: 'legend txt_annot'})
+      .styles({ cursor: 'pointer' })
+      .on('mouseover', () => {
+        under_rect.style('fill-opacity', 0.1);
+      })
+      .on('mouseout', () => {
+        under_rect.style('fill-opacity', 0);
+      });
+    let under_rect = group_elem.append('rect')
+      .styles({ fill: 'green', 'fill-opacity': 0 });
+    let text_elem = group_elem.append('text')
+      .attrs({ x: this.x, y: this.y })
       .styles({
         'font-size': this.fontSize + 'px',
-        'text-anchor': 'start'
+        'text-anchor': 'start',
       });
     text_elem.append('tspan')
       .attr('x', this.x)
-      .text('Enter your text...');
-    text_elem.on('mouseover', () => {
-      text_elem.style('background-color', 'green');
-    });
-    text_elem.on('mouseout', () => {
-      text_elem.style('background-color', 'transparent');
-    });
-
-    text_elem.call(drag_txt_annot);
-
-    text_elem.on('contextmenu', () => {
+      .text(i18next.t('app_page.text_box_edit_box.constructor_default'));
+    group_elem.call(drag_txt_annot);
+    group_elem.on('dblclick', () => {
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+      this.editStyle();
+    })
+    .on('contextmenu', () => {
       context_menu.showMenu(d3.event,
                             document.querySelector('body'),
                             getItems());
     });
 
-    text_elem.on('dblclick', () => {
-      d3.event.preventDefault();
-      d3.event.stopPropagation();
-      this.editStyle();
-    });
     this.lineHeight = Math.round(this.fontSize * 1.4);
     this.textAnnot = text_elem;
+    this.group = group_elem;
     this.fontFamily = 'Verdana,Geneva,sans-serif';
     this.anchor = "start";
     this.buffer = undefined;
     this.id = id_text_annot;
 
     this.update_bbox()
-    pos_lgds_elem.set(this.id, text_elem.node().getBoundingClientRect());
-
-    return this;
+    pos_lgds_elem.set(this.id, group_elem.node().getBoundingClientRect());
   }
 
   remove() {
-    pos_lgds_elem.delete(this.textAnnot.attr('id'));
-    this.textAnnot.remove();
+    pos_lgds_elem.delete(this.group.attr('id'));
+    this.group.remove();
   }
 
   update_text(new_content) {
@@ -510,6 +513,8 @@ class Textbox {
     let bbox = this.textAnnot.node().getBoundingClientRect();
     this.width = bbox.width;
     this.height = bbox.height;
+    this.group.select('rect')
+      .attrs({ x: bbox.left - 10, y: bbox.top - 10, height: this.height + 20, width: this.width + 20 });
   }
 
   editStyle() {
@@ -667,6 +672,7 @@ class Textbox {
           .style("font-size", '12px');
         text_elem.style('text-anchor', 'end');
         self.anchor = 'end';
+        self.update_bbox();
       });
     let center = content_modif_zone.append('span')
       .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
@@ -678,6 +684,7 @@ class Textbox {
           .style('font-size', '12px');
         text_elem.style('text-anchor', 'middle');
         self.anchor = 'middle';
+        self.update_bbox();
       });
     let left = content_modif_zone.append('span')
       .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
@@ -691,6 +698,7 @@ class Textbox {
           .style('font-size', '12px');
         text_elem.style('text-anchor', 'start');
         self.anchor = 'start';
+        self.update_bbox();
       });
     let selected = self.anchor === 'start' ? left : self.anchor === 'middle' ? center : right;
     selected.style('font-weight', 'bold')
@@ -775,11 +783,11 @@ class Textbox {
   }
 
   up_element() {
-    up_legend(this.textAnnot.node());
+    up_legend(this.group.node());
   }
 
   down_element() {
-    down_legend(this.textAnnot.node());
+    down_legend(this.group.node());
   }
 }
 

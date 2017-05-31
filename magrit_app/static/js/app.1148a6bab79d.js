@@ -1110,7 +1110,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.a640aaa145cd.json'
+            loadPath: 'static/locales/{{lng}}/translation.1148a6bab79d.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -12598,7 +12598,7 @@ var Textbox = function () {
         } }];
     };
     var drag_txt_annot = d3.drag().subject(function () {
-      var t = d3.select(this);
+      var t = d3.select(this).select('text');
       var snap_lines = get_coords_snap_lines(this.id);
       return {
         x: t.attr('x'),
@@ -12618,7 +12618,7 @@ var Textbox = function () {
       var _this3 = this;
 
       d3.event.sourceEvent.preventDefault();
-      var elem = d3.select(this).attrs({ x: +d3.event.x, y: +d3.event.y });
+      var elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
       var transform = elem.attr('transform');
       if (transform) {
         var v = +transform.match(/[-.0-9]+/g)[0];
@@ -12679,48 +12679,45 @@ var Textbox = function () {
         var _v = +transform.match(/[-.0-9]+/g)[0];
         elem.attr('transform', 'rotate(' + _v + ', ' + self.x + ', ' + self.y + ')');
       }
+      self.update_bbox();
     });
-    var text_elem = map.append('text').attrs({ id: id_text_annot, x: this.x, y: this.y }).styles({
+    var group_elem = map.append('g').attrs({ id: id_text_annot, class: 'legend txt_annot' }).styles({ cursor: 'pointer' }).on('mouseover', function () {
+      under_rect.style('fill-opacity', 0.1);
+    }).on('mouseout', function () {
+      under_rect.style('fill-opacity', 0);
+    });
+    var under_rect = group_elem.append('rect').styles({ fill: 'green', 'fill-opacity': 0 });
+    var text_elem = group_elem.append('text').attrs({ x: this.x, y: this.y }).styles({
       'font-size': this.fontSize + 'px',
       'text-anchor': 'start'
     });
-    text_elem.append('tspan').attr('x', this.x).text('Enter your text...');
-    text_elem.on('mouseover', function () {
-      text_elem.style('background-color', 'green');
-    });
-    text_elem.on('mouseout', function () {
-      text_elem.style('background-color', 'transparent');
-    });
-
-    text_elem.call(drag_txt_annot);
-
-    text_elem.on('contextmenu', function () {
-      context_menu.showMenu(d3.event, document.querySelector('body'), getItems());
-    });
-
-    text_elem.on('dblclick', function () {
+    text_elem.append('tspan').attr('x', this.x).text(i18next.t('app_page.text_box_edit_box.constructor_default'));
+    group_elem.call(drag_txt_annot);
+    group_elem.on('dblclick', function () {
       d3.event.preventDefault();
       d3.event.stopPropagation();
       _this2.editStyle();
+    }).on('contextmenu', function () {
+      context_menu.showMenu(d3.event, document.querySelector('body'), getItems());
     });
+
     this.lineHeight = Math.round(this.fontSize * 1.4);
     this.textAnnot = text_elem;
+    this.group = group_elem;
     this.fontFamily = 'Verdana,Geneva,sans-serif';
     this.anchor = "start";
     this.buffer = undefined;
     this.id = id_text_annot;
 
     this.update_bbox();
-    pos_lgds_elem.set(this.id, text_elem.node().getBoundingClientRect());
-
-    return this;
+    pos_lgds_elem.set(this.id, group_elem.node().getBoundingClientRect());
   }
 
   _createClass(Textbox, [{
     key: 'remove',
     value: function remove() {
-      pos_lgds_elem.delete(this.textAnnot.attr('id'));
-      this.textAnnot.remove();
+      pos_lgds_elem.delete(this.group.attr('id'));
+      this.group.remove();
     }
   }, {
     key: 'update_text',
@@ -12747,6 +12744,7 @@ var Textbox = function () {
       var bbox = this.textAnnot.node().getBoundingClientRect();
       this.width = bbox.width;
       this.height = bbox.height;
+      this.group.select('rect').attrs({ x: bbox.left - 10, y: bbox.top - 10, height: this.height + 20, width: this.width + 20 });
     }
   }, {
     key: 'editStyle',
@@ -12869,18 +12867,21 @@ var Textbox = function () {
         right.style('font-weight', 'bold').style("font-size", '12px');
         text_elem.style('text-anchor', 'end');
         self.anchor = 'end';
+        self.update_bbox();
       });
       var center = content_modif_zone.append('span').styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' }).attr('class', 'align-option').html('center').on('click', function () {
         content_modif_zone.selectAll('.align-option').style('font-weight', '');
         center.style('font-weight', 'bold').style('font-size', '12px');
         text_elem.style('text-anchor', 'middle');
         self.anchor = 'middle';
+        self.update_bbox();
       });
       var left = content_modif_zone.append('span').styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' }).attr('class', 'align-option').html('left').on('click', function () {
         content_modif_zone.selectAll('.align-option').style('font-weight', '').style('font-size', '11px');
         left.style('font-weight', 'bold').style('font-size', '12px');
         text_elem.style('text-anchor', 'start');
         self.anchor = 'start';
+        self.update_bbox();
       });
       var selected = self.anchor === 'start' ? left : self.anchor === 'middle' ? center : right;
       selected.style('font-weight', 'bold').style('font-size', '12px');
@@ -12949,12 +12950,12 @@ var Textbox = function () {
   }, {
     key: 'up_element',
     value: function up_element() {
-      up_legend(this.textAnnot.node());
+      up_legend(this.group.node());
     }
   }, {
     key: 'down_element',
     value: function down_element() {
-      down_legend(this.textAnnot.node());
+      down_legend(this.group.node());
     }
   }]);
 
@@ -15337,14 +15338,17 @@ function get_map_template() {
         });
       } else if (ft.classList.contains('txt_annot')) {
         if (!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
-        var inner_p = ft.childNodes[0];
+        var text = ft.querySelector('text');
+        console.log(text);
         map_config.layout_features.text_annot.push({
           id: ft.id,
-          content: inner_p.innerHTML,
-          style: inner_p.getAttribute('style'),
-          position_x: ft.x.baseVal.value,
-          position_y: ft.y.baseVal.value,
-          transform: ft.getAttribute('transform')
+          content: Array.prototype.map.call(text.querySelectorAll('tspan'), function (el) {
+            return el.innerHTML;
+          }).join('\n'),
+          style: text.getAttribute('style'),
+          position_x: text.x.baseVal.value,
+          position_y: text.y.baseVal.value,
+          transform: text.getAttribute('transform')
         });
       } else if (ft.classList.contains('single_symbol')) {
         if (!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
@@ -15766,13 +15770,11 @@ function apply_user_preferences(json_pref) {
         for (var _i9 = 0; _i9 < map_config.layout_features.text_annot.length; _i9++) {
           var _ft4 = map_config.layout_features.text_annot[_i9];
           var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
-          var inner_p = new_txt_box.text_annot.select("p").node();
-          inner_p.innerHTML = _ft4.content;
-          // inner_p.style = ft.style;
-          inner_p.setAttribute('style', _ft4.style);
-          new_txt_box.text_annot.attr('transform', _ft4.transform);
-          new_txt_box.fontsize = +_ft4.style.split('font-size: ')[1].split('px')[0];
-          new_txt_box.font_family = _ft4.style.split('font-family: ')[1].split(';')[0];
+          new_txt_box.textAnnot.node().setAttribute('style', _ft4.style);
+          new_txt_box.textAnnot.attr('transform', _ft4.transform).attr('x', _ft4.position_x).attr('y', _ft4.position_y);
+          new_txt_box.update_text(_ft4.content);
+          new_txt_box.fontSize = +_ft4.style.split('font-size: ')[1].split('px')[0];
+          new_txt_box.fontFamily = _ft4.style.split('font-family: ')[1].split(';')[0];
         }
       }
       if (map_config.layout_features.single_symbol) {
