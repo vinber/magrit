@@ -1106,7 +1106,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.2146b2abfa4c.json'
+            loadPath: 'static/locales/{{lng}}/translation.954b1fbf6e34.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -12621,7 +12621,7 @@ var Textbox = function () {
       under_rect.style('fill-opacity', 0);
     });
     var under_rect = group_elem.append('rect').styles({ fill: 'green', 'fill-opacity': 0 });
-    var text_elem = group_elem.append('text').attrs({ x: this.x, y: this.y }).styles({
+    var text_elem = group_elem.append('text').attrs({ x: this.x, y: this.y, id: ['in_', id_text_annot].join('') }).styles({
       'font-size': this.fontSize + 'px',
       'font-family': 'Arial,Helvetica,sans-serif',
       'text-anchor': 'start'
