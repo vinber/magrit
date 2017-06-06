@@ -142,6 +142,7 @@ function get_map_template() {
         if (!map_config.layout_features.single_symbol) map_config.layout_features.single_symbol = [];
         let img = ft.childNodes[0];
         map_config.layout_features.single_symbol.push({
+          id: ft.id,
           x: img.getAttribute('x'),
           y: img.getAttribute('y'),
           width: img.getAttribute('width'),
@@ -568,7 +569,7 @@ function apply_user_preferences(json_pref){
       if (map_config.layout_features.single_symbol) {
         for (let i=0; i < map_config.layout_features.single_symbol.length; i++) {
           let ft = map_config.layout_features.single_symbol[i];
-          let symb = add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height);
+          let symb = add_single_symbol(ft.href, ft.x, ft.y, ft.width, ft.height, ft.id);
           if (ft.scalable) {
             let parent_symb = symb.node().parentElement;
             parent_symb.classList.add('scalable-legend');

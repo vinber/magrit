@@ -1739,29 +1739,29 @@ function handleClickAddPicto(){
 
     document.body.style.cursor = 'not-allowed';
     map.style('cursor', 'crosshair')
-        .on('click', function(){
-              msg.dismiss();
-              click_pt = [d3.event.layerX, d3.event.layerY];
-              map_point = map.append('rect')
-                  .attrs({x: click_pt[0] - 2, y: click_pt[1] - 2, height: 4, width: 4})
-                  .style('fill', 'red');
-              setTimeout(function(){
-                  map_point.remove();
-              }, 500);
-              map.style('cursor', '').on('click', null);
-              document.body.style.cursor = '';
-              if(!available_symbols){
-                  prep_symbols.then(confirmed => {
-                      box_choice_symbol(window.default_symbols).then( result => {
-                          if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
-                      });
-                  });
-              } else {
-                  box_choice_symbol(window.default_symbols).then( result => {
-                      if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
-                  });
-              }
-        });
+      .on('click', function(){
+        msg.dismiss();
+        click_pt = [d3.event.layerX, d3.event.layerY];
+        map_point = map.append('rect')
+          .attrs({x: click_pt[0] - 2, y: click_pt[1] - 2, height: 4, width: 4})
+          .style('fill', 'red');
+        setTimeout(function(){
+          map_point.remove();
+        }, 500);
+        map.style('cursor', '').on('click', null);
+        document.body.style.cursor = '';
+        if(!available_symbols){
+          prep_symbols.then(confirmed => {
+            box_choice_symbol(window.default_symbols).then( result => {
+              if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
+            });
+          });
+        } else {
+          box_choice_symbol(window.default_symbols).then( result => {
+            if(result){ add_single_symbol(result.split("url(")[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, symbol_id); }
+          });
+        }
+      });
 }
 
 // function handleFreeDraw(){

@@ -1507,7 +1507,7 @@ function reproj_symbol_layer(){
               .selectAll(symbol)
               .attrs(function(d,i){
                 let coords = path.centroid(d.geometry),
-                    size = +this.getAttribute('width').slice(0, -2) / 2;
+                    size = +this.getAttribute('width').replace('px', '') / 2;
                 return { 'x': coords[0] - size, 'y': coords[1] - size };
               });
       } else if(symbol == "circle"){ // Reproject Prop Symbol :
