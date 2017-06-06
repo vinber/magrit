@@ -134,6 +134,9 @@ function setUpInterface(reload_project) {
             return;
         } else if (val == 'last_projection') {
             val = tmp.name;
+        } else if (val == 'ConicConformalFrance') {
+            val = 'def_proj4';
+            _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
         }
 
         if (val == 'def_proj4') {
@@ -1106,7 +1109,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.954b1fbf6e34.json'
+            loadPath: 'static/locales/{{lng}}/translation.64417da686a6.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -9642,9 +9645,6 @@ function scale_to_lyr(name) {
     if (!bbox_layer_path) return;
     s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
     t = [0, 0];
-    if (current_proj_name === "ConicConformalFrance") {
-        s *= 5000;
-    }
     proj.scale(s).translate(t);
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();

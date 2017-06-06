@@ -1140,9 +1140,6 @@ function scale_to_lyr(name){
   if (!bbox_layer_path) return;
   s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
   t = [0, 0];
-  if (current_proj_name === "ConicConformalFrance") {
-    s *= 5000;
-  }
   proj.scale(s).translate(t);
   map.selectAll(".layer").selectAll("path").attr("d", path);
   reproj_symbol_layer();
