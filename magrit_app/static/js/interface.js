@@ -715,7 +715,7 @@ function add_dataset(readed_dataset){
     let cols = Object.getOwnPropertyNames(readed_dataset[0]);
 
     // Test if there is an empty last line and remove it if its the case :
-    if(cols.map(f => readed_dataset[readed_dataset.length - 1][f]).every(f => f == "")){
+    if(cols.map(f => readed_dataset[readed_dataset.length - 1][f]).every(f => f === "" || f === undefined)){
         readed_dataset = readed_dataset.slice(0, readed_dataset.length - 1);
     }
 
