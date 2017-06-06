@@ -1106,7 +1106,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.7b404ca8d1e6.json'
+            loadPath: 'static/locales/{{lng}}/translation.2146b2abfa4c.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -12623,6 +12623,7 @@ var Textbox = function () {
     var under_rect = group_elem.append('rect').styles({ fill: 'green', 'fill-opacity': 0 });
     var text_elem = group_elem.append('text').attrs({ x: this.x, y: this.y }).styles({
       'font-size': this.fontSize + 'px',
+      'font-family': 'Arial,Helvetica,sans-serif',
       'text-anchor': 'start'
     });
     text_elem.append('tspan').attr('x', this.x).text(i18next.t('app_page.text_box_edit_box.constructor_default'));
@@ -12676,9 +12677,14 @@ var Textbox = function () {
     key: 'update_bbox',
     value: function update_bbox() {
       var bbox = this.textAnnot.node().getBoundingClientRect();
+
+      var _get_map_xy = get_map_xy0(),
+          x0 = _get_map_xy.x,
+          y0 = _get_map_xy.y;
+
       this.width = bbox.width;
       this.height = bbox.height;
-      this.group.select('rect').attrs({ x: bbox.left - 10, y: bbox.top - 10, height: this.height + 20, width: this.width + 20 });
+      this.group.select('rect').attrs({ x: bbox.left - x0 - 10, y: bbox.top - y0 - 10, height: this.height + 20, width: this.width + 20 });
     }
   }, {
     key: 'editStyle',
@@ -13867,9 +13873,9 @@ var UserEllipse = function () {
 var get_coords_snap_lines = function get_coords_snap_lines(uid) {
   var snap_lines = { x: [], y: [] };
 
-  var _get_map_xy = get_map_xy0(),
-      x = _get_map_xy.x,
-      y = _get_map_xy.y;
+  var _get_map_xy2 = get_map_xy0(),
+      x = _get_map_xy2.x,
+      y = _get_map_xy2.y;
 
   pos_lgds_elem.forEach(function (v, k) {
     if (k != uid) {
@@ -15267,15 +15273,14 @@ function get_map_template() {
       } else if (ft.classList.contains('txt_annot')) {
         if (!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
         var text = ft.querySelector('text');
-        console.log(text);
         map_config.layout_features.text_annot.push({
           id: ft.id,
           content: Array.prototype.map.call(text.querySelectorAll('tspan'), function (el) {
             return el.innerHTML;
           }).join('\n'),
           style: text.getAttribute('style'),
-          position_x: text.x.baseVal.value,
-          position_y: text.y.baseVal.value,
+          position_x: text.getAttribute('x'),
+          position_y: text.getAttribute('y'),
           transform: text.getAttribute('transform')
         });
       } else if (ft.classList.contains('single_symbol')) {
@@ -15699,10 +15704,17 @@ function apply_user_preferences(json_pref) {
           var _ft4 = map_config.layout_features.text_annot[_i9];
           var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
           new_txt_box.textAnnot.node().setAttribute('style', _ft4.style);
-          new_txt_box.textAnnot.attr('transform', _ft4.transform).attr('x', _ft4.position_x).attr('y', _ft4.position_y);
-          new_txt_box.update_text(_ft4.content);
+          new_txt_box.textAnnot.attrs({
+            transform: _ft4.transform,
+            x: _ft4.position_x,
+            y: _ft4.position_y
+          }).selectAll('tspan').attrs({
+            x: _ft4.position_x,
+            y: _ft4.position_y
+          });
           new_txt_box.fontSize = +_ft4.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.fontFamily = _ft4.style.split('font-family: ')[1].split(';')[0];
+          new_txt_box.update_text(_ft4.content);
         }
       }
       if (map_config.layout_features.single_symbol) {

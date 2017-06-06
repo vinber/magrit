@@ -454,6 +454,7 @@ class Textbox {
       .attrs({ x: this.x, y: this.y })
       .styles({
         'font-size': this.fontSize + 'px',
+        'font-family': 'Arial,Helvetica,sans-serif',
         'text-anchor': 'start',
       });
     text_elem.append('tspan')
@@ -510,11 +511,12 @@ class Textbox {
   }
 
   update_bbox() {
-    let bbox = this.textAnnot.node().getBoundingClientRect();
+    const bbox = this.textAnnot.node().getBoundingClientRect();
+    const {x: x0, y: y0} = get_map_xy0();
     this.width = bbox.width;
     this.height = bbox.height;
     this.group.select('rect')
-      .attrs({ x: bbox.left - 10, y: bbox.top - 10, height: this.height + 20, width: this.width + 20 });
+      .attrs({ x: bbox.left - x0 - 10, y: bbox.top - y0 - 10, height: this.height + 20, width: this.width + 20 });
   }
 
   editStyle() {
