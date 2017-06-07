@@ -1109,7 +1109,7 @@ function parseQuery(search) {
         lng: lang,
         fallbackLng: existing_lang[0],
         backend: {
-            loadPath: 'static/locales/{{lng}}/translation.db45f698651b.json'
+            loadPath: 'static/locales/{{lng}}/translation.534307bc5156.json'
         }
     }, function (err, tr) {
         if (err) {
@@ -7490,7 +7490,6 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
   svg_map.lastChild.setAttribute("id", id_new_layer);
   var node_new_layer = document.getElementById(id_new_layer);
   svg_map.insertBefore(node_new_layer, svg_map.querySelector('.legend'));
-  node_new_layer.setAttribute("class", "result_layer layer");
   result_data[new_name] = [];
   current_layers[new_name] = {
     n_features: current_layers[ref_layer].n_features,
@@ -15402,13 +15401,6 @@ function get_map_template() {
         layer_style_i.color_map = [].concat(_toConsumableArray(current_layer_prop.color_map));
       }
       if (current_layer_prop.break_val) layer_style_i.break_val = current_layer_prop.break_val;
-
-      // } else if (current_layer_prop.renderer == "Stewart"
-      //             || current_layer_prop.renderer == "Gridded"
-      //             || current_layer_prop.renderer == "Choropleth"
-      //             || current_layer_prop.renderer == "Categorical"
-      //             || current_layer_prop.renderer == "Carto_doug"
-      //             || current_layer_prop.renderer == "OlsonCarto") {
     } else if (['Stewart', 'Gridded', 'Choropleth', 'Categorical', 'Carto_doug', 'OlsonCarto'].indexOf(current_layer_prop.renderer) > -1) {
       (function () {
         selection = map.select("#" + _layer_id).selectAll("path");
@@ -15505,7 +15497,7 @@ function get_map_template() {
       }
     }
     // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-    return JSON.stringify({ "map_config": map_config, "layers": layers_style });;
+    return JSON.stringify({ map_config: map_config, layers: layers_style, info: { version: _app.version } });;
   });
 }
 

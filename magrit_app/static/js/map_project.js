@@ -356,7 +356,7 @@ function get_map_template() {
         }
       }
       // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-      return JSON.stringify({"map_config": map_config, "layers": layers_style});;
+      return JSON.stringify({ map_config: map_config, layers: layers_style, info: { version: _app.version } });;
     });
 }
 
