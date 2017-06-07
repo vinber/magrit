@@ -264,12 +264,6 @@ function get_map_template() {
       if (current_layer_prop.break_val)
         layer_style_i.break_val = current_layer_prop.break_val;
 
-    // } else if (current_layer_prop.renderer == "Stewart"
-    //             || current_layer_prop.renderer == "Gridded"
-    //             || current_layer_prop.renderer == "Choropleth"
-    //             || current_layer_prop.renderer == "Categorical"
-    //             || current_layer_prop.renderer == "Carto_doug"
-    //             || current_layer_prop.renderer == "OlsonCarto") {
     } else if (['Stewart', 'Gridded', 'Choropleth', 'Categorical', 'Carto_doug', 'OlsonCarto'].indexOf(current_layer_prop.renderer) > -1) {
       selection = map.select("#" + layer_id).selectAll("path");
       layer_style_i.renderer = current_layer_prop.renderer;
@@ -943,27 +937,26 @@ function reorder_layers_elem_legends(desired_order){
     if (t) {
       parent.appendChild(t);
     }
-    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
   }
+  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
 }
 
 function rehandle_legend(layer_name, properties){
-    for(let i = 0; i < properties.length; i++){
-        let prop = properties[i];
-        if(prop.type == 'legend_root'){
-            createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
-        } else if(prop.type == 'legend_root_symbol') {
-            createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
-        } else if(prop.type == 'legend_root_lines_class'){
-            createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
-        } else if(prop.type == 'legend_root_lines_symbol'){
-            createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
-        }
-        let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
-        lgd.setAttribute('transform', prop.transform);
-        if(prop.display == "none")
-            lgd.setAttribute('display', "none");
+  for(let i = 0; i < properties.length; i++){
+    let prop = properties[i];
+    if(prop.type == 'legend_root'){
+      createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
+    } else if(prop.type == 'legend_root_symbol') {
+      createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+    } else if(prop.type == 'legend_root_lines_class'){
+      createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
+    } else if(prop.type == 'legend_root_lines_symbol'){
+      createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
     }
+    let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
+    lgd.setAttribute('transform', prop.transform);
+    if(prop.display == "none") lgd.setAttribute('display', "none");
+  }
 }
 
 const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
