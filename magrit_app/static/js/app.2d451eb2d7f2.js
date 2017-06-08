@@ -7,29 +7,29 @@
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 Function.prototype.memoized = function () {
-    var max_size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 25;
+  var max_size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 25;
 
-    this._memo = this._memo || { values: new Map(), stack: [], max_size: max_size };
-    var key = JSON.stringify(Array.prototype.slice.call(arguments));
-    var cache_value = this._memo.values.get(key);
-    if (cache_value !== undefined) {
-        return JSON.parse(cache_value);
-    } else {
-        cache_value = this.apply(this, arguments);
-        this._memo.values.set(key, JSON.stringify(cache_value));
-        this._memo.stack.push(key);
-        if (this._memo.stack.length >= this._memo.max_size) {
-            var old_key = this._memo.stack.shift();
-            this._memo.values.delete(old_key);
-        }
-        return cache_value;
+  this._memo = this._memo || { values: new Map(), stack: [], max_size: max_size };
+  var key = JSON.stringify(Array.prototype.slice.call(arguments));
+  var cache_value = this._memo.values.get(key);
+  if (cache_value !== undefined) {
+    return JSON.parse(cache_value);
+  } else {
+    cache_value = this.apply(this, arguments);
+    this._memo.values.set(key, JSON.stringify(cache_value));
+    this._memo.stack.push(key);
+    if (this._memo.stack.length >= this._memo.max_size) {
+      var old_key = this._memo.stack.shift();
+      this._memo.values.delete(old_key);
     }
+    return cache_value;
+  }
 };
 Function.prototype.memoize = function () {
-    var fn = this;
-    return function () {
-        return fn.memoized.apply(fn, arguments);
-    };
+  var fn = this;
+  return function () {
+    return fn.memoized.apply(fn, arguments);
+  };
 };
 
 /**
@@ -40,943 +40,935 @@ Function.prototype.memoize = function () {
 *
 */
 function setUpInterface(reload_project) {
-    // Only ask for confirmation before leaving page if things have been done
-    // (layer added, etc..)
-    window.addEventListener("beforeunload", beforeUnloadWindow);
+  // Only ask for confirmation before leaving page if things have been done
+  // (layer added, etc..)
+  window.addEventListener("beforeunload", beforeUnloadWindow);
 
-    // Remove some layers from the server when user leave the page
-    // (ie. result layers are removed but targeted layer and layout layers stay
-    // in cache as they have more chance to be added again)
-    window.addEventListener("unload", function () {
-        var layer_names = Object.getOwnPropertyNames(current_layers).filter(function (name) {
-            if (sample_no_values.has(name) || !current_layers[name].hasOwnProperty("key_name")) return 0;else if (current_layers[name].targeted) return 0;else if (current_layers[name].renderer && (current_layers[name].renderer.indexOf("PropSymbols") > -1 || current_layers[name].renderer.indexOf("Dorling") > -1 || current_layers[name].renderer.indexOf("Choropleth") > -1 || current_layers[name].renderer.indexOf("Categorical") > -1)) return 0;
-            return 1;
-        });
-        if (layer_names.length) {
-            var formToSend = new FormData();
-            layer_names.forEach(function (name) {
-                formToSend.append("layer_name", current_layers[name].key_name);
-            });
-            navigator.sendBeacon("/layers/delete", formToSend);
-        }
-    }, false);
-    var bg = document.createElement('div');
-    bg.id = 'overlay';
-    bg.style.display = "none";
-    bg.style.textAlign = "center";
-    bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' + '<span style="color: white; z-index: 2;">...<br></span>' + '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' + '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' + '<div class="line"></div><div class="line"></div></div></div>';
-    var btn = document.createElement("button");
-    btn.style.fontSize = '13px';
-    btn.style.background = '#4b9cdb';
-    btn.style.border = '1px solid #298cda';
-    btn.style.fontWeight = 'bold';
-    btn.className = "button_st3 i18n";
-    btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
-    bg.appendChild(btn);
-    document.body.appendChild(bg);
-
-    btn.onclick = function () {
-        if (_app.xhr_to_cancel) {
-            _app.xhr_to_cancel.abort();
-            _app.xhr_to_cancel = undefined;
-        }
-        if (_app.webworker_to_cancel) {
-            _app.webworker_to_cancel.onmessage = null;
-            _app.webworker_to_cancel.terminate();
-            _app.webworker_to_cancel = undefined;
-        }
-        document.getElementById('overlay').style.display = 'none';
-    };
-
-    var bg_drop = document.createElement('div');
-    bg_drop.className = "overlay_drop";
-    bg_drop.id = 'overlay_drop';
-    bg_drop.style.background = 'black';
-    bg_drop.style.opacity = '0.6';
-    bg_drop.style.display = 'none';
-    bg_drop.style.padding = '10px';
-    var inner_div = document.createElement("div");
-    inner_div.style.border = "dashed 2px white";
-    inner_div.style.margin = "10px";
-    inner_div.style.background = "rgba(0, 0, 0, 0.33)";
-    inner_div.style.borderRadius = "1%";
-    inner_div.className = "overlay_drop";
-    var inner_p = document.createElement("p");
-    inner_p.style.position = 'fixed';
-    inner_p.style.top = '50%';
-    inner_p.style.left = '50%';
-    inner_p.style.transform = 'translateX(-50%)translateY(-50%)';
-    inner_p.style.fontSize = '14px';
-    inner_p.style.width = 'auto';
-    inner_p.style.bottom = '0px';
-    inner_p.style.opacity = '0.85';
-    inner_p.style.textAlign = 'center';
-    inner_p.style.color = 'white';
-    inner_p.style.padding = '0.5em';
-    inner_p.innerHTML = "Drop your file(s) in the window ...";
-    inner_div.appendChild(inner_p);
-    bg_drop.appendChild(inner_div);
-    document.body.appendChild(bg_drop);
-
-    var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
-
-    var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
-        var val = this.value,
-            tmp = this.querySelector('[value="last_projection"]');
-
-        if (val === 'more') {
-            this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
-            createBoxCustomProjection();
-            return;
-        } else if (val == 'proj4') {
-            this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
-            createBoxProj4();
-            return;
-        } else if (val == 'last_projection') {
-            val = tmp.name;
-        } else if (val == 'ConicConformalFrance') {
-            val = 'def_proj4';
-            _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
-        }
-
-        if (val == 'def_proj4') {
-            current_proj_name = val;
-            change_projection_4(proj4(_app.last_projection));
-        } else {
-            current_proj_name = val;
-            change_projection(current_proj_name);
-        }
+  // Remove some layers from the server when user leave the page
+  // (ie. result layers are removed but targeted layer and layout layers stay
+  // in cache as they have more chance to be added again)
+  window.addEventListener("unload", function () {
+    var layer_names = Object.getOwnPropertyNames(current_layers).filter(function (name) {
+      if (sample_no_values.has(name) || !current_layers[name].hasOwnProperty("key_name")) return 0;else if (current_layers[name].targeted) return 0;else if (current_layers[name].renderer && (current_layers[name].renderer.indexOf("PropSymbols") > -1 || current_layers[name].renderer.indexOf("Dorling") > -1 || current_layers[name].renderer.indexOf("Choropleth") > -1 || current_layers[name].renderer.indexOf("Categorical") > -1)) return 0;
+      return 1;
     });
-
-    for (var i = 0; i < shortListContent.length; i++) {
-        var option = shortListContent[i];
-        proj_select2.append('option').attrs({ class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option }).text(i18next.t('app_page.projection_name.' + option));
+    if (layer_names.length) {
+      (function () {
+        var formToSend = new FormData();
+        layer_names.forEach(function (name) {
+          formToSend.append("layer_name", current_layers[name].key_name);
+        });
+        navigator.sendBeacon("/layers/delete", formToSend);
+      })();
     }
-    proj_select2.node().value = "NaturalEarth2";
+  }, false);
+  var bg = document.createElement('div');
+  bg.id = 'overlay';
+  bg.style.display = "none";
+  bg.style.textAlign = "center";
+  bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' + '<span style="color: white; z-index: 2;">...<br></span>' + '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' + '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' + '<div class="line"></div><div class="line"></div></div></div>';
+  var btn = document.createElement("button");
+  btn.style.fontSize = '13px';
+  btn.style.background = '#4b9cdb';
+  btn.style.border = '1px solid #298cda';
+  btn.style.fontWeight = 'bold';
+  btn.className = "button_st3 i18n";
+  btn.setAttribute("data-i18n", "[html]app_page.common.cancel");
+  bg.appendChild(btn);
+  document.body.appendChild(bg);
 
-    var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
-        window.localStorage.removeItem("magrit_project");
-        window.removeEventListener("beforeunload", beforeUnloadWindow);
-        location.reload();
-    });
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
-
-    const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
-        window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-    });
-
-    const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
-        "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
-        "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
-        var click_func = function click_func(window_name, target_url) {
-            window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-        };
-        var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: _app.version }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
-        // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
-        '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
-        swal({
-            title: i18next.t("app_page.help_box.title"),
-            html: box_content,
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonText: i18next.t('app_page.common.close'),
-            animation: "slide-from-top",
-            onOpen: function onOpen() {
-                var content = document.getElementsByClassName('about_content')[0];
-                var credit_link = content.querySelector('#credit_link');
-                credit_link.style.fontWeight = "bold";
-                credit_link.style.cursor = "pointer";
-                credit_link.color = "#000";
-                credit_link.onclick = function () {
-                    window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_doc').onclick = function () {
-                    window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_contact').onclick = function () {
-                    window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-                content.querySelector('.btn_gh').onclick = function () {
-                    window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
-                };
-            }
-        }).then(function (inputValue) {
-            null;
-        }, function (dismissValue) {
-            null;
-        });
-    });
-
-    const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
-        "font-size": "14px", "vertical-align": "super",
-        background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
-        if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
-            (function () {
-                var current_lang = i18next.language;
-                var other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
-                var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_langs[0], "callback": change_lang }, { "name": other_langs[1], "callback": change_lang }];
-                var menu = document.createElement("div");
-                menu.style.top = "40px";
-                menu.style.right = "0px";
-                menu.className = "context-menu";
-                menu.id = "menu_lang";
-                menu.style.minWidth = "30px";
-                menu.style.width = "50px";
-                menu.style.background = "#000";
-                var list_elems = document.createElement("ul");
-                menu.appendChild(list_elems);
-
-                var _loop = function _loop(_i2) {
-                    var item = document.createElement("li"),
-                        name = document.createElement("span");
-                    list_elems.appendChild(item);
-                    item.setAttribute("data-index", _i2);
-                    item.style.textAlign = "right";
-                    item.style.paddingRight = "16px";
-                    name.className = "context-menu-item-name";
-                    name.style.color = "white";
-                    name.textContent = actions[_i2].name;
-                    item.appendChild(name);
-                    item.onclick = function () {
-                        actions[_i2].callback();
-                        menu.remove();
-                    };
-                };
-
-                for (var _i2 = 0; _i2 < actions.length; _i2++) {
-                    _loop(_i2);
-                }
-                document.querySelector("body").appendChild(menu);
-            })();
-        }
-    });
-
-    var menu = d3.select("#menu"),
-        b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
-        accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
-        b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
-        accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
-        b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
-        accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
-        b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
-        accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
-        b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
-        accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
-        b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
-        accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
-
-    var section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
-    window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
-    window.section2 = accordion2.append('div').attr('id', 'section2');
-    accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
-    accordion5.append("div").attr("id", "section5");
-
-    var dv1 = section1.append("div"),
-        dv11 = dv1.append("div").style("width", "auto");
-
-    dv11.append("img").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26", "alt": "Geometry layer" }).style("cursor", "pointer").on('click', click_button_add_layer);
-
-    dv11.append("p").attrs({ id: "input_geom", class: "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_geom").on('click', click_button_add_layer);
-
-    var dv12 = dv1.append("div");
-    dv12.append("img").attrs({ "id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26", "alt": "Additional dataset" }).style("cursor", "pointer").on('click', click_button_add_layer);
-
-    dv12.append("p").attrs({ "id": "data_ext", "class": "user_panel i18n", "data-i18n": "[html]app_page.section1.add_ext_dataset" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).on('click', click_button_add_layer);
-
-    var div_sample = dv1.append("div").attr("id", "sample_zone");
-    div_sample.append("img").attrs({ "id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26", "alt": "Sample layers" }).style("cursor", "pointer").on('click', add_sample_layer);
-
-    div_sample.append("span").attrs({ "id": "sample_link", "class": "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_sample_data").on('click', add_sample_layer);
-
-    dv1.append("p").attr("id", "join_section").styles({ "text-align": "center", "margin-top": "2px" }).html("");
-
-    dv1.append('p').styles({ 'text-align': 'center', 'margin': '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
-        'data-i18n': '[html]app_page.box_type_fields.title',
-        'disabled': true }).styles({ cursor: 'pointer',
-        'border-radius': '4px',
-        'border': '1px solid lightgrey',
-        'padding': '3.5px' }).html(i18next.t('app_page.box_type_fields.title')).on('click', function () {
-        var layer_name = Object.getOwnPropertyNames(user_data)[0];
-        make_box_type_fields(layer_name);
-    });
-
-    make_ico_choice();
-    add_simplified_land_layer();
-
-    var section3 = d3.select("#section3");
-
-    window.layer_list = section3.append("div").attrs({ class: "i18n",
-        "data-i18n": "[tooltip-title]app_page.tooltips.section3",
-        "data-placement": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
-
-    var dv3 = section3.append("div").style("padding-top", "10px").html('');
-
-    dv3.append("img").attrs({ "src": "static/img/b/addsample_t.png", class: 'i18n',
-        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
-        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
-    dv3.append("img").attrs({ "src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
-        "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
-        "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
-
-    var section4 = d3.select("#section4");
-    var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
-        display: "inline-block",
-        padding: "0px",
-        width: "100%",
-        "margin-top": "0px" });
-
-    var e = dv4.append("li").styles({ margin: "1px", padding: "4px", "text-align": "center" });
-    e.append("input").attrs({ "id": "title", "class": "list_elem_section4 i18n",
-        "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", function () {
-        handle_title(this.value);
-    });
-    e.append("span").styles({ display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub" }).html(sys_run_button.replace("submit", "Title properties")).on("click", handle_title_properties);
-
-    var f = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    f.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.background_color");
-    f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", function () {
-        handle_bg_color(this.value);
-    });
-
-    var a1 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    a1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_width");
-    a1.append("input").attrs({ id: "input-width", type: "number", value: w, "class": "list_elem_section4 m_elem_right" }).on("change", function () {
-        var new_width = +this.value;
-        if (new_width == 0 || isNaN(new_width)) {
-            this.value = w;
-            return;
-        }
-        var ratio_type = document.getElementById("map_ratio_select").value;
-        if (ratio_type == "portrait") {
-            h = round_value(new_width / 0.70707, 0);
-            canvas_mod_size([new_width, h]);
-        } else if (ratio_type == "landscape") {
-            h = round_value(new_width * 0.70707, 0);
-            canvas_mod_size([new_width, h]);
-        } else {
-            canvas_mod_size([new_width, null]);
-        }
-        document.getElementById("input-height").value = h;
-    });
-
-    var a2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    a2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_height");
-    a2.append("input").attrs({ id: "input-height", type: "number", "value": h, class: "m_elem_right list_elem_section4" }).on("change", function () {
-        var new_height = +this.value;
-        if (new_height == 0 || isNaN(new_height)) {
-            this.value = h;
-            return;
-        }
-        var ratio_type = document.getElementById("map_ratio_select").value;
-        if (ratio_type == "portrait") {
-            w = round_value(new_height * 0.70707, 0);
-            canvas_mod_size([w, new_height]);
-        } else if (ratio_type == "landscape") {
-            w = round_value(new_height / 0.70707, 0);
-            canvas_mod_size([w, new_height]);
-        } else {
-            canvas_mod_size([null, new_height]);
-        }
-        document.getElementById("input-width").value = w;
-    });
-
-    var b = dv4.append("li").styles({ margin: "1px", padding: "4px 0" });
-    b.append("p").attr("class", "list_elem_section4 i18n").style("padding", "4px").attr("data-i18n", "[html]app_page.section4.map_ratio");
-    var ratio_select = b.append("select").attrs({ "class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select" });
-
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
-    ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
-    ratio_select.on("change", function () {
-        var map_xy = get_map_xy0();
-        var dispo_w = document.innerWidth - map_xy.x - 1;
-        var dispo_h = document.innerHeight - map_xy.y - 1;
-        var diff_w = dispo_w - w;
-        var diff_h = dispo_h - h;
-        if (this.value == "portrait") {
-            if (round_value(w / h, 1) == 1.4) {
-                var tmp = h;
-                h = w;
-                w = tmp;
-            } else if (diff_h >= diff_w) {
-                w = round_value(h * 0.70707, 0);
-            } else {
-                h = round_value(w / 0.70707, 0);
-            }
-        } else if (this.value == "landscape") {
-            if (round_value(h / w, 1) == 1.4) {
-                var _tmp = h;
-                h = w;
-                w = _tmp;
-            } else if (diff_h <= diff_w) {
-                w = round_value(h / 0.70707, 0);
-            } else {
-                h = round_value(w * 0.70707, 0);
-            }
-        }
-        canvas_mod_size([w, h]);
-        document.getElementById("input-width").value = w;
-        document.getElementById("input-height").value = h;
-        fill_export_png_options(this.value);
-    });
-    var zoom_prop = svg_map.__zoom;
-
-    var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
-    d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit",
-        class: "m_elem_right list_elem_section4 button_st4 i18n",
-        'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
-        document.getElementById('btn_s4').click();
-        window.scrollTo(0, 0);
-        w = Math.round(window.innerWidth - 361);
-        h = window.innerHeight - 55;
-        canvas_mod_size([w, h]);
-        document.getElementById('map_ratio_select').value = "ratio_user";
-    });
-
-    var c = dv4.append("li").styles({ margin: "1px", padding: "4px" });
-    c.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_menu").style("cursor", "pointer");
-    c.append("span").attr("id", "map_center_menu_ico").style("display", "inline-table").style("cursor", "pointer");
-    c.on("click", function () {
-        var sections = document.getElementsByClassName("to_hide"),
-            arg = void 0;
-        if (sections[0].style.display == "none") {
-            arg = "";
-            document.getElementById("map_center_menu_ico").classList = "active";
-        } else {
-            arg = "none";
-            document.getElementById("map_center_menu_ico").classList = "";
-        }
-        sections[0].style.display = arg;
-        sections[1].style.display = arg;
-        sections[2].style.display = arg;
-        sections[3].style.display = arg;
-    });
-
-    var c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    c1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_x");
-    c1.append("input").style("width", "80px").attrs({ id: "input-center-x", class: "m_elem_right",
-        type: "number", value: round_value(zoom_prop.x, 2), step: "any" }).on("change", function () {
-        svg_map.__zoom.x = +this.value;
-        zoom_without_redraw();
-    });
-
-    var c2 = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    c2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_y");
-
-    c2.append("input").attrs({ id: "input-center-y", class: "list_elem_section4 m_elem_right",
-        type: "number", "value": round_value(zoom_prop.y, 2), step: "any" }).style("width", "80px").on("change", function () {
-        svg_map.__zoom.y = +this.value;
-        zoom_without_redraw();
-    });;
-
-    var d = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    d.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_scale_k");
-    d.append("input").attrs({ id: "input-scale-k",
-        class: "list_elem_section4 m_elem_right",
-        type: "number",
-        value: round_value(zoom_prop.k * proj.scale(), 2),
-        step: "any" }).style("width", "80px").on("change", function () {
-        svg_map.__zoom.k = +this.value / proj.scale();
-        zoom_without_redraw();
-    });
-
-    var g = dv4.append("li").style("display", "none").attr("class", "to_hide");
-    g.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.canvas_rotation");
-
-    g.append("span").style("float", "right").html("°");
-
-    g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
-        value: 0, min: 0, max: 360, step: "any" }).styles({ width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px" }).on("change", function () {
-        var val = +this.value,
-            old_value = document.getElementById("form_rotate").value;
-        if (isNaN(val) || val < -361) {
-            this.value = old_value;
-            return;
-        } else if (val < 0 && val > -361) {
-            this.value = 360 + val;
-        } else if (val > 360) {
-            this.value = 360;
-        } else {
-            // Should remove trailing zeros (right/left) if any :
-            this.value = +this.value;
-        }
-        rotate_global(this.value);
-        document.getElementById("form_rotate").value = this.value;
-    });
-
-    g.append("input").attrs({ type: "range", id: "form_rotate", min: 0, max: 360, step: 1 }).styles({ width: "80px", margin: "0px 10px 5px 15px", float: "right" }).on("input", function () {
-        rotate_global(this.value);
-        document.getElementById("canvas_rotation_value_txt").value = this.value;
-    });
-
-    var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-    g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
-    g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: "autoalign_features", type: "checkbox",
-        class: "m_elem_right list_elem_section4 i18n" }).on('change', function () {
-        _app.autoalign_features = this.checked ? true : false;
-    });
-
-    var _i = dv4.append('li').styles({ 'text-align': 'center' });
-    _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
-    var p1 = _i.insert('p').style('display', 'inline-block');
-    p1.insert('span').insert('img').attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
-        return add_layout_feature('arrow');
-    });
-    // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: 'static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
-    p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
-        return add_layout_feature('text_annot');
-    });
-    if (!window.isIE) {
-        p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
-            return add_layout_feature('symbol');
-        });
+  btn.onclick = function () {
+    if (_app.xhr_to_cancel) {
+      _app.xhr_to_cancel.abort();
+      _app.xhr_to_cancel = undefined;
     }
-    p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
-        return add_layout_feature('rectangle');
-    });
-    p1.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
-        return add_layout_feature('ellipse');
-    });
+    if (_app.webworker_to_cancel) {
+      _app.webworker_to_cancel.onmessage = null;
+      _app.webworker_to_cancel.terminate();
+      _app.webworker_to_cancel = undefined;
+    }
+    document.getElementById('overlay').style.display = 'none';
+  };
 
-    var p2 = _i.insert('p').style('display', 'inline-block');
-    p2.insert('span').insert('img').attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
-        return add_layout_feature('graticule');
-    });
-    p2.insert('span').insert('img').attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
-        return add_layout_feature('north_arrow');
-    });
-    p2.insert('span').insert('img').attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
-        return add_layout_feature('scale');
-    });
-    p2.insert('span').insert('img').attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
-        return add_layout_feature('sphere');
-    });
+  var bg_drop = document.createElement('div');
+  bg_drop.className = "overlay_drop";
+  bg_drop.id = 'overlay_drop';
+  bg_drop.style.background = 'black';
+  bg_drop.style.opacity = '0.6';
+  bg_drop.style.display = 'none';
+  bg_drop.style.padding = '10px';
+  var inner_div = document.createElement("div");
+  inner_div.style.border = "dashed 2px white";
+  inner_div.style.margin = "10px";
+  inner_div.style.background = "rgba(0, 0, 0, 0.33)";
+  inner_div.style.borderRadius = "1%";
+  inner_div.className = "overlay_drop";
+  var inner_p = document.createElement("p");
+  inner_p.style.position = 'fixed';
+  inner_p.style.top = '50%';
+  inner_p.style.left = '50%';
+  inner_p.style.transform = 'translateX(-50%)translateY(-50%)';
+  inner_p.style.fontSize = '14px';
+  inner_p.style.width = 'auto';
+  inner_p.style.bottom = '0px';
+  inner_p.style.opacity = '0.85';
+  inner_p.style.textAlign = 'center';
+  inner_p.style.color = 'white';
+  inner_p.style.padding = '0.5em';
+  inner_p.innerHTML = "Drop your file(s) in the window ...";
+  inner_div.appendChild(inner_p);
+  bg_drop.appendChild(inner_div);
+  document.body.appendChild(bg_drop);
 
-    var section5b = d3.select("#section5");
-    var dv5b = section5b.append("div").attr("class", "form-item");
+  var proj_options = d3.select(".header_options_projection").append("div").attr("id", "const_options_projection").style("display", "inline-flex");
 
-    var type_export = dv5b.append("p");
-    type_export.append("span").attr("class", "i18n").attr("data-i18n", "[html]app_page.section5b.type");
-    var select_type_export = type_export.append("select").attrs({ "id": "select_export_type", "class": "m_elem_right" }).on("change", function () {
-        var type = this.value,
-            export_filename = document.getElementById("export_filename");
-        if (type === "svg") {
-            document.getElementById('export_options_geo').style.display = 'none';
-            document.getElementById("export_options_png").style.display = "none";
-            export_filename.value = "export.svg";
-            export_filename.style.display = "";
-            export_filename.previousSibling.style.display = "";
-        } else if (type === "png") {
-            document.getElementById('export_options_geo').style.display = 'none';
-            document.getElementById("export_options_png").style.display = "";
-            export_filename.value = "export.png";
-            export_filename.style.display = "";
-            export_filename.previousSibling.style.display = "";
-        } else if (type === "geo") {
-            document.getElementById("export_options_png").style.display = "none";
-            document.getElementById('export_options_geo').style.display = '';
-            export_filename.style.display = "none";
-            export_filename.previousSibling.style.display = "none";
-        }
-    });
+  var proj_select2 = proj_options.append("div").attrs({ class: 'styled-select' }).insert("select").attrs({ class: 'i18n', 'id': 'form_projection2' }).styles({ "width": "calc(100% + 20px)" }).on('change', function () {
+    var val = this.value,
+        tmp = this.querySelector('[value="last_projection"]');
 
-    select_type_export.append("option").text("SVG").attr("value", "svg");
-    select_type_export.append("option").text("PNG").attr("value", "png");
-    select_type_export.append("option").text("GEO").attr("value", "geo");
+    if (val === 'more') {
+      this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
+      createBoxCustomProjection();
+      return;
+    } else if (val == 'proj4') {
+      this.value = tmp && current_proj_name === tmp.name ? "last_projection" : current_proj_name;
+      createBoxProj4();
+      return;
+    } else if (val == 'last_projection') {
+      val = tmp.name;
+    } else if (val == 'ConicConformalFrance') {
+      val = 'def_proj4';
+      _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+    }
 
-    var export_png_options = dv5b.append("p").attr("id", "export_options_png").style("display", "none");
-    export_png_options.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.format" });
-
-    var select_size_png = export_png_options.append("select").attrs({ "id": "select_png_format", "class": "m_elem_right" });
-    fill_export_png_options("user_defined");
-
-    select_size_png.on("change", function () {
-        var value = this.value,
-            unit = value === "web" ? " (px)" : " (cm)",
-            in_h = document.getElementById("export_png_height"),
-            in_w = document.getElementById("export_png_width");
-        if (value === "web") {
-            in_h.value = h;
-            in_w.value = w;
-        } else if (value === "user_defined") {
-            in_h.value = Math.round(h / 118.11 * 10) / 10;
-            in_w.value = Math.round(w / 118.11 * 10) / 10;
-        } else if (value === "A4_landscape") {
-            in_h.value = 21.0;
-            in_w.value = 29.7;
-        } else if (value === "A4_portrait") {
-            in_h.value = 29.7;
-            in_w.value = 21.0;
-        } else if (value === "A3_landscape") {
-            in_h.value = 42.0;
-            in_w.value = 29.7;
-        } else if (value === "A3_portrait") {
-            in_h.value = 29.7;
-            in_w.value = 42.0;
-        } else if (value === "A5_landscape") {
-            in_h.value = 14.8;
-            in_w.value = 21.0;
-        } else if (value === "A5_portrait") {
-            in_h.value = 21.0;
-            in_w.value = 14.8;
-        }
-        document.getElementById("export_png_width_txt").innerHTML = unit;
-        document.getElementById("export_png_height_txt").innerHTML = unit;
-        if (value.indexOf("portrait") > -1 || value.indexOf("landscape") > -1) {
-            in_h.disabled = "disabled";
-            in_w.disabled = "disabled";
-        } else {
-            in_h.disabled = undefined;
-            in_w.disabled = undefined;
-        }
-    });
-
-    var exp_a = export_png_options.append("p");
-    exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
-
-    exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
-        var ratio = h / w,
-            export_png_height = document.getElementById("export_png_height");
-        export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
-    });
-
-    exp_a.append("span").attr("id", "export_png_width_txt").html(" (px)");
-
-    var exp_b = export_png_options.append("p");
-    exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
-
-    exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
-        var ratio = h / w,
-            export_png_width = document.getElementById("export_png_width");
-        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-    });
-
-    exp_b.append("span").attr("id", "export_png_height_txt").html(" (px)");
-
-    var export_name = dv5b.append("p");
-    export_name.append("span").attrs({ class: "i18n", "data-i18n": "[html]app_page.section5b.filename" });
-
-    export_name.append("input").attrs({ "id": "export_filename", "class": "m_elem_right", "type": "text" });
-
-    var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
-
-    var geo_a = export_geo_options.append('p').style('margin-bottom', '0');
-    geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
-
-    var selec_layer = export_geo_options.insert("select").styles({ 'position': 'sticky', 'float': 'right' }).attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
-
-    var geo_b = export_geo_options.append('p').styles({ 'clear': 'both' }); // 'margin-top': '35px !important'
-    geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
-    var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' }).style('margin-top', '5px');
-
-    export_geo_options.append('p').style('margin', 'auto').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
-    var geo_c = export_geo_options.append('p').style('margin', 'auto');
-    var selec_projection = geo_c.insert("select").styles({ position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).attrs({ id: "projection_to_use", disabled: true, class: 'i18n' });
-
-    var proj4_input = export_geo_options.append('p').style('margin', 'auto').insert("input").attrs({ id: 'proj4str' }).styles({ display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).on('keyup', function () {
-        ok_button.disabled = this.value.length == 0 ? 'true' : '';
-    });
-
-    ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
-        // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
-        selec_type.append("option").attr("value", name).text(name);
-    });
-
-    [["app_page.section5b.wgs84", "epsg:4326"], ["app_page.section5b.web_mercator", "epsg:3857"], ["app_page.section5b.laea_europe", "epsg:3035"], ["app_page.section5b.usa_albers", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["app_page.section5b.british_national_grid", "epsg:27700"], ["app_page.section5b.lambert93", "epsg:2154"], ["app_page.section5b.eckert_4", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["app_page.section5b.proj4_prompt", "proj4string"]].forEach(function (projection) {
-        selec_projection.append("option").attrs({ class: 'i18n', value: projection[1], 'data-i18n': projection[0] }).text(i18next.t(projection[0]));
-    });
-
-    selec_type.on("change", function () {
-        if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
-            selec_projection.node().options.selectedIndex = 0;
-            selec_projection.attr("disabled", true);
-            ok_button.disabled = "";
-        } else {
-            selec_projection.attr("disabled", null);
-        }
-    });
-
-    selec_projection.on("change", function () {
-        if (this.value == "proj4string") {
-            proj4_input.style("display", "initial");
-            if (proj4_input.node().value == '' || proj4_input.node().value == undefined) ok_button.disabled = "true";
-        } else {
-            proj4_input.style("display", "none");
-            ok_button.disabled = "";
-        }
-    });
-    var ok_button = dv5b.append('p').style('float', 'left').append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
-        var type_export = document.getElementById("select_export_type").value,
-            export_name = document.getElementById("export_filename").value;
-        if (type_export === "svg") {
-            export_compo_svg(export_name);
-        } else if (type_export === "geo") {
-            var layer_name = document.getElementById('layer_to_export').value,
-                type = document.getElementById('datatype_to_use').value,
-                _proj2 = document.getElementById('projection_to_use').value,
-                proj4value = document.getElementById('proj4str').value;
-            export_layer_geo(layer_name, type, _proj2, proj4value);
-            //make_export_layer_box()
-        } else if (type_export === "png") {
-            var _type_export = document.getElementById("select_png_format").value,
-                ratio = void 0;
-            if (_type_export === "web") {
-                ratio = +document.getElementById("export_png_height").value / +h;
-            } else {
-                _type_export = "paper";
-                ratio = +document.getElementById("export_png_height").value * 118.11 / +h;
-            }
-            _export_compo_png(_type_export, ratio, export_name);
-        }
-    });
-
-    // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
-    var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
-
-    var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
-
-    var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
-        return {
-            "data-placement": d.tooltip_position,
-            "class": d.class,
-            "data-i18n": d.i18n,
-            "id": d.id };
-    }).html(function (d) {
-        return d.html;
-    });
-
-    // Trigger actions when buttons are clicked and set-up the initial view :
-    d3.selectAll(".zoom_button").on("click", zoomClick);
-    document.getElementById("info_button").onclick = displayInfoOnMove;
-    document.getElementById("hand_button").onclick = handle_click_hand;
-    document.getElementById("brush_zoom_button").onclick = handleZoomRect;
-
-    // Already append the div for displaying information on features,
-    // setting it currently unactive until it will be requested :
-    d3.select("body").append("div").attr("id", "info_features").classed("active", false).style("display", "none").html("");
-
-    //
-    accordionize(".accordion");
-    document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
-    prepare_drop_section();
-
-    new Sortable(document.getElementById("sortable"), {
-        animation: 100,
-        onUpdate: function onUpdate(a) {
-            // Set the layer order on the map in concordance with the user changes
-            // in the layer manager with a pretty rusty 'sorting' algorythm :
-            var at_end = null;
-            if (document.getElementById("info_features").className == "active") {
-                displayInfoOnMove();
-                at_end = true;
-            }
-            var desired_order = [],
-                actual_order = [],
-                layers = svg_map.querySelectorAll(".layer");
-
-            for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
-                var n = a.target.childNodes[_i3].getAttribute("layer_name");
-                desired_order[_i3] = _app.layer_to_id.get(n);
-                actual_order[_i3] = layers[_i3].id;
-            }
-            for (var _i4 = 0, len = desired_order.length; _i4 < len; _i4++) {
-                var lyr1 = document.getElementById(desired_order[_i4]),
-                    lyr2 = document.getElementById(desired_order[_i4 + 1]) || document.getElementById(desired_order[_i4]);
-                svg_map.insertBefore(lyr2, lyr1);
-            }
-            if (at_end) displayInfoOnMove();
-        },
-        onStart: function onStart(event) {
-            document.body.classList.add("no-drop");
-        },
-        onEnd: function onEnd(event) {
-            document.body.classList.remove("no-drop");
-        }
-    });
-
-    if (reload_project) {
-        var url = void 0;
-        if (reload_project.startsWith('http')) {
-            url = reload_project;
-        } else {
-            url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
-        }
-        xhrequest("GET", url, undefined, true).then(function (data) {
-            apply_user_preferences(data);
-        });
+    if (val == 'def_proj4') {
+      current_proj_name = val;
+      change_projection_4(proj4(_app.last_projection));
     } else {
-        // Check if there is a project to reload in the localStorage :
-        var last_project = window.localStorage.getItem("magrit_project");
-        if (last_project && last_project.length && last_project.length > 0) {
-            swal({ title: "",
-                // text: i18next.t("app_page.common.resume_last_project"),
-                allowOutsideClick: false,
-                allowEscapeKey: false,
-                type: "question",
-                showConfirmButton: true,
-                showCancelButton: true,
-                confirmButtonText: i18next.t("app_page.common.new_project"),
-                cancelButtonText: i18next.t("app_page.common.resume_last")
-            }).then(function () {
-                // If we don't want to resume from the last project, we can
-                // remove it :
-                window.localStorage.removeItem("magrit_project");
-                // Indicate that that no layer have been added for now :*
-                _app.first_layer = true;
-            }, function (dismiss) {
-                apply_user_preferences(last_project);
-            });
-        } else {
-            // Indicate that that no layer have been added for now :*
-            _app.first_layer = true;
-        }
+      current_proj_name = val;
+      change_projection(current_proj_name);
     }
-    // Set the properties for the notification zone :
-    alertify.set('notifier', 'position', 'bottom-left');
+  });
+
+  for (var i = 0; i < shortListContent.length; i++) {
+    var option = shortListContent[i];
+    proj_select2.append('option').attrs({ class: 'i18n', value: option, 'data-i18n': 'app_page.projection_name.' + option }).text(i18next.t('app_page.projection_name.' + option));
+  }
+  proj_select2.node().value = "NaturalEarth2";
+
+  var const_options = d3.select(".header_options_right").append("div").attr("id", "const_options").style("display", "inline");
+
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+    window.localStorage.removeItem("magrit_project");
+    window.removeEventListener("beforeunload", beforeUnloadWindow);
+    location.reload();
+  });
+
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin': 'auto' }).html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+    window.open('static/book/index.html', 'DocWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+  });
+
+  const_options.append("button").attrs({ id: "help_btn", class: "const_buttons i18n",
+    "data-i18n": "[tooltip-title]app_page.help_box.tooltip_btn",
+    "data-placement": "bottom" }).styles({ cursor: "pointer", background: "transparent" }).html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on("click", function () {
+    if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();
+    var click_func = function click_func(window_name, target_url) {
+      window.open(target_url, window_name, "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+    };
+    var box_content = '<div class="about_content">' + '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' + i18next.t('app_page.help_box.version', { version: _app.version }) + '</span></p>' + '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+    // '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.doc') + '</button></p>' +
+    '<p><button class="swal2-styled swal2_blue btn_doc">' + i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_contact">' + i18next.t('app_page.help_box.contact') + '</button></p>' + '<p><button class="swal2-styled swal2_blue btn_gh">' + i18next.t('app_page.help_box.gh_link') + '</button></p>' + '<p style="font-size: 0.8em; margin:auto;"><span>' + i18next.t('app_page.help_box.credits') + '</span></p></div>';
+    swal({
+      title: i18next.t("app_page.help_box.title"),
+      html: box_content,
+      showCancelButton: true,
+      showConfirmButton: false,
+      cancelButtonText: i18next.t('app_page.common.close'),
+      animation: "slide-from-top",
+      onOpen: function onOpen() {
+        var content = document.getElementsByClassName('about_content')[0];
+        var credit_link = content.querySelector('#credit_link');
+        credit_link.style.fontWeight = "bold";
+        credit_link.style.cursor = "pointer";
+        credit_link.color = "#000";
+        credit_link.onclick = function () {
+          window.open('http://riate.cnrs.fr', 'RiatePage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+        content.querySelector('.btn_doc').onclick = function () {
+          window.open('http://magrit.hypotheses.org/', "Carnet hypotheses", "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+        content.querySelector('.btn_contact').onclick = function () {
+          window.open('/contact', 'ContactWindow', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+        content.querySelector('.btn_gh').onclick = function () {
+          window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', "toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes").focus();
+        };
+      }
+    }).then(function (inputValue) {
+      null;
+    }, function (dismissValue) {
+      null;
+    });
+  });
+
+  const_options.append("button").attrs({ id: "current_app_lang", class: "const_buttons" }).styles({ color: "white", cursor: 'pointer',
+    "font-size": "14px", "vertical-align": "super",
+    background: "transparent", "font-weight": "bold" }).html(i18next.language).on("click", function () {
+    if (document.getElementById("menu_lang")) document.getElementById("menu_lang").remove();else {
+      (function () {
+        var current_lang = i18next.language;
+        var other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+        var actions = [{ "name": current_lang, "callback": change_lang }, { "name": other_langs[0], "callback": change_lang }, { "name": other_langs[1], "callback": change_lang }];
+        var menu = document.createElement("div");
+        menu.style.top = "40px";
+        menu.style.right = "0px";
+        menu.className = "context-menu";
+        menu.id = "menu_lang";
+        menu.style.minWidth = "30px";
+        menu.style.width = "50px";
+        menu.style.background = "#000";
+        var list_elems = document.createElement("ul");
+        menu.appendChild(list_elems);
+
+        var _loop = function _loop(_i2) {
+          var item = document.createElement("li"),
+              name = document.createElement("span");
+          list_elems.appendChild(item);
+          item.setAttribute("data-index", _i2);
+          item.style.textAlign = "right";
+          item.style.paddingRight = "16px";
+          name.className = "context-menu-item-name";
+          name.style.color = "white";
+          name.textContent = actions[_i2].name;
+          item.appendChild(name);
+          item.onclick = function () {
+            actions[_i2].callback();
+            menu.remove();
+          };
+        };
+
+        for (var _i2 = 0; _i2 < actions.length; _i2++) {
+          _loop(_i2);
+        }
+        document.querySelector("body").appendChild(menu);
+      })();
+    }
+  });
+
+  var menu = d3.select("#menu"),
+      b_accordion1 = menu.append("button").attr("id", "btn_s1").attr("class", "accordion i18n").attr("data-i18n", "app_page.section1.title"),
+      accordion1 = menu.append("div").attr("class", "panel").attr("id", "accordion1"),
+      b_accordion2_pre = menu.append("button").attr("id", "btn_s2").attr("class", "accordion i18n").attr("data-i18n", "app_page.section2.title"),
+      accordion2_pre = menu.append("div").attr("class", "panel").attr("id", "accordion2_pre"),
+      b_accordion2 = menu.append("button").attr("id", "btn_s2b").attr("class", "accordion i18n").style('display', 'none'),
+      accordion2 = menu.append("div").attr("class", "panel").attr("id", "accordion2b").style('display', 'none'),
+      b_accordion3 = menu.append("button").attr("id", "btn_s3").attr("class", "accordion i18n").attr("data-i18n", "app_page.section3.title"),
+      accordion3 = menu.append("div").attr("class", "panel").attr("id", "accordion3"),
+      b_accordion4 = menu.append("button").attr("id", "btn_s4").attr("class", "accordion i18n").attr("data-i18n", "app_page.section4.title"),
+      accordion4 = menu.append("div").attr("class", "panel").attr("id", "accordion4"),
+      b_accordion5 = menu.append("button").attr("id", "btn_s5").attr("class", "accordion i18n").attr("data-i18n", "app_page.section5b.title"),
+      accordion5 = menu.append("div").attr("class", "panel").attr("id", "accordion5b");
+
+  var section1 = accordion1.append("div").attr("id", "section1").attr("class", "i18n").attr("data-i18n", "[tooltip-title]app_page.tooltips.section1").attr("data-placement", "right");
+  window.section2_pre = accordion2_pre.append("div").attr("id", "section2_pre");
+  window.section2 = accordion2.append('div').attr('id', 'section2');
+  accordion3.append("div").attrs({ id: "section3" }), accordion4.append("div").attr("id", "section4");
+  accordion5.append("div").attr("id", "section5");
+
+  var dv1 = section1.append("div"),
+      dv11 = dv1.append("div").style("width", "auto");
+
+  dv11.append("img").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26", "alt": "Geometry layer" }).style("cursor", "pointer").on('click', click_button_add_layer);
+
+  dv11.append("p").attrs({ id: "input_geom", class: "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_geom").on('click', click_button_add_layer);
+
+  var dv12 = dv1.append("div");
+  dv12.append("img").attrs({ "id": "img_data_ext", "class": "user_panel", "src": "static/img/b/addtabular.png", "width": "26", "height": "26", "alt": "Additional dataset" }).style("cursor", "pointer").on('click', click_button_add_layer);
+
+  dv12.append("p").attrs({ "id": "data_ext", "class": "user_panel i18n", "data-i18n": "[html]app_page.section1.add_ext_dataset" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).on('click', click_button_add_layer);
+
+  var div_sample = dv1.append("div").attr("id", "sample_zone");
+  div_sample.append("img").attrs({ "id": "sample_button", "class": "user_panel", "src": "static/img/b/addsample.png", "width": "26", "height": "26", "alt": "Sample layers" }).style("cursor", "pointer").on('click', add_sample_layer);
+
+  div_sample.append("span").attrs({ "id": "sample_link", "class": "user_panel i18n" }).styles({ display: "inline", cursor: "pointer", "margin-left": "5px", "vertical-align": "super", "font-weight": "bold" }).attr("data-i18n", "[html]app_page.section1.add_sample_data").on('click', add_sample_layer);
+
+  dv1.append("p").attr("id", "join_section").styles({ "text-align": "center", "margin-top": "2px" }).html("");
+
+  dv1.append('p').styles({ 'text-align': 'center', 'margin': '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
+    'data-i18n': '[html]app_page.box_type_fields.title',
+    'disabled': true }).styles({ cursor: 'pointer',
+    'border-radius': '4px',
+    'border': '1px solid lightgrey',
+    'padding': '3.5px' }).html(i18next.t('app_page.box_type_fields.title')).on('click', function () {
+    var layer_name = Object.getOwnPropertyNames(user_data)[0];
+    make_box_type_fields(layer_name);
+  });
+
+  make_ico_choice();
+  add_simplified_land_layer();
+
+  var section3 = d3.select("#section3");
+
+  window.layer_list = section3.append("div").attrs({ class: "i18n",
+    "data-i18n": "[tooltip-title]app_page.tooltips.section3",
+    "data-placement": "right" }).append("ul").attrs({ id: "sortable", class: "layer_list" });
+
+  var dv3 = section3.append("div").style("padding-top", "10px").html('');
+
+  dv3.append("img").attrs({ "src": "static/img/b/addsample_t.png", class: 'i18n',
+    "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout_sample",
+    "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on('click', add_layout_layers);
+  dv3.append("img").attrs({ "src": "static/img/b/addgeom_t.png", 'id': 'input_layout_geom', class: 'i18n',
+    "data-i18n": "[tooltip-title]app_page.tooltips.section3_add_layout",
+    "data-placement": "right" }).styles({ cursor: "pointer", margin: "2.5px", float: "right", "border-radius": "10%" }).on("click", click_button_add_layer);
+
+  var section4 = d3.select("#section4");
+  var dv4 = section4.append("div").attr("class", "form-item").style("margin", "auto").append("ul").styles({ "list-style": "outside none none",
+    display: "inline-block",
+    padding: "0px",
+    width: "100%",
+    "margin-top": "0px" });
+
+  var e = dv4.append("li").styles({ margin: "1px", padding: "4px", "text-align": "center" });
+  e.append("input").attrs({ "id": "title", "class": "list_elem_section4 i18n",
+    "placeholder": "", "data-i18n": "[placeholder]app_page.section4.map_title" }).styles({ "margin": "0px 0px 0px 3px", "width": "160px" }).on("keyup", function () {
+    handle_title(this.value);
+  });
+  e.append("span").styles({ display: "inline", top: "4px", cursor: "pointer", "vertical-align": "sub" }).html(sys_run_button.replace("submit", "Title properties")).on("click", handle_title_properties);
+
+  var f = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+  f.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.background_color");
+  f.append("input").styles({ position: "absolute", right: "20px", "width": "60px", "margin-left": "15px" }).attrs({ type: "color", id: "bg_color", value: "#ffffff", "class": "list_elem_section4 m_elem_right" }).on("change", function () {
+    handle_bg_color(this.value);
+  });
+
+  var a1 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+  a1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_width");
+  a1.append("input").attrs({ id: "input-width", type: "number", value: w, "class": "list_elem_section4 m_elem_right" }).on("change", function () {
+    var new_width = +this.value;
+    if (new_width == 0 || isNaN(new_width)) {
+      this.value = w;
+      return;
+    }
+    var ratio_type = document.getElementById("map_ratio_select").value;
+    if (ratio_type == "portrait") {
+      h = round_value(new_width / 0.70707, 0);
+      canvas_mod_size([new_width, h]);
+    } else if (ratio_type == "landscape") {
+      h = round_value(new_width * 0.70707, 0);
+      canvas_mod_size([new_width, h]);
+    } else {
+      canvas_mod_size([new_width, null]);
+    }
+    document.getElementById("input-height").value = h;
+  });
+
+  var a2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+  a2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_height");
+  a2.append("input").attrs({ id: "input-height", type: "number", "value": h, class: "m_elem_right list_elem_section4" }).on("change", function () {
+    var new_height = +this.value;
+    if (new_height == 0 || isNaN(new_height)) {
+      this.value = h;
+      return;
+    }
+    var ratio_type = document.getElementById("map_ratio_select").value;
+    if (ratio_type == "portrait") {
+      w = round_value(new_height * 0.70707, 0);
+      canvas_mod_size([w, new_height]);
+    } else if (ratio_type == "landscape") {
+      w = round_value(new_height / 0.70707, 0);
+      canvas_mod_size([w, new_height]);
+    } else {
+      canvas_mod_size([null, new_height]);
+    }
+    document.getElementById("input-width").value = w;
+  });
+
+  var b = dv4.append("li").styles({ margin: "1px", padding: "4px 0" });
+  b.append("p").attr("class", "list_elem_section4 i18n").style("padding", "4px").attr("data-i18n", "[html]app_page.section4.map_ratio");
+  var ratio_select = b.append("select").attrs({ "class": "list_elem_section4 i18n m_elem_right", "id": "map_ratio_select" });
+
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_user").attr("value", "ratio_user");
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_landscape").attr("value", "landscape");;
+  ratio_select.append("option").text("").attr("data-i18n", "[html]app_page.section4.ratio_portait").attr("value", "portrait");
+  ratio_select.on("change", function () {
+    var map_xy = get_map_xy0();
+    var dispo_w = document.innerWidth - map_xy.x - 1;
+    var dispo_h = document.innerHeight - map_xy.y - 1;
+    var diff_w = dispo_w - w;
+    var diff_h = dispo_h - h;
+    if (this.value == "portrait") {
+      if (round_value(w / h, 1) == 1.4) {
+        var tmp = h;
+        h = w;
+        w = tmp;
+      } else if (diff_h >= diff_w) {
+        w = round_value(h * 0.70707, 0);
+      } else {
+        h = round_value(w / 0.70707, 0);
+      }
+    } else if (this.value == "landscape") {
+      if (round_value(h / w, 1) == 1.4) {
+        var _tmp = h;
+        h = w;
+        w = _tmp;
+      } else if (diff_h <= diff_w) {
+        w = round_value(h / 0.70707, 0);
+      } else {
+        h = round_value(w * 0.70707, 0);
+      }
+    }
+    canvas_mod_size([w, h]);
+    document.getElementById("input-width").value = w;
+    document.getElementById("input-height").value = h;
+    fill_export_png_options(this.value);
+  });
+  var zoom_prop = svg_map.__zoom;
+
+  var d2 = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+  d2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.resize_fit");
+  d2.append("button").styles({ margin: 0, padding: 0 }).attrs({ id: "resize_fit",
+    class: "m_elem_right list_elem_section4 button_st4 i18n",
+    'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
+    document.getElementById('btn_s4').click();
+    window.scrollTo(0, 0);
+    w = Math.round(window.innerWidth - 361);
+    h = window.innerHeight - 55;
+    canvas_mod_size([w, h]);
+    document.getElementById('map_ratio_select').value = "ratio_user";
+  });
+
+  var c = dv4.append("li").styles({ margin: "1px", padding: "4px" });
+  c.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_menu").style("cursor", "pointer");
+  c.append("span").attr("id", "map_center_menu_ico").style("display", "inline-table").style("cursor", "pointer");
+  c.on("click", function () {
+    var sections = document.getElementsByClassName("to_hide"),
+        arg = void 0;
+    if (sections[0].style.display == "none") {
+      arg = "";
+      document.getElementById("map_center_menu_ico").classList = "active";
+    } else {
+      arg = "none";
+      document.getElementById("map_center_menu_ico").classList = "";
+    }
+    sections[0].style.display = arg;
+    sections[1].style.display = arg;
+    sections[2].style.display = arg;
+    sections[3].style.display = arg;
+  });
+
+  var c1 = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  c1.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_x");
+  c1.append("input").style("width", "80px").attrs({ id: "input-center-x", class: "m_elem_right",
+    type: "number", value: round_value(zoom_prop.x, 2), step: "any" }).on("change", function () {
+    svg_map.__zoom.x = +this.value;
+    zoom_without_redraw();
+  });
+
+  var c2 = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  c2.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_center_y");
+
+  c2.append("input").attrs({ id: "input-center-y", class: "list_elem_section4 m_elem_right",
+    type: "number", "value": round_value(zoom_prop.y, 2), step: "any" }).style("width", "80px").on("change", function () {
+    svg_map.__zoom.y = +this.value;
+    zoom_without_redraw();
+  });;
+
+  var d = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  d.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.map_scale_k");
+  d.append("input").attrs({ id: "input-scale-k",
+    class: "list_elem_section4 m_elem_right",
+    type: "number",
+    value: round_value(zoom_prop.k * proj.scale(), 2),
+    step: "any" }).style("width", "80px").on("change", function () {
+    svg_map.__zoom.k = +this.value / proj.scale();
+    zoom_without_redraw();
+  });
+
+  var g = dv4.append("li").style("display", "none").attr("class", "to_hide");
+  g.append("p").attr("class", "list_elem_section4 i18n").attr("data-i18n", "[html]app_page.section4.canvas_rotation");
+
+  g.append("span").style("float", "right").html("°");
+
+  g.append("input").attrs({ id: "canvas_rotation_value_txt", class: "without_spinner", type: 'number',
+    value: 0, min: 0, max: 360, step: "any" }).styles({ width: "30px", "margin-left": "10px", "float": "right", "font-size": "11.5px" }).on("change", function () {
+    var val = +this.value,
+        old_value = document.getElementById("form_rotate").value;
+    if (isNaN(val) || val < -361) {
+      this.value = old_value;
+      return;
+    } else if (val < 0 && val > -361) {
+      this.value = 360 + val;
+    } else if (val > 360) {
+      this.value = 360;
+    } else {
+      // Should remove trailing zeros (right/left) if any :
+      this.value = +this.value;
+    }
+    rotate_global(this.value);
+    document.getElementById("form_rotate").value = this.value;
+  });
+
+  g.append("input").attrs({ type: "range", id: "form_rotate", min: 0, max: 360, step: 1 }).styles({ width: "80px", margin: "0px 10px 5px 15px", float: "right" }).on("input", function () {
+    rotate_global(this.value);
+    document.getElementById("canvas_rotation_value_txt").value = this.value;
+  });
+
+  var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
+  g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: "autoalign_features", type: "checkbox",
+    class: "m_elem_right list_elem_section4 i18n" }).on('change', function () {
+    _app.autoalign_features = this.checked ? true : false;
+  });
+
+  var _i = dv4.append('li').styles({ 'text-align': 'center' });
+  _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', "data-i18n": "[html]app_page.section4.layout_features" });
+  var p1 = _i.insert('p').style('display', 'inline-block');
+  p1.insert('span').insert('img').attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' }).on('click', function () {
+    return add_layout_feature('arrow');
+  });
+  // p1.insert('span').insert('img').attrs({id: 'btn_free_draw', src: 'static/img/layout_icons/draw-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.free_draw'}).on('click', () => add_layout_feature('free_draw'));
+  p1.insert('span').insert('img').attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' }).on('click', function () {
+    return add_layout_feature('text_annot');
+  });
+  if (!window.isIE) {
+    p1.insert('span').insert('img').attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' }).on('click', function () {
+      return add_layout_feature('symbol');
+    });
+  }
+  p1.insert('span').insert('img').attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' }).on('click', function () {
+    return add_layout_feature('rectangle');
+  });
+  p1.insert('span').insert('img').attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' }).on('click', function () {
+    return add_layout_feature('ellipse');
+  });
+
+  var p2 = _i.insert('p').style('display', 'inline-block');
+  p2.insert('span').insert('img').attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' }).on('click', function () {
+    return add_layout_feature('graticule');
+  });
+  p2.insert('span').insert('img').attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' }).on('click', function () {
+    return add_layout_feature('north_arrow');
+  });
+  p2.insert('span').insert('img').attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' }).on('click', function () {
+    return add_layout_feature('scale');
+  });
+  p2.insert('span').insert('img').attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' }).on('click', function () {
+    return add_layout_feature('sphere');
+  });
+
+  var section5b = d3.select("#section5");
+  var dv5b = section5b.append("div").attr("class", "form-item");
+
+  var type_export = dv5b.append("p");
+  type_export.append("span").attr("class", "i18n").attr("data-i18n", "[html]app_page.section5b.type");
+  var select_type_export = type_export.append("select").attrs({ "id": "select_export_type", "class": "m_elem_right" }).on("change", function () {
+    var type = this.value,
+        export_filename = document.getElementById("export_filename");
+    if (type === "svg") {
+      document.getElementById('export_options_geo').style.display = 'none';
+      document.getElementById("export_options_png").style.display = "none";
+      export_filename.value = "export.svg";
+      export_filename.style.display = "";
+      export_filename.previousSibling.style.display = "";
+    } else if (type === "png") {
+      document.getElementById('export_options_geo').style.display = 'none';
+      document.getElementById("export_options_png").style.display = "";
+      export_filename.value = "export.png";
+      export_filename.style.display = "";
+      export_filename.previousSibling.style.display = "";
+    } else if (type === "geo") {
+      document.getElementById("export_options_png").style.display = "none";
+      document.getElementById('export_options_geo').style.display = '';
+      export_filename.style.display = "none";
+      export_filename.previousSibling.style.display = "none";
+    }
+  });
+
+  select_type_export.append("option").text("SVG").attr("value", "svg");
+  select_type_export.append("option").text("PNG").attr("value", "png");
+  select_type_export.append("option").text("GEO").attr("value", "geo");
+
+  var export_png_options = dv5b.append("p").attr("id", "export_options_png").style("display", "none");
+  export_png_options.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.format" });
+
+  var select_size_png = export_png_options.append("select").attrs({ "id": "select_png_format", "class": "m_elem_right" });
+  fill_export_png_options("user_defined");
+
+  select_size_png.on("change", function () {
+    var value = this.value,
+        unit = value === "web" ? " (px)" : " (cm)",
+        in_h = document.getElementById("export_png_height"),
+        in_w = document.getElementById("export_png_width");
+    if (value === "web") {
+      in_h.value = h;
+      in_w.value = w;
+    } else if (value === "user_defined") {
+      in_h.value = Math.round(h / 118.11 * 10) / 10;
+      in_w.value = Math.round(w / 118.11 * 10) / 10;
+    } else if (value === "A4_landscape") {
+      in_h.value = 21.0;
+      in_w.value = 29.7;
+    } else if (value === "A4_portrait") {
+      in_h.value = 29.7;
+      in_w.value = 21.0;
+    } else if (value === "A3_landscape") {
+      in_h.value = 42.0;
+      in_w.value = 29.7;
+    } else if (value === "A3_portrait") {
+      in_h.value = 29.7;
+      in_w.value = 42.0;
+    } else if (value === "A5_landscape") {
+      in_h.value = 14.8;
+      in_w.value = 21.0;
+    } else if (value === "A5_portrait") {
+      in_h.value = 21.0;
+      in_w.value = 14.8;
+    }
+    document.getElementById("export_png_width_txt").innerHTML = unit;
+    document.getElementById("export_png_height_txt").innerHTML = unit;
+    if (value.indexOf("portrait") > -1 || value.indexOf("landscape") > -1) {
+      in_h.disabled = "disabled";
+      in_w.disabled = "disabled";
+    } else {
+      in_h.disabled = undefined;
+      in_w.disabled = undefined;
+    }
+  });
+
+  var exp_a = export_png_options.append("p");
+  exp_a.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.width" });
+
+  exp_a.append("input").style("width", "60px").attrs({ "id": "export_png_width", "class": "m_elem_right", "type": "number", step: 0.1, value: w }).on("change", function () {
+    var ratio = h / w,
+        export_png_height = document.getElementById("export_png_height");
+    export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
+  });
+
+  exp_a.append("span").attr("id", "export_png_width_txt").html(" (px)");
+
+  var exp_b = export_png_options.append("p");
+  exp_b.append("span").attrs({ "class": "i18n", "data-i18n": "[html]app_page.section5b.height" });
+
+  exp_b.append("input").style("width", "60px").attrs({ "id": "export_png_height", "class": "m_elem_right", "type": "number", step: 0.1, value: h }).on("change", function () {
+    var ratio = h / w,
+        export_png_width = document.getElementById("export_png_width");
+    export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+  });
+
+  exp_b.append("span").attr("id", "export_png_height_txt").html(" (px)");
+
+  var export_name = dv5b.append("p");
+  export_name.append("span").attrs({ class: "i18n", "data-i18n": "[html]app_page.section5b.filename" });
+
+  export_name.append("input").attrs({ "id": "export_filename", "class": "m_elem_right", "type": "text" });
+
+  var export_geo_options = dv5b.append("p").attr("id", "export_options_geo").style("display", "none");
+
+  var geo_a = export_geo_options.append('p').style('margin-bottom', '0');
+  geo_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
+
+  var selec_layer = export_geo_options.insert("select").styles({ 'position': 'sticky', 'float': 'right' }).attrs({ id: "layer_to_export", class: 'i18n m_elem_right' });
+
+  var geo_b = export_geo_options.append('p').styles({ 'clear': 'both' }); // 'margin-top': '35px !important'
+  geo_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_datatype' });
+  var selec_type = geo_b.insert("select").attrs({ id: 'datatype_to_use', class: 'i18n m_elem_right' }).style('margin-top', '5px');
+
+  export_geo_options.append('p').style('margin', 'auto').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
+  var geo_c = export_geo_options.append('p').style('margin', 'auto');
+  var selec_projection = geo_c.insert("select").styles({ position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).attrs({ id: "projection_to_use", disabled: true, class: 'i18n' });
+
+  var proj4_input = export_geo_options.append('p').style('margin', 'auto').insert("input").attrs({ id: 'proj4str' }).styles({ display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' }).on('keyup', function () {
+    ok_button.disabled = this.value.length == 0 ? 'true' : '';
+  });
+
+  ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML", "KML"].forEach(function (name) {
+    // ["GeoJSON", "TopoJSON", "ESRI Shapefile", "GML"].forEach( name => {
+    selec_type.append("option").attr("value", name).text(name);
+  });
+
+  [["app_page.section5b.wgs84", "epsg:4326"], ["app_page.section5b.web_mercator", "epsg:3857"], ["app_page.section5b.laea_europe", "epsg:3035"], ["app_page.section5b.usa_albers", "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=37.5 +lon_0=-96 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs"], ["app_page.section5b.british_national_grid", "epsg:27700"], ["app_page.section5b.lambert93", "epsg:2154"], ["app_page.section5b.eckert_4", "+proj=eck4 +lon_0=0 +x_0=0 +y_0=0 +ellps=WGS84 +datum=WGS84 +units=m +no_defs "], ["app_page.section5b.proj4_prompt", "proj4string"]].forEach(function (projection) {
+    selec_projection.append("option").attrs({ class: 'i18n', value: projection[1], 'data-i18n': projection[0] }).text(i18next.t(projection[0]));
+  });
+
+  selec_type.on("change", function () {
+    if (this.value == "TopoJSON" || this.value == "KML" || this.value == "GeoJSON") {
+      selec_projection.node().options.selectedIndex = 0;
+      selec_projection.attr("disabled", true);
+      ok_button.disabled = "";
+    } else {
+      selec_projection.attr("disabled", null);
+    }
+  });
+
+  selec_projection.on("change", function () {
+    if (this.value == "proj4string") {
+      proj4_input.style("display", "initial");
+      if (proj4_input.node().value == '' || proj4_input.node().value == undefined) ok_button.disabled = "true";
+    } else {
+      proj4_input.style("display", "none");
+      ok_button.disabled = "";
+    }
+  });
+  var ok_button = dv5b.append('p').style('float', 'left').append("button").attrs({ "id": "export_button_section5b", "class": "i18n button_st4", "data-i18n": "[html]app_page.section5b.export_button" }).on("click", function () {
+    var type_export = document.getElementById("select_export_type").value,
+        export_name = document.getElementById("export_filename").value;
+    if (type_export === "svg") {
+      export_compo_svg(export_name);
+    } else if (type_export === "geo") {
+      var layer_name = document.getElementById('layer_to_export').value,
+          type = document.getElementById('datatype_to_use').value,
+          _proj2 = document.getElementById('projection_to_use').value,
+          proj4value = document.getElementById('proj4str').value;
+      export_layer_geo(layer_name, type, _proj2, proj4value);
+      //make_export_layer_box()
+    } else if (type_export === "png") {
+      var _type_export = document.getElementById("select_png_format").value,
+          ratio = void 0;
+      if (_type_export === "web") {
+        ratio = +document.getElementById("export_png_height").value / +h;
+      } else {
+        _type_export = "paper";
+        ratio = +document.getElementById("export_png_height").value * 118.11 / +h;
+      }
+      _export_compo_png(_type_export, ratio, export_name);
+    }
+  });
+
+  // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
+  var lm = map_div.append("div").attr("class", "light-menu").styles({ position: "absolute", right: "0px", bottom: "0px" });
+
+  var lm_buttons = [{ id: "zoom_out", "i18n": "[tooltip-title]app_page.lm_buttons.zoom-", "tooltip_position": "left", class: "zoom_button i18n", html: "-" }, { id: "zoom_in", "i18n": "[tooltip-title]app_page.lm_buttons.zoom+", "tooltip_position": "left", class: "zoom_button i18n", html: "+" }, { id: "info_button", "i18n": "[tooltip-title]app_page.lm_buttons.i", "tooltip_position": "left", class: "info_button i18n", html: "i" }, { id: "brush_zoom_button", class: "brush_zoom_button", "i18n": "[tooltip-title]app_page.lm_buttons.zoom_rect", "tooltip_position": "left", html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: "hand_button", "i18n": "[tooltip-title]app_page.lm_buttons.hand_button", "tooltip_position": "left", class: "hand_button active i18n", html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
+
+  var selec = lm.selectAll("input").data(lm_buttons).enter().append('p').style("margin", "auto").insert("button").attrs(function (d, i) {
+    return {
+      "data-placement": d.tooltip_position,
+      "class": d.class,
+      "data-i18n": d.i18n,
+      "id": d.id };
+  }).html(function (d) {
+    return d.html;
+  });
+
+  // Trigger actions when buttons are clicked and set-up the initial view :
+  d3.selectAll(".zoom_button").on("click", zoomClick);
+  document.getElementById("info_button").onclick = displayInfoOnMove;
+  document.getElementById("hand_button").onclick = handle_click_hand;
+  document.getElementById("brush_zoom_button").onclick = handleZoomRect;
+
+  // Already append the div for displaying information on features,
+  // setting it currently unactive until it will be requested :
+  d3.select("body").append("div").attr("id", "info_features").classed("active", false).style("display", "none").html("");
+
+  //
+  accordionize(".accordion");
+  document.getElementById("btn_s1").dispatchEvent(new MouseEvent("click"));
+  prepare_drop_section();
+
+  new Sortable(document.getElementById("sortable"), {
+    animation: 100,
+    onUpdate: function onUpdate(a) {
+      // Set the layer order on the map in concordance with the user changes
+      // in the layer manager with a pretty rusty 'sorting' algorythm :
+      var at_end = null;
+      if (document.getElementById("info_features").className == "active") {
+        displayInfoOnMove();
+        at_end = true;
+      }
+      var desired_order = [],
+          actual_order = [],
+          layers = svg_map.querySelectorAll(".layer");
+
+      for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
+        var n = a.target.childNodes[_i3].getAttribute("layer_name");
+        desired_order[_i3] = _app.layer_to_id.get(n);
+        actual_order[_i3] = layers[_i3].id;
+      }
+      for (var _i4 = 0, len = desired_order.length; _i4 < len; _i4++) {
+        var lyr1 = document.getElementById(desired_order[_i4]),
+            lyr2 = document.getElementById(desired_order[_i4 + 1]) || document.getElementById(desired_order[_i4]);
+        svg_map.insertBefore(lyr2, lyr1);
+      }
+      if (at_end) displayInfoOnMove();
+    },
+    onStart: function onStart(event) {
+      document.body.classList.add("no-drop");
+    },
+    onEnd: function onEnd(event) {
+      document.body.classList.remove("no-drop");
+    }
+  });
+
+  if (reload_project) {
+    var url = void 0;
+    if (reload_project.startsWith('http')) {
+      url = reload_project;
+    } else {
+      url = 'https://gist.githubusercontent.com/' + reload_project + '/raw/';
+    }
+    xhrequest("GET", url, undefined, true).then(function (data) {
+      apply_user_preferences(data);
+    });
+  } else {
+    (function () {
+      // Check if there is a project to reload in the localStorage :
+      var last_project = window.localStorage.getItem("magrit_project");
+      if (last_project && last_project.length && last_project.length > 0) {
+        swal({ title: "",
+          // text: i18next.t("app_page.common.resume_last_project"),
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          type: "question",
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: i18next.t("app_page.common.new_project"),
+          cancelButtonText: i18next.t("app_page.common.resume_last")
+        }).then(function () {
+          // If we don't want to resume from the last project, we can
+          // remove it :
+          window.localStorage.removeItem("magrit_project");
+          // Indicate that that no layer have been added for now :*
+          _app.first_layer = true;
+        }, function (dismiss) {
+          apply_user_preferences(last_project);
+        });
+      } else {
+        // Indicate that that no layer have been added for now :*
+        _app.first_layer = true;
+      }
+    })();
+  }
+  // Set the properties for the notification zone :
+  alertify.set('notifier', 'position', 'bottom-left');
 }
 
 function encodeId(s) {
-    if (s === '') return '_';
-    return s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
-        return '_' + match[0].charCodeAt(0).toString(16) + '_';
-    });
+  if (s === '') return '_';
+  return s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
+    return '_' + match[0].charCodeAt(0).toString(16) + '_';
+  });
 }
 
 function bindTooltips() {
-    var dataAttr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "tooltip-title";
+  var dataAttr = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "tooltip-title";
 
-    // bind the mains tooltips
-    var tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
-    for (var i = tooltips_elem.length - 1; i > -1; i--) {
-        new Tooltip(tooltips_elem[i], {
-            dataAttr: dataAttr,
-            animation: 'slideNfade',
-            duration: 50,
-            delay: 100,
-            container: document.getElementById('twbs')
-        });
-    }
+  // bind the mains tooltips
+  var tooltips_elem = document.querySelectorAll("[" + dataAttr + "]");
+  for (var i = tooltips_elem.length - 1; i > -1; i--) {
+    new Tooltip(tooltips_elem[i], {
+      dataAttr: dataAttr,
+      animation: 'slideNfade',
+      duration: 50,
+      delay: 100,
+      container: document.getElementById('twbs')
+    });
+  }
 }
 
 function make_eye_button(state) {
-    if (state == "open") {
-        var eye_open = document.createElement("img");
-        eye_open.setAttribute("src", "static/img/b/eye_open.png");
-        eye_open.setAttribute("class", "active_button i18n");
-        eye_open.setAttribute("id", "eye_open");
-        eye_open.setAttribute("width", 17);
-        eye_open.setAttribute("height", 17);
-        eye_open.setAttribute("alt", "Visible");
-        return eye_open;
-    } else if (state == "closed") {
-        var eye_closed = document.createElement("img");
-        eye_closed.setAttribute("src", "static/img/b/eye_closed.png");
-        eye_closed.setAttribute("class", "active_button i18n");
-        eye_closed.setAttribute("id", "eye_closed");
-        eye_closed.setAttribute("width", 17);
-        eye_closed.setAttribute("height", 17);
-        eye_closed.setAttribute("alt", "Not visible");
-        return eye_closed;
-    }
+  if (state == "open") {
+    var eye_open = document.createElement("img");
+    eye_open.setAttribute("src", "static/img/b/eye_open.png");
+    eye_open.setAttribute("class", "active_button i18n");
+    eye_open.setAttribute("id", "eye_open");
+    eye_open.setAttribute("width", 17);
+    eye_open.setAttribute("height", 17);
+    eye_open.setAttribute("alt", "Visible");
+    return eye_open;
+  } else if (state == "closed") {
+    var eye_closed = document.createElement("img");
+    eye_closed.setAttribute("src", "static/img/b/eye_closed.png");
+    eye_closed.setAttribute("class", "active_button i18n");
+    eye_closed.setAttribute("id", "eye_closed");
+    eye_closed.setAttribute("width", 17);
+    eye_closed.setAttribute("height", 17);
+    eye_closed.setAttribute("alt", "Not visible");
+    return eye_closed;
+  }
 }
 
 function change_lang() {
-    var new_lang = this.name;
-    if (new_lang == i18next.language) {
-        return;
-    } else {
-        docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-        i18next.changeLanguage(new_lang, function () {
-            localize(".i18n");
-            bindTooltips();
-        });
-        document.getElementById("current_app_lang").innerHTML = new_lang;
-        var menu = document.getElementById("menu_lang");
-        if (menu) menu.remove();
-    }
+  var new_lang = this.name;
+  if (new_lang == i18next.language) {
+    return;
+  } else {
+    docCookies.setItem("user_lang", new_lang, 31536e3, "/");
+    i18next.changeLanguage(new_lang, function () {
+      localize(".i18n");
+      bindTooltips();
+    });
+    document.getElementById("current_app_lang").innerHTML = new_lang;
+    var menu = document.getElementById("menu_lang");
+    if (menu) menu.remove();
+  }
 }
 
 function make_ico_choice() {
-    var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png'];
+  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png'];
 
-    var function_panel = section2_pre.append("div").attr("id", "list_ico_func");
+  var function_panel = section2_pre.append("div").attr("id", "list_ico_func");
 
-    var _loop2 = function _loop2(i, len_i) {
-        var ico_name = list_fun_ico[i],
-            func_name = ico_name.split('.')[0],
-            func_desc = get_menu_option(func_name).desc,
-            margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
-        function_panel.insert("img").styles({ margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none" }).attrs({ class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-            src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on("click", function () {
-            var fill_menu = true;
-            // Do some clean-up related to the previously displayed options :
-            if (window.fields_handler) {
-                if (this.classList.contains('active')) {
-                    switch_accordion_section('btn_s2b');
-                    return;
-                } else {
-                    clean_menu_function();
-                }
-            }
+  var _loop2 = function _loop2(i, len_i) {
+    var ico_name = list_fun_ico[i],
+        func_name = ico_name.split('.')[0],
+        func_desc = get_menu_option(func_name).desc,
+        margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
+    function_panel.insert("img").styles({ margin: margin_value, cursor: 'pointer', width: '50px', "float": "left", "list-style": "none" }).attrs({ class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+      src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on("click", function () {
+      var fill_menu = true;
+      // Do some clean-up related to the previously displayed options :
+      if (window.fields_handler) {
+        if (this.classList.contains('active')) {
+          switch_accordion_section('btn_s2b');
+          return;
+        } else {
+          clean_menu_function();
+        }
+      }
 
-            document.getElementById('accordion2b').style.display = '';
+      document.getElementById('accordion2b').style.display = '';
 
-            // Get the function to fill the menu with the appropriate options (and do it):
-            _app.current_functionnality = get_menu_option(func_name);
-            var make_menu = eval(_app.current_functionnality.menu_factory);
-            window.fields_handler = eval(_app.current_functionnality.fields_handler);
-            make_menu();
+      // Get the function to fill the menu with the appropriate options (and do it):
+      _app.current_functionnality = get_menu_option(func_name);
+      var make_menu = window[_app.current_functionnality.menu_factory];
+      window.fields_handler = window[_app.current_functionnality.fields_handler];
+      make_menu();
 
-            // Replace the title of the section:
-            var selec_title = document.getElementById("btn_s2b");
-            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
-            selec_title.style.display = '';
+      // Replace the title of the section:
+      var selec_title = document.getElementById("btn_s2b");
+      selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
+      selec_title.style.display = '';
 
-            // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-            // let btn_info = document.getElementById("btn_info");
-            // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-            // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-            // new Popover(btn_info,{
-            //     container: document.getElementById("twbs"),
-            //     customClass: "help-popover",
-            //     dismiss: "true",
-            //     dismissOutsideClick: true,
-            //     placement: "right"
-            // });
+      // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
+      if (this.style.filter == "grayscale(100%)") {} else {
+        this.classList.add('active');
+        // Highlight the icon of the selected functionnality :
+        this.style.filter = "invert(100%) saturate(200%)";
 
-            // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
-            if (this.style.filter == "grayscale(100%)") {} else {
-                this.classList.add('active');
-                // Highlight the icon of the selected functionnality :
-                this.style.filter = "invert(100%) saturate(200%)";
+        // Fill the field of the functionnality with the field
+        // of the targeted layer if already uploaded by the user :
+        if (_app.targeted_layer_added) {
+          var target_layer = Object.getOwnPropertyNames(user_data)[0];
+          fields_handler.fill(target_layer);
+        }
 
-                // Fill the field of the functionnality with the field
-                // of the targeted layer if already uploaded by the user :
-                if (_app.targeted_layer_added) {
-                    var target_layer = Object.getOwnPropertyNames(user_data)[0];
-                    fields_handler.fill(target_layer);
-                }
+        // Specific case for flow/link functionnality as we are also
+        // filling the fields with data from the uploaded tabular file if any :
+        if (func_name == "flow" && joined_dataset) {
+          fields_handler.fill();
+        }
+      }
+      switch_accordion_section('btn_s2b');
+    });
+  };
 
-                // Specific case for flow/link functionnality as we are also
-                // filling the fields with data from the uploaded tabular file if any :
-                if (func_name == "flow" && joined_dataset) {
-                    fields_handler.fill();
-                }
-            }
-            switch_accordion_section('btn_s2b');
-        });
-    };
-
-    for (var i = 0, len_i = list_fun_ico.length; i < len_i; i++) {
-        _loop2(i, len_i);
-    }
+  for (var i = 0, len_i = list_fun_ico.length; i < len_i; i++) {
+    _loop2(i, len_i);
+  }
 }
 
 var w = Math.round(window.innerWidth - 361),
@@ -1015,7 +1007,7 @@ var user_data = new Object(),
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w + "px").style("height", h + "px").append("svg").attrs({ 'id': 'svg_map', 'width': w, 'height': h }).style("position", "absolute").on("contextmenu", function (event) {
-    d3.event.preventDefault();
+  d3.event.preventDefault();
 }).call(zoom);
 
 // map.on("contextmenu", function(event){ d3.event.preventDefault(); });
@@ -1023,12 +1015,12 @@ var map = map_div.style("width", w + "px").style("height", h + "px").append("svg
 var defs = map.append("defs");
 
 var _app = {
-    to_cancel: undefined,
-    targeted_layer_added: false,
-    current_functionnality: undefined,
-    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    version: document.querySelector("#header").getAttribute('v')
+  to_cancel: undefined,
+  targeted_layer_added: false,
+  current_functionnality: undefined,
+  layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+  id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+  version: document.querySelector("#header").getAttribute('v')
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1061,73 +1053,73 @@ var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 
 var customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
 
 function parseQuery(search) {
-    var args = search.substring(1).split('&');
-    var argsParsed = {};
-    var arg = void 0,
-        kvp = void 0,
-        key = void 0,
-        value = void 0;
-    for (var i = 0; i < args.length; i++) {
-        arg = args[i];
-        if (arg.indexOf('=') === -1) {
-            argsParsed[decodeURIComponent(arg).trim()] = true;
-        } else {
-            kvp = arg.split('=');
-            key = decodeURIComponent(kvp[0]).trim();
-            value = decodeURIComponent(kvp[1]).trim();
-            argsParsed[key] = decodeURIComponent(kvp[1]).trim();
-        }
+  var args = search.substring(1).split('&');
+  var argsParsed = {};
+  var arg = void 0,
+      kvp = void 0,
+      key = void 0,
+      value = void 0;
+  for (var i = 0; i < args.length; i++) {
+    arg = args[i];
+    if (arg.indexOf('=') === -1) {
+      argsParsed[decodeURIComponent(arg).trim()] = true;
+    } else {
+      kvp = arg.split('=');
+      key = decodeURIComponent(kvp[0]).trim();
+      value = decodeURIComponent(kvp[1]).trim();
+      argsParsed[key] = decodeURIComponent(kvp[1]).trim();
     }
-    return argsParsed;
+  }
+  return argsParsed;
 }
 
 (function () {
-    var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
-    var params = {};
-    document.querySelector('noscript').remove();
-    window.isIE = function () {
-        return (/MSIE/i.test(navigator.userAgent) || /Trident\/\d./i.test(navigator.userAgent) || /Edge\/\d./i.test(navigator.userAgent) ? true : false
-        );
-    }();
-    // window.isOldMS_Firefox = (() => (/Firefox/i.test(navigator.userAgent)
-    //   && (/Windows NT 6.0/i.test(navigator.userAgent)
-    //       || /Windows NT 6.1/i.test(navigator.userAgent))) ? true : false
-    // )();
-    if (window.location.search) {
-        var parsed_querystring = parseQuery(window.location.search);
-        params.reload = parsed_querystring.reload;
-        if (typeof history.replaceState !== 'undefined') {
-            // replaceState should avoid creating a new entry on the history
-            var obj = { Page: window.location.search, Url: window.location.pathname };
-            history.replaceState(obj, obj.Page, obj.Url);
-        }
+  var lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
+  var params = {};
+  document.querySelector('noscript').remove();
+  window.isIE = function () {
+    return (/MSIE/i.test(navigator.userAgent) || /Trident\/\d./i.test(navigator.userAgent) || /Edge\/\d./i.test(navigator.userAgent) ? true : false
+    );
+  }();
+  // window.isOldMS_Firefox = (() => (/Firefox/i.test(navigator.userAgent)
+  //   && (/Windows NT 6.0/i.test(navigator.userAgent)
+  //       || /Windows NT 6.1/i.test(navigator.userAgent))) ? true : false
+  // )();
+  if (window.location.search) {
+    var parsed_querystring = parseQuery(window.location.search);
+    params.reload = parsed_querystring.reload;
+    if (typeof history.replaceState !== 'undefined') {
+      // replaceState should avoid creating a new entry on the history
+      var obj = { Page: window.location.search, Url: window.location.pathname };
+      history.replaceState(obj, obj.Page, obj.Url);
     }
+  }
 
-    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
-    i18next.use(i18nextXHRBackend).init({
-        debug: true,
-        lng: lang,
-        fallbackLng: existing_lang[0],
-        backend: {
-            loadPath: 'static/locales/{{lng}}/translation.534307bc5156.json'
-        }
-    }, function (err, tr) {
-        if (err) {
-            throw err;
-        } else {
-            window.localize = locI18next.init(i18next);
-            setUpInterface(params.reload);
-            localize(".i18n");
-            bindTooltips();
-        }
-    });
+  lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
+  i18next.use(i18nextXHRBackend).init({
+    debug: true,
+    lng: lang,
+    fallbackLng: existing_lang[0],
+    backend: {
+      loadPath: 'static/locales/{{lng}}/translation.2d451eb2d7f2.json'
+    }
+  }, function (err, tr) {
+    if (err) {
+      throw err;
+    } else {
+      window.localize = locI18next.init(i18next);
+      setUpInterface(params.reload);
+      localize(".i18n");
+      bindTooltips();
+    }
+  });
 })();
 
 function up_legends() {
-    var legend_features = svg_map.querySelectorAll('.legend');
-    for (var i = 0; i < legend_features.length; i++) {
-        svg_map.appendChild(legend_features[i], null);
-    }
+  var legend_features = svg_map.querySelectorAll('.legend');
+  for (var i = 0; i < legend_features.length; i++) {
+    svg_map.appendChild(legend_features[i], null);
+  }
 }
 
 ////////////////
@@ -1138,108 +1130,98 @@ function up_legends() {
 // which are on each feature representing a layer in the layer manager
 // (the function is called each time that a new feature is put in this layer manager)
 function binds_layers_buttons(layer_name) {
-    if (layer_name == undefined) {
-        alert("This shouldn't happend");
-        return;
-    }
-    var layer_id = _app.layer_to_id.get(layer_name);
-    var sortable_elem = d3.select("#sortable").select("." + layer_id);
-    sortable_elem.on("dblclick", function () {
-        handle_click_layer(layer_name);
-    });
-    sortable_elem.on("contextmenu", function () {
-        d3.event.preventDefault();return;
-    });
-    sortable_elem.select("#trash_button").on("click", function () {
-        remove_layer(layer_name);
-    });
-    sortable_elem.select(".active_button").on("click", function () {
-        handle_active_layer(layer_name);
-    });
-    sortable_elem.select(".style_button").on("click", function () {
-        handle_click_layer(layer_name);
-    });
-    sortable_elem.select(".style_target_layer").on("click", function () {
-        handle_click_layer(layer_name);
-    });
-    sortable_elem.select("#legend_button").on("click", function () {
-        handle_legend(layer_name);
-    });
-    sortable_elem.select("#browse_data_button").on("click", function () {
-        boxExplore2.create(layer_name);
-    });
-    sortable_elem.select("#zoom_fit_button").on("click", function () {
-        center_map(layer_name);
-        zoom_without_redraw();
-    });
-    // TODO : re-add a tooltip when the mouse is over that sortable element ?
+  if (layer_name == undefined) {
+    alert("This shouldn't happend");
+    return;
+  }
+  var layer_id = _app.layer_to_id.get(layer_name);
+  var sortable_elem = d3.select("#sortable").select("." + layer_id);
+  sortable_elem.on("dblclick", function () {
+    handle_click_layer(layer_name);
+  });
+  sortable_elem.on("contextmenu", function () {
+    d3.event.preventDefault();return;
+  });
+  sortable_elem.select("#trash_button").on("click", function () {
+    remove_layer(layer_name);
+  });
+  sortable_elem.select(".active_button").on("click", function () {
+    handle_active_layer(layer_name);
+  });
+  sortable_elem.select(".style_button").on("click", function () {
+    handle_click_layer(layer_name);
+  });
+  sortable_elem.select(".style_target_layer").on("click", function () {
+    handle_click_layer(layer_name);
+  });
+  sortable_elem.select("#legend_button").on("click", function () {
+    handle_legend(layer_name);
+  });
+  sortable_elem.select("#browse_data_button").on("click", function () {
+    boxExplore2.create(layer_name);
+  });
+  sortable_elem.select("#zoom_fit_button").on("click", function () {
+    center_map(layer_name);
+    zoom_without_redraw();
+  });
+  // TODO : re-add a tooltip when the mouse is over that sortable element ?
 }
 
 // Function to display information on the top layer (in the layer manager)
 function displayInfoOnMove() {
-    var info_features = d3.select("#info_features");
-    if (info_features.classed("active")) {
-        map.selectAll(".layer").selectAll("path").on("mouseover", null);
-        map.selectAll(".layer").selectAll("circle").on("mouseover", null);
-        map.selectAll(".layer").selectAll("rect").on("mouseover", null);
-        info_features.classed("active", false);
+  var info_features = d3.select("#info_features");
+  if (info_features.classed("active")) {
+    map.selectAll(".layer").selectAll("path").on("mouseover", null);
+    map.selectAll(".layer").selectAll("circle").on("mouseover", null);
+    map.selectAll(".layer").selectAll("rect").on("mouseover", null);
+    info_features.classed("active", false);
+    info_features.style("display", "none").html("");
+    svg_map.style.cursor = "";
+  } else {
+    var _ret6 = function () {
+      map.select('.brush').remove();
+      var layers = svg_map.querySelectorAll(".layer"),
+          nb_layer = layers.length,
+          top_visible_layer = null;
+
+      for (var i = nb_layer - 1; i > -1; i--) {
+        if (layers[i].style.visibility != "hidden") {
+          top_visible_layer = _app.id_to_layer.get(layers[i].id);
+          break;
+        }
+      }
+
+      if (!top_visible_layer) {
+        swal("", i18next.t("app_page.common.error_no_visible"), "error");
+        return {
+          v: void 0
+        };
+      }
+
+      var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
+          symbol = current_layers[top_visible_layer].symbol || "path";
+
+      map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
+        var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+        var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+        Object.getOwnPropertyNames(properties).forEach(function (el) {
+          txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
+        });
+        txt_info.push("</p>");
+        info_features.style("display", null).html(txt_info.join(''));
+      });
+
+      map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
         info_features.style("display", "none").html("");
-        svg_map.style.cursor = "";
-    } else {
-        map.select('.brush').remove();
-        var layers = svg_map.querySelectorAll(".layer"),
-            nb_layer = layers.length,
-            top_visible_layer = null;
+      });
 
-        for (var i = nb_layer - 1; i > -1; i--) {
-            if (layers[i].style.visibility != "hidden") {
-                top_visible_layer = _app.id_to_layer.get(layers[i].id);
-                break;
-            }
-        }
+      info_features.classed("active", true);
+      svg_map.style.cursor = "help";
+    }();
 
-        if (!top_visible_layer) {
-            swal("", i18next.t("app_page.common.error_no_visible"), "error");
-            return;
-        }
-
-        var id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
-            symbol = current_layers[top_visible_layer].symbol || "path";
-
-        map.select(id_top_layer).selectAll(symbol).on("mouseover", function (d, i) {
-            var txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ", i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-            var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
-            Object.getOwnPropertyNames(properties).forEach(function (el) {
-                txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
-            });
-            txt_info.push("</p>");
-            info_features.style("display", null).html(txt_info.join(''));
-        });
-
-        map.select(id_top_layer).selectAll(symbol).on("mouseout", function () {
-            info_features.style("display", "none").html("");
-        });
-
-        info_features.classed("active", true);
-        svg_map.style.cursor = "help";
-    }
+    if ((typeof _ret6 === "undefined" ? "undefined" : _typeof(_ret6)) === "object") return _ret6.v;
+  }
 }
-
-/*
-function reproj_lgd_elem(){
-    let scalable_elem = document.querySelectorAll(".scalable-legend");
-    for(let i = scalable_elem.length - 1; i > -1; i--){
-        let className = scalable_elem[i].className;
-        if(className.indexOf("arrow") > -1){
-
-        } else if (className.indexOf("user_ellipse") > -1){
-            let ellipse = scalable_elem[i].querySelector("ellipse");
-            ellipse.cx.baseVal.value = ;
-            ellipse.cy.baseVal.value = ;
-        }
-    }
-}
-*/
 
 /**
 *  Function redrawing the prop symbol / img / labels when the projection changes
@@ -1247,317 +1229,314 @@ function reproj_lgd_elem(){
 *
 */
 function reproj_symbol_layer() {
-    for (var lyr_name in current_layers) {
-        if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
-            var symbol = current_layers[lyr_name].symbol;
+  for (var lyr_name in current_layers) {
+    if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
+      var symbol = current_layers[lyr_name].symbol;
 
-            if (symbol == "text") {
-                // Reproject the labels :
-                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d) {
-                    var pt = path.centroid(d.geometry);
-                    return { 'x': pt[0], 'y': pt[1] };
-                });
-            } else if (symbol == "image") {
-                // Reproject pictograms :
-                map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d, i) {
-                    var coords = path.centroid(d.geometry),
-                        size = +this.getAttribute('width').replace('px', '') / 2;
-                    return { 'x': coords[0] - size, 'y': coords[1] - size };
-                });
-            } else if (symbol == "circle") {
-                // Reproject Prop Symbol :
-                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
-                    return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
-                }).attrs(function (d) {
-                    var centroid = path.centroid(d);
-                    return {
-                        'r': d.properties.prop_value,
-                        'cx': centroid[0],
-                        'cy': centroid[1]
-                    };
-                });
-            } else if (symbol == "rect") {
-                // Reproject Prop Symbol :
-                map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
-                    return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
-                }).attrs(function (d) {
-                    var centroid = path.centroid(d),
-                        size = d.properties.prop_value;
-                    return {
-                        'height': size,
-                        'width': size,
-                        'x': centroid[0] - size / 2,
-                        'y': centroid[1] - size / 2
-                    };
-                });
-            }
-        } else if (current_layers[lyr_name].pointRadius != undefined) {
-            map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll("path").attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
-        }
+      if (symbol == "text") {
+        // Reproject the labels :
+        map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d) {
+          var pt = path.centroid(d.geometry);
+          return { 'x': pt[0], 'y': pt[1] };
+        });
+      } else if (symbol == "image") {
+        // Reproject pictograms :
+        map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll(symbol).attrs(function (d, i) {
+          var coords = path.centroid(d.geometry),
+              size = +this.getAttribute('width').replace('px', '') / 2;
+          return { 'x': coords[0] - size, 'y': coords[1] - size };
+        });
+      } else if (symbol == "circle") {
+        // Reproject Prop Symbol :
+        map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
+          return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
+        }).attrs(function (d) {
+          var centroid = path.centroid(d);
+          return {
+            'r': d.properties.prop_value,
+            'cx': centroid[0],
+            'cy': centroid[1]
+          };
+        });
+      } else if (symbol == "rect") {
+        // Reproject Prop Symbol :
+        map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll(symbol).style('display', function (d) {
+          return isNaN(+path.centroid(d)[0]) ? "none" : undefined;
+        }).attrs(function (d) {
+          var centroid = path.centroid(d),
+              size = d.properties.prop_value;
+          return {
+            'height': size,
+            'width': size,
+            'x': centroid[0] - size / 2,
+            'y': centroid[1] - size / 2
+          };
+        });
+      }
+    } else if (current_layers[lyr_name].pointRadius != undefined) {
+      map.select("#" + _app.layer_to_id.get(lyr_name)).selectAll("path").attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
     }
+  }
 }
 
 function make_dialog_container(id_box, title, class_box) {
-    id_box = id_box || "dialog";
-    title = title || "";
+  var _id_box = id_box || "dialog";
+  var _title = title || "";
+  var _class_box = class_box || "dialog";
+  var container = document.createElement("div");
+  container.setAttribute("id", id_box);
+  container.setAttribute("class", "twbs modal fade" + " " + _class_box);
+  container.setAttribute("tabindex", "-1");
+  container.setAttribute("role", "dialog");
+  container.setAttribute("aria-labelledby", "myModalLabel");
+  container.setAttribute("aria-hidden", "true");
+  container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+  document.getElementById("twbs").appendChild(container);
+  var html_content = "<div class=\"modal-header\">\n    <button type=\"button\" id=\"xclose\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">\xD7</span></button>\n    <h4 class=\"modal-title\" id=\"gridModalLabel\">" + _title + "</h4>\n    </div>\n    <div class=\"modal-body\"> </div>\n    <div class=\"modal-footer\">\n    <button type=\"button\" class=\"btn btn-primary btn_ok\" data-dismiss=\"modal\">" + i18next.t("app_page.common.confirm") + "</button>\n    <button type=\"button\" class=\"btn btn-default btn_cancel\">" + i18next.t("app_page.common.cancel") + "</button>\n    </div>";
+  var modal_box = new Modal(document.getElementById(_id_box), { content: html_content });
+  modal_box.show();
+  return modal_box;
+}
+
+var overlay_under_modal = function () {
+  var twbs_div = document.querySelector('.twbs');
+  var bg = document.createElement('div');
+  bg.id = 'overlay_twbs';
+  bg.style.width = "100%";
+  bg.style.height = "100%";
+  bg.style.position = "fixed";
+  bg.style.zIndex = 99;
+  bg.style.top = 0;
+  bg.style.left = 0;
+  bg.style.background = "rgba(0,0,0,0.4)";
+  bg.style.display = "none";
+  twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
+  return {
+    display: function display() {
+      bg.style.display = "";
+    },
+    hide: function hide() {
+      bg.style.display = "none";
+    }
+  };
+}();
+
+var make_confirm_dialog2 = function (class_box, title, options) {
+  var get_available_id = function get_available_id() {
+    for (var i = 0; i < 50; i++) {
+      if (!existing.has(i)) {
+        existing.add(i);
+        return i;
+      }
+    }
+  };
+  var existing = new Set();
+  return function (class_box, title, options) {
     class_box = class_box || "dialog";
+    title = title || i18next.t("app_page.common.ask_confirm");
+    options = options || {};
+
     var container = document.createElement("div");
-    container.setAttribute("id", id_box);
-    container.setAttribute("class", "twbs modal fade" + " " + class_box);
+    var new_id = get_available_id();
+
+    container.setAttribute("id", "myModal_" + new_id);
+    container.setAttribute("class", "twbs modal fade " + class_box);
     container.setAttribute("tabindex", "-1");
     container.setAttribute("role", "dialog");
     container.setAttribute("aria-labelledby", "myModalLabel");
     container.setAttribute("aria-hidden", "true");
-    container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+    container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>' : '<div class="modal-dialog"><div class="modal-content"></div></div>';
     document.getElementById("twbs").appendChild(container);
 
-    container = document.getElementById(id_box);
+    container = document.getElementById("myModal_" + new_id);
+    var deferred = Promise.pending();
+    var text_ok = options.text_ok || i18next.t("app_page.common.confirm");
+    var text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
+    var html_content = "<div class=\"modal-header\">\n      <button type=\"button\" id=\"xclose\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">\xD7</span></button>\n      <h4 class=\"modal-title\" id=\"gridModalLabel\">" + title + "</h4>\n      </div>\n      <div class=\"modal-body\"><p>" + (options.html_content || '') + "</p></div>\n      <div class=\"modal-footer\">\n      <button type=\"button\" class=\"btn btn-primary btn_ok\" data-dismiss=\"modal\">" + text_ok + "</button>\n      <button type=\"button\" class=\"btn btn-default btn_cancel\">" + text_cancel + "</button>\n      </div>";
     var modal_box = new Modal(container, {
-        content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + i18next.t("app_page.common.confirm") + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>' + '</div>'
+      backdrop: true,
+      keyboard: false,
+      content: html_content
     });
     modal_box.show();
-    return modal_box;
-}
-
-var overlay_under_modal = function () {
-    var twbs_div = document.querySelector('.twbs');
-    var bg = document.createElement('div');
-    bg.id = 'overlay_twbs';
-    bg.style.width = "100%";
-    bg.style.height = "100%";
-    bg.style.position = "fixed";
-    bg.style.zIndex = 99;
-    bg.style.top = 0;
-    bg.style.left = 0;
-    bg.style.background = "rgba(0,0,0,0.4)";
-    bg.style.display = "none";
-    twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
-    return {
-        display: function display() {
-            bg.style.display = "";
-        },
-        hide: function hide() {
-            bg.style.display = "none";
-        }
+    container.modal = modal_box;
+    overlay_under_modal.display();
+    var func_cb = function func_cb(evt) {
+      helper_esc_key_twbs_cb(evt, _onclose_false);
     };
-}();
-
-var make_confirm_dialog2 = function (class_box, title, options) {
-    var existing = new Set();
-    var get_available_id = function get_available_id() {
-        for (var i = 0; i < 50; i++) {
-            if (!existing.has(i)) {
-                existing.add(i);
-                return i;
-            }
-        }
+    var clean_up_box = function clean_up_box() {
+      document.removeEventListener('keydown', func_cb);
+      existing.delete(new_id);
+      overlay_under_modal.hide();
+      container.remove();
     };
-    return function (class_box, title, options) {
-        class_box = class_box || "dialog";
-        title = title || i18next.t("app_page.common.ask_confirm");
-        options = options || {};
-
-        var container = document.createElement("div");
-        var new_id = get_available_id();
-
-        container.setAttribute("id", "myModal_" + new_id);
-        container.setAttribute("class", "twbs modal fade " + class_box);
-        container.setAttribute("tabindex", "-1");
-        container.setAttribute("role", "dialog");
-        container.setAttribute("aria-labelledby", "myModalLabel");
-        container.setAttribute("aria-hidden", "true");
-        container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>' : '<div class="modal-dialog"><div class="modal-content"></div></div>';
-        document.getElementById("twbs").appendChild(container);
-
-        container = document.getElementById("myModal_" + new_id);
-        var deferred = Promise.pending();
-        var html_content = options.html_content || "";
-        var text_ok = options.text_ok || i18next.t("app_page.common.confirm");
-        var text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
-        var modal_box = new Modal(container, {
-            backdrop: true,
-            keyboard: false,
-            content: '<div class="modal-header">' + '<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>' + '<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>' + '</div>' + '<div class="modal-body">' + '<p>' + html_content + '</p>' + '</div>' + '<div class="modal-footer">' + '<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>' + '<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>' + '</div>'
-        });
-        modal_box.show();
-        container.modal = modal_box;
-        overlay_under_modal.display();
-        var func_cb = function func_cb(evt) {
-            helper_esc_key_twbs_cb(evt, _onclose_false);
-        };
-        var clean_up_box = function clean_up_box() {
-            document.removeEventListener('keydown', func_cb);
-            existing.delete(new_id);
-            overlay_under_modal.hide();
-            container.remove();
-        };
-        var _onclose_false = function _onclose_false() {
-            deferred.resolve(false);
-            clean_up_box();
-        };
-        container.querySelector(".btn_cancel").onclick = _onclose_false;
-        container.querySelector("#xclose").onclick = _onclose_false;
-        container.querySelector(".btn_ok").onclick = function () {
-            deferred.resolve(true);
-            clean_up_box();
-        };
-        document.addEventListener('keydown', func_cb);
-        return deferred.promise;
+    var _onclose_false = function _onclose_false() {
+      deferred.resolve(false);
+      clean_up_box();
     };
+    container.querySelector(".btn_cancel").onclick = _onclose_false;
+    container.querySelector("#xclose").onclick = _onclose_false;
+    container.querySelector(".btn_ok").onclick = function () {
+      deferred.resolve(true);
+      clean_up_box();
+    };
+    document.addEventListener('keydown', func_cb);
+    return deferred.promise;
+  };
 }();
 
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(name) {
-    name = name || this.parentElement.parentElement.getAttribute("layer_name");
-    swal({
-        title: "",
-        text: i18next.t("app_page.common.remove_layer", { layer: name }),
-        type: "warning",
-        customClass: 'swal2_custom',
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: i18next.t("app_page.common.delete") + "!",
-        cancelButtonText: i18next.t("app_page.common.cancel")
-    }).then(function () {
-        remove_layer_cleanup(name);
-    }, function () {
-        null;
-    }); // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
-    //  ^^^^^^^^^^^^^^^^^^^^^^^ Not sure anymore :/
+  name = name || this.parentElement.parentElement.getAttribute("layer_name");
+  swal({
+    title: "",
+    text: i18next.t("app_page.common.remove_layer", { layer: name }),
+    type: "warning",
+    customClass: 'swal2_custom',
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: i18next.t("app_page.common.delete") + "!",
+    cancelButtonText: i18next.t("app_page.common.cancel")
+  }).then(function () {
+    remove_layer_cleanup(name);
+  }, function () {
+    null;
+  }); // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
+  //  ^^^^^^^^^^^^^^^^^^^^^^^ Not sure anymore :/
 }
 
 function remove_ext_dataset() {
-    swal({
-        title: "",
-        text: i18next.t("app_page.common.remove_tabular"),
-        type: "warning",
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: i18next.t("app_page.common.delete") + "!",
-        cancelButtonText: i18next.t("app_page.common.cancel")
-    }).then(function () {
-        remove_ext_dataset_cleanup();
-    }, function () {
-        null;
-    });
+  swal({
+    title: "",
+    text: i18next.t("app_page.common.remove_tabular"),
+    type: "warning",
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: i18next.t("app_page.common.delete") + "!",
+    cancelButtonText: i18next.t("app_page.common.cancel")
+  }).then(function () {
+    remove_ext_dataset_cleanup();
+  }, function () {
+    null;
+  });
 }
 
 function remove_ext_dataset_cleanup() {
-    field_join_map = new Array();
-    joined_dataset = new Array();
-    dataset_name = undefined;
-    var ext_dataset_img = document.getElementById("img_data_ext");
-    ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
-    ext_dataset_img.setAttribute("alt", "Additional dataset");
-    ext_dataset_img.style.cursor = "pointer";
-    ext_dataset_img.onclick = click_button_add_layer;
-    var data_ext_txt = document.getElementById("data_ext");
-    data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
-    data_ext_txt.onclick = click_button_add_layer;
-    data_ext_txt.classList.add('i18n');
-    data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
-    document.getElementById("remove_dataset").remove();
-    document.getElementById("join_section").innerHTML = "";
+  field_join_map = new Array();
+  joined_dataset = new Array();
+  dataset_name = undefined;
+  var ext_dataset_img = document.getElementById("img_data_ext");
+  ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
+  ext_dataset_img.setAttribute("alt", "Additional dataset");
+  ext_dataset_img.style.cursor = "pointer";
+  ext_dataset_img.onclick = click_button_add_layer;
+  var data_ext_txt = document.getElementById("data_ext");
+  data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
+  data_ext_txt.onclick = click_button_add_layer;
+  data_ext_txt.classList.add('i18n');
+  data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
+  document.getElementById("remove_dataset").remove();
+  document.getElementById("join_section").innerHTML = "";
 }
 
 // Do some clean-up when a layer is removed
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name) {
-    if (!current_layers[name]) return;
-    var layer_id = _app.layer_to_id.get(name);
-    // Making some clean-up regarding the result layer :
-    if (current_layers[name].is_result) {
-        map.selectAll([".lgdf_", layer_id].join('')).remove();
-        if (result_data.hasOwnProperty(name)) delete result_data[name];
-        if (current_layers[name].hasOwnProperty("key_name") && current_layers[name].renderer.indexOf("Choropleth") < 0 && current_layers[name].renderer.indexOf("Categorical") < 0) send_remove_server(name);
-    }
-    // Is the layer using a filter ? If yes, remove it:
-    var filter_id = map.select('#' + layer_id).attr('filter');
-    if (filter_id) {
-        svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
-    }
+  if (!current_layers[name]) return;
+  var layer_id = _app.layer_to_id.get(name);
+  // Making some clean-up regarding the result layer :
+  if (current_layers[name].is_result) {
+    map.selectAll([".lgdf_", layer_id].join('')).remove();
+    if (result_data.hasOwnProperty(name)) delete result_data[name];
+    if (current_layers[name].hasOwnProperty("key_name") && current_layers[name].renderer.indexOf("Choropleth") < 0 && current_layers[name].renderer.indexOf("Categorical") < 0) send_remove_server(name);
+  }
+  // Is the layer using a filter ? If yes, remove it:
+  var filter_id = map.select('#' + layer_id).attr('filter');
+  if (filter_id) {
+    svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
+  }
 
-    // Remove the layer from the map and from the layer manager :
-    map.select('#' + layer_id).remove();
-    document.querySelector('#sortable .' + layer_id).remove();
+  // Remove the layer from the map and from the layer manager :
+  map.select('#' + layer_id).remove();
+  document.querySelector('#sortable .' + layer_id).remove();
 
-    // Remove the layer from the "geo export" menu :
-    var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
-    if (a) a.remove();
+  // Remove the layer from the "geo export" menu :
+  var a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+  if (a) a.remove();
 
-    // Remove the layer from the "mask" section if the "smoothed map" menu is open :
-    if (_app.current_functionnality && _app.current_functionnality.name == 'smooth') {
-        var _a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
-        if (_a) _a.remove();
-        //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
-    }
+  // Remove the layer from the "mask" section if the "smoothed map" menu is open :
+  if (_app.current_functionnality && _app.current_functionnality.name == 'smooth') {
+    var _a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+    if (_a) _a.remove();
+    //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+  }
 
-    // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
-    if (current_layers[name].targeted) {
-        // Updating the top of the menu (section 1) :
-        //$("#input_geom").qtip("destroy");
-        document.getElementById("remove_target").remove();
-        d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
-        d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
-        // Unfiling the fields related to the targeted functionnality:
-        if (_app.current_functionnality) {
-            clean_menu_function();
-        }
-
-        // Update some global variables :
-        field_join_map = [];
-        user_data = new Object();
-        _app.targeted_layer_added = false;
-
-        // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
-        document.getElementById('sample_zone').style.display = null;
-
-        // Restore the state of the bottom of the section 1 :
-        document.getElementById("join_section").innerHTML = "";
-
-        // Disabled the button allowing the user to choose type for its layer :
-        document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
-
-        reset_user_values();
+  // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
+  if (current_layers[name].targeted) {
+    // Updating the top of the menu (section 1) :
+    //$("#input_geom").qtip("destroy");
+    document.getElementById("remove_target").remove();
+    d3.select("#img_in_geom").attrs({ "id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "24", "height": "24", "alt": "Geometry layer" }).on('click', click_button_add_layer);
+    d3.select("#input_geom").attrs({ 'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t("app_page.section1.add_geom")).on('click', click_button_add_layer);
+    // Unfiling the fields related to the targeted functionnality:
+    if (_app.current_functionnality) {
+      clean_menu_function();
     }
 
-    // There is probably better ways in JS to delete the object,
-    // but in order to make it explicit that we are removing it :
-    delete current_layers[name];
+    // Update some global variables :
+    field_join_map = [];
+    user_data = new Object();
+    _app.targeted_layer_added = false;
+
+    // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
+    document.getElementById('sample_zone').style.display = null;
+
+    // Restore the state of the bottom of the section 1 :
+    document.getElementById("join_section").innerHTML = "";
+
+    // Disabled the button allowing the user to choose type for its layer :
+    document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
+
+    reset_user_values();
+  }
+
+  // There is probably better ways in JS to delete the object,
+  // but in order to make it explicit that we are removing it :
+  delete current_layers[name];
 }
 
 // Change color of the background (ie the parent "svg" element on the top of which group of elements have been added)
 function handle_bg_color(color) {
-    map.style("background-color", color);
+  map.style("background-color", color);
 }
 
 function handle_click_hand(behavior) {
-    var hb = d3.select('.hand_button');
-    behavior = behavior && (typeof behavior === "undefined" ? "undefined" : _typeof(behavior)) !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
-    if (behavior == "lock") {
-        hb.classed("locked", true);
-        hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
-        map.select('.brush').remove();
-        document.getElementById("zoom_in").parentElement.style.display = "none";
-        document.getElementById("zoom_out").parentElement.style.display = "none";
-        document.getElementById("brush_zoom_button").parentElement.style.display = "none";
-        zoom.on("zoom", function () {
-            var blocked = svg_map.__zoom;return function () {
-                this.__zoom = blocked;
-            };
-        }());
-    } else {
-        hb.classed("locked", false);
-        hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
-        zoom.on("zoom", zoom_without_redraw);
-        document.getElementById("zoom_in").parentElement.style.display = "";
-        document.getElementById("zoom_out").parentElement.style.display = "";
-        document.getElementById("brush_zoom_button").parentElement.style.display = "";
-        map.select('.brush').remove();
-    }
+  var hb = d3.select('.hand_button');
+  behavior = behavior && (typeof behavior === "undefined" ? "undefined" : _typeof(behavior)) !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
+  if (behavior == "lock") {
+    hb.classed("locked", true);
+    hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
+    map.select('.brush').remove();
+    document.getElementById("zoom_in").parentElement.style.display = "none";
+    document.getElementById("zoom_out").parentElement.style.display = "none";
+    document.getElementById("brush_zoom_button").parentElement.style.display = "none";
+    zoom.on("zoom", function () {
+      var blocked = svg_map.__zoom;return function () {
+        this.__zoom = blocked;
+      };
+    }());
+  } else {
+    hb.classed("locked", false);
+    hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
+    zoom.on("zoom", zoom_without_redraw);
+    document.getElementById("zoom_in").parentElement.style.display = "";
+    document.getElementById("zoom_out").parentElement.style.display = "";
+    document.getElementById("brush_zoom_button").parentElement.style.display = "";
+    map.select('.brush').remove();
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1565,134 +1544,122 @@ function handle_click_hand(behavior) {
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw() {
-    var rot_val = canvas_rotation_value || "";
-    var transform, t_val;
-    if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
-        transform = d3.zoomTransform(svg_map);
-        t_val = transform.toString() + rot_val;
-        map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = _app.id_to_layer.get(this.id);
-            return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / transform.k + "px";
-        }).attr("transform", t_val);
-        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
-    } else {
-        t_val = d3.event.transform + rot_val;
-        map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
-            var lyr_name = _app.id_to_layer.get(this.id);
-            return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k + "px";
-        }).attr("transform", t_val);
-        map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
-    }
-    if (scaleBar.displayed) {
-        scaleBar.update();
-    }
-    // if(scaleBar.displayed){
-    //     if(proj.invert) {
-    //         scaleBar.update();
-    //     } else {
-    //         scaleBar.remove()
-    //     }
-    // }
+  var rot_val = canvas_rotation_value || "";
+  var transform, t_val;
+  if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
+    transform = d3.zoomTransform(svg_map);
+    t_val = transform.toString() + rot_val;
+    map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
+      var lyr_name = _app.id_to_layer.get(this.id);
+      return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / transform.k + "px";
+    }).attr("transform", t_val);
+    map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
+  } else {
+    t_val = d3.event.transform + rot_val;
+    map.selectAll(".layer").transition().duration(50).style("stroke-width", function () {
+      var lyr_name = _app.id_to_layer.get(this.id);
+      return current_layers[lyr_name].fixed_stroke ? this.style.strokeWidth : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k + "px";
+    }).attr("transform", t_val);
+    map.selectAll(".scalable-legend").transition().duration(50).attr("transform", t_val);
+  }
 
-    if (window.legendRedrawTimeout) {
-        clearTimeout(legendRedrawTimeout);
-    }
-    window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
-    var zoom_params = svg_map.__zoom;
-    // let zoom_k_scale = proj.scale() * zoom_params.k;
-    document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
-    document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
-    // let a = document.getElementById('form_projection'),
-    //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
-    // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
-    // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
+  if (scaleBar.displayed) {
+    scaleBar.update();
+  }
+  if (window.legendRedrawTimeout) {
+    clearTimeout(legendRedrawTimeout);
+  }
+  window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
+  var zoom_params = svg_map.__zoom;
+  // let zoom_k_scale = proj.scale() * zoom_params.k;
+  document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
+  document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
+  document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
+  // let a = document.getElementById('form_projection'),
+  //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+  // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
+  // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
 };
 
 function redraw_legends_symbols(targeted_node) {
-    if (!targeted_node) var legend_nodes = document.querySelectorAll("#legend_root_symbol");else var legend_nodes = [targeted_node];
+  var legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll("#legend_root_symbol");
+  if (legend_nodes.length < 1) return;
 
-    if (legend_nodes.length < 1) return;
+  var hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
+  var hidden = [];
 
-    var hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
-    var hidden = [];
+  for (var i = 0; i < legend_nodes.length; ++i) {
+    var layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+        layer_name = _app.id_to_layer.get(layer_id),
+        rendered_field = current_layers[layer_name].rendered_field,
+        nested = legend_nodes[i].getAttribute("nested"),
+        display_value = legend_nodes[i].getAttribute("display"),
+        visible = legend_nodes[i].style.visibility;
 
-    for (var i = 0; i < legend_nodes.length; ++i) {
-        var layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
-            layer_name = _app.id_to_layer.get(layer_id),
-            rendered_field = current_layers[layer_name].rendered_field,
-            nested = legend_nodes[i].getAttribute("nested"),
-            display_value = legend_nodes[i].getAttribute("display"),
-            visible = legend_nodes[i].style.visibility;
+    var transform_param = legend_nodes[i].getAttribute("transform"),
+        rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
+        lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
+        lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
+        notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
 
-        var transform_param = legend_nodes[i].getAttribute("transform"),
-            rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
-            lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
-            notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
+    var rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
+      color: legend_nodes[i].querySelector("#under_rect").style.fill,
+      opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
+    } : undefined;
 
-        var rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
-            color: legend_nodes[i].querySelector("#under_rect").style.fill,
-            opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
-        } : undefined;
+    legend_nodes[i].remove();
+    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
+    var new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
+    new_lgd.style.visibility = visible;
+    if (transform_param) new_lgd.setAttribute("transform", transform_param);
 
-        legend_nodes[i].remove();
-        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
-        var new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
-        new_lgd.style.visibility = visible;
-        if (transform_param) new_lgd.setAttribute("transform", transform_param);
-
-        if (display_value) {
-            new_lgd.setAttribute("display", display_value);
-            hidden.push(true);
-        } else if (hide) {
-            new_lgd.setAttribute("display", "none");
-        }
+    if (display_value) {
+      new_lgd.setAttribute("display", display_value);
+      hidden.push(true);
+    } else if (hide) {
+      new_lgd.setAttribute("display", "none");
     }
-    if (hide && !(hidden.length == legend_nodes.length)) {
-        alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
-    }
+  }
+  if (hide && !(hidden.length == legend_nodes.length)) {
+    alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
+  }
 }
 
 function interpolateZoom(translate, scale) {
-    var self = this;
-    var transform = d3.zoomTransform(svg_map);
-    return d3.transition().duration(225).tween("zoom", function () {
-        var iTranslate = d3.interpolate([transform.x, transform.y], translate),
-            iScale = d3.interpolate(transform.k, scale);
-        return function (t) {
-            svg_map.__zoom.k = iScale(t);
-            var _t = iTranslate(t);
-            svg_map.__zoom.x = _t[0];
-            svg_map.__zoom.y = _t[1];
-            zoom_without_redraw();
-        };
-    });
+  var transform = d3.zoomTransform(svg_map);
+  return d3.transition().duration(225).tween("zoom", function () {
+    var iTranslate = d3.interpolate([transform.x, transform.y], translate);
+    var iScale = d3.interpolate(transform.k, scale);
+    return function (t) {
+      svg_map.__zoom.k = iScale(t);
+      var _t = iTranslate(t);
+      svg_map.__zoom.x = _t[0];
+      svg_map.__zoom.y = _t[1];
+      zoom_without_redraw();
+    };
+  });
 }
 
 function zoomClick() {
-    if (map_div.select("#hand_button").classed("locked")) return;
-    var direction = this.id === 'zoom_in' ? 1 : -1,
-        factor = 0.1,
-        target_zoom = 1,
-        center = [w / 2, h / 2],
-        transform = d3.zoomTransform(svg_map),
-        translate = [transform.x, transform.y],
-        translate0 = [],
-        l = [],
-        view = { x: translate[0], y: translate[1], k: transform.k };
+  if (map_div.select("#hand_button").classed("locked")) return;
+  var direction = this.id === 'zoom_in' ? 1 : -1,
+      factor = 0.1,
+      target_zoom = 1,
+      center = [w / 2, h / 2],
+      transform = d3.zoomTransform(svg_map),
+      translate = [transform.x, transform.y],
+      translate0 = [],
+      l = [],
+      view = { x: translate[0], y: translate[1], k: transform.k };
 
-    d3.event.preventDefault();
-    target_zoom = transform.k * (1 + factor * direction);
-
-    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
-    view.k = target_zoom;
-    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
-
-    view.x += center[0] - l[0];
-    view.y += center[1] - l[1];
-
-    interpolateZoom([view.x, view.y], view.k);
+  d3.event.preventDefault();
+  target_zoom = transform.k * (1 + factor * direction);
+  translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+  view.k = target_zoom;
+  l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+  view.x += center[0] - l[0];
+  view.y += center[1] - l[1];
+  interpolateZoom([view.x, view.y], view.k);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1700,357 +1667,360 @@ function zoomClick() {
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle) {
-    canvas_rotation_value = ["rotate(", angle, ")"].join('');
-    var zoom_transform = d3.zoomTransform(svg_map);
+  canvas_rotation_value = ["rotate(", angle, ")"].join('');
+  var zoom_transform = d3.zoomTransform(svg_map);
 
-    map.selectAll("g.layer").transition().duration(10).attr("transform", [canvas_rotation_value, ",translate(", [zoom_transform.x, zoom_transform.y], "),", "scale(", zoom_transform.k, ")"].join(''));
-    if (northArrow.displayed) {
-        var current_rotate = !isNaN(+northArrow.svg_node.attr("rotate")) ? +northArrow.svg_node.attr("rotate") : 0;
-        northArrow.svg_node.attr("transform", ["rotate(", +angle + current_rotate, ",", northArrow.x_center, ",", northArrow.y_center, ")"].join(''));
-    }
-    zoom_without_redraw();
+  map.selectAll("g.layer").transition().duration(10).attr("transform", canvas_rotation_value + ",translate(" + [zoom_transform.x, zoom_transform.y] + "),scale(" + zoom_transform.k + ")");
+  // [canvas_rotation_value,
+  //                   ",translate(", [zoom_transform.x, zoom_transform.y], "),",
+  //                   "scale(", zoom_transform.k, ")"].join(''));
+  if (northArrow.displayed) {
+    var current_rotate = !isNaN(+northArrow.svg_node.attr("rotate")) ? +northArrow.svg_node.attr("rotate") : 0;
+    northArrow.svg_node.attr('transform', "rotate(" + (+angle + current_rotate) + "," + northArrow.x_center + ", " + northArrow.y_center + ")");
+    // northArrow.svg_node.attr("transform", [
+    //     "rotate(", +angle + current_rotate, ",",northArrow.x_center,",", northArrow.y_center, ")"
+    //     ].join(''));
+  }
+  zoom_without_redraw();
 };
 
 function isInterrupted(proj_name) {
-    return proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1;
+  return proj_name.indexOf("interrupted") > -1 || proj_name.indexOf("armadillo") > -1 || proj_name.indexOf("healpix") > -1;
 }
 
 function handleClipPath() {
-    var proj_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-    var main_layer = arguments[1];
+  var proj_name = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+  var main_layer = arguments[1];
 
-    proj_name = proj_name.toLowerCase();
-    var defs_sphere = defs.node().querySelector("#sphere"),
-        defs_extent = defs.node().querySelector("#extent"),
-        defs_clipPath = defs.node().querySelector("clipPath");
-    if (defs_sphere) {
-        defs_sphere.remove();
-    }
-    if (defs_extent) {
-        defs_extent.remove();
-    }
-    if (defs_clipPath) {
-        defs_clipPath.remove();
-    }
+  proj_name = proj_name.toLowerCase();
+  var defs_sphere = defs.node().querySelector("#sphere");
+  var defs_extent = defs.node().querySelector("#extent");
+  var defs_clipPath = defs.node().querySelector("clipPath");
+  if (defs_sphere) {
+    defs_sphere.remove();
+  }
+  if (defs_extent) {
+    defs_extent.remove();
+  }
+  if (defs_clipPath) {
+    defs_clipPath.remove();
+  }
 
-    if (isInterrupted(proj_name)) {
-        defs.append("path").datum({ type: "Sphere" }).attr("id", "sphere").attr("d", path);
+  if (isInterrupted(proj_name)) {
+    defs.append("path").datum({ type: "Sphere" }).attr("id", "sphere").attr("d", path);
 
-        defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
+    defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#sphere");
 
-        map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
+    map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
 
-        svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
-    } else if (proj_name.indexOf('conicconformal') > -1) {
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+  } else if (proj_name.indexOf('conicconformal') > -1) {
 
-        var outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
+    var outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
-        // proj.fitSize([w, h], outline);
-        // proj.scale(s).translate(t)
-        // path.projection(proj);
+    // proj.fitSize([w, h], outline);
+    // proj.scale(s).translate(t)
+    // path.projection(proj);
 
-        defs.append("path").attr("id", "extent").attr("d", path(outline));
-        defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#extent");
+    defs.append("path").attr("id", "extent").attr("d", path(outline));
+    defs.append("clipPath").attr("id", "clip").append("use").attr("xlink:href", "#extent");
 
-        map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
-
-        // map.selectAll('.layer')
-        //     .selectAll('path')
-        //     .attr('d', path);
-        //
-        // reproj_symbol_layer();
-        // if(main_layer){
-        //   center_map(main_layer);
-        //   zoom_without_redraw();
-        // }
-    } else {
-        map.selectAll(".layer").attr("clip-path", null);
-    }
+    map.selectAll(".layer:not(.no_clip)").attr("clip-path", "url(#clip)");
+    // map.selectAll('.layer')
+    //     .selectAll('path')
+    //     .attr('d', path);
+    //
+    // reproj_symbol_layer();
+    // if(main_layer){
+    //   center_map(main_layer);
+    //   zoom_without_redraw();
+    // }
+  } else {
+    map.selectAll(".layer").attr("clip-path", null);
+  }
 }
 
 function change_projection(new_proj_name) {
-    // Disable the zoom by rectangle selection if the user is using it :
-    map.select('.brush').remove();
+  // Disable the zoom by rectangle selection if the user is using it :
+  map.select('.brush').remove();
 
-    // Only keep the first argument of the rotation parameter :
-    var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0],
-        def_proj = available_projections.get(new_proj_name);
+  // Only keep the first argument of the rotation parameter :
+  var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0],
+      def_proj = available_projections.get(new_proj_name);
 
-    // Update global variables:
-    // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
-    proj = d3[def_proj.name]();
-    if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);else if (def_proj.parallel) proj = proj.parallel(def_proj.parallel);
-    if (def_proj.clipAngle) proj = proj.clipAngle(def_proj.clipAngle);
-    if (def_proj.rotate) prev_rotate = def_proj.rotate;
-    if (proj.rotate) proj.rotate(prev_rotate);
+  // Update global variables:
+  // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
+  proj = d3[def_proj.name]();
+  if (def_proj.parallels) proj = proj.parallels(def_proj.parallels);else if (def_proj.parallel) proj = proj.parallel(def_proj.parallel);
+  if (def_proj.clipAngle) proj = proj.clipAngle(def_proj.clipAngle);
+  if (def_proj.rotate) prev_rotate = def_proj.rotate;
+  if (proj.rotate) proj.rotate(prev_rotate);
 
-    path = d3.geoPath().projection(proj).pointRadius(4);
+  path = d3.geoPath().projection(proj).pointRadius(4);
 
-    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
-    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+  // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
-    // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-    var layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if (!layer_name && def_proj.bounds) {
-        scale_to_bbox(def_proj.bounds);
-    } else if (!layer_name) {
-        var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
-            return f.style.visibility != "hidden";
-        });
-        layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
-    }
-    if (layer_name) {
-        scale_to_lyr(layer_name);
-        center_map(layer_name);
-        zoom_without_redraw();
-    } else {
-        proj.translate(t).scale(s);
-        map.selectAll(".layer").selectAll("path").attr("d", path);
-        reproj_symbol_layer();
-    }
-    // Set or remove the clip-path according to the projection:
-    handleClipPath(new_proj_name, layer_name);
+  // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+  var layer_name = Object.getOwnPropertyNames(user_data)[0];
+  if (!layer_name && def_proj.bounds) {
+    scale_to_bbox(def_proj.bounds);
+  } else if (!layer_name) {
+    var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
+      return f.style.visibility != "hidden";
+    });
+    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+  }
+  if (layer_name) {
+    scale_to_lyr(layer_name);
+    center_map(layer_name);
+    zoom_without_redraw();
+  } else {
+    proj.translate(t).scale(s);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+  }
+  // Set or remove the clip-path according to the projection:
+  handleClipPath(new_proj_name, layer_name);
 }
 
 var getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
-    // Create the custom d3 projection using proj 4 forward and inverse functions:
-    var projRaw = function projRaw(lambda, phi) {
-        return _proj.forward([lambda, phi].map(radiansToDegrees));
-    };
-    projRaw.invert = function (x, y) {
-        return _proj.inverse([x, y]).map(degreesToRadians);
-    };
-    return d3.geoProjection(projRaw);
+  // Create the custom d3 projection using proj 4 forward and inverse functions:
+  var projRaw = function projRaw(lambda, phi) {
+    return _proj.forward([lambda, phi].map(radiansToDegrees));
+  };
+  projRaw.invert = function (x, y) {
+    return _proj.inverse([x, y]).map(degreesToRadians);
+  };
+  return d3.geoProjection(projRaw);
 };
 
 function change_projection_4(_proj) {
-    remove_layer_cleanup('Sphere');
-    // Disable the zoom by rectangle selection if the user is using it :
-    map.select('.brush').remove();
+  remove_layer_cleanup('Sphere');
+  // Disable the zoom by rectangle selection if the user is using it :
+  map.select('.brush').remove();
 
-    // Only keep the first argument of the rotation parameter :
-    var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
+  // Only keep the first argument of the rotation parameter :
+  var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
 
-    proj = getD3ProjFromProj4(_proj);
-    path = d3.geoPath().projection(proj).pointRadius(4);
+  proj = getD3ProjFromProj4(_proj);
+  path = d3.geoPath().projection(proj).pointRadius(4);
 
-    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
-    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+  // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
-    // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-    var layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if (!layer_name) {
-        var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
-            return f.style.visibility != "hidden";
-        });
-        layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
-    }
-    if (!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule") {
-        scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
-    } else {
-        var rv = fitLayer(layer_name);
-        s = rv[0];
-        t = rv[1];
-        if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
-            s = 100;t = [0, 0];
-            scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
-        }
-    }
+  // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+  var layer_name = Object.getOwnPropertyNames(user_data)[0];
+  if (!layer_name) {
+    var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
+      return f.style.visibility != "hidden";
+    });
+    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+  }
+  if (!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule") {
+    scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+  } else {
+    var rv = fitLayer(layer_name);
+    s = rv[0];
+    t = rv[1];
     if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
-        s = 100;t = [0, 0];
-        console.log('Error');
-        return false;
+      s = 100;t = [0, 0];
+      scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
     }
-    map.selectAll(".layer").selectAll("path").attr("d", path);
-    reproj_symbol_layer();
-    center_map(layer_name);
-    zoom_without_redraw();
+  }
+  if (isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])) {
+    s = 100;t = [0, 0];
+    console.log('Error');
+    return false;
+  }
+  map.selectAll(".layer").selectAll("path").attr("d", path);
+  reproj_symbol_layer();
+  center_map(layer_name);
+  zoom_without_redraw();
 
-    // Remove the existing clip path if any :
-    handleClipPath();
-    return true;
+  // Remove the existing clip path if any :
+  handleClipPath();
+  return true;
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
 function handle_active_layer(name) {
-    var fill_value, parent_div, selec, at_end;
+  var fill_value, parent_div, selec, at_end;
 
-    if (document.getElementById("info_features").className == "active") {
-        displayInfoOnMove();
-        at_end = true;
-    }
-    if (!name) {
-        selec = this;
-        parent_div = selec.parentElement;
-        name = parent_div.parentElement.getAttribute("layer_name");
-    } else {
-        selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
-        parent_div = selec.parentElement;
-    }
-    var func = function func() {
-        handle_active_layer(name);
-    };
-    if (selec.id == "eye_closed") {
-        fill_value = 1;
-        var eye_open = make_eye_button("open");
-        eye_open.onclick = func;
-        parent_div.replaceChild(eye_open, selec);
-    } else {
-        fill_value = 0;
-        var eye_closed = make_eye_button("closed");
-        eye_closed.onclick = func;
-        parent_div.replaceChild(eye_closed, selec);
-    }
-    map.select("#" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
-    map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+  if (document.getElementById("info_features").className == "active") {
+    displayInfoOnMove();
+    at_end = true;
+  }
+  if (!name) {
+    selec = this;
+    parent_div = selec.parentElement;
+    name = parent_div.parentElement.getAttribute("layer_name");
+  } else {
+    selec = document.querySelector("#sortable ." + _app.layer_to_id.get(name) + " .active_button");
+    parent_div = selec.parentElement;
+  }
+  var func = function func() {
+    handle_active_layer(name);
+  };
+  if (selec.id == "eye_closed") {
+    fill_value = 1;
+    var eye_open = make_eye_button("open");
+    eye_open.onclick = func;
+    parent_div.replaceChild(eye_open, selec);
+  } else {
+    fill_value = 0;
+    var eye_closed = make_eye_button("closed");
+    eye_closed.onclick = func;
+    parent_div.replaceChild(eye_closed, selec);
+  }
+  map.select("#" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
+  map.selectAll(".lgdf_" + _app.layer_to_id.get(name)).style("visibility", fill_value == 0 ? "hidden" : "initial");
 
-    if (at_end) {
-        displayInfoOnMove();
-    }
+  if (at_end) {
+    displayInfoOnMove();
+  }
 }
 
 // Function to handle the title add and changes
 function handle_title(txt) {
-    var title = d3.select("#map_title").select("text");
-    if (title.node()) {
-        title.text(txt);
-    } else {
-        map.append("g").attrs({ "class": "legend title", "id": "map_title" }).style("cursor", "pointer").insert("text").attrs({ x: w / 2, y: h / 12,
-            "alignment-baseline": "middle", "text-anchor": "middle" }).styles({ "font-family": "Arial, Helvetica, sans-serif",
-            "font-size": "20px", position: "absolute", color: "black" }).text(txt).on("contextmenu dblclick", function () {
-            d3.event.preventDefault();
-            d3.event.stopPropagation();
-            handle_title_properties();
-        }).call(drag_elem_geo);
-    }
+  var title = d3.select("#map_title").select("text");
+  if (title.node()) {
+    title.text(txt);
+  } else {
+    map.append("g").attrs({ "class": "legend title", "id": "map_title" }).style("cursor", "pointer").insert("text").attrs({ x: w / 2, y: h / 12, "alignment-baseline": "middle", "text-anchor": "middle" }).styles({ "font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black" }).text(txt).on("contextmenu dblclick", function () {
+      d3.event.preventDefault();
+      d3.event.stopPropagation();
+      handle_title_properties();
+    }).call(drag_elem_geo);
+  }
 }
 
 function handle_title_properties() {
-    var title = d3.select("#map_title").select("text");
-    if (!title.node() || title.text() == "") {
-        swal({ title: "",
-            text: i18next.t("app_page.common.error_no_title"),
-            type: "error",
-            allowOutsideClick: true,
-            allowEscapeKey: true
-        }).then(function () {
-            null;
-        }, function () {
-            null;
-        });
-        return;
-    }
-    var title_props = {
-        size: title.style("font-size"),
-        font_weight: title.style('font-weight'),
-        font_style: title.style('font-style'),
-        text_decoration: title.style('text-decoration'),
-        color: title.style("fill"),
-        position_x: title.attr("x"),
-        position_x_pct: round_value(+title.attr("x") / w * 100, 1),
-        position_y: title.attr("y"),
-        position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-        font_family: title.style("font-family"),
-        stroke: title.style('stroke'),
-        stroke_width: title.style('stroke-width')
-    };
-    title_props.font_weight = title_props.font_weight == "400" || title_props.font_weight == "" ? "" : "bold";
-
-    // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true }).then(function (confirmed) {
-        if (!confirmed) title.attrs({ x: title_props.position_x, y: title_props.position_y }).styles({
-            "font-size": title_props.size, "fill": title_props.color,
-            "font-family": title_props.font_family, 'font-style': title_props.font_style,
-            'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
-            'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
-        });
+  var title = d3.select("#map_title").select("text");
+  if (!title.node() || title.text() == "") {
+    swal({ title: "",
+      text: i18next.t("app_page.common.error_no_title"),
+      type: "error",
+      allowOutsideClick: true,
+      allowEscapeKey: true
+    }).then(function () {
+      null;
+    }, function () {
+      null;
     });
-    var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
-
-    box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "65px").on("change", function () {
-        title.style("font-size", this.value + "px");
-    });
-    box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "65px").on("change", function () {
-        title.attr("x", w * +this.value / 100);
-    });
-    box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "65px").on("change", function () {
-        title.attr("y", h * +this.value / 100);
-    });
-    box_content.append("p").html(i18next.t("app_page.title_box.font_color")).insert("input").attrs({ type: "color", value: rgb2hex(title_props.color) }).on("change", function () {
-        title.style("fill", this.value);
-    });
-    var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family")).insert("select").attr("class", "params").on("change", function () {
-        title.style("font-family", this.value);
-    });
-    available_fonts.forEach(function (font) {
-        font_select.append("option").text(font[0]).attr("value", font[1]);
-    });
-    font_select.node().selectedIndex = available_fonts.map(function (d) {
-        return d[1] == title_props.font_family ? "1" : "0";
-    }).indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title
-    var options_format = box_content.append('p'),
-        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
-        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
-        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
-
-    btn_bold.on('click', function () {
-        if (this.classList.contains('active')) {
-            this.classList.remove('active');
-            title.style('font-weight', '');
-        } else {
-            this.classList.add('active');
-            title.style('font-weight', 'bold');
-        }
-    });
-    btn_italic.on('click', function () {
-        if (this.classList.contains('active')) {
-            this.classList.remove('active');
-            title.style('font-style', '');
-        } else {
-            this.classList.add('active');
-            title.style('font-style', 'italic');
-        }
-    });
-    btn_underline.on('click', function () {
-        if (this.classList.contains('active')) {
-            this.classList.remove('active');
-            title.style('text-decoration', '');
-        } else {
-            this.classList.add('active');
-            title.style('text-decoration', 'underline');
-        }
-    });
-
-    var hasBuffer = title_props.stroke !== "none";
-    var buffer_section1 = box_content.append("p");
-    var buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
-    box_content.append('p').style('clear', 'both');
-
-    buffer_section1.append('input').attrs({ type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null }).on('change', function () {
-        if (this.checked) {
-            buffer_section2.style('display', '');
-            title.style('stroke', buffer_color.node().value).style('stroke-width', buffer_width.node().value + 'px');
-            console.log(buffer_color.attr('value'), buffer_color.node().value);
-        } else {
-            buffer_section2.style('display', 'none');
-            title.style('stroke', 'none').style('stroke-width', '1px');
-        }
-    });
-
-    buffer_section1.append('label').attrs({ for: 'title_buffer_chkbox' }).text(i18next.t('app_page.title_box.buffer'));
-
-    var buffer_color = buffer_section2.insert('input').style('float', 'left').attrs({ type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff" }).on('change', function () {
-        title.style('stroke', this.value);
-    });
-
-    buffer_section2.insert('span').style('float', 'right').html(' px');
-
-    var buffer_width = buffer_section2.insert('input').styles({ 'float': 'right', 'width': '60px' }).attrs({ type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1 }).on('change', function () {
-        title.style('stroke-width', this.value + 'px');
-    });
-
     return;
+  }
+  var title_props = {
+    size: title.style("font-size"),
+    font_weight: title.style('font-weight'),
+    font_style: title.style('font-style'),
+    text_decoration: title.style('text-decoration'),
+    color: title.style("fill"),
+    position_x: title.attr("x"),
+    position_x_pct: round_value(+title.attr("x") / w * 100, 1),
+    position_y: title.attr("y"),
+    position_y_pct: round_value(+title.attr("y") / h * 100, 1),
+    font_family: title.style("font-family"),
+    stroke: title.style('stroke'),
+    stroke_width: title.style('stroke-width')
+  };
+  title_props.font_weight = title_props.font_weight == "400" || title_props.font_weight == "" ? "" : "bold";
+
+  // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
+  make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true }).then(function (confirmed) {
+    if (!confirmed) title.attrs({ x: title_props.position_x, y: title_props.position_y }).styles({
+      "font-size": title_props.size, "fill": title_props.color,
+      "font-family": title_props.font_family, 'font-style': title_props.font_style,
+      'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+      'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
+    });
+  });
+  var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
+
+  box_content.append("p").html(i18next.t("app_page.title_box.font_size")).insert("input").attrs({ type: "number", min: 2, max: 40, step: 1, value: +title_props.size.split("px")[0] }).style("width", "65px").on("change", function () {
+    title.style("font-size", this.value + "px");
+  });
+  box_content.append("p").html(i18next.t("app_page.title_box.xpos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style("width", "65px").on("change", function () {
+    title.attr("x", w * +this.value / 100);
+  });
+  box_content.append("p").html(i18next.t("app_page.title_box.ypos")).insert("input").attrs({ type: "number", min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style("width", "65px").on("change", function () {
+    title.attr("y", h * +this.value / 100);
+  });
+  box_content.append("p").html(i18next.t("app_page.title_box.font_color")).insert("input").attrs({ type: "color", value: rgb2hex(title_props.color) }).on("change", function () {
+    title.style("fill", this.value);
+  });
+
+  var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family")).insert("select").attr("class", "params").on("change", function () {
+    title.style("font-family", this.value);
+  });
+  available_fonts.forEach(function (font) {
+    font_select.append("option").text(font[0]).attr("value", font[1]);
+  });
+  font_select.node().selectedIndex = available_fonts.map(function (d) {
+    return d[1] == title_props.font_family ? "1" : "0";
+  }).indexOf("1");
+  // TODO : Allow the display a rectangle (resizable + selection color) under the title
+  var options_format = box_content.append('p'),
+      btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+      btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+      btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+  btn_bold.on('click', function () {
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('font-weight', '');
+    } else {
+      this.classList.add('active');
+      title.style('font-weight', 'bold');
+    }
+  });
+  btn_italic.on('click', function () {
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('font-style', '');
+    } else {
+      this.classList.add('active');
+      title.style('font-style', 'italic');
+    }
+  });
+  btn_underline.on('click', function () {
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('text-decoration', '');
+    } else {
+      this.classList.add('active');
+      title.style('text-decoration', 'underline');
+    }
+  });
+
+  var hasBuffer = title_props.stroke !== "none";
+  var buffer_section1 = box_content.append("p");
+  var buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
+  box_content.append('p').style('clear', 'both');
+
+  buffer_section1.append('input').attrs({ type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null }).on('change', function () {
+    if (this.checked) {
+      buffer_section2.style('display', '');
+      title.style('stroke', buffer_color.node().value).style('stroke-width', buffer_width.node().value + 'px');
+    } else {
+      buffer_section2.style('display', 'none');
+      title.style('stroke', 'none').style('stroke-width', '1px');
+    }
+  });
+
+  buffer_section1.append('label').attrs({ for: 'title_buffer_chkbox' }).text(i18next.t('app_page.title_box.buffer'));
+
+  var buffer_color = buffer_section2.insert('input').style('float', 'left').attrs({ type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff" }).on('change', function () {
+    title.style('stroke', this.value);
+  });
+
+  buffer_section2.insert('span').style('float', 'right').html(' px');
+
+  var buffer_width = buffer_section2.insert('input').styles({ 'float': 'right', 'width': '60px' }).attrs({ type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1 }).on('change', function () {
+    title.style('stroke-width', this.value + 'px');
+  });
+
+  return;
 }
 
 /** Function triggered by the change of map/canvas size
@@ -2060,275 +2030,277 @@ function handle_title_properties() {
 *                but also works with the 2 params together like [800, 750])
 */
 function canvas_mod_size(shape) {
-    if (shape[0]) {
-        w = +shape[0];
-        map.attr("width", w).call(zoom_without_redraw);
-        map_div.style("width", w + "px");
-        if (w + 360 + 30 < window.innerWidth) {
-            document.querySelector(".light-menu").style.right = '-30px';
-        } else {
-            document.querySelector(".light-menu").style.right = '0px';
-        }
-    }
-    if (shape[1]) {
-        h = +shape[1];
-        map.attr("height", h).call(zoom_without_redraw);
-        map_div.style("height", h + "px");
-    }
-    move_legends();
-
-    // Lets update the corresponding fields in the export section :
-    var ratio = void 0,
-        format = document.getElementById("select_png_format").value;
-    if (format === "web") {
-        ratio = 1;
-    } else if (format === "user_defined") {
-        ratio = 118.11;
+  if (shape[0]) {
+    w = +shape[0];
+    map.attr("width", w).call(zoom_without_redraw);
+    map_div.style("width", w + "px");
+    if (w + 360 + 30 < window.innerWidth) {
+      document.querySelector(".light-menu").style.right = '-30px';
     } else {
-        return;
+      document.querySelector(".light-menu").style.right = '0px';
     }
-    document.getElementById("export_png_width").value = Math.round(w * ratio * 10) / 10;
-    document.getElementById("export_png_height").value = Math.round(h * ratio * 10) / 10;
+  }
+  if (shape[1]) {
+    h = +shape[1];
+    map.attr("height", h).call(zoom_without_redraw);
+    map_div.style("height", h + "px");
+  }
+  move_legends();
+
+  // Lets update the corresponding fields in the export section :
+  var ratio = void 0;
+  var format = document.getElementById("select_png_format").value;
+  if (format === "web") {
+    ratio = 1;
+  } else if (format === "user_defined") {
+    ratio = 118.11;
+  } else {
+    return;
+  }
+  document.getElementById("export_png_width").value = Math.round(w * ratio * 10) / 10;
+  document.getElementById("export_png_height").value = Math.round(h * ratio * 10) / 10;
 }
 
 function patchSvgForFonts() {
-    function getListUsedFonts() {
-        var elems = [svg_map.getElementsByTagName('text'), svg_map.getElementsByTagName('p')];
-        var needed_definitions = [];
-        elems.map(function (d) {
-            return d ? d : [];
+  function getListUsedFonts() {
+    var elems = [svg_map.getElementsByTagName('text'), svg_map.getElementsByTagName('p')];
+    var needed_definitions = [];
+    elems.map(function (d) {
+      return d ? d : [];
+    });
+    for (var j = 0; j < 2; j++) {
+      var _loop3 = function _loop3(i) {
+        var font_elem = elems[j][i].style.fontFamily;
+        customs_fonts.forEach(function (font) {
+          if (font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) == -1) {
+            needed_definitions.push(font);
+          }
         });
-        for (var j = 0; j < 2; j++) {
-            var _loop3 = function _loop3(i) {
-                var font_elem = elems[j][i].style.fontFamily;
-                customs_fonts.forEach(function (font) {
-                    if (font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) == -1) {
-                        needed_definitions.push(font);
-                    }
-                });
-            };
+      };
 
-            for (var i = 0; i < elems[j].length; i++) {
-                _loop3(i);
-            }
-        }
-        return needed_definitions;
+      for (var i = 0; i < elems[j].length; i++) {
+        _loop3(i);
+      }
     }
+    return needed_definitions;
+  }
 
-    var needed_definitions = getListUsedFonts();
-    if (needed_definitions.length == 0) {
-        return;
-    } else {
-        var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
-            return i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null;
-        })[0].cssRules;
-        var fonts_to_add = needed_definitions.map(function (name) {
-            return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
-        });
-        var style_elem = document.createElement("style");
-        style_elem.innerHTML = fonts_to_add.join(' ');
-        svg_map.querySelector("defs").appendChild(style_elem);
-    }
+  var needed_definitions = getListUsedFonts();
+  if (needed_definitions.length == 0) {
+    return;
+  } else {
+    (function () {
+      var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
+        return i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null;
+      })[0].cssRules;
+      var fonts_to_add = needed_definitions.map(function (name) {
+        return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
+      });
+      var style_elem = document.createElement("style");
+      style_elem.innerHTML = fonts_to_add.join(' ');
+      svg_map.querySelector("defs").appendChild(style_elem);
+    })();
+  }
 }
 
 function unpatchSvgForFonts() {
-    var defs_style = svg_map.querySelector("defs").querySelector("style");
-    if (defs_style) defs_style.remove();
+  var defs_style = svg_map.querySelector("defs").querySelector("style");
+  if (defs_style) defs_style.remove();
 }
 
 function patchSvgForInkscape() {
-    svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
-    var elems = svg_map.getElementsByTagName("g");
-    for (var i = elems.length - 1; i > -1; i--) {
-        if (elems[i].id === '') {
-            continue;
-        } else if (elems[i].classList.contains("layer")) {
-            elems[i].setAttribute("inkscape:label", elems[i].id);
-        } else if (elems[i].id.indexOf("legend") > -1) {
-            var layer_name = elems[i].className.baseVal.split("lgdf_")[1];
-            elems[i].setAttribute("inkscape:label", "legend_" + layer_name);
-        } else {
-            elems[i].setAttribute("inkscape:label", elems[i].id);
-        }
-        elems[i].setAttribute("inkscape:groupmode", "layer");
+  svg_map.setAttribute("xmlns:inkscape", "http://www.inkscape.org/namespaces/inkscape");
+  var elems = svg_map.getElementsByTagName("g");
+  for (var i = elems.length - 1; i > -1; i--) {
+    if (elems[i].id === '') {
+      continue;
+    } else if (elems[i].classList.contains("layer")) {
+      elems[i].setAttribute("inkscape:label", elems[i].id);
+    } else if (elems[i].id.indexOf("legend") > -1) {
+      var layer_name = elems[i].className.baseVal.split("lgdf_")[1];
+      elems[i].setAttribute("inkscape:label", "legend_" + layer_name);
+    } else {
+      elems[i].setAttribute("inkscape:label", elems[i].id);
     }
+    elems[i].setAttribute("inkscape:groupmode", "layer");
+  }
 }
 
 function unpatchSvgForInkscape() {
-    svg_map.removeAttribute('xmlns:inkscape');
-    var elems = svg_map.getElementsByTagName('g');
-    for (var i = elems.length - 1; i > -1; i--) {
-        if (elems[i].id !== '') {
-            elems[i].removeAttribute('inkscape:label');
-            elems[i].removeAttribute('inkscape:groupmode');
-        }
+  svg_map.removeAttribute('xmlns:inkscape');
+  var elems = svg_map.getElementsByTagName('g');
+  for (var i = elems.length - 1; i > -1; i--) {
+    if (elems[i].id !== '') {
+      elems[i].removeAttribute('inkscape:label');
+      elems[i].removeAttribute('inkscape:groupmode');
     }
+  }
 }
 
 function check_output_name(name, extension) {
-    var part = name.split('.');
-    var regexpName = new RegExp(/^[a-z0-9_]+$/i);
-    if (regexpName.test(part[0]) && part[0].length < 250) {
-        return part[0] + '.' + extension;
-    }
-    return "export." + extension;
+  var part = name.split('.');
+  var regexpName = new RegExp(/^[a-z0-9_]+$/i);
+  if (regexpName.test(part[0]) && part[0].length < 250) {
+    return part[0] + '.' + extension;
+  }
+  return "export." + extension;
 }
 
 function patchSvgForForeignObj() {
-    var elems = document.getElementsByTagName('foreignObject');
-    var originals = [];
-    for (var i = 0; i < elems.length; i++) {
-        var el = elems[i];
-        originals.push([el.getAttribute('width'), el.getAttribute('height')]);
-        el.setAttribute('width', '100%');
-        el.setAttribute('height', '100%');
-    }
-    return originals;
+  var elems = document.getElementsByTagName('foreignObject');
+  var originals = [];
+  for (var i = 0; i < elems.length; i++) {
+    var el = elems[i];
+    originals.push([el.getAttribute('width'), el.getAttribute('height')]);
+    el.setAttribute('width', '100%');
+    el.setAttribute('height', '100%');
+  }
+  return originals;
 }
 
 function unpatchSvgForForeignObj(originals) {
-    var elems = document.getElementsByTagName('foreignObject');
-    for (var i = 0; i < originals.length; i++) {
-        var el = elems[i];
-        el.setAttribute('width', originals[i][0]);
-        el.setAttribute('height', originals[i][1]);
-    }
+  var elems = document.getElementsByTagName('foreignObject');
+  for (var i = 0; i < originals.length; i++) {
+    var el = elems[i];
+    el.setAttribute('width', originals[i][0]);
+    el.setAttribute('height', originals[i][1]);
+  }
 }
 
 function export_compo_svg(output_name) {
-    output_name = check_output_name(output_name, "svg");
-    patchSvgForInkscape();
-    patchSvgForFonts();
-    var dimensions_foreign_obj = patchSvgForForeignObj();
-    var targetSvg = document.getElementById("svg_map"),
-        serializer = new XMLSerializer(),
-        source = serializer.serializeToString(targetSvg);
+  output_name = check_output_name(output_name, "svg");
+  patchSvgForInkscape();
+  patchSvgForFonts();
+  var dimensions_foreign_obj = patchSvgForForeignObj();
+  var targetSvg = document.getElementById("svg_map"),
+      serializer = new XMLSerializer(),
+      source = serializer.serializeToString(targetSvg);
 
-    if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-    }
-    if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
-        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-    }
+  if (!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  if (!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)) {
+    source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+  }
 
-    source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
+  source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
-    var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
-    clickLinkFromDataUrl(url, output_name).then(function (a) {
-        unpatchSvgForFonts();
-        unpatchSvgForForeignObj(dimensions_foreign_obj);
-        unpatchSvgForInkscape();
-    }).catch(function (err) {
-        display_error_during_computation();
-        console.log(err);
-    });
+  var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+  clickLinkFromDataUrl(url, output_name).then(function (a) {
+    unpatchSvgForFonts();
+    unpatchSvgForForeignObj(dimensions_foreign_obj);
+    unpatchSvgForInkscape();
+  }).catch(function (err) {
+    display_error_during_computation();
+    console.log(err);
+  });
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
 //   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png() {
-    var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "web";
-    var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
-    var output_name = arguments[2];
+  var type = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "web";
+  var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
+  var output_name = arguments[2];
 
-    document.getElementById("overlay").style.display = "";
-    output_name = check_output_name(output_name, "png");
-    var dimensions_foreign_obj = patchSvgForForeignObj();
-    patchSvgForFonts();
-    var targetCanvas = d3.select("body").append("canvas").attrs({ id: "canvas_map_export", height: h, width: w }).node(),
-        targetSVG = document.querySelector("#svg_map"),
-        mime_type = "image/png",
-        svg_xml,
-        ctx,
-        img;
+  document.getElementById("overlay").style.display = "";
+  output_name = check_output_name(output_name, "png");
+  var dimensions_foreign_obj = patchSvgForForeignObj();
+  patchSvgForFonts();
+  var targetCanvas = d3.select("body").append("canvas").attrs({ id: "canvas_map_export", height: h, width: w }).node(),
+      targetSVG = document.querySelector("#svg_map"),
+      mime_type = "image/png",
+      svg_xml,
+      ctx,
+      img;
 
-    // At this point it might be better to wrap the whole function in a try catch ?
-    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+  // At this point it might be better to wrap the whole function in a try catch ?
+  // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+  try {
+    svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
+  } catch (err) {
+    document.getElementById("overlay").style.display = "none";
+    targetCanvas.remove();
+    display_error_during_computation(String(err));
+    return;
+  }
+  if (scalefactor != 1) {
     try {
-        svg_xml = new XMLSerializer().serializeToString(targetSVG), ctx = targetCanvas.getContext('2d'), img = new Image();
+      changeResolution(targetCanvas, scalefactor);
     } catch (err) {
-        document.getElementById("overlay").style.display = "none";
-        targetCanvas.remove();
-        display_error_during_computation(String(err));
-        return;
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+      display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
+      return;
     }
-    if (scalefactor != 1) {
-        try {
-            changeResolution(targetCanvas, scalefactor);
-        } catch (err) {
-            document.getElementById("overlay").style.display = "none";
-            targetCanvas.remove();
-            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
-            return;
-        }
+  }
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0);
+    try {
+      var imgUrl = targetCanvas.toDataURL(mime_type);
+    } catch (err) {
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+      display_error_during_computation(String(err));
+      return;
     }
-    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
-    img.onload = function () {
-        ctx.drawImage(img, 0, 0);
-        try {
-            var imgUrl = targetCanvas.toDataURL(mime_type);
-        } catch (err) {
-            document.getElementById("overlay").style.display = "none";
-            targetCanvas.remove();
-            display_error_during_computation(String(err));
-            return;
-        }
-        clickLinkFromDataUrl(imgUrl, output_name).then(function (_) {
-            unpatchSvgForFonts();
-            unpatchSvgForForeignObj(dimensions_foreign_obj);
-            document.getElementById("overlay").style.display = "none";
-            targetCanvas.remove();
-        }).catch(function (err) {
-            display_error_during_computation();
-            console.log(err);
-        });;
-    };
+    clickLinkFromDataUrl(imgUrl, output_name).then(function (_) {
+      unpatchSvgForFonts();
+      unpatchSvgForForeignObj(dimensions_foreign_obj);
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+    }).catch(function (err) {
+      display_error_during_computation();
+      console.log(err);
+    });;
+  };
 }
 
 function export_layer_geo(layer, type, projec, proj4str) {
-    var formToSend = new FormData();
-    formToSend.append("layer", layer);
-    formToSend.append("layer_name", current_layers[layer].key_name);
-    formToSend.append("format", type);
-    if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
+  var formToSend = new FormData();
+  formToSend.append("layer", layer);
+  formToSend.append("layer_name", current_layers[layer].key_name);
+  formToSend.append("format", type);
+  if (projec == "proj4string") formToSend.append("projection", JSON.stringify({ "proj4string": proj4str }));else formToSend.append("projection", JSON.stringify({ "name": projec }));
 
-    var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
+  var extensions = new Map([["GeoJSON", "geojson"], ["TopoJSON", "topojson"], ["ESRI Shapefile", "zip"], ["GML", "zip"], ["KML", "kml"]]);
 
-    xhrequest("POST", 'get_layer2', formToSend, true).then(function (data) {
-        if (data.indexOf('{"Error"') === 0 || data.length === 0) {
-            var error_message = void 0;
-            if (data.indexOf('{"Error"') < 5) {
-                data = JSON.parse(data);
-                error_message = i18next.t(data.Error);
-            } else {
-                error_message = i18next.t('app_page.common.error_msg');
-            }
-            swal({ title: "Oops...",
-                text: error_message,
-                type: "error",
-                allowOutsideClick: false,
-                allowEscapeKey: false
-            }).then(function () {
-                null;
-            }, function () {
-                null;
-            });
-            return;
-        }
-        var ext = extensions.get(type),
-            filename = [layer, ext].join('.'),
-            dataStr = void 0;
-        if (ext.indexOf('json') > -1) {
-            dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
-        } else if (ext.indexOf("kml") > -1) {
-            dataStr = 'data:text/xml;charset=utf-8,' + encodeURIComponent(data);
-        } else {
-            dataStr = 'data:application/zip;base64,' + data;
-        }
-        clickLinkFromDataUrl(dataStr, filename);
-    }, function (error) {
-        console.log(error);
-    });
+  xhrequest("POST", 'get_layer2', formToSend, true).then(function (data) {
+    if (data.indexOf('{"Error"') === 0 || data.length === 0) {
+      var error_message = void 0;
+      if (data.indexOf('{"Error"') < 5) {
+        data = JSON.parse(data);
+        error_message = i18next.t(data.Error);
+      } else {
+        error_message = i18next.t('app_page.common.error_msg');
+      }
+      swal({ title: "Oops...",
+        text: error_message,
+        type: "error",
+        allowOutsideClick: false,
+        allowEscapeKey: false
+      }).then(function () {
+        null;
+      }, function () {
+        null;
+      });
+      return;
+    }
+    var ext = extensions.get(type),
+        filename = [layer, ext].join('.'),
+        dataStr = void 0;
+    if (ext.indexOf('json') > -1) {
+      dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(data);
+    } else if (ext.indexOf("kml") > -1) {
+      dataStr = 'data:text/xml;charset=utf-8,' + encodeURIComponent(data);
+    } else {
+      dataStr = 'data:application/zip;base64,' + data;
+    }
+    clickLinkFromDataUrl(dataStr, filename);
+  }, function (error) {
+    console.log(error);
+  });
 }
 
 /*
@@ -2336,41 +2308,41 @@ function export_layer_geo(layer, type, projec, proj4str) {
 *
 */
 function changeResolution(canvas, scaleFactor) {
-    // Set up CSS size if it's not set up already
-    if (!canvas.style.width) canvas.style.width = canvas.width + 'px';
-    if (!canvas.style.height) canvas.style.height = canvas.height + 'px';
+  // Set up CSS size if it's not set up already
+  if (!canvas.style.width) canvas.style.width = canvas.width + 'px';
+  if (!canvas.style.height) canvas.style.height = canvas.height + 'px';
 
-    canvas.width = Math.ceil(canvas.width * scaleFactor);
-    canvas.height = Math.ceil(canvas.height * scaleFactor);
-    var ctx = canvas.getContext('2d');
-    ctx.scale(scaleFactor, scaleFactor);
+  canvas.width = Math.ceil(canvas.width * scaleFactor);
+  canvas.height = Math.ceil(canvas.height * scaleFactor);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(scaleFactor, scaleFactor);
 }
 
 function fill_export_png_options(displayed_ratio) {
-    var select_size_png = d3.select("#select_png_format");
-    select_size_png.selectAll("option").remove();
+  var select_size_png = d3.select("#select_png_format");
+  select_size_png.selectAll("option").remove();
 
-    select_size_png.append("option").attrs({ value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web" });
-    select_size_png.append("option").attrs({ value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined" });
+  select_size_png.append("option").attrs({ value: "web", class: "i18n", "data-i18n": "[text]app_page.section5b.web" });
+  select_size_png.append("option").attrs({ value: "user_defined", class: "i18n", "data-i18n": "[text]app_page.section5b.user_defined" });
 
-    if (displayed_ratio === "portrait") {
-        select_size_png.append("option").attrs({ value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait" });
-        select_size_png.append("option").attrs({ value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait" });
-        select_size_png.append("option").attrs({ value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait" });
-    } else if (displayed_ratio === "landscape") {
-        select_size_png.append("option").attrs({ value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape" });
-        select_size_png.append("option").attrs({ value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape" });
-        select_size_png.append("option").attrs({ value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape" });
-    }
-    localize("#select_png_format > .i18n");
+  if (displayed_ratio === "portrait") {
+    select_size_png.append("option").attrs({ value: "A5_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_portrait" });
+    select_size_png.append("option").attrs({ value: "A4_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_portrait" });
+    select_size_png.append("option").attrs({ value: "A3_portrait", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_portrait" });
+  } else if (displayed_ratio === "landscape") {
+    select_size_png.append("option").attrs({ value: "A5_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A5_landscape" });
+    select_size_png.append("option").attrs({ value: "A4_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A4_landscape" });
+    select_size_png.append("option").attrs({ value: "A3_landscape", class: "i18n", "data-i18n": "[text]app_page.section5b.A3_landscape" });
+  }
+  localize("#select_png_format > .i18n");
 }
 
 var beforeUnloadWindow = function beforeUnloadWindow(event) {
-    get_map_template().then(function (jsonParams) {
-        window.localStorage.removeItem('magrit_project');
-        window.localStorage.setItem('magrit_project', jsonParams);
-    });
-    event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? 'Confirm exit' : undefined;
+  get_map_template().then(function (jsonParams) {
+    window.localStorage.removeItem('magrit_project');
+    window.localStorage.setItem('magrit_project', jsonParams);
+  });
+  event.returnValue = _app.targeted_layer_added || Object.getOwnPropertyNames(result_data).length > 0 ? 'Confirm exit' : undefined;
 };
 "use strict";
 // Helper function in order to have a colorbrewer color ramp with
@@ -3250,27 +3222,29 @@ var display_discretization = function display_discretization(layer_name, field_n
         height: window.innerHeight - 60 + "px" });
 
     if (values.length < 500) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            var str_tr = void 0;
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-                str_tr = "_boxplot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-                str_tr = '_beeswarm';
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-                str_tr = '';
-            }
-            document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
-        });
+        (function () {
+            // Only allow for beeswarm plot if there isn't too many values
+            // as it seems to be costly due to the "simulation" + the voronoi
+            var current_histo = "histogram",
+                choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+            choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+                var str_tr = void 0;
+                if (current_histo == 'histogram') {
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                    str_tr = "_boxplot";
+                } else if (current_histo == "box_plot") {
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+                    str_tr = '_beeswarm';
+                } else if (current_histo == "beeswarm") {
+                    refDisplay("histogram");
+                    current_histo = "histogram";
+                    str_tr = '';
+                }
+                document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
+            });
+        })();
     }
     var div_svg = newBox.append('div').append("svg").attr("id", "svg_discretization").attr("width", svg_w + margin.left + margin.right).attr("height", svg_h + margin.top + margin.bottom);
 
@@ -3893,22 +3867,24 @@ var display_discretization_links_discont = function display_discretization_links
     refDisplay("histogram");
 
     if (values.length < 750) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-            }
-        });
+        (function () {
+            // Only allow for beeswarm plot if there isn't too many values
+            // as it seems to be costly due to the "simulation" + the voronoi
+            var current_histo = "histogram",
+                choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+            choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+                if (current_histo == 'histogram') {
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                } else if (current_histo == "box_plot") {
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+                } else if (current_histo == "beeswarm") {
+                    refDisplay("histogram");
+                    current_histo = "histogram";
+                }
+            });
+        })();
     }
 
     var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
@@ -4016,6 +3992,8 @@ var display_discretization_links_discont = function display_discretization_links
     return deferred.promise;
 };
 "use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -5248,27 +5226,33 @@ var fields_Stewart = {
         if (default_selected_mask) setSelected(mask_selec.node(), default_selected_mask);
 
         if (layer) {
-            // let fields = type_col(layer, "number"),
-            var fields = getFieldsType("stock", layer),
-                field_selec = section2.select("#stewart_field"),
-                field_selec2 = section2.select("#stewart_field2");
+            var _ret3 = function () {
+                // let fields = type_col(layer, "number"),
+                var fields = getFieldsType("stock", layer),
+                    field_selec = section2.select("#stewart_field"),
+                    field_selec2 = section2.select("#stewart_field2");
 
-            if (fields.length == 0) {
-                display_error_num_field();
-                return;
-            }
+                if (fields.length == 0) {
+                    display_error_num_field();
+                    return {
+                        v: void 0
+                    };
+                }
 
-            field_selec2.append("option").text(" ").attr("value", "None");
-            fields.forEach(function (field) {
-                field_selec.append("option").text(field).attr("value", field);
-                field_selec2.append("option").text(field).attr("value", field);
-            });
-            document.getElementById("stewart_span").value = get_first_guess_span('stewart');
+                field_selec2.append("option").text(" ").attr("value", "None");
+                fields.forEach(function (field) {
+                    field_selec.append("option").text(field).attr("value", field);
+                    field_selec2.append("option").text(field).attr("value", field);
+                });
+                document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
-            field_selec.on("change", function () {
-                document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
-            });
-            section2.select('#stewart_yes').on('click', render_stewart);
+                field_selec.on("change", function () {
+                    document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
+                });
+                section2.select('#stewart_yes').on('click', render_stewart);
+            }();
+
+            if ((typeof _ret3 === "undefined" ? "undefined" : _typeof(_ret3)) === "object") return _ret3.v;
         }
         section2.selectAll(".params").attr("disabled", null);
     },
@@ -5478,72 +5462,74 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                // let opt_scale_max = document.getElementById("Anamorph_opt2");
-                // if(opt_scale_max.value > 100){
-                //     opt_scale_max.value = 100;
-                // }
-                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                var nb_ft = current_layers[layer].n_features,
-                    dataset = user_data[layer];
+                (function () {
+                    // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                    // if(opt_scale_max.value > 100){
+                    //     opt_scale_max.value = 100;
+                    // }
+                    // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    var nb_ft = current_layers[layer].n_features,
+                        dataset = user_data[layer];
 
-                // if(contains_empty_val(dataset.map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
+                    // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
-                var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                    sqrt = Math.sqrt,
-                    abs = Math.abs,
-                    d_val = [],
-                    transform = [];
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                        sqrt = Math.sqrt,
+                        abs = Math.abs,
+                        d_val = [],
+                        transform = [];
 
-                for (var i = 0; i < nb_ft; ++i) {
-                    var val = +dataset[i][field_name];
-                    // We deliberatly use 0 if this is a missing value :
-                    if (isNaN(val) || !isFinite(val)) val = 0;
-                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
-                }
-                d_val.sort(function (a, b) {
-                    return b[1] - a[1];
-                });
-                var ref = d_val[0][1] / d_val[0][2];
-                d_val[0].push(1);
-
-                for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
-                    var _val = d_val[_i3][1] / d_val[_i3][2];
-                    var scale = sqrt(_val / ref);
-                    d_val[_i3].push(scale);
-                }
-                d_val.sort(function (a, b) {
-                    return a[0] - b[0];
-                });
-                var formToSend = new FormData();
-                formToSend.append("json", JSON.stringify({
-                    topojson: current_layers[layer].key_name,
-                    scale_values: d_val.map(function (ft) {
-                        return ft[3];
-                    }),
-                    field_name: field_name }));
-                xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
-                    var options = { result_layer_on_add: true };
-                    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-                        options["choosed_name"] = new_user_layer_name;
+                    for (var i = 0; i < nb_ft; ++i) {
+                        var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
+                        d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                     }
-                    var n_layer_name = add_layer_topojson(result, options);
-                    current_layers[n_layer_name].renderer = "OlsonCarto";
-                    current_layers[n_layer_name].rendered_field = field_name;
-                    current_layers[n_layer_name].scale_max = 1;
-                    current_layers[n_layer_name].ref_layer_name = layer;
-                    current_layers[n_layer_name].scale_byFeature = transform;
-                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
-                    switch_accordion_section();
-                }, function (err) {
-                    display_error_during_computation();
-                    console.log(err);
-                });
+                    d_val.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+                    var ref = d_val[0][1] / d_val[0][2];
+                    d_val[0].push(1);
+
+                    for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+                        var _val = d_val[_i3][1] / d_val[_i3][2];
+                        var scale = sqrt(_val / ref);
+                        d_val[_i3].push(scale);
+                    }
+                    d_val.sort(function (a, b) {
+                        return a[0] - b[0];
+                    });
+                    var formToSend = new FormData();
+                    formToSend.append("json", JSON.stringify({
+                        topojson: current_layers[layer].key_name,
+                        scale_values: d_val.map(function (ft) {
+                            return ft[3];
+                        }),
+                        field_name: field_name }));
+                    xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
+                        var options = { result_layer_on_add: true };
+                        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+                            options["choosed_name"] = new_user_layer_name;
+                        }
+                        var n_layer_name = add_layer_topojson(result, options);
+                        current_layers[n_layer_name].renderer = "OlsonCarto";
+                        current_layers[n_layer_name].rendered_field = field_name;
+                        current_layers[n_layer_name].scale_max = 1;
+                        current_layers[n_layer_name].ref_layer_name = layer;
+                        current_layers[n_layer_name].scale_byFeature = transform;
+                        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
+                        switch_accordion_section();
+                    }, function (err) {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
+                })();
             } else if (algo === "dougenik") {
-                var _formToSend = new FormData(),
+                var formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
@@ -5551,16 +5537,16 @@ var fields_Anamorphose = {
                 if (!current_layers[layer].original_fields.has(field_name)) {
                     var table = user_data[layer],
                         to_send = var_to_send[field_name];
-                    for (var _i4 = 0, i_len = table.length; _i4 < i_len; ++_i4) {
-                        to_send.push(+table[_i4][field_name]);
+                    for (var i = 0, i_len = table.length; i < i_len; ++i) {
+                        to_send.push(+table[i][field_name]);
                     }
                 }
-                _formToSend.append("json", JSON.stringify({
+                formToSend.append("json", JSON.stringify({
                     "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
                     "iterations": nb_iter }));
 
-                xhrequest("POST", '/compute/carto_doug', _formToSend, true).then(function (data) {
+                xhrequest("POST", '/compute/carto_doug', formToSend, true).then(function (data) {
                     var options = { result_layer_on_add: true };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
                         options["choosed_name"] = new_user_layer_name;
@@ -5658,62 +5644,64 @@ function make_prop_line(rendering_params, geojson_line_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_line_layer) {
-        var make_geojson_line_layer = function make_geojson_line_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: cloneObj(ft.geometry)
-                };
-                if (f_ix_len) {
-                    for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                        new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_line_layer = function make_geojson_line_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: cloneObj(ft.geometry)
+                    };
+                    if (f_ix_len) {
+                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                        }
                     }
+                    new_obj.properties[field] = value;
+                    new_obj.properties[t_field_name] = propSize.scale(value);
+                    new_obj.properties['color'] = get_color(value, i);
+                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                    result.push([value, new_obj]);
                 }
-                new_obj.properties[field] = value;
-                new_obj.properties[t_field_name] = propSize.scale(value);
-                new_obj.properties['color'] = get_color(value, i);
-                if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                result.push([value, new_obj]);
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_line_layer = make_geojson_line_layer();
+            geojson_line_layer = make_geojson_line_layer();
+        })();
     }
 
     var layer_id = encodeId(layer_to_add);
@@ -5769,85 +5757,87 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_pt_layer) {
-        var make_geojson_pt_layer = function make_geojson_pt_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: { type: 'Point' }
-                };
-                if (ft.geometry.type.indexOf('Multi') < 0) {
-                    if (f_ix_len) {
-                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_pt_layer = function make_geojson_pt_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: { type: 'Point' }
+                    };
+                    if (ft.geometry.type.indexOf('Multi') < 0) {
+                        if (f_ix_len) {
+                            for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                                new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                            }
                         }
-                    }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
-                } else {
-                    var areas = [];
-                    for (var j = 0; j < ft.geometry.coordinates.length; j++) {
-                        areas.push(path.area({
-                            type: ft.geometry.type,
-                            coordinates: [ft.geometry.coordinates[j]]
-                        }));
-                    }
-                    var ix_max = areas.indexOf(max_fast(areas));
-                    if (f_ix_len) {
-                        for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
-                            new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
+                    } else {
+                        var areas = [];
+                        for (var j = 0; j < ft.geometry.coordinates.length; j++) {
+                            areas.push(path.area({
+                                type: ft.geometry.type,
+                                coordinates: [ft.geometry.coordinates[j]]
+                            }));
                         }
+                        var ix_max = areas.indexOf(max_fast(areas));
+                        if (f_ix_len) {
+                            for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
+                                new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                            }
+                        }
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
                     }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
                 }
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_pt_layer = make_geojson_pt_layer();
+            geojson_pt_layer = make_geojson_pt_layer();
+        })();
     }
     var layer_id = encodeId(layer_to_add);
     _app.layer_to_id.set(layer_to_add, layer_id);
@@ -6083,8 +6073,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
         });
         col_map = new Map();
-        for (var _i5 = 0; _i5 < cats.length; _i5++) {
-            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
+        for (var _i4 = 0; _i4 < cats.length; _i4++) {
+            col_map.set(cats[_i4].name, [cats[_i4].color, cats[_i4].name, cats[_i4].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -6476,13 +6466,15 @@ var render_discont = function render_discont() {
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
 
         {
-            // Only display the 50% most important values :
-            // TODO : reintegrate this upstream in the layer creation :
-            var lim = 0.5 * current_layers[new_layer_name].n_features;
-            result_layer.selectAll('path').style("display", function (d, i) {
-                return i <= lim ? null : "none";
-            });
-            current_layers[new_layer_name].min_display = 0.5;
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style("display", function (d, i) {
+                    return i <= lim ? null : "none";
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
@@ -7134,8 +7126,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i6 = 0; _i6 < nb_class; ++_i6) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i6], user_breaks[_i6 + 1]], sizes[_i6]]);
+        for (var _i5 = 0; _i5 < nb_class; ++_i5) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i5], user_breaks[_i5 + 1]], sizes[_i5]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });
@@ -11136,15 +11128,17 @@ function createStyleBox_Line(layer_name) {
                     return current_layers[layer_name].linksbyId[i][2];
                 });
             } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].size = prev_size;
-                current_layers[layer_name].breaks = prev_breaks;
-                var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
-                    return +i <= lim ? null : "none";
-                }).style('stroke-width', function (d) {
-                    return d.properties.prop_val;
-                });
+                (function () {
+                    current_layers[layer_name].min_display = prev_min_display;
+                    current_layers[layer_name].size = prev_size;
+                    current_layers[layer_name].breaks = prev_breaks;
+                    var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+                    selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
+                        return +i <= lim ? null : "none";
+                    }).style('stroke-width', function (d) {
+                        return d.properties.prop_val;
+                    });
+                })();
             } else {
                 if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", border_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", border_opacity).style("stroke", function () {
                     return Colors.names[Colors.random()];
@@ -11162,28 +11156,30 @@ function createStyleBox_Line(layer_name) {
     var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
 
     if (renderer == "Categorical" || renderer == "PropSymbolsTypo") {
-        var color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
+        (function () {
+            var color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
 
-        popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
-                _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
-                cats = _prepare_categories_a2[0],
-                _ = _prepare_categories_a2[1];
+            popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
+                    _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+                    cats = _prepare_categories_a2[0],
+                    _ = _prepare_categories_a2[1];
 
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: color_field, field: color_field
-                    };
-                    selection.transition().style('stroke', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+                container.modal.hide();
+                display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: color_field, field: color_field
+                        };
+                        selection.transition().style('stroke', function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             container.modal.hide();
@@ -11219,48 +11215,52 @@ function createStyleBox_Line(layer_name) {
     }
 
     if (renderer == "Links") {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        var max_val = 0;
-        selection.each(function (d) {
-            if (+d.properties.fij > max_val) max_val = d.properties.fij;
-        });
-        var threshold_section = popup.append('p').attr("class", "line_elem");
-        threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
-        // The legend will be updated in order to start on the minimum value displayed instead of
-        //   using the minimum value of the serie (skipping unused class if necessary)
-        threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
-            var val = +this.value;
-            popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-            selection.style("display", function (d) {
-                return +d.properties.fij > val ? null : "none";
+        (function () {
+            prev_min_display = current_layers[layer_name].min_display || 0;
+            prev_breaks = current_layers[layer_name].breaks.slice();
+            var max_val = 0;
+            selection.each(function (d) {
+                if (+d.properties.fij > max_val) max_val = d.properties.fij;
             });
-            current_layers[layer_name].min_display = val;
-        });
-        threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
-            container.modal.hide();
-            display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
-                container.modal.show();
-                if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    }),
-                        links_byId = current_layers[layer_name].linksbyId;
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+links_byId[i][1])];
-                    });
-                }
+            var threshold_section = popup.append('p').attr("class", "line_elem");
+            threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
+            // The legend will be updated in order to start on the minimum value displayed instead of
+            //   using the minimum value of the serie (skipping unused class if necessary)
+            threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
+                var val = +this.value;
+                popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
+                selection.style("display", function (d) {
+                    return +d.properties.fij > val ? null : "none";
+                });
+                current_layers[layer_name].min_display = val;
             });
-        });
+            threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
+            popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
+                container.modal.hide();
+                display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
+                    container.modal.show();
+                    if (result) {
+                        (function () {
+                            var serie = result[0],
+                                sizes = result[1].map(function (ft) {
+                                return ft[1];
+                            }),
+                                links_byId = current_layers[layer_name].linksbyId;
+                            serie.setClassManually(result[2]);
+                            current_layers[layer_name].breaks = result[1];
+                            selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
+                                return sizes[serie.getClass(+links_byId[i][1])];
+                            });
+                        })();
+                    }
+                });
+            });
+        })();
     } else if (renderer == "DiscLayer") {
         prev_min_display = current_layers[layer_name].min_display || 0;
         prev_size = current_layers[layer_name].size.slice();
         prev_breaks = current_layers[layer_name].breaks.slice();
-        var _max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
+        var max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
             return i.disc_value;
         }));
         var disc_part = popup.append("p").attr("class", "line_elem");
@@ -11280,17 +11280,19 @@ function createStyleBox_Line(layer_name) {
             display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
                 container.modal.show();
                 if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    });
+                    (function () {
+                        var serie = result[0],
+                            sizes = result[1].map(function (ft) {
+                            return ft[1];
+                        });
 
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+d.properties.disc_value)];
-                    });
+                        serie.setClassManually(result[2]);
+                        current_layers[layer_name].breaks = result[1];
+                        current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+                        selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
+                            return sizes[serie.getClass(+d.properties.disc_value)];
+                        });
+                    })();
                 }
             });
         });
@@ -11315,29 +11317,31 @@ function createStyleBox_Line(layer_name) {
             current_layers[layer_name]['stroke-width-const'] = val;
         });
     } else if (renderer.startsWith('PropSymbols')) {
-        var field_used = current_layers[layer_name].rendered_field;
-        var d_values = result_data[layer_name].map(function (f) {
-            return +f[field_used];
-        });
-        var prop_val_content = popup.append("p");
-        prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: current_layers[layer_name].rendered_field }));
-        prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
-        prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
-            var f_size = +this.value,
-                prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
-            current_layers[layer_name].size[1] = f_size;
-            redraw_prop_val(prop_values);
-        });
-        prop_val_content.append("span").style("float", "right").html('(px)');
+        (function () {
+            var field_used = current_layers[layer_name].rendered_field;
+            var d_values = result_data[layer_name].map(function (f) {
+                return +f[field_used];
+            });
+            var prop_val_content = popup.append("p");
+            prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: current_layers[layer_name].rendered_field }));
+            prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
+            prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
+                var f_size = +this.value,
+                    prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
+                current_layers[layer_name].size[1] = f_size;
+                redraw_prop_val(prop_values);
+            });
+            prop_val_content.append("span").style("float", "right").html('(px)');
 
-        var prop_val_content2 = popup.append("p").attr("class", "line_elem");
-        prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
-        prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
-            var f_val = +this.value,
-                prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
-            redraw_prop_val(prop_values);
-            current_layers[layer_name].size[0] = f_val;
-        });
+            var prop_val_content2 = popup.append("p").attr("class", "line_elem");
+            prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
+            prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
+                var f_val = +this.value,
+                    prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
+                redraw_prop_val(prop_values);
+                current_layers[layer_name].size[0] = f_val;
+            });
+        })();
     }
 
     make_generate_labels_section(popup, layer_name);
@@ -11469,45 +11473,49 @@ function createStyleBox(layer_name) {
 
     if (current_layers[layer_name].colors_breaks == undefined && renderer != "Categorical") {
         if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
-            var fields = getFieldsType('category', null, fields_layer);
-            var fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-            [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
-                fill_method.append("option").text(d[0]).attr("value", d[1]);
-            });
-            popup.append('div').attrs({ id: "fill_color_section" });
-            fill_method.on("change", function () {
-                d3.select("#fill_color_section").html("").on("click", null);
-                if (this.value == "single") make_single_color_menu(layer_name, fill_prev);else if (this.value == "categorical") make_categorical_color_menu(fields, layer_name, fill_prev);else if (this.value == "random") make_random_color(layer_name);
-            });
-            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            (function () {
+                var fields = getFieldsType('category', null, fields_layer);
+                var fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
+                [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.categorical_color"), "categorical"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
+                    fill_method.append("option").text(d[0]).attr("value", d[1]);
+                });
+                popup.append('div').attrs({ id: "fill_color_section" });
+                fill_method.on("change", function () {
+                    d3.select("#fill_color_section").html("").on("click", null);
+                    if (this.value == "single") make_single_color_menu(layer_name, fill_prev);else if (this.value == "categorical") make_categorical_color_menu(fields, layer_name, fill_prev);else if (this.value == "random") make_random_color(layer_name);
+                });
+                setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            })();
         } else {
             popup.append('div').attrs({ id: "fill_color_section" });
             make_single_color_menu(layer_name, fill_prev);
         }
     } else if (renderer == "Categorical") {
-        var rendered_field = current_layers[layer_name].rendered_field;
+        (function () {
+            var rendered_field = current_layers[layer_name].rendered_field;
 
-        popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            container.modal.hide();
+            popup.insert('p').styles({ "margin": "auto", "text-align": "center" }).html("").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                container.modal.hide();
 
-            var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
-                _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
-                cats = _prepare_categories_a4[0],
-                _ = _prepare_categories_a4[1];
+                var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
+                    _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+                    cats = _prepare_categories_a4[0],
+                    _ = _prepare_categories_a4[1];
 
-            display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: rendered_field, field: rendered_field
-                    };
-                    selection.transition().style('fill', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+                display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: rendered_field, field: rendered_field
+                        };
+                        selection.transition().style('fill', function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Choropleth") {
         popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
             container.modal.hide();
@@ -11536,64 +11544,74 @@ function createStyleBox(layer_name) {
             });
         });
     } else if (renderer == "Gridded") {
-        var field_to_discretize = current_layers[layer_name].rendered_field;
-        popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "Choropleth",
-                        field: field_to_discretize,
-                        extra_options: confirmed[7]
-                    };
-                    var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                    selection.transition().style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+        (function () {
+            var field_to_discretize = current_layers[layer_name].rendered_field;
+            popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
+                display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
+                            colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
+                            renderer: "Choropleth",
+                            field: field_to_discretize,
+                            extra_options: confirmed[7]
+                        };
+                        var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+                        selection.transition().style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (renderer == "Stewart") {
-        var field_to_colorize = "min",
-            nb_ft = current_layers[layer_name].n_features;
-        var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-        rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+        var prev_palette;
+        var recolor_stewart;
+        var color_palette_section;
 
-        var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
-            var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-            if (reversed) new_coloramp.reverse();
-            for (var i = 0; i < nb_ft; ++i) {
-                rendering_params.breaks[i][1] = new_coloramp[i];
-            }selection.transition().style("fill", function (d, i) {
-                return new_coloramp[i];
+        (function () {
+            var field_to_colorize = "min",
+                nb_ft = current_layers[layer_name].n_features;
+            prev_palette = cloneObj(current_layers[layer_name].color_palette);
+
+            rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+
+            recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
+                var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+                if (reversed) new_coloramp.reverse();
+                for (var i = 0; i < nb_ft; ++i) {
+                    rendering_params.breaks[i][1] = new_coloramp[i];
+                }selection.transition().style("fill", function (d, i) {
+                    return new_coloramp[i];
+                });
+                current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+            };
+
+            color_palette_section = popup.insert("p").attr("class", "line_elem");
+
+            color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
+            var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
+                recolor_stewart(this.value, false);
             });
-            current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
-        };
 
-        var color_palette_section = popup.insert("p").attr("class", "line_elem");
-        color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-        var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
-            recolor_stewart(this.value, false);
-        });
-
-        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-            seq_color_select.append("option").text(name).attr("value", name);
-        });
-        seq_color_select.node().value = prev_palette.name;
-        popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
-            var pal_name = document.getElementById("coloramp_params").value;
-            recolor_stewart(pal_name, true);
-        });
+            ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+                seq_color_select.append("option").text(name).attr("value", name);
+            });
+            seq_color_select.node().value = prev_palette.name;
+            popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
+                var pal_name = document.getElementById("coloramp_params").value;
+                recolor_stewart(pal_name, true);
+            });
+        })();
     }
     var fill_opacity_section = popup.append('p').attr("class", "line_elem");
     fill_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
@@ -11693,53 +11711,55 @@ function make_generate_labels_graticule_section(parent_node) {
 function make_generate_labels_section(parent_node, layer_name) {
     var _fields = get_fields_name(layer_name) || [];
     if (_fields && _fields.length > 0) {
-        var labels_section = parent_node.append("p");
-        var input_fields = {};
-        for (var i = 0; i < _fields.length; i++) {
-            input_fields[_fields[i]] = _fields[i];
-        }
-        labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
-            this.style.fontWeight = "bold";
-        }).on("mouseout", function () {
-            this.style.fontWeight = "";
-        }).on("click", function () {
-            swal({
-                title: "",
-                text: i18next.t("app_page.layer_style_popup.field_label"),
-                type: "question",
-                customClass: 'swal2_custom',
-                showCancelButton: true,
-                showCloseButton: false,
-                allowEscapeKey: false,
-                allowOutsideClick: false,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: i18next.t("app_page.common.confirm"),
-                input: 'select',
-                inputPlaceholder: i18next.t("app_page.common.field"),
-                inputOptions: input_fields,
-                inputValidator: function inputValidator(value) {
-                    return new Promise(function (resolve, reject) {
-                        if (_fields.indexOf(value) < 0) {
-                            reject(i18next.t("app_page.common.no_value"));
-                        } else {
-                            var options_labels = {
-                                label_field: value,
-                                color: "#000",
-                                font: "Arial,Helvetica,sans-serif",
-                                ref_font_size: 12,
-                                uo_layer_name: ["Labels", value, layer_name].join('_')
-                            };
-                            render_label(layer_name, options_labels);
-                            resolve();
-                        }
-                    });
-                }
-            }).then(function (value) {
-                console.log(value);
-            }, function (dismiss) {
-                console.log(dismiss);
+        (function () {
+            var labels_section = parent_node.append("p");
+            var input_fields = {};
+            for (var i = 0; i < _fields.length; i++) {
+                input_fields[_fields[i]] = _fields[i];
+            }
+            labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
+                this.style.fontWeight = "bold";
+            }).on("mouseout", function () {
+                this.style.fontWeight = "";
+            }).on("click", function () {
+                swal({
+                    title: "",
+                    text: i18next.t("app_page.layer_style_popup.field_label"),
+                    type: "question",
+                    customClass: 'swal2_custom',
+                    showCancelButton: true,
+                    showCloseButton: false,
+                    allowEscapeKey: false,
+                    allowOutsideClick: false,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: i18next.t("app_page.common.confirm"),
+                    input: 'select',
+                    inputPlaceholder: i18next.t("app_page.common.field"),
+                    inputOptions: input_fields,
+                    inputValidator: function inputValidator(value) {
+                        return new Promise(function (resolve, reject) {
+                            if (_fields.indexOf(value) < 0) {
+                                reject(i18next.t("app_page.common.no_value"));
+                            } else {
+                                var options_labels = {
+                                    label_field: value,
+                                    color: "#000",
+                                    font: "Arial,Helvetica,sans-serif",
+                                    ref_font_size: 12,
+                                    uo_layer_name: ["Labels", value, layer_name].join('_')
+                                };
+                                render_label(layer_name, options_labels);
+                                resolve();
+                            }
+                        });
+                    }
+                }).then(function (value) {
+                    console.log(value);
+                }, function (dismiss) {
+                    console.log(dismiss);
+                });
             });
-        });
+        })();
     }
 }
 
@@ -11889,32 +11909,34 @@ function createStyleBox_ProbSymbol(layer_name) {
 
     popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
     if (type_method === "PropSymbolsChoro") {
-        var field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "PropSymbolsChoro",
-                        field: field_color,
-                        extra_options: confirmed[7]
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
+        (function () {
+            var field_color = current_layers[layer_name].rendered_field2;
+            popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
+                container.modal.hide();
+                display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+                //  "quantiles",
+                current_layers[layer_name].options_disc).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0],
+                            type: confirmed[1],
+                            breaks: confirmed[2],
+                            colors: confirmed[3],
+                            colorsByFeature: confirmed[4],
+                            schema: confirmed[5],
+                            no_data: confirmed[6],
+                            renderer: "PropSymbolsChoro",
+                            field: field_color,
+                            extra_options: confirmed[7]
+                        };
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
             });
-        });
+        })();
     } else if (current_layers[layer_name].break_val != undefined) {
         var fill_color_section = popup.append('div').attr("id", "fill_color_section");
         fill_color_section.append("p").style("text-align", "center").html(i18next.t("app_page.layer_style_popup.color_break"));
@@ -11946,48 +11968,52 @@ function createStyleBox_ProbSymbol(layer_name) {
             });
         });
     } else if (type_method === "PropSymbolsTypo") {
-        var _field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: _field_color }));
-        popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a5 = prepare_categories_array(layer_name, _field_color, current_layers[layer_name].color_map),
-                _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
-                cats = _prepare_categories_a6[0],
-                _ = _prepare_categories_a6[1];
+        (function () {
+            var field_color = current_layers[layer_name].rendered_field2;
+            popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color }));
+            popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
+                var _prepare_categories_a5 = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map),
+                    _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
+                    cats = _prepare_categories_a6[0],
+                    _ = _prepare_categories_a6[1];
 
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, _field_color, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: _field_color, field: _field_color
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
+                container.modal.hide();
+                display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
+                    container.modal.show();
+                    if (confirmed) {
+                        rendering_params = {
+                            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+                            renderer: "Categorical", rendered_field: field_color, field: field_color
+                        };
+                        selection.style("fill", function (d, i) {
+                            return rendering_params.colorsByFeature[i];
+                        });
+                    }
+                });
+            });
+        })();
+    } else {
+        (function () {
+            var fields_all = type_col2(result_data[layer_name]),
+                fields = getFieldsType('category', null, fields_all),
+                fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
+
+            [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
+                fill_method.append("option").text(d[0]).attr("value", d[1]);
+            });
+            popup.append('div').attr("id", "fill_color_section");
+            fill_method.on("change", function () {
+                popup.select("#fill_color_section").html("").on("click", null);
+                if (this.value == "single") {
+                    make_single_color_menu(layer_name, fill_prev, type_symbol);
+                    map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
+                    current_layers[layer_name].fill_color = cloneObj(fill_prev);
+                } else if (this.value == "random") {
+                    make_random_color(layer_name, type_symbol);
                 }
             });
-        });
-    } else {
-        var fields_all = type_col2(result_data[layer_name]),
-            fields = getFieldsType('category', null, fields_all),
-            fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-
-        [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d, i) {
-            fill_method.append("option").text(d[0]).attr("value", d[1]);
-        });
-        popup.append('div').attr("id", "fill_color_section");
-        fill_method.on("change", function () {
-            popup.select("#fill_color_section").html("").on("click", null);
-            if (this.value == "single") {
-                make_single_color_menu(layer_name, fill_prev, type_symbol);
-                map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
-                current_layers[layer_name].fill_color = cloneObj(fill_prev);
-            } else if (this.value == "random") {
-                make_random_color(layer_name, type_symbol);
-            }
-        });
-        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+        })();
     }
 
     var fill_opct_section = popup.append('p').attr("class", "line_elem");
@@ -14672,17 +14698,19 @@ function createLegend_choro(layer, field, title, subtitle) {
   }
 
   if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
-    var tmp_pos = void 0;
-    legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
-      tmp_pos = y_pos2 + i * boxheight + i * boxgap;
-      return tmp_pos;
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
-    });
+    (function () {
+      var tmp_pos = void 0;
+      legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
+        tmp_pos = y_pos2 + i * boxheight + i * boxgap;
+        return tmp_pos;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
+      });
 
-    legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", xpos + boxwidth * 2 + 10).attr("y", tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
-    });
+      legend_root.insert('text').attr("id", "lgd_choro_min_val").attr("x", xpos + boxwidth * 2 + 10).attr("y", tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+      });
+    })();
   } else {
     legend_elems.append('text').attr("x", xpos + boxwidth * 2 + 10).attr("y", function (d, i) {
       return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
@@ -14931,29 +14959,33 @@ function createlegendEditBox(legend_id, layer_name) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
     } else {
-      var nb_dec = [],
-          nb_left = [];
-      legend_boxes.each(function (d) {
-        nb_dec.push(get_nb_decimals(d.value));
-        nb_left.push(get_nb_left_separator(d.value));
-      });
-      max_nb_decimals = max_fast(nb_dec);
-      max_nb_left = min_fast(nb_left);
+      (function () {
+        var nb_dec = [],
+            nb_left = [];
+        legend_boxes.each(function (d) {
+          nb_dec.push(get_nb_decimals(d.value));
+          nb_left.push(get_nb_left_separator(d.value));
+        });
+        max_nb_decimals = max_fast(nb_dec);
+        max_nb_left = min_fast(nb_left);
+      })();
     }
     max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
     if (max_nb_decimals > 0 || max_nb_left >= 2) {
       if (legend_node.getAttribute("rounding_precision")) {
         current_nb_dec = legend_node.getAttribute("rounding_precision");
       } else {
-        var nbs = [],
-            _nb_dec = [];
-        legend_boxes.each(function () {
-          nbs.push(this.textContent);
-        });
-        for (var i = 0; i < nbs.length; i++) {
-          _nb_dec.push(get_nb_decimals(nbs[i]));
-        }
-        current_nb_dec = max_fast(_nb_dec);
+        (function () {
+          var nbs = [],
+              nb_dec = [];
+          legend_boxes.each(function () {
+            nbs.push(this.textContent);
+          });
+          for (var i = 0; i < nbs.length; i++) {
+            nb_dec.push(get_nb_decimals(nbs[i]));
+          }
+          current_nb_dec = max_fast(nb_dec);
+        })();
       }
       if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) max_nb_decimals = 18;
       var e = box_body.append('p');
@@ -14964,21 +14996,21 @@ function createlegendEditBox(legend_id, layer_name) {
         d3.select("#precision_change_txt").html(nb_float);
         legend_node.setAttribute("rounding_precision", nb_float);
         if (legend_id === "legend_root") {
-          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
-            var values = legend_boxes._groups[0][_i].__data__.value.split(' - ');
-            legend_boxes._groups[0][_i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
+          for (var i = 0; i < legend_boxes._groups[0].length; i++) {
+            var values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
           }
           var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
         } else if (legend_id === "legend_root_symbol") {
-          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
-            var value = legend_boxes._groups[0][_i2].__data__.value;
-            legend_boxes._groups[0][_i2].innerHTML = round_value(+value, nb_float).toLocaleString();
+          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
+            var value = legend_boxes._groups[0][_i].__data__.value;
+            legend_boxes._groups[0][_i].innerHTML = round_value(+value, nb_float).toLocaleString();
           }
         } else if (legend_id === "legend_root_lines_class") {
-          for (var _i3 = 0; _i3 < legend_boxes._groups[0].length; _i3++) {
-            var _value = legend_boxes._groups[0][_i3].__data__.value[1];
-            legend_boxes._groups[0][_i3].innerHTML = round_value(+_value, nb_float).toLocaleString();
+          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
+            var _value = legend_boxes._groups[0][_i2].__data__.value[1];
+            legend_boxes._groups[0][_i2].innerHTML = round_value(+_value, nb_float).toLocaleString();
           }
           var _min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
@@ -15777,110 +15809,114 @@ function apply_user_preferences(json_pref) {
 
     // This is a layer for which a geometries have been stocked as TopoJSON :
     if (_layer.topo_geom) {
-      var tmp = {
-        skip_alert: true,
-        choosed_name: layer_name,
-        skip_rescale: true
-      };
-      if (_layer.targeted) {
-        tmp['target_layer_on_add'] = true;
-      } else if (_layer.renderer) {
-        tmp['func_name'] = func_name_corresp.get(_layer.renderer);
-        tmp['result_layer_on_add'] = true;
-      }
-      if (_layer.pointRadius != undefined) tmp['pointRadius'] = _layer.pointRadius;
-
-      // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
-      layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
-      var current_layer_prop = current_layers[layer_name];
-      if (_layer.renderer) {
-        current_layer_prop.renderer = _layer.renderer;
-      }
-      if (_layer.targeted && _layer.fields_type) {
-        current_layer_prop.fields_type = _layer.fields_type;
-        document.getElementById('btn_type_fields').removeAttribute('disabled');
-      }
-      var _layer_id2 = _app.layer_to_id.get(layer_name);
-      var layer_selec = map.select("#" + _layer_id2);
-
-      current_layer_prop.rendered_field = _layer.rendered_field;
-
-      if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
-      if (_layer.size) current_layer_prop.size = _layer.size;
-      if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
-      if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
-      if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
-      if (_layer.color_palette) current_layer_prop.color_palette;
-      if (_layer.renderer) {
-        // if (_layer.renderer === "Choropleth"
-        //         || _layer.renderer === "Stewart"
-        //         || _layer.renderer === "Gridded") {
-        if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
-          layer_selec.selectAll("path").style(current_layer_prop.type === "Line" ? "stroke" : "fill", function (d, j) {
-            return _layer.color_by_id[j];
-          });
-        } else if (_layer.renderer == "Links") {
-          current_layer_prop.linksbyId = _layer.linksbyId;
-          current_layer_prop.min_display = _layer.min_display;
-          current_layer_prop.breaks = _layer.breaks;
-          layer_selec.selectAll("path").styles(function (d, j) {
-            return {
-              display: +d.properties.fij > _layer.min_display ? null : "none",
-              stroke: _layer.fill_color.single,
-              'stroke-width': current_layer_prop.linksbyId[j][2]
-            };
-          });
-        } else if (_layer.renderer == "DiscLayer") {
-          current_layer_prop.min_display = _layer.min_display || 0;
-          current_layer_prop.breaks = _layer.breaks;
-          var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
-          layer_selec.selectAll("path").styles(function (d, j) {
-            return {
-              fill: "none",
-              stroke: _layer.fill_color.single,
-              display: j <= lim ? null : 'none',
-              'stroke-width': d.properties.prop_val
-            };
-          });
-        } else if (_layer.renderer.startsWith("Categorical")) {
-          var rendering_params = {
-            colorByFeature: _layer.color_by_id,
-            color_map: new Map(_layer.color_map),
-            rendered_field: _layer.rendered_field,
-            renderer: "Categorical"
-          };
-          render_categorical(layer_name, rendering_params);
+      (function () {
+        var tmp = {
+          skip_alert: true,
+          choosed_name: layer_name,
+          skip_rescale: true
+        };
+        if (_layer.targeted) {
+          tmp['target_layer_on_add'] = true;
+        } else if (_layer.renderer) {
+          tmp['func_name'] = func_name_corresp.get(_layer.renderer);
+          tmp['result_layer_on_add'] = true;
         }
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
-      }
-      if (_layer.stroke_color) {
-        layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
-      }
-      if (_layer['stroke-width-const']) {
-        current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
-        layer_selec.style('stroke-width', _layer['stroke-width-const']);
-      }
-      if (_layer.fixed_stroke) current_layer_prop.fixed_stroke = _layer.fixed_stroke;
-      if (_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer") {
-        layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", _layer.fill_color.single);
-      } else if (_layer.fill_color && _layer.fill_color.random) {
-        layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", function () {
-          return Colors.names[Colors.random()];
-        });
-      }
+        if (_layer.pointRadius != undefined) tmp['pointRadius'] = _layer.pointRadius;
 
-      layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
-      if (_layer.visible == 'hidden') {
-        handle_active_layer(layer_name);
-      }
-      if (_layer.filter_shadow) {
-        createDropShadow(_layer_id2);
-      }
-      done += 1;
-      if (done == map_config.n_layers) set_final_param();
-      // });
+        // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
+        layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
+        var current_layer_prop = current_layers[layer_name];
+        if (_layer.renderer) {
+          current_layer_prop.renderer = _layer.renderer;
+        }
+        if (_layer.targeted && _layer.fields_type) {
+          current_layer_prop.fields_type = _layer.fields_type;
+          document.getElementById('btn_type_fields').removeAttribute('disabled');
+        }
+        var layer_id = _app.layer_to_id.get(layer_name);
+        var layer_selec = map.select("#" + layer_id);
+
+        current_layer_prop.rendered_field = _layer.rendered_field;
+
+        if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
+        if (_layer.size) current_layer_prop.size = _layer.size;
+        if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
+        if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
+        if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
+        if (_layer.color_palette) current_layer_prop.color_palette;
+        if (_layer.renderer) {
+          // if (_layer.renderer === "Choropleth"
+          //         || _layer.renderer === "Stewart"
+          //         || _layer.renderer === "Gridded") {
+          if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
+            layer_selec.selectAll("path").style(current_layer_prop.type === "Line" ? "stroke" : "fill", function (d, j) {
+              return _layer.color_by_id[j];
+            });
+          } else if (_layer.renderer == "Links") {
+            current_layer_prop.linksbyId = _layer.linksbyId;
+            current_layer_prop.min_display = _layer.min_display;
+            current_layer_prop.breaks = _layer.breaks;
+            layer_selec.selectAll("path").styles(function (d, j) {
+              return {
+                display: +d.properties.fij > _layer.min_display ? null : "none",
+                stroke: _layer.fill_color.single,
+                'stroke-width': current_layer_prop.linksbyId[j][2]
+              };
+            });
+          } else if (_layer.renderer == "DiscLayer") {
+            (function () {
+              current_layer_prop.min_display = _layer.min_display || 0;
+              current_layer_prop.breaks = _layer.breaks;
+              var lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
+              layer_selec.selectAll("path").styles(function (d, j) {
+                return {
+                  fill: "none",
+                  stroke: _layer.fill_color.single,
+                  display: j <= lim ? null : 'none',
+                  'stroke-width': d.properties.prop_val
+                };
+              });
+            })();
+          } else if (_layer.renderer.startsWith("Categorical")) {
+            var rendering_params = {
+              colorByFeature: _layer.color_by_id,
+              color_map: new Map(_layer.color_map),
+              rendered_field: _layer.rendered_field,
+              renderer: "Categorical"
+            };
+            render_categorical(layer_name, rendering_params);
+          }
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        }
+        if (_layer.stroke_color) {
+          layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
+        }
+        if (_layer['stroke-width-const']) {
+          current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+          layer_selec.style('stroke-width', _layer['stroke-width-const']);
+        }
+        if (_layer.fixed_stroke) current_layer_prop.fixed_stroke = _layer.fixed_stroke;
+        if (_layer.fill_color && _layer.fill_color.single && _layer.renderer != "DiscLayer") {
+          layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", _layer.fill_color.single);
+        } else if (_layer.fill_color && _layer.fill_color.random) {
+          layer_selec.selectAll('path').style(current_layer_prop.type != "Line" ? "fill" : "stroke", function () {
+            return Colors.names[Colors.random()];
+          });
+        }
+
+        layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
+        if (_layer.visible == 'hidden') {
+          handle_active_layer(layer_name);
+        }
+        if (_layer.filter_shadow) {
+          createDropShadow(layer_id);
+        }
+        done += 1;
+        if (done == map_config.n_layers) set_final_param();
+        // });
+      })();
     } else if (layer_name === "World") {
       add_simplified_land_layer({ skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible !== 'hidden' });
       done += 1;
@@ -15905,7 +15941,7 @@ function apply_user_preferences(json_pref) {
         // ... or this is a layer of proportionnals symbols :
       } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
         var geojson_layer = _layer.symbol == 'line' ? _layer.geo_line : _layer.geo_pt;
-        var _rendering_params = {
+        var rendering_params = {
           new_name: layer_name,
           field: _layer.rendered_field,
           ref_value: _layer.size[0],
@@ -15915,15 +15951,15 @@ function apply_user_preferences(json_pref) {
           ref_layer_name: _layer.ref_layer_name,
           renderer: _layer.renderer
         };
-        if (_layer.renderer === "PropSymbolsChoro" || _layer.renderer === "PropSymbolsTypo") _rendering_params.fill_color = _layer.fill_color.class;else if (_layer.fill_color.random) _rendering_params.fill_color = "#fff";else if (_layer.fill_color.single != undefined) _rendering_params.fill_color = _layer.fill_color.single;else if (_layer.fill_color.two) {
-          _rendering_params.fill_color = _layer.fill_color;
-          _rendering_params.break_val = _layer.break_val;
+        if (_layer.renderer === "PropSymbolsChoro" || _layer.renderer === "PropSymbolsTypo") rendering_params.fill_color = _layer.fill_color.class;else if (_layer.fill_color.random) rendering_params.fill_color = "#fff";else if (_layer.fill_color.single != undefined) rendering_params.fill_color = _layer.fill_color.single;else if (_layer.fill_color.two) {
+          rendering_params.fill_color = _layer.fill_color;
+          rendering_params.break_val = _layer.break_val;
         }
 
         if (_layer.symbol == 'line') {
-          make_prop_line(_rendering_params, geojson_layer);
+          make_prop_line(rendering_params, geojson_layer);
         } else {
-          make_prop_symbols(_rendering_params, geojson_layer);
+          make_prop_symbols(rendering_params, geojson_layer);
           if (_layer.stroke_color) map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).style('stroke', _layer.stroke_color);
         }
         if (_layer.renderer == "PropSymbolsTypo") {
@@ -15955,70 +15991,72 @@ function apply_user_preferences(json_pref) {
         }
         // ... or this is a layer of labels :
       } else if (_layer.renderer && _layer.renderer.startsWith("Label")) {
-        var _rendering_params2 = {
+        var _rendering_params = {
           uo_layer_name: layer_name,
           label_field: _layer.rendered_field,
           color: _layer.fill_color,
           ref_font_size: _layer.default_size,
           font: _layer.default_font
         };
-        render_label(null, _rendering_params2, { data: _layer.data_labels, current_position: _layer.current_position });
+        render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
       } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")) {
-        var symbols_map = new Map(_layer.symbols_map);
-        var new_layer_data = {
-          type: "FeatureCollection",
-          features: _layer.current_state.map(function (d) {
-            return d.data;
-          })
-        };
-
-        var nb_features = new_layer_data.features.length;
-        var context_menu = new ContextMenu(),
-            getItems = function getItems(self_parent) {
-          return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
-              make_style_box_indiv_symbol(self_parent);
-            } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
-              self_parent.style.display = "none";
-            } }];
-        };
-        var _layer_id3 = encodeId(layer_name);
-        _app.layer_to_id.set(layer_name, _layer_id3);
-        _app.id_to_layer.set(_layer_id3, layer_name);
-        // Add the features at there original positions :
-        map.append("g").attrs({ id: _layer_id3, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
-          var symb = symbols_map.get(d.properties.symbol_field),
-              prop = _layer.current_state[j],
-              coords = prop.pos;
-          return {
-            "x": coords[0] - symb[1] / 2,
-            "y": coords[1] - symb[1] / 2,
-            "width": prop.size,
-            "height": prop.size,
-            "xlink:href": symb[0]
+        (function () {
+          var symbols_map = new Map(_layer.symbols_map);
+          var new_layer_data = {
+            type: "FeatureCollection",
+            features: _layer.current_state.map(function (d) {
+              return d.data;
+            })
           };
-        }).style('display', function (d, j) {
-          return _layer.current_state[j].display;
-        }).on("mouseover", function () {
-          this.style.cursor = "pointer";
-        }).on("mouseout", function () {
-          this.style.cursor = "initial";
-        }).on("contextmenu dblclick", function () {
-          context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
-        }).call(drag_elem_geo);
 
-        create_li_layer_elem(layer_name, nb_features, ["Point", "symbol"], "result");
-        current_layers[layer_name] = {
-          "n_features": nb_features,
-          "renderer": "TypoSymbols",
-          "symbols_map": symbols_map,
-          "rendered_field": _layer.rendered_field,
-          "is_result": true,
-          "symbol": "image",
-          "ref_layer_name": _layer.ref_layer_name
-        };
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
+          var nb_features = new_layer_data.features.length;
+          var context_menu = new ContextMenu(),
+              getItems = function getItems(self_parent) {
+            return [{ "name": i18next.t("app_page.common.edit_style"), "action": function action() {
+                make_style_box_indiv_symbol(self_parent);
+              } }, { "name": i18next.t("app_page.common.delete"), "action": function action() {
+                self_parent.style.display = "none";
+              } }];
+          };
+          var layer_id = encodeId(layer_name);
+          _app.layer_to_id.set(layer_name, layer_id);
+          _app.id_to_layer.set(layer_id, layer_name);
+          // Add the features at there original positions :
+          map.append("g").attrs({ id: layer_id, class: "layer" }).selectAll("image").data(new_layer_data.features).enter().insert("image").attrs(function (d, j) {
+            var symb = symbols_map.get(d.properties.symbol_field),
+                prop = _layer.current_state[j],
+                coords = prop.pos;
+            return {
+              "x": coords[0] - symb[1] / 2,
+              "y": coords[1] - symb[1] / 2,
+              "width": prop.size,
+              "height": prop.size,
+              "xlink:href": symb[0]
+            };
+          }).style('display', function (d, j) {
+            return _layer.current_state[j].display;
+          }).on("mouseover", function () {
+            this.style.cursor = "pointer";
+          }).on("mouseout", function () {
+            this.style.cursor = "initial";
+          }).on("contextmenu dblclick", function () {
+            context_menu.showMenu(d3.event, document.querySelector("body"), getItems(this));
+          }).call(drag_elem_geo);
+
+          create_li_layer_elem(layer_name, nb_features, ["Point", "symbol"], "result");
+          current_layers[layer_name] = {
+            "n_features": nb_features,
+            "renderer": "TypoSymbols",
+            "symbols_map": symbols_map,
+            "rendered_field": _layer.rendered_field,
+            "is_result": true,
+            "symbol": "image",
+            "ref_layer_name": _layer.ref_layer_name
+          };
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        })();
       } else {
         null;
       }

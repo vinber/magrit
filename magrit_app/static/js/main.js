@@ -1138,8 +1138,8 @@ function make_ico_choice(){
 
                 // Get the function to fill the menu with the appropriate options (and do it):
                 _app.current_functionnality = get_menu_option(func_name);
-                let make_menu = eval(_app.current_functionnality.menu_factory);
-                window.fields_handler = eval(_app.current_functionnality.fields_handler);
+                let make_menu = window[_app.current_functionnality.menu_factory];
+                window.fields_handler = window[_app.current_functionnality.fields_handler];
                 make_menu();
 
                 // Replace the title of the section:
@@ -1152,18 +1152,6 @@ function make_ico_choice(){
                                         i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
                                         '</span>';
                 selec_title.style.display = '';
-
-                // // Bind the help tooltip (displayed when mouse over the 'i' icon) :
-                // let btn_info = document.getElementById("btn_info");
-                // btn_info.setAttribute("data-title", i18next.t("app_page.func_help." + func_name + ".title"));
-                // btn_info.setAttribute("data-content", i18next.t("app_page.func_help." + func_name + ".block"));
-                // new Popover(btn_info,{
-                //     container: document.getElementById("twbs"),
-                //     customClass: "help-popover",
-                //     dismiss: "true",
-                //     dismissOutsideClick: true,
-                //     placement: "right"
-                // });
 
                 // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
                 if(this.style.filter == "grayscale(100%)"){
@@ -1380,10 +1368,10 @@ function parseQuery(search) {
 })();
 
 function up_legends(){
-    let legend_features = svg_map.querySelectorAll('.legend');
-    for(let i = 0; i < legend_features.length; i++){
-        svg_map.appendChild(legend_features[i], null);
-    }
+  let legend_features = svg_map.querySelectorAll('.legend');
+  for (let i = 0; i < legend_features.length; i++) {
+    svg_map.appendChild(legend_features[i], null);
+  }
 }
 
 ////////////////
@@ -1394,25 +1382,25 @@ function up_legends(){
 // which are on each feature representing a layer in the layer manager
 // (the function is called each time that a new feature is put in this layer manager)
 function binds_layers_buttons(layer_name){
-    if(layer_name == undefined){
-        alert("This shouldn't happend");
-        return;
-    }
-    let layer_id = _app.layer_to_id.get(layer_name);
-    let sortable_elem = d3.select("#sortable").select("." + layer_id);
-    sortable_elem.on("dblclick", () => { handle_click_layer(layer_name); });
-    sortable_elem.on("contextmenu", () => { d3.event.preventDefault(); return; });
-    sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
-    sortable_elem.select(".active_button").on("click", () => { handle_active_layer(layer_name); });
-    sortable_elem.select(".style_button").on("click", () => { handle_click_layer(layer_name); });
-    sortable_elem.select(".style_target_layer").on("click", () => { handle_click_layer(layer_name) });
-    sortable_elem.select("#legend_button").on("click", () => { handle_legend(layer_name); });
-    sortable_elem.select("#browse_data_button").on("click", () => { boxExplore2.create(layer_name); });
-    sortable_elem.select("#zoom_fit_button").on("click", () => {
-        center_map(layer_name);
-        zoom_without_redraw();
-    });
-    // TODO : re-add a tooltip when the mouse is over that sortable element ?
+  if(layer_name == undefined){
+    alert("This shouldn't happend");
+    return;
+  }
+  let layer_id = _app.layer_to_id.get(layer_name);
+  let sortable_elem = d3.select("#sortable").select("." + layer_id);
+  sortable_elem.on("dblclick", () => { handle_click_layer(layer_name); });
+  sortable_elem.on("contextmenu", () => { d3.event.preventDefault(); return; });
+  sortable_elem.select("#trash_button").on("click", () => { remove_layer(layer_name); });
+  sortable_elem.select(".active_button").on("click", () => { handle_active_layer(layer_name); });
+  sortable_elem.select(".style_button").on("click", () => { handle_click_layer(layer_name); });
+  sortable_elem.select(".style_target_layer").on("click", () => { handle_click_layer(layer_name) });
+  sortable_elem.select("#legend_button").on("click", () => { handle_legend(layer_name); });
+  sortable_elem.select("#browse_data_button").on("click", () => { boxExplore2.create(layer_name); });
+  sortable_elem.select("#zoom_fit_button").on("click", () => {
+    center_map(layer_name);
+    zoom_without_redraw();
+  });
+  // TODO : re-add a tooltip when the mouse is over that sortable element ?
 }
 
 // Function to display information on the top layer (in the layer manager)
@@ -1465,22 +1453,6 @@ function displayInfoOnMove(){
         svg_map.style.cursor="help";
     }
 }
-
-/*
-function reproj_lgd_elem(){
-    let scalable_elem = document.querySelectorAll(".scalable-legend");
-    for(let i = scalable_elem.length - 1; i > -1; i--){
-        let className = scalable_elem[i].className;
-        if(className.indexOf("arrow") > -1){
-
-        } else if (className.indexOf("user_ellipse") > -1){
-            let ellipse = scalable_elem[i].querySelector("ellipse");
-            ellipse.cx.baseVal.value = ;
-            ellipse.cy.baseVal.value = ;
-        }
-    }
-}
-*/
 
 /**
 *  Function redrawing the prop symbol / img / labels when the projection changes
@@ -1546,181 +1518,173 @@ function reproj_symbol_layer(){
 }
 
 function make_dialog_container(id_box, title, class_box){
-        id_box = id_box || "dialog";
-        title = title || "";
-        class_box = class_box || "dialog";
-        let container = document.createElement("div");
-        container.setAttribute("id", id_box);
-        container.setAttribute("class", "twbs modal fade" + " " + class_box);
-        container.setAttribute("tabindex", "-1");
-        container.setAttribute("role", "dialog");
-        container.setAttribute("aria-labelledby", "myModalLabel");
-        container.setAttribute("aria-hidden", "true");
-        container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
-        document.getElementById("twbs").appendChild(container);
-
-        container = document.getElementById(id_box);
-        let modal_box = new Modal(container, {
-            content: '<div class="modal-header">'
-                      +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
-                      +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
-                      +'</div>'
-                      +'<div class="modal-body">'
-                      +'</div>'
-                      +'<div class="modal-footer">'
-                      +'<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + i18next.t("app_page.common.confirm") + '</button>'
-                      +'<button type="button" class="btn btn-primary btn_cancel">' + i18next.t("app_page.common.cancel") + '</button>'
-                      +'</div>'
-        });
-        modal_box.show();
-        return modal_box;
+  const _id_box = id_box || "dialog";
+  const _title = title || "";
+  const _class_box = class_box || "dialog";
+  let container = document.createElement("div");
+  container.setAttribute("id", id_box);
+  container.setAttribute("class", "twbs modal fade" + " " + _class_box);
+  container.setAttribute("tabindex", "-1");
+  container.setAttribute("role", "dialog");
+  container.setAttribute("aria-labelledby", "myModalLabel");
+  container.setAttribute("aria-hidden", "true");
+  container.innerHTML = '<div class="modal-dialog"><div class="modal-content"></div></div>';
+  document.getElementById("twbs").appendChild(container);
+  let html_content = `<div class="modal-header">
+    <button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+    <h4 class="modal-title" id="gridModalLabel">${_title}</h4>
+    </div>
+    <div class="modal-body"> </div>
+    <div class="modal-footer">
+    <button type="button" class="btn btn-primary btn_ok" data-dismiss="modal">${i18next.t("app_page.common.confirm")}</button>
+    <button type="button" class="btn btn-default btn_cancel">${i18next.t("app_page.common.cancel")}</button>
+    </div>`;
+  let modal_box = new Modal(document.getElementById(_id_box), { content: html_content });
+  modal_box.show();
+  return modal_box;
 }
 
 var overlay_under_modal = (function(){
-    let twbs_div = document.querySelector('.twbs');
-    let bg = document.createElement('div');
-    bg.id = 'overlay_twbs';
-    bg.style.width = "100%";
-    bg.style.height = "100%";
-    bg.style.position = "fixed";
-    bg.style.zIndex = 99;
-    bg.style.top = 0;
-    bg.style.left = 0;
-    bg.style.background = "rgba(0,0,0,0.4)";
-    bg.style.display = "none";
-    twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
-    return {
-        display: function(){ bg.style.display = "" },
-        hide: function(){ bg.style.display = "none"}
-    };
+  let twbs_div = document.querySelector('.twbs');
+  let bg = document.createElement('div');
+  bg.id = 'overlay_twbs';
+  bg.style.width = "100%";
+  bg.style.height = "100%";
+  bg.style.position = "fixed";
+  bg.style.zIndex = 99;
+  bg.style.top = 0;
+  bg.style.left = 0;
+  bg.style.background = "rgba(0,0,0,0.4)";
+  bg.style.display = "none";
+  twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
+  return {
+    display: function(){ bg.style.display = "" },
+    hide: function(){ bg.style.display = "none"}
+  };
 })();
 
-var make_confirm_dialog2 = (function(class_box, title, options){
-    let existing = new Set();
-    let get_available_id = () => {
-        for(let i = 0; i < 50; i++){
-            if(!existing.has(i)){
-                existing.add(i);
-                return i;
-            }
-        }
+var make_confirm_dialog2 = (function(class_box, title, options) {
+  const get_available_id = () => {
+    for(let i = 0; i < 50; i++){
+      if(!existing.has(i)){
+        existing.add(i);
+        return i;
+      }
+    }
+  };
+  let existing = new Set();
+  return function(class_box, title, options){
+    class_box = class_box || "dialog";
+    title = title || i18next.t("app_page.common.ask_confirm");
+    options = options || {};
+
+    let container = document.createElement("div");
+    let new_id = get_available_id();
+
+    container.setAttribute("id", "myModal_" + new_id);
+    container.setAttribute("class", "twbs modal fade " + class_box);
+    container.setAttribute("tabindex", "-1");
+    container.setAttribute("role", "dialog");
+    container.setAttribute("aria-labelledby", "myModalLabel");
+    container.setAttribute("aria-hidden", "true");
+    container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>'
+                        : '<div class="modal-dialog"><div class="modal-content"></div></div>';
+    document.getElementById("twbs").appendChild(container);
+
+    container = document.getElementById("myModal_" + new_id);
+    let deferred = Promise.pending();
+    let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
+    let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
+    let html_content = `<div class="modal-header">
+      <button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+      <h4 class="modal-title" id="gridModalLabel">${title}</h4>
+      </div>
+      <div class="modal-body"><p>${options.html_content || ''}</p></div>
+      <div class="modal-footer">
+      <button type="button" class="btn btn-primary btn_ok" data-dismiss="modal">${text_ok}</button>
+      <button type="button" class="btn btn-default btn_cancel">${text_cancel}</button>
+      </div>`;
+    let modal_box = new Modal(container, {
+      backdrop: true,
+      keyboard: false,
+      content: html_content
+    });
+    modal_box.show();
+    container.modal = modal_box;
+    overlay_under_modal.display();
+    let func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
+    let clean_up_box = () => {
+      document.removeEventListener('keydown', func_cb);
+      existing.delete(new_id);
+      overlay_under_modal.hide();
+      container.remove();
     };
-    return function(class_box, title, options){
-        class_box = class_box || "dialog";
-        title = title || i18next.t("app_page.common.ask_confirm");
-        options = options || {};
-
-        let container = document.createElement("div");
-        let new_id = get_available_id();
-
-        container.setAttribute("id", "myModal_" + new_id);
-        container.setAttribute("class", "twbs modal fade " + class_box);
-        container.setAttribute("tabindex", "-1");
-        container.setAttribute("role", "dialog");
-        container.setAttribute("aria-labelledby", "myModalLabel");
-        container.setAttribute("aria-hidden", "true");
-        container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>'
-                            : '<div class="modal-dialog"><div class="modal-content"></div></div>';
-        document.getElementById("twbs").appendChild(container);
-
-        container = document.getElementById("myModal_" + new_id);
-        let deferred = Promise.pending();
-        let html_content = options.html_content || "";
-        let text_ok = options.text_ok || i18next.t("app_page.common.confirm");
-        let text_cancel = options.text_cancel || i18next.t("app_page.common.cancel");
-        let modal_box = new Modal(container, {
-            backdrop: true,
-            keyboard: false,
-            content: '<div class="modal-header">'
-                      +'<button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>'
-                      +'<h4 class="modal-title" id="gridModalLabel">' + title + '</h4>'
-                      +'</div>'
-                      +'<div class="modal-body">'
-                      +'<p>'
-                      + html_content
-                      +'</p>'
-                      +'</div>'
-                      +'<div class="modal-footer">'
-                      +'<button type="button" class="btn btn-default btn_ok" data-dismiss="modal">' + text_ok + '</button>'
-                      +'<button type="button" class="btn btn-primary btn_cancel">' + text_cancel + '</button>'
-                      +'</div>'
-        });
-        modal_box.show();
-        container.modal = modal_box;
-        overlay_under_modal.display();
-        let func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
-        let clean_up_box = () => {
-            document.removeEventListener('keydown', func_cb);
-            existing.delete(new_id);
-            overlay_under_modal.hide();
-            container.remove();
-        };
-        let _onclose_false = () => {
-            deferred.resolve(false);
-            clean_up_box();
-        };
-        container.querySelector(".btn_cancel").onclick = _onclose_false;
-        container.querySelector("#xclose").onclick = _onclose_false;
-        container.querySelector(".btn_ok").onclick = function(){
-            deferred.resolve(true);
-            clean_up_box();
-        }
-        document.addEventListener('keydown', func_cb);
-        return deferred.promise;
+    let _onclose_false = () => {
+      deferred.resolve(false);
+      clean_up_box();
     };
+    container.querySelector(".btn_cancel").onclick = _onclose_false;
+    container.querySelector("#xclose").onclick = _onclose_false;
+    container.querySelector(".btn_ok").onclick = function(){
+      deferred.resolve(true);
+      clean_up_box();
+    };
+    document.addEventListener('keydown', func_cb);
+    return deferred.promise;
+  };
 })();
 
 
 // Wrapper to obtain confirmation before actually removing a layer :
 function remove_layer(name){
-    name = name || this.parentElement.parentElement.getAttribute("layer_name");
-    swal({
-        title: "",
-        text: i18next.t("app_page.common.remove_layer", {layer: name}),
-        type: "warning",
-        customClass: 'swal2_custom',
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: i18next.t("app_page.common.delete") + "!",
-        cancelButtonText: i18next.t("app_page.common.cancel")
-    }).then(() => { remove_layer_cleanup(name); },
-            () => { null; }
-    );    // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
-                //  ^^^^^^^^^^^^^^^^^^^^^^^ Not sure anymore :/
+  name = name || this.parentElement.parentElement.getAttribute("layer_name");
+  swal({
+    title: "",
+    text: i18next.t("app_page.common.remove_layer", {layer: name}),
+    type: "warning",
+    customClass: 'swal2_custom',
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: i18next.t("app_page.common.delete") + "!",
+    cancelButtonText: i18next.t("app_page.common.cancel")
+  }).then(() => { remove_layer_cleanup(name); },
+          () => { null; }
+  );    // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
+              //  ^^^^^^^^^^^^^^^^^^^^^^^ Not sure anymore :/
 }
 
 function remove_ext_dataset(){
-    swal({
-        title: "",
-        text: i18next.t("app_page.common.remove_tabular"),
-        type: "warning",
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonColor: "#DD6B55",
-        confirmButtonText: i18next.t("app_page.common.delete") + "!",
-        cancelButtonText: i18next.t("app_page.common.cancel")
-        }).then(() => {
-                remove_ext_dataset_cleanup();
-             }, () => { null; });
+  swal({
+    title: "",
+    text: i18next.t("app_page.common.remove_tabular"),
+    type: "warning",
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: "#DD6B55",
+    confirmButtonText: i18next.t("app_page.common.delete") + "!",
+    cancelButtonText: i18next.t("app_page.common.cancel")
+  }).then(() => {
+    remove_ext_dataset_cleanup();
+  }, () => { null; });
 }
 
 function remove_ext_dataset_cleanup(){
-    field_join_map = new Array();
-    joined_dataset = new Array();
-    dataset_name = undefined;
-    let ext_dataset_img = document.getElementById("img_data_ext");
-    ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
-    ext_dataset_img.setAttribute("alt", "Additional dataset");
-    ext_dataset_img.style.cursor = "pointer";
-    ext_dataset_img.onclick = click_button_add_layer;
-    let data_ext_txt = document.getElementById("data_ext");
-    data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
-    data_ext_txt.onclick = click_button_add_layer;
-    data_ext_txt.classList.add('i18n');
-    data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
-    document.getElementById("remove_dataset").remove();
-    document.getElementById("join_section").innerHTML = "";
+  field_join_map = new Array();
+  joined_dataset = new Array();
+  dataset_name = undefined;
+  let ext_dataset_img = document.getElementById("img_data_ext");
+  ext_dataset_img.setAttribute("src", "static/img/b/addtabular.png");
+  ext_dataset_img.setAttribute("alt", "Additional dataset");
+  ext_dataset_img.style.cursor = "pointer";
+  ext_dataset_img.onclick = click_button_add_layer;
+  let data_ext_txt = document.getElementById("data_ext");
+  data_ext_txt.innerHTML = i18next.t("app_page.section1.add_ext_dataset");
+  data_ext_txt.onclick = click_button_add_layer;
+  data_ext_txt.classList.add('i18n');
+  data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset')
+  document.getElementById("remove_dataset").remove();
+  document.getElementById("join_section").innerHTML = "";
 }
 
 // Do some clean-up when a layer is removed
@@ -1801,29 +1765,29 @@ function remove_layer_cleanup(name){
 
 // Change color of the background (ie the parent "svg" element on the top of which group of elements have been added)
 function handle_bg_color(color){
-    map.style("background-color", color);
+  map.style("background-color", color);
 }
 
 function handle_click_hand(behavior){
-    var hb = d3.select('.hand_button');
-    behavior = behavior && typeof behavior !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
-    if(behavior == "lock"){
-        hb.classed("locked", true);
-        hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
-        map.select('.brush').remove();
-        document.getElementById("zoom_in").parentElement.style.display = "none";
-        document.getElementById("zoom_out").parentElement.style.display = "none";
-        document.getElementById("brush_zoom_button").parentElement.style.display = "none";
-        zoom.on("zoom", function(){ let blocked = svg_map.__zoom; return function(){ this.__zoom = blocked; }}());
-    } else {
-        hb.classed("locked", false);
-        hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
-        zoom.on("zoom", zoom_without_redraw);
-        document.getElementById("zoom_in").parentElement.style.display = "";
-        document.getElementById("zoom_out").parentElement.style.display = "";
-        document.getElementById("brush_zoom_button").parentElement.style.display = "";
-        map.select('.brush').remove();
-    }
+  var hb = d3.select('.hand_button');
+  behavior = behavior && typeof behavior !== "object" ? behavior : !hb.classed("locked") ? "lock" : "unlock";
+  if(behavior == "lock"){
+    hb.classed("locked", true);
+    hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
+    map.select('.brush').remove();
+    document.getElementById("zoom_in").parentElement.style.display = "none";
+    document.getElementById("zoom_out").parentElement.style.display = "none";
+    document.getElementById("brush_zoom_button").parentElement.style.display = "none";
+    zoom.on("zoom", function(){ let blocked = svg_map.__zoom; return function(){ this.__zoom = blocked; }}());
+  } else {
+    hb.classed("locked", false);
+    hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
+    zoom.on("zoom", zoom_without_redraw);
+    document.getElementById("zoom_in").parentElement.style.display = "";
+    document.getElementById("zoom_out").parentElement.style.display = "";
+    document.getElementById("brush_zoom_button").parentElement.style.display = "";
+    map.select('.brush').remove();
+  }
 }
 
 
@@ -1832,155 +1796,143 @@ function handle_click_hand(behavior){
 //////////////////////////////////////////////////////////////////////////////
 
 function zoom_without_redraw(){
-    var rot_val = canvas_rotation_value || "";
-    var transform, t_val;
-    if(!d3.event || !d3.event.transform || !d3.event.sourceEvent){
-        transform = d3.zoomTransform(svg_map);
-        t_val = transform.toString() + rot_val;
-        map.selectAll(".layer")
-          .transition()
-          .duration(50)
-          .style("stroke-width", function(){
-                let lyr_name = _app.id_to_layer.get(this.id);
-                return current_layers[lyr_name].fixed_stroke
-                        ? this.style.strokeWidth
-                        : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
-            })
-          .attr("transform", t_val);
-        map.selectAll(".scalable-legend")
-          .transition()
-          .duration(50)
-          .attr("transform", t_val);
-    } else {
-        t_val = d3.event.transform + rot_val;
-        map.selectAll(".layer")
-          .transition()
-          .duration(50)
-          .style("stroke-width", function(){
-                let lyr_name = _app.id_to_layer.get(this.id);
-                return current_layers[lyr_name].fixed_stroke
-                        ? this.style.strokeWidth
-                        : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
-            })
-          .attr("transform", t_val);
-        map.selectAll(".scalable-legend")
-          .transition()
-          .duration(50)
-          .attr("transform", t_val);
-    }
-    if(scaleBar.displayed){ scaleBar.update(); }
-    // if(scaleBar.displayed){
-    //     if(proj.invert) {
-    //         scaleBar.update();
-    //     } else {
-    //         scaleBar.remove()
-    //     }
-    // }
+  var rot_val = canvas_rotation_value || "";
+  var transform, t_val;
+  if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
+    transform = d3.zoomTransform(svg_map);
+    t_val = transform.toString() + rot_val;
+    map.selectAll(".layer")
+      .transition()
+      .duration(50)
+      .style("stroke-width", function(){
+          let lyr_name = _app.id_to_layer.get(this.id);
+          return current_layers[lyr_name].fixed_stroke
+                  ? this.style.strokeWidth
+                  : current_layers[lyr_name]['stroke-width-const'] / transform.k +  "px";
+        })
+      .attr("transform", t_val);
+    map.selectAll(".scalable-legend")
+      .transition()
+      .duration(50)
+      .attr("transform", t_val);
+  } else {
+    t_val = d3.event.transform + rot_val;
+    map.selectAll(".layer")
+      .transition()
+      .duration(50)
+      .style("stroke-width", function(){
+          let lyr_name = _app.id_to_layer.get(this.id);
+          return current_layers[lyr_name].fixed_stroke
+                  ? this.style.strokeWidth
+                  : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  "px";
+        })
+      .attr("transform", t_val);
+    map.selectAll(".scalable-legend")
+      .transition()
+      .duration(50)
+      .attr("transform", t_val);
+  }
 
-    if(window.legendRedrawTimeout){
-        clearTimeout(legendRedrawTimeout);
-    }
-    window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
-    let zoom_params = svg_map.__zoom;
-    // let zoom_k_scale = proj.scale() * zoom_params.k;
-    document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
-    document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
-    document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
-    // let a = document.getElementById('form_projection'),
-    //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
-    // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
-    // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
+  if (scaleBar.displayed) {
+    scaleBar.update();
+  }
+  if (window.legendRedrawTimeout) {
+    clearTimeout(legendRedrawTimeout);
+  }
+  window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
+  let zoom_params = svg_map.__zoom;
+  // let zoom_k_scale = proj.scale() * zoom_params.k;
+  document.getElementById("input-center-x").value = round_value(zoom_params.x, 2);
+  document.getElementById("input-center-y").value = round_value(zoom_params.y, 2);
+  document.getElementById("input-scale-k").value = round_value(proj.scale() * zoom_params.k, 2);
+  // let a = document.getElementById('form_projection'),
+  //     disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+  // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
+  // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
 };
 
 function redraw_legends_symbols(targeted_node){
-    if(!targeted_node)
-        var legend_nodes = document.querySelectorAll("#legend_root_symbol");
-    else
-        var legend_nodes = [targeted_node];
+  const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll("#legend_root_symbol");
+  if(legend_nodes.length < 1)
+    return;
 
-    if(legend_nodes.length < 1) return;
+  let hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
+  let hidden = [];
 
-    let hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
-    let hidden = [];
+  for (let i = 0; i < legend_nodes.length; ++i) {
+    let layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
+        layer_name = _app.id_to_layer.get(layer_id),
+        rendered_field = current_layers[layer_name].rendered_field,
+        nested = legend_nodes[i].getAttribute("nested"),
+        display_value = legend_nodes[i].getAttribute("display"),
+        visible = legend_nodes[i].style.visibility;
 
-    for(let i=0; i<legend_nodes.length; ++i){
-        let layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
-            layer_name = _app.id_to_layer.get(layer_id),
-            rendered_field = current_layers[layer_name].rendered_field,
-            nested = legend_nodes[i].getAttribute("nested"),
-            display_value = legend_nodes[i].getAttribute("display"),
-            visible = legend_nodes[i].style.visibility;
+    let transform_param = legend_nodes[i].getAttribute("transform"),
+        rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
+        lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
+        lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
+        notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
 
-        let transform_param = legend_nodes[i].getAttribute("transform"),
-            rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
-            lgd_title = legend_nodes[i].querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = legend_nodes[i].querySelector("#legendsubtitle").innerHTML,
-            notes = legend_nodes[i].querySelector("#legend_bottom_note").innerHTML;
+    let rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
+        color: legend_nodes[i].querySelector("#under_rect").style.fill,
+        opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
+    } : undefined;
 
-        let rect_fill_value = legend_nodes[i].getAttribute("visible_rect") == "true" ? {
-            color: legend_nodes[i].querySelector("#under_rect").style.fill,
-            opacity: legend_nodes[i].querySelector("#under_rect").style.fillOpacity
-        } : undefined;
+    legend_nodes[i].remove();
+    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
+    let new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
+    new_lgd.style.visibility = visible;
+    if (transform_param)
+      new_lgd.setAttribute("transform", transform_param);
 
-        legend_nodes[i].remove();
-        createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
-        let new_lgd = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
-        new_lgd.style.visibility = visible;
-        if(transform_param)
-            new_lgd.setAttribute("transform", transform_param);
-
-        if(display_value){
-            new_lgd.setAttribute("display", display_value);
-            hidden.push(true);
-        } else if (hide){
-            new_lgd.setAttribute("display", "none");
-        }
+    if (display_value) {
+      new_lgd.setAttribute("display", display_value);
+      hidden.push(true);
+    } else if (hide) {
+      new_lgd.setAttribute("display", "none");
     }
-    if(hide && !(hidden.length == legend_nodes.length)){
-        alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
-    }
+  }
+  if (hide && !(hidden.length == legend_nodes.length)) {
+    alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
+  }
 }
 
 function interpolateZoom(translate, scale) {
-    var self = this;
-    var transform = d3.zoomTransform(svg_map);
-    return d3.transition().duration(225).tween("zoom", function () {
-        var iTranslate = d3.interpolate([transform.x, transform.y], translate),
-            iScale = d3.interpolate(transform.k, scale);
-        return function (t) {
-            svg_map.__zoom.k = iScale(t);
-            let _t =  iTranslate(t);
-            svg_map.__zoom.x = _t[0];
-            svg_map.__zoom.y = _t[1];
-            zoom_without_redraw()
-        };
-    });
+  const transform = d3.zoomTransform(svg_map);
+  return d3.transition().duration(225).tween("zoom", () => {
+    const iTranslate = d3.interpolate([transform.x, transform.y], translate);
+    const iScale = d3.interpolate(transform.k, scale);
+    return (t) => {
+      svg_map.__zoom.k = iScale(t);
+      let _t =  iTranslate(t);
+      svg_map.__zoom.x = _t[0];
+      svg_map.__zoom.y = _t[1];
+      zoom_without_redraw();
+    };
+  });
 }
 
 function zoomClick() {
-    if(map_div.select("#hand_button").classed("locked"))
-        return;
-    var direction = (this.id === 'zoom_in') ? 1 : -1,
-        factor = 0.1,
-        target_zoom = 1,
-        center = [w / 2, h / 2],
-        transform = d3.zoomTransform(svg_map),
-        translate = [transform.x, transform.y],
-        translate0 = [],
-        l = [],
-        view = {x: translate[0], y: translate[1], k: transform.k};
+  if (map_div.select("#hand_button").classed("locked"))
+    return;
+  let direction = (this.id === 'zoom_in') ? 1 : -1,
+    factor = 0.1,
+    target_zoom = 1,
+    center = [w / 2, h / 2],
+    transform = d3.zoomTransform(svg_map),
+    translate = [transform.x, transform.y],
+    translate0 = [],
+    l = [],
+    view = { x: translate[0], y: translate[1], k: transform.k };
 
-    d3.event.preventDefault();
-    target_zoom = transform.k * (1 + factor * direction);
-
-    translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
-    view.k = target_zoom;
-    l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
-
-    view.x += center[0] - l[0];
-    view.y += center[1] - l[1];
-
-    interpolateZoom([view.x, view.y], view.k);
+  d3.event.preventDefault();
+  target_zoom = transform.k * (1 + factor * direction);
+  translate0 = [(center[0] - view.x) / view.k, (center[1] - view.y) / view.k];
+  view.k = target_zoom;
+  l = [translate0[0] * view.k + view.x, translate0[1] * view.k + view.y];
+  view.x += center[0] - l[0];
+  view.y += center[1] - l[1];
+  interpolateZoom([view.x, view.y], view.k);
 }
 
 
@@ -1989,134 +1941,135 @@ function zoomClick() {
 //////////////////////////////////////////////////////////////////////////////
 
 function rotate_global(angle){
-    canvas_rotation_value = ["rotate(", angle, ")"].join('');
-    let zoom_transform = d3.zoomTransform(svg_map);
+  canvas_rotation_value = ["rotate(", angle, ")"].join('');
+  let zoom_transform = d3.zoomTransform(svg_map);
 
-    map.selectAll("g.layer")
-      .transition()
-      .duration(10)
-      .attr("transform", [canvas_rotation_value,
-                          ",translate(", [zoom_transform.x, zoom_transform.y], "),",
-                          "scale(", zoom_transform.k, ")"].join(''));
-    if(northArrow.displayed){
-        let current_rotate = !isNaN(+northArrow.svg_node.attr("rotate")) ? +northArrow.svg_node.attr("rotate") : 0;
-        northArrow.svg_node.attr("transform", [
-            "rotate(", +angle + current_rotate, ",",northArrow.x_center,",", northArrow.y_center, ")"
-            ].join(''));
-    }
-    zoom_without_redraw();
+  map.selectAll("g.layer")
+    .transition()
+    .duration(10)
+    .attr("transform", `${canvas_rotation_value},translate(${[zoom_transform.x, zoom_transform.y]}),scale(${zoom_transform.k})`);
+      // [canvas_rotation_value,
+      //                   ",translate(", [zoom_transform.x, zoom_transform.y], "),",
+      //                   "scale(", zoom_transform.k, ")"].join(''));
+  if (northArrow.displayed) {
+    let current_rotate = !isNaN(+northArrow.svg_node.attr("rotate")) ? +northArrow.svg_node.attr("rotate") : 0;
+    northArrow.svg_node.attr('transform', `rotate(${+angle + current_rotate},${northArrow.x_center}, ${northArrow.y_center})`);
+    // northArrow.svg_node.attr("transform", [
+    //     "rotate(", +angle + current_rotate, ",",northArrow.x_center,",", northArrow.y_center, ")"
+    //     ].join(''));
+  }
+  zoom_without_redraw();
 };
 
 function isInterrupted(proj_name){
-    return (proj_name.indexOf("interrupted") > -1
-            || proj_name.indexOf("armadillo") > -1
-            || proj_name.indexOf("healpix") > -1);
+  return (proj_name.indexOf("interrupted") > -1
+          || proj_name.indexOf("armadillo") > -1
+          || proj_name.indexOf("healpix") > -1);
 }
 
 function handleClipPath(proj_name='', main_layer){
-    proj_name = proj_name.toLowerCase();
-    let defs_sphere = defs.node().querySelector("#sphere"),
-        defs_extent = defs.node().querySelector("#extent"),
-        defs_clipPath = defs.node().querySelector("clipPath");
-    if(defs_sphere){ defs_sphere.remove(); }
-    if(defs_extent){ defs_extent.remove(); }
-    if(defs_clipPath){ defs_clipPath.remove(); }
+  proj_name = proj_name.toLowerCase();
+  let defs_sphere = defs.node().querySelector("#sphere");
+  let defs_extent = defs.node().querySelector("#extent");
+  let defs_clipPath = defs.node().querySelector("clipPath");
+  if(defs_sphere){ defs_sphere.remove(); }
+  if(defs_extent){ defs_extent.remove(); }
+  if(defs_clipPath){ defs_clipPath.remove(); }
 
-    if(isInterrupted(proj_name)){
-        defs.append("path")
-            .datum({type: "Sphere"})
-            .attr("id", "sphere")
-            .attr("d", path);
+  if(isInterrupted(proj_name)){
+    defs.append("path")
+      .datum({type: "Sphere"})
+      .attr("id", "sphere")
+      .attr("d", path);
 
-        defs.append("clipPath")
-            .attr("id", "clip")
-          .append("use")
-            .attr("xlink:href", "#sphere");
+    defs.append("clipPath")
+      .attr("id", "clip")
+      .append("use")
+      .attr("xlink:href", "#sphere");
 
-        map.selectAll(".layer:not(.no_clip)")
-            .attr("clip-path", "url(#clip)");
+    map.selectAll(".layer:not(.no_clip)")
+      .attr("clip-path", "url(#clip)");
 
-        svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
-    } else if (proj_name.indexOf('conicconformal') > -1){
+    svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+  } else if (proj_name.indexOf('conicconformal') > -1){
 
-        let outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
+      let outline = d3.geoGraticule().extentMajor([[-180, -60], [180, 90]]).outline();
 
-        // proj.fitSize([w, h], outline);
-        // proj.scale(s).translate(t)
-        // path.projection(proj);
+      // proj.fitSize([w, h], outline);
+      // proj.scale(s).translate(t)
+      // path.projection(proj);
 
-        defs.append("path")
-            .attr("id", "extent")
-            .attr("d", path(outline));
-        defs.append("clipPath")
-            .attr("id", "clip")
-          .append("use")
-            .attr("xlink:href", "#extent");
+      defs.append("path")
+        .attr("id", "extent")
+        .attr("d", path(outline));
+      defs.append("clipPath")
+        .attr("id", "clip")
+        .append("use")
+        .attr("xlink:href", "#extent");
 
-        map.selectAll(".layer:not(.no_clip)")
-            .attr("clip-path", "url(#clip)");
-
-        // map.selectAll('.layer')
-        //     .selectAll('path')
-        //     .attr('d', path);
-        //
-        // reproj_symbol_layer();
-        // if(main_layer){
-        //   center_map(main_layer);
-        //   zoom_without_redraw();
-        // }
-    } else {
-        map.selectAll(".layer")
-                .attr("clip-path", null);
-    }
+      map.selectAll(".layer:not(.no_clip)")
+        .attr("clip-path", "url(#clip)");
+      // map.selectAll('.layer')
+      //     .selectAll('path')
+      //     .attr('d', path);
+      //
+      // reproj_symbol_layer();
+      // if(main_layer){
+      //   center_map(main_layer);
+      //   zoom_without_redraw();
+      // }
+  } else {
+    map.selectAll(".layer")
+      .attr("clip-path", null);
+  }
 }
 
 function change_projection(new_proj_name) {
-    // Disable the zoom by rectangle selection if the user is using it :
-    map.select('.brush').remove();
+  // Disable the zoom by rectangle selection if the user is using it :
+  map.select('.brush').remove();
 
-    // Only keep the first argument of the rotation parameter :
-    let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0],
-        def_proj = available_projections.get(new_proj_name);
+  // Only keep the first argument of the rotation parameter :
+  let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0],
+      def_proj = available_projections.get(new_proj_name);
 
-    // Update global variables:
-    // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
-    proj = d3[def_proj.name]();
-    if(def_proj.parallels)
-        proj = proj.parallels(def_proj.parallels);
-    else if (def_proj.parallel)
-        proj = proj.parallel(def_proj.parallel);
-    if(def_proj.clipAngle)
-        proj = proj.clipAngle(def_proj.clipAngle);
-    if(def_proj.rotate)
-        prev_rotate = def_proj.rotate;
-    if(proj.rotate)
-        proj.rotate(prev_rotate);
+  // Update global variables:
+  // proj = def_proj.custom ? d3.geoProjection(window[def_proj.name]()).scale(def_proj.scale) : d3[def_proj.name]();
+  proj = d3[def_proj.name]();
+  if(def_proj.parallels)
+    proj = proj.parallels(def_proj.parallels);
+  else if (def_proj.parallel)
+    proj = proj.parallel(def_proj.parallel);
+  if(def_proj.clipAngle)
+    proj = proj.clipAngle(def_proj.clipAngle);
+  if(def_proj.rotate)
+    prev_rotate = def_proj.rotate;
+  if(proj.rotate)
+    proj.rotate(prev_rotate);
 
-    path = d3.geoPath().projection(proj).pointRadius(4);
+  path = d3.geoPath().projection(proj).pointRadius(4);
 
-    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
-    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+  // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
-    // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-    let layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if(!layer_name && def_proj.bounds){
-        scale_to_bbox(def_proj.bounds);
-    } else if (!layer_name){
-      let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
-      layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
-    }
-    if(layer_name){
-      scale_to_lyr(layer_name);
-      center_map(layer_name);
-      zoom_without_redraw();
-    } else {
-      proj.translate(t).scale(s);
-      map.selectAll(".layer").selectAll("path").attr("d", path);
-      reproj_symbol_layer();
-    }
-    // Set or remove the clip-path according to the projection:
-    handleClipPath(new_proj_name, layer_name);
+  // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+  let layer_name = Object.getOwnPropertyNames(user_data)[0];
+  if(!layer_name && def_proj.bounds){
+    scale_to_bbox(def_proj.bounds);
+  } else if (!layer_name){
+    let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
+    layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
+  }
+  if(layer_name){
+    scale_to_lyr(layer_name);
+    center_map(layer_name);
+    zoom_without_redraw();
+  } else {
+    proj.translate(t).scale(s);
+    map.selectAll(".layer").selectAll("path").attr("d", path);
+    reproj_symbol_layer();
+  }
+  // Set or remove the clip-path according to the projection:
+  handleClipPath(new_proj_name, layer_name);
 }
 
 const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
@@ -2131,49 +2084,49 @@ const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
 }
 
 function change_projection_4(_proj) {
-    remove_layer_cleanup('Sphere');
-    // Disable the zoom by rectangle selection if the user is using it :
-    map.select('.brush').remove();
+  remove_layer_cleanup('Sphere');
+  // Disable the zoom by rectangle selection if the user is using it :
+  map.select('.brush').remove();
 
-    // Only keep the first argument of the rotation parameter :
-    let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0];
+  // Only keep the first argument of the rotation parameter :
+  let prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0,0,0];
 
-    proj = getD3ProjFromProj4(_proj)
-    path = d3.geoPath().projection(proj).pointRadius(4);
+  proj = getD3ProjFromProj4(_proj)
+  path = d3.geoPath().projection(proj).pointRadius(4);
 
-    // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
-    document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
+  // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
+  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? "" : "none";
 
-    // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-    let layer_name = Object.getOwnPropertyNames(user_data)[0];
-    if(!layer_name){
-      let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
-      layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
-    }
-    if(!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule"){
-        scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
-    } else {
-        let rv = fitLayer(layer_name);
-        s = rv[0];
-        t = rv[1];
-        if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
-            s = 100; t = [0, 0];
-            scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
-        }
-    }
+  // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
+  let layer_name = Object.getOwnPropertyNames(user_data)[0];
+  if(!layer_name){
+    let layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), f => f.style.visibility != "hidden");
+    layer_name = layers_active.length > 0 ? layers_active[layers_active.length -1].id : undefined;
+  }
+  if(!layer_name || layer_name == "World" || layer_name == "Sphere" || layer_name == "Graticule"){
+    scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
+  } else {
+    let rv = fitLayer(layer_name);
+    s = rv[0];
+    t = rv[1];
     if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
-        s = 100; t = [0, 0];
-        console.log('Error');
-        return false;
+      s = 100; t = [0, 0];
+      scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
     }
-    map.selectAll(".layer").selectAll("path").attr("d", path);
-    reproj_symbol_layer();
-    center_map(layer_name);
-    zoom_without_redraw();
+  }
+  if(isNaN(s) || s == 0 || isNaN(t[0]) || isNaN(t[1])){
+    s = 100; t = [0, 0];
+    console.log('Error');
+    return false;
+  }
+  map.selectAll(".layer").selectAll("path").attr("d", path);
+  reproj_symbol_layer();
+  center_map(layer_name);
+  zoom_without_redraw();
 
-    // Remove the existing clip path if any :
-    handleClipPath();
-    return true;
+  // Remove the existing clip path if any :
+  handleClipPath();
+  return true;
 }
 
 
@@ -2215,173 +2168,171 @@ function handle_active_layer(name){
 
 // Function to handle the title add and changes
 function handle_title(txt){
-    var title = d3.select("#map_title").select("text");
-    if(title.node()){
-        title.text(txt);
-    } else {
-        map.append("g")
-             .attrs({"class": "legend title", "id": "map_title"})
-             .style("cursor", "pointer")
-          .insert("text")
-             .attrs({x: w/2, y: h/12,
-                     "alignment-baseline": "middle", "text-anchor": "middle"})
-             .styles({"font-family": "Arial, Helvetica, sans-serif",
-                      "font-size": "20px", position: "absolute", color: "black"})
-             .text(txt)
-             .on("contextmenu dblclick", () => {
-                d3.event.preventDefault();
-                d3.event.stopPropagation();
-                handle_title_properties();
-              })
-             .call(drag_elem_geo);
-    }
+  const title = d3.select("#map_title").select("text");
+  if (title.node()) {
+    title.text(txt);
+  } else {
+    map.append("g")
+      .attrs({"class": "legend title", "id": "map_title"})
+      .style("cursor", "pointer")
+      .insert("text")
+      .attrs({x: w/2, y: h/12, "alignment-baseline": "middle", "text-anchor": "middle"})
+      .styles({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"})
+      .text(txt)
+      .on("contextmenu dblclick", () => {
+        d3.event.preventDefault();
+        d3.event.stopPropagation();
+        handle_title_properties();
+      })
+      .call(drag_elem_geo);
+  }
 }
 
 function handle_title_properties(){
-    var title = d3.select("#map_title").select("text");
-    if(!title.node() || title.text() == ""){
-        swal({title: "",
-              text: i18next.t("app_page.common.error_no_title"),
-              type: "error",
-              allowOutsideClick: true,
-              allowEscapeKey: true
-            }).then( () => { null; },
-                      () => { null; });
-        return;
+  var title = d3.select("#map_title").select("text");
+  if(!title.node() || title.text() == ""){
+      swal({title: "",
+            text: i18next.t("app_page.common.error_no_title"),
+            type: "error",
+            allowOutsideClick: true,
+            allowEscapeKey: true
+          }).then( () => { null; },
+                    () => { null; });
+      return;
+  }
+  var title_props = {
+      size: title.style("font-size"),
+      font_weight: title.style('font-weight'),
+      font_style: title.style('font-style'),
+      text_decoration: title.style('text-decoration'),
+      color: title.style("fill"),
+      position_x: title.attr("x"),
+      position_x_pct: round_value(+title.attr("x") / w * 100, 1),
+      position_y: title.attr("y"),
+      position_y_pct: round_value(+title.attr("y") / h * 100, 1),
+      font_family: title.style("font-family"),
+      stroke: title.style('stroke'),
+      stroke_width: title.style('stroke-width')
+      };
+  title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
+
+  // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
+  make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
+      .then(function(confirmed){
+          if(!confirmed)
+              title.attrs({x: title_props.position_x, y: title_props.position_y})
+                  .styles({
+                      "font-size": title_props.size, "fill": title_props.color,
+                      "font-family": title_props.font_family, 'font-style': title_props.font_style,
+                      'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+                      'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
+                      });
+          });
+  var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
+
+  box_content.append("p")
+    .html(i18next.t("app_page.title_box.font_size"))
+    .insert("input")
+    .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "65px")
+    .on("change", function(){  title.style("font-size", this.value + "px");  });
+  box_content.append("p")
+    .html(i18next.t("app_page.title_box.xpos"))
+    .insert("input")
+    .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "65px")
+    .on("change", function(){  title.attr("x", w * +this.value / 100);  });
+  box_content.append("p")
+    .html(i18next.t("app_page.title_box.ypos"))
+    .insert("input")
+    .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "65px")
+    .on("change", function(){  title.attr("y", h * +this.value / 100);  });
+  box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
+    .insert("input")
+    .attrs({type: "color", value: rgb2hex(title_props.color)})
+    .on("change", function(){  title.style("fill", this.value);  });
+
+  var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family"))
+      .insert("select").attr("class", "params")
+      .on("change", function(){  title.style("font-family", this.value); });
+  available_fonts.forEach(function(font){
+    font_select.append("option").text(font[0]).attr("value", font[1])
+  });
+  font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
+  // TODO : Allow the display a rectangle (resizable + selection color) under the title
+  let options_format = box_content.append('p'),
+      btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
+      btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
+      btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+
+  btn_bold.on('click', function(){
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('font-weight', '');
+    } else {
+      this.classList.add('active');
+      title.style('font-weight', 'bold');
     }
-    var title_props = {
-        size: title.style("font-size"),
-        font_weight: title.style('font-weight'),
-        font_style: title.style('font-style'),
-        text_decoration: title.style('text-decoration'),
-        color: title.style("fill"),
-        position_x: title.attr("x"),
-        position_x_pct: round_value(+title.attr("x") / w * 100, 1),
-        position_y: title.attr("y"),
-        position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-        font_family: title.style("font-family"),
-        stroke: title.style('stroke'),
-        stroke_width: title.style('stroke-width')
-        };
-    title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
+  });
+  btn_italic.on('click', function(){
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('font-style', '');
+    } else {
+      this.classList.add('active');
+      title.style('font-style', 'italic');
+    }
+  });
+  btn_underline.on('click', function(){
+    if (this.classList.contains('active')) {
+      this.classList.remove('active');
+      title.style('text-decoration', '');
+    } else {
+      this.classList.add('active');
+      title.style('text-decoration', 'underline');
+    }
+  });
 
-    // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-    make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
-        .then(function(confirmed){
-            if(!confirmed)
-                title.attrs({x: title_props.position_x, y: title_props.position_y})
-                    .styles({
-                        "font-size": title_props.size, "fill": title_props.color,
-                        "font-family": title_props.font_family, 'font-style': title_props.font_style,
-                        'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
-                        'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
-                        });
-            });
-    var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
+  let hasBuffer = title_props.stroke !== "none";
+  let buffer_section1 = box_content.append("p");
+  let buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
+  box_content.append('p').style('clear', 'both');
 
-    box_content.append("p")
-        .html(i18next.t("app_page.title_box.font_size"))
-        .insert("input")
-        .attrs({type: "number", min: 2, max:40, step:1, value: +title_props.size.split("px")[0]}).style("width", "65px")
-        .on("change", function(){  title.style("font-size", this.value + "px");  });
-    box_content.append("p")
-        .html(i18next.t("app_page.title_box.xpos"))
-        .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_x_pct}).style("width", "65px")
-        .on("change", function(){  title.attr("x", w * +this.value / 100);  });
-    box_content.append("p")
-        .html(i18next.t("app_page.title_box.ypos"))
-        .insert("input")
-        .attrs({type: "number", min: 0, max:100, step:1, value: title_props.position_y_pct}).style("width", "65px")
-        .on("change", function(){  title.attr("y", h * +this.value / 100);  });
-    box_content.append("p").html(i18next.t("app_page.title_box.font_color"))
-        .insert("input")
-        .attrs({type: "color", value: rgb2hex(title_props.color)})
-        .on("change", function(){  title.style("fill", this.value);  });
-    var font_select = box_content.append("p").html(i18next.t("app_page.title_box.font_family"))
-        .insert("select").attr("class", "params")
-        .on("change", function(){  title.style("font-family", this.value); });
-    available_fonts.forEach(function(font){
-        font_select.append("option").text(font[0]).attr("value", font[1])
-    });
-    font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
-    // TODO : Allow the display a rectangle (resizable + selection color) under the title
-    let options_format = box_content.append('p'),
-        btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
-        btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
-        btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == "underline" ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
-
-    btn_bold.on('click', function(){
-        if(this.classList.contains('active')){
-            this.classList.remove('active');
-            title.style('font-weight', '');
-        } else {
-            this.classList.add('active');
-            title.style('font-weight', 'bold');
-        }
-    });
-    btn_italic.on('click', function(){
-        if(this.classList.contains('active')){
-            this.classList.remove('active');
-            title.style('font-style', '');
-        } else {
-            this.classList.add('active');
-            title.style('font-style', 'italic');
-        }
-    });
-    btn_underline.on('click', function(){
-      if(this.classList.contains('active')){
-          this.classList.remove('active');
-          title.style('text-decoration', '');
+  buffer_section1.append('input')
+    .attrs({type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null})
+    .on('change', function(){
+      if (this.checked) {
+        buffer_section2.style('display', '');
+        title.style('stroke', buffer_color.node().value)
+            .style('stroke-width', buffer_width.node().value + 'px');
       } else {
-          this.classList.add('active');
-          title.style('text-decoration', 'underline');
+        buffer_section2.style('display', 'none');
+        title.style('stroke', 'none')
+            .style('stroke-width', '1px');
       }
     });
 
-    let hasBuffer = title_props.stroke !== "none";
-    let buffer_section1 = box_content.append("p");
-    let buffer_section2 = box_content.append('p').style('display', hasBuffer ? '' : 'none');
-    box_content.append('p').style('clear', 'both');
+  buffer_section1.append('label')
+    .attrs({for: 'title_buffer_chkbox'})
+    .text(i18next.t('app_page.title_box.buffer'));
 
-    buffer_section1.append('input')
-        .attrs({type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null})
-        .on('change', function(){
-            if(this.checked){
-                buffer_section2.style('display', '');
-                title.style('stroke', buffer_color.node().value)
-                    .style('stroke-width', buffer_width.node().value + 'px');
-                console.log(buffer_color.attr('value'), buffer_color.node().value);
-            } else {
-                buffer_section2.style('display', 'none');
-                title.style('stroke', 'none')
-                    .style('stroke-width', '1px');
-            }
-        });
+  let buffer_color = buffer_section2.insert('input')
+    .style('float', 'left')
+    .attrs({type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff"})
+    .on('change', function(){
+        title.style('stroke', this.value);
+    });
 
-    buffer_section1.append('label')
-        .attrs({for: 'title_buffer_chkbox'})
-        .text(i18next.t('app_page.title_box.buffer'));
+  buffer_section2.insert('span')
+    .style('float', 'right')
+    .html(' px');
 
-    let buffer_color = buffer_section2.insert('input')
-        .style('float', 'left')
-        .attrs({type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : "#ffffff"})
-        .on('change', function(){
-            title.style('stroke', this.value);
-        });
+  let buffer_width = buffer_section2.insert('input')
+    .styles({'float': 'right', 'width': '60px'})
+    .attrs({type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1})
+    .on('change', function(){
+      title.style('stroke-width', this.value + 'px');
+    });
 
-    buffer_section2.insert('span')
-        .style('float', 'right')
-        .html(' px');
-
-    let buffer_width = buffer_section2.insert('input')
-        .styles({'float': 'right', 'width': '60px'})
-        .attrs({type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1})
-        .on('change', function(){
-            title.style('stroke-width', this.value + 'px');
-        });
-
-    return;
+  return;
 }
 
 /** Function triggered by the change of map/canvas size
@@ -2391,37 +2342,37 @@ function handle_title_properties(){
 *                but also works with the 2 params together like [800, 750])
 */
 function canvas_mod_size(shape){
-    if(shape[0]){
-        w = +shape[0];
-        map.attr("width", w)
-            .call(zoom_without_redraw);
-        map_div.style("width", w + "px");
-        if(w + 360 + 30 < window.innerWidth){
-            document.querySelector(".light-menu").style.right = '-30px';
-        } else {
-            document.querySelector(".light-menu").style.right = '0px';
-        }
-    }
-    if(shape[1]){
-        h = +shape[1];
-        map.attr("height", h)
-            .call(zoom_without_redraw);
-        map_div.style("height", h + "px");
-    }
-    move_legends();
-
-    // Lets update the corresponding fields in the export section :
-    let ratio,
-        format = document.getElementById("select_png_format").value;
-    if (format === "web"){
-        ratio = 1
-    } else if (format === "user_defined") {
-        ratio = 118.11;
+  if (shape[0]) {
+    w = +shape[0];
+    map.attr("width", w)
+      .call(zoom_without_redraw);
+    map_div.style("width", w + "px");
+    if(w + 360 + 30 < window.innerWidth){
+      document.querySelector(".light-menu").style.right = '-30px';
     } else {
-        return;
+      document.querySelector(".light-menu").style.right = '0px';
     }
-    document.getElementById("export_png_width").value = Math.round(w * ratio * 10) / 10;
-    document.getElementById("export_png_height").value = Math.round(h * ratio * 10) / 10;
+  }
+  if(shape[1]){
+    h = +shape[1];
+    map.attr("height", h)
+      .call(zoom_without_redraw);
+    map_div.style("height", h + "px");
+  }
+  move_legends();
+
+  // Lets update the corresponding fields in the export section :
+  let ratio;
+  let format = document.getElementById("select_png_format").value;
+  if (format === "web"){
+    ratio = 1
+  } else if (format === "user_defined") {
+    ratio = 118.11;
+  } else {
+    return;
+  }
+  document.getElementById("export_png_width").value = Math.round(w * ratio * 10) / 10;
+  document.getElementById("export_png_height").value = Math.round(h * ratio * 10) / 10;
 }
 
 function patchSvgForFonts(){
@@ -2461,9 +2412,9 @@ function patchSvgForFonts(){
 }
 
 function unpatchSvgForFonts(){
-    let defs_style = svg_map.querySelector("defs").querySelector("style");
-    if(defs_style)
-        defs_style.remove();
+  let defs_style = svg_map.querySelector("defs").querySelector("style");
+  if(defs_style)
+    defs_style.remove();
 }
 
 function patchSvgForInkscape(){
@@ -2518,7 +2469,7 @@ function patchSvgForForeignObj(){
 
 function unpatchSvgForForeignObj(originals){
   let elems = document.getElementsByTagName('foreignObject');
-  for(let i = 0; i < originals.length; i++){
+  for (let i = 0; i < originals.length; i++) {
     let el = elems[i];
     el.setAttribute('width', originals[i][0]);
     el.setAttribute('height', originals[i][1]);
@@ -2527,32 +2478,32 @@ function unpatchSvgForForeignObj(originals){
 
 
 function export_compo_svg(output_name){
-    output_name = check_output_name(output_name, "svg");
-    patchSvgForInkscape();
-    patchSvgForFonts();
-    let dimensions_foreign_obj = patchSvgForForeignObj();
-    let targetSvg = document.getElementById("svg_map"),
-        serializer = new XMLSerializer(),
-        source = serializer.serializeToString(targetSvg);
+  output_name = check_output_name(output_name, "svg");
+  patchSvgForInkscape();
+  patchSvgForFonts();
+  let dimensions_foreign_obj = patchSvgForForeignObj();
+  let targetSvg = document.getElementById("svg_map"),
+      serializer = new XMLSerializer(),
+      source = serializer.serializeToString(targetSvg);
 
-    if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
-        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-    }
-    if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
-        source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
-    }
+  if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+    source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+  }
+  if(!source.match(/^<svg[^>]+"http\:\/\/www\.w3\.org\/1999\/xlink"/)){
+    source = source.replace(/^<svg/, '<svg xmlns:xlink="http://www.w3.org/1999/xlink"');
+  }
 
-    source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
+  source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
-    let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
-    clickLinkFromDataUrl(url, output_name).then(a => {
-        unpatchSvgForFonts();
-        unpatchSvgForForeignObj(dimensions_foreign_obj);
-        unpatchSvgForInkscape();
-    }).catch( err => {
-        display_error_during_computation();
-        console.log(err);
-    });
+  let url = "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(source);
+  clickLinkFromDataUrl(url, output_name).then(a => {
+    unpatchSvgForFonts();
+    unpatchSvgForForeignObj(dimensions_foreign_obj);
+    unpatchSvgForInkscape();
+  }).catch( err => {
+    display_error_during_computation();
+    console.log(err);
+  });
 }
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
