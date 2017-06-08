@@ -83,7 +83,7 @@ cdef class Cartogram(object):
         self.iterations = iterations
         self.total_features = <unsigned int>len(self.geodf)
         self.dForceReductionFactor = 0
-        self.values = geodf[[field_idx]].astype(float).values.T[0]
+        self.values = geodf.T.iloc[field_idx].astype(float).values
         self.aLocal = <Holder *>malloc(self.total_features * sizeof(Holder))
         if not self.aLocal:
             raise MemoryError()
