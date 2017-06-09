@@ -498,7 +498,7 @@ function apply_user_preferences(json_pref){
         scaleBar.x = map_config.layout_features.scale_bar.x;
         scaleBar.y = map_config.layout_features.scale_bar.y;
         scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
-        scaleBar.resize();
+        scaleBar.update(); //scaleBar.resize();
       }
       if (map_config.layout_features.north_arrow) {
         northArrow.display();
