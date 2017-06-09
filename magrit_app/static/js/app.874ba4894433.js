@@ -1101,7 +1101,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.2d451eb2d7f2.json'
+      loadPath: 'static/locales/{{lng}}/translation.874ba4894433.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -12714,6 +12714,8 @@ var Textbox = function () {
   }, {
     key: 'editStyle',
     value: function editStyle() {
+      var _this4 = this;
+
       var map_xy0 = get_map_xy0();
       var self = this;
       var text_elem = self.textAnnot;
@@ -12737,7 +12739,7 @@ var Textbox = function () {
       current_options.font_weight = current_options.font_weight === '400' || current_options.font_weight === '' ? '' : 'bold';
       make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.text_box_edit_box.title'), { widthFitContent: true }).then(function (confirmed) {
         if (!confirmed) {
-          text_elem.text(current_options.content).styles({
+          text_elem.styles({
             color: current_options.color,
             'font-size': current_options.size + 'px',
             'font-weight': current_options.font_weight,
@@ -12749,6 +12751,7 @@ var Textbox = function () {
           self.fontFamily = current_options.font_family;
           text_elem.attr('transform', current_options.transform_rotate);
           self.buffer = current_options.buffer;
+          _this4.update_text(current_options.content);
         } else if (!buffer_txt_chk.node().checked) {
           self.buffer = undefined;
         }
@@ -12935,7 +12938,7 @@ var Textbox = function () {
 
 var scaleBar = {
   create: function create(x, y) {
-    var _this4 = this;
+    var _this5 = this;
 
     if (!proj.invert) {
       swal({ title: '',
@@ -12967,13 +12970,13 @@ var scaleBar = {
 
     var getItems = function getItems() {
       return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-          _this4.editStyle();
+          _this5.editStyle();
         } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-          _this4.up_element();
+          _this5.up_element();
         } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-          _this4.down_element();
+          _this5.down_element();
         } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-          _this4.remove();
+          _this5.remove();
         } }];
     };
 
@@ -13157,7 +13160,7 @@ var scaleBar = {
 
 var northArrow = {
   display: function display(x, y) {
-    var _this5 = this;
+    var _this6 = this;
 
     var x_pos = x || w - 100,
         y_pos = y || h - 100,
@@ -13249,13 +13252,13 @@ var northArrow = {
 
     var getItems = function getItems() {
       return [{ name: i18next.t('app_page.common.options'), action: function action() {
-          _this5.editStyle();
+          _this6.editStyle();
         } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-          _this5.up_element();
+          _this6.up_element();
         } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-          _this5.down_element();
+          _this6.down_element();
         } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-          _this5.remove();
+          _this6.remove();
         } }];
     };
 
@@ -13460,18 +13463,18 @@ var UserRectangle = function () {
   }, {
     key: 'draw',
     value: function draw() {
-      var _this6 = this;
+      var _this7 = this;
 
       var context_menu = new ContextMenu();
       var getItems = function getItems() {
         return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-            _this6.editStyle();
+            _this7.editStyle();
           } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-            _this6.up_element();
+            _this7.up_element();
           } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-            _this6.down_element();
+            _this7.down_element();
           } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-            _this6.remove();
+            _this7.remove();
           } }];
       };
 
@@ -13496,7 +13499,7 @@ var UserRectangle = function () {
       }).on('dblclick', function () {
         d3.event.preventDefault();
         d3.event.stopPropagation();
-        _this6.handle_ctrl_pt();
+        _this7.handle_ctrl_pt();
       }).call(this.drag_behavior);
       // pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
     }
@@ -13687,18 +13690,18 @@ var UserEllipse = function () {
   _createClass(UserEllipse, [{
     key: 'draw',
     value: function draw() {
-      var _this7 = this;
+      var _this8 = this;
 
       var context_menu = new ContextMenu(),
           getItems = function getItems() {
         return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-            _this7.editStyle();
+            _this8.editStyle();
           } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-            _this7.up_element();
+            _this8.up_element();
           } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-            _this7.down_element();
+            _this8.down_element();
           } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-            _this7.remove();
+            _this8.remove();
           } }];
       };
 
@@ -13721,7 +13724,7 @@ var UserEllipse = function () {
       }).on('dblclick', function () {
         d3.event.preventDefault();
         d3.event.stopPropagation();
-        _this7.handle_ctrl_pt();
+        _this8.handle_ctrl_pt();
       }).call(this.drag_behavior);
     }
   }, {

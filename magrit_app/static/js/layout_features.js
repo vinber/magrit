@@ -545,7 +545,6 @@ class Textbox {
       .then((confirmed) => {
         if (!confirmed) {
           text_elem
-            .text(current_options.content)
             .styles({
               color: current_options.color,
               'font-size': `${current_options.size}px`,
@@ -558,6 +557,7 @@ class Textbox {
           self.fontFamily = current_options.font_family;
           text_elem.attr('transform', current_options.transform_rotate);
           self.buffer = current_options.buffer;
+          this.update_text(current_options.content);
         } else if (!buffer_txt_chk.node().checked) {
           self.buffer = undefined;
         }
