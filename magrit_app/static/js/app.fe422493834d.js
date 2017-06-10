@@ -1101,7 +1101,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7047e0a53d2c.json'
+      loadPath: 'static/locales/{{lng}}/translation.fe422493834d.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -15686,7 +15686,13 @@ function apply_user_preferences(json_pref) {
         scaleBar.x = map_config.layout_features.scale_bar.x;
         scaleBar.y = map_config.layout_features.scale_bar.y;
         scaleBar.Scale._groups[0][0].setAttribute('transform', map_config.layout_features.scale_bar.transform);
-        scaleBar.update(); //scaleBar.resize();
+        // We should be able to avoid this condition and always use the same method
+        // but while waiting to test it more it may be safer to do it that way
+        if (scaleBar.fixed_size === false) {
+          scaleBar.update();
+        } else {
+          scaleBar.resize();
+        }
       }
       if (map_config.layout_features.north_arrow) {
         northArrow.display();
