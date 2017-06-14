@@ -801,15 +801,15 @@ class Textbox {
 */
 const scaleBar = {
   create(x, y) {
-    if (!proj.invert) {
-      swal({ title: '',
-        text: i18next.t('app_page.common.error_interrupted_projection_scalebar'),
-        type: 'error',
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-      }).then(() => { null; }, () => { null; });
-      return;
-    }
+    // if (!proj.invert) {
+    //   swal({ title: '',
+    //     text: i18next.t('app_page.common.error_interrupted_projection_scalebar'),
+    //     type: 'error',
+    //     allowOutsideClick: false,
+    //     allowEscapeKey: false,
+    //   }).then(() => { null; }, () => { null; });
+    //   return;
+    // }
     let scale_gp = map.append('g').attr('id', 'scale_bar').attr('class', 'legend scale'),
       x_pos = 40,
       y_pos = h - 100,
@@ -823,7 +823,8 @@ const scaleBar = {
     this.precision = 0;
     this.start_end_bar = false;
     this.fixed_size = false;
-    this.getDist();
+    let rv = this.getDist();
+    if(rv) return;
 
     const getItems = () => [
       { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
@@ -926,15 +927,14 @@ const scaleBar = {
     this.handle_start_end_bar();
   },
   update() {
+    const err = this.getDist();
+    if (err) {
+      this.remove();
+      return;
+    }
     if (this.fixed_size) {
-      this.getDist();
       this.resize();
     } else {
-      const err = this.getDist();
-      if (err) {
-        this.remove();
-        return;
-      }
       this.Scale.select('#text_limit_sup_scale').text(`${this.dist_txt} ${this.unit}`);
     }
   },

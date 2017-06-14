@@ -46,7 +46,7 @@ function setUpInterface(reload_project)
   // in cache as they have more chance to be added again)
   window.addEventListener("unload", function(){
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
-      if (sample_no_values.has(name) || !(current_layers[name].hasOwnProperty("key_name")))
+      if (!(current_layers[name].hasOwnProperty("key_name")))
         return 0;
       else if (current_layers[name].targeted)
         return 0;
@@ -1191,8 +1191,7 @@ var path = d3.geoPath().projection(proj).pointRadius(4),
     t = proj.translate(),
     s = proj.scale(),
     current_proj_name = "NaturalEarth2",
-    zoom = d3.zoom().on("zoom", zoom_without_redraw),
-    sample_no_values = new Set(["Sphere", "Graticule", "World"]);
+    zoom = d3.zoom().on("zoom", zoom_without_redraw);
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -1216,11 +1215,11 @@ var user_data = new Object(),
 
 // The "map" (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.style("width", w+"px").style("height", h+"px")
-            .append("svg")
-            .attrs({'id': 'svg_map', 'width': w, 'height': h})
-            .style("position", "absolute")
-            .on("contextmenu", function(event){ d3.event.preventDefault(); })
-            .call(zoom);
+  .append("svg")
+  .attrs({'id': 'svg_map', 'width': w, 'height': h})
+  .style("position", "absolute")
+  .on("contextmenu", function(event){ d3.event.preventDefault(); })
+  .call(zoom);
 
 // map.on("contextmenu", function(event){ d3.event.preventDefault(); });
 
@@ -1969,7 +1968,7 @@ function isInterrupted(proj_name){
 
 function handleClipPath(proj_name='', main_layer){
   proj_name = proj_name.toLowerCase();
-  let defs_sphere = defs.node().querySelector("#sphere");
+  let defs_sphere = defs.node().querySelector("#sphereClipPath");
   let defs_extent = defs.node().querySelector("#extent");
   let defs_clipPath = defs.node().querySelector("clipPath");
   if(defs_sphere){ defs_sphere.remove(); }
@@ -1979,13 +1978,13 @@ function handleClipPath(proj_name='', main_layer){
   if(isInterrupted(proj_name)){
     defs.append("path")
       .datum({type: "Sphere"})
-      .attr("id", "sphere")
+      .attr("id", "sphereClipPath")
       .attr("d", path);
 
     defs.append("clipPath")
       .attr("id", "clip")
       .append("use")
-      .attr("xlink:href", "#sphere");
+      .attr("xlink:href", "#sphereClipPath");
 
     map.selectAll(".layer:not(.no_clip)")
       .attr("clip-path", "url(#clip)");

@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.3.3 (2017-06-xx)
+------------------
+
+- Allow to add more than one sphere background (#26).
+
+
 0.3.2 (2017-06-09)
 ------------------
 

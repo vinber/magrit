@@ -1541,6 +1541,7 @@ function add_simplified_land_layer(options = {}){
   let fill_opacity = options.fill_opacity || 0.75;
   let stroke_width = options.stroke_width || "0.3px";
   let visible = options.visible === false ? false : true;
+  let drop_shadow = options.drop_shadow || false;
 
   d3.json("static/data_sample/World.topojson", function(error, json) {
     _app.layer_to_id.set('World', 'World');
@@ -1562,6 +1563,9 @@ function add_simplified_land_layer(options = {}){
       .styles({stroke: stroke, fill: fill,
                "stroke-opacity": stroke_opacity, "fill-opacity": fill_opacity});
     create_li_layer_elem("World", null, "Polygon", "sample");
+    if (drop_shadow) {
+      createDropShadow('World');
+    }
     if(!skip_rescale){
       scale_to_lyr("World");
       center_map("World");

@@ -35,7 +35,7 @@ function get_map_template() {
     zoom_transform = d3.zoomTransform(svg_map);
 
   map_config.projection = current_proj_name;
-  if (current_proj_name == "def_proj4") {
+  if (current_proj_name === "def_proj4") {
     map_config.custom_projection = _app.last_projection;
   }
   map_config.projection_scale = proj.scale();
@@ -204,11 +204,11 @@ function get_map_template() {
       layer_style_i.fill_color = current_layer_prop.fill_color;
       layer_style_i.fields_type = current_layer_prop.fields_type;
       layer_style_i.stroke_color = selection.style("stroke");
-    } else if (layer_type === "sphere" || layer_type === "Graticule" || layer_name === "World") {
+    } else if (layer_type === "sphere" || layer_type === "graticule" || layer_name === "World") {
       selection = map.select("#" + layer_name).selectAll("path");
       layer_style_i.fill_color = rgb2hex(selection.style("fill"));
       layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
-      if (layer_name == "Graticule") {
+      if (layer_type === "graticule") {
         layer_style_i.stroke_dasharray = current_layers.Graticule.dasharray;
         layer_style_i.step = current_layers.Graticule.step;
       }
@@ -356,7 +356,7 @@ function get_map_template() {
         }
       }
       // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-      return JSON.stringify({ map_config: map_config, layers: layers_style, info: { version: _app.version } });;
+      return JSON.stringify({ map_config: map_config, layers: layers_style, info: { version: _app.version } });
     });
 }
 
@@ -645,8 +645,13 @@ function apply_user_preferences(json_pref){
     let _layer = layers[i],
         layer_name = _layer.layer_name,
         layer_type = _layer.layer_type,
+        layer_id,
         symbol;
-    if (app_version === undefined || (p_version.minor <= 3 && p_version.patch <= 4)) {
+
+    // Reload the sphere differently as some ("breaking") changes were made
+    // when updating to 0.3.3
+    if (app_version === undefined
+        || (p_version.major === 0 && p_version.minor <= 3 && p_version.patch < 3)) {
       if (layer_name === 'Sphere') layer_type = 'sphere';
       else if (layer_name === 'Graticule') layer_type = 'graticule';
     }
@@ -654,7 +659,7 @@ function apply_user_preferences(json_pref){
         stroke_opacity = _layer.stroke_opacity;
 
     // This is a layer for which a geometries have been stocked as TopoJSON :
-    if(_layer.topo_geom){
+    if (_layer.topo_geom) {
       let tmp = {
         skip_alert: true,
         choosed_name: layer_name,
@@ -679,7 +684,7 @@ function apply_user_preferences(json_pref){
         current_layer_prop.fields_type = _layer.fields_type;
         document.getElementById('btn_type_fields').removeAttribute('disabled');
       }
-      let layer_id = _app.layer_to_id.get(layer_name);
+      layer_id = _app.layer_to_id.get(layer_name);
       let layer_selec = map.select("#" + layer_id);
 
       current_layer_prop.rendered_field = _layer.rendered_field;
@@ -700,7 +705,7 @@ function apply_user_preferences(json_pref){
         if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
             layer_selec.selectAll("path")
               .style(current_layer_prop.type === "Line" ? "stroke" : "fill", (d,j) => _layer.color_by_id[j]);
-        } else if (_layer.renderer == "Links") {
+        } else if (_layer.renderer === "Links") {
           current_layer_prop.linksbyId = _layer.linksbyId;
           current_layer_prop.min_display = _layer.min_display;
           current_layer_prop.breaks = _layer.breaks;
@@ -710,7 +715,7 @@ function apply_user_preferences(json_pref){
                 stroke: _layer.fill_color.single,
                 'stroke-width': current_layer_prop.linksbyId[j][2]
             }));
-        } else if (_layer.renderer == "DiscLayer") {
+        } else if (_layer.renderer === "DiscLayer") {
             current_layer_prop.min_display = _layer.min_display || 0;
             current_layer_prop.breaks = _layer.breaks;
             let lim = current_layer_prop.min_display != 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
@@ -755,19 +760,28 @@ function apply_user_preferences(json_pref){
 
       layer_selec.selectAll('path')
         .styles({ 'fill-opacity':fill_opacity, 'stroke-opacity': stroke_opacity});
-      if(_layer.visible == 'hidden'){
+      if(_layer.visible === 'hidden'){
         handle_active_layer(layer_name);
       }
       if (_layer.filter_shadow) {
         createDropShadow(layer_id);
       }
       done += 1;
-      if(done == map_config.n_layers) set_final_param();
+      if(done === map_config.n_layers) set_final_param();
       // });
     } else if (layer_name === "World") {
-      add_simplified_land_layer({skip_rescale: true, 'fill': _layer.fill_color, 'stroke': _layer.stroke_color, 'fill_opacity': fill_opacity, 'stroke_opacity': stroke_opacity, stroke_width: _layer['stroke-width-const'] + "px", visible: _layer.visible !== 'hidden'});
+      add_simplified_land_layer({
+        skip_rescale: true,
+        fill: _layer.fill_color,
+        stroke: _layer.stroke_color,
+        fill_opacity: fill_opacity,
+        stroke_opacity: stroke_opacity,
+        stroke_width: _layer['stroke-width-const'] + "px",
+        visible: _layer.visible !== 'hidden',
+        drop_shadow: _layer.filter_shadow
+      });
       done += 1;
-      if(done == map_config.n_layers) set_final_param();
+      if(done === map_config.n_layers) set_final_param();
     // ... or this is a layer provided by the application :
     } else {
       if (layer_type === "sphere" || layer_type === "graticule") {
@@ -778,7 +792,7 @@ function apply_user_preferences(json_pref){
           stroke_opacity: stroke_opacity,
           stroke_width: _layer['stroke-width-const'] + 'px'
         };
-        if (layer_type == "Graticule") {
+        if (layer_type === "graticule") {
           options.fill = "none";
           options.stroke_dasharray = _layer.stroke_dasharray;
           options.step = _layer.step;
@@ -786,9 +800,10 @@ function apply_user_preferences(json_pref){
           options.fill = _layer.fill_color;
         }
         add_layout_feature(layer_type, options);
+        layer_id = _app.layer_to_id.get(layer_name);
       // ... or this is a layer of proportionnals symbols :
       } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
-        let geojson_layer = _layer.symbol == 'line' ? _layer.geo_line : _layer.geo_pt;
+        let geojson_layer = _layer.symbol === 'line' ? _layer.geo_line : _layer.geo_pt;
         let rendering_params = {
           new_name: layer_name,
           field: _layer.rendered_field,
@@ -810,13 +825,13 @@ function apply_user_preferences(json_pref){
           rendering_params.break_val = _layer.break_val;
         }
 
-        if (_layer.symbol == 'line') {
+        if (_layer.symbol === 'line') {
           make_prop_line(rendering_params, geojson_layer);
         } else {
           make_prop_symbols(rendering_params, geojson_layer);
           if(_layer.stroke_color) map.select('#' + _app.layer_to_id.get(layer_name)).selectAll(_layer.symbol).style('stroke', _layer.stroke_color)
         }
-        if (_layer.renderer == "PropSymbolsTypo") {
+        if (_layer.renderer === "PropSymbolsTypo") {
           current_layers[layer_name].color_map = new Map(_layer.color_map);
         }
         if (_layer.options_disc) {
@@ -835,13 +850,14 @@ function apply_user_preferences(json_pref){
           rehandle_legend(layer_name, _layer.legend);
         }
         current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
-        map.select('#' + _app.layer_to_id.get(layer_name))
+        layer_id = _app.layer_to_id.get(layer_name);
+        map.select('#' + layer_id)
           .selectAll(_layer.symbol)
           .styles({'stroke-width': _layer['stroke-width-const'] + "px",
                    'fill-opacity': fill_opacity,
                    'stroke-opacity': stroke_opacity});
         if(_layer.fill_color.random){
-          map.select('#' + _app.layer_to_id.get(layer_name))
+          map.select('#' + layer_id)
             .selectAll(_layer.symbol)
             .style('fill', _ => Colors.names[Colors.random()]);
         }
@@ -855,6 +871,7 @@ function apply_user_preferences(json_pref){
           font: _layer.default_font
         };
         render_label(null, rendering_params, {data: _layer.data_labels, current_position: _layer.current_position});
+        layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith("TypoSymbol")){
         let symbols_map = new Map(_layer.symbols_map);
         let new_layer_data = {
@@ -868,7 +885,7 @@ function apply_user_preferences(json_pref){
                 {"name": i18next.t("app_page.common.edit_style"), "action": () => { make_style_box_indiv_symbol(self_parent); }},
                 {"name": i18next.t("app_page.common.delete"), "action": () => {self_parent.style.display = "none"; }}
         ];
-        let layer_id = encodeId(layer_name);
+        layer_id = encodeId(layer_name);
         _app.layer_to_id.set(layer_name, layer_id);
         _app.id_to_layer.set(layer_id, layer_name);
         // Add the features at there original positions :
@@ -922,7 +939,7 @@ function apply_user_preferences(json_pref){
       // This function is called on each layer added
       //   to delay the call to the function doing a final adjusting of the zoom factor / translate values / layers orders :
       done += 1;
-      if (done == map_config.n_layers) set_final_param();
+      if (done === map_config.n_layers) set_final_param();
     }
   }
 }
@@ -966,18 +983,18 @@ function reorder_layers_elem_legends(desired_order){
 function rehandle_legend(layer_name, properties){
   for(let i = 0; i < properties.length; i++){
     let prop = properties[i];
-    if(prop.type == 'legend_root'){
+    if(prop.type === 'legend_root'){
       createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
-    } else if(prop.type == 'legend_root_symbol') {
+    } else if(prop.type === 'legend_root_symbol') {
       createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
-    } else if(prop.type == 'legend_root_lines_class'){
+    } else if(prop.type === 'legend_root_lines_class'){
       createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
-    } else if(prop.type == 'legend_root_lines_symbol'){
+    } else if(prop.type === 'legend_root_lines_symbol'){
       createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
     }
     let lgd = svg_map.querySelector('#' + prop.type + '.lgdf_' + _app.layer_to_id.get(layer_name));
     lgd.setAttribute('transform', prop.transform);
-    if(prop.display == "none") lgd.setAttribute('display', "none");
+    if(prop.display === "none") lgd.setAttribute('display', "none");
   }
 }
 
