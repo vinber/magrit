@@ -37,5 +37,5 @@ More examples are available in the [gallery](http://magrit.hypotheses.org/galeri
 Contributions are welcome! There are various way to contribute to the project:
 - Feedback and bug reports
 - Translation (French, English and Spanish languages are currently available)
-- Code contribution (you're one the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
+- Code contribution (you're in the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
 - Contribute to the [gallery](http://magrit.hypotheses.org/galerie)
