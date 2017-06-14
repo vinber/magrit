@@ -43,8 +43,10 @@ class UserArrow {
         handle_click_hand('lock');
       })
       .on('end', () => {
-        if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }  // zoom.on("zoom", zoom_without_redraw);
-          // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
+        if (d3.event.subject && !d3.event.subject.map_locked) {
+          handle_click_hand('unlock');
+        }
+        // pos_lgds_elem.set(this.id + this.className, this.getBoundingClientRect());
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
@@ -141,8 +143,7 @@ class UserArrow {
                 y1: this.pt1[1],
         			  x2: this.pt2[0],
                 y2: this.pt2[1] })
-      .styles({ 'stroke-width': this.stroke_width,
-                stroke: 'rgb(0, 0, 0)' });
+      .styles({ 'stroke-width': this.stroke_width, stroke: 'rgb(0, 0, 0)' });
 
     this.arrow.call(this.drag_behavior);
 
@@ -241,8 +242,8 @@ class UserArrow {
           nx = d3.event.x,
           ny = d3.event.y;
         t.attrs({ x: nx - 3, y: ny - 3 });
-       line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
-       line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
+        line.x2.baseVal.value = (nx - zoom_params.x) / zoom_params.k;
+        line.y2.baseVal.value = (ny - zoom_params.y) / zoom_params.k;
       }));
 
       // Exit the "edit" state by double clicking again on the arrow :
@@ -350,7 +351,7 @@ class UserArrow {
 }
 
 class Textbox {
-  constructor(parent, id_text_annot, position=[10, 30]) {
+  constructor(parent, id_text_annot, position = [10, 30]) {
     const self = this;
     this.x = position[0];
     this.y = position[1];
@@ -363,7 +364,7 @@ class Textbox {
       { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
     ];
     const drag_txt_annot = d3.drag()
-      .subject(function() {
+      .subject(function () {
         const t = d3.select(this).select('text');
         const snap_lines = get_coords_snap_lines(this.id);
         return {
@@ -377,16 +378,16 @@ class Textbox {
         d3.event.sourceEvent.stopPropagation();
         handle_click_hand('lock');
       })
-      .on('end', function() {
+      .on('end', function () {
         if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
         pos_lgds_elem.set(this.id, this.getBoundingClientRect());
       })
-      .on('drag', function() {
+      .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
-        let elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
-        let transform = elem.attr('transform');
+        const elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
+        const transform = elem.attr('transform');
         if (transform) {
-          let v = +transform.match(/[-.0-9]+/g)[0];
+          const v = +transform.match(/[-.0-9]+/g)[0];
           elem.attr('transform', `rotate(${v}, ${d3.event.x + self.width}, ${d3.event.y + self.height})`);
         }
         elem.selectAll('tspan').attr('x', +d3.event.x);
@@ -404,7 +405,7 @@ class Textbox {
               const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+              Array.prototype.forEach.call(this.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0];
               });
             }
@@ -412,7 +413,7 @@ class Textbox {
               const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(this.querySelectorAll('tspan'), el => {
+              Array.prototype.forEach.call(this.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
               });
             }
@@ -434,13 +435,13 @@ class Textbox {
         self.x = elem.attr('x');
         self.y = elem.attr('y');
         if (transform) {
-          let v = +transform.match(/[-.0-9]+/g)[0];
+          const v = +transform.match(/[-.0-9]+/g)[0];
           elem.attr('transform', `rotate(${v}, ${self.x}, ${self.y})`);
         }
         self.update_bbox();
       });
-    let group_elem = map.append('g')
-      .attrs({ id: id_text_annot, class: 'legend txt_annot'})
+    const group_elem = map.append('g')
+      .attrs({ id: id_text_annot, class: 'legend txt_annot' })
       .styles({ cursor: 'pointer' })
       .on('mouseover', () => {
         under_rect.style('fill-opacity', 0.1);
@@ -450,10 +451,10 @@ class Textbox {
       });
     let under_rect = group_elem.append('rect')
       .styles({ fill: 'green', 'fill-opacity': 0 });
-    let text_elem = group_elem.append('text')
+    const text_elem = group_elem.append('text')
       .attrs({ x: this.x, y: this.y, id: ['in_', id_text_annot].join('') })
       .styles({
-        'font-size': this.fontSize + 'px',
+        'font-size': `${this.fontSize}px`,
         'font-family': 'Arial,Helvetica,sans-serif',
         'text-anchor': 'start',
       });
@@ -476,11 +477,11 @@ class Textbox {
     this.textAnnot = text_elem;
     this.group = group_elem;
     this.fontFamily = 'Verdana,Geneva,sans-serif';
-    this.anchor = "start";
+    this.anchor = 'start';
     this.buffer = undefined;
     this.id = id_text_annot;
 
-    this.update_bbox()
+    this.update_bbox();
     pos_lgds_elem.set(this.id, group_elem.node().getBoundingClientRect());
   }
 
@@ -492,7 +493,7 @@ class Textbox {
   update_text(new_content) {
     const split = new_content.split('\n');
     this.textAnnot.selectAll('tspan').remove();
-    for (let i=0; i < split.length; i++) {
+    for (let i = 0; i < split.length; i++) {
       this.textAnnot.append('tspan')
         .attr('x', this.x)
         .attr('dy', i === 0 ? null : this.lineHeight)
@@ -504,7 +505,7 @@ class Textbox {
   get_text_content() {
     const content = [];
     this.textAnnot.selectAll('tspan')
-      .each(function(){
+      .each(function () {
         content.push(this.innerHTML);
       });
     return content.join('\n');
@@ -512,7 +513,7 @@ class Textbox {
 
   update_bbox() {
     const bbox = this.textAnnot.node().getBoundingClientRect();
-    const {x: x0, y: y0} = get_map_xy0();
+    const { x: x0, y: y0 } = get_map_xy0();
     this.width = bbox.width;
     this.height = bbox.height;
     this.group.select('rect')
@@ -551,7 +552,7 @@ class Textbox {
               'font-weight': current_options.font_weight,
               'text-decoration': current_options.text_decoration,
               'font-style': current_options.font_style,
-              'text-shadow': current_options.text_shadow
+              'text-shadow': current_options.text_shadow,
             });
           self.fontSize = current_options.size;
           self.fontFamily = current_options.font_family;
@@ -614,8 +615,8 @@ class Textbox {
         document.getElementById('textbox_txt_rotate').value = rotate_value;
       });
 
-    let options_font = box_content.append('p');
-    let font_select = options_font.insert('select')
+    const options_font = box_content.append('p');
+    const font_select = options_font.insert('select')
       .on('change', function () {
         text_elem.style('font-family', this.value);
         self.fontFamily = this.value;
@@ -633,7 +634,7 @@ class Textbox {
         self.fontSize = +this.value;
         self.lineHeight = Math.round(self.fontSize * 1.4);
         text_elem.style('font-size', `${self.fontSize}px`);
-        text_elem.selectAll('tspan').each(function(d, i){
+        text_elem.selectAll('tspan').each(function (d, i) {
           if (i !== 0) {
             d3.select(this).attr('dy', self.lineHeight);
           }
@@ -666,18 +667,18 @@ class Textbox {
       .html(i18next.t('app_page.text_box_edit_box.content'));
     const right = content_modif_zone.append('span')
       .attr('class', 'align-option')
-      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', float: 'right' })
       .html('right')
       .on('click', () => {
         content_modif_zone.selectAll('.align-option').style('font-weight', '');
         right.style('font-weight', 'bold')
-          .style("font-size", '12px');
+          .style('font-size', '12px');
         text_elem.style('text-anchor', 'end');
         self.anchor = 'end';
         self.update_bbox();
       });
-    let center = content_modif_zone.append('span')
-      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+    const center = content_modif_zone.append('span')
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', float: 'right' })
       .attr('class', 'align-option')
       .html('center')
       .on('click', () => {
@@ -688,8 +689,8 @@ class Textbox {
         self.anchor = 'middle';
         self.update_bbox();
       });
-    let left = content_modif_zone.append('span')
-      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', 'float': 'right' })
+    const left = content_modif_zone.append('span')
+      .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', float: 'right' })
       .attr('class', 'align-option')
       .html('left')
       .on('click', () => {
@@ -702,7 +703,7 @@ class Textbox {
         self.anchor = 'start';
         self.update_bbox();
       });
-    let selected = self.anchor === 'start' ? left : self.anchor === 'middle' ? center : right;
+    const selected = self.anchor === 'start' ? left : self.anchor === 'middle' ? center : right;
     selected.style('font-weight', 'bold')
       .style('font-size', '12px');
 
@@ -1062,15 +1063,15 @@ const northArrow = {
 
     this.drag_behavior = d3.drag()
       .subject(function () {
-         const t = d3.select(this.querySelector('image'));
-         const snap_lines = get_coords_snap_lines(this.id);
-         return {
-           x: +t.attr('x'),
-           y: +t.attr('y'),
-           map_locked: !!map_div.select('#hand_button').classed('locked'),
-           snap_lines,
-         };
-       })
+        const t = d3.select(this.querySelector('image'));
+        const snap_lines = get_coords_snap_lines(this.id);
+        return {
+          x: +t.attr('x'),
+          y: +t.attr('y'),
+          map_locked: !!map_div.select('#hand_button').classed('locked'),
+          snap_lines,
+        };
+      })
       .on('start', () => {
         d3.event.sourceEvent.stopPropagation();
         handle_click_hand('lock'); // zoom.on("zoom", null);
@@ -1295,14 +1296,14 @@ class UserRectangle {
 
     this.drag_behavior = d3.drag()
       .subject(function () {
-         const t = d3.select(this.querySelector('rect'));
-         return {
-           x: +t.attr('x'),
-           y: +t.attr('y'),
-           map_locked: !!map_div.select('#hand_button').classed('locked'),
+        const t = d3.select(this.querySelector('rect'));
+        return {
+          x: +t.attr('x'),
+          y: +t.attr('y'),
+          map_locked: !!map_div.select('#hand_button').classed('locked'),
                   // , snap_lines: get_coords_snap_lines(this.id)
-         };
-       })
+        };
+      })
       .on('start', () => {
         d3.event.sourceEvent.stopPropagation();
         handle_click_hand('lock');
@@ -1371,25 +1372,25 @@ class UserRectangle {
         { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
         { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
         { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
-      ];
+    ];
 
     this.rectangle = this.svg_elem.append('g')
       .attrs({ class: 'user_rectangle legend scalable-legend',
-               id: this.id,
-               transform: svg_map.__zoom.toString() });
+        id: this.id,
+        transform: svg_map.__zoom.toString() });
 
     const r = this.rectangle.insert('rect')
       .attrs({
         x: this.pt1[0],
         y: this.pt1[1],
         height: this.height,
-        width: this.width
+        width: this.width,
       })
       .styles({
         'stroke-width': this.stroke_width,
         stroke: this.stroke_color,
         fill: this.fill_color,
-        'fill-opacity': 0
+        'fill-opacity': 0,
       });
 
     this.rectangle
@@ -1585,13 +1586,13 @@ class UserEllipse {
     const self = this;
     this.drag_behavior = d3.drag()
       .subject(function () {
-         const t = d3.select(this.querySelector('ellipse'));
-         return {
-           x: +t.attr('cx'),
-           y: +t.attr('cy'),
-           map_locked: !!map_div.select('#hand_button').classed('locked'),
-         };
-       })
+        const t = d3.select(this.querySelector('ellipse'));
+        return {
+          x: +t.attr('cx'),
+          y: +t.attr('cy'),
+          map_locked: !!map_div.select('#hand_button').classed('locked'),
+        };
+      })
       .on('start', () => {
         d3.event.sourceEvent.stopPropagation();
         handle_click_hand('lock');
@@ -1633,13 +1634,13 @@ class UserEllipse {
         rx: 30,
         ry: 40,
   			cx: this.pt1[0],
-        cy: this.pt1[1]
+        cy: this.pt1[1],
       })
       .styles({
         'stroke-width': this.stroke_width,
         stroke: this.stroke_color,
         fill: 'rgb(255, 255, 255)',
-        'fill-opacity': 0
+        'fill-opacity': 0,
       });
 
     this.ellipse

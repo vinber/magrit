@@ -138,7 +138,6 @@ function check_layer_name(name){
     if(name.match(/^\d+/)){
         name = "_" + name;
     }
-    // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
     if(!current_layers.hasOwnProperty(name) && ["Graticule", "World"].indexOf(name) < 0)
         return name;
     else {

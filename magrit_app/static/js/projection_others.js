@@ -1,22 +1,22 @@
-const sin = Math.sin,
-  asin = Math.asin,
-  abs = Math.abs,
-  cos = Math.cos;
+const sin = Math.sin;
+const asin = Math.asin;
+const abs = Math.abs;
+const cos = Math.cos;
 
-const NITER = 20,
-  EPS = 1e-7,
-  ONETOL = 1.000001,
-  CN = 2.67595,
-  CS = 2.43763,
-  RCN = 0.37369906014686373063,
-  RCS = 0.41023453108141924738,
-  FYCN = 1.75859,
-  FYCS = 1.93052,
-  RYCN = 0.56863737426006061674,
-  RYCS = 0.51799515156538134803,
-  FXC = 0.85,
-  RXC = 1.17647058823529411764,
-  M_HALFPI = Math.PI / 2;
+const NITER = 20;
+const EPS = 1e-7;
+const ONETOL = 1.000001;
+const CN = 2.67595;
+const CS = 2.43763;
+const RCN = 0.37369906014686373063;
+const RCS = 0.41023453108141924738;
+const FYCN = 1.75859;
+const FYCS = 1.93052;
+const RYCN = 0.56863737426006061674;
+const RYCS = 0.51799515156538134803;
+const FXC = 0.85;
+const RXC = 1.17647058823529411764;
+const M_HALFPI = Math.PI / 2;
 
 function hatanoRaw(lambda, phi) {
   const c = sin(phi) * (phi < 0 ? CS : CN);
@@ -61,18 +61,18 @@ hatanoRaw.invert = (x, y) => {
   return [xx, yy];
 };
 
-function winkel1Raw(lat_truescale) {
-  const cosphi1 = cos(lat_truescale);
+function winkel1Raw(latTrueScale) {
+  const cosphi1 = cos(latTrueScale);
 
   function forward(lambda, phi) {
-    let x = lambda;
-    let y = phi;
+    const x = lambda;
+    const y = phi;
     return [0.5 * x * (cosphi1 + cos(phi)), y];
   }
 
   forward.invert = (x, y) => {
-    let lambda = x;
-    let phi = y;
+    const lambda = x;
+    const phi = y;
     return [2 * lambda / (cosphi1 + cos(phi)), phi];
   };
 

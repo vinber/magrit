@@ -66,9 +66,14 @@ const display_box_symbol_typo = function (layer, field, categories) {
     .insert('p')
     .attrs({ class: 'symbol_section', title: i18next.t('app_page.symbol_typo_box.title_click') })
     .style('background-image', d => d.img)
-    .styles({ width: '32px', height: '32px', margin: '0px 1px 0px 1px',
-      'border-radius': '10%', border: '1px dashed blue', display: 'inline-block',
-      'background-size': '32px 32px', 'vertical-align': 'middle' })
+    .styles({ width: '32px',
+      height: '32px',
+      margin: '0px 1px 0px 1px',
+      'border-radius': '10%',
+      border: '1px dashed blue',
+      display: 'inline-block',
+      'background-size': '32px 32px',
+      'vertical-align': 'middle' })
     .on('click', function () {
       modal_box.hide();
       box_choice_symbol(res_symbols, '.dialog')
@@ -96,9 +101,9 @@ const display_box_symbol_typo = function (layer, field, categories) {
 
   new Sortable(document.getElementById('typo_categories'));
 
-  let deferred = Promise.pending();
-  let container = document.getElementById('symbol_box');
-  let fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
+  const deferred = Promise.pending();
+  const container = document.getElementById('symbol_box');
+  const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
 
   const clean_up_box = function () {
     container.remove();
@@ -154,7 +159,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': `url("${d[1]}")` // ['url("', d[1], '")'].join('')
+      'background-image': `url("${d[1]}")`, // ['url("', d[1], '")'].join('')
     }))
     .on('click', function () {
       box_select.selectAll('p').each(function () {
@@ -247,7 +252,7 @@ function make_style_box_indiv_symbol(symbol_node) {
   };
   const ref_coords = {
     x: +symbol_node.getAttribute('x') + (current_options.size / 2),
-    y: +symbol_node.getAttribute('y') + (current_options.size / 2)
+    y: +symbol_node.getAttribute('y') + (current_options.size / 2),
   };
   const ref_coords2 = cloneObj(ref_coords);
   const new_params = {};
@@ -265,7 +270,7 @@ function make_style_box_indiv_symbol(symbol_node) {
           if (!parent.classList.contains('scalable-legend')) {
             parent.classList.add('scalable-legend');
           }
-        } else if (!parent.classList.contains('layer')){
+        } else if (!parent.classList.contains('layer')) {
           parent.removeAttribute('transform', undefined);
           if (parent.classList.contains('scalable-legend')) {
             parent.classList.remove('scalable-legend');

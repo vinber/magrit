@@ -150,7 +150,6 @@ function get_map_template() {
           href: img.getAttribute('href'),
           scalable: ft.classList.contains('scalable-legend')
         });
-        // console.log(map_config.layout_features.single_symbol);
       }
     }
   }
@@ -395,6 +394,20 @@ function display_error_loading_project(error){
 }
 
 function apply_user_preferences(json_pref){
+  const getAppVersion = (info) => {
+    if (!info || !info.version){
+      return { app_version: undefined, p_version: undefined };
+    } else {
+      let app_version = info.version;
+      let version_split = app_version.split('.');
+      let p_version = {
+        major: version_split[0],
+        minor: version_split[1],
+        patch: version_split[2]
+      };
+      return { app_version: app_version, p_version: p_version };
+    }
+  };
   let preferences;
   try {
     preferences = JSON.parse(json_pref);
@@ -404,13 +417,7 @@ function apply_user_preferences(json_pref){
   }
   let map_config = preferences.map_config;
   let layers = preferences.layers;
-  let app_version = preferences.info ? preferences.info.version : undefined;
-  let version_split = app_version ? app_version.split('.') : undefined;
-  let p_version = app_version ? {
-    major: version_split[0],
-    minor: version_split[1],
-    patch: version_split[2]
-  } : undefined;
+  let {app_version, p_version} = getAppVersion(preferences.info);
   if(!layers || !map_config){
     display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
     return;
@@ -690,9 +697,6 @@ function apply_user_preferences(json_pref){
       if (_layer.color_palette)
         current_layer_prop.color_palette;
       if (_layer.renderer){
-        // if (_layer.renderer === "Choropleth"
-        //         || _layer.renderer === "Stewart"
-        //         || _layer.renderer === "Gridded") {
         if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
             layer_selec.selectAll("path")
               .style(current_layer_prop.type === "Line" ? "stroke" : "fill", (d,j) => _layer.color_by_id[j]);
@@ -786,14 +790,14 @@ function apply_user_preferences(json_pref){
       } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
         let geojson_layer = _layer.symbol == 'line' ? _layer.geo_line : _layer.geo_pt;
         let rendering_params = {
-            new_name: layer_name,
-            field: _layer.rendered_field,
-            ref_value:  _layer.size[0],
-            ref_size: _layer.size[1],
-            symbol: _layer.symbol,
-            nb_features: geojson_layer.features.length,
-            ref_layer_name: _layer.ref_layer_name,
-            renderer: _layer.renderer,
+          new_name: layer_name,
+          field: _layer.rendered_field,
+          ref_value:  _layer.size[0],
+          ref_size: _layer.size[1],
+          symbol: _layer.symbol,
+          nb_features: geojson_layer.features.length,
+          ref_layer_name: _layer.ref_layer_name,
+          renderer: _layer.renderer,
         };
         if (_layer.renderer === "PropSymbolsChoro" || _layer.renderer === "PropSymbolsTypo")
           rendering_params.fill_color = _layer.fill_color.class;
