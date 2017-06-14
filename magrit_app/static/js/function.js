@@ -139,7 +139,7 @@ function check_layer_name(name){
         name = "_" + name;
     }
     // if([...new Set([...["World", "Graticule", "Sphere"], ...Object.getOwnPropertyNames(current_layers)])].indexOf(name) < 0)
-    if(!current_layers.hasOwnProperty(name) && ["Graticule", "Sphere", "World"].indexOf(name) < 0)
+    if(!current_layers.hasOwnProperty(name) && ["Graticule", "World"].indexOf(name) < 0)
         return name;
     else {
         let i = 1;

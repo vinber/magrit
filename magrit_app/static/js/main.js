@@ -1230,8 +1230,8 @@ var _app = {
     to_cancel: undefined,
     targeted_layer_added: false,
     current_functionnality: undefined,
-    layer_to_id: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["Sphere", "Sphere"], ["World", "World"], ["Graticule", "Graticule"]]),
+    layer_to_id: new Map([["World", "World"], ["Graticule", "Graticule"]]),
+    id_to_layer: new Map([["World", "World"], ["Graticule", "Graticule"]]),
     version: document.querySelector("#header").getAttribute('v')
 };
 

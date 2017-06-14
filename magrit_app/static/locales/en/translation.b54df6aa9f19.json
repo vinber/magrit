@@ -107,8 +107,8 @@
         "section1": {
             "title": "Add your data",
             "add_geom": "Add a basemap",
-            "add_ext_dataset": "Add additional dataset",
-            "add_sample_data": "Select available sample basemap (with included data)"
+            "add_ext_dataset": "Add a dataset",
+            "add_sample_data": "Select a sample basemap (data is included)"
         },
         "section2": {
             "title": "Choose a representation"
@@ -250,7 +250,7 @@
             "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}} | Median : {{median}}<br> Std Deviation : {{stddev}}"
         },
         "tooltips": {
-            "section1": "Drop a GeoJSON, GML, TopoJSON, ziped shapefile project or KML file here or add manually a layer by clicking here",
+            "section1": "Drop a GeoJSON, GML, TopoJSON, zipped shapefile project or KML file here or add manually a layer by clicking here",
             "section3": "Drop a layout GeoJSON, GML, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
             "section3_add_layout": "Add layout layer",
             "section3_add_layout_sample": "Add sample layout layer",
@@ -260,17 +260,17 @@
             "documentation": "Documentation"
         },
         "func_description" : {
-            "smooth": "Render a smoothed map (using stewart potentials algorythm)",
-            "prop": "Display proportional symbols on a numerical field of your data",
-            "choroprop": "Display proportional symbols and choropleth coloration of the symbols on two numerical fields of your dataset with an appropriate discretisation",
-            "proptypo": "Display proportional symbols colored according to their belonging to a categorie",
-            "choro": "Render a choropleth map on a numerical field of your data with an appropriate discretisation",
-            "cartogram": "Render a map using an area-deforming algorythm on a numerical field of your data",
-            "grid": "Render a gridded density map on a numerical field of your data",
-            "flow": "Render a map displaying links between features with graduated sizes",
-            "discont": "Render a map displaying discontinuities between polygons features",
-            "typo": "Render a categorical map with an attribute field of your dataset",
-            "typosymbol": "Display pictograms on the features of the map"
+            "smooth": "Display a smoothed map (using Stewart potentials algorithm)",
+            "prop": "Display proportional symbols using a numerical data",
+            "choroprop": "Display proportional symbols and choropleth coloration based on two numerical data using a proper discretization method",
+            "proptypo": "Display proportional symbols colored according to defined categories",
+            "choro": "Display a choropleth map using a numerical field in the attribute table and a proper discretization method",
+            "cartogram": "Display a cartogram (distorting the shape of spatial units based on a numerical data)",
+            "grid": "Display a gridded density map on a numerical data",
+            "flow": "Display sized links between features.",
+            "discont": "Display discontinuities between polygons features",
+            "typo": "Display a map sorting a field by category",
+            "typosymbol": "Create a (qualitative) map using pictograms"
         },
         "func_title" : {
             "smooth": "Smoothed map (Stewart potentials)",
@@ -382,7 +382,7 @@
         },
         "box_type_fields": {
             "title": "Data type",
-            "message_invite": "Select/modify the kind of data in each field.",
+            "message_invite": "Selet/modify the data type (in each field)",
             "stock": "Stock",
             "ratio": "Ratio",
             "category": "Category",
@@ -439,7 +439,7 @@
             "carnet_hypotheses": "<i>Hypothèses</i> blog",
             "contact": "Contact",
             "gh_link": "GitHub project page",
-            "credits": "Realized by Matthieu Viry, Timothée Giraud and Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
+            "credits": "Created by Matthieu Viry, Timothée Giraud and Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
             "title": "North arrow options",
@@ -555,7 +555,7 @@
             "graticule_dasharray": "Length of dashes<br>",
             "graticule_clip": "Clip graticule to layer extent",
             "generate_labels": "Generate labels for this layer ...",
-            "field_label": "Select a field to use",
+            "field_label": "Select a field",
             "layer_shadow": "Add a shadow"
         },
         "lm_buttons":{
@@ -633,7 +633,7 @@
                 "hexagon": "Hexagon"
             },
             "cartogram": {
-                "algo": "Algorythm to use ",
+                "algo": "Algorithm to use ",
                 "field": "Field ",
                 "dougenik_iterations": "N. iterations "
             },

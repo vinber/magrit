@@ -1,14 +1,7 @@
 "use strict";
 
 function get_map_template() {
-  let map_config = {},
-    layers_style = [],
-    layers = map.selectAll("g.layer"),
-    map_title = document.getElementById('map_title'),
-    layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
-    zoom_transform = d3.zoomTransform(svg_map);
-
-  function get_legend_info(lgd_node) {
+  const get_legend_info = function get_legend_info(lgd_node) {
     let type_lgd = lgd_node.id;
     let rect_fill_value = (lgd_node.getAttribute("visible_rect") === "true") ? {
                             color: lgd_node.querySelector("#under_rect").style.fill,
@@ -32,7 +25,14 @@ function get_map_template() {
       result.nested_symbols = lgd_node.getAttribute('nested');
     }
     return result;
-  }
+  };
+
+  let map_config = {},
+    layers_style = [],
+    layers = map.selectAll("g.layer"),
+    map_title = document.getElementById('map_title'),
+    layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
+    zoom_transform = d3.zoomTransform(svg_map);
 
   map_config.projection = current_proj_name;
   if (current_proj_name == "def_proj4") {
@@ -153,7 +153,6 @@ function get_map_template() {
         // console.log(map_config.layout_features.single_symbol);
       }
     }
-
   }
   for (let i=map_config.n_layers-1; i > -1; --i) {
     layers_style[i] = {};
@@ -161,10 +160,12 @@ function get_map_template() {
         layer_id = layers._groups[0][i].id,
         layer_name = _app.id_to_layer.get(layer_id),
         current_layer_prop = current_layers[layer_name],
+        layer_type = current_layer_prop.sphere ? 'sphere' : current_layer_prop.graticule ? 'graticule' : 'layer',
         nb_ft = current_layer_prop.n_features,
         selection;
 
     layer_style_i.layer_name = layer_name;
+    layer_style_i.layer_type = layer_type;
     layer_style_i.n_features = nb_ft;
     layer_style_i.visible = layers._groups[0][i].style.visibility;
     let lgd = document.getElementsByClassName('lgdf_' + layer_id);
@@ -204,7 +205,7 @@ function get_map_template() {
       layer_style_i.fill_color = current_layer_prop.fill_color;
       layer_style_i.fields_type = current_layer_prop.fields_type;
       layer_style_i.stroke_color = selection.style("stroke");
-    } else if (layer_name == "Sphere" || layer_name == "Graticule" || layer_name == "World") {
+    } else if (layer_type === "sphere" || layer_type === "Graticule" || layer_name === "World") {
       selection = map.select("#" + layer_name).selectAll("path");
       layer_style_i.fill_color = rgb2hex(selection.style("fill"));
       layer_style_i.stroke_color = rgb2hex(selection.style("stroke"));
@@ -403,7 +404,13 @@ function apply_user_preferences(json_pref){
   }
   let map_config = preferences.map_config;
   let layers = preferences.layers;
-
+  let app_version = preferences.info ? preferences.info.version : undefined;
+  let version_split = app_version ? app_version.split('.') : undefined;
+  let p_version = app_version ? {
+    major: version_split[0],
+    minor: version_split[1],
+    patch: version_split[2]
+  } : undefined;
   if(!layers || !map_config){
     display_error_loading_project(i18next.t("app_page.common.error_invalid_map_project"));
     return;
@@ -630,8 +637,12 @@ function apply_user_preferences(json_pref){
   for (let i = map_config.n_layers - 1; i > -1; --i) {
     let _layer = layers[i],
         layer_name = _layer.layer_name,
+        layer_type = _layer.layer_type,
         symbol;
-
+    if (app_version === undefined || (p_version.minor <= 3 && p_version.patch <= 4)) {
+      if (layer_name === 'Sphere') layer_type = 'sphere';
+      else if (layer_name === 'Graticule') layer_type = 'graticule';
+    }
     let fill_opacity = _layer.fill_opacity,
         stroke_opacity = _layer.stroke_opacity;
 
@@ -755,21 +766,22 @@ function apply_user_preferences(json_pref){
       if(done == map_config.n_layers) set_final_param();
     // ... or this is a layer provided by the application :
     } else {
-      if (layer_name === "Sphere" || layer_name === "Graticule") {
+      if (layer_type === "sphere" || layer_type === "graticule") {
         let options = {
-          'stroke': _layer.stroke_color,
-          'fill_opacity': fill_opacity,
-          'stroke_opacity': stroke_opacity,
-          'stroke_width': _layer['stroke-width-const'] + 'px'
+          layer_name: layer_name,
+          stroke: _layer.stroke_color,
+          fill_opacity: fill_opacity,
+          stroke_opacity: stroke_opacity,
+          stroke_width: _layer['stroke-width-const'] + 'px'
         };
-        if (layer_name == "Graticule") {
+        if (layer_type == "Graticule") {
           options.fill = "none";
           options.stroke_dasharray = _layer.stroke_dasharray;
           options.step = _layer.step;
         } else {
           options.fill = _layer.fill_color;
         }
-        add_layout_feature(layer_name.toLowerCase(), options);
+        add_layout_feature(layer_type, options);
       // ... or this is a layer of proportionnals symbols :
       } else if (_layer.renderer && _layer.renderer.startsWith("PropSymbol")) {
         let geojson_layer = _layer.symbol == 'line' ? _layer.geo_line : _layer.geo_pt;

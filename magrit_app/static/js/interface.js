@@ -1171,10 +1171,10 @@ function fitLayer(layer_name) {
   return [s, t];
 }
 
-function setSphereBottom(){
+function setSphereBottom(sphere_id){
   let layers_list = document.querySelector(".layer_list");
   layers_list.appendChild(layers_list.childNodes[0]);
-  svg_map.insertBefore(svg_map.querySelector('#Sphere'), svg_map.childNodes[0]);
+  svg_map.insertBefore(svg_map.querySelector('#' + sphere_id + '.layer'), svg_map.childNodes[0]);
   svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
  }
 
@@ -1205,24 +1205,34 @@ function add_layout_feature(selected_feature, options = {}){
         }
         handleClickTextBox(new_id);
     } else if (selected_feature == "sphere"){
-        if(current_layers.Sphere) return;
+        // if(current_layers.Sphere) return;
+        let layer_to_add = check_layer_name(options.layer_name || 'Sphere');
+        let layer_id = encodeId(layer_to_add);
         let fill = options.fill || "#add8e6";
         let fill_opacity = options.fill_opacity || 0.2;
         let stroke_width = options.stroke_width || "0.5px";
         let stroke_opacity = options.stroke_opacity || 1;
         let stroke = options.stroke || "#ffffff";
-        current_layers["Sphere"] = {type: "Polygon", n_features: 1, "stroke-width-const": +stroke_width.slice(0,-2), fill_color: {single: fill}};
+        _app.layer_to_id.set(layer_to_add, layer_id);
+        _app.id_to_layer.set(layer_id, layer_to_add);
+        current_layers[layer_to_add] = {
+          sphere: true,
+          type: "Polygon",
+          n_features: 1,
+          "stroke-width-const": +stroke_width.slice(0,-2),
+          fill_color: { single: fill }
+        };
         map.append("g")
-            .attrs({id: "Sphere", class: "layer"})
-            .styles({'stroke-width': stroke_width})
-            .append("path")
-            .datum({type: "Sphere"})
-            .styles({fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke})
-            .attrs({id: 'sphere', d: path, 'clip-path': 'url(#clip)'});
-        create_li_layer_elem("Sphere", null, "Polygon", "sample");
+          .attrs({id: layer_id, class: 'layer'})
+          .styles({'stroke-width': stroke_width})
+          .append('path')
+          .datum({ type: "Sphere" })
+          .styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke })
+          .attrs({ d: path, 'clip-path': 'url(#clip)' });
+        create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
         alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
         zoom_without_redraw();
-        setSphereBottom();
+        setSphereBottom(layer_id);
     } else if (selected_feature == "graticule"){
         if(current_layers["Graticule"] != undefined) return;
         let stroke = options.stroke || '#808080';
@@ -1240,21 +1250,22 @@ function add_layout_feature(selected_feature, options = {}){
             current_layers['Graticule'].extent = extent;
         }
         map.insert("g", '.legend')
-            .attrs({id: "Graticule", class: "layer"})
-            .styles({'stroke-width': stroke_width})
-            .append("path")
-            .datum(graticule)
-            .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
-            .styles({'stroke-dasharray': stroke_dasharray, 'fill': 'none', 'stroke': stroke});
+          .attrs({id: "Graticule", class: "layer"})
+          .styles({'stroke-width': stroke_width})
+          .append("path")
+          .datum(graticule)
+          .attrs({'class': 'graticule', 'clip-path': 'url(#clip)', 'd': path})
+          .styles({'stroke-dasharray': stroke_dasharray, 'fill': 'none', 'stroke': stroke});
         current_layers["Graticule"] = {
-            "type": "Line",
-            "n_features":1,
-            "stroke-width-const": +stroke_width.slice(0,-2),
-            "fill_color": {single: stroke},
-            opacity: stroke_opacity,
-            step: step,
-            dasharray: stroke_dasharray,
-            };
+          graticule: true,
+          "type": "Line",
+          "n_features":1,
+          "stroke-width-const": +stroke_width.slice(0,-2),
+          "fill_color": {single: stroke},
+          opacity: stroke_opacity,
+          step: step,
+          dasharray: stroke_dasharray,
+          };
         create_li_layer_elem("Graticule", null, "Line", "sample");
         alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
         up_legends();

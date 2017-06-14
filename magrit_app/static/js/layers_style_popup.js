@@ -1,7 +1,7 @@
 "use strict";
 // TODO : refactor some functions in this file (they are really too messy)
 function handle_click_layer(layer_name){
-    if(layer_name == "Graticule")
+    if(current_layers[layer_name].graticule)
         createStyleBoxGraticule();
     else if(current_layers[layer_name].type == "Line")
         createStyleBox_Line(layer_name);
@@ -899,6 +899,7 @@ function createStyleBox(layer_name){
     let existing_box = document.querySelector(".styleBox");
     if(existing_box) existing_box.remove();
     var type = current_layers[layer_name].type,
+        isSphere = current_layers[layer_name].sphere === true,
         rendering_params,
         renderer = current_layers[layer_name].renderer,
         g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
@@ -924,83 +925,81 @@ function createStyleBox(layer_name){
     Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
         table.push(d.__data__.properties);
     });
-    if(layer_name != "Sphere")
-        var fields_layer = current_layers[layer_name].fields_type || type_col2(table);
-    else {
-        var fields_layer = [];
-    }
-    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
-        .then(function(confirmed){
-            if(confirmed){
-                // Update the object holding the properties of the layer if Yes is clicked
-                if(type === "Point" && current_layers[layer_name].pointRadius) {
-                    current_layers[layer_name].pointRadius = +current_pt_size;
-                }
-                if(renderer != undefined
-                     && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical"){
-                    current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
-                    let colors_breaks = [];
-                    for(let i = rendering_params['breaks'].length-1; i > 0; --i){
-                        colors_breaks.push([
-                            [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
-                            rendering_params['colors'][i-1]
-                            ]);
-                    }
-                    current_layers[layer_name].colors_breaks = colors_breaks;
-                    current_layers[layer_name].rendered_field = rendering_params.field;
-                    current_layers[layer_name].options_disc = {
-                            schema: rendering_params.schema,
-                            colors: rendering_params.colors,
-                            no_data: rendering_params.no_data,
-                            type: rendering_params.type,
-                            breaks: rendering_params.breaks,
-                            extra_options: rendering_params.extra_options
-                          };
-                } else if (renderer == "Stewart"){
-                    current_layers[layer_name].colors_breaks = rendering_params.breaks;
-                    current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
-                } else if (renderer == "Categorical" && rendering_params != undefined){
-                    current_layers[layer_name].color_map = rendering_params.color_map;
-                    current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
-                }
+    var fields_layer = !isSphere ? current_layers[layer_name].fields_type || type_col2(table) : [];
 
-                if ((rendering_params !== undefined && rendering_params.field !== undefined) || renderer === 'Stewart') {
-                    redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
-                }
-                zoom_without_redraw();
-            } else {
-                // Reset to original values the rendering parameters if "no" is clicked
-                selection.style('fill-opacity', opacity)
-                         .style('stroke-opacity', border_opacity);
-                let zoom_scale = +d3.zoomTransform(map.node()).k;
-                map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
-                current_layers[layer_name]['stroke-width-const'] = stroke_width;
-                let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-                if(type === "Point" && current_layers[layer_name].pointRadius) {
-                    selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius))
-                } else {
-                    if(current_layers[layer_name].renderer == "Stewart"){
-                        recolor_stewart(prev_palette.name, prev_palette.reversed);
-                    } else if(fill_meth == "single") {
-                        selection.style('fill', fill_prev.single)
-                                 .style('stroke', stroke_prev);
-                    } else if(fill_meth == "class") {
-                        selection.style('fill-opacity', opacity)
-                               .style("fill", function(d, i){ return fill_prev.class[i] })
-                               .style('stroke-opacity', border_opacity)
-                               .style("stroke", stroke_prev);
-                    } else if(fill_meth == "random"){
-                        selection.style('fill', function(){return Colors.names[Colors.random()];})
-                                 .style('stroke', stroke_prev);
-                    } else if(fill_meth == "categorical"){
-                        fill_categorical(layer_name, fill_prev.categorical[0], "path", fill_prev.categorical[1])
-                    }
-                }
-                if(current_layers[layer_name].colors_breaks)
-                    current_layers[layer_name].colors_breaks = prev_col_breaks;
-                current_layers[layer_name].fill_color = fill_prev;
-                zoom_without_redraw();
+    make_confirm_dialog2("styleBox", layer_name, {top: true, widthFitContent: true, draggable: true})
+      .then(function(confirmed){
+        if(confirmed){
+          // Update the object holding the properties of the layer if Yes is clicked
+          if(type === "Point" && current_layers[layer_name].pointRadius) {
+              current_layers[layer_name].pointRadius = +current_pt_size;
+          }
+          if(renderer != undefined
+               && rendering_params != undefined && renderer != "Stewart" && renderer != "Categorical"){
+              current_layers[layer_name].fill_color = {"class": rendering_params.colorsByFeature};
+              let colors_breaks = [];
+              for (let i = rendering_params['breaks'].length-1; i > 0; --i) {
+                colors_breaks.push([
+                  [rendering_params['breaks'][i-1], " - ", rendering_params['breaks'][i]].join(''),
+                  rendering_params['colors'][i-1]
+                  ]);
+              }
+              current_layers[layer_name].colors_breaks = colors_breaks;
+              current_layers[layer_name].rendered_field = rendering_params.field;
+              current_layers[layer_name].options_disc = {
+                schema: rendering_params.schema,
+                colors: rendering_params.colors,
+                no_data: rendering_params.no_data,
+                type: rendering_params.type,
+                breaks: rendering_params.breaks,
+                extra_options: rendering_params.extra_options
+              };
+          } else if (renderer == "Stewart"){
+            current_layers[layer_name].colors_breaks = rendering_params.breaks;
+            current_layers[layer_name].fill_color.class =  rendering_params.breaks.map(obj => obj[1]);
+          } else if (renderer == "Categorical" && rendering_params != undefined){
+            current_layers[layer_name].color_map = rendering_params.color_map;
+            current_layers[layer_name].fill_color = {'class': [].concat(rendering_params.colorsByFeature)};
+          }
+
+          if ((rendering_params !== undefined && rendering_params.field !== undefined) || renderer === 'Stewart') {
+              redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+          }
+          zoom_without_redraw();
+        } else {
+          // Reset to original values the rendering parameters if "no" is clicked
+          selection.style('fill-opacity', opacity)
+            .style('stroke-opacity', border_opacity);
+          let zoom_scale = +d3.zoomTransform(map.node()).k;
+          map.select(g_lyr_name).style('stroke-width', stroke_width/zoom_scale + "px");
+          current_layers[layer_name]['stroke-width-const'] = stroke_width;
+          let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+          if(type === "Point" && current_layers[layer_name].pointRadius) {
+            selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius))
+          } else {
+            if(current_layers[layer_name].renderer == "Stewart"){
+              recolor_stewart(prev_palette.name, prev_palette.reversed);
+            } else if (fill_meth == "single") {
+              selection.style('fill', fill_prev.single)
+                .style('stroke', stroke_prev);
+            } else if (fill_meth == "class") {
+              selection.style('fill-opacity', opacity)
+                .style("fill", function(d, i){ return fill_prev.class[i] })
+                .style('stroke-opacity', border_opacity)
+                .style("stroke", stroke_prev);
+            } else if (fill_meth == "random") {
+              selection.style('fill', function(){return Colors.names[Colors.random()];})
+                .style('stroke', stroke_prev);
+            } else if (fill_meth == "categorical"){
+              fill_categorical(layer_name, fill_prev.categorical[0], "path", fill_prev.categorical[1])
             }
+          }
+          if (current_layers[layer_name].colors_breaks) {
+            current_layers[layer_name].colors_breaks = prev_col_breaks;
+          }
+          current_layers[layer_name].fill_color = fill_prev;
+          zoom_without_redraw();
+        }
     });
 
     var container = document.querySelector(".twbs > .styleBox");
