@@ -20,6 +20,7 @@
     <script src="/static/js/lib/bootstrap.min.js"></script>
     <script src="/static/js/lib/jquery.easing.min.js"></script>
     <script  src="static/js/lib/sweetalert2.min.js"></script>
+    <script src="/static/js/lib/cookies.min.js"></script>
 </head>
 <style>
 @import url(http://fonts.googleapis.com/css?family=Merriweather);
@@ -182,99 +183,92 @@ form textarea {
 <script>
 
 function sendForm(){
-    let data = new FormData();
-    data.append('name', document.getElementById('input-name').value);
-    data.append('email', document.getElementById('input-email').value);
-    data.append('subject', document.getElementById('input-subject').value);
-    data.append('message', document.getElementById('input-message').value);
+  let data = new FormData();
+  data.append('name', document.getElementById('input-name').value);
+  data.append('email', document.getElementById('input-email').value);
+  data.append('subject', document.getElementById('input-subject').value);
+  data.append('message', document.getElementById('input-message').value);
 
-    let request = new XMLHttpRequest();
-    request.open("POST", "/contact", true);
-    request.onload = resp => {
-        swal({title: "",
-              text: i18next.t("app_page.common.ok") + "!",
-              type: "success",
-              showCancelButton: false,
-              allowOutsideClick: false,
-            }).then(() => { return; }, dismiss => { return; });
-    };
-    request.onerror = err => {
-        swal({title: "",
-              text: i18next.t("app_page.common.error_msg") + "!",
-              type: "error",
-              showCancelButton: false,
-              allowOutsideClick: false,
-            }).then(() => { return; }, dismiss => { return; });
-    };
-    request.send(data);
+  let request = new XMLHttpRequest();
+  request.open("POST", "/contact", true);
+  request.onload = resp => {
+    swal({title: "",
+          text: i18next.t("app_page.common.ok") + "!",
+          type: "success",
+          showCancelButton: false,
+          allowOutsideClick: false,
+        }).then(() => { return; }, dismiss => { return; });
+  };
+  request.onerror = err => {
+    swal({title: "",
+          text: i18next.t("app_page.common.error_msg") + "!",
+          type: "error",
+          showCancelButton: false,
+          allowOutsideClick: false,
+        }).then(() => { return; }, dismiss => { return; });
+  };
+  request.send(data);
 }
 
 //i18n initialization :
 (function(){
-    var existing_lang = ["en", "es", "fr"];
-    let lang = window.navigator.language.split('-')[0];
-    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
-    i18next.use(i18nextXHRBackend)
-      .init({
-          debug: true,
-          lng: lang,
-          fallbackLng: existing_lang[0],
-          backend: {
-            loadPath: "/static/locales/{{lng}}/translation.json"
-          }
-    }, (err, t) => {
-        if(err)
-            throw err;
-        else {
-            window.localize = locI18next.init(i18next);
-            localize(".i18n");
-            bind_buttons();
-            prepare_lang_buttons();
-        }
-    });
+  var existing_lang = ["en", "es", "fr"];
+  let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
+  lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
+  i18next.use(i18nextXHRBackend)
+    .init({
+      debug: true,
+      lng: lang,
+      fallbackLng: existing_lang[0],
+      backend: {
+        loadPath: "/static/locales/{{lng}}/translation.json"
+      }
+  }, (err, t) => {
+    if(err)
+      throw err;
+    else {
+      window.localize = locI18next.init(i18next);
+      localize(".i18n");
+      prepare_lang_buttons();
+    }
+  });
 })();
 
 function prepare_lang_buttons(){
-    let current_lang =  i18next.language,
-        other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+  let current_lang =  i18next.language,
+      other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
 
-    document.getElementById("lang_current").innerHTML = current_lang;
-    let button_lang1 = document.getElementById("lang1");
-    button_lang1.innerHTML = current_lang;
-    button_lang1.onclick = handle_change_lang;
-    let button_lang2 = document.getElementById("lang2");
-    button_lang2.innerHTML = other_langs[0];
-    button_lang2.onclick = handle_change_lang;
-    let button_lang3 = document.getElementById("lang3");
-    button_lang3.innerHTML = other_langs[1];
-    button_lang3.onclick = handle_change_lang;
-}
-
-function bind_buttons(){
-    let send_button = document.getElementById("send_button");
-    send_button.onclick = function(){
-
-    }
+  document.getElementById("lang_current").innerHTML = current_lang;
+  let button_lang1 = document.getElementById("lang1");
+  button_lang1.innerHTML = current_lang;
+  button_lang1.onclick = handle_change_lang;
+  let button_lang2 = document.getElementById("lang2");
+  button_lang2.innerHTML = other_langs[0];
+  button_lang2.onclick = handle_change_lang;
+  let button_lang3 = document.getElementById("lang3");
+  button_lang3.innerHTML = other_langs[1];
+  button_lang3.onclick = handle_change_lang;
 }
 
 //Handle user click on the "language" buttons :
 function handle_change_lang(){
-    if(this.id == "lang1" && i18next.language == this.innerHTML){
-        return;
-    }
-    let lang = this.innerHTML,
-        old_lang = document.getElementById("lang_current").innerHTML;
-    change_lang(lang, old_lang);
+  if(this.id == "lang1" && i18next.language == this.innerHTML){
+    return;
+  }
+  let lang = this.innerHTML;
+  let old_lang = document.getElementById("lang_current").innerHTML;
+  change_lang(lang, old_lang);
 }
 
 // Actually change the content of the page :
 function change_lang(new_lang){
-    i18next.changeLanguage(new_lang, () => { localize(".i18n");});
-    let other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
-    document.getElementById("lang_current").innerHTML = new_lang;
-    document.getElementById("lang3").innerHTML = other_langs[0];
-    document.getElementById("lang2").innerHTML = other_langs[1];
-    document.getElementById("lang1").innerHTML = new_lang;
+  docCookies.setItem("user_lang", new_lang, 31536e3, "/");
+  i18next.changeLanguage(new_lang, () => { localize(".i18n");});
+  let other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+  document.getElementById("lang_current").innerHTML = new_lang;
+  document.getElementById("lang3").innerHTML = other_langs[0];
+  document.getElementById("lang2").innerHTML = other_langs[1];
+  document.getElementById("lang1").innerHTML = new_lang;
 }
 
 

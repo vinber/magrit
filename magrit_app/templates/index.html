@@ -236,24 +236,24 @@
 <script>
 //jQuery for initialising tooltips
 $('[data-toggle="popover"]').popover({
-    trigger: 'hover'
+  trigger: 'hover'
 });
 
 //jQuery for image preview
 $(function(){
-    $(".pop").on("click", function(){
-        $(".imagepreview").attr("src", $(this).find("img").attr("src"));
-        $("#imagemodal").modal("show");
-    });
+  $(".pop").on("click", function(){
+    $(".imagepreview").attr("src", $(this).find("img").attr("src"));
+    $("#imagemodal").modal("show");
+  });
 });
 
 //Handle user click on the "language" buttons :
 function handle_change_lang(){
-    if(this.id == "lang1" && i18next.language == this.innerHTML){
-        return;
-    }
-    var lang = this.innerHTML;
-    change_lang(lang);
+  if(this.id == "lang1" && i18next.language == this.innerHTML){
+      return;
+  }
+  var lang = this.innerHTML;
+  change_lang(lang);
 }
 
 // // Actually change the content of the page :
@@ -267,84 +267,84 @@ function handle_change_lang(){
 
 // Actually change the content of the page :
 function change_lang(new_lang){
-    docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-    i18next.changeLanguage(new_lang, function(){ localize(".i18n");});
-    var other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
-    document.getElementById("lang_current").innerHTML = new_lang;
-    document.getElementById("lang3").innerHTML = other_langs[0];
-    document.getElementById("lang2").innerHTML = other_langs[1];
-    document.getElementById("lang1").innerHTML = new_lang;
+  docCookies.setItem("user_lang", new_lang, 31536e3, "/");
+  i18next.changeLanguage(new_lang, function(){ localize(".i18n");});
+  var other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+  document.getElementById("lang_current").innerHTML = new_lang;
+  document.getElementById("lang3").innerHTML = other_langs[0];
+  document.getElementById("lang2").innerHTML = other_langs[1];
+  document.getElementById("lang1").innerHTML = new_lang;
 }
 
 
 function bind_enter_buttons(){
-    var enter = function() {
-        if(!docCookies.getItem("cookie_law_validated")){
-            docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
-        }
-        window.location = "/modules"
-    };
-    var elems = document.querySelectorAll(".enter_button"), i;
-    for(i=0; i < elems.length; i++){
-        elems[i].onclick = enter;
+  var enter = function() {
+    if(!docCookies.getItem("cookie_law_validated")){
+      docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
     }
+    window.location = "/modules"
+  };
+  var elems = document.querySelectorAll(".enter_button"), i;
+  for (let i=0; i < elems.length; i++) {
+    elems[i].onclick = enter;
+  }
 }
 
 
 function handle_div_cookie(){
-    var cookie_div = document.getElementById("cookieLaw");
-    if(docCookies.getItem("cookie_law_validated")){
-        cookie_div.style.display = "none";
-    } else {
-        cookie_div.querySelector("#understood_cookie")
-            .onclick = function() {
-                document.getElementById("cookieLaw").remove();
-                docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
-            };
-    }
+  var cookie_div = document.getElementById("cookieLaw");
+  if (docCookies.getItem("cookie_law_validated")) {
+    cookie_div.style.display = "none";
+  } else {
+    cookie_div.querySelector("#understood_cookie").onclick = function() {
+      document.getElementById("cookieLaw").remove();
+      docCookies.setItem("cookie_law_validated", "true", 31536e3, "/");
+    };
+  }
 }
 
 
 function prepare_lang_buttons(){
-    var current_lang =  i18next.language,
-        other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
+  var current_lang =  i18next.language,
+      other_langs = current_lang == "en" ? ["es", "fr"] : current_lang == "fr" ? ["en", "es"] : ["en", "fr"];
 
-    document.getElementById("lang_current").innerHTML = current_lang;
-    var button_lang1 = document.getElementById("lang1");
-    button_lang1.innerHTML = current_lang;
-    button_lang1.onclick = handle_change_lang;
-    var button_lang2 = document.getElementById("lang2");
-    button_lang2.innerHTML = other_langs[0];
-    button_lang2.onclick = handle_change_lang;
-    var button_lang3 = document.getElementById("lang3");
-    button_lang3.innerHTML = other_langs[1];
-    button_lang3.onclick = handle_change_lang;
+  document.getElementById("lang_current").innerHTML = current_lang;
+  var button_lang1 = document.getElementById("lang1");
+  button_lang1.innerHTML = current_lang;
+  button_lang1.onclick = handle_change_lang;
+  var button_lang2 = document.getElementById("lang2");
+  button_lang2.innerHTML = other_langs[0];
+  button_lang2.onclick = handle_change_lang;
+  var button_lang3 = document.getElementById("lang3");
+  button_lang3.innerHTML = other_langs[1];
+  button_lang3.onclick = handle_change_lang;
 }
 
 //i18n initialization :
 (function(){
-    var existing_lang = ["en", "es", "fr"];
-    var lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
-    lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
-    i18next.use(i18nextXHRBackend)
-      .init({
-          debug: true,
-          lng: lang,
-          fallbackLng: existing_lang[0],
-          backend: {
-            loadPath: "/static/locales/{{lng}}/translation.json"
-          }
-    }, function(err, t) {
-        if(err)
-            throw err;
-        else {
-            window.localize = locI18next.init(i18next);
-            localize(".i18n");
-            bind_enter_buttons();
-            handle_div_cookie();
-            prepare_lang_buttons();
+  var existing_lang = ["en", "es", "fr"];
+  var lang = docCookies.getItem("user_lang") || window.navigator.language.split('-')[0];
+  lang = existing_lang.indexOf(lang) > -1 ? lang : 'en';
+  docCookies.setItem("user_lang", lang, 31536e3, "/");
+  i18next.use(i18nextXHRBackend)
+    .init({
+        debug: true,
+        lng: lang,
+        fallbackLng: existing_lang[0],
+        backend: {
+          loadPath: "/static/locales/{{lng}}/translation.json"
         }
-    });
+  }, function(err, t) {
+    if(err)
+      throw err;
+    else {
+      window.localize = locI18next.init(i18next);
+      localize(".i18n");
+      bind_enter_buttons();
+      handle_div_cookie();
+      prepare_lang_buttons();
+    }
+  });
 })();
 
 </script>

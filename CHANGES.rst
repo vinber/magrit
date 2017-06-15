@@ -6,6 +6,8 @@ Changes
 
 - Allow to add more than one sphere background (#26).
 
+- Add default projection for sample basemaps.
+
 
 0.3.2 (2017-06-09)
 ------------------
@@ -39,6 +41,3 @@ Changes
 - Fix bug with choice of pictogram size.
 
 - Fix bug in the order in which some features are reloaded from project file.
-
-
-

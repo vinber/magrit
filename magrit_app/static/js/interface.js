@@ -1079,8 +1079,9 @@ function add_layer_topojson(text, options = {}){
                 type: "success"
               }).then(() => {
                   change_projection_4(_proj);
+                  current_proj_name = 'def_proj4';
                   _app.last_projection = parsedJSON.proj;
-        					addLastProjectionSelect('def_proj4');
+        					addLastProjectionSelect('def_proj4', _app.last_projection);
                   if(target_layer_on_add && joined_dataset.length > 0)
                       ask_join_now(lyr_name_to_add);
                   else if (target_layer_on_add)
@@ -1094,6 +1095,14 @@ function add_layer_topojson(text, options = {}){
 
         }
     }
+
+    if (options.proj4string) {
+      change_projection_4(proj4(options.proj4string));
+      current_proj_name = 'def_proj4';
+      _app.last_projection = options.proj4string;
+      addLastProjectionSelect('def_proj4', _app.last_projection);
+    }
+
     return lyr_name_to_add;
 };
 
@@ -1434,47 +1443,54 @@ function add_sample_layer(){
     if(!_app.list_extrabasemaps){
         prepare_extra_dataset_availables();
     }
-    var fields_type_sample = new Map([
-        ['GrandParisMunicipalities', [{"name":"DEP","type":"category","has_duplicate":true},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category","has_duplicate":true},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category","has_duplicate":true},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
-        ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id","not_number":true},{"name":"STATUT","type":"category","has_duplicate":true},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
-        ['nuts2-2013-data', [{"name":"id","type":"id","not_number":true},{"name":"name","type":"id","not_number":true},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category","has_duplicate":true}]],
-        ['brazil', [{"name":"ADMIN_NAME","type":"id","not_number":true},{"name":"Abbreviation","type":"id","not_number":true},{"name":"Capital","type":"id","not_number":true},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category","has_duplicate":true},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
-        ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
-        ]),
-        target_layers = [
-           [i18next.t("app_page.sample_layer_box.target_layer"),""],
-           [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
-           [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
-           [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
-           [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
-           [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"]
-        ], dialog_res = [], selec, selec_url, content;
+    const fields_type_sample = new Map([
+      ['GrandParisMunicipalities', [{"name":"DEP","type":"category","has_duplicate":true},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category","has_duplicate":true},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category","has_duplicate":true},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
+      ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id","not_number":true},{"name":"STATUT","type":"category","has_duplicate":true},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
+      ['nuts2-2013-data', [{"name":"id","type":"id","not_number":true},{"name":"name","type":"id","not_number":true},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category","has_duplicate":true}]],
+      ['brazil', [{"name":"ADMIN_NAME","type":"id","not_number":true},{"name":"Abbreviation","type":"id","not_number":true},{"name":"Capital","type":"id","not_number":true},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category","has_duplicate":true},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
+      ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
+    ]);
+    const suggested_projection = new Map([
+      ['GrandParisMunicipalities', '+proj=lcc +lat_1=48.25 +lat_2=49.75 +lat_0=49 +lon_0=3 +x_0=1700000 +y_0=8200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'],
+      ['martinique', '+proj=utm +zone=20 +ellps=intl +towgs84=186,482,151,0,0,0,0 +units=m +no_defs'],
+      ['nuts2-2013-data', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'],
+      ['brazil', '+proj=longlat +ellps=aust_SA +towgs84=-67.35,3.88,-38.22,0,0,0,0 +no_defs'],
+    ]);
+    const target_layers = [
+     [i18next.t("app_page.sample_layer_box.target_layer"),""],
+     [i18next.t("app_page.sample_layer_box.grandparismunicipalities"), "GrandParisMunicipalities"],
+     [i18next.t("app_page.sample_layer_box.martinique"), "martinique"],
+     [i18next.t("app_page.sample_layer_box.nuts2_data"), "nuts2-2013-data"],
+     [i18next.t("app_page.sample_layer_box.brazil"), "brazil"],
+     [i18next.t("app_page.sample_layer_box.world_countries"), "world_countries_data"]
+    ];
+    const dialog_res = [];
+    let selec, selec_url, content;
 
     make_confirm_dialog2("sampleDialogBox", i18next.t("app_page.sample_layer_box.title"))
-        .then(function(confirmed){
-            if(confirmed){
-                if(content.attr('id') == "panel1"){
-                    if(selec){
-                        add_sample_geojson(selec, {target_layer_on_add: true, fields_type: fields_type_sample.get(selec)});
-                    }
-                } else if(content.attr('id') == "panel2"){
-                  let formToSend = new FormData();
-                  formToSend.append("url", selec_url[1]);
-                  formToSend.append("layer_name", selec_url[0]);
-                  xhrequest('POST', '/convert_extrabasemap', formToSend, true)
-                    .then( data => {
-                        add_layer_topojson(data, {target_layer_on_add: true});
-                    }, error => {
-                        display_error_during_computation();
-                    });
-                    // xhrequest('GET', selec_url[1], null, true)
-                    //     .then(request_result => {
-                    //         let file = new File([request_result], selec_url[0] + '.geojson', {type : 'application/geo+json'});
-                    //         handle_single_file(file, true);
-                    //     });
-                }
+      .then(function(confirmed){
+        if(confirmed){
+          if(content.attr('id') == "panel1"){
+            if(selec){
+              add_sample_geojson(selec, {
+                target_layer_on_add: true,
+                fields_type: fields_type_sample.get(selec),
+                proj4string: suggested_projection.get(selec)
+              });
             }
-        });
+          } else if(content.attr('id') === "panel2"){
+            let formToSend = new FormData();
+            formToSend.append("url", selec_url[1]);
+            formToSend.append("layer_name", selec_url[0]);
+            xhrequest('POST', '/convert_extrabasemap', formToSend, true)
+              .then( data => {
+                  add_layer_topojson(data, { target_layer_on_add: true });
+              }, error => {
+                  display_error_during_computation();
+              });
+          }
+        }
+      });
 
     function make_panel2(){
         box_body.selectAll('div').remove();

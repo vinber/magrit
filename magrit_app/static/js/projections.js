@@ -1,5 +1,3 @@
-
-
 const shortListContent = [
   'AzimuthalEqualAreaEurope',
   'ConicConformalFrance',
@@ -133,7 +131,7 @@ const createBoxProj4 = function createBoxProj4() {
     const rv = change_projection_4(_p);
     if (rv) {
       _app.last_projection = proj_str;
-      addLastProjectionSelect('def_proj4');
+      addLastProjectionSelect('def_proj4', _app.last_projection);
       current_proj_name = 'def_proj4';
     } else {
       swal({ title: 'Oops...',
@@ -152,11 +150,45 @@ const createBoxProj4 = function createBoxProj4() {
   overlay_under_modal.display();
 };
 
-function addLastProjectionSelect(proj_name) {
+const displayTooltipProj4 = function displayTooltipProj4(ev) {
+  const target = ev.target;
+  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+    return;
+  }
+  const title = target.tooltip;
+  let tooltipWrap = document.createElement("div");
+  tooltipWrap.className = 'custom_tooltip';
+  tooltipWrap.appendChild(document.createTextNode(title));
+
+  let firstChild = document.body.firstChild;
+  firstChild.parentNode.insertBefore(tooltipWrap, firstChild);
+
+  let linkProps = this.getBoundingClientRect();
+  let tooltipProps = tooltipWrap.getBoundingClientRect();
+  let topPos = linkProps.bottom - tooltipProps.height / 2;
+  tooltipWrap.setAttribute('style', `top: ${topPos}px; left: ${linkProps.right - 15}px;`);
+}
+
+const removeTooltipProj4 = function removeTooltipProj4(ev) {
+  const target = ev.target;
+  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+    return;
+  }
+  let a = document.querySelector('div.custom_tooltip');
+  if (a) a.remove();
+}
+
+const makeTooltipProj4 = (proj_select, proj4string) => {
+  proj_select.tooltip = proj4string;
+  proj_select.addEventListener('mouseover', displayTooltipProj4);
+  proj_select.addEventListener('mouseout', removeTooltipProj4);
+}
+
+function addLastProjectionSelect(proj_name, proj4string) {
   const proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
-  } else if (proj_select.options.length == 10) {
+  } else if (proj_select.options.length === 10) {
     let prev_elem = proj_select.querySelector("[value='more']"),
       new_option = document.createElement('option');
     new_option.className = 'i18n';
@@ -166,12 +198,18 @@ function addLastProjectionSelect(proj_name) {
     new_option.innerHTML = i18next.t(`app_page.projection_name.${proj_name}`);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
+    if (proj4string){
+      makeTooltipProj4(proj_select, proj4string);
+    }
   } else {
     const option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
     option.innerHTML = i18next.t(`app_page.projection_name.${proj_name}`);
     option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     proj_select.value = 'last_projection';
+    if (proj4string){
+      makeTooltipProj4(proj_select, proj4string);
+    }
   }
 }
 
@@ -191,16 +229,16 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       available_projections.forEach((v, k) => {
         if (v.param_in == filter_in) {
           display_select_proj.insert('option')
-							.attrs({ class: 'i18n', value: k })
-							.text(i18next.t(`app_page.projection_name.${k}`));
+  					.attrs({ class: 'i18n', value: k })
+  					.text(i18next.t(`app_page.projection_name.${k}`));
         }
       });
     } else if (!filter_in) {
       available_projections.forEach((v, k) => {
         if (v.param_ex == filter_ex) {
           display_select_proj.append('option')
-								.attrs({ class: 'i18n', value: k })
-								.text(i18next.t(`app_page.projection_name.${k}`));
+  					.attrs({ class: 'i18n', value: k })
+  					.text(i18next.t(`app_page.projection_name.${k}`));
         }
       });
     } else {
@@ -209,14 +247,14 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
         if (v.param_in == filter_in && v.param_ex == filter_ex) {
           empty = false;
           display_select_proj.append('option')
-								.attrs({ class: 'i18n', value: k })
-								.text(i18next.t(`app_page.projection_name.${k}`));
+						.attrs({ class: 'i18n', value: k })
+						.text(i18next.t(`app_page.projection_name.${k}`));
         }
       });
       if (empty) {
         display_select_proj.append('option')
-						.attrs({ class: 'i18n', value: 'no_result' })
-						.html(i18next.t('app_page.projection_box.no_result_projection'));
+  				.attrs({ class: 'i18n', value: 'no_result' })
+  				.html(i18next.t('app_page.projection_box.no_result_projection'));
       }
     }
     display_select_proj.on('dblclick', function () {
@@ -286,17 +324,17 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   dialog.style.width = '700px';
 
-  let choice_proj = content.append('button')
-					.attrs({ class: 'accordion_proj active', id: 'btn_choice_proj' })
-					.style('padding', '0 6px')
-					.html(i18next.t('app_page.projection_box.choice_projection')),
-    accordion_choice_projs = content.append('div')
-					.attrs({ class: 'panel show', id: 'accordion_choice_projection' })
-					.style('padding', '10px')
-					.style('width', '98%'),
-    choice_proj_content = accordion_choice_projs.append('div')
-					.attr('id', 'choice_proj_content')
-					.style('text-align', 'center');
+  const choice_proj = content.append('button')
+  	.attrs({ class: 'accordion_proj active', id: 'btn_choice_proj' })
+  	.style('padding', '0 6px')
+  	.html(i18next.t('app_page.projection_box.choice_projection'));
+  const accordion_choice_projs = content.append('div')
+  	.attrs({ class: 'panel show', id: 'accordion_choice_projection' })
+  	.style('padding', '10px')
+  	.style('width', '98%');
+  const choice_proj_content = accordion_choice_projs.append('div')
+		.attr('id', 'choice_proj_content')
+		.style('text-align', 'center');
 
   const column1 = choice_proj_content.append('div')
 			.styles({ float: 'left', width: '50%' });
@@ -309,62 +347,61 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   const filtersection1 = column1.append('div').attr('class', 'switch-field f1');
   filtersection1.append('div')
-			.attrs({ class: 'switch-title' })
-			.html(i18next.t('app_page.projection_box.filter_nature'));
+		.attrs({ class: 'switch-title' })
+		.html(i18next.t('app_page.projection_box.filter_nature'));
   ['any', 'other', 'cone', 'cylindrical', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
     const _id = `switch_proj1_elem_${i}`;
     filtersection1.append('input')
-					.attrs({ type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v });
+			.attrs({ type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v });
     filtersection1.append('label')
-					.attr('for', _id)
-					.html(i18next.t(`app_page.projection_box.${v}`));
+  		.attr('for', _id)
+  		.html(i18next.t(`app_page.projection_box.${v}`));
   });
 
   const filtersection2 = column2.append('div').attr('class', 'switch-field f2');
   filtersection2.append('div')
-			.attrs({ class: 'switch-title' })
-			.html(i18next.t('app_page.projection_box.filter_prop'));
+  	.attrs({ class: 'switch-title' })
+  	.html(i18next.t('app_page.projection_box.filter_prop'));
   ['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach((v, i) => {
     const _id = `switch_proj2_elem_${i}`;
     filtersection2.append('input')
-					.attrs({ type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v });
+  		.attrs({ type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v });
     filtersection2.append('label')
-					.attr('for', _id)
-					.html(i18next.t(`app_page.projection_box.${v}`));
+  		.attr('for', _id)
+  		.html(i18next.t(`app_page.projection_box.${v}`));
   });
 
   Array.prototype.forEach.call(document.querySelectorAll('.filter1,.filter2'), (el) => { el.onclick = onClickFilter; });
 
   var p = column3.append('p').style('margin', 'auto');
   var display_select_proj = p.append('select')
-			.attr('id', 'select_proj')
-  		.attr('size', 18);
+  	.attr('id', 'select_proj')
+  	.attr('size', 18);
 
   updateSelect(null, null);
 
   column3.append('button')
-			.style('margin', '5px 0 5px 0')
-			// .styles({margin: '5px 0 5px 0', padding: '5px', float: 'right'})
-			.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' })
-			.html(i18next.t('app_page.projection_box.ok_reproject'))
-			.on('click', () => {
-  const value = document.getElementById('select_proj').value;
-  if (value == 'no_result') return;
-  reproj(value);
-});
+  	.style('margin', '5px 0 5px 0')
+  	.attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' })
+  	.html(i18next.t('app_page.projection_box.ok_reproject'))
+  	.on('click', () => {
+      const value = document.getElementById('select_proj').value;
+      if (value == 'no_result') return;
+      reproj(value);
+    });
 
   let choice_options = content.append('button')
-					.attrs({ class: 'accordion_proj', id: 'btn_choice_proj' })
-					.style('padding', '0 6px')
-					.html(i18next.t('app_page.projection_box.projection_options')),
-    accordion_choice_options = content.append('div')
-					.attrs({ class: 'panel', id: 'accordion_choice_projection' })
-					.style('padding', '10px')
-					.style('width', '98%'),
-    options_proj_content = accordion_choice_options.append('div')
-					.attr('id', 'options_proj_content')
-					.style('width', '60%')
-					.style('transform', 'translateX(45%)');
+  	.attrs({ class: 'accordion_proj', id: 'btn_choice_proj' })
+  	.style('padding', '0 6px')
+  	.html(i18next.t('app_page.projection_box.projection_options'));
+  let accordion_choice_options = content.append('div')
+		.attrs({ class: 'panel', id: 'accordion_choice_projection' })
+		.style('padding', '10px')
+		.style('width', '98%');
+  let options_proj_content = accordion_choice_options.append('div')
+  	.attr('id', 'options_proj_content')
+  	.style('width', '60%')
+  	.style('transform', 'translateX(45%)');
 
   let rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
   const lambda_section = rotate_section.append('p');
@@ -375,36 +412,36 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 		.styles({ width: '60px', float: 'right' })
 		.attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 })
 		.on('input', function () {
-  if (this.value > 180) this.value = 180;
-  else if (this.value < -180) this.value = -180;
-  handle_proj_center_button([-this.value, null, null]);
-});
+      if (this.value > 180) this.value = 180;
+      else if (this.value < -180) this.value = -180;
+      handle_proj_center_button([-this.value, null, null]);
+    });
 
   const phi_section = rotate_section.append('p')
-			.style('clear', 'both');
+		.style('clear', 'both');
   phi_section.append('span')
-			.style('float', 'left')
-			.html(i18next.t('app_page.section5.projection_center_phi'));
+		.style('float', 'left')
+		.html(i18next.t('app_page.section5.projection_center_phi'));
   let phi_input = phi_section.append('input')
 		.styles({ width: '60px', float: 'right' })
 		.attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 })
 		.on('input', function () {
-  if (this.value > 180) { this.value = 180; } else if (this.value < -180) { this.value = -180; }
-  handle_proj_center_button([null, -this.value, null]);
-});
+      if (this.value > 180) { this.value = 180; } else if (this.value < -180) { this.value = -180; }
+      handle_proj_center_button([null, -this.value, null]);
+    });
 
   const gamma_section = rotate_section.append('p')
-			.style('clear', 'both');
+		.style('clear', 'both');
   gamma_section.append('span')
-			.style('float', 'left')
-			.html(i18next.t('app_page.section5.projection_center_gamma'));
+		.style('float', 'left')
+		.html(i18next.t('app_page.section5.projection_center_gamma'));
   let gamma_input = gamma_section.append('input')
-			.styles({ width: '60px', float: 'right' })
-			.attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 })
-			.on('input', function () {
-  if (this.value > 90) { this.value = 90; } else if (this.value < -90) { this.value = -90; }
-  handle_proj_center_button([null, null, -this.value]);
-});
+		.styles({ width: '60px', float: 'right' })
+		.attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 })
+		.on('input', function () {
+      if (this.value > 90) { this.value = 90; } else if (this.value < -90) { this.value = -90; }
+      handle_proj_center_button([null, null, -this.value]);
+    });
 
   let parallels_section = options_proj_content.append('div')
 			.styles({ 'text-align': 'center', clear: 'both' })
@@ -417,18 +454,18 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 		.styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
 		.attrs({ type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5 })
 		.on('input', function () {
-  if (this.value > 90) this.value = 90;
-  else if (this.value < -90) this.value = -90;
-  handle_parallels_change([this.value, null]);
-});
+      if (this.value > 90) this.value = 90;
+      else if (this.value < -90) this.value = -90;
+      handle_parallels_change([this.value, null]);
+    });
   let sp2_input = inputs.append('input')
 		.styles({ width: '60px', display: 'inline', 'margin-left': '2px' })
 		.attrs({ type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5 })
 		.on('input', function () {
-  if (this.value > 90) this.value = 90;
-  else if (this.value < -90) this.value = -90;
-  handle_parallels_change([null, this.value]);
-});
+      if (this.value > 90) this.value = 90;
+      else if (this.value < -90) this.value = -90;
+      handle_parallels_change([null, this.value]);
+    });
 
   let parallel_section = options_proj_content.append('div')
 		.styles({ 'text-align': 'center', clear: 'both' })
@@ -442,10 +479,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 		.styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
 		.attrs({ type: 'number', value: prev_parallel || 0, min: -90, max: 90, step: 0.5 })
 		.on('input', function () {
-  if (this.value > 90) this.value = 90;
-  else if (this.value < -90) this.value = -90;
-  handle_parallel_change(this.value);
-});
+      if (this.value > 90) this.value = 90;
+      else if (this.value < -90) this.value = -90;
+      handle_parallel_change(this.value);
+    });
 
   if (prev_projection == 'def_proj4') {
     options_proj_content.selectAll('input')
@@ -466,11 +503,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     s = prev_scale;
     t = prev_translate.slice();
     current_proj_name = prev_projection;
-    addLastProjectionSelect(current_proj_name);
-    if (prev_projection != 'def_proj4') {
+
+    if (prev_projection !== 'def_proj4') {
       change_projection(current_proj_name);
-    } else if (prev_projection == 'def_proj4') {
+      addLastProjectionSelect(current_proj_name);
+    } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
+      addLastProjectionSelect(current_proj_name, _app.last_projection);
     }
     if (prev_rotate) { handle_proj_center_button(prev_rotate); }
     if (prev_parallels) { handle_parallels_change(prev_parallels); }		else if (prev_parallel) { handle_parallel_change(prev_parallel); }

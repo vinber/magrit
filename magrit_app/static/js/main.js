@@ -146,20 +146,21 @@ function setUpInterface(reload_project)
           this.value = (tmp && current_proj_name === tmp.name) ? "last_projection" : current_proj_name;
           createBoxCustomProjection();
           return;
-      } else if (val == 'proj4') {
+      } else if (val === 'proj4') {
           this.value = (tmp && current_proj_name === tmp.name) ? "last_projection" : current_proj_name;
           createBoxProj4();
           return;
-      }  else if (val == 'last_projection') {
+      }  else if (val === 'last_projection') {
           val = tmp.name;
-      } else if (val == 'ConicConformalFrance') {
+      } else if (val === 'ConicConformalFrance') {
           val = 'def_proj4';
           _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
       }
 
-      if (val == 'def_proj4') {
+      if (val === 'def_proj4') {
         current_proj_name = val;
         change_projection_4(proj4(_app.last_projection));
+        makeTooltipProj4(document.getElementById('form_projection2'), _app.last_projection);
       } else {
         current_proj_name = val;
         change_projection(current_proj_name);
@@ -287,20 +288,20 @@ function setUpInterface(reload_project)
         let list_elems = document.createElement("ul");
         menu.appendChild(list_elems);
         for (let i = 0; i < actions.length; i++) {
-            let item = document.createElement("li"),
-                name = document.createElement("span");
-            list_elems.appendChild(item);
-            item.setAttribute("data-index", i);
-            item.style.textAlign = "right";
-            item.style.paddingRight = "16px";
-            name.className = "context-menu-item-name";
-            name.style.color = "white";
-            name.textContent = actions[i].name;
-            item.appendChild(name);
-            item.onclick = () => {
-                actions[i].callback();
-                menu.remove();
-            };
+          let item = document.createElement("li"),
+              name = document.createElement("span");
+          list_elems.appendChild(item);
+          item.setAttribute("data-index", i);
+          item.style.textAlign = "right";
+          item.style.paddingRight = "16px";
+          name.className = "context-menu-item-name";
+          name.style.color = "white";
+          name.textContent = actions[i].name;
+          item.appendChild(name);
+          item.onclick = () => {
+              actions[i].callback();
+              menu.remove();
+          };
         }
         document.querySelector("body").appendChild(menu);
       }
@@ -331,8 +332,8 @@ function setUpInterface(reload_project)
   accordion4.append("div").attr("id","section4");
   accordion5.append("div").attr("id","section5");
 
-  let dv1 = section1.append("div"),
-      dv11 = dv1.append("div").style("width", "auto");
+  let dv1 = section1.append("div");
+  let dv11 = dv1.append("div").style("width", "auto");
 
   dv11.append("img")
     .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "26", "height": "26",  "alt": "Geometry layer"})
@@ -1080,20 +1081,19 @@ function make_eye_button(state){
 }
 
 function change_lang(){
-    let new_lang = this.name;
-    if(new_lang == i18next.language){
-        return;
-    } else {
-        docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-        i18next.changeLanguage(new_lang, () => {
-            localize(".i18n");
-            bindTooltips();
-        });
-        document.getElementById("current_app_lang").innerHTML = new_lang;
-        let menu = document.getElementById("menu_lang");
-        if(menu)
-            menu.remove();
-    }
+  let new_lang = this.name;
+  if(new_lang == i18next.language){
+    return;
+  } else {
+    docCookies.setItem("user_lang", new_lang, 31536e3, "/");
+    i18next.changeLanguage(new_lang, () => {
+        localize(".i18n");
+        bindTooltips();
+    });
+    document.getElementById("current_app_lang").innerHTML = new_lang;
+    let menu = document.getElementById("menu_lang");
+    if(menu) menu.remove();
+  }
 }
 
 function make_ico_choice(){
@@ -1225,26 +1225,26 @@ var map = map_div.style("width", w+"px").style("height", h+"px")
 
 var defs = map.append("defs");
 
-var _app = {
-    to_cancel: undefined,
-    targeted_layer_added: false,
-    current_functionnality: undefined,
-    layer_to_id: new Map([["World", "World"], ["Graticule", "Graticule"]]),
-    id_to_layer: new Map([["World", "World"], ["Graticule", "Graticule"]]),
-    version: document.querySelector("#header").getAttribute('v')
+const _app = {
+  to_cancel: undefined,
+  targeted_layer_added: false,
+  current_functionnality: undefined,
+  layer_to_id: new Map([["World", "World"], ["Graticule", "Graticule"]]),
+  id_to_layer: new Map([["World", "World"], ["Graticule", "Graticule"]]),
+  version: document.querySelector("#header").getAttribute('v')
 };
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
 const button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
-    button_legend = ' <img src="static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
-    button_zoom_fit = ' <img src="static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
-    button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
-    button_type = new Map([
-        ["Point", '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'],
-        ["Line", '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'],
-        ["Polygon", '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']
-        ]);
+  button_legend = ' <img src="static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
+  button_zoom_fit = ' <img src="static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
+  button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
+  button_type = new Map([
+    ["Point", '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'],
+    ["Line", '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'],
+    ["Polygon", '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']
+  ]);
 
 const button_result_type = new Map([
         ["flow", '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'],
@@ -1268,37 +1268,37 @@ const sys_run_button = '<img src="static/img/High-contrast-system-run.png" width
 
 // Shortcut to the name of the methods offered by geostats library:
 const discretiz_geostats_switch = new Map([
-        ["jenks", "getJenks"],
-        ["equal_interval", "getEqInterval"],
-        //["std_dev", "getStdDeviation"],
-        ["quantiles", "getQuantile"],
-        ["arithmetic_progression", "getArithmeticProgression"],
-        ["Q6", "getBreaksQ6"],
-        ["geometric_progression", "getGeometricProgression"]
-    ]);
+  ["jenks", "getJenks"],
+  ["equal_interval", "getEqInterval"],
+  //["std_dev", "getStdDeviation"],
+  ["quantiles", "getQuantile"],
+  ["arithmetic_progression", "getArithmeticProgression"],
+  ["Q6", "getBreaksQ6"],
+  ["geometric_progression", "getGeometricProgression"]
+]);
 
 // Reference to the available fonts that the user could select :
 const available_fonts = [
-    ['Arial', 'Arial,Helvetica,sans-serif'],
-    ['Arial Black', 'Arial Black,Gadget,sans-serif'],
-    ['Arimo', 'Arimo,sans-serif'],
-    ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
-    ['Bitter', 'Bitter,sans-serif'],
-    ['Dosis', 'Dosis,sans-serif'],
-    ['Roboto', 'Roboto,sans-serif'],
-    ['Lobster', 'Lobster,sans-serif'],
-    ['Impact', 'Impact,Charcoal,sans-serif'],
-    ['Inconsolata', 'Inconsolata,sans-serif'],
-    ['Georgia', 'Georgia,serif'],
-    ['Lobster', 'Lobster,serif'],
-    ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
-    ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
-    ['Roboto', 'Roboto'],
-    ['Scope One', 'Scope One'],
-    ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-    ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
-    ['Verdana', 'Verdana,Geneva,sans-serif']
-    ];
+  ['Arial', 'Arial,Helvetica,sans-serif'],
+  ['Arial Black', 'Arial Black,Gadget,sans-serif'],
+  ['Arimo', 'Arimo,sans-serif'],
+  ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
+  ['Bitter', 'Bitter,sans-serif'],
+  ['Dosis', 'Dosis,sans-serif'],
+  ['Roboto', 'Roboto,sans-serif'],
+  ['Lobster', 'Lobster,sans-serif'],
+  ['Impact', 'Impact,Charcoal,sans-serif'],
+  ['Inconsolata', 'Inconsolata,sans-serif'],
+  ['Georgia', 'Georgia,serif'],
+  ['Lobster', 'Lobster,serif'],
+  ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
+  ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
+  ['Roboto', 'Roboto'],
+  ['Scope One', 'Scope One'],
+  ['Tahoma', 'Tahoma,Geneva,sans-serif'],
+  ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
+  ['Verdana', 'Verdana,Geneva,sans-serif']
+];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
 // with the style-fonts.css file as we are using their order to lookup for their definition
@@ -1404,53 +1404,53 @@ function binds_layers_buttons(layer_name){
 
 // Function to display information on the top layer (in the layer manager)
 function displayInfoOnMove(){
-    var info_features = d3.select("#info_features");
-    if(info_features.classed("active")){
-        map.selectAll(".layer").selectAll("path").on("mouseover", null);
-        map.selectAll(".layer").selectAll("circle").on("mouseover", null);
-        map.selectAll(".layer").selectAll("rect").on("mouseover", null);
-        info_features.classed("active", false);
-        info_features.style("display", "none").html("");
-        svg_map.style.cursor = "";
-    } else {
-        map.select('.brush').remove();
-        let layers = svg_map.querySelectorAll(".layer"),
-            nb_layer = layers.length,
-            top_visible_layer = null;
+  var info_features = d3.select("#info_features");
+  if (info_features.classed("active")) {
+    map.selectAll(".layer").selectAll("path").on("mouseover", null);
+    map.selectAll(".layer").selectAll("circle").on("mouseover", null);
+    map.selectAll(".layer").selectAll("rect").on("mouseover", null);
+    info_features.classed("active", false);
+    info_features.style("display", "none").html("");
+    svg_map.style.cursor = "";
+  } else {
+    map.select('.brush').remove();
+    let layers = svg_map.querySelectorAll(".layer"),
+      nb_layer = layers.length,
+      top_visible_layer = null;
 
-        for(let i = nb_layer-1; i > -1; i--){
-            if(layers[i].style.visibility != "hidden"){
-                top_visible_layer = _app.id_to_layer.get(layers[i].id);
-                break;
-            }
-        }
-
-        if(!top_visible_layer){
-            swal("", i18next.t("app_page.common.error_no_visible"), "error");
-            return;
-        }
-
-        let id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer),
-            symbol = current_layers[top_visible_layer].symbol || "path";
-
-        map.select(id_top_layer).selectAll(symbol).on("mouseover", function(d,i){
-            let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
-                            i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
-            let properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
-            Object.getOwnPropertyNames(properties).forEach(el => {
-                txt_info.push("<br><b>" + el + "</b> : " + properties[el]);
-            });
-            txt_info.push("</p>");
-            info_features.style("display", null).html(txt_info.join(''));
-        });
-
-        map.select(id_top_layer).selectAll(symbol).on("mouseout", function(){
-                info_features.style("display", "none").html("");
-        });
-
-        info_features.classed("active", true);
-        svg_map.style.cursor="help";
+    for (let i = nb_layer-1; i > -1; i--) {
+      if (layers[i].style.visibility !== "hidden") {
+        top_visible_layer = _app.id_to_layer.get(layers[i].id);
+        break;
+      }
     }
+
+    if (!top_visible_layer) {
+      swal("", i18next.t("app_page.common.error_no_visible"), "error");
+      return;
+    }
+
+    let id_top_layer = "#" + _app.layer_to_id.get(top_visible_layer);
+    let symbol = current_layers[top_visible_layer].symbol || "path";
+
+    map.select(id_top_layer).selectAll(symbol).on("mouseover", (d,i) => {
+      let txt_info = ["<h3>", top_visible_layer, "</h3><i>Feature ",
+                      i + 1, "/", current_layers[top_visible_layer].n_features, "</i><p>"];
+      let properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+      Object.getOwnPropertyNames(properties).forEach(el => {
+          txt_info.push(`<br><b>${el}</b> : ${properties[el]}`);
+      });
+      txt_info.push("</p>");
+      info_features.style("display", null).html(txt_info.join(''));
+    });
+
+    map.select(id_top_layer).selectAll(symbol).on("mouseout", () => {
+      info_features.style("display", "none").html("");
+    });
+
+    info_features.classed("active", true);
+    svg_map.style.cursor="help";
+  }
 }
 
 /**
@@ -1460,58 +1460,58 @@ function displayInfoOnMove(){
 */
 function reproj_symbol_layer(){
   for(let lyr_name in current_layers){
-    if(current_layers[lyr_name].renderer
+    if (current_layers[lyr_name].renderer
         && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
             || current_layers[lyr_name].renderer.indexOf('TypoSymbols')  > -1
-            || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )){
+            || current_layers[lyr_name].renderer.indexOf('Label')  > -1 )) {
       let symbol = current_layers[lyr_name].symbol;
 
-      if (symbol == "text") { // Reproject the labels :
-          map.select('#' + _app.layer_to_id.get(lyr_name))
-                .selectAll(symbol)
-                .attrs( d => {
-                  let pt = path.centroid(d.geometry);
-                  return {'x': pt[0], 'y': pt[1]};
-                });
-      } else if (symbol == "image"){ // Reproject pictograms :
-          map.select('#' + _app.layer_to_id.get(lyr_name))
-              .selectAll(symbol)
-              .attrs(function(d,i){
-                let coords = path.centroid(d.geometry),
-                    size = +this.getAttribute('width').replace('px', '') / 2;
-                return { 'x': coords[0] - size, 'y': coords[1] - size };
-              });
-      } else if(symbol == "circle"){ // Reproject Prop Symbol :
-          map.select("#"+_app.layer_to_id.get(lyr_name))
-              .selectAll(symbol)
-              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
-              .attrs( d => {
-                let centroid = path.centroid(d);
-                return {
-                  'r': d.properties.prop_value,
-                  'cx': centroid[0],
-                  'cy': centroid[1]
-                };
-              });
-      } else if (symbol == "rect") { // Reproject Prop Symbol :
-          map.select("#"+_app.layer_to_id.get(lyr_name))
-              .selectAll(symbol)
-              .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
-              .attrs( d => {
-                let centroid = path.centroid(d),
-                    size =  d.properties.prop_value;
-                return {
-                  'height': size,
-                  'width': size,
-                  'x': centroid[0] - size / 2,
-                  'y': centroid[1] - size / 2
-                };
-              });
+      if (symbol === "text") { // Reproject the labels :
+        map.select('#' + _app.layer_to_id.get(lyr_name))
+          .selectAll(symbol)
+          .attrs( d => {
+            let pt = path.centroid(d.geometry);
+            return {'x': pt[0], 'y': pt[1]};
+          });
+      } else if (symbol === "image"){ // Reproject pictograms :
+        map.select('#' + _app.layer_to_id.get(lyr_name))
+          .selectAll(symbol)
+          .attrs(function(d,i){
+            let coords = path.centroid(d.geometry),
+                size = +this.getAttribute('width').replace('px', '') / 2;
+            return { 'x': coords[0] - size, 'y': coords[1] - size };
+          });
+      } else if(symbol === "circle"){ // Reproject Prop Symbol :
+        map.select("#"+_app.layer_to_id.get(lyr_name))
+          .selectAll(symbol)
+          .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
+          .attrs( d => {
+            let centroid = path.centroid(d);
+            return {
+              'r': d.properties.prop_value,
+              'cx': centroid[0],
+              'cy': centroid[1]
+            };
+          });
+      } else if (symbol === "rect") { // Reproject Prop Symbol :
+        map.select("#"+_app.layer_to_id.get(lyr_name))
+          .selectAll(symbol)
+          .style('display', d => isNaN(+path.centroid(d)[0]) ? "none" : undefined)
+          .attrs( d => {
+            let centroid = path.centroid(d),
+                size =  d.properties.prop_value;
+            return {
+              'height': size,
+              'width': size,
+              'x': centroid[0] - size / 2,
+              'y': centroid[1] - size / 2
+            };
+          });
       }
     } else if (current_layers[lyr_name].pointRadius != undefined){
-        map.select("#"+_app.layer_to_id.get(lyr_name))
-            .selectAll("path")
-            .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
+      map.select("#"+_app.layer_to_id.get(lyr_name))
+        .selectAll("path")
+        .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
     }
   }
 }
@@ -1564,8 +1564,8 @@ var overlay_under_modal = (function(){
 
 var make_confirm_dialog2 = (function(class_box, title, options) {
   const get_available_id = () => {
-    for(let i = 0; i < 50; i++){
-      if(!existing.has(i)){
+    for (let i = 0; i < 50; i++) {
+      if (!existing.has(i)) {
         existing.add(i);
         return i;
       }
@@ -1690,76 +1690,83 @@ function remove_ext_dataset_cleanup(){
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 function remove_layer_cleanup(name){
-    if(!current_layers[name]) return;
-    let layer_id = _app.layer_to_id.get(name);
-    // Making some clean-up regarding the result layer :
-    if(current_layers[name].is_result){
-        map.selectAll([".lgdf_", layer_id].join('')).remove();
-        if(result_data.hasOwnProperty(name))
-            delete result_data[name];
-        if(current_layers[name].hasOwnProperty("key_name")
-           && current_layers[name].renderer.indexOf("Choropleth") < 0
-           && current_layers[name].renderer.indexOf("Categorical") < 0)
-            send_remove_server(name);
+  if (!current_layers[name]) return;
+  let layer_id = _app.layer_to_id.get(name);
+  // Making some clean-up regarding the result layer :
+  if(current_layers[name].is_result){
+    map.selectAll([".lgdf_", layer_id].join('')).remove();
+    if (result_data.hasOwnProperty(name)) {
+      delete result_data[name];
     }
-    // Is the layer using a filter ? If yes, remove it:
-    let filter_id = map.select('#' + layer_id).attr('filter');
-    if (filter_id) {
-      svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
+    if (current_layers[name].hasOwnProperty("key_name")
+         && current_layers[name].renderer.indexOf("Choropleth") < 0
+         && current_layers[name].renderer.indexOf("Categorical") < 0) {
+      send_remove_server(name);
     }
+  }
+  // Is the layer using a filter ? If yes, remove it:
+  let filter_id = map.select('#' + layer_id).attr('filter');
+  if (filter_id) {
+    svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
+  }
 
-    // Remove the layer from the map and from the layer manager :
-    map.select('#' + layer_id).remove();
-    document.querySelector('#sortable .' + layer_id).remove()
+  // Remove the layer from the map and from the layer manager :
+  map.select('#' + layer_id).remove();
+  document.querySelector('#sortable .' + layer_id).remove()
 
-    // Remove the layer from the "geo export" menu :
-    let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+  // Remove the layer from the "geo export" menu :
+  let a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+  if(a) a.remove();
+
+  // Remove the layer from the "mask" section if the "smoothed map" menu is open :
+  if(_app.current_functionnality && _app.current_functionnality.name == 'smooth'){
+    let a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
     if(a) a.remove();
+    //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+  }
 
-    // Remove the layer from the "mask" section if the "smoothed map" menu is open :
-    if(_app.current_functionnality && _app.current_functionnality.name == 'smooth'){
-        let a = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
-        if(a) a.remove();
-        //Array.prototype.forEach.call(document.getElementById('stewart_mask').options, el => { if(el.value == name) el.remove(); });
+  // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
+  if(current_layers[name].targeted){
+    // Updating the top of the menu (section 1) :
+    //$("#input_geom").qtip("destroy");
+    document.getElementById("remove_target").remove();
+    d3.select("#img_in_geom")
+      .attrs({ id: "img_in_geom",
+        class: "user_panel",
+        src: "static/img/b/addgeom.png",
+        width: "24",
+        height: "24",
+        alt: "Geometry layer" })
+      .on('click',  click_button_add_layer);
+    d3.select("#input_geom")
+      .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
+      .html(i18next.t("app_page.section1.add_geom"))
+      .on('click', click_button_add_layer);
+    // Unfiling the fields related to the targeted functionnality:
+    if(_app.current_functionnality){
+      clean_menu_function();
     }
 
-    // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
-    if(current_layers[name].targeted){
-        // Updating the top of the menu (section 1) :
-        //$("#input_geom").qtip("destroy");
-        document.getElementById("remove_target").remove();
-        d3.select("#img_in_geom")
-            .attrs({"id": "img_in_geom", "class": "user_panel", "src": "static/img/b/addgeom.png", "width": "24", "height": "24",  "alt": "Geometry layer"})
-            .on('click',  click_button_add_layer);
-        d3.select("#input_geom")
-            .attrs({'class': 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom'})
-            .html(i18next.t("app_page.section1.add_geom"))
-            .on('click', click_button_add_layer);
-        // Unfiling the fields related to the targeted functionnality:
-        if(_app.current_functionnality){
-            clean_menu_function();
-        }
+    // Update some global variables :
+    field_join_map = [];
+    user_data = new Object();
+    _app.targeted_layer_added = false;
 
-        // Update some global variables :
-        field_join_map = [];
-        user_data = new Object();
-        _app.targeted_layer_added = false;
+    // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
+    document.getElementById('sample_zone').style.display = null;
 
-        // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
-        document.getElementById('sample_zone').style.display = null;
+    // Restore the state of the bottom of the section 1 :
+    document.getElementById("join_section").innerHTML = "";
 
-        // Restore the state of the bottom of the section 1 :
-        document.getElementById("join_section").innerHTML = "";
+    // Disabled the button allowing the user to choose type for its layer :
+    document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
-        // Disabled the button allowing the user to choose type for its layer :
-        document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
+    reset_user_values();
+  }
 
-        reset_user_values();
-    }
-
-    // There is probably better ways in JS to delete the object,
-    // but in order to make it explicit that we are removing it :
-    delete current_layers[name];
+  // There is probably better ways in JS to delete the object,
+  // but in order to make it explicit that we are removing it :
+  delete current_layers[name];
 }
 
 // Change color of the background (ie the parent "svg" element on the top of which group of elements have been added)
@@ -2067,6 +2074,12 @@ function change_projection(new_proj_name) {
     map.selectAll(".layer").selectAll("path").attr("d", path);
     reproj_symbol_layer();
   }
+
+  // Remove the tooltip used for projections using proj4 :
+  let selectProj = document.querySelector('#form_projection2');
+  selectProj.removeAttribute('tooltip');
+  selectProj.removeEventListener('mouseover', displayTooltipProj4);
+  selectProj.removeEventListener('mouseout', removeTooltipProj4);
   // Set or remove the clip-path according to the projection:
   handleClipPath(new_proj_name, layer_name);
 }
@@ -2172,11 +2185,11 @@ function handle_title(txt){
     title.text(txt);
   } else {
     map.append("g")
-      .attrs({"class": "legend title", "id": "map_title"})
+      .attrs({ class: "legend title", id: "map_title" })
       .style("cursor", "pointer")
       .insert("text")
       .attrs({x: w/2, y: h/12, "alignment-baseline": "middle", "text-anchor": "middle"})
-      .styles({"font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black"})
+      .styles({ "font-family": "Arial, Helvetica, sans-serif", "font-size": "20px", position: "absolute", color: "black" })
       .text(txt)
       .on("contextmenu dblclick", () => {
         d3.event.preventDefault();
@@ -2189,44 +2202,44 @@ function handle_title(txt){
 
 function handle_title_properties(){
   var title = d3.select("#map_title").select("text");
-  if(!title.node() || title.text() == ""){
-      swal({title: "",
-            text: i18next.t("app_page.common.error_no_title"),
-            type: "error",
-            allowOutsideClick: true,
-            allowEscapeKey: true
-          }).then( () => { null; },
-                    () => { null; });
-      return;
+  if (!title.node() || title.text() === '') {
+    swal({
+      title: "",
+      text: i18next.t("app_page.common.error_no_title"),
+      type: "error",
+      allowOutsideClick: true,
+      allowEscapeKey: true
+    }).then( () => { null; }, () => { null; });
+    return;
   }
   var title_props = {
-      size: title.style("font-size"),
-      font_weight: title.style('font-weight'),
-      font_style: title.style('font-style'),
-      text_decoration: title.style('text-decoration'),
-      color: title.style("fill"),
-      position_x: title.attr("x"),
-      position_x_pct: round_value(+title.attr("x") / w * 100, 1),
-      position_y: title.attr("y"),
-      position_y_pct: round_value(+title.attr("y") / h * 100, 1),
-      font_family: title.style("font-family"),
-      stroke: title.style('stroke'),
-      stroke_width: title.style('stroke-width')
-      };
+    size: title.style("font-size"),
+    font_weight: title.style('font-weight'),
+    font_style: title.style('font-style'),
+    text_decoration: title.style('text-decoration'),
+    color: title.style("fill"),
+    position_x: title.attr("x"),
+    position_x_pct: round_value(+title.attr("x") / w * 100, 1),
+    position_y: title.attr("y"),
+    position_y_pct: round_value(+title.attr("y") / h * 100, 1),
+    font_family: title.style("font-family"),
+    stroke: title.style('stroke'),
+    stroke_width: title.style('stroke-width')
+  };
   title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
 
   // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
-  make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), {widthFitContent: true})
-      .then(function(confirmed){
-          if(!confirmed)
-              title.attrs({x: title_props.position_x, y: title_props.position_y})
-                  .styles({
-                      "font-size": title_props.size, "fill": title_props.color,
-                      "font-family": title_props.font_family, 'font-style': title_props.font_style,
-                      'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
-                      'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
-                      });
-          });
+  make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true })
+    .then((confirmed) => {
+      if(!confirmed)
+        title.attrs({x: title_props.position_x, y: title_props.position_y})
+            .styles({
+                "font-size": title_props.size, "fill": title_props.color,
+                "font-family": title_props.font_family, 'font-style': title_props.font_style,
+                'text-decoration': title_props.text_decoration, 'font-weight': title_props.font_weight,
+                'stroke': title_props.stroke, 'stroke-width': title_props.stroke_width
+              });
+    });
   var box_content = d3.select(".mapTitleitleDialogBox").select(".modal-body").append("div").style("margin", "15x");
 
   box_content.append("p")
@@ -2375,39 +2388,39 @@ function canvas_mod_size(shape){
 }
 
 function patchSvgForFonts(){
-    function getListUsedFonts(){
-        let elems = [
-            svg_map.getElementsByTagName('text'),
-            svg_map.getElementsByTagName('p')
-        ];
-        let needed_definitions = [];
-        elems.map(d => d ? d : []);
-        for(let j=0; j < 2; j++){
-            for(let i=0; i < elems[j].length; i++){
-                let font_elem = elems[j][i].style.fontFamily;
-                customs_fonts.forEach(font => {
-                    if(font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) == -1){
-                        needed_definitions.push(font);
-                    }
-                });
-            }
-        }
-        return needed_definitions;
+  function getListUsedFonts(){
+    let elems = [
+      svg_map.getElementsByTagName('text'),
+      svg_map.getElementsByTagName('p')
+    ];
+    let needed_definitions = [];
+    elems.map(d => d ? d : []);
+    for (let j=0; j < 2; j++) {
+      for (let i=0; i < elems[j].length; i++) {
+        let font_elem = elems[j][i].style.fontFamily;
+        customs_fonts.forEach((font) => {
+          if(font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) === -1){
+            needed_definitions.push(font);
+          }
+        });
+      }
     }
+    return needed_definitions;
+  }
 
-    var needed_definitions = getListUsedFonts();
-    if(needed_definitions.length == 0){
-        return;
-    } else {
-        let fonts_definitions = Array.prototype.filter.call(
-            document.styleSheets,
-            i => i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null
-            )[0].cssRules;
-        let fonts_to_add = needed_definitions.map(name => String(fonts_definitions[customs_fonts.indexOf(name)].cssText));
-        let style_elem = document.createElement("style");
-        style_elem.innerHTML = fonts_to_add.join(' ');
-        svg_map.querySelector("defs").appendChild(style_elem);
-    }
+  const needed_definitions = getListUsedFonts();
+  if(needed_definitions.length == 0){
+    return;
+  } else {
+    let fonts_definitions = Array.prototype.filter.call(
+      document.styleSheets,
+      i => i.href && i.href.indexOf("style-fonts.css") > -1 ? i : null
+      )[0].cssRules;
+    let fonts_to_add = needed_definitions.map(name => String(fonts_definitions[customs_fonts.indexOf(name)].cssText));
+    let style_elem = document.createElement("style");
+    style_elem.innerHTML = fonts_to_add.join(' ');
+    svg_map.querySelector("defs").appendChild(style_elem);
+  }
 }
 
 function unpatchSvgForFonts(){
@@ -2508,61 +2521,60 @@ function export_compo_svg(output_name){
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
 //   could be encountered in the browser (as "out of memory" error)
 function _export_compo_png(type="web", scalefactor=1, output_name){
-    document.getElementById("overlay").style.display = "";
-    output_name = check_output_name(output_name, "png");
-    let dimensions_foreign_obj = patchSvgForForeignObj();
-    patchSvgForFonts();
-    var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
-        targetSVG = document.querySelector("#svg_map"),
-        mime_type = "image/png",
-        svg_xml,
-        ctx,
-        img;
+  document.getElementById("overlay").style.display = "";
+  output_name = check_output_name(output_name, "png");
+  let dimensions_foreign_obj = patchSvgForForeignObj();
+  patchSvgForFonts();
+  var targetCanvas = d3.select("body").append("canvas").attrs({id: "canvas_map_export", height: h, width: w}).node(),
+      targetSVG = document.querySelector("#svg_map"),
+      mime_type = "image/png",
+      svg_xml,
+      ctx,
+      img;
 
-    // At this point it might be better to wrap the whole function in a try catch ?
-    // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+  // At this point it might be better to wrap the whole function in a try catch ?
+  // (as it seems it could fail on various points (XMLSerializer()).serializeToString, toDataURL, changeResolution, etc.)
+  try {
+    svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
+    ctx = targetCanvas.getContext('2d'),
+    img = new Image();
+  } catch(err) {
+    document.getElementById("overlay").style.display = "none";
+    targetCanvas.remove();
+    display_error_during_computation(String(err));
+    return;
+  }
+  if(scalefactor != 1){
     try {
-        svg_xml = (new XMLSerializer()).serializeToString(targetSVG),
-        ctx = targetCanvas.getContext('2d'),
-        img = new Image();
-    } catch(err) {
-        document.getElementById("overlay").style.display = "none";
-        targetCanvas.remove();
-        display_error_during_computation(String(err));
-        return;
+      changeResolution(targetCanvas, scalefactor);
+  } catch (err) {
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+      display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
+      return;
     }
-    if(scalefactor != 1){
-        try {
-            changeResolution(targetCanvas, scalefactor);
-        } catch (err) {
-            document.getElementById("overlay").style.display = "none";
-            targetCanvas.remove();
-            display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
-            return;
-        }
+  }
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0);
+    try {
+      var imgUrl = targetCanvas.toDataURL(mime_type);
+    } catch (err) {
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+      display_error_during_computation(String(err));
+      return;
     }
-    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg_xml);
-    img.onload = function() {
-        ctx.drawImage(img, 0, 0);
-        try {
-            var imgUrl = targetCanvas.toDataURL(mime_type);
-        } catch (err) {
-            document.getElementById("overlay").style.display = "none";
-            targetCanvas.remove();
-            display_error_during_computation(String(err));
-            return;
-        }
-        clickLinkFromDataUrl(imgUrl, output_name)
-            .then(_ => {
-                unpatchSvgForFonts();
-                unpatchSvgForForeignObj(dimensions_foreign_obj);
-                document.getElementById("overlay").style.display = "none";
-                targetCanvas.remove();
-            }).catch(err => {
-                display_error_during_computation();
-                console.log(err);
-            });;
-    };
+    clickLinkFromDataUrl(imgUrl, output_name).then((_) => {
+      unpatchSvgForFonts();
+      unpatchSvgForForeignObj(dimensions_foreign_obj);
+      document.getElementById("overlay").style.display = "none";
+      targetCanvas.remove();
+    }).catch(err => {
+      display_error_during_computation();
+      console.log(err);
+    });;
+  };
 }
 
 function export_layer_geo(layer, type, projec, proj4str){
@@ -2570,7 +2582,7 @@ function export_layer_geo(layer, type, projec, proj4str){
   formToSend.append("layer", layer);
   formToSend.append("layer_name", current_layers[layer].key_name);
   formToSend.append("format", type);
-  if(projec == "proj4string")
+  if(projec === "proj4string")
     formToSend.append("projection", JSON.stringify({"proj4string" : proj4str}));
   else
     formToSend.append("projection", JSON.stringify({"name" : projec}));
@@ -2592,13 +2604,14 @@ function export_layer_geo(layer, type, projec, proj4str){
         } else {
           error_message = i18next.t('app_page.common.error_msg');
         }
-        swal({title: "Oops...",
-             text: error_message,
-             type: "error",
-             allowOutsideClick: false,
-             allowEscapeKey: false
-            }).then( () => { null; },
-                      () => { null; });
+        swal({
+          title: "Oops...",
+          text: error_message,
+          type: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(() => { null; },
+          () => { null; });
         return;
       }
       let ext = extensions.get(type),
