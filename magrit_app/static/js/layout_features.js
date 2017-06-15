@@ -393,10 +393,11 @@ class Textbox {
         elem.selectAll('tspan').attr('x', +d3.event.x);
 
         if (_app.autoalign_features) {
-          let bbox = this.getBoundingClientRect(),
-            xmin = this.x.baseVal.value,
+          let t = elem.node();
+          let bbox = t.getBoundingClientRect(),
+            xmin = t.x.baseVal.value,
             xmax = xmin + bbox.width,
-            ymin = this.y.baseVal.value,
+            ymin = t.y.baseVal.value,
             ymax = ymin + bbox.height,
             snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
@@ -405,7 +406,7 @@ class Textbox {
               const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(this.querySelectorAll('tspan'), (el) => {
+              Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0];
               });
             }
@@ -413,7 +414,7 @@ class Textbox {
               const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(this.querySelectorAll('tspan'), (el) => {
+              Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
               });
             }
@@ -421,13 +422,13 @@ class Textbox {
               const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              this.y.baseVal.value = snap_lines_y[i][0];
+              t.y.baseVal.value = snap_lines_y[i][0];
             }
             if (abs(snap_lines_y[i][0] - ymax) < 10) {
               const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              this.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+              t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
             }
           }
         }

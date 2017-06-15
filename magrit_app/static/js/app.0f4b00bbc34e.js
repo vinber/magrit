@@ -1097,7 +1097,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.5749208ee7af.json'
+      loadPath: 'static/locales/{{lng}}/translation.0f4b00bbc34e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -12658,8 +12658,6 @@ var Textbox = function () {
       }
       pos_lgds_elem.set(this.id, this.getBoundingClientRect());
     }).on('drag', function () {
-      var _this3 = this;
-
       d3.event.sourceEvent.preventDefault();
       var elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
       var transform = elem.attr('transform');
@@ -12671,10 +12669,11 @@ var Textbox = function () {
 
       if (_app.autoalign_features) {
         (function () {
-          var bbox = _this3.getBoundingClientRect(),
-              xmin = _this3.x.baseVal.value,
+          var t = elem.node();
+          var bbox = t.getBoundingClientRect(),
+              xmin = t.x.baseVal.value,
               xmax = xmin + bbox.width,
-              ymin = _this3.y.baseVal.value,
+              ymin = t.y.baseVal.value,
               ymax = ymin + bbox.height,
               snap_lines_x = d3.event.subject.snap_lines.x,
               snap_lines_y = d3.event.subject.snap_lines.y;
@@ -12684,7 +12683,7 @@ var Textbox = function () {
               var _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               var _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(_this3.querySelectorAll('tspan'), function (el) {
+              Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
                 el.x.baseVal.value = snap_lines_x[i][0];
               });
             }
@@ -12692,7 +12691,7 @@ var Textbox = function () {
               var _y = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               var _y3 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
-              Array.prototype.forEach.call(_this3.querySelectorAll('tspan'), function (el) {
+              Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
                 el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
               });
             }
@@ -12700,13 +12699,13 @@ var Textbox = function () {
               var x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               var x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              _this3.y.baseVal.value = snap_lines_y[i][0];
+              t.y.baseVal.value = snap_lines_y[i][0];
             }
             if (abs(snap_lines_y[i][0] - ymax) < 10) {
               var _x5 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               var _x6 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(_x5, _x6, snap_lines_y[i][0], snap_lines_y[i][0]);
-              _this3.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+              t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
             }
           };
 
@@ -12798,7 +12797,7 @@ var Textbox = function () {
   }, {
     key: 'editStyle',
     value: function editStyle() {
-      var _this4 = this;
+      var _this3 = this;
 
       var map_xy0 = get_map_xy0();
       var self = this;
@@ -12835,7 +12834,7 @@ var Textbox = function () {
           self.fontFamily = current_options.font_family;
           text_elem.attr('transform', current_options.transform_rotate);
           self.buffer = current_options.buffer;
-          _this4.update_text(current_options.content);
+          _this3.update_text(current_options.content);
         } else if (!buffer_txt_chk.node().checked) {
           self.buffer = undefined;
         }
@@ -13022,7 +13021,7 @@ var Textbox = function () {
 
 var scaleBar = {
   create: function create(x, y) {
-    var _this5 = this;
+    var _this4 = this;
 
     // if (!proj.invert) {
     //   swal({ title: '',
@@ -13051,13 +13050,13 @@ var scaleBar = {
 
     var getItems = function getItems() {
       return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-          _this5.editStyle();
+          _this4.editStyle();
         } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-          _this5.up_element();
+          _this4.up_element();
         } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-          _this5.down_element();
+          _this4.down_element();
         } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-          _this5.remove();
+          _this4.remove();
         } }];
     };
 
@@ -13240,7 +13239,7 @@ var scaleBar = {
 
 var northArrow = {
   display: function display(x, y) {
-    var _this6 = this;
+    var _this5 = this;
 
     var x_pos = x || w - 100,
         y_pos = y || h - 100,
@@ -13332,13 +13331,13 @@ var northArrow = {
 
     var getItems = function getItems() {
       return [{ name: i18next.t('app_page.common.options'), action: function action() {
-          _this6.editStyle();
+          _this5.editStyle();
         } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-          _this6.up_element();
+          _this5.up_element();
         } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-          _this6.down_element();
+          _this5.down_element();
         } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-          _this6.remove();
+          _this5.remove();
         } }];
     };
 
@@ -13543,18 +13542,18 @@ var UserRectangle = function () {
   }, {
     key: 'draw',
     value: function draw() {
-      var _this7 = this;
+      var _this6 = this;
 
       var context_menu = new ContextMenu();
       var getItems = function getItems() {
         return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-            _this7.editStyle();
+            _this6.editStyle();
           } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-            _this7.up_element();
+            _this6.up_element();
           } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-            _this7.down_element();
+            _this6.down_element();
           } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-            _this7.remove();
+            _this6.remove();
           } }];
       };
 
@@ -13579,7 +13578,7 @@ var UserRectangle = function () {
       }).on('dblclick', function () {
         d3.event.preventDefault();
         d3.event.stopPropagation();
-        _this7.handle_ctrl_pt();
+        _this6.handle_ctrl_pt();
       }).call(this.drag_behavior);
       // pos_lgds_elem.set(this.rectangle.attr('id'), r.node().getBoundingClientRect());
     }
@@ -13770,18 +13769,18 @@ var UserEllipse = function () {
   _createClass(UserEllipse, [{
     key: 'draw',
     value: function draw() {
-      var _this8 = this;
+      var _this7 = this;
 
       var context_menu = new ContextMenu(),
           getItems = function getItems() {
         return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-            _this8.editStyle();
+            _this7.editStyle();
           } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
-            _this8.up_element();
+            _this7.up_element();
           } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
-            _this8.down_element();
+            _this7.down_element();
           } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-            _this8.remove();
+            _this7.remove();
           } }];
       };
 
@@ -13804,7 +13803,7 @@ var UserEllipse = function () {
       }).on('dblclick', function () {
         d3.event.preventDefault();
         d3.event.stopPropagation();
-        _this8.handle_ctrl_pt();
+        _this7.handle_ctrl_pt();
       }).call(this.drag_behavior);
     }
   }, {
