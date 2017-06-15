@@ -2379,6 +2379,7 @@ var fields_Discont = {
         if(!layer) return;
         let fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
             fields_id = getFieldsType('id', layer),
+            select_type_discont = section2.select('#kind_Discont'),
             field_discont = section2.select("#field_Discont"),
             // field_id = section2.select("#field_id_Discont"),
             ok_button = section2.select('#yes_Discont');
@@ -2388,8 +2389,13 @@ var fields_Discont = {
             return;
         }
 
+        select_type_discont.on('change', function(){
+          let field_name = field_discont.node().value;
+          document.getElementById("Discont_output_name").value = ["Disc", field_name, this.value, layer].join('_');
+        });
+
         fields_num.forEach(function(field){
-            field_discont.append("option").text(field).attr("value", field);
+          field_discont.append("option").text(field).attr("value", field);
         });
         // if(fields_id.length == 0){
         //     field_id.append("option").text(i18next.t("app_page.common.default")).attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
@@ -2404,7 +2410,7 @@ var fields_Discont = {
         });
         ok_button.on('click', render_discont);
         section2.selectAll(".params").attr("disabled", null);
-        document.getElementById("Discont_output_name").value = ["Disc", layer].join('_');
+        document.getElementById("Discont_output_name").value = ["Disc", field_discont.node().value, select_type_discont.node().value, layer].join('_');
     },
     unfill: function(){
         unfillSelectInput(document.getElementById("field_Discont"));

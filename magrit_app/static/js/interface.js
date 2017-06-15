@@ -1096,11 +1096,17 @@ function add_layer_topojson(text, options = {}){
         }
     }
 
-    if (options.proj4string) {
-      change_projection_4(proj4(options.proj4string));
-      current_proj_name = 'def_proj4';
-      _app.last_projection = options.proj4string;
-      addLastProjectionSelect('def_proj4', _app.last_projection);
+    if (options.default_projection) {
+      if (options.default_projection[0] === 'proj4') {
+        change_projection_4(proj4(options.default_projection[1]));
+        current_proj_name = 'def_proj4';
+        _app.last_projection = options.default_projection[1];
+        addLastProjectionSelect('def_proj4', _app.last_projection);
+      } else if (options.default_projection[0] === 'd3') {
+        current_proj_name = options.default_projection[1];
+        change_projection(current_proj_name);
+        addLastProjectionSelect(current_proj_name);
+      }
     }
 
     return lyr_name_to_add;
@@ -1451,10 +1457,11 @@ function add_sample_layer(){
       ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
     ]);
     const suggested_projection = new Map([
-      ['GrandParisMunicipalities', '+proj=lcc +lat_1=48.25 +lat_2=49.75 +lat_0=49 +lon_0=3 +x_0=1700000 +y_0=8200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'],
-      ['martinique', '+proj=utm +zone=20 +ellps=intl +towgs84=186,482,151,0,0,0,0 +units=m +no_defs'],
-      ['nuts2-2013-data', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'],
-      ['brazil', '+proj=longlat +ellps=aust_SA +towgs84=-67.35,3.88,-38.22,0,0,0,0 +no_defs'],
+      ['GrandParisMunicipalities', ['proj4', '+proj=lcc +lat_1=48.25 +lat_2=49.75 +lat_0=49 +lon_0=3 +x_0=1700000 +y_0=8200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']],
+      ['martinique', ['proj4', '+proj=utm +zone=20 +ellps=intl +towgs84=186,482,151,0,0,0,0 +units=m +no_defs']],
+      ['nuts2-2013-data', ['proj4', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']],
+      ['brazil', ['proj4', '+proj=longlat +ellps=aust_SA +towgs84=-67.35,3.88,-38.22,0,0,0,0 +no_defs']],
+      ['world_countries_data', ['d3', 'geoNaturalEarth2']],
     ]);
     const target_layers = [
      [i18next.t("app_page.sample_layer_box.target_layer"),""],
@@ -1475,7 +1482,7 @@ function add_sample_layer(){
               add_sample_geojson(selec, {
                 target_layer_on_add: true,
                 fields_type: fields_type_sample.get(selec),
-                proj4string: suggested_projection.get(selec)
+                default_projection: suggested_projection.get(selec)
               });
             }
           } else if(content.attr('id') === "panel2"){
