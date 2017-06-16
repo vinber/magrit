@@ -69,6 +69,39 @@ def normalize(arr):
     rng = arr.max() - amin
     return (arr - amin) * 255 / rng
 
+    
+def assertDeepAlmostEqual(test_case, expected, actual, name, places=1):
+    """
+    Assert that two complex structures have almost equal contents.
+
+    Compares lists, dicts and tuples recursively. Checks numeric values
+    using test_case's :py:meth:`unittest.TestCase.assertAlmostEqual` and
+    checks all other values with :py:meth:`unittest.TestCase.assertEqual`.
+    Accepts additional positional and keyword arguments and pass those
+    intact to assertAlmostEqual() (that's how you specify comparison
+    precision).
+
+    :param test_case: TestCase object on which we can call all of the basic
+    'assert' methods.
+    :type test_case: :py:class:`unittest.TestCase` object
+    """
+    try:
+        if isinstance(expected, (int, float, complex)):
+            test_case.assertAlmostEqual(expected, actual, places=places)
+        elif isinstance(expected, (list, tuple)):
+            test_case.assertEqual(len(expected), len(actual))
+            for index in range(len(expected)):
+                v1, v2 = expected[index], actual[index]
+                assertDeepAlmostEqual(test_case, v1, v2, name, places)
+        elif isinstance(expected, dict):
+            test_case.assertEqual(set(expected), set(actual))
+            for key in expected:
+                assertDeepAlmostEqual(test_case, expected[key], actual[key], name, places)
+        else:
+            test_case.assertEqual(expected, actual)
+    except AssertionError as exc:
+        test_case.fail("{}: {}".format(name, exc))
+
 
 class ReloadCompareProjectsTest(unittest.TestCase):
     def setUp(self):
@@ -88,7 +121,9 @@ class ReloadCompareProjectsTest(unittest.TestCase):
         self.accept_next_alert = True
         self.fetch_projets_github()
 
-    def t_reload(self, i, name, url, b_image):
+    def t_reload(self, i, name):
+        url, b_image, project = \
+            self.urls[name], self.images[name], self.projects[name]
         with self.subTest(i=i):
             driver = self.driver
             driver.get(self.base_url + "?reload={}".format(url))
@@ -99,6 +134,7 @@ class ReloadCompareProjectsTest(unittest.TestCase):
                 self.fail("Overlay not hiding / Project reloading")
 
             self.open_menu_section(5)
+            time.sleep(0.4)
             Select(driver.find_element_by_id(
                 "select_export_type")).select_by_value("png")
             time.sleep(0.2)
@@ -112,11 +148,17 @@ class ReloadCompareProjectsTest(unittest.TestCase):
                 is_same_image(
                     '{}{}.png'.format(self.tmp_folder, name), b_image))
             os.remove('{}{}.png'.format(self.tmp_folder, name))
+            driver.find_element_by_id('save_file_button').click()
+            time.sleep(2)
+            with open(self.tmp_folder + 'magrit_project.json') as f:
+                data = json.loads(f.read())
+            assertDeepAlmostEqual(self, data, json.loads(project), name)
+            os.remove(self.tmp_folder + 'magrit_project.json')
 
     def test_each_project(self):
         names = list(self.urls.keys())
         for i, name in enumerate(names):
-            self.t_reload(i, name, self.urls[name], self.images[name])
+            self.t_reload(i, name)
 
     def tearDown(self):
         self.assertEqual([], self.verificationErrors)
@@ -154,12 +196,16 @@ class ReloadCompareProjectsTest(unittest.TestCase):
         data = json.loads(r.text)
         self.urls = {}
         self.images = {}
+        self.projects = {}
         for d in data:
-            if 'json' in d['name']:
-                self.urls[d['name'].replace('.json', '')] = d['download_url']
-            elif 'png' in d['name']:
+            name = d['name']
+            if 'json' in name:
+                self.urls[name.replace('.json', '')] = d['download_url']
+                resp_project = requests.get(d['download_url'])
+                self.projects[name.replace('.json', '')] = resp_project.text
+            elif 'png' in name:
                 resp_image = requests.get(d['download_url'])
-                self.images[d['name'].replace('.png', '')] = \
+                self.images[name.replace('.png', '')] = \
                     BytesIO(resp_image.content)
 
 

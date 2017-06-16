@@ -166,7 +166,7 @@ function get_map_template() {
     layer_style_i.layer_name = layer_name;
     layer_style_i.layer_type = layer_type;
     layer_style_i.n_features = nb_ft;
-    layer_style_i.visible = layers._groups[0][i].style.visibility;
+    layer_style_i.visible = layers._groups[0][i].style.visibility !== 'hidden' ? '' : 'hidden';
     let lgd = document.getElementsByClassName('lgdf_' + layer_id);
     if (lgd.length == 0) {
       layer_style_i.legend = undefined;
@@ -700,7 +700,7 @@ function apply_user_preferences(json_pref){
       if (_layer.fill_color)
         current_layer_prop.fill_color = _layer.fill_color;
       if (_layer.color_palette)
-        current_layer_prop.color_palette;
+        current_layer_prop.color_palette = _layer.color_palette;
       if (_layer.renderer){
         if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
             layer_selec.selectAll("path")
