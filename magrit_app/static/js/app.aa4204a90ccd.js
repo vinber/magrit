@@ -1097,7 +1097,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.fd492eb08639.json'
+      loadPath: 'static/locales/{{lng}}/translation.aa4204a90ccd.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11528,6 +11528,7 @@ function createStyleBox(layer_name) {
             } else {
                 if (current_layers[layer_name].renderer == "Stewart") {
                     recolor_stewart(prev_palette.name, prev_palette.reversed);
+                    redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
                 } else if (fill_meth == "single") {
                     selection.style('fill', fill_prev.single).style('stroke', stroke_prev);
                 } else if (fill_meth == "class") {

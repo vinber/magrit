@@ -5,16 +5,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
+
 from flaky import flaky
 from functools import wraps
+from io import BytesIO
+from scipy.misc import imread
+from scipy.linalg import norm
+from scipy import average
 from uuid import uuid4
 import unittest
 import time
+import requests
 import os
 try:
     import ujson as json
 except ImportError:
     import json
+
 
 def retry(ExceptionToCheck, tries=4, delay=2):
     """
@@ -37,6 +44,123 @@ def retry(ExceptionToCheck, tries=4, delay=2):
             return f(*args, **kwargs)
         return f_retry  # true decorator
     return deco_retry
+
+
+def is_same_image(image1, image2):
+    img1 = imread(image1).astype(float)
+    img2 = imread(image2).astype(float)
+    if img1.shape != img2.shape:
+        return False
+    img1 = normalize(to_grayscale(img1))
+    img2 = normalize(to_grayscale(img2))
+    z_norm = norm((img1 - img2).ravel(), 0)
+    if z_norm < 1e-6:
+        return True
+    else:
+        return False
+
+
+def to_grayscale(arr):
+    return average(arr, -1)
+
+
+def normalize(arr):
+    amin = arr.min()
+    rng = arr.max() - amin
+    return (arr - amin) * 255 / rng
+
+
+class ReloadCompareProjectsTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
+            str(uuid4()).split('-')[4])
+        os.mkdir(self.tmp_folder)
+        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions.add_experimental_option(
+            "prefs", {"download.default_directory": self.tmp_folder})
+        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
+                                       chrome_options=chromeOptions)
+
+        self.driver.set_window_size(1600, 900)
+        self.driver.implicitly_wait(2)
+        self.base_url = "http://localhost:9999/modules"
+        self.verificationErrors = []
+        self.accept_next_alert = True
+        self.fetch_projets_github()
+
+    def t_reload(self, i, name, url, b_image):
+        with self.subTest(i=i):
+            driver = self.driver
+            driver.get(self.base_url + "?reload={}".format(url))
+            time.sleep(0.2)
+            if i > 0:
+                driver.switch_to.alert.accept()
+            if not self.wait_until_overlay_disapear(5):
+                self.fail("Overlay not hiding / Project reloading")
+
+            self.open_menu_section(5)
+            Select(driver.find_element_by_id(
+                "select_export_type")).select_by_value("png")
+            time.sleep(0.2)
+            input_name = driver.find_element_by_css_selector(
+                'input#export_filename')
+            input_name.clear()
+            input_name.send_keys('{}.png'.format(name))
+            driver.find_element_by_id("export_button_section5b").click()
+            time.sleep(2)
+            self.assertTrue(
+                is_same_image(
+                    '{}{}.png'.format(self.tmp_folder, name), b_image))
+            os.remove('{}{}.png'.format(self.tmp_folder, name))
+
+    def test_each_project(self):
+        names = list(self.urls.keys())
+        for i, name in enumerate(names):
+            self.t_reload(i, name, self.urls[name], self.images[name])
+
+    def tearDown(self):
+        self.assertEqual([], self.verificationErrors)
+        files = os.listdir(self.tmp_folder)
+        [os.remove(self.tmp_folder + file) for file in files]
+        os.removedirs(self.tmp_folder)
+        self.driver.quit()
+
+    def wait_until_overlay_disapear(self, delay=10):
+        time.sleep(1)
+        for i in range(delay):
+            try:
+                if self.driver.find_element_by_id(
+                        'overlay').value_of_css_property('display') == 'none':
+                    return True
+            except:
+                continue
+            time.sleep(1)
+        return False
+
+    def open_menu_section(self, nb_section):
+        b = self.driver.find_element_by_id("btn_s{}".format(nb_section))
+        if b:
+            self.click_elem_retry(b)
+            time.sleep(0.5)
+        else:
+            self.fail("Failed to open menu ", nb_section)
+
+    @retry(Exception, 3, 1)
+    def click_elem_retry(self, elem):
+        elem.click()
+
+    def fetch_projets_github(self):
+        r = requests.get('https://api.github.com/repos/mthh/example-magrit-projects/contents/')
+        data = json.loads(r.text)
+        self.urls = {}
+        self.images = {}
+        for d in data:
+            if 'json' in d['name']:
+                self.urls[d['name'].replace('.json', '')] = d['download_url']
+            elif 'png' in d['name']:
+                resp_image = requests.get(d['download_url'])
+                self.images[d['name'].replace('.png', '')] = \
+                    BytesIO(resp_image.content)
 
 
 @flaky

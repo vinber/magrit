@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.3.4 (2017-06-xx)
+------------------
+
+- Fix the "auto-align" feature behavior for the new text annotation.
+
+
 0.3.3 (2017-06-15)
 ------------------
 

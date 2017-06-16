@@ -912,7 +912,6 @@ function createStyleBox(layer_name){
     if(current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
         prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
 
-
     var stroke_prev = selection.style('stroke'),
         border_opacity = selection.style('stroke-opacity'),
         stroke_width = +current_layers[layer_name]['stroke-width-const'],
@@ -979,6 +978,7 @@ function createStyleBox(layer_name){
           } else {
             if(current_layers[layer_name].renderer == "Stewart"){
               recolor_stewart(prev_palette.name, prev_palette.reversed);
+              redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
             } else if (fill_meth == "single") {
               selection.style('fill', fill_prev.single)
                 .style('stroke', stroke_prev);
