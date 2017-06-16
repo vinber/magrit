@@ -2227,6 +2227,9 @@ function handle_title_properties(){
     stroke_width: title.style('stroke-width')
   };
   title_props.font_weight = (title_props.font_weight == "400" || title_props.font_weight == "") ? "" : "bold";
+  // Font name don't seems to be formatted in the same way on Firefox and Chrome
+  // (a space is inserted after the comma in Chrome so we are removing it)
+  title_props.font_family = title_props.font_family ? title_props.font_family.replace(', ', ',') : title_props.font_family;
 
   // Properties on the title are changed in real-time by the user then it will be rollback to original properties if Cancel is clicked
   make_confirm_dialog2("mapTitleitleDialogBox", i18next.t("app_page.title_box.title"), { widthFitContent: true })
@@ -2269,7 +2272,7 @@ function handle_title_properties(){
     font_select.append("option").text(font[0]).attr("value", font[1])
   });
   font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? "1" : "0").indexOf("1");
-  // TODO : Allow the display a rectangle (resizable + selection color) under the title
+
   let options_format = box_content.append('p'),
       btn_bold = options_format.insert('span').attr('class', title_props.font_weight == "bold" ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">'),
       btn_italic = options_format.insert('span').attr('class', title_props.font_style == "italic" ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
