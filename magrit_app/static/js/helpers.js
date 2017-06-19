@@ -32,6 +32,11 @@ function switch_accordion_section(id_elem) {
   document.getElementById(id_elem).dispatchEvent(new MouseEvent('click'));
 }
 
+function check_remove_existing_box(box_selector) {
+  const existing_box = document.querySelector(box_selector);
+  if (existing_box) existing_box.remove();
+}
+
 function path_to_geojson(layerName) {
   const id_layer = ['#', _app.layer_to_id.get(layerName)].join('');
   const result_geojson = [];

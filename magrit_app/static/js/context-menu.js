@@ -1,5 +1,5 @@
 function ContextMenu() {
-  this.items = new Array();
+  this.items = [];
 
   this.addItem = function (item) {
     this.items.push({
@@ -19,8 +19,8 @@ function ContextMenu() {
   };
 
   this.removeItemByName = function (name) {
-    for (let i = items.length - 1; i > 0; i--) {
-      if (this.items[i].name.valueOf() == name.valueOf()) {
+    for (let i = this.items.length - 1; i > 0; i--) {
+      if (this.items[i].name.valueOf() === name.valueOf()) {
         this.items.splice(i, 1);
         break;
       }
@@ -28,26 +28,38 @@ function ContextMenu() {
   };
 
   this.setItems = function (items) {
-    this.items = new Array();
+    this.items = [];
     for (let i = 0; i < items.length; i++) {
       if (items[i].name) {
-        if (items[i].action) { this.addItem(items[i]); } else if (items[i].items) { this.addSubMenu(items[i]); }
+        if (items[i].action) {
+          this.addItem(items[i]);
+        } else if (items[i].items) {
+          this.addSubMenu(items[i]);
+        }
       }
     }
   };
 
   this.showMenu = function (event, parent, items) {
-    if (items) { this.setItems(items); }
+    if (items) {
+      this.setItems(items);
+    }
 
-    if (event.preventDefault) { event.preventDefault(); } else			{ event.returnValue = false; }
+    if (event.preventDefault) {
+      event.preventDefault();
+    } else {
+      event.returnValue = false;
+    }
 
-    if (event.stopPropagation) { event.stopPropagation(); }
+    if (event.stopPropagation) {
+      event.stopPropagation();
+    }
 
     this.initMenu(parent);
     this.DOMObj.style.top = `${event.clientY + document.body.scrollTop}px`;
     this.DOMObj.style.left = `${event.clientX}px`;
     const self = this;
-    var hideMenu = function () {
+    const hideMenu = function () {
       if (self.DOMObj && self.DOMObj.parentNode && self.DOMObj.parentNode.removeChild) {
         self.DOMObj.parentNode.removeChild(self.DOMObj);
       }
@@ -81,7 +93,7 @@ function ContextMenu() {
           const ix = this.getAttribute('data-index');
           self.items[ix].action();
         };
-      }			else {
+      } else {
         const arrow = document.createElement('span');
         arrow.className = 'arrow';
         arrow.innerHTML = '&#9658;';

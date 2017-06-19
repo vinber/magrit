@@ -129,8 +129,7 @@ function createStyleBoxTypoSymbols(layer_name){
         current_layers[layer_name].default_size = prev_settings_defaults.size;
     }
 
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
 
     var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("image"),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
@@ -263,8 +262,7 @@ function createStyleBoxLabel(layer_name){
         current_layers[layer_name].default_font = prev_settings_defaults.font;
     };
 
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
 
     var selection = map.select("#" + _app.layer_to_id.get(layer_name)).selectAll("text"),
         ref_layer_name = current_layers[layer_name].ref_layer_name;
@@ -358,8 +356,7 @@ function createStyleBoxLabel(layer_name){
 }
 
 function createStyleBoxGraticule(layer_name){
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
     let current_params = cloneObj(current_layers["Graticule"]);
     let selection = map.select("#Graticule > path");
     let selection_strokeW = map.select("#Graticule");
@@ -535,8 +532,7 @@ function redraw_legend(type_legend, layer_name, field){
 }
 
 function createStyleBox_Line(layer_name){
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
     var rendering_params,
         renderer = current_layers[layer_name].renderer,
         g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
@@ -896,8 +892,7 @@ function createStyleBox_Line(layer_name){
 }
 
 function createStyleBox(layer_name){
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
     var type = current_layers[layer_name].type,
         isSphere = current_layers[layer_name].sphere === true,
         rendering_params,
@@ -1386,8 +1381,7 @@ function get_fields_name(layer_name){
 }
 
 function createStyleBox_ProbSymbol(layer_name){
-    let existing_box = document.querySelector(".styleBox");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleBox");
 
     var g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
         ref_layer_name = current_layers[layer_name].ref_layer_name,
@@ -1743,11 +1737,10 @@ function make_style_box_indiv_label(label_node){
     }
     let new_params = {};
 
-    let existing_box = document.querySelector(".styleTextAnnotation");
-    if(existing_box) existing_box.remove();
+    check_remove_existing_box(".styleTextAnnotation");
 
     make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), {widthFitContent: true, draggable: true})
-      .then( confirmed => {
+      .then((confirmed) => {
           if(!confirmed){
               label_node.style.fontsize = current_options.size;
               label_node.textContent = current_options.content;

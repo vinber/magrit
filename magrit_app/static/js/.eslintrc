@@ -8,13 +8,21 @@
     "mocha": true
   },
   "rules": {
-    "valid-jsdoc": ["error", {
+    "camelcase": 0,
+    "consistent-return": 1,
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-underscore-dangle": 0,
+    "one-var": ["warn", "never"],
+    "no-mixed-operators": 0,
+    "no-undef": 1,
+    "no-unused-vars": 0,
+    "valid-jsdoc": ["warn", {
       "requireReturn": true,
       "requireReturnType": true,
       "requireParamDescription": true,
       "requireReturnDescription": true
     }],
-    "require-jsdoc": ["error", {
+    "require-jsdoc": ["warn", {
         "require": {
             "FunctionDeclaration": true,
             "MethodDefinition": true,
@@ -23,4 +31,3 @@
     }]
   }
 }
-

@@ -9,7 +9,7 @@
 * @param {integer} name - The name of the colorBrewer palette to use
 * @return {array} - An array of color with the desired length
 */
-const getColorBrewerArray = function (nbClass, name) {
+const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
   if (nbClass < 10 && nbClass >= 3) {
     const colors = colorbrewer[name][nbClass];
     return colors;
@@ -40,12 +40,12 @@ const getColorBrewerArray = function (nbClass, name) {
 * @return {array} - An array of k colors.
 */
 const interp_n = function interp_n(colors, diff, k) {
-  let tmp = [],
-    new_colors = [];
-  for (var i = 0; i < diff; ++i) {
+  const tmp = [];
+  const new_colors = [];
+  for (let i = 0; i < diff; ++i) {
     tmp.push(rgb2hex(interpolateColor(hexToRgb(colors[i]), hexToRgb(colors[i + 1]))));
   }
-  for (var i = 0; i < k; ++i) {
+  for (let i = 0; i < k; ++i) {
     new_colors.push(colors[i]);
     if (tmp[i]) new_colors.push(tmp[i]);
   }
@@ -65,11 +65,11 @@ function rgb2hex(rgb) {
     if (rgb.indexOf('#') > -1 || rgb.indexOf('rgb') < 0) {
       return rgb;
     }
-    rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
-    return (rgb && rgb.length === 4) ? `#${
-      (`0${parseInt(rgb[1], 10).toString(16)}`).slice(-2)
-      }${(`0${parseInt(rgb[2], 10).toString(16)}`).slice(-2)
-      }${(`0${parseInt(rgb[3], 10).toString(16)}`).slice(-2)}` : '';
+    const _rgb = rgb.match(/^rgba?[\s+]?\([\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?,[\s+]?(\d+)[\s+]?/i);
+    return (_rgb && _rgb.length === 4) ? `#${
+      (`0${parseInt(_rgb[1], 10).toString(16)}`).slice(-2)
+      }${(`0${parseInt(_rgb[2], 10).toString(16)}`).slice(-2)
+      }${(`0${parseInt(_rgb[3], 10).toString(16)}`).slice(-2)}` : '';
   }
   return (rgb && rgb.length === 3) ? `#${
       (`0${parseInt(rgb[0], 10).toString(16)}`).slice(-2)
@@ -87,11 +87,11 @@ function rgb2hex(rgb) {
 */
 function hexToRgb(hex, out) {
     // Originally from http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (out === 'string') {
-    return result ? ['rgb(', parseInt(result[1], 16), ',', parseInt(result[2], 16), ',', parseInt(result[3], 16), ')'].join('') : null;
+    return res ? `rgb(${parseInt(res[1], 16)},${parseInt(res[2], 16)},${parseInt(res[3], 16)})` : null;
   }
-  return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+  return res ? [parseInt(res[1], 16), parseInt(res[2], 16), parseInt(res[3], 16)] : null;
 }
 
 // Return the interpolated value at "factor" (0<factor<1) between color1 and color2
@@ -157,12 +157,23 @@ const Colors = {
     yellow: '#ffff00',
   },
   random() {
-    let result;
-    let count = 0;
-    for (const prop in this.names) {
-      if (Math.random() < 1 / ++count)        { result = prop; }
-    }
-    return result;
+    (function a() {
+      const keys = Object.keys(this.names);
+      const n = keys.length;
+      return () => {
+        let result;
+        let count = 0;
+        for (let i = 0; i < n; i++) {
+          const prop = keys[i];
+          count += 1;
+          if (Math.random() < 1 / count) {
+            result = prop;
+            break;
+          }
+        }
+        return result || 0;
+      };
+    })();
   },
 };
 
@@ -172,18 +183,20 @@ const ColorsSelected = {
     '#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
   seen: new Set(),  // In order to avoid randomly returning the same color as the last one, at least for the first layers
   random(to_rgb = false) {
-    let nb_color = this.colorCodes.length,
-      seen = this.seen,
-      result_color = this.colorCodes[0],
+    const nb_color = this.colorCodes.length;
+    let seen = this.seen;
+    let result_color = this.colorCodes[0],
       attempts = 40; // To avoid a while(true) if it went wrong for any reason
-    if (seen.size == nb_color) { seen = new Set(); }
+    if (seen.size === nb_color) { seen = new Set(); }
     while (attempts > 0) {
       const ix = Math.round(Math.random() * (nb_color - 1));
       result_color = this.colorCodes[ix];
       if (!(seen.has(result_color))) {
         seen.add(result_color);
         break;
-      } else { --attempts; }
+      } else {
+        attempts -= 1;
+      }
     }
     return to_rgb ? hexToRgb(result_color) : result_color;
   },

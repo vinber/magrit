@@ -277,8 +277,7 @@ class UserArrow {
 
     if (!map_locked) handle_click_hand('lock');
 
-    const existing_box = document.querySelector('.styleBoxArrow');
-    if (existing_box) existing_box.remove();
+    check_remove_existing_box('.styleBoxArrow');
 
     make_confirm_dialog2('styleBoxArrow', i18next.t('app_page.arrow_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
@@ -525,8 +524,7 @@ class Textbox {
     const map_xy0 = get_map_xy0();
     const self = this;
     const text_elem = self.textAnnot;
-    const existing_box = document.querySelector('.styleTextAnnotation');
-    if (existing_box) existing_box.remove();
+    check_remove_existing_box('.styleTextAnnotation');
 
     const current_options = {
       size: self.fontSize,
