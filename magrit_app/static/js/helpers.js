@@ -524,7 +524,7 @@ function make_box_type_fields(layerName) {
 }
 
 function getAvailablesFunctionnalities(layerName) {
-  let fields_stock = getFieldsType('stock', layerName),
+  const fields_stock = getFieldsType('stock', layerName),
     fields_ratio = getFieldsType('ratio', layerName),
     fields_categ = getFieldsType('category', layerName),
     section = document.getElementById('section2_pre');
@@ -618,7 +618,7 @@ const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename) {
 
 const helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
   evt = evt || window.event;
-  const isEscape = ('key' in evt) ? (evt.key == 'Escape' || evt.key == 'Esc') : (evt.keyCode == 27);
+  const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
   if (isEscape) {
     evt.stopPropagation();
     if (callback) {
@@ -626,3 +626,59 @@ const helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(evt, callback) {
     }
   }
 };
+
+const cloneObj = (obj) => {
+  if (obj === null || typeof obj !== 'object') return obj;
+  else if (obj.toString() === '[object Map]') return new Map(obj.entries());
+  return Object.assign({}, obj);
+}
+
+function change_layer_name(old_name, new_name){
+  const old_id = _app.layer_to_id.get(old_name);
+  const new_id = encodeId(new_name);
+  current_layers[new_name] = cloneObj(current_layers[old_name]);
+  delete current_layers[old_name];
+  const list_elem = document.querySelector(`li.${old_name}`);
+  list_elem.classList.remove(old_name);
+  list_elem.classList.add(new_id);
+  list_elem.setAttribute('layer_name', new_name);
+  list_elem.innerHTML = list_elem.innerHTML.replace(old_name, new_name);
+  const b = svg_map.querySelector(`#${old_name}`);
+  b.id = new_id;
+  const lgd_elem = document.querySelector(`g[layer_name="${old_name}"]`);
+  if (lgd_elem) {
+    lgd_elem.setAttribute('layer_name', new_name);
+    lgd_elem.classList.remove(`lgdf_${old_id}`);
+    lgd_elem.classList.add(`lgdf_${new_id}`);
+  }
+  if (Object.getOwnPropertyNames(result_data).indexOf(old_name) > -1) {
+    result_data[new_name] = [].concat(result_data[old_name]);
+    delete result_data[old_name];
+  }
+  if (Object.getOwnPropertyNames(user_data).indexOf(old_name) > -1) {
+    user_data[new_name] = [].concat(user_data[old_name]);
+    delete user_data[old_name];
+  }
+  if (current_layers[new_name].targeted) {
+    const name_section1 = document.getElementById('section1').querySelector('#input_geom');
+    name_section1.innerHTML = name_section1.innerHTML.replace(old_name, new_name);
+  }
+  const other_layers = Object.getOwnPropertyNames(current_layers);
+  for (let i = 0; i < other_layers.length; i++) {
+    if (current_layers[other_layers[i]].ref_layer_name === old_name) {
+      current_layers[other_layers[i]].ref_layer_name = new_name;
+    }
+  }
+  const select_export_lyr = document.getElementById('section5').querySelectorAll('#layer_to_export > option');
+  for (let i = 0; i < select_export_lyr.length; i++) {
+    if (select_export_lyr[i].value === old_name) {
+      select_export_lyr[i].value = new_name;
+      select_export_lyr[i].innerHTML = new_name;
+    }
+  }
+  _app.layer_to_id.set(new_name, new_id);
+  _app.id_to_layer.set(new_id, new_name);
+  _app.layer_to_id.delete(old_name);
+  _app.id_to_layer.delete(old_id);
+  binds_layers_buttons(new_name);
+}

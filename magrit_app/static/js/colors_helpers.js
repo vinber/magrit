@@ -157,23 +157,18 @@ const Colors = {
     yellow: '#ffff00',
   },
   random() {
-    (function a() {
-      const keys = Object.keys(this.names);
-      const n = keys.length;
-      return () => {
-        let result;
-        let count = 0;
-        for (let i = 0; i < n; i++) {
-          const prop = keys[i];
-          count += 1;
-          if (Math.random() < 1 / count) {
-            result = prop;
-            break;
-          }
-        }
-        return result || 0;
-      };
-    })();
+    const keys = Object.keys(this.names);
+    const n = keys.length;
+    let result = 0;
+    let count = 0;
+    for (let i = 0; i < n; i++) {
+      const prop = keys[i];
+      count += 1;
+      if (Math.random() < 1 / count) {
+        result = prop;
+      }
+    }
+    return result;
   },
 };
 

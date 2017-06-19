@@ -827,43 +827,40 @@ function add_layer_topojson(text, options = {}){
   try {
     parsedJSON = JSON.parse(text);
   } catch (e) {
-    parsedjSON = {Error: 'Unable to load the layer'};
+    parsedJSON = { Error: 'Unable to load the layer' };
   }
-  if (parsedJSON.Error) {  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
+  if (parsedJSON.Error) {
+    // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
     display_error_during_computation(parsedJSON.Error);
     return;
   }
-  let result_layer_on_add = options.result_layer_on_add ? true : false,
-      target_layer_on_add = options.target_layer_on_add ? true : false,
-      skip_alert = options.skip_alert ? true : false,
-      skip_rescale = options.skip_rescale === true ? true : false,
-      fields_type = options.fields_type ? options.fields_type : undefined;
+  const result_layer_on_add = options.result_layer_on_add ? true : false,
+    target_layer_on_add = options.target_layer_on_add ? true : false,
+    skip_alert = options.skip_alert ? true : false,
+    skip_rescale = options.skip_rescale === true ? true : false,
+    fields_type = options.fields_type ? options.fields_type : undefined;
+  const topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5);
+  const layers_names = Object.getOwnPropertyNames(topoObj.objects);
+  const random_color1 = ColorsSelected.random();
+  const lyr_name = layers_names[0];
+  const lyr_name_to_add = check_layer_name(options.choosed_name ? options.choosed_name : lyr_name);
+  const lyr_id = encodeId(lyr_name_to_add);
+  const nb_ft = topoObj.objects[lyr_name].geometries.length;
+  const topoObj_objects = topoObj.objects[lyr_name];
+  let data_to_load = false;
+  let type, _proj;
 
-  let type,
-      topoObj = parsedJSON.file.transform ? parsedJSON.file : topojson.quantize(parsedJSON.file, 1e5),
-      data_to_load = false,
-      layers_names = Object.getOwnPropertyNames(topoObj.objects),
-      _proj;
-
-  if(layers_names.length > 1){
-      swal('', i18next.t('app_page.common.warning_multiple_layers'), 'warning');
+  if (layers_names.length > 1) {
+    swal('', i18next.t('app_page.common.warning_multiple_layers'), 'warning');
   }
 
-  var random_color1 = ColorsSelected.random(),
-      lyr_name = layers_names[0],
-      lyr_name_to_add = check_layer_name(options.choosed_name ? options.choosed_name : lyr_name),
-      lyr_id = encodeId(lyr_name_to_add);
+  if (!topoObj_objects.geometries || topoObj_objects.geometries.length === 0) {
+    display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+    return;
+  }
 
   _app.layer_to_id.set(lyr_name_to_add, lyr_id);
   _app.id_to_layer.set(lyr_id, lyr_name_to_add);
-
-  const nb_ft = topoObj.objects[lyr_name].geometries.length,
-    topoObj_objects = topoObj.objects[lyr_name];
-
-  if (!topoObj_objects.geometries || topoObj_objects.geometries.length === 0) {
-      display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
-      return;
-  }
 
   for (let _t_ix = 0; _t_ix < nb_ft; _t_ix++) {
     if (topoObj_objects.geometries[_t_ix] && topoObj_objects.geometries[_t_ix].type) {
@@ -879,24 +876,29 @@ function add_layer_topojson(text, options = {}){
     return;
   }
 
-  if( _app.first_layer) {
+  if ( _app.first_layer) {
     // remove_layer_cleanup('World');
     let q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
-    if(q) q.click();
+    if (q) q.click();
     delete _app.first_layer;
     if (parsedJSON.proj) {
-      try { _proj = proj4(parsedJSON.proj) } catch (e) { _proj = undefined; console.log(e); }
+      try {
+        _proj = proj4(parsedJSON.proj)
+      } catch (e) {
+        _proj = undefined;
+        console.log(e);
+      }
     }
   }
 
   let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
 
   current_layers[lyr_name_to_add] = {
-    'type': type,
-    'n_features': nb_ft,
+    type: type,
+    n_features: nb_ft,
     'stroke-width-const': type === 'Line' ? 1.5 : 0.4,
-    'fill_color':  {'single': random_color1},
-    'key_name': parsedJSON.key
+    fill_color:  { 'single': random_color1 },
+    key_name: parsedJSON.key
   };
 
   if (target_layer_on_add) {
@@ -904,7 +906,7 @@ function add_layer_topojson(text, options = {}){
     user_data[lyr_name_to_add] = [];
     data_to_load = true;
     current_layers[lyr_name_to_add].fields_type = [];
-  } else if(result_layer_on_add) {
+  } else if (result_layer_on_add) {
     result_data[lyr_name_to_add] = [];
     current_layers[lyr_name_to_add].is_result = true;
   }
@@ -968,15 +970,15 @@ function add_layer_topojson(text, options = {}){
       stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
       'stroke-opacity': 1,
       fill: type !== 'Line' ? random_color1 : null,
-      'fill-opacity': type !== 'Line' ? 0.90 : 0
+      'fill-opacity': type !== 'Line' ? 0.90 : 0,
     });
 
   let class_name = [
     target_layer_on_add ? 'sortable_target ' : result_layer_on_add ? 'sortable_result ' : null,
-    lyr_id
+    lyr_id,
   ].join('');
 
-  let layers_listed = layer_list.node(),
+  const layers_listed = layer_list.node(),
     li = document.createElement('li'),
     _lyr_name_display_menu = get_display_name_on_layer_list(lyr_name_to_add);
 
@@ -1018,27 +1020,28 @@ function add_layer_topojson(text, options = {}){
 
     window._target_layer_file = topoObj;
     if (!skip_rescale) {
-        scale_to_lyr(lyr_name_to_add);
-        center_map(lyr_name_to_add);
+      scale_to_lyr(lyr_name_to_add);
+      center_map(lyr_name_to_add);
     }
     handle_click_hand('lock');
-    if (_app.current_functionnality != undefined)
+    if (_app.current_functionnality != undefined) {
         fields_handler.fill(lyr_name_to_add);
-  } else if (result_layer_on_add) {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), "</div>"].join('');
+    } else if (result_layer_on_add) {
+      li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), '</div>'].join('');
+    }
     if (!skip_rescale) {
         center_map(lyr_name_to_add);
     }
     handle_click_hand('lock');
   } else {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('')
   }
 
   if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name === "smooth"){
     fields_handler.fill();
   }
 
-  if(type === 'Point'){
+  if (type === 'Point') {
     current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
   }
 
@@ -1086,14 +1089,14 @@ function add_layer_topojson(text, options = {}){
         change_projection_4(_proj);
         current_proj_name = 'def_proj4';
         _app.last_projection = parsedJSON.proj;
-				addLastProjectionSelect('def_proj4', _app.last_projection);
+        addLastProjectionSelect('def_proj4', _app.last_projection);
         if (target_layer_on_add && joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
         }
       }, (dismiss) => {
-        if(target_layer_on_add && joined_dataset.length > 0) {
+        if (target_layer_on_add && joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
@@ -1183,9 +1186,9 @@ function center_map(name){
 
 function fitLayer(layer_name) {
   proj.scale(1).translate([0,0])
-  const b = get_bbox_layer_path(layer_name),
-      s = .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h),
-      t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
+  const b = get_bbox_layer_path(layer_name);
+  const s = .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
+  const t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
   proj.scale(s).translate(t);
   return [s, t];
 }
@@ -1377,10 +1380,10 @@ function add_layout_feature(selected_feature, options = {}) {
 function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', symbol_id = null) {
   const context_menu = new ContextMenu();
   const getItems = (self_parent) => [
-    { 'name': i18next.t('app_page.common.options'), 'action': () => { make_style_box_indiv_symbol(self_parent); } },
-    { 'name': i18next.t('app_page.common.up_element'), 'action': () => { up_legend(self_parent.parentElement); } },
-    { 'name': i18next.t('app_page.common.down_element'), 'action': () => { down_legend(self_parent.parentElement); } },
-    { 'name': i18next.t('app_page.common.delete'), 'action': () => { self_parent.parentElement.remove(); } }
+    { name: i18next.t('app_page.common.options'), action: () => { make_style_box_indiv_symbol(self_parent); } },
+    { name: i18next.t('app_page.common.up_element'), action: () => { up_legend(self_parent.parentElement); } },
+    { name: i18next.t('app_page.common.down_element'), action: () => { down_legend(self_parent.parentElement); } },
+    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.parentElement.remove(); } }
   ];
 
   x = x || w / 2;
