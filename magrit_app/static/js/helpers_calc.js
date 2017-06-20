@@ -240,14 +240,14 @@ function getBreaksStdDev(serie, share, mean_position = 'center', precision) {
   const nb_class = breaks.length - 1;
   if (breaks[0] < min) {
     if (breaks[1] < min) {
-      console.log("This shouldn't happen (min)");
+      console.log('This shouldn\'t happen (min)');
     }
     breaks[0] = min;
   }
 
   if (breaks[nb_class] > max) {
     if (breaks[nb_class - 1] > max) {
-      console.log("This shouldn't happen (max)");
+      console.log('This shouldn\'t happen (max)');
     }
     breaks[nb_class] = max;
   }

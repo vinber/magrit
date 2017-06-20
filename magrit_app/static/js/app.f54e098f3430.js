@@ -53,11 +53,13 @@ function setUpInterface(reload_project) {
       return 1;
     });
     if (layer_names.length) {
-      var formToSend = new FormData();
-      layer_names.forEach(function (name) {
-        formToSend.append('layer_name', current_layers[name].key_name);
-      });
-      navigator.sendBeacon('/layers/delete', formToSend);
+      (function () {
+        var formToSend = new FormData();
+        layer_names.forEach(function (name) {
+          formToSend.append('layer_name', current_layers[name].key_name);
+        });
+        navigator.sendBeacon('/layers/delete', formToSend);
+      })();
     }
   }, false);
   var bg = document.createElement('div');
@@ -308,13 +310,45 @@ function setUpInterface(reload_project) {
   });
 
   make_ico_choice();
-  add_simplified_land_layer();
 
   var section3 = d3.select('#section3');
 
   window.layer_list = section3.append('div').attrs({ class: 'i18n',
     'data-i18n': '[tooltip-title]app_page.tooltips.section3',
     'data-placement': 'right' }).append('ul').attrs({ id: 'sortable', class: 'layer_list' });
+  new Sortable(document.getElementById('sortable'), {
+    animation: 100,
+    onUpdate: function onUpdate(a) {
+      // Set the layer order on the map in concordance with the user changes
+      // in the layer manager with a pretty rusty 'sorting' algorythm :
+      var desired_order = [],
+          actual_order = [],
+          layers = svg_map.querySelectorAll('.layer');
+      var at_end = null;
+      if (document.getElementById('info_features').className === 'active') {
+        displayInfoOnMove();
+        at_end = true;
+      }
+
+      for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
+        var n = a.target.childNodes[_i3].getAttribute('layer_name');
+        desired_order[_i3] = _app.layer_to_id.get(n);
+        actual_order[_i3] = layers[_i3].id;
+      }
+      for (var _i4 = 0, len = desired_order.length; _i4 < len; _i4++) {
+        var lyr1 = document.getElementById(desired_order[_i4]),
+            lyr2 = document.getElementById(desired_order[_i4 + 1]) || document.getElementById(desired_order[_i4]);
+        svg_map.insertBefore(lyr2, lyr1);
+      }
+      if (at_end) displayInfoOnMove();
+    },
+    onStart: function onStart(event) {
+      document.body.classList.add('no-drop');
+    },
+    onEnd: function onEnd(event) {
+      document.body.classList.remove('no-drop');
+    }
+  });
 
   var dv3 = section3.append('div').style('padding-top', '10px').html('');
 
@@ -447,7 +481,7 @@ function setUpInterface(reload_project) {
   c.on('click', function () {
     var sections = document.getElementsByClassName('to_hide'),
         arg = void 0;
-    if (sections[0].style.display == 'none') {
+    if (sections[0].style.display === 'none') {
       arg = '';
       document.getElementById('map_center_menu_ico').classList = 'active';
     } else {
@@ -560,12 +594,14 @@ function setUpInterface(reload_project) {
     return add_layout_feature('sphere');
   });
 
+  add_simplified_land_layer();
+
   var section5b = d3.select('#section5');
   var dv5b = section5b.append('div').attr('class', 'form-item');
 
   var type_export = dv5b.append('p');
   type_export.append('span').attr('class', 'i18n').attr('data-i18n', '[html]app_page.section5b.type');
-  var select_type_export = type_export.append('select').attrs({ 'id': 'select_export_type', 'class': 'm_elem_right' }).on('change', function () {
+  var select_type_export = type_export.append('select').attrs({ id: 'select_export_type', class: 'm_elem_right' }).on('change', function () {
     var type = this.value,
         export_filename = document.getElementById('export_filename');
     if (type === 'svg') {
@@ -593,9 +629,10 @@ function setUpInterface(reload_project) {
   select_type_export.append('option').text('GEO').attr('value', 'geo');
 
   var export_png_options = dv5b.append('p').attr('id', 'export_options_png').style('display', 'none');
-  export_png_options.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.section5b.format' });
 
-  var select_size_png = export_png_options.append('select').attrs({ 'id': 'select_png_format', 'class': 'm_elem_right' });
+  export_png_options.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.format' });
+
+  var select_size_png = export_png_options.append('select').attrs({ id: 'select_png_format', class: 'm_elem_right' });
   fill_export_png_options('user_defined');
 
   select_size_png.on('change', function () {
@@ -642,7 +679,7 @@ function setUpInterface(reload_project) {
   var exp_a = export_png_options.append('p');
   exp_a.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.section5b.width' });
 
-  exp_a.append('input').style('width', '60px').attrs({ 'id': 'export_png_width', 'class': 'm_elem_right', 'type': 'number', step: 0.1, value: w }).on('change', function () {
+  exp_a.append('input').style('width', '60px').attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1, value: w }).on('change', function () {
     var ratio = h / w,
         export_png_height = document.getElementById('export_png_height');
     export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
@@ -651,7 +688,7 @@ function setUpInterface(reload_project) {
   exp_a.append('span').attr('id', 'export_png_width_txt').html(' (px)');
 
   var exp_b = export_png_options.append('p');
-  exp_b.append('span').attrs({ 'class': 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
+  exp_b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
 
   exp_b.append('input').style('width', '60px').attrs({ 'id': 'export_png_height', 'class': 'm_elem_right', 'type': 'number', step: 0.1, value: h }).on('change', function () {
     var ratio = h / w,
@@ -767,40 +804,6 @@ function setUpInterface(reload_project) {
   document.getElementById('btn_s1').dispatchEvent(new MouseEvent('click'));
   prepare_drop_section();
 
-  new Sortable(document.getElementById('sortable'), {
-    animation: 100,
-    onUpdate: function onUpdate(a) {
-      // Set the layer order on the map in concordance with the user changes
-      // in the layer manager with a pretty rusty 'sorting' algorythm :
-      var at_end = null;
-      if (document.getElementById('info_features').className == 'active') {
-        displayInfoOnMove();
-        at_end = true;
-      }
-      var desired_order = [],
-          actual_order = [],
-          layers = svg_map.querySelectorAll('.layer');
-
-      for (var _i3 = 0, len_i = a.target.childNodes.length; _i3 < len_i; _i3++) {
-        var n = a.target.childNodes[_i3].getAttribute('layer_name');
-        desired_order[_i3] = _app.layer_to_id.get(n);
-        actual_order[_i3] = layers[_i3].id;
-      }
-      for (var _i4 = 0, len = desired_order.length; _i4 < len; _i4++) {
-        var lyr1 = document.getElementById(desired_order[_i4]),
-            lyr2 = document.getElementById(desired_order[_i4 + 1]) || document.getElementById(desired_order[_i4]);
-        svg_map.insertBefore(lyr2, lyr1);
-      }
-      if (at_end) displayInfoOnMove();
-    },
-    onStart: function onStart(event) {
-      document.body.classList.add('no-drop');
-    },
-    onEnd: function onEnd(event) {
-      document.body.classList.remove('no-drop');
-    }
-  });
-
   if (reload_project) {
     var url = void 0;
     if (reload_project.startsWith('http')) {
@@ -812,31 +815,33 @@ function setUpInterface(reload_project) {
       apply_user_preferences(data);
     });
   } else {
-    // Check if there is a project to reload in the localStorage :
-    var last_project = window.localStorage.getItem('magrit_project');
-    if (last_project && last_project.length && last_project.length > 0) {
-      swal({ title: '',
-        // text: i18next.t('app_page.common.resume_last_project'),
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        type: 'question',
-        showConfirmButton: true,
-        showCancelButton: true,
-        confirmButtonText: i18next.t('app_page.common.new_project'),
-        cancelButtonText: i18next.t('app_page.common.resume_last')
-      }).then(function () {
-        // If we don't want to resume from the last project, we can
-        // remove it :
-        window.localStorage.removeItem('magrit_project');
+    (function () {
+      // Check if there is a project to reload in the localStorage :
+      var last_project = window.localStorage.getItem('magrit_project');
+      if (last_project && last_project.length && last_project.length > 0) {
+        swal({ title: '',
+          // text: i18next.t('app_page.common.resume_last_project'),
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          type: 'question',
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: i18next.t('app_page.common.new_project'),
+          cancelButtonText: i18next.t('app_page.common.resume_last')
+        }).then(function () {
+          // If we don't want to resume from the last project, we can
+          // remove it :
+          window.localStorage.removeItem('magrit_project');
+          // Indicate that that no layer have been added for now :*
+          _app.first_layer = true;
+        }, function (dismiss) {
+          apply_user_preferences(last_project);
+        });
+      } else {
         // Indicate that that no layer have been added for now :*
         _app.first_layer = true;
-      }, function (dismiss) {
-        apply_user_preferences(last_project);
-      });
-    } else {
-      // Indicate that that no layer have been added for now :*
-      _app.first_layer = true;
-    }
+      }
+    })();
   }
   // Set the properties for the notification zone :
   alertify.set('notifier', 'position', 'bottom-left');
@@ -1091,7 +1096,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.a64cf1a924d7.json'
+      loadPath: 'static/locales/{{lng}}/translation.f54e098f3430.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1164,42 +1169,48 @@ function displayInfoOnMove() {
     info_features.style('display', 'none').html('');
     svg_map.style.cursor = '';
   } else {
-    map.select('.brush').remove();
-    var layers = svg_map.querySelectorAll('.layer'),
-        nb_layer = layers.length,
-        top_visible_layer = null;
+    var _ret6 = function () {
+      map.select('.brush').remove();
+      var layers = svg_map.querySelectorAll('.layer'),
+          nb_layer = layers.length,
+          top_visible_layer = null;
 
-    for (var i = nb_layer - 1; i > -1; i--) {
-      if (layers[i].style.visibility !== 'hidden') {
-        top_visible_layer = _app.id_to_layer.get(layers[i].id);
-        break;
+      for (var i = nb_layer - 1; i > -1; i--) {
+        if (layers[i].style.visibility !== 'hidden') {
+          top_visible_layer = _app.id_to_layer.get(layers[i].id);
+          break;
+        }
       }
-    }
 
-    if (!top_visible_layer) {
-      swal('', i18next.t('app_page.common.error_no_visible'), 'error');
-      return;
-    }
+      if (!top_visible_layer) {
+        swal('', i18next.t('app_page.common.error_no_visible'), 'error');
+        return {
+          v: void 0
+        };
+      }
 
-    var id_top_layer = '#' + _app.layer_to_id.get(top_visible_layer);
-    var symbol = current_layers[top_visible_layer].symbol || 'path';
+      var id_top_layer = '#' + _app.layer_to_id.get(top_visible_layer);
+      var symbol = current_layers[top_visible_layer].symbol || 'path';
 
-    map.select(id_top_layer).selectAll(symbol).on('mouseover', function (d, i) {
-      var txt_info = ['<h3>', top_visible_layer, '</h3><i>Feature ', i + 1, '/', current_layers[top_visible_layer].n_features, '</i><p>'];
-      var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
-      Object.getOwnPropertyNames(properties).forEach(function (el) {
-        txt_info.push('<br><b>' + el + '</b> : ' + properties[el]);
+      map.select(id_top_layer).selectAll(symbol).on('mouseover', function (d, i) {
+        var txt_info = ['<h3>', top_visible_layer, '</h3><i>Feature ', i + 1, '/', current_layers[top_visible_layer].n_features, '</i><p>'];
+        var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+        Object.getOwnPropertyNames(properties).forEach(function (el) {
+          txt_info.push('<br><b>' + el + '</b> : ' + properties[el]);
+        });
+        txt_info.push('</p>');
+        info_features.style('display', null).html(txt_info.join(''));
       });
-      txt_info.push('</p>');
-      info_features.style('display', null).html(txt_info.join(''));
-    });
 
-    map.select(id_top_layer).selectAll(symbol).on('mouseout', function () {
-      info_features.style('display', 'none').html('');
-    });
+      map.select(id_top_layer).selectAll(symbol).on('mouseout', function () {
+        info_features.style('display', 'none').html('');
+      });
 
-    info_features.classed('active', true);
-    svg_map.style.cursor = 'help';
+      info_features.classed('active', true);
+      svg_map.style.cursor = 'help';
+    }();
+
+    if ((typeof _ret6 === 'undefined' ? 'undefined' : _typeof(_ret6)) === "object") return _ret6.v;
   }
 }
 
@@ -2088,15 +2099,17 @@ function patchSvgForFonts() {
   if (needed_definitions.length == 0) {
     return;
   } else {
-    var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
-      return i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null;
-    })[0].cssRules;
-    var fonts_to_add = needed_definitions.map(function (name) {
-      return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
-    });
-    var style_elem = document.createElement('style');
-    style_elem.innerHTML = fonts_to_add.join(' ');
-    svg_map.querySelector('defs').appendChild(style_elem);
+    (function () {
+      var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
+        return i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null;
+      })[0].cssRules;
+      var fonts_to_add = needed_definitions.map(function (name) {
+        return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
+      });
+      var style_elem = document.createElement('style');
+      style_elem.innerHTML = fonts_to_add.join(' ');
+      svg_map.querySelector('defs').appendChild(style_elem);
+    })();
   }
 }
 
@@ -3268,27 +3281,29 @@ var display_discretization = function display_discretization(layer_name, field_n
         height: window.innerHeight - 60 + "px" });
 
     if (values.length < 500) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            var str_tr = void 0;
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-                str_tr = "_boxplot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-                str_tr = '_beeswarm';
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-                str_tr = '';
-            }
-            document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
-        });
+        (function () {
+            // Only allow for beeswarm plot if there isn't too many values
+            // as it seems to be costly due to the "simulation" + the voronoi
+            var current_histo = "histogram",
+                choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+            choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+                var str_tr = void 0;
+                if (current_histo == 'histogram') {
+                    refDisplay("box_plot");
+                    current_histo = "box_plot";
+                    str_tr = "_boxplot";
+                } else if (current_histo == "box_plot") {
+                    refDisplay("beeswarm");
+                    current_histo = "beeswarm";
+                    str_tr = '_beeswarm';
+                } else if (current_histo == "beeswarm") {
+                    refDisplay("histogram");
+                    current_histo = "histogram";
+                    str_tr = '';
+                }
+                document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
+            });
+        })();
     }
     var div_svg = newBox.append('div').append("svg").attr("id", "svg_discretization").attr("width", svg_w + margin.left + margin.right).attr("height", svg_h + margin.top + margin.bottom);
 
@@ -3919,22 +3934,24 @@ var display_discretization_links_discont = function display_discretization_links
   refDisplay('histogram');
 
   if (values.length < 750) {
-    // Only allow for beeswarm plot if there isn't too many values
-    // as it seems to be costly due to the "simulation" + the voronoi
-    var choiceHisto = ref_histo_box.append('p').style('text-align', 'center');
-    var currentHisto = 'histogram';
-    choiceHisto.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-      if (currentHisto === 'histogram') {
-        refDisplay('box_plot');
-        currentHisto = 'box_plot';
-      } else if (currentHisto === 'box_plot') {
-        refDisplay('beeswarm');
-        currentHisto = 'beeswarm';
-      } else if (currentHisto === 'beeswarm') {
-        refDisplay('histogram');
-        currentHisto = 'histogram';
-      }
-    });
+    (function () {
+      // Only allow for beeswarm plot if there isn't too many values
+      // as it seems to be costly due to the "simulation" + the voronoi
+      var choiceHisto = ref_histo_box.append('p').style('text-align', 'center');
+      var currentHisto = 'histogram';
+      choiceHisto.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+        if (currentHisto === 'histogram') {
+          refDisplay('box_plot');
+          currentHisto = 'box_plot';
+        } else if (currentHisto === 'box_plot') {
+          refDisplay('beeswarm');
+          currentHisto = 'beeswarm';
+        } else if (currentHisto === 'beeswarm') {
+          refDisplay('histogram');
+          currentHisto = 'histogram';
+        }
+      });
+    })();
   }
 
   var txt_nb_class = d3.select('#discretization_panel').append('input').attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' }).on('change', function () {
@@ -4045,6 +4062,8 @@ var display_discretization_links_discont = function display_discretization_links
   return deferred.promise;
 };
 "use strict";
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -5276,27 +5295,33 @@ var fields_Stewart = {
         if (default_selected_mask) setSelected(mask_selec.node(), default_selected_mask);
 
         if (layer) {
-            // let fields = type_col(layer, "number"),
-            var fields = getFieldsType("stock", layer),
-                field_selec = section2.select("#stewart_field"),
-                field_selec2 = section2.select("#stewart_field2");
+            var _ret3 = function () {
+                // let fields = type_col(layer, "number"),
+                var fields = getFieldsType("stock", layer),
+                    field_selec = section2.select("#stewart_field"),
+                    field_selec2 = section2.select("#stewart_field2");
 
-            if (fields.length == 0) {
-                display_error_num_field();
-                return;
-            }
+                if (fields.length == 0) {
+                    display_error_num_field();
+                    return {
+                        v: void 0
+                    };
+                }
 
-            field_selec2.append("option").text(" ").attr("value", "None");
-            fields.forEach(function (field) {
-                field_selec.append("option").text(field).attr("value", field);
-                field_selec2.append("option").text(field).attr("value", field);
-            });
-            document.getElementById("stewart_span").value = get_first_guess_span('stewart');
+                field_selec2.append("option").text(" ").attr("value", "None");
+                fields.forEach(function (field) {
+                    field_selec.append("option").text(field).attr("value", field);
+                    field_selec2.append("option").text(field).attr("value", field);
+                });
+                document.getElementById("stewart_span").value = get_first_guess_span('stewart');
 
-            field_selec.on("change", function () {
-                document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
-            });
-            section2.select('#stewart_yes').on('click', render_stewart);
+                field_selec.on("change", function () {
+                    document.getElementById("stewart_output_name").value = ["Smoothed", this.value, layer].join('_');
+                });
+                section2.select('#stewart_yes').on('click', render_stewart);
+            }();
+
+            if ((typeof _ret3 === "undefined" ? "undefined" : _typeof(_ret3)) === "object") return _ret3.v;
         }
         section2.selectAll(".params").attr("disabled", null);
     },
@@ -5370,7 +5395,7 @@ function render_stewart() {
     xhrequest("POST", '/compute/stewart', formToSend, true).then(function (res) {
         var data_split = res.split('|||'),
             raw_topojson = data_split[0],
-            options = { result_layer_on_add: true };
+            options = { result_layer_on_add: true, func_name: 'smooth' };
         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
             options["choosed_name"] = new_user_layer_name;
         }
@@ -5506,72 +5531,74 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById("Anamorph_output_name").value;
 
             if (algo === "olson") {
-                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                // let opt_scale_max = document.getElementById("Anamorph_opt2");
-                // if(opt_scale_max.value > 100){
-                //     opt_scale_max.value = 100;
-                // }
-                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                var nb_ft = current_layers[layer].n_features,
-                    dataset = user_data[layer];
+                (function () {
+                    // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                    // if(opt_scale_max.value > 100){
+                    //     opt_scale_max.value = 100;
+                    // }
+                    // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    var nb_ft = current_layers[layer].n_features,
+                        dataset = user_data[layer];
 
-                // if(contains_empty_val(dataset.map(a => a[field_name]))){
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
+                    // if(contains_empty_val(dataset.map(a => a[field_name]))){
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
-                var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                    sqrt = Math.sqrt,
-                    abs = Math.abs,
-                    d_val = [],
-                    transform = [];
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                        sqrt = Math.sqrt,
+                        abs = Math.abs,
+                        d_val = [],
+                        transform = [];
 
-                for (var i = 0; i < nb_ft; ++i) {
-                    var val = +dataset[i][field_name];
-                    // We deliberatly use 0 if this is a missing value :
-                    if (isNaN(val) || !isFinite(val)) val = 0;
-                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
-                }
-                d_val.sort(function (a, b) {
-                    return b[1] - a[1];
-                });
-                var ref = d_val[0][1] / d_val[0][2];
-                d_val[0].push(1);
-
-                for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
-                    var _val = d_val[_i3][1] / d_val[_i3][2];
-                    var scale = sqrt(_val / ref);
-                    d_val[_i3].push(scale);
-                }
-                d_val.sort(function (a, b) {
-                    return a[0] - b[0];
-                });
-                var formToSend = new FormData();
-                formToSend.append("json", JSON.stringify({
-                    topojson: current_layers[layer].key_name,
-                    scale_values: d_val.map(function (ft) {
-                        return ft[3];
-                    }),
-                    field_name: field_name }));
-                xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
-                    var options = { result_layer_on_add: true };
-                    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-                        options["choosed_name"] = new_user_layer_name;
+                    for (var i = 0; i < nb_ft; ++i) {
+                        var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
+                        d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                     }
-                    var n_layer_name = add_layer_topojson(result, options);
-                    current_layers[n_layer_name].renderer = "OlsonCarto";
-                    current_layers[n_layer_name].rendered_field = field_name;
-                    current_layers[n_layer_name].scale_max = 1;
-                    current_layers[n_layer_name].ref_layer_name = layer;
-                    current_layers[n_layer_name].scale_byFeature = transform;
-                    map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
-                    switch_accordion_section();
-                }, function (err) {
-                    display_error_during_computation();
-                    console.log(err);
-                });
+                    d_val.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+                    var ref = d_val[0][1] / d_val[0][2];
+                    d_val[0].push(1);
+
+                    for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+                        var _val = d_val[_i3][1] / d_val[_i3][2];
+                        var scale = sqrt(_val / ref);
+                        d_val[_i3].push(scale);
+                    }
+                    d_val.sort(function (a, b) {
+                        return a[0] - b[0];
+                    });
+                    var formToSend = new FormData();
+                    formToSend.append("json", JSON.stringify({
+                        topojson: current_layers[layer].key_name,
+                        scale_values: d_val.map(function (ft) {
+                            return ft[3];
+                        }),
+                        field_name: field_name }));
+                    xhrequest("POST", '/compute/olson', formToSend, true).then(function (result) {
+                        var options = { result_layer_on_add: true, func_name: 'cartogram' };
+                        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+                            options["choosed_name"] = new_user_layer_name;
+                        }
+                        var n_layer_name = add_layer_topojson(result, options);
+                        current_layers[n_layer_name].renderer = "OlsonCarto";
+                        current_layers[n_layer_name].rendered_field = field_name;
+                        current_layers[n_layer_name].scale_max = 1;
+                        current_layers[n_layer_name].ref_layer_name = layer;
+                        current_layers[n_layer_name].scale_byFeature = transform;
+                        map.select("#" + _app.layer_to_id.get(n_layer_name)).selectAll("path").style("fill-opacity", 0.8).style("stroke", "black").style("stroke-opacity", 0.8);
+                        switch_accordion_section();
+                    }, function (err) {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
+                })();
             } else if (algo === "dougenik") {
-                var _formToSend = new FormData(),
+                var formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById("Anamorph_dougenik_iterations").value;
 
@@ -5579,17 +5606,17 @@ var fields_Anamorphose = {
                 if (!current_layers[layer].original_fields.has(field_name)) {
                     var table = user_data[layer],
                         to_send = var_to_send[field_name];
-                    for (var _i4 = 0, i_len = table.length; _i4 < i_len; ++_i4) {
-                        to_send.push(+table[_i4][field_name]);
+                    for (var i = 0, i_len = table.length; i < i_len; ++i) {
+                        to_send.push(+table[i][field_name]);
                     }
                 }
-                _formToSend.append("json", JSON.stringify({
+                formToSend.append("json", JSON.stringify({
                     "topojson": current_layers[layer].key_name,
                     "var_name": var_to_send,
                     "iterations": nb_iter }));
 
-                xhrequest("POST", '/compute/carto_doug', _formToSend, true).then(function (data) {
-                    var options = { result_layer_on_add: true };
+                xhrequest("POST", '/compute/carto_doug', formToSend, true).then(function (data) {
+                    var options = { result_layer_on_add: true, func_name: 'cartogram' };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
                         options["choosed_name"] = new_user_layer_name;
                     }
@@ -5686,62 +5713,64 @@ function make_prop_line(rendering_params, geojson_line_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_line_layer) {
-        var make_geojson_line_layer = function make_geojson_line_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: cloneObj(ft.geometry)
-                };
-                if (f_ix_len) {
-                    for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                        new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_line_layer = function make_geojson_line_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: cloneObj(ft.geometry)
+                    };
+                    if (f_ix_len) {
+                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                        }
                     }
+                    new_obj.properties[field] = value;
+                    new_obj.properties[t_field_name] = propSize.scale(value);
+                    new_obj.properties['color'] = get_color(value, i);
+                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                    result.push([value, new_obj]);
                 }
-                new_obj.properties[field] = value;
-                new_obj.properties[t_field_name] = propSize.scale(value);
-                new_obj.properties['color'] = get_color(value, i);
-                if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                result.push([value, new_obj]);
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_line_layer = make_geojson_line_layer();
+            geojson_line_layer = make_geojson_line_layer();
+        })();
     }
 
     var layer_id = encodeId(layer_to_add);
@@ -5797,85 +5826,87 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_pt_layer) {
-        var make_geojson_pt_layer = function make_geojson_pt_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
-                result = [];
-            for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: "Feature",
-                    properties: {},
-                    geometry: { type: 'Point' }
-                };
-                if (ft.geometry.type.indexOf('Multi') < 0) {
-                    if (f_ix_len) {
-                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_pt_layer = function make_geojson_pt_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName("path"),
+                    result = [];
+                for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: "Feature",
+                        properties: {},
+                        geometry: { type: 'Point' }
+                    };
+                    if (ft.geometry.type.indexOf('Multi') < 0) {
+                        if (f_ix_len) {
+                            for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                                new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                            }
                         }
-                    }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
-                } else {
-                    var areas = [];
-                    for (var j = 0; j < ft.geometry.coordinates.length; j++) {
-                        areas.push(path.area({
-                            type: ft.geometry.type,
-                            coordinates: [ft.geometry.coordinates[j]]
-                        }));
-                    }
-                    var ix_max = areas.indexOf(max_fast(areas));
-                    if (f_ix_len) {
-                        for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
-                            new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
+                    } else {
+                        var areas = [];
+                        for (var j = 0; j < ft.geometry.coordinates.length; j++) {
+                            areas.push(path.area({
+                                type: ft.geometry.type,
+                                coordinates: [ft.geometry.coordinates[j]]
+                            }));
                         }
+                        var ix_max = areas.indexOf(max_fast(areas));
+                        if (f_ix_len) {
+                            for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
+                                new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                            }
+                        }
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
                     }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
                 }
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: "FeatureCollection",
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: "FeatureCollection",
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length == nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_pt_layer = make_geojson_pt_layer();
+            geojson_pt_layer = make_geojson_pt_layer();
+        })();
     }
     var layer_id = encodeId(layer_to_add);
     _app.layer_to_id.set(layer_to_add, layer_id);
@@ -6111,8 +6142,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
         });
         col_map = new Map();
-        for (var _i5 = 0; _i5 < cats.length; _i5++) {
-            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
+        for (var _i4 = 0; _i4 < cats.length; _i4++) {
+            col_map.set(cats[_i4].name, [cats[_i4].color, cats[_i4].name, cats[_i4].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -6510,13 +6541,15 @@ var render_discont = function render_discont() {
         create_li_layer_elem(new_layer_name, nb_ft, ["Line", "discont"], "result");
 
         {
-            // Only display the 50% most important values :
-            // TODO : reintegrate this upstream in the layer creation :
-            var lim = 0.5 * current_layers[new_layer_name].n_features;
-            result_layer.selectAll('path').style("display", function (d, i) {
-                return i <= lim ? null : "none";
-            });
-            current_layers[new_layer_name].min_display = 0.5;
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style("display", function (d, i) {
+                    return i <= lim ? null : "none";
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
@@ -6932,7 +6965,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         "grid_shape": cell_shape
     }));
     xhrequest("POST", '/compute/gridded', formToSend, true).then(function (data) {
-        var options = { result_layer_on_add: true };
+        var options = { result_layer_on_add: true, func_name: 'grid' };
         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
             options["choosed_name"] = new_user_layer_name;
         }
@@ -7131,7 +7164,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
 
     xhrequest("POST", '/compute/links', formToSend, true).then(function (data) {
         // FIXME : should use the user selected new name if any
-        var options = { result_layer_on_add: true };
+        var options = { result_layer_on_add: true, func_name: 'flow' };
         if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
             options["choosed_name"] = new_user_layer_name;
         }
@@ -7168,8 +7201,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
 
-        for (var _i6 = 0; _i6 < nb_class; ++_i6) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i6], user_breaks[_i6 + 1]], sizes[_i6]]);
+        for (var _i5 = 0; _i5 < nb_class; ++_i5) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i5], user_breaks[_i5 + 1]], sizes[_i5]]);
         }layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style("stroke-width", function (d, i) {
             return links_byId[i][2];
         });
@@ -8054,12 +8087,12 @@ function change_layer_name(old_name, new_name) {
   var new_id = encodeId(new_name);
   current_layers[new_name] = cloneObj(current_layers[old_name]);
   delete current_layers[old_name];
-  var list_elem = document.querySelector('li.' + old_name);
-  list_elem.classList.remove(old_name);
+  var list_elem = document.querySelector('li.' + old_id);
+  list_elem.classList.remove(old_id);
   list_elem.classList.add(new_id);
   list_elem.setAttribute('layer_name', new_name);
   list_elem.innerHTML = list_elem.innerHTML.replace(old_name, new_name);
-  var b = svg_map.querySelector('#' + old_name);
+  var b = svg_map.querySelector('#' + old_id);
   b.id = new_id;
   var lgd_elem = document.querySelector('g[layer_name="' + old_name + '"]');
   if (lgd_elem) {
@@ -8078,6 +8111,10 @@ function change_layer_name(old_name, new_name) {
   if (current_layers[new_name].targeted) {
     var name_section1 = document.getElementById('section1').querySelector('#input_geom');
     name_section1.innerHTML = name_section1.innerHTML.replace(old_name, new_name);
+    if (window.fields_handler) {
+      window.fields_handler.unfill();
+      window.fields_handler.fill(new_name);
+    }
   }
   var other_layers = Object.getOwnPropertyNames(current_layers);
   for (var i = 0; i < other_layers.length; i++) {
@@ -8376,14 +8413,14 @@ function getBreaksStdDev(serie, share) {
   var nb_class = breaks.length - 1;
   if (breaks[0] < min) {
     if (breaks[1] < min) {
-      console.log("This shouldn't happen (min)");
+      console.log('This shouldn\'t happen (min)');
     }
     breaks[0] = min;
   }
 
   if (breaks[nb_class] > max) {
     if (breaks[nb_class - 1] > max) {
-      console.log("This shouldn't happen (max)");
+      console.log('This shouldn\'t happen (max)');
     }
     breaks[nb_class] = max;
   }
@@ -9664,7 +9701,7 @@ function add_layer_topojson(text) {
     _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
     var remove_target = document.getElementById('remove_target');
     remove_target.onclick = function () {
-      remove_layer(lyr_name_to_add);
+      remove_layer(Object.getOwnPropertyNames(user_data)[0]);
     };
     remove_target.onmouseover = function () {
       this.style.opacity = 1;
@@ -10188,37 +10225,37 @@ function add_simplified_land_layer() {
   var stroke_opacity = options.stroke_opacity || 0.0;
   var fill_opacity = options.fill_opacity || 0.75;
   var stroke_width = options.stroke_width || '0.3px';
-  var visible = options.visible === false ? false : true;
+  var visible = !(options.visible === false);
   var drop_shadow = options.drop_shadow || false;
 
-  d3.json('static/data_sample/World.topojson', function (error, json) {
-    _app.layer_to_id.set('World', 'World');
-    _app.id_to_layer.set('World', 'World');
-    current_layers['World'] = {
-      type: 'Polygon',
-      n_features: 125,
-      'stroke-width-const': +stroke_width.slice(0, -2),
-      fill_color: { single: fill }
-    };
-    map.insert('g', '.legend').attrs({ id: 'World', class: 'layer', 'clip-path': 'url(#clip)' }).style('stroke-width', stroke_width).selectAll('.subunit').data(topojson.feature(json, json.objects.World).features).enter().append('path').attr('d', path).styles({
-      stroke: stroke,
-      fill: fill,
-      'stroke-opacity': stroke_opacity,
-      'fill-opacity': fill_opacity
-    });
-    create_li_layer_elem('World', null, 'Polygon', 'sample');
-    if (drop_shadow) {
-      createDropShadow('World');
-    }
-    if (!skip_rescale) {
-      scale_to_lyr('World');
-      center_map('World');
-    }
-    if (!visible) {
-      handle_active_layer('World');
-    }
-    zoom_without_redraw();
+  // d3.json('static/data_sample/World.topojson', (error, json) => {
+  _app.layer_to_id.set('World', 'World');
+  _app.id_to_layer.set('World', 'World');
+  current_layers['World'] = {
+    type: 'Polygon',
+    n_features: 125,
+    'stroke-width-const': +stroke_width.slice(0, -2),
+    fill_color: { single: fill }
+  };
+  map.insert('g', '.legend').attrs({ id: 'World', class: 'layer', 'clip-path': 'url(#clip)' }).style('stroke-width', stroke_width).selectAll('.subunit').data(topojson.feature(world_topology, world_topology.objects.World).features).enter().append('path').attr('d', path).styles({
+    stroke: stroke,
+    fill: fill,
+    'stroke-opacity': stroke_opacity,
+    'fill-opacity': fill_opacity
   });
+  create_li_layer_elem('World', null, 'Polygon', 'sample');
+  if (drop_shadow) {
+    createDropShadow('World');
+  }
+  if (!skip_rescale) {
+    scale_to_lyr('World');
+    center_map('World');
+  }
+  if (!visible) {
+    handle_active_layer('World');
+  }
+  zoom_without_redraw();
+  // });
 }
 
 function add_sample_geojson(name, options) {
@@ -10780,190 +10817,207 @@ var removeExistingJointure = function removeExistingJointure(layer_name) {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function handle_click_layer(layer_name) {
-    if (current_layers[layer_name].graticule) createStyleBoxGraticule();else if (current_layers[layer_name].type === 'Line') createStyleBox_Line(layer_name);else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) createStyleBox_ProbSymbol(layer_name);else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'Label') createStyleBoxLabel(layer_name);else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'TypoSymbols') createStyleBoxTypoSymbols(layer_name);else createStyleBox(layer_name);
-    return;
+  if (current_layers[layer_name].graticule) createStyleBoxGraticule();else if (current_layers[layer_name].type === 'Line') createStyleBox_Line(layer_name);else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
+    createStyleBox_ProbSymbol(layer_name);
+  } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'Label') {
+    createStyleBoxLabel(layer_name);
+  } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'TypoSymbols') {
+    createStyleBoxTypoSymbols(layer_name);
+  } else {
+    createStyleBox(layer_name);
+  }
+  return;
 };
 
 function make_single_color_menu(layer, fill_prev) {
-    var symbol = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'path';
+  var symbol = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'path';
 
-    var fill_color_section = d3.select('#fill_color_section'),
-        g_lyr_name = '#' + _app.layer_to_id.get(layer),
-        last_color = fill_prev && fill_prev.single ? fill_prev.single : '#FFF';
-    var block = fill_color_section.insert('p');
-    block.insert('span').html(i18next.t('app_page.layer_style_popup.fill_color'));
-    block.insert('input').style('float', 'right').attrs({ type: 'color', value: last_color }).on('change', function () {
-        map.select(g_lyr_name).selectAll(symbol).transition().style('fill', this.value);
-        current_layers[layer].fill_color = { single: this.value };
-    });
+  var fill_color_section = d3.select('#fill_color_section'),
+      g_lyr_name = '#' + _app.layer_to_id.get(layer),
+      last_color = fill_prev && fill_prev.single ? fill_prev.single : '#FFF';
+  var block = fill_color_section.insert('p');
+  block.insert('span').html(i18next.t('app_page.layer_style_popup.fill_color'));
+  block.insert('input').style('float', 'right').attrs({ type: 'color', value: last_color }).on('change', function () {
+    map.select(g_lyr_name).selectAll(symbol).transition().style('fill', this.value);
+    current_layers[layer].fill_color = { single: this.value };
+  });
+  map.select(g_lyr_name).selectAll(symbol).transition().style('fill', last_color);
+  current_layers[layer].fill_color = { single: last_color };
 }
 
 function make_random_color(layer) {
-    var symbol = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'path';
+  var symbol = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'path';
 
-    var block = d3.select('#fill_color_section');
-    block.selectAll('span').remove();
-    block.insert('span').styles({ cursor: 'pointer', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.toggle_colors')).on('click', function (d, i) {
-        map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function () {
-            return Colors.names[Colors.random()];
-        });
-        current_layers[layer].fill_color = { random: true };
-        make_random_color(layer, symbol);
+  var block = d3.select('#fill_color_section');
+  block.selectAll('span').remove();
+  block.insert('span').styles({ cursor: 'pointer', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.toggle_colors')).on('click', function (d, i) {
+    map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function () {
+      return Colors.names[Colors.random()];
     });
+    current_layers[layer].fill_color = { random: true };
+    make_random_color(layer, symbol);
+  });
+  map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function () {
+    return Colors.names[Colors.random()];
+  });
+  current_layers[layer].fill_color = { random: true };
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map) {
-    map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function (d) {
-        return color_cat_map.get(d.properties[field_name]);
-    });
+  map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function (d) {
+    return color_cat_map.get(d.properties[field_name]);
+  });
 }
 
 function make_categorical_color_menu(fields, layer, fill_prev) {
-    var symbol = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'path';
+  var symbol = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'path';
 
-    var fill_color_section = d3.select('#fill_color_section').append('p');
-    fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.categorical_field'));
-    var field_selec = fill_color_section.insert('select');
-    fields.forEach(function (field) {
-        if (field !== 'id') field_selec.append('option').text(field).attr('value', field);
-    });
-    if (fill_prev.categorical && fill_prev.categorical instanceof Array) {
-        setSelected(field_selec.node(), fill_prev.categorical[0]);
-    }
-    field_selec.on('change', function () {
-        var field_name = this.value,
-            data_layer = current_layers[layer].is_result ? result_data[layer] : user_data[layer],
-            values = data_layer.map(function (i) {
-            return i[field_name];
-        }),
-            cats = new Set(values),
-            txt = [cats.size, ' cat.'].join('');
-        d3.select('#nb_cat_txt').html(txt);
-        var color_cat_map = new Map();
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+  var fill_color_section = d3.select('#fill_color_section').append('p');
+  fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.categorical_field'));
+  var field_selec = fill_color_section.insert('select');
+  fields.forEach(function (field) {
+    if (field !== 'id') field_selec.append('option').text(field).attr('value', field);
+  });
+  if (fill_prev.categorical && fill_prev.categorical instanceof Array) {
+    setSelected(field_selec.node(), fill_prev.categorical[0]);
+  }
+  field_selec.on('change', function () {
+    var field_name = this.value,
+        data_layer = current_layers[layer].is_result ? result_data[layer] : user_data[layer],
+        values = data_layer.map(function (i) {
+      return i[field_name];
+    }),
+        cats = new Set(values),
+        txt = [cats.size, ' cat.'].join('');
+    d3.select('#nb_cat_txt').html(txt);
+    var color_cat_map = new Map();
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-        try {
-            for (var _iterator = cats[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                var val = _step.value;
+    try {
+      for (var _iterator = cats[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var val = _step.value;
 
-                color_cat_map.set(val, Colors.names[Colors.random()]);
-            }
-        } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion && _iterator.return) {
-                    _iterator.return();
-                }
-            } finally {
-                if (_didIteratorError) {
-                    throw _iteratorError;
-                }
-            }
+        color_cat_map.set(val, Colors.names[Colors.random()]);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
         }
-
-        current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
-        fill_categorical(layer, field_name, symbol, color_cat_map);
-    });
-
-    if ((!fill_prev || !fill_prev.categorical) && field_selec.node().options.length > 0) {
-        setSelected(field_selec.node(), field_selec.node().options[0].value);
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
     }
-    fill_color_section.append('span').attr('id', 'nb_cat_txt').html('');
+
+    current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
+    fill_categorical(layer, field_name, symbol, color_cat_map);
+  });
+
+  if ((!fill_prev || !fill_prev.categorical) && field_selec.node().options.length > 0) {
+    setSelected(field_selec.node(), field_selec.node().options[0].value);
+  }
+  fill_color_section.append('span').attr('id', 'nb_cat_txt').html('');
 }
 
 function make_change_layer_name_section(parent, layer_name) {
-    var section = parent.insert('p');
-    section.append('span').html(i18next.t('app_page.layer_style_popup.layer_name'));
-    var inpt = section.append('input').attrs({ id: 'lyr_change_name', type: 'text' }).styles({ width: '80px', float: 'right' });
-    inpt.node().value = layer_name;
-    return inpt;
+  var section = parent.insert('p').attr('class', 'inp_bottom');
+  section.append('span').html(i18next.t('app_page.layer_style_popup.layer_name'));
+  var inpt = section.append('input').attrs({ id: 'lyr_change_name', type: 'text' }).styles({ width: '200px', float: 'left' });
+  inpt.node().value = layer_name;
+  return inpt;
 }
 
 function createStyleBoxTypoSymbols(layer_name) {
-    function get_prev_settings() {
-        var features = selection._groups[0];
-        for (var i = 0; i < features.length; i++) {
-            prev_settings.push({
-                display: features[i].style.display ? features[i].style.display : null,
-                size: features[i].getAttribute('width'),
-                position: [features[i].getAttribute('x'), features[i].getAttribute('y')]
-            });
-        }
-        prev_settings_defaults['size'] = current_layers[layer_name].default_size;
+  function get_prev_settings() {
+    var features = selection._groups[0];
+    for (var i = 0; i < features.length; i++) {
+      prev_settings.push({
+        display: features[i].style.display ? features[i].style.display : null,
+        size: features[i].getAttribute('width'),
+        position: [features[i].getAttribute('x'), features[i].getAttribute('y')]
+      });
     }
+    prev_settings_defaults['size'] = current_layers[layer_name].default_size;
+  }
 
-    function restore_prev_settings() {
-        var features = selection._groups[0];
-        for (var i = 0; i < features.length; i++) {
-            features[i].setAttribute('width', prev_settings[i]['size']);
-            features[i].setAttribute('height', prev_settings[i]['size']);
-            features[i].setAttribute('x', prev_settings[i]['position'][0]);
-            features[i].setAttribute('y', prev_settings[i]['position'][1]);
-            features[i].style.display = prev_settings[i]['display'];
-        }
-        current_layers[layer_name].default_size = prev_settings_defaults.size;
+  var restore_prev_settings = function restore_prev_settings() {
+    var features = selection._groups[0];
+    for (var i = 0; i < features.length; i++) {
+      features[i].setAttribute('width', prev_settings[i]['size']);
+      features[i].setAttribute('height', prev_settings[i]['size']);
+      features[i].setAttribute('x', prev_settings[i]['position'][0]);
+      features[i].setAttribute('y', prev_settings[i]['position'][1]);
+      features[i].style.display = prev_settings[i]['display'];
     }
+    current_layers[layer_name].default_size = prev_settings_defaults.size;
+  };
 
-    check_remove_existing_box('.styleBox');
+  check_remove_existing_box('.styleBox');
 
-    var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('image'),
-        ref_layer_name = current_layers[layer_name].ref_layer_name,
-        symbols_map = current_layers[layer_name].symbols_map,
-        rendered_field = current_layers[layer_name].rendered_field;
+  var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('image'),
+      ref_layer_name = current_layers[layer_name].ref_layer_name,
+      symbols_map = current_layers[layer_name].symbols_map,
+      rendered_field = current_layers[layer_name].rendered_field;
 
-    var prev_settings = [],
-        prev_settings_defaults = {},
-        zs = d3.zoomTransform(svg_map).k;
-    var new_layer_name = layer_name;
+  var prev_settings = [],
+      prev_settings_defaults = {},
+      zs = d3.zoomTransform(svg_map).k;
 
-    get_prev_settings();
+  get_prev_settings();
 
-    make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (!confirmed) {
-            restore_prev_settings();
-        } else {
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-        }
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (!confirmed) {
+      restore_prev_settings();
+    } else {
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
+    }
+  });
+
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+
+  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: rendered_field }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+  popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_symb_loc', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.reset_symbols_location')).on('click', function () {
+    selection.transition().attrs(function (d) {
+      var centroid = path.centroid(d.geometry),
+          size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2;
+      return { x: centroid[0] - size_symbol, y: centroid[1] - size_symbol };
     });
+  });
 
-    var container = document.querySelector('.twbs > .styleBox');
-    var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+  popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_symb_display', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.redraw_symbols')).on('click', function () {
+    selection.style('display', undefined);
+  });
 
-    popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: rendered_field }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
-
-    var new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function () {
-        new_layer_name = this.value;
+  var size_section = popup.append('p');
+  size_section.append('span').html('Symbol sizes (will be applyed to all symbols)');
+  size_section.append('input').attrs({ min: 0, max: 200, step: 'any', value: 32, type: 'number' }).styles({ width: '60px', margin: 'auto' }).on('change', function () {
+    var value = this.value;
+    selection.transition().attrs(function () {
+      var current_size = this.height.baseVal.value;
+      return {
+        width: value + 'px',
+        height: value + 'px',
+        x: this.x.baseVal.value + current_size / 2 - value / 2,
+        y: this.y.baseVal.value + current_size / 2 - value / 2
+      };
     });
-    popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_symb_loc', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.reset_symbols_location')).on('click', function () {
-        selection.transition().attrs(function (d) {
-            var centroid = path.centroid(d.geometry),
-                size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2;
-            return { x: centroid[0] - size_symbol, y: centroid[1] - size_symbol };
-        });
-    });
-
-    popup.append('p').style('text-align', 'center').insert('button').attr('id', 'reset_symb_display').attr('class', 'button_st4').text(i18next.t('app_page.layer_style_popup.redraw_symbols')).on('click', function () {
-        selection.style('display', undefined);
-    });
-
-    var size_section = popup.append('p');
-    size_section.append('span').html('Symbol sizes (will be applyed to all symbols)');
-    size_section.append('input').attrs({ min: 0, max: 200, step: 'any', value: 32, type: 'number' }).styles({ width: '60px', margin: 'auto' }).on('change', function () {
-        var value = this.value;
-        selection.transition().attrs(function () {
-            var current_size = this.height.baseVal.value;
-            return { 'width': value + 'px', 'height': value + 'px',
-                'x': this.x.baseVal.value + current_size / 2 - value / 2,
-                'y': this.y.baseVal.value + current_size / 2 - value / 2 };
-        });
-    });
+  });
 }
 //    popup.append("p").style("text-align", "center")
 //            .insert("button")
@@ -10992,1376 +11046,1402 @@ function createStyleBoxTypoSymbols(layer_name) {
 // }
 
 function createStyleBoxLabel(layer_name) {
-    function get_prev_settings() {
-        var features = selection._groups[0];
-        prev_settings = [];
-        for (var i = 0; i < features.length; i++) {
-            prev_settings.push({
-                'color': features[i].style.fill,
-                'size': features[i].style.fontSize,
-                'display': features[i].style.display ? features[i].style.display : null,
-                'position': [features[i].getAttribute('x'), features[i].getAttribute('y')],
-                'font': features[i].style.fontFamily
-            });
-        }
-        prev_settings_defaults = {
-            'color': current_layers[layer_name].fill_color,
-            'size': current_layers[layer_name].default_size,
-            'font': current_layers[layer_name].default_font
-        };
+  function get_prev_settings() {
+    var features = selection._groups[0];
+    prev_settings = [];
+    for (var i = 0; i < features.length; i++) {
+      prev_settings.push({
+        'color': features[i].style.fill,
+        'size': features[i].style.fontSize,
+        'display': features[i].style.display ? features[i].style.display : null,
+        'position': [features[i].getAttribute('x'), features[i].getAttribute('y')],
+        'font': features[i].style.fontFamily
+      });
+    }
+    prev_settings_defaults = {
+      color: current_layers[layer_name].fill_color,
+      size: current_layers[layer_name].default_size,
+      font: current_layers[layer_name].default_font
     };
+  };
 
-    function restore_prev_settings() {
-        var features = selection._groups[0];
-        for (var i = 0; i < features.length; i++) {
-            features[i].style.fill = prev_settings[i]['color'];
-            features[i].style.fontSize = prev_settings[i]['size'];
-            features[i].style.display = prev_settings[i]['display'];
-            features[i].setAttribute('x', prev_settings[i]['position'][0]);
-            features[i].setAttribute('y', prev_settings[i]['position'][1]);
-            features[i].style.fontFamily = prev_settings[i]['font'];
-        }
+  function restore_prev_settings() {
+    var features = selection._groups[0];
+    for (var i = 0; i < features.length; i++) {
+      features[i].style.fill = prev_settings[i]['color'];
+      features[i].style.fontSize = prev_settings[i]['size'];
+      features[i].style.display = prev_settings[i]['display'];
+      features[i].setAttribute('x', prev_settings[i]['position'][0]);
+      features[i].setAttribute('y', prev_settings[i]['position'][1]);
+      features[i].style.fontFamily = prev_settings[i]['font'];
+    }
 
-        current_layers[layer_name].fill_color = prev_settings_defaults.color;
-        current_layers[layer_name].default_size = prev_settings_defaults.size;
-        current_layers[layer_name].default_font = prev_settings_defaults.font;
-    };
+    current_layers[layer_name].fill_color = prev_settings_defaults.color;
+    current_layers[layer_name].default_size = prev_settings_defaults.size;
+    current_layers[layer_name].default_font = prev_settings_defaults.font;
+  };
 
-    check_remove_existing_box('.styleBox');
+  check_remove_existing_box('.styleBox');
 
-    var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('text'),
-        ref_layer_name = current_layers[layer_name].ref_layer_name;
+  var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('text'),
+      ref_layer_name = current_layers[layer_name].ref_layer_name;
 
-    var prev_settings = [],
-        prev_settings_defaults = {},
-        rendering_params = {};
+  var prev_settings = [],
+      prev_settings_defaults = {},
+      rendering_params = {};
 
-    get_prev_settings();
+  get_prev_settings();
 
-    make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (!confirmed) {
-            restore_prev_settings();
-        } else {
-            // Change the layer name if requested :
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-        }
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (!confirmed) {
+      restore_prev_settings();
+    } else {
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
+    }
+  });
+
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+
+  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+  popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_labels_loc', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.reset_labels_location')).on('click', function () {
+    selection.transition().attrs(function (d) {
+      var coords = path.centroid(d.geometry);
+      return { x: coords[0], y: coords[1] };
     });
+  });
 
-    var container = document.querySelector('.twbs > .styleBox');
-    var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+  popup.append('p').style('text-align', 'center').insert('button').attr('id', 'reset_labels_display').attr('class', 'button_st4').text(i18next.t('app_page.layer_style_popup.redraw_labels')).on('click', function () {
+    selection.style('display', undefined);
+  });
 
-    popup.append('p').styles({ 'text-align': 'center', 'color': 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
+  popup.insert('p').style('text-align', 'center').style('font-size', '9px').html(i18next.t('app_page.layer_style_popup.overrride_warning'));
+  var label_sizes = popup.append('p').attr('class', 'line_elem');
+  label_sizes.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_size'));
+  label_sizes.insert('span').style('float', 'right').html(' px');
+  label_sizes.insert('input').styles({ float: 'right', width: '70px' }).attr('type', 'number').attr('value', +current_layers[layer_name].default_size.replace('px', '')).on('change', function () {
+    var size = this.value + 'px';
+    current_layers[layer_name].default_size = size;
+    selection.style('font-size', size);
+  });
 
-    var new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function () {
-        new_layer_name = this.value;
-    });
-    popup.append('p').style('text-align', 'center').insert('button').attr('id', 'reset_labels_loc').attr('class', 'button_st4').text(i18next.t('app_page.layer_style_popup.reset_labels_location')).on('click', function () {
-        selection.transition().attrs(function (d) {
-            var coords = path.centroid(d.geometry);
-            return { x: coords[0], y: coords[1] };
-        });
-    });
+  var default_color = popup.insert('p').attr('class', 'line_elem');
+  default_color.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_color'));
+  default_color.insert('input').style('float', 'right').attrs({ type: 'color', value: current_layers[layer_name].fill_color }).on('change', function () {
+    current_layers[layer_name].fill_color = this.value;
+    selection.transition().style('fill', this.value);
+  });
 
-    popup.append("p").style("text-align", "center").insert("button").attr("id", "reset_labels_display").attr("class", "button_st4").text(i18next.t("app_page.layer_style_popup.redraw_labels")).on("click", function () {
-        selection.style("display", undefined);
-    });
+  var font_section = popup.insert('p').attr('class', 'line_elem');
+  font_section.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_font'));
+  var choice_font = font_section.insert('select').style('float', 'right').on('change', function () {
+    current_layers[layer_name].default_font = this.value;
+    selection.transition().style('font-family', this.value);
+  });
 
-    popup.insert("p").style("text-align", "center").style("font-size", "9px").html(i18next.t("app_page.layer_style_popup.overrride_warning"));
-    var label_sizes = popup.append("p").attr("class", "line_elem");
-    label_sizes.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_size"));
-    label_sizes.insert("span").style("float", "right").html(" px");
-    label_sizes.insert("input").styles({ "float": "right", "width": "70px" }).attr("type", "number").attr("value", +current_layers[layer_name].default_size.replace("px", "")).on("change", function () {
-        var size = this.value + "px";
-        current_layers[layer_name].default_size = size;
-        selection.style("font-size", size);
-    });
-
-    var default_color = popup.insert("p").attr("class", "line_elem");
-    default_color.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_color"));
-    default_color.insert("input").style('float', 'right').attrs({ "type": "color", "value": current_layers[layer_name].fill_color }).on("change", function () {
-        current_layers[layer_name].fill_color = this.value;
-        selection.transition().style("fill", this.value);
-    });
-
-    var font_section = popup.insert("p").attr("class", "line_elem");
-    font_section.append("span").html(i18next.t("app_page.layer_style_popup.labels_default_font"));
-    var choice_font = font_section.insert("select").style("float", "right").on("change", function () {
-        current_layers[layer_name].default_font = this.value;
-        selection.transition().style("font-family", this.value);
-    });
-
-    available_fonts.forEach(function (name) {
-        choice_font.append("option").attr("value", name[1]).text(name[0]);
-    });
-    choice_font.node().value = current_layers[layer_name].default_font;
+  available_fonts.forEach(function (name) {
+    choice_font.append('option').attr('value', name[1]).text(name[0]);
+  });
+  choice_font.node().value = current_layers[layer_name].default_font;
 }
 
 function createStyleBoxGraticule(layer_name) {
-    check_remove_existing_box(".styleBox");
-    var current_params = cloneObj(current_layers["Graticule"]);
-    var selection = map.select("#Graticule > path");
-    var selection_strokeW = map.select("#Graticule");
+  check_remove_existing_box('.styleBox');
+  var current_params = cloneObj(current_layers['Graticule']);
+  var selection = map.select('#Graticule > path');
+  var selection_strokeW = map.select('#Graticule');
 
-    make_confirm_dialog2("styleBox", layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (confirmed) {
-            null;
-        } else {
-            null;
-        }
-    });
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (confirmed) {
+      null;
+    } else {
+      null;
+    }
+  });
 
-    var container = document.querySelector(".twbs > .styleBox");
-    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
-    // let new_layer_name = layer_name;
-    // const new_name_section = make_change_layer_name_section(popup, layer_name);
-    // new_name_section.on('change', function() {
-    //   new_layer_name = this.value;
-    // });
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+  // let new_layer_name = layer_name;
+  // const new_name_section = make_change_layer_name_section(popup, layer_name);
+  // new_name_section.on('change', function() {
+  //   new_layer_name = this.value;
+  // });
 
-    var color_choice = popup.append("p").attr("class", "line_elem");
-    color_choice.append("span").html(i18next.t("app_page.layer_style_popup.color"));
-    color_choice.append("input").style("float", "right").attrs({ type: "color", value: current_params.fill_color.single }).on("change", function () {
-        selection.style("stroke", this.value);
-        current_layers["Graticule"].fill_color.single = this.value;
-    });
+  var color_choice = popup.append('p').attr('class', 'line_elem');
+  color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
+  color_choice.append('input').style('float', 'right').attrs({ type: 'color', value: current_params.fill_color.single }).on('change', function () {
+    selection.style('stroke', this.value);
+    current_layers['Graticule'].fill_color.single = this.value;
+  });
 
-    var opacity_choice = popup.append("p").attr("class", "line_elem");
-    opacity_choice.append("span").html(i18next.t("app_page.layer_style_popup.opacity"));
-    opacity_choice.append("input").attrs({ type: "range", value: current_params.opacity, min: 0, max: 1, step: 0.1 }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on("change", function () {
-        selection.style("stroke-opacity", this.value);
-        current_layers["Graticule"].opacity = +this.value;
-        popup.select("#graticule_opacity_txt").html(+this.value * 100 + "%");
-    });
-    opacity_choice.append("span").attr("id", "graticule_opacity_txt").style("float", "right").html(current_params.opacity * 100 + '%');
+  var opacity_choice = popup.append('p').attr('class', 'line_elem');
+  opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
+  opacity_choice.append('input').attrs({ type: 'range', value: current_params.opacity, min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    selection.style('stroke-opacity', this.value);
+    current_layers['Graticule'].opacity = +this.value;
+    popup.select('#graticule_opacity_txt').html(+this.value * 100 + '%');
+  });
+  opacity_choice.append('span').attr('id', 'graticule_opacity_txt').style('float', 'right').html(current_params.opacity * 100 + '%');
 
-    var stroke_width_choice = popup.append("p").attr("class", "line_elem");
-    stroke_width_choice.append("span").html(i18next.t("app_page.layer_style_popup.width"));
-    stroke_width_choice.append("input").attrs({ type: "number", value: current_params["stroke-width-const"] }).styles({ "width": "60px", "float": "right" }).on("change", function () {
-        selection_strokeW.style("stroke-width", this.value);
-        current_layers["Graticule"]["stroke-width-const"] = +this.value;
-    });
+  var stroke_width_choice = popup.append('p').attr('class', 'line_elem');
+  stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
+  stroke_width_choice.append('input').attrs({ type: 'number', value: current_params['stroke-width-const'] }).styles({ width: '60px', float: 'right' }).on('change', function () {
+    selection_strokeW.style('stroke-width', this.value);
+    current_layers['Graticule']['stroke-width-const'] = +this.value;
+  });
 
-    var steps_choice = popup.append("p").attr("class", "line_elem");
-    steps_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_steps"));
-    steps_choice.append("input").attrs({ id: "graticule_range_steps", type: "range", value: current_params.step, min: 0, max: 100, step: 1 }).styles({ "vertical-align": "middle", "width": "58px", "display": "inline", "float": "right" }).on("change", function () {
-        var next_layer = selection_strokeW.node().nextSibling;
-        var step_val = +this.value,
-            dasharray_val = +document.getElementById("graticule_dasharray_txt").value;
-        current_layers["Graticule"].step = step_val;
-        map.select("#Graticule").remove();
-        map.append("g").attrs({ id: "Graticule", class: "layer" }).append("path").datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: "graticule", d: path, "clip-path": "url(#clip)" }).styles({ fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val });
-        zoom_without_redraw();
-        selection = map.select("#Graticule").selectAll("path");
-        selection_strokeW = map.select("#Graticule");
-        svg_map.insertBefore(selection_strokeW.node(), next_layer);
-        popup.select("#graticule_step_txt").attr("value", step_val);
-    });
-    steps_choice.append("input").attrs({ type: "number", value: current_params.step, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_step_txt" }).styles({ width: "30px", "margin-left": "10px", "float": "right" }).on("change", function () {
-        var grat_range = document.getElementById("graticule_range_steps");
-        grat_range.value = +this.value;
-        grat_range.dispatchEvent(new MouseEvent("change"));
-    });
+  var steps_choice = popup.append('p').attr('class', 'line_elem');
+  steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
+  steps_choice.append('input').attrs({ id: 'graticule_range_steps', type: 'range', value: current_params.step, min: 0, max: 100, step: 1 }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
+    var next_layer = selection_strokeW.node().nextSibling;
+    var step_val = +this.value;
+    var dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
+    current_layers['Graticule'].step = step_val;
+    map.select('#Graticule').remove();
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    zoom_without_redraw();
+    selection = map.select('#Graticule').selectAll('path');
+    selection_strokeW = map.select('#Graticule');
+    svg_map.insertBefore(selection_strokeW.node(), next_layer);
+    popup.select('#graticule_step_txt').attr('value', step_val);
+  });
+  steps_choice.append('input').attrs({ type: 'number', value: current_params.step, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+    var grat_range = document.getElementById('graticule_range_steps');
+    grat_range.value = +this.value;
+    grat_range.dispatchEvent(new MouseEvent('change'));
+  });
 
-    var dasharray_choice = popup.append("p").attr("class", "line_elem");
-    dasharray_choice.append("span").html(i18next.t("app_page.layer_style_popup.graticule_dasharray"));
-    dasharray_choice.append("input").attrs({ type: "range", value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: "graticule_range_dasharray" }).styles({ "vertical-align": "middle", "width": "58px", "display": "inline", "float": "right" }).on("change", function () {
-        selection.style("stroke-dasharray", this.value);
-        current_layers["Graticule"].dasharray = +this.value;
-        popup.select("#graticule_dasharray_txt").attr("value", this.value);
-    });
-    dasharray_choice.append("input").attrs({ type: "number", value: current_params.dasharray, min: 0, max: 100, step: "any", class: "without_spinner", id: "graticule_dasharray_txt" }).styles({ width: "30px", "margin-left": "10px", "float": "right" }).on("change", function () {
-        var grat_range = document.getElementById("graticule_range_dasharray");
-        grat_range.value = +this.value;
-        grat_range.dispatchEvent(new MouseEvent("change"));
-    });
+  var dasharray_choice = popup.append('p').attr('class', 'line_elem');
+  dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
+  dasharray_choice.append('input').attrs({ type: 'range', value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
+    selection.style('stroke-dasharray', this.value);
+    current_layers['Graticule'].dasharray = +this.value;
+    popup.select('#graticule_dasharray_txt').attr('value', this.value);
+  });
+  dasharray_choice.append('input').attrs({ type: 'number', value: current_params.dasharray, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+    var grat_range = document.getElementById('graticule_range_dasharray');
+    grat_range.value = +this.value;
+    grat_range.dispatchEvent(new MouseEvent('change'));
+  });
 
-    var clip_extent_section = popup.append('p').attr('class', 'line_elem');
-    clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null }).on('change', function () {
-        var next_layer = selection_strokeW.node().nextSibling,
-            step_val = +document.getElementById("graticule_step_txt").value,
-            dasharray_val = +document.getElementById("graticule_dasharray_txt").value,
-            graticule = d3.geoGraticule().step([step_val, step_val]);
-        map.select("#Graticule").remove();
-        if (this.checked) {
-            var bbox_layer = _target_layer_file.bbox,
-                extent_grat = [[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10], [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
+  var clip_extent_section = popup.append('p').attr('class', 'line_elem');
+  clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null }).on('change', function () {
+    var next_layer = selection_strokeW.node().nextSibling,
+        step_val = +document.getElementById('graticule_step_txt').value,
+        dasharray_val = +document.getElementById('graticule_dasharray_txt').value,
+        graticule = d3.geoGraticule().step([step_val, step_val]);
+    map.select('#Graticule').remove();
+    if (this.checked) {
+      var bbox_layer = _target_layer_file.bbox;
+      var extent_grat = [[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10], [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
 
-            if (extent_grat[0] < -180) extent_grat[0] = -180;
-            if (extent_grat[1] < -90) extent_grat[1] = -90;
-            if (extent_grat[2] > 180) extent_grat[2] = 180;
-            if (extent_grat[3] > 90) extent_grat[3] = 90;
-            graticule = graticule.extent(extent_grat);
-            current_layers['Graticule'].extent = extent_grat;
-        } else {
-            current_layers['Graticule'].extent = undefined;
-        }
-        map.append("g").attrs({ id: "Graticule", class: "layer" }).append("path").datum(graticule).attrs({ class: "graticule", d: path, "clip-path": "url(#clip)" }).styles({ fill: "none", "stroke": current_layers["Graticule"].fill_color.single, "stroke-dasharray": dasharray_val });
-        zoom_without_redraw();
-        selection = map.select("#Graticule").selectAll("path");
-        selection_strokeW = map.select("#Graticule");
-        svg_map.insertBefore(selection_strokeW.node(), next_layer);
-    });
-    clip_extent_section.append('label').attrs({ for: 'clip_graticule' }).html(i18next.t('app_page.layer_style_popup.graticule_clip'));
+      if (extent_grat[0] < -180) extent_grat[0] = -180;
+      if (extent_grat[1] < -90) extent_grat[1] = -90;
+      if (extent_grat[2] > 180) extent_grat[2] = 180;
+      if (extent_grat[3] > 90) extent_grat[3] = 90;
+      graticule = graticule.extent(extent_grat);
+      current_layers['Graticule'].extent = extent_grat;
+    } else {
+      current_layers['Graticule'].extent = undefined;
+    }
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    zoom_without_redraw();
+    selection = map.select('#Graticule').selectAll('path');
+    selection_strokeW = map.select('#Graticule');
+    svg_map.insertBefore(selection_strokeW.node(), next_layer);
+  });
+  clip_extent_section.append('label').attrs({ for: 'clip_graticule' }).html(i18next.t('app_page.layer_style_popup.graticule_clip'));
 
-    make_generate_labels_graticule_section(popup);
+  make_generate_labels_graticule_section(popup);
 }
 
 function redraw_legend(type_legend, layer_name, field) {
-    var _ref = type_legend === "default" ? [["#legend_root.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === "line_class" ? [["#legend_root_lines_class.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === "line_symbol" ? [["#legend_root_lines_symbol.lgdf_", _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined,
-        _ref2 = _slicedToArray(_ref, 2),
-        selector = _ref2[0],
-        func = _ref2[1];
+  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined,
+      _ref2 = _slicedToArray(_ref, 2),
+      selector = _ref2[0],
+      func = _ref2[1];
 
-    var lgd = document.querySelector(selector);
-    if (lgd) {
-        var transform_param = lgd.getAttribute("transform"),
-            lgd_title = lgd.querySelector("#legendtitle").innerHTML,
-            lgd_subtitle = lgd.querySelector("#legendsubtitle").innerHTML,
-            rounding_precision = lgd.getAttribute("rounding_precision"),
-            note = lgd.querySelector("#legend_bottom_note").innerHTML,
-            boxgap = lgd.getAttribute("boxgap");
-        var rect_fill_value = lgd.getAttribute("visible_rect") == "true" ? {
-            color: lgd.querySelector("#under_rect").style.fill,
-            opacity: lgd.querySelector("#under_rect").style.fillOpacity
-        } : undefined;
+  var lgd = document.querySelector(selector);
+  if (lgd) {
+    var transform_param = lgd.getAttribute('transform'),
+        lgd_title = lgd.querySelector('#legendtitle').innerHTML,
+        lgd_subtitle = lgd.querySelector('#legendsubtitle').innerHTML,
+        rounding_precision = lgd.getAttribute('rounding_precision'),
+        note = lgd.querySelector('#legend_bottom_note').innerHTML,
+        boxgap = lgd.getAttribute('boxgap');
+    var rect_fill_value = lgd.getAttribute('visible_rect') === 'true' ? {
+      color: lgd.querySelector('#under_rect').style.fill,
+      opacity: lgd.querySelector('#under_rect').style.fillOpacity
+    } : undefined;
 
-        if (type_legend == "default") {
-            var no_data_txt = lgd.querySelector("#no_data_txt");
-            no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+    if (type_legend === 'default') {
+      var no_data_txt = lgd.querySelector('#no_data_txt');
+      no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
-            lgd.remove();
-            func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
-        } else {
-            lgd.remove();
-            func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
-        }
-        lgd = document.querySelector(selector);
-        if (transform_param) {
-            lgd.setAttribute("transform", transform_param);
-        }
+      lgd.remove();
+      func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+    } else {
+      lgd.remove();
+      func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
     }
+    lgd = document.querySelector(selector);
+    if (transform_param) {
+      lgd.setAttribute('transform', transform_param);
+    }
+  }
 }
 
 function createStyleBox_Line(layer_name) {
-    check_remove_existing_box(".styleBox");
-    var rendering_params,
-        renderer = current_layers[layer_name].renderer,
-        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
-        selection = map.select(g_lyr_name).selectAll("path"),
-        opacity = selection.style('fill-opacity');
+  check_remove_existing_box('.styleBox');
+  var rendering_params,
+      renderer = current_layers[layer_name].renderer,
+      g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
+      selection = map.select(g_lyr_name).selectAll('path'),
+      opacity = selection.style('fill-opacity');
 
-    var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-        prev_col_breaks;
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color),
+      prev_col_breaks;
 
-    if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
 
-    var stroke_prev = selection.style('stroke'),
-        border_opacity = selection.style('stroke-opacity'),
-        stroke_width = +current_layers[layer_name]['stroke-width-const'],
-        prev_min_display,
-        prev_size,
-        prev_breaks;
+  var stroke_prev = selection.style('stroke'),
+      border_opacity = selection.style('stroke-opacity'),
+      stroke_width = +current_layers[layer_name]['stroke-width-const'],
+      prev_min_display,
+      prev_size,
+      prev_breaks;
 
-    if (stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev);
+  if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
 
-    var table = [];
-    Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), function (d) {
-        table.push(d.__data__.properties);
-    });
+  var table = [];
+  Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), function (d) {
+    table.push(d.__data__.properties);
+  });
 
-    var redraw_prop_val = function redraw_prop_val(prop_values) {
-        var selec = selection._groups[0];
-        for (var i = 0, len = prop_values.length; i < len; i++) {
-            selec[i].style.strokeWidth = prop_values[i];
-        }
-    };
-
-    make_confirm_dialog2("styleBox", layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (confirmed) {
-            if (renderer != undefined && rendering_params != undefined && renderer != "Categorical" && renderer != "PropSymbolsTypo") {
-                current_layers[layer_name].fill_color = { "class": rendering_params.colorsByFeature };
-                var colors_breaks = [];
-                for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-                    colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
-                }
-                current_layers[layer_name].colors_breaks = colors_breaks;
-                current_layers[layer_name].rendered_field = rendering_params.field;
-                current_layers[layer_name].options_disc = {
-                    schema: rendering_params.schema,
-                    colors: rendering_params.colors,
-                    no_data: rendering_params.no_data,
-                    type: rendering_params.type,
-                    breaks: rendering_params.breaks,
-                    extra_options: rendering_params.extra_options
-                };
-                redraw_legend('default', layer_name, rendering_params.field);
-            } else if ((renderer == "Categorical" || renderer == "PropSymbolsTypo") && rendering_params != undefined) {
-                current_layers[layer_name].color_map = rendering_params.color_map;
-                current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
-                redraw_legend('default', layer_name, rendering_params.field);
-            } else if (renderer == "DiscLayer") {
-                selection.each(function (d) {
-                    d.properties.prop_val = this.style.strokeWidth;
-                });
-                // Also change the legend if there is one displayed :
-                redraw_legend('line_class', layer_name);
-            } else if (renderer == "Links") {
-                selection.each(function (d, i) {
-                    current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
-                });
-                // Also change the legend if there is one displayed :
-                redraw_legend('line_class', layer_name);
-            }
-
-            if (renderer.startsWith('PropSymbols')) {
-                redraw_legend('line_symbol', layer_name);
-            }
-
-            // Change the layer name if requested :
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-            zoom_without_redraw();
-        } else {
-            // Reset to original values the rendering parameters if "no" is clicked
-            selection.style('fill-opacity', opacity).style('stroke-opacity', border_opacity);
-            var zoom_scale = +d3.zoomTransform(map.node()).k;
-            map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + "px");
-            current_layers[layer_name]['stroke-width-const'] = stroke_width;
-            var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-
-            if (current_layers[layer_name].renderer == "Links" && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].breaks = prev_breaks;
-                selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("display", function (d) {
-                    return +d.properties.fij > prev_min_display ? null : "none";
-                }).style("stroke-opacity", border_opacity).style("stroke-width", function (d, i) {
-                    return current_layers[layer_name].linksbyId[i][2];
-                });
-            } else if (current_layers[layer_name].renderer == "DiscLayer" && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].size = prev_size;
-                current_layers[layer_name].breaks = prev_breaks;
-                var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                selection.style('fill-opacity', 0).style("stroke", fill_prev.single).style("stroke-opacity", border_opacity).style("display", function (d, i) {
-                    return +i <= lim ? null : "none";
-                }).style('stroke-width', function (d) {
-                    return d.properties.prop_val;
-                });
-            } else {
-                if (fill_meth == "single") selection.style("stroke", fill_prev.single).style("stroke-opacity", border_opacity);else if (fill_meth == "random") selection.style("stroke-opacity", border_opacity).style("stroke", function () {
-                    return Colors.names[Colors.random()];
-                });else if (fill_meth == "class" && renderer == "Links") selection.style('stroke-opacity', function (d, i) {
-                    return current_layers[layer_name].linksbyId[i][0];
-                }).style("stroke", stroke_prev);
-            }
-            if (current_layers[layer_name].colors_breaks) current_layers[layer_name].colors_breaks = prev_col_breaks;
-            current_layers[layer_name].fill_color = fill_prev;
-            zoom_without_redraw();
-        }
-    });
-
-    var container = document.querySelector(".twbs > .styleBox");
-    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
-    var new_layer_name = layer_name;
-
-    var new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function () {
-        new_layer_name = this.value;
-    });
-
-    if (renderer === "Categorical" || renderer === "PropSymbolsTypo") {
-        var color_field = renderer === "Categorical" ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
-
-        popup.insert('p').style("margin", "auto").html("").append("button").attr("class", "button_disc").styles({ "font-size": "0.8em", "text-align": "center" }).html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
-                _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
-                cats = _prepare_categories_a2[0],
-                _ = _prepare_categories_a2[1];
-
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: color_field, field: color_field
-                    };
-                    selection.transition().style('stroke', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else if (renderer == "Choropleth" || renderer == "PropSymbolsChoro") {
-        popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        //  renderer:"Choropleth",
-                        field: current_layers[layer_name].rendered_field,
-                        extra_options: confirmed[7]
-                    };
-                    selection.transition().style("stroke", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else {
-        var c_section = popup.append('p').attr("class", "line_elem");
-        c_section.insert("span").html(i18next.t("app_page.layer_style_popup.color"));
-        c_section.insert('input').attrs({ type: "color", value: stroke_prev }).style("float", "right").on('change', function () {
-            selection.style("stroke", this.value);
-            current_layers[layer_name].fill_color = { single: this.value };
-            // current_layers[layer_name].fill_color.single = this.value;
-        });
+  var redraw_prop_val = function redraw_prop_val(prop_values) {
+    var selec = selection._groups[0];
+    for (var i = 0, len = prop_values.length; i < len; i++) {
+      selec[i].style.strokeWidth = prop_values[i];
     }
+  };
 
-    if (renderer == "Links") {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        var max_val = 0;
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (confirmed) {
+      if (renderer != undefined && rendering_params != undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
+        current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+        var colors_breaks = [];
+        for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
+          colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+        }
+        current_layers[layer_name].colors_breaks = colors_breaks;
+        current_layers[layer_name].rendered_field = rendering_params.field;
+        current_layers[layer_name].options_disc = {
+          schema: rendering_params.schema,
+          colors: rendering_params.colors,
+          no_data: rendering_params.no_data,
+          type: rendering_params.type,
+          breaks: rendering_params.breaks,
+          extra_options: rendering_params.extra_options
+        };
+        redraw_legend('default', layer_name, rendering_params.field);
+      } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params != undefined) {
+        current_layers[layer_name].color_map = rendering_params.color_map;
+        current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+        redraw_legend('default', layer_name, rendering_params.field);
+      } else if (renderer === 'DiscLayer') {
         selection.each(function (d) {
-            if (+d.properties.fij > max_val) max_val = d.properties.fij;
+          d.properties.prop_val = this.style.strokeWidth;
         });
-        var threshold_section = popup.append('p').attr("class", "line_elem");
-        threshold_section.append("span").html(i18next.t("app_page.layer_style_popup.display_flow_larger"));
-        // The legend will be updated in order to start on the minimum value displayed instead of
-        //   using the minimum value of the serie (skipping unused class if necessary)
-        threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
-            var val = +this.value;
-            popup.select("#larger_than").html(["<i> ", val, " </i>"].join(''));
-            selection.style("display", function (d) {
-                return +d.properties.fij > val ? null : "none";
-            });
-            current_layers[layer_name].min_display = val;
+        // Also change the legend if there is one displayed :
+        redraw_legend('line_class', layer_name);
+      } else if (renderer === 'Links') {
+        selection.each(function (d, i) {
+          current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
         });
-        threshold_section.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display, " </i>"].join(''));
-        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.modify_size_class")).on("click", function () {
-            container.modal.hide();
-            display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
-                container.modal.show();
-                if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    }),
-                        links_byId = current_layers[layer_name].linksbyId;
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+links_byId[i][1])];
-                    });
-                }
-            });
-        });
-    } else if (renderer == "DiscLayer") {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_size = current_layers[layer_name].size.slice();
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        var _max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
-            return i.disc_value;
-        }));
-        var disc_part = popup.append("p").attr("class", "line_elem");
-        disc_part.append("span").html(i18next.t("app_page.layer_style_popup.discont_threshold"));
-        disc_part.insert("input").attrs({ type: "range", min: 0, max: 1, step: 0.1, value: prev_min_display }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on("change", function () {
-            var val = +this.value;
-            var lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-            popup.select("#larger_than").html(["<i> ", val * 100, " % </i>"].join(''));
-            selection.style("display", function (d, i) {
-                return i <= lim ? null : "none";
-            });
-            current_layers[layer_name].min_display = val;
-        });
-        disc_part.insert('label').attr("id", "larger_than").style("float", "right").html(["<i> ", prev_min_display * 100, " % </i>"].join(''));
-        popup.append('p').style('text-align', 'center').append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization_links_discont(layer_name, "disc_value", current_layers[layer_name].breaks.length, "user_defined").then(function (result) {
-                container.modal.show();
-                if (result) {
-                    var serie = result[0],
-                        sizes = result[1].map(function (ft) {
-                        return ft[1];
-                    });
+        // Also change the legend if there is one displayed :
+        redraw_legend('line_class', layer_name);
+      }
 
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                    selection.style('fill-opacity', 0).style("stroke-width", function (d, i) {
-                        return sizes[serie.getClass(+d.properties.disc_value)];
-                    });
-                }
-            });
+      if (renderer.startsWith('PropSymbols')) {
+        redraw_legend('line_symbol', layer_name);
+      }
+
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
+      zoom_without_redraw();
+    } else {
+      // Reset to original values the rendering parameters if "no" is clicked
+      selection.style('fill-opacity', opacity).style('stroke-opacity', border_opacity);
+      var zoom_scale = +d3.zoomTransform(map.node()).k;
+      map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + 'px');
+      current_layers[layer_name]['stroke-width-const'] = stroke_width;
+      var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+
+      if (current_layers[layer_name].renderer === 'Links' && prev_min_display != undefined) {
+        current_layers[layer_name].min_display = prev_min_display;
+        current_layers[layer_name].breaks = prev_breaks;
+        selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('display', function (d) {
+          return +d.properties.fij > prev_min_display ? null : 'none';
+        }).style('stroke-opacity', border_opacity).style('stroke-width', function (d, i) {
+          return current_layers[layer_name].linksbyId[i][2];
         });
+      } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display != undefined) {
+        (function () {
+          current_layers[layer_name].min_display = prev_min_display;
+          current_layers[layer_name].size = prev_size;
+          current_layers[layer_name].breaks = prev_breaks;
+          var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+          selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('stroke-opacity', border_opacity).style('display', function (d, i) {
+            return +i <= lim ? null : 'none';
+          }).style('stroke-width', function (d) {
+            return d.properties.prop_val;
+          });
+        })();
+      } else {
+        if (fill_meth === 'single') {
+          selection.style('stroke', fill_prev.single).style('stroke-opacity', border_opacity);
+        } else if (fill_meth === 'random') {
+          selection.style('stroke-opacity', border_opacity).style('stroke', function () {
+            return Colors.names[Colors.random()];
+          });
+        } else if (fill_meth === 'class' && renderer === 'Links') {
+          selection.style('stroke-opacity', function (d, i) {
+            return current_layers[layer_name].linksbyId[i][0];
+          }).style('stroke', stroke_prev);
+        }
+      }
+      if (current_layers[layer_name].colors_breaks) current_layers[layer_name].colors_breaks = prev_col_breaks;
+      current_layers[layer_name].fill_color = fill_prev;
+      zoom_without_redraw();
     }
+  });
 
-    var opacity_section = popup.append('p').attr("class", "line_elem");
-    opacity_section.insert("span").html(i18next.t("app_page.layer_style_popup.opacity"));
-    opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on('change', function () {
-        opacity_section.select("#opacity_val_txt").html(" " + this.value);
-        selection.style('stroke-opacity', this.value);
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+
+  if (renderer === 'Categorical' || renderer === 'PropSymbolsTypo') {
+    (function () {
+      var color_field = renderer === 'Categorical' ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
+
+      popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
+            _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+            cats = _prepare_categories_a2[0],
+            _ = _prepare_categories_a2[1];
+
+        container.modal.hide();
+        display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              color_map: confirmed[1],
+              colorsByFeature: confirmed[2],
+              renderer: 'Categorical',
+              rendered_field: color_field,
+              field: color_field
+            };
+            selection.transition().style('stroke', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else if (renderer === 'Choropleth' || renderer === 'PropSymbolsChoro') {
+    popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+      container.modal.hide();
+      display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, current_layers[layer_name].options_disc).then(function (confirmed) {
+        container.modal.show();
+        if (confirmed) {
+          rendering_params = {
+            nb_class: confirmed[0],
+            type: confirmed[1],
+            breaks: confirmed[2],
+            colors: confirmed[3],
+            colorsByFeature: confirmed[4],
+            schema: confirmed[5],
+            no_data: confirmed[6],
+            //  renderer:"Choropleth",
+            field: current_layers[layer_name].rendered_field,
+            extra_options: confirmed[7]
+          };
+          selection.transition().style('stroke', function (d, i) {
+            return rendering_params.colorsByFeature[i];
+          });
+        }
+      });
     });
+  } else {
+    var c_section = popup.append('p').attr('class', 'line_elem');
+    c_section.insert('span').html(i18next.t('app_page.layer_style_popup.color'));
+    c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+      selection.style('stroke', this.value);
+      current_layers[layer_name].fill_color = { single: this.value };
+      // current_layers[layer_name].fill_color.single = this.value;
+    });
+  }
 
-    opacity_section.append("span").attr("id", "opacity_val_txt").style("display", "inline").style("float", "right").html(" " + border_opacity);
+  if (renderer === 'Links') {
+    (function () {
+      prev_min_display = current_layers[layer_name].min_display || 0;
+      prev_breaks = current_layers[layer_name].breaks.slice();
+      var max_val = 0;
+      selection.each(function (d) {
+        if (+d.properties.fij > max_val) max_val = d.properties.fij;
+      });
+      var threshold_section = popup.append('p').attr('class', 'line_elem');
+      threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
+      // The legend will be updated in order to start on the minimum value displayed instead of
+      //   using the minimum value of the serie (skipping unused class if necessary)
+      threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+        var val = +this.value;
+        popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
+        selection.style('display', function (d) {
+          return +d.properties.fij > val ? null : 'none';
+        });
+        current_layers[layer_name].min_display = val;
+      });
+      threshold_section.insert('label').attr('id', 'larger_than').style('float', 'right').html('<i> ' + prev_min_display + ' </i>');
+      popup.append('p').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.modify_size_class')).on('click', function () {
+        container.modal.hide();
+        display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, 'user_defined').then(function (result) {
+          container.modal.show();
+          if (result) {
+            (function () {
+              var serie = result[0],
+                  sizes = result[1].map(function (ft) {
+                return ft[1];
+              }),
+                  links_byId = current_layers[layer_name].linksbyId;
+              serie.setClassManually(result[2]);
+              current_layers[layer_name].breaks = result[1];
+              selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
+                return sizes[serie.getClass(+links_byId[i][1])];
+              });
+            })();
+          }
+        });
+      });
+    })();
+  } else if (renderer === 'DiscLayer') {
+    prev_min_display = current_layers[layer_name].min_display || 0;
+    prev_size = current_layers[layer_name].size.slice();
+    prev_breaks = current_layers[layer_name].breaks.slice();
+    var max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
+      return i.disc_value;
+    }));
+    var disc_part = popup.append('p').attr('class', 'line_elem');
+    disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
+    disc_part.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+      var val = +this.value;
+      var lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
+      popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
+      selection.style('display', function (d, i) {
+        return i <= lim ? null : 'none';
+      });
+      current_layers[layer_name].min_display = val;
+    });
+    disc_part.insert('label').attr('id', 'larger_than').style('float', 'right').html(['<i> ', prev_min_display * 100, ' % </i>'].join(''));
+    popup.append('p').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+      container.modal.hide();
+      display_discretization_links_discont(layer_name, 'disc_value', current_layers[layer_name].breaks.length, 'user_defined').then(function (result) {
+        container.modal.show();
+        if (result) {
+          (function () {
+            var serie = result[0],
+                sizes = result[1].map(function (ft) {
+              return ft[1];
+            });
 
-    if (!renderer || !renderer.startsWith('PropSymbols') && renderer != "DiscLayer" && renderer != "Links") {
-        var width_section = popup.append('p');
-        width_section.append("span").html(i18next.t("app_page.layer_style_popup.width"));
-        width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ "width": "60px", "float": "right" }).on('change', function () {
-            var val = +this.value;
-            var zoom_scale = +d3.zoomTransform(map.node()).k;
-            map.select(g_lyr_name).style("stroke-width", val / zoom_scale + "px");
-            current_layers[layer_name]['stroke-width-const'] = val;
-        });
-    } else if (renderer.startsWith('PropSymbols')) {
-        var field_used = current_layers[layer_name].rendered_field;
-        var d_values = result_data[layer_name].map(function (f) {
-            return +f[field_used];
-        });
-        var prop_val_content = popup.append("p");
-        prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: current_layers[layer_name].rendered_field }));
-        prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
-        prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
-            var f_size = +this.value,
-                prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, "line");
-            current_layers[layer_name].size[1] = f_size;
-            redraw_prop_val(prop_values);
-        });
-        prop_val_content.append("span").style("float", "right").html('(px)');
+            serie.setClassManually(result[2]);
+            current_layers[layer_name].breaks = result[1];
+            current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+            selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
+              return sizes[serie.getClass(+d.properties.disc_value)];
+            });
+          })();
+        }
+      });
+    });
+  }
 
-        var prop_val_content2 = popup.append("p").attr("class", "line_elem");
-        prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
-        prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
-            var f_val = +this.value,
-                prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], "line");
-            redraw_prop_val(prop_values);
-            current_layers[layer_name].size[0] = f_val;
-        });
-    }
+  var opacity_section = popup.append('p').attr('class', 'line_elem');
+  opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.opacity'));
+  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    opacity_section.select('#opacity_val_txt').html(' ' + this.value);
+    selection.style('stroke-opacity', this.value);
+  });
 
-    make_generate_labels_section(popup, layer_name);
+  opacity_section.append('span').attr('id', 'opacity_val_txt').style('display', 'inline').style('float', 'right').html(' ' + border_opacity);
+
+  if (!renderer || !renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'Links') {
+    var width_section = popup.append('p');
+    width_section.append('span').html(i18next.t('app_page.layer_style_popup.width'));
+    width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+      var val = +this.value;
+      var zoom_scale = +d3.zoomTransform(map.node()).k;
+      map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
+      current_layers[layer_name]['stroke-width-const'] = val;
+    });
+  } else if (renderer.startsWith('PropSymbols')) {
+    (function () {
+      var field_used = current_layers[layer_name].rendered_field;
+      var d_values = result_data[layer_name].map(function (f) {
+        return +f[field_used];
+      });
+      var prop_val_content = popup.append('p');
+      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
+      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+      prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
+        var f_size = +this.value;
+        var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
+        current_layers[layer_name].size[1] = f_size;
+        redraw_prop_val(prop_values);
+      });
+      prop_val_content.append('span').style('float', 'right').html('(px)');
+
+      var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
+      prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+      prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
+        var f_val = +this.value,
+            prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
+        redraw_prop_val(prop_values);
+        current_layers[layer_name].size[0] = f_val;
+      });
+    })();
+  }
+
+  make_generate_labels_section(popup, layer_name);
 }
 
 function createStyleBox(layer_name) {
-    check_remove_existing_box(".styleBox");
-    var type = current_layers[layer_name].type,
-        isSphere = current_layers[layer_name].sphere === true,
-        rendering_params,
-        renderer = current_layers[layer_name].renderer,
-        g_lyr_name = "#" + _app.layer_to_id.get(layer_name),
-        selection = map.select(g_lyr_name).selectAll("path"),
-        opacity = selection.style('fill-opacity');
+  check_remove_existing_box('.styleBox');
+  var type = current_layers[layer_name].type,
+      isSphere = current_layers[layer_name].sphere === true,
+      renderer = current_layers[layer_name].renderer,
+      g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
+      selection = map.select(g_lyr_name).selectAll('path'),
+      opacity = selection.style('fill-opacity');
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  var prev_col_breaks = void 0;
+  var rendering_params = void 0;
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  }
+  var border_opacity = selection.style('stroke-opacity'),
+      stroke_width = +current_layers[layer_name]['stroke-width-const'];
+  var table = [];
+  var stroke_prev = selection.style('stroke');
+  var prev_min_display = void 0,
+      prev_size = void 0,
+      prev_breaks = void 0;
 
-    var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-        prev_col_breaks;
+  if (stroke_prev.startsWith('rgb')) {
+    stroke_prev = rgb2hex(stroke_prev);
+  }
 
-    if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), function (d) {
+    table.push(d.__data__.properties);
+  });
+  var fields_layer = !isSphere ? current_layers[layer_name].fields_type || type_col2(table) : [];
 
-    var stroke_prev = selection.style('stroke'),
-        border_opacity = selection.style('stroke-opacity'),
-        stroke_width = +current_layers[layer_name]['stroke-width-const'],
-        prev_min_display,
-        prev_size,
-        prev_breaks;
-
-    if (stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev);
-
-    var table = [];
-    Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), function (d) {
-        table.push(d.__data__.properties);
-    });
-    var fields_layer = !isSphere ? current_layers[layer_name].fields_type || type_col2(table) : [];
-
-    make_confirm_dialog2("styleBox", layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (confirmed) {
-            // Update the object holding the properties of the layer if Yes is clicked
-            if (type === "Point" && current_layers[layer_name].pointRadius) {
-                current_layers[layer_name].pointRadius = +current_pt_size;
-            }
-            if (renderer != undefined && rendering_params != undefined && renderer !== "Stewart" && renderer !== "Categorical") {
-                current_layers[layer_name].fill_color = { "class": rendering_params.colorsByFeature };
-                var colors_breaks = [];
-                for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-                    colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
-                }
-                current_layers[layer_name].colors_breaks = colors_breaks;
-                current_layers[layer_name].rendered_field = rendering_params.field;
-                current_layers[layer_name].options_disc = {
-                    schema: rendering_params.schema,
-                    colors: rendering_params.colors,
-                    no_data: rendering_params.no_data,
-                    type: rendering_params.type,
-                    breaks: rendering_params.breaks,
-                    extra_options: rendering_params.extra_options
-                };
-            } else if (renderer === "Stewart") {
-                current_layers[layer_name].colors_breaks = rendering_params.breaks;
-                current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
-                    return obj[1];
-                });
-            } else if (renderer === "Categorical" && rendering_params != undefined) {
-                current_layers[layer_name].color_map = rendering_params.color_map;
-                current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
-            }
-
-            if (rendering_params !== undefined && rendering_params.field !== undefined || renderer === 'Stewart') {
-                redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
-            }
-            // Change the layer name if requested :
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-            zoom_without_redraw();
-        } else {
-            // Reset to original values the rendering parameters if "no" is clicked
-            selection.style('fill-opacity', opacity).style('stroke-opacity', border_opacity);
-            var zoom_scale = +d3.zoomTransform(map.node()).k;
-            map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + "px");
-            current_layers[layer_name]['stroke-width-const'] = stroke_width;
-            var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-            if (type === "Point" && current_layers[layer_name].pointRadius) {
-                selection.attr("d", path.pointRadius(+current_layers[layer_name].pointRadius));
-            } else {
-                if (current_layers[layer_name].renderer === 'Stewart') {
-                    recolor_stewart(prev_palette.name, prev_palette.reversed);
-                    redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
-                } else if (fill_meth === 'single') {
-                    selection.style('fill', fill_prev.single).style('stroke', stroke_prev);
-                } else if (fill_meth === 'class') {
-                    selection.style('fill-opacity', opacity).style('fill', function (d, i) {
-                        return fill_prev.class[i];
-                    }).style("stroke-opacity", border_opacity).style('stroke', stroke_prev);
-                } else if (fill_meth === "random") {
-                    selection.style('fill', function () {
-                        return Colors.names[Colors.random()];
-                    }).style('stroke', stroke_prev);
-                } else if (fill_meth === 'categorical') {
-                    fill_categorical(layer_name, fill_prev.categorical[0], 'path', fill_prev.categorical[1]);
-                }
-            }
-            if (current_layers[layer_name].colors_breaks) {
-                current_layers[layer_name].colors_breaks = prev_col_breaks;
-            }
-            current_layers[layer_name].fill_color = fill_prev;
-            zoom_without_redraw();
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (confirmed) {
+      // Update the object holding the properties of the layer if Yes is clicked
+      if (type === 'Point' && current_layers[layer_name].pointRadius) {
+        current_layers[layer_name].pointRadius = +current_pt_size;
+      }
+      if (renderer != undefined && rendering_params != undefined && renderer !== 'Stewart' && renderer !== 'Categorical') {
+        current_layers[layer_name].fill_color = { 'class': rendering_params.colorsByFeature };
+        var colors_breaks = [];
+        for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
+          colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
         }
-    });
-
-    var container = document.querySelector('.twbs > .styleBox');
-    var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
-
-    var new_layer_name = layer_name;
-    var new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function () {
-        new_layer_name = this.value;
-    });
-
-    if (type === 'Point') {
-        var current_pt_size = current_layers[layer_name].pointRadius;
-        var pt_size = popup.append("p").attr('class', 'line_elem');
-        pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
-        pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: "58px", 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on("change", function () {
-            current_pt_size = +this.value;
-            document.getElementById('point_radius_size_txt').value = current_pt_size;
-            selection.attr('d', path.pointRadius(current_pt_size));
-        });
-        pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on("change", function () {
-            var pt_size_range = document.getElementById('point_radius_size'),
-                old_value = pt_size_range.value;
-            if (this.value == "" || isNaN(+this.value)) {
-                this.value = old_value;
-            } else {
-                this.value = round_value(+this.value, 2);
-                pt_size_range.value = this.value;
-                selection.attr("d", path.pointRadius(this.value));
-            }
-        });
-    }
-
-    if (current_layers[layer_name].colors_breaks == undefined && renderer !== 'Categorical') {
-        if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
-            var fields = getFieldsType('category', null, fields_layer);
-            var fill_method = popup.append("p").html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
-            [[i18next.t('app_page.layer_style_popup.single_color'), "single"], [i18next.t('app_page.layer_style_popup.categorical_color'), "categorical"], [i18next.t('app_page.layer_style_popup.random_color'), "random"]].forEach(function (d, i) {
-                fill_method.append('option').text(d[0]).attr('value', d[1]);
-            });
-            popup.append('div').attrs({ id: 'fill_color_section' });
-            fill_method.on('change', function () {
-                d3.select("#fill_color_section").html('').on('click', null);
-                if (this.value === 'single') make_single_color_menu(layer_name, fill_prev);else if (this.value === 'categorical') make_categorical_color_menu(fields, layer_name, fill_prev);else if (this.value === 'random') make_random_color(layer_name);
-            });
-            setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
-        } else {
-            popup.append('div').attrs({ id: 'fill_color_section' });
-            make_single_color_menu(layer_name, fill_prev);
-        }
-    } else if (renderer === 'Categorical') {
-        var rendered_field = current_layers[layer_name].rendered_field;
-
-        popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).html('').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
-            container.modal.hide();
-
-            var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
-                _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
-                cats = _prepare_categories_a4[0],
-                _ = _prepare_categories_a4[1];
-
-            display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: 'Categorical', rendered_field: rendered_field, field: rendered_field
-                    };
-                    selection.transition().style('fill', function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else if (renderer === 'Choropleth') {
-        popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
-            container.modal.hide();
-            display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        //  renderer:"Choropleth",
-                        field: current_layers[layer_name].rendered_field,
-                        extra_options: confirmed[7]
-                    };
-                    var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                    selection.transition().style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else if (renderer == "Gridded") {
-        var field_to_discretize = current_layers[layer_name].rendered_field;
-        popup.append('p').style("margin", "auto").style("text-align", "center").append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "Choropleth",
-                        field: field_to_discretize,
-                        extra_options: confirmed[7]
-                    };
-                    var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-                    selection.transition().style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else if (renderer == "Stewart") {
-        var field_to_colorize = "min",
-            nb_ft = current_layers[layer_name].n_features;
-        var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-        rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
-
-        var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
-            var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-            if (reversed) new_coloramp.reverse();
-            for (var i = 0; i < nb_ft; ++i) {
-                rendering_params.breaks[i][1] = new_coloramp[i];
-            }selection.transition().style("fill", function (d, i) {
-                return new_coloramp[i];
-            });
-            current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+        current_layers[layer_name].colors_breaks = colors_breaks;
+        current_layers[layer_name].rendered_field = rendering_params.field;
+        current_layers[layer_name].options_disc = {
+          schema: rendering_params.schema,
+          colors: rendering_params.colors,
+          no_data: rendering_params.no_data,
+          type: rendering_params.type,
+          breaks: rendering_params.breaks,
+          extra_options: rendering_params.extra_options
         };
-
-        var color_palette_section = popup.insert("p").attr("class", "line_elem");
-        color_palette_section.append("span").html(i18next.t("app_page.layer_style_popup.color_palette"));
-        var seq_color_select = color_palette_section.insert("select").attr("id", "coloramp_params").style('float', 'right').on("change", function () {
-            recolor_stewart(this.value, false);
+      } else if (renderer === 'Stewart') {
+        current_layers[layer_name].colors_breaks = rendering_params.breaks;
+        current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
+          return obj[1];
         });
+      } else if (renderer === 'Categorical' && rendering_params != undefined) {
+        current_layers[layer_name].color_map = rendering_params.color_map;
+        current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
+      }
 
-        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-            seq_color_select.append("option").text(name).attr("value", name);
-        });
-        seq_color_select.node().value = prev_palette.name;
-        popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', 'margin': '0 !important' }).insert("button").attrs({ "class": "button_st3", "id": "reverse_colramp" }).html(i18next.t("app_page.layer_style_popup.reverse_palette")).on("click", function () {
-            var pal_name = document.getElementById("coloramp_params").value;
-            recolor_stewart(pal_name, true);
-        });
-    }
-    var fill_opacity_section = popup.append('p').attr("class", "line_elem");
-    fill_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
-    fill_opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: opacity }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right", "margin-right": "0px" }).on('change', function () {
-        selection.style('fill-opacity', this.value);
-        fill_opacity_section.select("#fill_opacity_txt").html(+this.value * 100 + "%");
-    });
-    fill_opacity_section.append("span").style("float", "right").attr("id", "fill_opacity_txt").html(+opacity * 100 + "%");
-
-    var c_section = popup.append('p').attr("class", "line_elem");
-    c_section.insert("span").html(i18next.t("app_page.layer_style_popup.border_color"));
-    c_section.insert('input').attrs({ type: "color", value: stroke_prev }).style("float", "right").on('change', function () {
-        selection.style("stroke", this.value);
-    });
-
-    var opacity_section = popup.append('p').attr("class", "line_elem");
-    opacity_section.insert("span").html(i18next.t("app_page.layer_style_popup.border_opacity"));
-    opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ "width": "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on('change', function () {
-        opacity_section.select("#opacity_val_txt").html(" " + this.value);
-        selection.style('stroke-opacity', this.value);
-    });
-
-    opacity_section.append("span").attr("id", "opacity_val_txt").style("display", "inline").style("float", "right").html(" " + border_opacity);
-
-    var width_section = popup.append('p');
-    width_section.append("span").html(i18next.t("app_page.layer_style_popup.border_width"));
-    width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ "width": "60px", "float": "right" }).on('change', function () {
-        var val = +this.value;
-        var zoom_scale = +d3.zoomTransform(map.node()).k;
-        map.select(g_lyr_name).style("stroke-width", val / zoom_scale + "px");
-        current_layers[layer_name]['stroke-width-const'] = val;
-    });
-
-    var shadow_section = popup.append('p');
-    var chkbx = shadow_section.insert('input').style('margin', '0').attrs({
-        type: 'checkbox',
-        id: 'checkbox_shadow_layer',
-        checked: map.select(g_lyr_name).attr('filter') ? true : null });
-    shadow_section.insert('label').attr('for', 'checkbox_shadow_layer').html(i18next.t('app_page.layer_style_popup.layer_shadow'));
-    chkbx.on('change', function () {
-        if (this.checked) {
-            createDropShadow(_app.layer_to_id.get(layer_name));
-        } else {
-            var filter_id = map.select(g_lyr_name).attr('filter');
-            svg_map.querySelector(filter_id.substring(4).replace(')', '')).remove();
-            map.select(g_lyr_name).attr('filter', null);
+      if (rendering_params !== undefined && rendering_params.field !== undefined || renderer === 'Stewart') {
+        redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+      }
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
+      zoom_without_redraw();
+    } else {
+      // Reset to original values the rendering parameters if "no" is clicked
+      selection.style('fill-opacity', opacity).style('stroke-opacity', border_opacity);
+      var zoom_scale = +d3.zoomTransform(map.node()).k;
+      map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + 'px');
+      current_layers[layer_name]['stroke-width-const'] = stroke_width;
+      var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+      if (type === 'Point' && current_layers[layer_name].pointRadius) {
+        selection.attr('d', path.pointRadius(+current_layers[layer_name].pointRadius));
+      } else {
+        if (current_layers[layer_name].renderer === 'Stewart') {
+          recolor_stewart(prev_palette.name, prev_palette.reversed);
+          redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+        } else if (fill_meth === 'single') {
+          selection.style('fill', fill_prev.single).style('stroke', stroke_prev);
+        } else if (fill_meth === 'class') {
+          selection.style('fill-opacity', opacity).style('fill', function (d, i) {
+            return fill_prev.class[i];
+          }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
+        } else if (fill_meth === 'random') {
+          selection.style('fill', function () {
+            return Colors.names[Colors.random()];
+          }).style('stroke', stroke_prev);
+        } else if (fill_meth === 'categorical') {
+          fill_categorical(layer_name, fill_prev.categorical[0], 'path', fill_prev.categorical[1]);
         }
+      }
+      if (current_layers[layer_name].colors_breaks) {
+        current_layers[layer_name].colors_breaks = prev_col_breaks;
+      }
+      current_layers[layer_name].fill_color = fill_prev;
+      zoom_without_redraw();
+    }
+  });
+
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+
+  if (type === 'Point') {
+    var current_pt_size = current_layers[layer_name].pointRadius;
+    var pt_size = popup.append('p').attr('class', 'line_elem');
+    pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
+    pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+      current_pt_size = +this.value;
+      document.getElementById('point_radius_size_txt').value = current_pt_size;
+      selection.attr('d', path.pointRadius(current_pt_size));
     });
-    make_generate_labels_section(popup, layer_name);
+    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+      var pt_size_range = document.getElementById('point_radius_size');
+      var old_value = pt_size_range.value;
+      if (this.value === '' || isNaN(+this.value)) {
+        this.value = old_value;
+      } else {
+        this.value = round_value(+this.value, 2);
+        pt_size_range.value = this.value;
+        selection.attr('d', path.pointRadius(this.value));
+      }
+    });
+  }
+
+  if (current_layers[layer_name].colors_breaks == undefined && renderer !== 'Categorical') {
+    if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
+      (function () {
+        var fields = getFieldsType('category', null, fields_layer);
+        var fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
+        [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.categorical_color'), 'categorical'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d, i) {
+          fill_method.append('option').text(d[0]).attr('value', d[1]);
+        });
+        popup.append('div').attrs({ id: 'fill_color_section' });
+        fill_method.on('change', function () {
+          d3.select('#fill_color_section').html('').on('click', null);
+          if (this.value === 'single') {
+            make_single_color_menu(layer_name, fill_prev);
+          } else if (this.value === 'categorical') {
+            make_categorical_color_menu(fields, layer_name, fill_prev);
+          } else if (this.value === 'random') {
+            make_random_color(layer_name);
+          }
+        });
+        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+      })();
+    } else {
+      popup.append('div').attrs({ id: 'fill_color_section' });
+      make_single_color_menu(layer_name, fill_prev);
+    }
+  } else if (renderer === 'Categorical') {
+    (function () {
+      var rendered_field = current_layers[layer_name].rendered_field;
+
+      popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        container.modal.hide();
+
+        var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
+            _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+            cats = _prepare_categories_a4[0],
+            _ = _prepare_categories_a4[1];
+
+        display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              color_map: confirmed[1],
+              colorsByFeature: confirmed[2],
+              renderer: 'Categorical',
+              rendered_field: rendered_field,
+              field: rendered_field
+            };
+            selection.transition().style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else if (renderer === 'Choropleth') {
+    popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+      container.modal.hide();
+      display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
+      //  "quantiles",
+      current_layers[layer_name].options_disc).then(function (confirmed) {
+        container.modal.show();
+        if (confirmed) {
+          rendering_params = {
+            nb_class: confirmed[0],
+            type: confirmed[1],
+            breaks: confirmed[2],
+            colors: confirmed[3],
+            colorsByFeature: confirmed[4],
+            schema: confirmed[5],
+            no_data: confirmed[6],
+            //  renderer:"Choropleth",
+            field: current_layers[layer_name].rendered_field,
+            extra_options: confirmed[7]
+          };
+          var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+          selection.transition().style('fill', function (d, i) {
+            return rendering_params.colorsByFeature[i];
+          });
+        }
+      });
+    });
+  } else if (renderer === 'Gridded') {
+    (function () {
+      var field_to_discretize = current_layers[layer_name].rendered_field;
+      popup.append('p').style('margin', 'auto').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+        container.modal.hide();
+        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+        //  "quantiles",
+        current_layers[layer_name].options_disc).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              type: confirmed[1],
+              breaks: confirmed[2],
+              colors: confirmed[3],
+              colorsByFeature: confirmed[4],
+              schema: confirmed[5],
+              no_data: confirmed[6],
+              renderer: 'Choropleth',
+              field: field_to_discretize,
+              extra_options: confirmed[7]
+            };
+            var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+            selection.transition().style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else if (renderer === 'Stewart') {
+    var prev_palette;
+    var recolor_stewart;
+    var color_palette_section;
+
+    (function () {
+      var field_to_colorize = 'min',
+          nb_ft = current_layers[layer_name].n_features;
+      prev_palette = cloneObj(current_layers[layer_name].color_palette);
+
+      rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+
+      recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
+        var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+        if (reversed) new_coloramp.reverse();
+        for (var i = 0; i < nb_ft; ++i) {
+          rendering_params.breaks[i][1] = new_coloramp[i];
+        }selection.transition().style('fill', function (d, i) {
+          return new_coloramp[i];
+        });
+        current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+      };
+
+      color_palette_section = popup.insert('p').attr('class', 'line_elem');
+
+      color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
+      var seq_color_select = color_palette_section.insert('select').attr('id', 'coloramp_params').style('float', 'right').on('change', function () {
+        recolor_stewart(this.value, false);
+      });
+
+      ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+        seq_color_select.append('option').text(name).attr('value', name);
+      });
+      seq_color_select.node().value = prev_palette.name;
+      popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', margin: '0 !important' }).insert('button').attrs({ class: 'button_st3', id: 'reverse_colramp' }).html(i18next.t('app_page.layer_style_popup.reverse_palette')).on('click', function () {
+        var pal_name = document.getElementById('coloramp_params').value;
+        recolor_stewart(pal_name, true);
+      });
+    })();
+  }
+  var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
+  fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+    selection.style('fill-opacity', this.value);
+    fill_opacity_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
+  });
+  fill_opacity_section.append('span').style('float', 'right').attr('id', 'fill_opacity_txt').html(+opacity * 100 + '%');
+
+  var c_section = popup.append('p').attr('class', 'line_elem');
+  c_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_color'));
+  c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+    selection.style('stroke', this.value);
+  });
+
+  var opacity_section = popup.append('p').attr('class', 'line_elem');
+  opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
+  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    opacity_section.select('#opacity_val_txt').html(' ' + this.value);
+    selection.style('stroke-opacity', this.value);
+  });
+
+  opacity_section.append('span').attr('id', 'opacity_val_txt').styles({ display: 'inline', float: 'right' }).html(' ' + border_opacity);
+
+  var width_section = popup.append('p');
+  width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
+  width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+    var val = +this.value;
+    var zoom_scale = +d3.zoomTransform(map.node()).k;
+    map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
+    current_layers[layer_name]['stroke-width-const'] = val;
+  });
+
+  var shadow_section = popup.append('p');
+  var chkbx = shadow_section.insert('input').style('margin', '0').attrs({
+    type: 'checkbox',
+    id: 'checkbox_shadow_layer',
+    checked: map.select(g_lyr_name).attr('filter') ? true : null });
+  shadow_section.insert('label').attr('for', 'checkbox_shadow_layer').html(i18next.t('app_page.layer_style_popup.layer_shadow'));
+  chkbx.on('change', function () {
+    if (this.checked) {
+      createDropShadow(_app.layer_to_id.get(layer_name));
+    } else {
+      var filter_id = map.select(g_lyr_name).attr('filter');
+      svg_map.querySelector(filter_id.substring(4).replace(')', '')).remove();
+      map.select(g_lyr_name).attr('filter', null);
+    }
+  });
+  make_generate_labels_section(popup, layer_name);
 }
 
 function make_generate_labels_graticule_section(parent_node) {
-    var labels_section = parent_node.append("p");
-    labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
-        this.style.fontWeight = "bold";
-    }).on("mouseout", function () {
-        this.style.fontWeight = "";
-    }).on("click", function () {
-        // swal({
-        //     title: "",
-        //     text: i18next.t("app_page.layer_style_popup.position_label_graticule"),
-        //     type: "question",
-        //     customClass: 'swal2_custom',
-        //     showCancelButton: true,
-        //     showCloseButton: false,
-        //     allowEscapeKey: false,
-        //     allowOutsideClick: false,
-        //     confirmButtonColor: "#DD6B55",
-        //     confirmButtonText: i18next.t("app_page.common.confirm"),
-        //     input: 'select',
-        //     inputPlaceholder: i18next.t("app_page.common.field"),
-        //     inputOptions: input_fields,
-        //     inputValidator: function(value) {
-        //         return new Promise(function(resolve, reject){
-        //             if(_fields.indexOf(value) < 0){
-        //                 reject(i18next.t("app_page.common.no_value"));
-        //             } else {
-        var options_labels = {
-            color: "#000",
-            font: "Arial,Helvetica,sans-serif",
-            ref_font_size: 12,
-            uo_layer_name: ["Labels", "Graticule"].join('_')
-        };
-        render_label_graticule("Graticule", options_labels);
-        //             resolve();
-        //           }
-        //       });
-        //   }
-        // }).then( value => {
-        //       console.log(value);
-        //   }, dismiss => {
-        //       console.log(dismiss);
-        // });
+  var labels_section = parent_node.append('p');
+  labels_section.append('span').attr('id', 'generate_labels').styles({ cursor: 'pointer', 'margin-top': '15px' }).html(i18next.t('app_page.layer_style_popup.generate_labels')).on('mouseover', function () {
+    this.style.fontWeight = 'bold';
+  }).on('mouseout', function () {
+    this.style.fontWeight = '';
+  }).on('click', function () {
+    render_label_graticule('Graticule', {
+      color: '#000',
+      font: 'Arial,Helvetica,sans-serif',
+      ref_font_size: 12,
+      uo_layer_name: ['Labels', 'Graticule'].join('_')
     });
+  });
 }
 
 function make_generate_labels_section(parent_node, layer_name) {
-    var _fields = get_fields_name(layer_name) || [];
-    if (_fields && _fields.length > 0) {
-        var labels_section = parent_node.append("p");
-        var input_fields = {};
-        for (var i = 0; i < _fields.length; i++) {
-            input_fields[_fields[i]] = _fields[i];
-        }
-        labels_section.append("span").attr("id", "generate_labels").styles({ "cursor": "pointer", "margin-top": "15px" }).html(i18next.t("app_page.layer_style_popup.generate_labels")).on("mouseover", function () {
-            this.style.fontWeight = "bold";
-        }).on("mouseout", function () {
-            this.style.fontWeight = "";
-        }).on("click", function () {
-            swal({
-                title: "",
-                text: i18next.t("app_page.layer_style_popup.field_label"),
-                type: "question",
-                customClass: 'swal2_custom',
-                showCancelButton: true,
-                showCloseButton: false,
-                allowEscapeKey: false,
-                allowOutsideClick: false,
-                confirmButtonColor: "#DD6B55",
-                confirmButtonText: i18next.t("app_page.common.confirm"),
-                input: 'select',
-                inputPlaceholder: i18next.t("app_page.common.field"),
-                inputOptions: input_fields,
-                inputValidator: function inputValidator(value) {
-                    return new Promise(function (resolve, reject) {
-                        if (_fields.indexOf(value) < 0) {
-                            reject(i18next.t("app_page.common.no_value"));
-                        } else {
-                            var options_labels = {
-                                label_field: value,
-                                color: "#000",
-                                font: "Arial,Helvetica,sans-serif",
-                                ref_font_size: 12,
-                                uo_layer_name: ["Labels", value, layer_name].join('_')
-                            };
-                            render_label(layer_name, options_labels);
-                            resolve();
-                        }
-                    });
-                }
-            }).then(function (value) {
-                console.log(value);
-            }, function (dismiss) {
-                console.log(dismiss);
+  var _fields = get_fields_name(layer_name) || [];
+  if (_fields && _fields.length > 0) {
+    (function () {
+      var labels_section = parent_node.append('p');
+      var input_fields = {};
+      for (var i = 0; i < _fields.length; i++) {
+        input_fields[_fields[i]] = _fields[i];
+      }
+      labels_section.append('span').attr('id', 'generate_labels').styles({ cursor: 'pointer', 'margin-top': '15px' }).html(i18next.t('app_page.layer_style_popup.generate_labels')).on('mouseover', function () {
+        this.style.fontWeight = 'bold';
+      }).on('mouseout', function () {
+        this.style.fontWeight = '';
+      }).on('click', function () {
+        swal({
+          title: '',
+          text: i18next.t('app_page.layer_style_popup.field_label'),
+          type: 'question',
+          customClass: 'swal2_custom',
+          showCancelButton: true,
+          showCloseButton: false,
+          allowEscapeKey: false,
+          allowOutsideClick: false,
+          confirmButtonColor: '#DD6B55',
+          confirmButtonText: i18next.t('app_page.common.confirm'),
+          input: 'select',
+          inputPlaceholder: i18next.t('app_page.common.field'),
+          inputOptions: input_fields,
+          inputValidator: function inputValidator(value) {
+            return new Promise(function (resolve, reject) {
+              if (_fields.indexOf(value) < 0) {
+                reject(i18next.t('app_page.common.no_value'));
+              } else {
+                render_label(layer_name, {
+                  label_field: value,
+                  color: '#000',
+                  font: 'Arial,Helvetica,sans-serif',
+                  ref_font_size: 12,
+                  uo_layer_name: ['Labels', value, layer_name].join('_')
+                });
+                resolve();
+              }
             });
+          }
+        }).then(function (value) {
+          console.log(value);
+        }, function (dismiss) {
+          console.log(dismiss);
         });
-    }
+      });
+    })();
+  }
 }
 
 function get_fields_name(layer_name) {
-    var elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
-    if (!elem.__data__ || !elem.__data__.properties) {
-        return null;
-    } else {
-        return Object.getOwnPropertyNames(elem.__data__.properties);
-    }
+  var elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
+  if (!elem.__data__ || !elem.__data__.properties) {
+    return null;
+  } else {
+    return Object.getOwnPropertyNames(elem.__data__.properties);
+  }
 }
 
 function createStyleBox_ProbSymbol(layer_name) {
-    check_remove_existing_box(".styleBox");
-    var layer_id = _app.layer_to_id.get(layer_name),
-        g_lyr_name = '' + layer_id,
-        ref_layer_name = current_layers[layer_name].ref_layer_name,
-        type_method = current_layers[layer_name].renderer,
-        type_symbol = current_layers[layer_name].symbol,
-        field_used = current_layers[layer_name].rendered_field,
-        selection = map.select(g_lyr_name).selectAll(type_symbol),
-        old_size = [current_layers[layer_name].size[0], current_layers[layer_name].size[1]];
-    var rendering_params = void 0;
-    var stroke_prev = selection.style('stroke'),
-        opacity = selection.style('fill-opacity'),
-        border_opacity = selection.style('stroke-opacity'),
-        stroke_width = selection.style('stroke-width');
+  check_remove_existing_box('.styleBox');
+  var layer_id = _app.layer_to_id.get(layer_name),
+      g_lyr_name = '#' + layer_id,
+      ref_layer_name = current_layers[layer_name].ref_layer_name,
+      type_method = current_layers[layer_name].renderer,
+      type_symbol = current_layers[layer_name].symbol,
+      field_used = current_layers[layer_name].rendered_field,
+      selection = map.select(g_lyr_name).selectAll(type_symbol),
+      old_size = [current_layers[layer_name].size[0], current_layers[layer_name].size[1]];
+  var rendering_params = void 0;
+  var stroke_prev = selection.style('stroke'),
+      opacity = selection.style('fill-opacity'),
+      border_opacity = selection.style('stroke-opacity'),
+      stroke_width = selection.style('stroke-width');
 
-    var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-        prev_col_breaks;
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color),
+      prev_col_breaks;
 
-    var d_values = result_data[layer_name].map(function (v) {
-        return +v[field_used];
-    });
+  var d_values = result_data[layer_name].map(function (v) {
+    return +v[field_used];
+  });
 
-    var redraw_prop_val = function redraw_prop_val(prop_values) {
-        var selec = selection._groups[0];
+  var redraw_prop_val = function redraw_prop_val(prop_values) {
+    var selec = selection._groups[0];
 
-        if (type_symbol === "circle") {
-            for (var i = 0, len = prop_values.length; i < len; i++) {
-                selec[i].setAttribute('r', prop_values[i]);
-            }
-        } else if (type_symbol === "rect") {
-            for (var _i = 0, _len = prop_values.length; _i < _len; _i++) {
-                var old_rect_size = +selec[_i].getAttribute('height'),
-                    centr = [+selec[_i].getAttribute("x") + old_rect_size / 2 - prop_values[_i] / 2, +selec[_i].getAttribute("y") + old_rect_size / 2 - prop_values[_i] / 2];
-                selec[_i].setAttribute('x', centr[0]);
-                selec[_i].setAttribute('y', centr[1]);
-                selec[_i].setAttribute('height', prop_values[_i]);
-                selec[_i].setAttribute('width', prop_values[_i]);
-            }
-        }
-    };
-
-    if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
-        prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
-    } else if (current_layers[layer_name].break_val != undefined) {
-        prev_col_breaks = current_layers[layer_name].break_val;
+    if (type_symbol === 'circle') {
+      for (var i = 0, len = prop_values.length; i < len; i++) {
+        selec[i].setAttribute('r', prop_values[i]);
+      }
+    } else if (type_symbol === 'rect') {
+      for (var _i = 0, _len = prop_values.length; _i < _len; _i++) {
+        var old_rect_size = +selec[_i].getAttribute('height'),
+            centr = [+selec[_i].getAttribute('x') + old_rect_size / 2 - prop_values[_i] / 2, +selec[_i].getAttribute('y') + old_rect_size / 2 - prop_values[_i] / 2];
+        selec[_i].setAttribute('x', centr[0]);
+        selec[_i].setAttribute('y', centr[1]);
+        selec[_i].setAttribute('height', prop_values[_i]);
+        selec[_i].setAttribute('width', prop_values[_i]);
+      }
     }
-    if (stroke_prev.startsWith("rgb")) stroke_prev = rgb2hex(stroke_prev);
-    if (stroke_width.endsWith("px")) stroke_width = stroke_width.substring(0, stroke_width.length - 2);
+  };
 
-    make_confirm_dialog2("styleBox", layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (confirmed) {
-            // if(current_layers[layer_name].size != old_size){
-            var lgd_prop_symb = document.querySelector(["#legend_root_symbol.lgdf_", layer_id].join(''));
-            if (lgd_prop_symb) {
-                redraw_legends_symbols(lgd_prop_symb);
-            }
-            if (type_symbol === "circle") {
-                selection.each(function (d, i) {
-                    d.properties.prop_value = this.getAttribute('r');
-                    d.properties.color = rgb2hex(this.style.fill);
-                });
-            } else {
-                selection.each(function (d, i) {
-                    d.properties.prop_value = this.getAttribute('height');
-                    d.properties.color = rgb2hex(this.style.fill);
-                });
-            }
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
+  } else if (current_layers[layer_name].break_val != undefined) {
+    prev_col_breaks = current_layers[layer_name].break_val;
+  }
+  if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
+  if (stroke_width.endsWith('px')) stroke_width = stroke_width.substring(0, stroke_width.length - 2);
 
-            if ((type_method === "PropSymbolsChoro" || type_method === "PropSymbolsTypo") && rendering_params != undefined) {
-                if (type_method === "PropSymbolsChoro") {
-                    current_layers[layer_name].fill_color = { "class": [].concat(rendering_params.colorsByFeature) };
-                    current_layers[layer_name].colors_breaks = [];
-                    for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-                        current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], " - ", rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
-                    }
-                    current_layers[layer_name].options_disc = {
-                        schema: rendering_params.schema,
-                        colors: rendering_params.colors,
-                        no_data: rendering_params.no_data,
-                        type: rendering_params.type,
-                        breaks: rendering_params.breaks,
-                        extra_options: rendering_params.extra_options
-                    };
-                } else if (type_method == "PropSymbolsTypo") {
-                    current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
-                    current_layers[layer_name].color_map = rendering_params.color_map;
-                }
-                current_layers[layer_name].rendered_field2 = rendering_params.field;
-                // Also change the legend if there is one displayed :
-                redraw_legend('default', layer_name, rendering_params.field);
-            }
-            // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
-            //     selection.each((d,i) => {
-            //         d.properties.color = rendering_params.colorsByFeature[i];
-            //     });
-            // }
-            // Change the layer name if requested :
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-        } else {
-            selection.style('fill-opacity', opacity);
-            map.select(g_lyr_name).style('stroke-width', stroke_width);
-            current_layers[layer_name]['stroke-width-const'] = stroke_width;
-            var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-            if (fill_meth === "single") {
-                selection.style('fill', fill_prev.single).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
-            } else if (fill_meth === "two") {
-                current_layers[layer_name].break_val = prev_col_breaks;
-                current_layers[layer_name].fill_color = { "two": [fill_prev.two[0], fill_prev.two[1]] };
-                selection.style('fill', function (d, i) {
-                    return d_values[i] > prev_col_breaks ? fill_prev.two[1] : fill_prev.two[0];
-                }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
-            } else if (fill_meth === "class") {
-                selection.style('fill-opacity', opacity).style("fill", function (d, i) {
-                    return current_layers[layer_name].fill_color.class[i];
-                }).style('stroke-opacity', border_opacity).style("stroke", stroke_prev);
-                current_layers[layer_name].colors_breaks = prev_col_breaks;
-            } else if (fill_meth === "random") {
-                selection.style('fill', function (_) {
-                    return Colors.names[Colors.random()];
-                }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
-            } else if (fill_meth === "categorical") {
-                fill_categorical(layer_name, fill_prev.categorical[0], type_symbol, fill_prev.categorical[1]);
-            }
-            current_layers[layer_name].fill_color = fill_prev;
-            if (current_layers[layer_name].size[1] != old_size[1]) {
-                var prop_values = prop_sizer3_e(d_values, old_size[0], old_size[1], type_symbol);
-                redraw_prop_val(prop_values);
-                current_layers[layer_name].size = [old_size[0], old_size[1]];
-            }
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (confirmed) {
+      // if(current_layers[layer_name].size != old_size){
+      var lgd_prop_symb = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
+      if (lgd_prop_symb) {
+        redraw_legends_symbols(lgd_prop_symb);
+      }
+      if (type_symbol === 'circle') {
+        selection.each(function (d, i) {
+          d.properties.prop_value = this.getAttribute('r');
+          d.properties.color = rgb2hex(this.style.fill);
+        });
+      } else {
+        selection.each(function (d, i) {
+          d.properties.prop_value = this.getAttribute('height');
+          d.properties.color = rgb2hex(this.style.fill);
+        });
+      }
+
+      if ((type_method === 'PropSymbolsChoro' || type_method === 'PropSymbolsTypo') && rendering_params != undefined) {
+        if (type_method === 'PropSymbolsChoro') {
+          current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+          current_layers[layer_name].colors_breaks = [];
+          for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
+            current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+          }
+          current_layers[layer_name].options_disc = {
+            schema: rendering_params.schema,
+            colors: rendering_params.colors,
+            no_data: rendering_params.no_data,
+            type: rendering_params.type,
+            breaks: rendering_params.breaks,
+            extra_options: rendering_params.extra_options
+          };
+        } else if (type_method === 'PropSymbolsTypo') {
+          current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+          current_layers[layer_name].color_map = rendering_params.color_map;
         }
-        zoom_without_redraw();
-    });
-
-    var container = document.querySelector(".twbs > .styleBox");
-    var popup = d3.select(container).select(".modal-content").style("width", "300px").select(".modal-body");
-
-    popup.append("p").styles({ "text-align": "center", "color": "grey" }).html([i18next.t("app_page.layer_style_popup.rendered_field", { field: current_layers[layer_name].rendered_field }), i18next.t("app_page.layer_style_popup.reference_layer", { layer: ref_layer_name })].join(''));
-
-    var new_layer_name = layer_name;
-    var new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function () {
-        new_layer_name = this.value;
-    });
-
-    if (type_method === "PropSymbolsChoro") {
-        var field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: field_color })).append("button").attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_discretization")).on("click", function () {
-            container.modal.hide();
-            display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
-            //  "quantiles",
-            current_layers[layer_name].options_disc).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0],
-                        type: confirmed[1],
-                        breaks: confirmed[2],
-                        colors: confirmed[3],
-                        colorsByFeature: confirmed[4],
-                        schema: confirmed[5],
-                        no_data: confirmed[6],
-                        renderer: "PropSymbolsChoro",
-                        field: field_color,
-                        extra_options: confirmed[7]
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
-    } else if (current_layers[layer_name].break_val != undefined) {
-        var fill_color_section = popup.append('div').attr("id", "fill_color_section");
-        fill_color_section.append("p").style("text-align", "center").html(i18next.t("app_page.layer_style_popup.color_break"));
-        var p2 = fill_color_section.append("p").style("display", "inline");
-        var col1 = p2.insert("input").attr("type", "color").attr("id", "col1").attr("value", current_layers[layer_name].fill_color.two[0]).on("change", function () {
-            var _this = this;
-
-            var new_break_val = +b_val.node().value;
-            current_layers[layer_name].fill_color.two[0] = this.value;
-            selection.transition().style("fill", function (d, i) {
-                return d_values[i] > new_break_val ? col2.node().value : _this.value;
-            });
-        });
-        var col2 = p2.insert("input").attr("type", "color").attr("id", "col2").attr("value", current_layers[layer_name].fill_color.two[1]).on("change", function () {
-            var _this2 = this;
-
-            var new_break_val = +b_val.node().value;
-            current_layers[layer_name].fill_color.two[1] = this.value;
-            selection.transition().style("fill", function (d, i) {
-                return d_values[i] > new_break_val ? _this2.value : col1.node().value;
-            });
-        });
-        fill_color_section.insert("span").html(i18next.t("app_page.layer_style_popup.break_value"));
-        var b_val = fill_color_section.insert("input").attrs({ type: "number", value: current_layers[layer_name].break_val }).style("width", "75px").on("change", function () {
-            var new_break_val = +this.value;
-            current_layers[layer_name].break_val = new_break_val;
-            selection.transition().style("fill", function (d, i) {
-                return d_values[i] > new_break_val ? col2.node().value : col1.node().value;
-            });
-        });
-    } else if (type_method === "PropSymbolsTypo") {
-        var _field_color = current_layers[layer_name].rendered_field2;
-        popup.append('p').style("margin", "auto").html(i18next.t("app_page.layer_style_popup.field_symbol_color", { field: _field_color }));
-        popup.append('p').style('text-align', 'center').insert('button').attr("class", "button_disc").html(i18next.t("app_page.layer_style_popup.choose_colors")).on("click", function () {
-            var _prepare_categories_a5 = prepare_categories_array(layer_name, _field_color, current_layers[layer_name].color_map),
-                _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
-                cats = _prepare_categories_a6[0],
-                _ = _prepare_categories_a6[1];
-
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, _field_color, cats).then(function (confirmed) {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                        nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-                        renderer: "Categorical", rendered_field: _field_color, field: _field_color
-                    };
-                    selection.style("fill", function (d, i) {
-                        return rendering_params.colorsByFeature[i];
-                    });
-                }
-            });
-        });
+        current_layers[layer_name].rendered_field2 = rendering_params.field;
+        // Also change the legend if there is one displayed :
+        redraw_legend('default', layer_name, rendering_params.field);
+      }
+      // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
+      //     selection.each((d,i) => {
+      //         d.properties.color = rendering_params.colorsByFeature[i];
+      //     });
+      // }
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
     } else {
-        var fields_all = type_col2(result_data[layer_name]),
-            fields = getFieldsType('category', null, fields_all),
-            fill_method = popup.append("p").html(i18next.t("app_page.layer_style_popup.fill_color")).insert("select");
-
-        [[i18next.t("app_page.layer_style_popup.single_color"), "single"], [i18next.t("app_page.layer_style_popup.random_color"), "random"]].forEach(function (d) {
-            fill_method.append("option").text(d[0]).attr("value", d[1]);
-        });
-        popup.append('div').attr("id", "fill_color_section");
-        fill_method.on("change", function () {
-            popup.select("#fill_color_section").html("").on("click", null);
-            if (this.value === "single") {
-                make_single_color_menu(layer_name, fill_prev, type_symbol);
-                map.select(g_lyr_name).selectAll(type_symbol).transition().style("fill", fill_prev.single);
-                current_layers[layer_name].fill_color = cloneObj(fill_prev);
-            } else if (this.value === "random") {
-                make_random_color(layer_name, type_symbol);
-            }
-        });
-        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+      selection.style('fill-opacity', opacity);
+      map.select(g_lyr_name).style('stroke-width', stroke_width);
+      current_layers[layer_name]['stroke-width-const'] = stroke_width;
+      var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+      if (fill_meth === 'single') {
+        selection.style('fill', fill_prev.single).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
+      } else if (fill_meth === 'two') {
+        current_layers[layer_name].break_val = prev_col_breaks;
+        current_layers[layer_name].fill_color = { two: [fill_prev.two[0], fill_prev.two[1]] };
+        selection.style('fill', function (d, i) {
+          return d_values[i] > prev_col_breaks ? fill_prev.two[1] : fill_prev.two[0];
+        }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
+      } else if (fill_meth === 'class') {
+        selection.style('fill-opacity', opacity).style('fill', function (d, i) {
+          return current_layers[layer_name].fill_color.class[i];
+        }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
+        current_layers[layer_name].colors_breaks = prev_col_breaks;
+      } else if (fill_meth === 'random') {
+        selection.style('fill', function (_) {
+          return Colors.names[Colors.random()];
+        }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
+      } else if (fill_meth === 'categorical') {
+        fill_categorical(layer_name, fill_prev.categorical[0], type_symbol, fill_prev.categorical[1]);
+      }
+      current_layers[layer_name].fill_color = fill_prev;
+      if (current_layers[layer_name].size[1] != old_size[1]) {
+        var prop_values = prop_sizer3_e(d_values, old_size[0], old_size[1], type_symbol);
+        redraw_prop_val(prop_values);
+        current_layers[layer_name].size = [old_size[0], old_size[1]];
+      }
     }
+    zoom_without_redraw();
+  });
 
-    var fill_opct_section = popup.append('p').attr("class", "line_elem");
-    fill_opct_section.append("span").html(i18next.t("app_page.layer_style_popup.fill_opacity"));
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
 
-    fill_opct_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", "float": "right" }).on('change', function () {
-        selection.style('fill-opacity', this.value);
-        fill_opct_section.select("#fill_opacity_txt").html(+this.value * 100 + "%");
+  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+
+  if (type_method === 'PropSymbolsChoro') {
+    (function () {
+      var field_color = current_layers[layer_name].rendered_field2;
+      popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color })).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+        container.modal.hide();
+        display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+        //  "quantiles",
+        current_layers[layer_name].options_disc).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              type: confirmed[1],
+              breaks: confirmed[2],
+              colors: confirmed[3],
+              colorsByFeature: confirmed[4],
+              schema: confirmed[5],
+              no_data: confirmed[6],
+              renderer: 'PropSymbolsChoro',
+              field: field_color,
+              extra_options: confirmed[7]
+            };
+            selection.style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else if (current_layers[layer_name].break_val != undefined) {
+    var fill_color_section = popup.append('div').attr('id', 'fill_color_section');
+    fill_color_section.append('p').style('text-align', 'center').html(i18next.t('app_page.layer_style_popup.color_break'));
+    var p2 = fill_color_section.append('p').style('display', 'inline');
+    var col1 = p2.insert('input').attr('type', 'color').attr('id', 'col1').attr('value', current_layers[layer_name].fill_color.two[0]).on('change', function () {
+      var _this = this;
+
+      var new_break_val = +b_val.node().value;
+      current_layers[layer_name].fill_color.two[0] = this.value;
+      selection.transition().style('fill', function (d, i) {
+        return d_values[i] > new_break_val ? col2.node().value : _this.value;
+      });
     });
+    var col2 = p2.insert('input').attr('type', 'color').attr('id', 'col2').attr('value', current_layers[layer_name].fill_color.two[1]).on('change', function () {
+      var _this2 = this;
 
-    fill_opct_section.append("span").attr("id", "fill_opacity_txt").style("float", "right").html(+opacity * 100 + "%");
-
-    var border_color_section = popup.append('p').attr("class", "line_elem");
-    border_color_section.append("span").html(i18next.t("app_page.layer_style_popup.border_color"));
-    border_color_section.insert('input').attrs({ type: "color", "value": stroke_prev }).style("float", "right").on('change', function () {
-        selection.transition().style("stroke", this.value);
+      var new_break_val = +b_val.node().value;
+      current_layers[layer_name].fill_color.two[1] = this.value;
+      selection.transition().style('fill', function (d, i) {
+        return d_values[i] > new_break_val ? _this2.value : col1.node().value;
+      });
     });
-
-    var border_opacity_section = popup.append('p');
-    border_opacity_section.append("span").html(i18next.t("app_page.layer_style_popup.border_opacity"));
-
-    border_opacity_section.insert('input').attrs({ type: "range", min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: "58px", "vertical-align": "middle", "display": "inline", float: "right" }).on('change', function () {
-        selection.style('stroke-opacity', this.value);
-        border_opacity_section.select("#border_opacity_txt").html(+this.value * 100 + "%");
+    fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.break_value'));
+    var b_val = fill_color_section.insert('input').attrs({ type: 'number', value: current_layers[layer_name].break_val }).style('width', '75px').on('change', function () {
+      var new_break_val = +this.value;
+      current_layers[layer_name].break_val = new_break_val;
+      selection.transition().style('fill', function (d, i) {
+        return d_values[i] > new_break_val ? col2.node().value : col1.node().value;
+      });
     });
+  } else if (type_method === 'PropSymbolsTypo') {
+    (function () {
+      var field_color = current_layers[layer_name].rendered_field2;
+      popup.append('p').style('margin', 'auto').html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color }));
+      popup.append('p').style('text-align', 'center').insert('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        var _prepare_categories_a5 = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map),
+            _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
+            cats = _prepare_categories_a6[0],
+            _ = _prepare_categories_a6[1];
 
-    border_opacity_section.append("span").attr("id", "border_opacity_txt").style("float", "right").html(+border_opacity * 100 + "%");
+        container.modal.hide();
+        display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+              renderer: 'Categorical', rendered_field: field_color, field: field_color
+            };
+            selection.style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else {
+    (function () {
+      var fields_all = type_col2(result_data[layer_name]),
+          fields = getFieldsType('category', null, fields_all),
+          fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
 
-    var border_width_section = popup.append('p').attr("class", "line_elem");
-    border_width_section.append("span").html(i18next.t("app_page.layer_style_popup.border_width"));
-    border_width_section.insert('input').attrs({ type: "number", min: 0, step: 0.1, value: stroke_width }).styles({ width: "60px", float: "right" }).on('change', function () {
-        selection.style("stroke-width", this.value + "px");
-        current_layers[layer_name]['stroke-width-const'] = +this.value;
-    });
+      [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d) {
+        fill_method.append('option').text(d[0]).attr('value', d[1]);
+      });
+      popup.append('div').attr('id', 'fill_color_section');
+      fill_method.on('change', function () {
+        popup.select('#fill_color_section').html('').on('click', null);
+        if (this.value === 'single') {
+          make_single_color_menu(layer_name, fill_prev, type_symbol);
+          map.select(g_lyr_name).selectAll(type_symbol).transition().style('fill', fill_prev.single);
+          current_layers[layer_name].fill_color = cloneObj(fill_prev);
+        } else if (this.value === 'random') {
+          make_random_color(layer_name, type_symbol);
+        }
+      });
+      setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+    })();
+  }
 
-    var prop_val_content = popup.append("p");
-    prop_val_content.append("span").html(i18next.t("app_page.layer_style_popup.field_symbol_size", { field: field_used }));
-    prop_val_content.append('span').html(i18next.t("app_page.layer_style_popup.symbol_fixed_size"));
-    prop_val_content.insert('input').styles({ width: "60px", float: "right" }).attrs({ type: "number", id: "max_size_range", min: 0.1, step: "any", value: current_layers[layer_name].size[1] }).on("change", function () {
-        var f_size = +this.value,
-            prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
-        current_layers[layer_name].size[1] = f_size;
-        redraw_prop_val(prop_values);
-    });
-    prop_val_content.append("span").style("float", "right").html('(px)');
+  var fill_opct_section = popup.append('p').attr('class', 'line_elem');
+  fill_opct_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
 
-    var prop_val_content2 = popup.append("p").attr("class", "line_elem");
-    prop_val_content2.append("span").html(i18next.t("app_page.layer_style_popup.on_value"));
-    prop_val_content2.insert("input").styles({ width: "100px", float: "right" }).attrs({ type: "number", min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on("change", function () {
-        var f_val = +this.value,
-            prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
-        redraw_prop_val(prop_values);
-        current_layers[layer_name].size[0] = f_val;
-    });
+  fill_opct_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    selection.style('fill-opacity', this.value);
+    fill_opct_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
+  });
 
-    make_generate_labels_section(popup, layer_name);
+  fill_opct_section.append('span').attr('id', 'fill_opacity_txt').style('float', 'right').html(+opacity * 100 + '%');
+
+  var border_color_section = popup.append('p').attr('class', 'line_elem');
+  border_color_section.append('span').html(i18next.t('app_page.layer_style_popup.border_color'));
+  border_color_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+    selection.transition().style('stroke', this.value);
+  });
+
+  var border_opacity_section = popup.append('p');
+  border_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
+
+  border_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    selection.style('stroke-opacity', this.value);
+    border_opacity_section.select('#border_opacity_txt').html(+this.value * 100 + '%');
+  });
+
+  border_opacity_section.append('span').attr('id', 'border_opacity_txt').style('float', 'right').html(+border_opacity * 100 + '%');
+
+  var border_width_section = popup.append('p').attr('class', 'line_elem');
+  border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
+  border_width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+    selection.style('stroke-width', this.value + 'px');
+    current_layers[layer_name]['stroke-width-const'] = +this.value;
+  });
+
+  var prop_val_content = popup.append('p');
+  prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: field_used }));
+  prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+  prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
+    var f_size = +this.value;
+    var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
+    current_layers[layer_name].size[1] = f_size;
+    redraw_prop_val(prop_values);
+  });
+  prop_val_content.append('span').style('float', 'right').html('(px)');
+
+  var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
+  prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+  prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
+    var f_val = +this.value;
+    var prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
+    redraw_prop_val(prop_values);
+    current_layers[layer_name].size[0] = f_val;
+  });
+
+  make_generate_labels_section(popup, layer_name);
 }
 
 function make_style_box_indiv_label(label_node) {
-    var current_options = {
-        size: label_node.style.fontSize,
-        content: label_node.textContent,
-        font: label_node.style.fontFamily,
-        color: label_node.style.fill
-    };
-    var new_params = {};
-    if (current_options.color.startsWith("rgb")) {
-        current_options.color = rgb2hex(current_options.color);
+  var current_options = {
+    size: label_node.style.fontSize,
+    content: label_node.textContent,
+    font: label_node.style.fontFamily,
+    color: label_node.style.fill
+  };
+  var new_params = {};
+  if (current_options.color.startsWith('rgb')) {
+    current_options.color = rgb2hex(current_options.color);
+  }
+  check_remove_existing_box('.styleTextAnnotation');
+  make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.func_options.label.title_box_indiv'), { widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (!confirmed) {
+      label_node.style.fontsize = current_options.size;
+      label_node.textContent = current_options.content;
+      label_node.style.fill = current_options.color;
+      label_node.style.fontFamily = current_options.font;
+    } else {
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, new_layer_name.trim());
+      }
     }
-    check_remove_existing_box(".styleTextAnnotation");
-    make_confirm_dialog2("styleTextAnnotation", i18next.t("app_page.func_options.label.title_box_indiv"), { widthFitContent: true, draggable: true }).then(function (confirmed) {
-        if (!confirmed) {
-            label_node.style.fontsize = current_options.size;
-            label_node.textContent = current_options.content;
-            label_node.style.fill = current_options.color;
-            label_node.style.fontFamily = current_options.font;
-        } else {
-            // Change the layer name if requested :
-            if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim());
-            }
-        }
-        // else {
-        //     label_node.__data__.properties.label = label_node.textContent;
-        // }
-    });
-    var box_content = d3.select(".styleTextAnnotation").select(".modal-content").style("width", "300px").select(".modal-body").insert('div');
-    var a = box_content.append("p").attr('class', 'line_elem');
-    a.insert('span').html(i18next.t("app_page.func_options.label.font_size"));
-    a.append("input").attrs({ type: "number", id: "font_size", min: 0, max: 34, step: "any", value: +label_node.style.fontSize.slice(0, -2) }).styles({ "width": "70px", "float": "right" }).on("change", function () {
-        label_node.style.fontSize = this.value + "px";
-    });
-    var b = box_content.append("p").attr('class', 'line_elem');
-    b.insert('span').html(i18next.t("app_page.func_options.label.content"));
-    b.append("input").attrs({ "value": label_node.textContent, id: "label_content" }).styles({ "width": "70px", "float": "right" }).on("keyup", function () {
-        label_node.textContent = this.value;
-    });
-    var c = box_content.append("p").attr('class', 'line_elem');
-    c.insert('span').html(i18next.t("app_page.func_options.common.color"));
-    c.append("input").attrs({ "type": "color", "value": rgb2hex(label_node.style.fill), id: "label_color" }).styles({ "width": "70px", "float": "right" }).on("change", function () {
-        label_node.style.fill = this.value;
-    });
-    var d = box_content.append("p").attr('class', 'line_elem');
-    d.insert('span').html(i18next.t("app_page.func_options.label.font_type"));
-    var selec_fonts = d.append("select").style('float', 'right').on("change", function () {
-        label_node.style.fontFamily = this.value;
-    });
+    // else {
+    //     label_node.__data__.properties.label = label_node.textContent;
+    // }
+  });
+  var box_content = d3.select('.styleTextAnnotation').select('.modal-content').style('width', '300px').select('.modal-body').insert('div');
+  var a = box_content.append('p').attr('class', 'line_elem');
+  a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
+  a.append('input').attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any', value: +label_node.style.fontSize.slice(0, -2) }).styles({ width: '70px', float: 'right' }).on('change', function () {
+    label_node.style.fontSize = this.value + 'px';
+  });
+  var b = box_content.append('p').attr('class', 'line_elem');
+  b.insert('span').html(i18next.t('app_page.func_options.label.content'));
+  b.append('input').attrs({ value: label_node.textContent, id: 'label_content' }).styles({ 'width': '70px', float: 'right' }).on('keyup', function () {
+    label_node.textContent = this.value;
+  });
+  var c = box_content.append('p').attr('class', 'line_elem');
+  c.insert('span').html(i18next.t('app_page.func_options.common.color'));
+  c.append('input').attrs({ type: 'color', value: rgb2hex(label_node.style.fill), id: 'label_color' }).styles({ width: '70px', float: 'right' }).on('change', function () {
+    label_node.style.fill = this.value;
+  });
+  var d = box_content.append('p').attr('class', 'line_elem');
+  d.insert('span').html(i18next.t('app_page.func_options.label.font_type'));
+  var selec_fonts = d.append('select').style('float', 'right').on('change', function () {
+    label_node.style.fontFamily = this.value;
+  });
 
-    available_fonts.forEach(function (name) {
-        selec_fonts.append("option").attr("value", name[1]).text(name[0]);
-    });
-    selec_fonts.node().value = label_node.style.fontFamily;
-};
+  available_fonts.forEach(function (name) {
+    selec_fonts.append('option').attr('value', name[1]).text(name[0]);
+  });
+  selec_fonts.node().value = label_node.style.fontFamily;
+}
 
 var createDropShadow = function createDropShadow(layerId) {
-    var filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
-    filt_to_use.setAttribute("id", 'filt_' + layerId);
-    // filt_to_use.setAttribute("x", 0);
-    // filt_to_use.setAttribute("y", 0);
-    filt_to_use.setAttribute("width", "200%");
-    filt_to_use.setAttribute("height", "200%");
-    var offset = document.createElementNS("http://www.w3.org/2000/svg", "feOffset");
-    offset.setAttributeNS(null, "result", "offOut");
-    offset.setAttributeNS(null, "in", "SourceAlpha");
-    offset.setAttributeNS(null, "dx", "5");
-    offset.setAttributeNS(null, "dy", "5");
-    var gaussian_blur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
-    gaussian_blur.setAttributeNS(null, 'result', 'blurOut');
-    gaussian_blur.setAttributeNS(null, 'in', 'offOut');
-    gaussian_blur.setAttributeNS(null, 'stdDeviation', 10);
-    var blend = document.createElementNS("http://www.w3.org/2000/svg", "feBlend");
-    blend.setAttributeNS(null, 'in', 'SourceGraphic');
-    blend.setAttributeNS(null, 'in2', 'blurOut');
-    blend.setAttributeNS(null, 'mode', 'normal');
-    filt_to_use.appendChild(offset);
-    filt_to_use.appendChild(gaussian_blur);
-    filt_to_use.appendChild(blend);
-    defs.node().appendChild(filt_to_use);
-    svg_map.querySelector('#' + layerId).setAttribute('filter', 'url(#filt_' + layerId + ')');
+  var filt_to_use = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+  filt_to_use.setAttribute('id', 'filt_' + layerId);
+  // filt_to_use.setAttribute("x", 0);
+  // filt_to_use.setAttribute("y", 0);
+  filt_to_use.setAttribute('width', '200%');
+  filt_to_use.setAttribute('height', '200%');
+  var offset = document.createElementNS('http://www.w3.org/2000/svg', 'feOffset');
+  offset.setAttributeNS(null, 'result', 'offOut');
+  offset.setAttributeNS(null, 'in', 'SourceAlpha');
+  offset.setAttributeNS(null, 'dx', '5');
+  offset.setAttributeNS(null, 'dy', '5');
+  var gaussian_blur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+  gaussian_blur.setAttributeNS(null, 'result', 'blurOut');
+  gaussian_blur.setAttributeNS(null, 'in', 'offOut');
+  gaussian_blur.setAttributeNS(null, 'stdDeviation', 10);
+  var blend = document.createElementNS('http://www.w3.org/2000/svg', 'feBlend');
+  blend.setAttributeNS(null, 'in', 'SourceGraphic');
+  blend.setAttributeNS(null, 'in2', 'blurOut');
+  blend.setAttributeNS(null, 'mode', 'normal');
+  filt_to_use.appendChild(offset);
+  filt_to_use.appendChild(gaussian_blur);
+  filt_to_use.appendChild(blend);
+  defs.node().appendChild(filt_to_use);
+  svg_map.querySelector('#' + layerId).setAttribute('filter', 'url(#filt_' + layerId + ')');
 };
 
 // /**
@@ -13189,7 +13269,7 @@ var scaleBar = {
     var scale_context_menu = new ContextMenu();
     this.under_rect = scale_gp.insert('rect').attrs({ x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: 'under_rect' }).styles({ fill: 'green', 'fill-opacity': 0 });
     scale_gp.insert('rect').attr('id', 'rect_scale').attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style('fill', 'black');
-    scale_gp.insert('text').attr('id', 'text_limit_sup_scale').attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ font: "11px 'Enriqueta', arial, serif",
+    scale_gp.insert('text').attr('id', 'text_limit_sup_scale').attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ font: '11px \'Enriqueta\', arial, serif',
       'text-anchor': 'middle' }).text(this.dist_txt + ' km');
 
     scale_gp.call(drag_legend_func(scale_gp));
@@ -14210,7 +14290,7 @@ function createLegend(layer, title) {
   } else if (renderer.indexOf('PropSymbols') != -1) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
   } else {
-    swal('Oops..', i18next.t('No legend available for this representation') + '.<br>' + i18next.t("Want to make a <a href='/'>suggestion</a> ?"), 'warning');
+    swal('Oops..', i18next.t('No legend available for this representation') + '.<br>' + i18next.t('Want to make a <a href="/">suggestion</a> ?'), 'warning');
     return;
   }
 
@@ -14424,9 +14504,9 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').style('font', "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').style('font', 'bold 12px "Enriqueta", arial, serif').attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', 'italic 12px "Enriqueta", arial, serif').attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   var ref_symbols_params = [];
 
@@ -14508,7 +14588,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
   legend_root.call(drag_legend_func(legend_root));
 
-  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style('font', "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style('font', '11px "Enriqueta", arial, serif').text(note_bottom != null ? note_bottom : '');
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
   // legend_root.select('#legendtitle').text(title || "");
   make_legend_context_menu(legend_root, layer);
@@ -14591,8 +14671,8 @@ function createLegend_symbol(layer, field, title, subtitle) {
     layer_field: field });
 
   var rect_under_legend = legend_root.insert('rect');
-  legend_root.insert('text').attr('id', 'legendtitle').text(title).style('font', "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendtitle').text(title).style('font', 'bold 12px "Enriqueta", arial, serif').attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', 'italic 12px "Enriqueta", arial, serif').attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
   var type_param = symbol_type === 'circle' ? 'r' : 'width';
@@ -14727,7 +14807,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
     last_pos += 2.5 * space_elem;
   }
 
-  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style('font', "11px 'Enriqueta', arial, serif").text(note_bottom != null ? note_bottom : '');
+  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).style('font', '11px "Enriqueta", arial, serif').text(note_bottom != null ? note_bottom : '');
 
   legend_root.call(drag_legend_func(legend_root));
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
@@ -14776,9 +14856,9 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || 'Title').style('font', "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendtitle').text(title || 'Title').style('font', 'bold 12px "Enriqueta", arial, serif').attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', 'italic 12px \'Enriqueta\', arial, serif').attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
@@ -14897,15 +14977,15 @@ function createLegend_choro(layer, field, title, subtitle) {
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').style('font', "bold 12px 'Enriqueta', arial, serif").attrs(subtitle != '' ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').style('font', 'bold 12px "Enriqueta", arial, serif').attrs(subtitle != '' ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif").attrs({ x: xpos + boxheight, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).style('font', 'italic 12px "Enriqueta", arial, serif').attrs({ x: xpos + boxheight, y: ypos + 15 });
 
   var legend_elems = legend_root.selectAll('.legend').append('g').data(data_colors_label).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
   });
 
-  if (current_layers[layer].renderer.indexOf('TypoSymbols') == -1) {
+  if (current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
     legend_elems.append('rect').attr('x', xpos + boxwidth).attr('y', function (d, i) {
       last_pos = y_pos2 + i * boxgap + i * boxheight;
       return last_pos;
@@ -14925,17 +15005,19 @@ function createLegend_choro(layer, field, title, subtitle) {
   }
 
   if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
-    var tmp_pos = void 0;
-    legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
-      tmp_pos = y_pos2 + i * boxheight + i * boxgap;
-      return tmp_pos;
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
-    });
+    (function () {
+      var tmp_pos = void 0;
+      legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
+        tmp_pos = y_pos2 + i * boxheight + i * boxgap;
+        return tmp_pos;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
+      });
 
-    legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + boxwidth * 2 + 10).attr('y', tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
-    });
+      legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + boxwidth * 2 + 10).attr('y', tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+      });
+    })();
   } else {
     legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
       return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
@@ -15011,20 +15093,18 @@ function display_box_value_symbol(layer_name) {
   var values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(function (f) {
     return cloneObj(f);
   }));
-  var original_values = [].concat(values_to_use);
 
   var _current_layers$layer2 = _slicedToArray(current_layers[layer_name].size, 2),
       ref_value = _current_layers$layer2[0],
       ref_size = _current_layers$layer2[1];
 
   var propSize = new PropSizer(ref_value, ref_size, symbol_type);
-
   var input_zone = box_body.append('div').styles({ float: 'right', top: '100px', right: '20px', position: 'relative' });
   var a = input_zone.append('p');
   var b = input_zone.append('p');
   var c = input_zone.append('p');
   var d = input_zone.append('p');
-
+  var original_values = [].concat(values_to_use);
   var val1 = a.insert('input').style('width', '80px').attrs({ class: 'without_spinner', type: 'number', max: val_max }).on('change', function () {
     var val = +this.value;
     if (isNaN(val)) return;
@@ -15191,29 +15271,33 @@ function createlegendEditBox(legend_id, layer_name) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
     } else {
-      var nb_dec = [],
-          nb_left = [];
-      legend_boxes.each(function (d) {
-        nb_dec.push(get_nb_decimals(d.value));
-        nb_left.push(get_nb_left_separator(d.value));
-      });
-      max_nb_decimals = max_fast(nb_dec);
-      max_nb_left = min_fast(nb_left);
+      (function () {
+        var nb_dec = [],
+            nb_left = [];
+        legend_boxes.each(function (d) {
+          nb_dec.push(get_nb_decimals(d.value));
+          nb_left.push(get_nb_left_separator(d.value));
+        });
+        max_nb_decimals = max_fast(nb_dec);
+        max_nb_left = min_fast(nb_left);
+      })();
     }
     max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
     if (max_nb_decimals > 0 || max_nb_left >= 2) {
       if (legend_node.getAttribute('rounding_precision')) {
         current_nb_dec = legend_node.getAttribute('rounding_precision');
       } else {
-        var nbs = [],
-            _nb_dec = [];
-        legend_boxes.each(function () {
-          nbs.push(this.textContent);
-        });
-        for (var i = 0; i < nbs.length; i++) {
-          _nb_dec.push(get_nb_decimals(nbs[i]));
-        }
-        current_nb_dec = max_fast(_nb_dec);
+        (function () {
+          var nbs = [],
+              nb_dec = [];
+          legend_boxes.each(function () {
+            nbs.push(this.textContent);
+          });
+          for (var i = 0; i < nbs.length; i++) {
+            nb_dec.push(get_nb_decimals(nbs[i]));
+          }
+          current_nb_dec = max_fast(nb_dec);
+        })();
       }
       if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) {
         max_nb_decimals = 18;
@@ -15226,21 +15310,21 @@ function createlegendEditBox(legend_id, layer_name) {
         d3.select('#precision_change_txt').html(nb_float);
         legend_node.setAttribute('rounding_precision', nb_float);
         if (legend_id === 'legend_root') {
-          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
-            var values = legend_boxes._groups[0][_i].__data__.value.split(' - ');
-            legend_boxes._groups[0][_i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
+          for (var i = 0; i < legend_boxes._groups[0].length; i++) {
+            var values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
           }
           var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
         } else if (legend_id === 'legend_root_symbol') {
-          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
-            var value = legend_boxes._groups[0][_i2].__data__.value;
-            legend_boxes._groups[0][_i2].innerHTML = round_value(+value, nb_float).toLocaleString();
+          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
+            var value = legend_boxes._groups[0][_i].__data__.value;
+            legend_boxes._groups[0][_i].innerHTML = round_value(+value, nb_float).toLocaleString();
           }
         } else if (legend_id === 'legend_root_lines_class') {
-          for (var _i3 = 0; _i3 < legend_boxes._groups[0].length; _i3++) {
-            var _value = legend_boxes._groups[0][_i3].__data__.value[1];
-            legend_boxes._groups[0][_i3].innerHTML = round_value(+_value, nb_float).toLocaleString();
+          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
+            var _value = legend_boxes._groups[0][_i2].__data__.value[1];
+            legend_boxes._groups[0][_i2].innerHTML = round_value(+_value, nb_float).toLocaleString();
           }
           var _min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
@@ -15371,8 +15455,8 @@ var get_max_nb_dec = function get_max_nb_dec(layer_name) {
   var max = 0;
   current_layers[layer_name].colors_breaks.forEach(function (el) {
     var tmp = el[0].split(' - ');
-    var p1 = tmp[0].indexOf('.'),
-        p2 = tmp[1].indexOf('.');
+    var p1 = tmp[0].indexOf('.');
+    var p2 = tmp[1].indexOf('.');
     if (p1 > -1) {
       if (tmp[0].length - 1 - p1 > max) {
         max = tmp[0].length - 1 - tmp[0].indexOf('.');
@@ -16097,109 +16181,113 @@ function apply_user_preferences(json_pref) {
 
     // This is a layer for which a geometries have been stocked as TopoJSON :
     if (_layer.topo_geom) {
-      var tmp = {
-        skip_alert: true,
-        choosed_name: layer_name,
-        skip_rescale: true
-      };
-      if (_layer.targeted) {
-        tmp['target_layer_on_add'] = true;
-      } else if (_layer.renderer) {
-        tmp['func_name'] = func_name_corresp.get(_layer.renderer);
-        tmp['result_layer_on_add'] = true;
-      }
-      if (_layer.pointRadius !== undefined) {
-        tmp['pointRadius'] = _layer.pointRadius;
-      }
-      // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
-      layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
-      var current_layer_prop = current_layers[layer_name];
-      if (_layer.renderer) {
-        current_layer_prop.renderer = _layer.renderer;
-      }
-      if (_layer.targeted && _layer.fields_type) {
-        current_layer_prop.fields_type = _layer.fields_type;
-        document.getElementById('btn_type_fields').removeAttribute('disabled');
-      }
-      layer_id = _app.layer_to_id.get(layer_name);
-      var layer_selec = map.select('#' + layer_id);
+      (function () {
+        var tmp = {
+          skip_alert: true,
+          choosed_name: layer_name,
+          skip_rescale: true
+        };
+        if (_layer.targeted) {
+          tmp['target_layer_on_add'] = true;
+        } else if (_layer.renderer) {
+          tmp['func_name'] = func_name_corresp.get(_layer.renderer);
+          tmp['result_layer_on_add'] = true;
+        }
+        if (_layer.pointRadius !== undefined) {
+          tmp['pointRadius'] = _layer.pointRadius;
+        }
+        // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
+        layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
+        var current_layer_prop = current_layers[layer_name];
+        if (_layer.renderer) {
+          current_layer_prop.renderer = _layer.renderer;
+        }
+        if (_layer.targeted && _layer.fields_type) {
+          current_layer_prop.fields_type = _layer.fields_type;
+          document.getElementById('btn_type_fields').removeAttribute('disabled');
+        }
+        layer_id = _app.layer_to_id.get(layer_name);
+        var layer_selec = map.select('#' + layer_id);
 
-      current_layer_prop.rendered_field = _layer.rendered_field;
+        current_layer_prop.rendered_field = _layer.rendered_field;
 
-      if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
-      if (_layer.size) current_layer_prop.size = _layer.size;
-      if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
-      if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
-      if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
-      if (_layer.color_palette) current_layer_prop.color_palette = _layer.color_palette;
-      if (_layer.renderer) {
-        if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
-          layer_selec.selectAll('path').style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', function (d, j) {
-            return _layer.color_by_id[j];
-          });
-        } else if (_layer.renderer === 'Links') {
-          current_layer_prop.linksbyId = _layer.linksbyId;
-          current_layer_prop.min_display = _layer.min_display;
-          current_layer_prop.breaks = _layer.breaks;
-          layer_selec.selectAll('path').styles(function (d, j) {
-            return {
-              display: +d.properties.fij > _layer.min_display ? null : 'none',
-              stroke: _layer.fill_color.single,
-              'stroke-width': current_layer_prop.linksbyId[j][2]
-            };
-          });
-        } else if (_layer.renderer === 'DiscLayer') {
-          current_layer_prop.min_display = _layer.min_display || 0;
-          current_layer_prop.breaks = _layer.breaks;
-          var lim = current_layer_prop.min_display !== 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
-          layer_selec.selectAll('path').styles(function (d, j) {
-            return {
-              fill: 'none',
-              stroke: _layer.fill_color.single,
-              display: j <= lim ? null : 'none',
-              'stroke-width': d.properties.prop_val
-            };
-          });
-        } else if (_layer.renderer.startsWith('Categorical')) {
-          render_categorical(layer_name, {
-            colorByFeature: _layer.color_by_id,
-            color_map: new Map(_layer.color_map),
-            rendered_field: _layer.rendered_field,
-            renderer: 'Categorical'
+        if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
+        if (_layer.size) current_layer_prop.size = _layer.size;
+        if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
+        if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
+        if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
+        if (_layer.color_palette) current_layer_prop.color_palette = _layer.color_palette;
+        if (_layer.renderer) {
+          if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
+            layer_selec.selectAll('path').style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', function (d, j) {
+              return _layer.color_by_id[j];
+            });
+          } else if (_layer.renderer === 'Links') {
+            current_layer_prop.linksbyId = _layer.linksbyId;
+            current_layer_prop.min_display = _layer.min_display;
+            current_layer_prop.breaks = _layer.breaks;
+            layer_selec.selectAll('path').styles(function (d, j) {
+              return {
+                display: +d.properties.fij > _layer.min_display ? null : 'none',
+                stroke: _layer.fill_color.single,
+                'stroke-width': current_layer_prop.linksbyId[j][2]
+              };
+            });
+          } else if (_layer.renderer === 'DiscLayer') {
+            (function () {
+              current_layer_prop.min_display = _layer.min_display || 0;
+              current_layer_prop.breaks = _layer.breaks;
+              var lim = current_layer_prop.min_display !== 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
+              layer_selec.selectAll('path').styles(function (d, j) {
+                return {
+                  fill: 'none',
+                  stroke: _layer.fill_color.single,
+                  display: j <= lim ? null : 'none',
+                  'stroke-width': d.properties.prop_val
+                };
+              });
+            })();
+          } else if (_layer.renderer.startsWith('Categorical')) {
+            render_categorical(layer_name, {
+              colorByFeature: _layer.color_by_id,
+              color_map: new Map(_layer.color_map),
+              rendered_field: _layer.rendered_field,
+              renderer: 'Categorical'
+            });
+          }
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        }
+        if (_layer.stroke_color) {
+          layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
+        }
+        if (_layer['stroke-width-const']) {
+          current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+          layer_selec.style('stroke-width', _layer['stroke-width-const']);
+        }
+        if (_layer.fixed_stroke) {
+          current_layer_prop.fixed_stroke = _layer.fixed_stroke;
+        }
+        if (_layer.fill_color && _layer.fill_color.single && _layer.renderer !== 'DiscLayer') {
+          layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', _layer.fill_color.single);
+        } else if (_layer.fill_color && _layer.fill_color.random) {
+          layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', function () {
+            return Colors.names[Colors.random()];
           });
         }
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
-      }
-      if (_layer.stroke_color) {
-        layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
-      }
-      if (_layer['stroke-width-const']) {
-        current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
-        layer_selec.style('stroke-width', _layer['stroke-width-const']);
-      }
-      if (_layer.fixed_stroke) {
-        current_layer_prop.fixed_stroke = _layer.fixed_stroke;
-      }
-      if (_layer.fill_color && _layer.fill_color.single && _layer.renderer !== 'DiscLayer') {
-        layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', _layer.fill_color.single);
-      } else if (_layer.fill_color && _layer.fill_color.random) {
-        layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', function () {
-          return Colors.names[Colors.random()];
-        });
-      }
 
-      layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
-      if (_layer.visible === 'hidden') {
-        handle_active_layer(layer_name);
-      }
-      if (_layer.filter_shadow) {
-        createDropShadow(layer_id);
-      }
-      done += 1;
-      if (done === map_config.n_layers) set_final_param();
-      // });
+        layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
+        if (_layer.visible === 'hidden') {
+          handle_active_layer(layer_name);
+        }
+        if (_layer.filter_shadow) {
+          createDropShadow(layer_id);
+        }
+        done += 1;
+        if (done === map_config.n_layers) set_final_param();
+        // });
+      })();
     } else if (layer_name === 'World') {
       add_simplified_land_layer({
         skip_rescale: true,
@@ -16304,61 +16392,63 @@ function apply_user_preferences(json_pref) {
         render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
-        var symbols_map = new Map(_layer.symbols_map);
-        var new_layer_data = {
-          type: 'FeatureCollection',
-          features: _layer.current_state.map(function (d) {
-            return d.data;
-          })
-        };
-
-        var nb_features = new_layer_data.features.length;
-        var context_menu = new ContextMenu();
-        var getItems = function getItems(self_parent) {
-          return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-              make_style_box_indiv_symbol(self_parent);
-            } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-              self_parent.style.display = 'none';
-            } }];
-        };
-        layer_id = encodeId(layer_name);
-        _app.layer_to_id.set(layer_name, layer_id);
-        _app.id_to_layer.set(layer_id, layer_name);
-        // Add the features at there original positions :
-        map.append('g').attrs({ id: layer_id, class: 'layer' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d, j) {
-          var symb = symbols_map.get(d.properties.symbol_field),
-              prop = _layer.current_state[j],
-              coords = prop.pos;
-          return {
-            x: coords[0] - symb[1] / 2,
-            y: coords[1] - symb[1] / 2,
-            width: prop.size,
-            height: prop.size,
-            'xlink:href': symb[0]
+        (function () {
+          var symbols_map = new Map(_layer.symbols_map);
+          var new_layer_data = {
+            type: 'FeatureCollection',
+            features: _layer.current_state.map(function (d) {
+              return d.data;
+            })
           };
-        }).style('display', function (d, j) {
-          return _layer.current_state[j].display;
-        }).on('mouseover', function () {
-          this.style.cursor = 'pointer';
-        }).on('mouseout', function () {
-          this.style.cursor = 'initial';
-        }).on('contextmenu dblclick', function () {
-          context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
-        }).call(drag_elem_geo);
 
-        create_li_layer_elem(layer_name, nb_features, ['Point', 'symbol'], 'result');
-        current_layers[layer_name] = {
-          n_features: nb_features,
-          renderer: 'TypoSymbols',
-          symbols_map: symbols_map,
-          rendered_field: _layer.rendered_field,
-          is_result: true,
-          symbol: 'image',
-          ref_layer_name: _layer.ref_layer_name
-        };
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
+          var nb_features = new_layer_data.features.length;
+          var context_menu = new ContextMenu();
+          var getItems = function getItems(self_parent) {
+            return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
+                make_style_box_indiv_symbol(self_parent);
+              } }, { name: i18next.t('app_page.common.delete'), action: function action() {
+                self_parent.style.display = 'none';
+              } }];
+          };
+          layer_id = encodeId(layer_name);
+          _app.layer_to_id.set(layer_name, layer_id);
+          _app.id_to_layer.set(layer_id, layer_name);
+          // Add the features at there original positions :
+          map.append('g').attrs({ id: layer_id, class: 'layer' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d, j) {
+            var symb = symbols_map.get(d.properties.symbol_field),
+                prop = _layer.current_state[j],
+                coords = prop.pos;
+            return {
+              x: coords[0] - symb[1] / 2,
+              y: coords[1] - symb[1] / 2,
+              width: prop.size,
+              height: prop.size,
+              'xlink:href': symb[0]
+            };
+          }).style('display', function (d, j) {
+            return _layer.current_state[j].display;
+          }).on('mouseover', function () {
+            this.style.cursor = 'pointer';
+          }).on('mouseout', function () {
+            this.style.cursor = 'initial';
+          }).on('contextmenu dblclick', function () {
+            context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
+          }).call(drag_elem_geo);
+
+          create_li_layer_elem(layer_name, nb_features, ['Point', 'symbol'], 'result');
+          current_layers[layer_name] = {
+            n_features: nb_features,
+            renderer: 'TypoSymbols',
+            symbols_map: symbols_map,
+            rendered_field: _layer.rendered_field,
+            is_result: true,
+            symbol: 'image',
+            ref_layer_name: _layer.ref_layer_name
+          };
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        })();
       } else {
         null;
       }
@@ -17734,6 +17824,9 @@ var boxExplore2 = {
     this.display_table(layer_name);
   }
 };
+"use strict";
+
+var world_topology = { "type": "Topology", "objects": { "World": { "type": "GeometryCollection", "crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } }, "geometries": [{ "type": "Polygon", "properties": { "id": "1" }, "arcs": [[0], [1], [2], [3], [4], [5], [6], [7], [8], [9]] }, { "type": "Polygon", "properties": { "id": "2" }, "arcs": [[10]] }, { "type": "Polygon", "properties": { "id": "3" }, "arcs": [[11]] }, { "type": "Polygon", "properties": { "id": "4" }, "arcs": [[12]] }, { "type": "Polygon", "properties": { "id": "5" }, "arcs": [[13]] }, { "type": "Polygon", "properties": { "id": "6" }, "arcs": [[14]] }, { "type": "Polygon", "properties": { "id": "7" }, "arcs": [[15]] }, { "type": "Polygon", "properties": { "id": "8" }, "arcs": [[16]] }, { "type": "Polygon", "properties": { "id": "9" }, "arcs": [[17]] }, { "type": "Polygon", "properties": { "id": "10" }, "arcs": [[18]] }, { "type": "Polygon", "properties": { "id": "11" }, "arcs": [[19]] }, { "type": "Polygon", "properties": { "id": "12" }, "arcs": [[20]] }, { "type": "Polygon", "properties": { "id": "13" }, "arcs": [[21]] }, { "type": "Polygon", "properties": { "id": "14" }, "arcs": [[22]] }, { "type": "Polygon", "properties": { "id": "15" }, "arcs": [[23]] }, { "type": "Polygon", "properties": { "id": "16" }, "arcs": [[24]] }, { "type": "Polygon", "properties": { "id": "17" }, "arcs": [[25]] }, { "type": "Polygon", "properties": { "id": "18" }, "arcs": [[26]] }, { "type": "Polygon", "properties": { "id": "19" }, "arcs": [[27]] }, { "type": "Polygon", "properties": { "id": "20" }, "arcs": [[28]] }, { "type": "Polygon", "properties": { "id": "21" }, "arcs": [[29]] }, { "type": "Polygon", "properties": { "id": "22" }, "arcs": [[30]] }, { "type": "Polygon", "properties": { "id": "23" }, "arcs": [[31]] }, { "type": "Polygon", "properties": { "id": "24" }, "arcs": [[32]] }, { "type": "Polygon", "properties": { "id": "25" }, "arcs": [[33]] }, { "type": "Polygon", "properties": { "id": "26" }, "arcs": [[34]] }, { "type": "Polygon", "properties": { "id": "27" }, "arcs": [[35]] }, { "type": "Polygon", "properties": { "id": "28" }, "arcs": [[36]] }, { "type": "Polygon", "properties": { "id": "29" }, "arcs": [[37]] }, { "type": "Polygon", "properties": { "id": "30" }, "arcs": [[38]] }, { "type": "Polygon", "properties": { "id": "31" }, "arcs": [[39]] }, { "type": "Polygon", "properties": { "id": "32" }, "arcs": [[40]] }, { "type": "Polygon", "properties": { "id": "33" }, "arcs": [[41]] }, { "type": "Polygon", "properties": { "id": "34" }, "arcs": [[42]] }, { "type": "Polygon", "properties": { "id": "35" }, "arcs": [[43]] }, { "type": "Polygon", "properties": { "id": "36" }, "arcs": [[44]] }, { "type": "Polygon", "properties": { "id": "37" }, "arcs": [[45]] }, { "type": "Polygon", "properties": { "id": "38" }, "arcs": [[46]] }, { "type": "Polygon", "properties": { "id": "39" }, "arcs": [[47]] }, { "type": "Polygon", "properties": { "id": "40" }, "arcs": [[48]] }, { "type": "Polygon", "properties": { "id": "41" }, "arcs": [[49], [50], [51], [52], [53], [54]] }, { "type": "Polygon", "properties": { "id": "42" }, "arcs": [[55]] }, { "type": "Polygon", "properties": { "id": "43" }, "arcs": [[56]] }, { "type": "Polygon", "properties": { "id": "44" }, "arcs": [[57]] }, { "type": "Polygon", "properties": { "id": "45" }, "arcs": [[58]] }, { "type": "Polygon", "properties": { "id": "46" }, "arcs": [[59]] }, { "type": "Polygon", "properties": { "id": "47" }, "arcs": [[60]] }, { "type": "Polygon", "properties": { "id": "48" }, "arcs": [[61]] }, { "type": "Polygon", "properties": { "id": "49" }, "arcs": [[62]] }, { "type": "Polygon", "properties": { "id": "50" }, "arcs": [[63]] }, { "type": "Polygon", "properties": { "id": "51" }, "arcs": [[64]] }, { "type": "Polygon", "properties": { "id": "52" }, "arcs": [[65]] }, { "type": "Polygon", "properties": { "id": "53" }, "arcs": [[66]] }, { "type": "Polygon", "properties": { "id": "54" }, "arcs": [[67]] }, { "type": "Polygon", "properties": { "id": "55" }, "arcs": [[68]] }, { "type": "Polygon", "properties": { "id": "56" }, "arcs": [[69]] }, { "type": "Polygon", "properties": { "id": "57" }, "arcs": [[70]] }, { "type": "Polygon", "properties": { "id": "58" }, "arcs": [[71]] }, { "type": "Polygon", "properties": { "id": "59" }, "arcs": [[72]] }, { "type": "Polygon", "properties": { "id": "60" }, "arcs": [[73]] }, { "type": "Polygon", "properties": { "id": "61" }, "arcs": [[74]] }, { "type": "Polygon", "properties": { "id": "62" }, "arcs": [[75]] }, { "type": "Polygon", "properties": { "id": "63" }, "arcs": [[76]] }, { "type": "Polygon", "properties": { "id": "64" }, "arcs": [[77]] }, { "type": "Polygon", "properties": { "id": "65" }, "arcs": [[78]] }, { "type": "Polygon", "properties": { "id": "66" }, "arcs": [[79]] }, { "type": "Polygon", "properties": { "id": "67" }, "arcs": [[80]] }, { "type": "Polygon", "properties": { "id": "68" }, "arcs": [[81]] }, { "type": "Polygon", "properties": { "id": "69" }, "arcs": [[82]] }, { "type": "Polygon", "properties": { "id": "70" }, "arcs": [[83]] }, { "type": "Polygon", "properties": { "id": "71" }, "arcs": [[84]] }, { "type": "Polygon", "properties": { "id": "72" }, "arcs": [[85]] }, { "type": "Polygon", "properties": { "id": "73" }, "arcs": [[86]] }, { "type": "Polygon", "properties": { "id": "74" }, "arcs": [[87]] }, { "type": "Polygon", "properties": { "id": "75" }, "arcs": [[88]] }, { "type": "Polygon", "properties": { "id": "76" }, "arcs": [[89]] }, { "type": "Polygon", "properties": { "id": "77" }, "arcs": [[90]] }, { "type": "Polygon", "properties": { "id": "78" }, "arcs": [[91]] }, { "type": "Polygon", "properties": { "id": "79" }, "arcs": [[92]] }, { "type": "Polygon", "properties": { "id": "80" }, "arcs": [[93]] }, { "type": "Polygon", "properties": { "id": "81" }, "arcs": [[94]] }, { "type": "Polygon", "properties": { "id": "82" }, "arcs": [[95]] }, { "type": "Polygon", "properties": { "id": "83" }, "arcs": [[96]] }, { "type": "Polygon", "properties": { "id": "84" }, "arcs": [[97]] }, { "type": "Polygon", "properties": { "id": "85" }, "arcs": [[98]] }, { "type": "Polygon", "properties": { "id": "86" }, "arcs": [[99]] }, { "type": "Polygon", "properties": { "id": "87" }, "arcs": [[100]] }, { "type": "Polygon", "properties": { "id": "88" }, "arcs": [[101]] }, { "type": "Polygon", "properties": { "id": "89" }, "arcs": [[102]] }, { "type": "Polygon", "properties": { "id": "90" }, "arcs": [[103]] }, { "type": "Polygon", "properties": { "id": "91" }, "arcs": [[104]] }, { "type": "Polygon", "properties": { "id": "92" }, "arcs": [[105]] }, { "type": "Polygon", "properties": { "id": "93" }, "arcs": [[106]] }, { "type": "Polygon", "properties": { "id": "94" }, "arcs": [[107]] }, { "type": "Polygon", "properties": { "id": "95" }, "arcs": [[108]] }, { "type": "Polygon", "properties": { "id": "96" }, "arcs": [[109]] }, { "type": "Polygon", "properties": { "id": "97" }, "arcs": [[110]] }, { "type": "Polygon", "properties": { "id": "98" }, "arcs": [[111]] }, { "type": "Polygon", "properties": { "id": "99" }, "arcs": [[112]] }, { "type": "Polygon", "properties": { "id": "100" }, "arcs": [[113]] }, { "type": "Polygon", "properties": { "id": "101" }, "arcs": [[114]] }, { "type": "Polygon", "properties": { "id": "102" }, "arcs": [[115]] }, { "type": "Polygon", "properties": { "id": "103" }, "arcs": [[116]] }, { "type": "Polygon", "properties": { "id": "104" }, "arcs": [[117]] }, { "type": "Polygon", "properties": { "id": "105" }, "arcs": [[118]] }, { "type": "Polygon", "properties": { "id": "106" }, "arcs": [[119]] }, { "type": "Polygon", "properties": { "id": "107" }, "arcs": [[120]] }, { "type": "Polygon", "properties": { "id": "108" }, "arcs": [[121]] }, { "type": "Polygon", "properties": { "id": "109" }, "arcs": [[122]] }, { "type": "Polygon", "properties": { "id": "110" }, "arcs": [[123]] }, { "type": "Polygon", "properties": { "id": "111" }, "arcs": [[124]] }, { "type": "Polygon", "properties": { "id": "112" }, "arcs": [[125]] }, { "type": "Polygon", "properties": { "id": "113" }, "arcs": [[126]] }, { "type": "Polygon", "properties": { "id": "114" }, "arcs": [[127]] }, { "type": "Polygon", "properties": { "id": "115" }, "arcs": [[128]] }, { "type": "Polygon", "properties": { "id": "116" }, "arcs": [[129]] }, { "type": "Polygon", "properties": { "id": "117" }, "arcs": [[130]] }, { "type": "Polygon", "properties": { "id": "118" }, "arcs": [[131]] }, { "type": "Polygon", "properties": { "id": "119" }, "arcs": [[132]] }, { "type": "Polygon", "properties": { "id": "120" }, "arcs": [[133]] }, { "type": "Polygon", "properties": { "id": "121" }, "arcs": [[134]] }, { "type": "Polygon", "properties": { "id": "122" }, "arcs": [[135]] }, { "type": "Polygon", "properties": { "id": "123" }, "arcs": [[136]] }, { "type": "Polygon", "properties": { "id": "124" }, "arcs": [[137]] }, { "type": "Polygon", "properties": { "id": "125" }, "arcs": [[138]] }, { "type": "Polygon", "properties": { "id": "126" }, "arcs": [[139]] }, { "type": "Polygon", "properties": { "id": "127" }, "arcs": [[140]] }, { "type": "Polygon", "properties": { "id": "128" }, "arcs": [[141]] }, { "type": "Polygon", "properties": { "id": "129" }, "arcs": [[142]] }, { "type": "Polygon", "properties": { "id": "130" }, "arcs": [[143]] }, { "type": "Polygon", "properties": { "id": "131" }, "arcs": [[144]] }, { "type": "Polygon", "properties": { "id": "132" }, "arcs": [[145]] }, { "type": "Polygon", "properties": { "id": "133" }, "arcs": [[146]] }, { "type": "Polygon", "properties": { "id": "134" }, "arcs": [[147]] }, { "type": "Polygon", "properties": { "id": "135" }, "arcs": [[148]] }, { "type": "Polygon", "properties": { "id": "136" }, "arcs": [[149]] }, { "type": "Polygon", "properties": { "id": "137" }, "arcs": [[150]] }, { "type": "Polygon", "properties": { "id": "138" }, "arcs": [[151]] }, { "type": "Polygon", "properties": { "id": "139" }, "arcs": [[152]] }, { "type": "Polygon", "properties": { "id": "140" }, "arcs": [[153]] }, { "type": "Polygon", "properties": { "id": "141" }, "arcs": [[154]] }, { "type": "Polygon", "properties": { "id": "142" }, "arcs": [[155]] }, { "type": "Polygon", "properties": { "id": "143" }, "arcs": [[156]] }, { "type": "Polygon", "properties": { "id": "144" }, "arcs": [[157]] }, { "type": "Polygon", "properties": { "id": "145" }, "arcs": [[158]] }, { "type": "Polygon", "properties": { "id": "146" }, "arcs": [[159]] }, { "type": "Polygon", "properties": { "id": "147" }, "arcs": [[160]] }, { "type": "Polygon", "properties": { "id": "148" }, "arcs": [[161]] }, { "type": "Polygon", "properties": { "id": "149" }, "arcs": [[162]] }, { "type": "Polygon", "properties": { "id": "150" }, "arcs": [[163]] }, { "type": "Polygon", "properties": { "id": "151" }, "arcs": [[164]] }, { "type": "Polygon", "properties": { "id": "152" }, "arcs": [[165]] }, { "type": "Polygon", "properties": { "id": "153" }, "arcs": [[166]] }, { "type": "Polygon", "properties": { "id": "154" }, "arcs": [[167]] }, { "type": "Polygon", "properties": { "id": "155" }, "arcs": [[168]] }, { "type": "Polygon", "properties": { "id": "156" }, "arcs": [[169]] }, { "type": "Polygon", "properties": { "id": "157" }, "arcs": [[170]] }, { "type": "Polygon", "properties": { "id": "158" }, "arcs": [[171]] }, { "type": "Polygon", "properties": { "id": "159" }, "arcs": [[172]] }, { "type": "Polygon", "properties": { "id": "160" }, "arcs": [[173]] }, { "type": "Polygon", "properties": { "id": "161" }, "arcs": [[174]] }, { "type": "Polygon", "properties": { "id": "162" }, "arcs": [[175]] }, { "type": "Polygon", "properties": { "id": "163" }, "arcs": [[176]] }, { "type": "Polygon", "properties": { "id": "164" }, "arcs": [[177]] }, { "type": "Polygon", "properties": { "id": "165" }, "arcs": [[178]] }, { "type": "Polygon", "properties": { "id": "166" }, "arcs": [[179]] }, { "type": "Polygon", "properties": { "id": "167" }, "arcs": [[180]] }, { "type": "Polygon", "properties": { "id": "168" }, "arcs": [[181]] }, { "type": "Polygon", "properties": { "id": "169" }, "arcs": [[182]] }, { "type": "Polygon", "properties": { "id": "170" }, "arcs": [[183]] }, { "type": "Polygon", "properties": { "id": "171" }, "arcs": [[184]] }, { "type": "Polygon", "properties": { "id": "172" }, "arcs": [[185]] }, { "type": "Polygon", "properties": { "id": "173" }, "arcs": [[186]] }, { "type": "Polygon", "properties": { "id": "174" }, "arcs": [[187]] }, { "type": "Polygon", "properties": { "id": "175" }, "arcs": [[188]] }, { "type": "Polygon", "properties": { "id": "176" }, "arcs": [[189]] }, { "type": "Polygon", "properties": { "id": "177" }, "arcs": [[190]] }, { "type": "Polygon", "properties": { "id": "178" }, "arcs": [[191]] }, { "type": "Polygon", "properties": { "id": "179" }, "arcs": [[192]] }, { "type": "Polygon", "properties": { "id": "180" }, "arcs": [[193]] }, { "type": "Polygon", "properties": { "id": "181" }, "arcs": [[194]] }, { "type": "Polygon", "properties": { "id": "182" }, "arcs": [[195]] }, { "type": "Polygon", "properties": { "id": "183" }, "arcs": [[196]] }, { "type": "Polygon", "properties": { "id": "184" }, "arcs": [[197]] }, { "type": "Polygon", "properties": { "id": "185" }, "arcs": [[198]] }, { "type": "Polygon", "properties": { "id": "186" }, "arcs": [[199]] }, { "type": "Polygon", "properties": { "id": "187" }, "arcs": [[200]] }] } }, "arcs": [[[52723, 52414], [-127, 105], [126, 669], [33, 510], [-84, 422], [-180, 81], [-104, 411], [-88, -154], [-268, 35], [-312, -188], [-165, 204], [-197, 789], [-134, 203], [-472, 6], [-302, -89], [-120, -65], [-910, -786], [-286, 204], [1, 10], [76, 24], [-320, 47], [-516, -116], [-469, -390], [-483, 457], [-310, 594], [-300, 427], [-287, 271], [-180, 450], [-40, 502], [-82, 422], [-396, 687], [-147, 441], [-327, 345], [-7, 422], [53, 301], [-171, 614], [176, 665], [139, 1073], [-46, 754], [-87, 240], [91, 471], [-226, 565], [14, 79], [49, 246], [233, 1143], [399, 1359], [253, 339], [172, 711], [414, 239], [253, 382], [256, 655], [-54, 735], [163, 676], [203, 399], [475, 444], [253, 1013], [150, 50], [276, -422], [397, 102], [9, -30], [192, -117], [908, 805], [524, 185], [515, 50], [125, -141], [596, 249], [339, -83], [369, 240], [382, -205], [-89, -541], [49, -473], [-288, -526], [57, -359], [326, -300], [235, -201], [278, 41], [513, -296], [235, -642], [367, -109], [470, -472], [192, 141], [111, 406], [-63, 289], [178, 484], [291, 214], [410, -163], [3, -186], [524, -205], [47, -180], [609, -166], [468, -311], [370, 392], [433, 9], [156, -187], [181, -88], [296, 154], [79, 155], [173, 868], [240, 899], [-16, 730], [30, 581], [-187, -220], [-220, 128], [-242, -359], [-244, -67], [-216, 297], [-373, 201], [-79, -371], [-202, -72], [-204, 362], [-352, -54], [59, 206], [-172, -30], [-41, 469], [-186, 198], [-78, 260], [149, 232], [-175, 288], [184, 535], [671, 17], [22, 465], [556, -86], [581, 534], [731, -163], [138, -285], [522, -186], [503, 3], [383, 340], [-6, 649], [-420, 431], [-280, 438], [-685, 544], [37, 146], [303, -21], [0, 787], [423, 191], [-290, 55], [-643, -260], [-303, -280], [145, -458], [258, 5], [-57, -167], [-583, -407], [-303, 718], [253, 173], [-720, 403], [-443, -617], [19, -197], [-283, -512], [-17, -338], [-264, -739], [108, -280], [152, -336], [159, -95], [-2, -124], [-446, -11], [-193, -223], [-170, -113], [-48, 192], [-279, 154], [-383, -180], [12, -194], [-104, -76], [-141, 159], [-70, -258], [215, -503], [-160, -228], [341, -330], [-242, -497], [68, -423], [-48, -105], [-290, 339], [-77, -169], [-209, 640], [240, 330], [-231, -62], [-321, 801], [-192, 547], [16, 696], [-242, 325], [-234, 273], [-20, 30], [-458, 423], [-228, 338], [-158, 536], [-83, 48], [-45, -263], [-52, 24], [-85, 361], [32, 60], [-359, -91], [-12, -682], [347, -415], [127, -537], [291, -383], [251, 6], [-1, -297], [332, -213], [335, -316], [-54, -215], [-265, 187], [-140, -471], [183, -170], [-244, -813], [-128, 7], [25, 460], [-158, 763], [-525, 680], [-188, -15], [-542, 677], [-274, 930], [-384, 234], [-340, -363], [-18, -29], [-62, -51], [-377, -351], [-532, 281], [-230, -246], [19, -388], [15, -269], [-326, -398], [-297, -135], [-365, -877], [153, -451], [-654, -1151], [-641, -14], [-251, -333], [-153, -56], [-170, 532], [-254, 134], [-440, -98], [56, 770], [-193, 201], [232, 1317], [-26, 561], [-151, 550], [392, 484], [181, -112], [790, -107], [720, 2], [175, 802], [15, 852], [-245, 457], [-481, 538], [-292, 291], [-10, 225], [478, -6], [113, -209], [364, 88], [-138, 543], [197, 38], [262, -225], [493, 541], [7, 375], [261, 126], [237, 218], [115, -8], [32, -2], [-124, 61], [292, 450], [66, 363], [551, 284], [129, -124], [9, 243], [372, -69], [123, 199], [-97, 578], [-149, 954], [198, 303], [228, 105], [261, 283], [-30, -500], [132, -251], [-407, -552], [-17, -391], [453, -421], [398, 227], [489, -184], [577, 271], [549, 123], [276, -144], [172, 296], [308, 114], [5, 445], [179, 854], [246, 118], [168, -256], [195, -21], [115, 339], [-209, 298], [-23, 476], [626, 261], [637, -106], [346, 295], [-144, 229], [-260, 94], [-1267, -364], [-519, 418], [-42, 1273], [596, 601], [550, 912], [-331, 195], [-641, -166], [-297, -954], [-418, -241], [-492, -715], [-95, -707], [521, -695], [-174, -371], [-452, -307], [-28, -654], [-232, -798], [-324, 35], [-90, -359], [-301, -103], [-569, 1725], [58, 375], [-269, 148], [-547, -571], [-547, -79], [-293, 366], [215, 301], [-297, 134], [145, 374], [-216, 369], [140, 798], [553, 237], [22, 181], [582, 570], [438, 704], [332, 198], [215, 780], [321, 359], [316, 570], [557, 389], [323, 572], [1212, 225], [514, 333], [819, 66], [920, -519], [-66, -276], [772, -275], [652, -87], [1403, -852], [-21, -549], [-274, -366], [-563, -12], [-1235, 370], [282, -354], [77, -899], [699, -425], [221, 125], [-457, 508], [157, 148], [975, -364], [-223, 495], [691, 651], [546, -372], [-98, 744], [83, 432], [-219, 395], [728, -96], [216, -346], [-333, -205], [91, -347], [520, 65], [28, 323], [1559, 782], [396, -423], [1116, 472], [525, 487], [933, -172], [1147, -701], [236, 314], [-557, 469], [-49, 925], [431, 309], [142, 501], [726, 468], [343, -465], [-126, -532], [80, -390], [76, -1143], [79, -552], [-473, -807], [-671, -85], [331, -350], [469, 127], [639, 787], [239, 756], [405, -156], [298, 142], [-384, 351], [-582, -5], [31, 596], [-20, 990], [332, -158], [79, -381], [291, -47], [91, 386], [325, 97], [311, 187], [652, -395], [525, -51], [-812, 538], [36, 591], [1653, 190], [-212, 208], [891, 714], [1846, 366], [267, -143], [1442, 767], [644, -49], [1000, -230], [887, 6], [645, -345], [-161, -665], [-1811, -1036], [1260, 283], [721, -101], [1377, 45], [3, -219], [716, -133], [929, 477], [1001, -193], [405, -255], [-293, -601], [278, -367], [327, -222], [548, 531], [308, -258], [649, 114], [578, -236], [444, 116], [-34, 617], [558, 160], [1498, -242], [572, -375], [891, -474], [1605, 96], [472, -217], [0, -449], [237, -306], [518, 183], [1499, 56], [396, -452], [280, 21], [104, 628], [1366, -150], [1228, -512], [-2, -1087], [-3, -1152], [-458, -418], [255, -354], [113, -596], [-186, -195], [-685, -57], [-628, -244], [-712, -561], [-210, -426], [-136, -95], [-321, 347], [-1144, -279], [-482, -269], [-88, -351], [-301, -530], [371, -218], [-151, -544], [162, -336], [-340, -30], [3, -736], [-584, -389], [-117, -529], [-273, -206], [-247, -781], [-289, -378], [-169, 1180], [-155, 1353], [138, 853], [395, 598], [431, 352], [234, 418], [1157, 1271], [158, 764], [-370, -87], [-236, -488], [-629, -633], [54, 788], [-610, -71], [-759, -897], [-62, -627], [-485, -190], [-316, 220], [-478, 351], [-460, -348], [-723, 277], [-881, -207], [-627, -560], [-623, -809], [-302, -496], [-654, -704], [462, -174], [-55, -451], [571, 292], [534, -42], [240, -615], [-27, -710], [-274, -805], [61, -280], [-138, -927], [-251, -381], [-323, -899], [-614, -1052], [-208, -514], [-551, -472], [-396, 279], [-286, -506], [-292, -429], [19, -412], [-610, -627], [-19, -334], [253, -312], [268, -773], [63, -691], [-154, -597], [-328, -236], [-338, -194], [-93, 482], [137, 470], [-113, 482], [139, 195], [-52, 403], [-553, 166], [213, 688], [-299, 454], [-418, -302], [-280, -406], [-195, -82], [174, 371], [-155, 91], [300, 561], [-313, 241], [-205, -419], [-250, -175], [-145, -403], [-349, -44], [-60, -284], [151, -278], [209, 8], [37, -502], [130, -92], [361, 411], [191, -191], [213, 21], [137, -75], [-460, -472], [-384, -579], [-127, -499], [296, -234], [348, -877], [119, -807], [-438, -110], [449, -163], [-359, -370], [192, 31], [168, -289], [-127, -315], [28, -422], [-125, -240], [-261, -692], [-109, -235], [-60, -609], [-112, -139], [-160, -375], [-425, -577], [-173, -361], [-475, -72], [-154, -149], [59, -82], [-21, -123], [-71, -47], [-61, 49], [7, 95], [46, 92], [-204, 208], [66, -376], [14, -37], [25, -70], [-42, -30], [-165, -121], [-325, -167], [-350, -188], [-5, -400], [-172, -132], [-48, 706], [-328, 129], [-158, -123], [-335, -272], [-60, -450], [-151, -134], [-114, -576], [227, -504], [56, -377], [594, -1200], [184, -739], [8, -685], [-48, -348], [-76, -549], [-220, -371], [-265, -192], [-106, -17], [-113, -462], [-481, -551], [39, 726], [-123, 327], [-229, 47], [14, 324], [-161, -74], [-51, 410], [-301, 591], [-275, 20], [35, 440], [-257, -39], [-5, -697], [-239, -1189], [26, -516], [166, 35], [116, -563], [37, -448], [165, -393], [158, -14], [141, -331], [291, -505], [91, -337], [-4, -1056], [239, -873], [-258, 53], [-578, 755], [-157, 587], [-103, 1235], [-62, 247], [-408, 1116], [-127, 89], [152, 1047], [6, 812], [-53, 821], [-116, 290], [-102, 686], [-39, 956], [-208, 481], [-29, -368], [-380, -578], [-338, 162], [111, 882], [-128, 734], [-182, 284], [69, 347], [-282, 198], [-130, 462], [-180, 851], [-183, 21], [-85, 162], [-10, -312], [-415, -414], [-242, -22], [-57, 178], [-335, -399], [44, -290], [-202, -438], [-259, -193], [-350, -751], [-494, -715], [2, -259], [-294, -150], [-69, -273], [-204, -99], [-58, -380], [81, -959], [-135, -765], [-3, -1002], [-163, -160], [-85, -420], [-199, -178], [-54, -326], [-149, -187], [-270, 498], [-280, 1586], [-198, 673], [-154, 1060], [-227, 787], [-221, 2173], [64, 387], [-94, 947], [-115, -100], [-7, -448], [-311, -285], [-257, 252], [-309, 660], [342, 154], [-432, 363], [-122, 375], [-153, -23], [-132, 495], [-251, 467], [-765, -161], [-531, 5], [-468, 73], [-716, 258], [-83, 619], [-187, 202], [-431, -406], [-302, 122], [-359, 540], [-289, 198], [-363, 1270], [-313, 118], [-116, -253], [-162, 19], [135, -837], [122, -535], [314, -458], [39, -624], [185, -568], [-10, 474], [178, 457], [203, -135], [-49, -613], [-209, -253], [98, -213], [109, -136], [600, 72], [490, 1002], [54, 129], [83, -28], [-28, -249], [29, -374], [214, -590], [454, -255], [279, -756], [-354, -1026], [-115, 91], [-112, -473], [39, -426], [-257, -118], [-158, -502], [-250, -56], [-116, -478], [-279, -15], [-259, -197], [-222, -218], [-18, -374], [-736, -506], [-249, -399], [-185, 8], [-365, -362], [-288, -50], [-218, -353], [-259, -76], [-194, 354], [-153, 1443], [25, 376], [-135, 624], [-162, 262], [-332, 1189], [-244, 281], [-157, 492], [0, 709], [-174, 713], [-259, 279], [-81, 533], [-157, 381], [-402, 1267], [-158, 25], [84, 722], [1, 119], [-19, -39], [-224, -973], [-233, 435], [-186, 806], [-65, -205], [148, -588], [178, -357], [140, -776], [416, -1518], [51, -602], [330, -539], [64, -413], [61, -1221], [60, -259], [292, -406], [176, -1092], [134, -486], [400, -359], [144, -404], [401, -710], [72, -405], [-173, -171], [135, -126], [287, -594], [191, -24], [220, 263], [193, -103], [255, 276], [437, 44], [369, 196], [147, 230], [137, -90], [-32, -731], [-93, -638], [-278, -860], [-223, -1047], [-303, -972], [-533, -1163], [-411, -506], [-300, -541], [-385, -854], [-152, -480], [-378, -614], [-176, -961], [-97, -142], [-115, -780], [191, -476], [-51, -836], [134, -964], [187, -284], [28, -1821], [85, -477], [-71, -583], [-204, -549], [-769, -829], [-168, -407], [-483, -757], [222, -1451], [-121, -1260], [-620, -545], [-99, -234], [104, -516], [-142, -983], [-332, -581], [-220, -741], [-512, -988], [-403, -554], [-395, -156], [-228, -225], [-637, 109], [-458, -209], [-267, -259], [-407, 545], [-179, 604], [119, 96], [-28, 567], [-247, 758], [-221, 1022], [-331, 720], [-228, 1822], [-24, 1085], [-278, 841], [-64, 381], [-363, 1159], [-23, 512], [-4, 838], [145, 604], [66, 753], [313, 688], [32, 923], [-210, 894], [103, 444], [-150, 817], [-154, 455], [253, 146], [-271, 56], [-56, 429], [-248, 623], [-337, 712], [-242, 808], [79, 1108], [136, 215]], [[86664, 77890], [100, -404], [251, 583], [-351, -179]], [[58657, 46892], [-162, 622], [-5, 318], [-227, 395], [55, 203], [-81, 845], [-125, 643], [-30, -1001], [112, -942], [190, -383], [107, -489], [166, -211]], [[59464, 51233], [50, 453], [-71, 294], [-202, 81], [-375, -299], [-38, -501], [-48, -597], [60, -379], [388, 103], [236, 845]], [[66682, 77670], [-33, 299], [139, 272], [-2, 146], [-70, 44], [-122, -261], [-162, -17], [-157, -81], [42, -42], [112, -110], [83, -82], [-70, -230], [48, -270], [152, -26], [40, 358]], [[65852, 75988], [80, -123], [80, -76], [67, 107], [-67, 222], [-74, 16], [-86, -146]], [[64565, 75886], [77, 565], [-217, 60], [-454, 1049], [305, 390], [325, 39], [173, 759], [-549, 232], [-551, -457], [-447, -328], [-255, -756], [151, -135], [60, -686], [311, -677], [365, -850], [-126, -168], [-157, -947], [71, -467], [283, -126], [261, -384], [228, -89], [584, 137], [-28, 301], [18, 898], [-114, 603], [-230, 60], [31, 585], [242, -255], [276, 282], [-227, 555], [-142, -16], [-145, -135], [-16, -392], [-103, 353]], [[57678, 85247], [20, 573], [-123, -116], [18, -376], [85, -81]], [[51407, 82322], [21, -127], [68, 53], [5, 132], [-94, -58]], [[59419, 46241], [100, -416], [13, -721], [-80, -285], [82, -696], [74, -103], [74, 35], [-45, 764], [75, 354], [-13, 89], [-7, 13], [-42, 73], [-6, 20], [-120, 879], [-27, 59], [-28, 48], [-3, 7], [-47, -120]], [[52421, 54028], [94, -40], [-100, -355], [-128, 113], [134, 282]], [[99745, 47026], [23, 54], [39, -103], [6, -119], [-33, 0], [-35, 168]], [[99771, 47233], [-53, -108], [-47, 98], [57, 127], [43, -117]], [[70473, 54273], [-3, -58], [-29, -44], [-51, 1], [-28, 47], [6, 65], [36, 46], [42, -3], [27, -54]], [[70391, 54827], [50, 30], [55, -44], [3, -86], [-40, -77], [-61, 13], [-22, 84], [15, 80]], [[70380, 53869], [65, 9], [32, -55], [12, -84], [-24, -48], [-56, -14], [-42, 42], [-8, 62], [21, 88]], [[32840, 61703], [29, -39], [-11, -41], [-39, 12], [-8, 49], [29, 19]], [[64004, 67159], [152, 16], [-63, -409], [-101, 68], [12, 325]], [[28292, 66386], [110, -210], [50, -206], [79, -207], [-6, -103], [-116, 0], [-54, 221], [-83, 121], [-77, 111], [61, 117], [-31, 155], [67, 1]], [[28541, 66314], [66, 44], [97, -28], [7, -89], [-117, -10], [-53, 83]], [[33463, 59361], [-42, 69], [3, 75], [32, -20], [21, -55], [20, -13], [37, 6], [-24, -55], [-47, -7]], [[62184, 44813], [-114, 80], [-53, 139], [-11, 268], [83, 16], [97, -332], [-2, -171]], [[43362, 60942], [212, -71], [79, -216], [-134, -211], [-208, 58], [-56, 218], [107, 222]], [[32931, 60804], [50, -33], [20, -83], [4, -73], [-38, -37], [-26, 75], [-38, 98], [-10, 92], [38, -39]], [[53320, 84087], [116, -347], [-37, -270], [-154, -129], [-46, 190], [-132, 41], [-112, 276], [149, 222], [216, 17]], [[45518, 68312], [38, -139], [-21, -127], [-52, -87], [-97, -10], [-74, 83], [-11, 139], [25, 140], [97, 54], [95, -53]], [[50890, 74810], [105, -121], [-128, -188], [-126, 195], [149, 114]], [[47940, 87630], [228, 248], [66, -164], [-118, -498], [-176, 414]], [[93905, 55860], [39, 92], [78, 6], [13, -99], [-27, -120], [-75, -28], [-42, 66], [14, 83]], [[49302, 80301], [-68, 6], [27, 36], [48, 30], [-7, -72]], [[32900, 58769], [-53, 3], [22, 115], [51, 132], [49, -7], [-25, -147], [-44, -96]], [[48720, 82994], [21, 159], [61, -46], [-42, -163], [-40, 50]], [[54348, 73970], [0, -249], [-149, -338], [55, -136], [-67, -293], [-735, 662], [92, 215], [364, -74], [440, 213]], [[52533, 75595], [67, 18], [129, -435], [-75, -795], [-195, -151], [-134, 203], [17, 412], [-56, 555], [247, 193]], [[49410, 80211], [48, -21], [-4, -44], [-75, 22], [31, 43]], [[5845, 53105], [71, 63], [103, -18], [51, -131], [-52, -125], [-105, -43], [-67, 105], [-1, 149]], [[32592, 61827], [48, -92], [-3, -55], [-33, 12], [-15, 58], [-44, 46], [-12, 55], [13, 28], [46, -52]], [[33069, 59738], [-35, 53], [0, 121], [56, 73], [25, -74], [-5, -149], [-41, -24]], [[97513, 55954], [34, -26], [68, 2], [17, 37], [-17, 61], [35, -45], [-4, -44], [-22, -31], [-84, -14], [-55, 30], [-15, 98], [43, -68]], [[54040, 72433], [-90, 6], [-34, 130], [57, 97], [108, -98], [-41, -135]], [[66031, 40264], [25, -109], [-37, -112], [-85, 12], [-16, 115], [47, 86], [66, 8]], [[96394, 51519], [-21, -13], [-19, 10], [-8, 28], [9, 27], [18, 8], [19, -10], [5, -25], [-3, -25]], [[87404, 56211], [25, 121], [47, 98], [-9, -152], [-40, -186], [-80, -201], [-45, -29], [36, 183], [66, 166]], [[78965, 52628], [-32, -76], [-74, -21], [-72, 42], [-49, 100], [227, -45]], [[51857, 51880], [-55, 27], [-26, 94], [15, 98], [58, 44], [70, -32], [12, -105], [-27, -78], [-47, -48]], [[65412, 49233], [40, -73], [15, -203], [-51, 43], [-42, 135], [38, 98]], [[1320, 39750], [117, -57], [-87, -159], [-75, 148], [45, 68]], [[32999, 59383], [0, 100], [5, 59], [29, 10], [27, -23], [-14, -142], [-34, -110], [-13, 106]], [[2148, 44096], [251, -309], [-87, -44], [-243, 131], [-64, 177], [143, 45]], [[34952, 54919], [63, 229], [264, -166], [277, -464], [87, -353], [98, -74], [66, -308], [174, -899], [155, -87], [5, -287], [-322, -709], [-287, -503], [228, 117], [241, 382], [228, -2], [285, -162], [-97, -885], [132, 143], [107, 567], [518, -150], [458, -533], [43, -405], [294, 117], [297, -281], [626, -8], [419, -489], [360, -699], [465, -134], [198, -1160], [-4, -431], [-137, -741], [-307, -754], [-137, -156], [-319, -1076], [-187, 10], [-88, -428], [-7, -754], [56, -673], [-76, -1057], [-163, -484], [4, -517], [-378, -1213], [29, -245], [-278, -338], [-25, -241], [-502, 27], [-232, -116], [-204, -321], [-426, -365], [-238, -343], [-209, -564], [-66, -1576], [-277, -480], [-140, -587], [-592, -1470], [49, 200], [288, 717], [109, 443], [-119, 16], [-74, -288], [-118, -319], [-183, -820], [-211, -367], [-107, -375], [-326, -333], [-381, 36], [-225, 256], [-204, -5], [-148, 305], [52, 861], [-103, -1061], [396, -689], [-29, -395], [162, -392], [-258, -750], [-408, -311], [-682, -183], [-242, 113], [102, -317], [-130, -543], [43, -325], [-401, -165], [-308, 261], [-50, -737], [350, -49], [52, -392], [-227, 140], [1, -270], [-250, -401], [-74, -781], [-166, 20], [-315, -357], [-80, -317], [232, -485], [224, -35], [3, -565], [-441, -558], [-77, -540], [-290, -217], [-81, -373], [200, -788], [-276, 54], [-393, -277], [-49, -620], [-601, 328], [-215, 263], [-196, 625], [-107, 709], [199, 220], [-78, 1335], [235, 518], [-308, -268], [-150, 46], [17, 464], [127, 549], [138, 613], [155, -51], [-38, -692], [-88, -388], [173, 42], [94, 786], [18, 451], [228, 1261], [-137, 289], [-223, -153], [-52, 447], [65, 573], [131, 281], [-119, 1020], [128, 322], [156, 918], [116, 259], [168, 907], [59, 675], [-62, 1228], [97, 189], [-66, 559], [97, 333], [203, 1737], [-39, 473], [146, 1780], [-93, 1783], [-276, 375], [-35, 232], [-608, 613], [-413, 497], [-306, 735], [19, 417], [-396, 1190], [-372, 1771], [-272, 823], [-315, 412], [-42, 1056], [253, 487], [107, 113], [-7, 267], [-95, 13], [-117, 351], [-48, 597], [236, 644], [6, 453], [293, 162], [45, 181], [137, 698], [155, -40], [207, 775], [-112, 134], [26, 1376], [-154, 398], [-161, 384], [79, 301], [-203, 214], [-229, -83], [-201, -248], [132, -413], [-189, -88], [-87, 186], [-125, 138], [-303, 136], [-102, -66], [-234, 339], [30, 237], [-291, 355], [-122, -55], [-210, 460], [48, 418], [-541, 1032], [93, 63], [-140, 245], [-269, -93], [-363, 278], [-340, 131], [-258, 340], [-459, 889], [-265, 196], [-162, -262], [-311, -182], [-338, 185], [-301, 316], [-612, 424], [-209, 360], [-469, 256], [-134, 311], [-288, 285], [-189, 598], [139, 625], [-167, 660], [-690, 1422], [-321, 395], [59, 312], [-386, 851], [-176, 138], [-251, 539], [-271, 1051], [22, 199], [-523, 433], [76, -994], [504, -1004], [20, -332], [266, -662], [407, -1498], [243, -319], [-117, -395], [-114, 384], [-495, 710], [-71, 809], [-228, 352], [-131, -37], [-394, 654], [246, 52], [35, 292], [-459, 748], [-103, 609], [-294, 990], [-268, 690], [-335, 314], [-327, 101], [-48, 397], [-178, 302], [-310, 881], [-75, 425], [-293, 568], [-35, 527], [-154, 352], [96, 571], [-135, 812], [110, 597], [70, 1651], [-237, 819], [706, -105], [-150, 579], [-45, 0], [-680, 894], [-241, -29], [-435, 430], [-18, 561], [-282, 628], [-440, 601], [139, 533], [-278, 5], [-109, 342], [-254, 330], [-548, 1016], [-432, 271], [-297, -182], [-395, 410], [-566, 358], [-687, 237], [-311, -67], [-870, 584], [-368, -133], [-17, -472], [-265, 22], [-492, -455], [-201, 333], [88, 696], [-413, -740], [-303, -189], [238, -310], [-244, -361], [-515, -369], [-147, -342], [-523, -314], [-78, -278], [-310, -59], [-659, -468], [-315, 46], [419, 438], [346, 63], [799, 949], [172, 720], [-297, -157], [-496, 140], [-395, -114], [-323, 771], [-303, -114], [-504, 434], [212, 157], [-426, 442], [-47, 865], [618, 96], [221, -133], [711, 412], [-109, 687], [-542, -303], [-849, 99], [-525, 580], [934, 555], [288, -275], [417, -1], [68, 388], [-487, 203], [-281, 396], [-513, 328], [86, 297], [525, 31], [678, 802], [1073, 297], [341, 270], [1343, -494], [692, 43], [1361, -311], [358, 77], [638, -268], [1427, -429], [806, 701], [1425, 66], [527, -475], [256, 367], [236, -344], [338, 222], [423, -41], [941, -428], [835, -86], [313, -274], [-452, -268], [465, -137], [1329, 15], [420, -650], [-199, 1168], [558, 164], [496, -503], [605, -179], [1003, 23], [-6, 349], [472, -25], [155, -490], [810, 628], [-216, 512], [-555, 287], [-155, 612], [647, 569], [433, -371], [291, -768], [-78, -313], [495, -352], [417, 209], [255, -244], [-63, -595], [485, -229], [329, 1422], [751, -116], [375, -580], [-335, -89], [343, -590], [-81, -267], [-601, -459], [-601, -21], [-424, -480], [-641, 355], [180, -356], [584, -107], [-290, -548], [-501, 34], [-131, -370], [-822, 175], [676, -296], [39, -189], [-503, -159], [-425, -769], [-233, -870], [107, -705], [356, 12], [204, -801], [-79, -230], [465, 178], [598, -233], [361, -468], [824, -462], [656, -73], [-14, -1239], [533, -936], [177, -84], [346, 668], [-51, 360], [-175, 697], [-125, 266], [381, 216], [482, 602], [19, 690], [-136, 398], [-415, 411], [371, 766], [-258, 497], [172, 355], [-169, 468], [184, 168], [756, -248], [306, 187], [638, -768], [455, -201], [-11, -283], [53, -470], [306, -543], [403, -211], [355, 244], [467, 1063], [412, -1072], [392, -959], [182, -649], [445, -544], [435, -167], [-416, -359], [400, 79], [214, -352], [230, -80], [36, -702], [-356, -395], [-413, -63], [-382, -569], [-566, -56], [-1263, 19], [-268, -533], [-470, -335], [2, -148], [644, 361], [221, 165], [187, 53], [199, -148], [80, -268], [-69, -245], [-163, -246], [-36, -523], [200, -451], [568, -360], [154, 173], [255, -335], [-604, -435], [-315, -7], [-325, -631], [-153, 134], [8, 505], [459, 425], [-114, 179], [-320, -241], [-352, -18], [-208, -366], [-371, -34], [-367, -696], [-54, -291], [39, -344], [193, -242], [-19, -100], [-409, -56], [-392, -137], [-211, -143], [-59, -192], [540, 211], [76, -175], [-639, -384], [45, -226], [-240, -479], [-173, 203], [108, -428], [2, -449], [-150, -239], [-87, 352], [-181, 481], [75, -565], [43, -363], [69, -190], [-99, -789], [-145, 95], [17, -471], [-170, -29], [-249, -455], [-203, -65], [-117, -343], [-319, -402], [-278, -542], [-52, -397], [217, -1429], [195, -900], [-130, -928], [-161, -46], [-176, 453], [-94, 552], [-216, 588], [57, 568], [-387, 711], [-240, -217], [-410, 375], [-693, 15], [-173, -189], [-67, -253], [70, -320], [-220, -30], [-296, 151], [-144, 309], [-120, -171], [-256, 138], [-469, -229], [-198, -353], [-234, -96], [-308, -914], [115, -601], [-143, -835], [-66, -1106], [206, -1123], [388, -1083], [357, -358], [843, 423], [195, 286], [103, 936], [159, 163], [507, 182], [315, -96], [-13, -333], [-241, -714], [86, -71], [-110, -718], [-73, 73], [-53, -456], [18, -360], [-133, -641], [132, -67], [138, 113], [385, -81], [116, 128], [452, -111], [58, -260], [265, -209], [-122, -985], [21, -511], [-104, -590], [62, -259], [298, -777], [91, -324], [261, -134], [353, 445], [285, -9], [273, -180], [181, -323], [118, -69], [369, 522], [31, 653], [185, 302], [134, -193], [48, 312], [249, -13], [312, 475], [29, 134], [102, 65], [106, -126], [-3, -228], [-176, -149], [98, -505], [-144, -512], [169, -447], [132, 410], [-132, 604], [397, 373], [50, 108], [-106, 80], [-18, 137], [67, 76], [104, -79], [8, -294], [235, -31], [256, -568], [469, 105], [118, -238], [300, -74], [171, 296], [393, 80], [113, -179], [-84, -406], [271, 89], [237, -322], [-74, -442], [286, -8], [238, -287], [305, -713], [250, -424], [-22, -346], [61, 320], [826, -145], [-33, -254]], [[25116, 79484], [-397, -290], [-301, -397], [142, -117], [194, 212], [125, -226], [596, 623], [68, -116], [-16, -260], [264, -268], [611, 142], [128, -189], [-98, 840], [-282, 39], [-160, 443], [-510, 136], [-364, -572]], [[26637, 78534], [-175, -282], [-629, 30], [-177, -520], [86, -117], [-161, -885], [24, -569], [147, -375], [176, 143], [121, 627], [-89, 382], [76, 611], [284, 393], [196, 146], [286, -153], [44, -593], [184, -235], [76, -521], [191, 210], [125, 706], [-91, 371], [416, -447], [91, 199], [-270, 637], [-931, 242]], [[27043, 76351], [-226, -481], [265, -188], [231, 73], [611, 510], [168, 252], [-16, 58], [-676, -171], [-351, -352], [-6, 299]], [[28039, 76766], [652, 35], [256, 667], [-346, -302], [-570, -84], [-191, -286], [199, -30]], [[30823, 42305], [116, 195], [-208, 400], [-180, -194], [251, -216], [41, 5], [-20, -190]], [[52621, 76475], [6, -441], [-23, -331], [-58, -12], [-77, 95], [-69, 390], [30, 166], [115, 52], [5, 105], [71, -24]], [[32806, 61180], [46, 92], [72, -80], [46, 133], [33, -144], [-8, -124], [-93, 47], [-48, -69], [-48, 145]], [[33165, 60197], [-31, -80], [-78, 31], [-30, 76], [-15, 115], [40, 54], [72, -83], [42, -113]], [[65484, 39987], [81, -29], [40, -94], [-13, -104], [-99, 15], [-51, 69], [-10, 99], [52, 44]], [[89749, 83174], [148, -902], [-58, -494], [294, -1550], [-340, 61], [-141, -774], [230, -865], [-240, 125], [-35, -406], [-137, -91], [-76, 403], [103, 786], [-32, 501], [127, 1356], [-119, 429], [12, 901], [125, 91], [46, 300], [93, 129]], [[12, 89353], [3, 1217], [1, 974], [1517, -1101], [823, -84], [420, -456], [-140, -244], [-409, -122], [-292, -712], [-623, 340], [-208, 386], [-655, 13], [-437, -211]], [[64052, 91773], [-307, -404], [-285, -8], [-17, 447], [283, 370], [283, -92], [43, -313]], [[21, 92731], [1, 298], [344, 35], [403, -224], [-748, -109]], [[89728, 94628], [413, -100], [-306, -443], [-810, 80], [703, 463]], [[90757, 95319], [974, -53], [777, -41], [-1350, -300], [-401, 394]], [[88641, 95670], [627, 48], [1115, -385], [-465, -326], [-1212, -149], [-610, 257], [-23, 341], [568, 214]], [[68651, 95674], [-1602, -444], [-620, -512], [-186, -152], [-385, -356], [-412, -696], [138, -631], [426, -305], [-688, -102], [-548, 161], [-267, 491], [390, 1195], [1472, 1214], [1118, 196], [715, 216], [312, -31], [137, -244]], [[78591, 97501], [521, -346], [-1643, -645], [672, 969], [450, 22]], [[77159, 97993], [700, -292], [-233, -632], [-1274, 38], [-442, 553], [1249, 333]], [[63563, 98386], [798, -78], [904, 59], [596, 97], [644, 10], [-1383, -924], [-752, -157], [-510, 266], [-297, 727]], [[76802, 98861], [546, -404], [-1528, -412], [982, 816]], [[30936, 21519], [49, -379], [547, -673], [369, -100], [-385, -237], [-587, 95], [-585, 26], [-268, 251], [326, 226], [37, 577], [278, 322], [219, -108]], [[99999, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-3, 0], [-135, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-123, 0], [-16, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [-139, 0], [-138, 0], [-139, 0], [0, 271], [0, 271], [0, 271], [0, 271], [0, 271], [0, 271], [0, 271], [0, 271], [0, 272], [0, 271], [0, 271], [0, 271], [1830, -95], [748, 760], [3657, -111], [307, 1291], [2047, 963], [-2069, 469], [-586, 460], [198, 465], [1781, -207], [657, -152], [1056, 359], [-792, 559], [552, 99], [2476, 384], [543, 396], [410, -212], [1924, 145], [1435, -63], [1091, 159], [1283, 62], [28, -274], [840, 190], [131, -400], [884, -43], [875, 134], [607, -200], [753, 113], [-832, 422], [-415, 529], [48, 338], [1389, -16], [3315, -83], [552, -331], [712, 8], [440, 398], [668, -445], [1931, 299], [773, 264], [212, 428], [15, 813], [-317, 601], [275, 266], [-41, 983], [311, 673], [555, 722], [435, 417], [395, 241], [708, 365], [357, -14], [-806, -654], [-624, -504], [-61, -217], [-313, -176], [-342, -596], [24, -629], [264, -264], [373, -543], [85, -595], [324, -455], [284, -953], [-216, -767], [-689, -625], [-1926, -729], [-2060, 69], [551, -568], [779, -20], [-603, -341], [-757, 72], [57, -217], [-801, -246], [-964, 506], [-33, -260], [960, -483], [1083, -31], [224, -868], [1278, 125], [1653, -524], [923, -1069], [661, -53], [1308, 668], [2356, 225], [630, -277], [804, 671], [1600, 351], [1555, 254], [-254, 338], [-1549, 424], [703, 888], [1350, 551], [809, 242], [1965, 394], [394, 526], [473, -54], [386, 330], [-368, 139], [341, 263], [862, 439], [143, 468], [386, 280], [500, -322], [-57, 479], [606, 54], [-132, -365], [1773, 9], [635, 259], [1847, 341], [746, -272], [310, 423], [244, -174], [1179, -112], [864, -155], [166, 332], [423, -331], [119, 235], [748, -363], [944, 415], [806, 172], [-51, 666], [733, -252], [12, -254], [707, 31], [257, -292], [318, 783], [2106, 818], [355, -157], [139, 497], [489, -201], [-182, 446], [948, 315], [521, -104], [1084, -910], [307, 119], [842, -59], [1313, -226], [327, 90], [174, -435], [-132, -480], [-688, -563], [545, -234], [-484, -682], [-125, -581], [731, 273], [833, 1288], [1448, 613], [358, 566], [1620, 617], [834, 176], [669, -29], [441, 186], [494, -144], [1330, 172], [83, -265], [697, 556], [715, -20], [1174, -372], [641, -19], [134, 347], [633, 167], [716, -589], [-14, -280], [732, 131], [145, -215], [1947, 641], [224, -311], [655, -189], [463, 592], [851, 24], [88, -230], [569, 149], [1172, -310], [859, -35], [331, -156], [217, -230], [788, -555], [1546, -162], [-3, 280], [699, -535], [945, -172], [621, -819], [29, 351], [1558, -275], [731, -582], [-195, -715], [-1400, -509], [-667, -842], [231, -936], [852, -895], [-1498, -271], [191, -524], [-348, -723], [2350, -1034], [3169, -780], [0, -271], [0, -271], [0, -271], [0, -272], [0, -271], [0, -271], [0, -271], [0, -271], [0, -271], [0, -271], [0, -271], [0, -271]], [[33312, 5936], [-160, -729], [-1680, 315], [1217, 262], [623, 152]], [[5474, 6183], [340, -319], [-1844, -177], [932, 791], [572, -295]], [[31435, 6660], [-975, -726], [-69, 468], [1044, 258]], [[37402, 6513], [448, -62], [58, -806], [-2953, -390], [227, 443], [856, 329], [330, 861], [872, 129], [588, -248], [-426, -256]], [[16335, 9502], [-142, -508], [-378, 409], [520, 99]], [[14976, 9617], [569, -197], [8, -356], [-906, 314], [329, 239]], [[29462, 10104], [106, -424], [-714, 20], [608, 404]], [[23128, 10579], [340, -443], [-1032, 15], [-851, 144], [963, 211], [580, 73]], [[30549, 11985], [479, -966], [-165, -696], [-596, -349], [-381, 353], [-443, -59], [-376, 144], [428, 419], [406, -45], [365, 164], [90, 352], [-336, 244], [-24, 575], [553, -136]], [[90109, 28535], [481, -348], [527, 265], [128, -218], [-49, -743], [-96, -548], [-165, -31], [-143, -209], [-231, 50], [-210, 546], [-242, 1236]], [[88211, 31313], [78, -352], [-389, 41], [-57, 380], [368, -69]], [[86176, 45448], [285, 61], [168, -280], [-245, -209], [-283, 72], [75, 356]], [[89596, 45671], [147, -933], [99, -164], [27, -655], [114, -438], [149, 202], [241, -451], [15, -864], [208, -685], [35, -716], [391, -549], [244, -129], [186, -598], [196, -643], [247, -283], [-3, -411], [268, -352], [396, -1101], [0, -640], [111, -1049], [-296, -2059], [-196, -244], [-252, -844], [-46, -489], [-169, -412], [-40, -1039], [-473, -72], [-426, -459], [-96, -297], [-292, 349], [-511, -189], [-316, 283], [-207, -19], [-359, 298], [-172, 404], [31, 322], [-164, 431], [-295, 116], [93, 536], [-64, 322], [-189, -452], [-125, 1005], [-275, -321], [-161, -634], [-192, 621], [-226, 724], [-518, 295], [-294, 320], [-607, -123], [-473, -335], [-306, 23], [-575, -512], [-164, -470], [-554, 68], [-425, -61], [-449, -566], [-485, -82], [-422, 396], [-37, 485], [189, 135], [4, 944], [-196, 826], [1, 423], [-226, 791], [-43, 455], [-88, 235], [-143, 322], [-99, 465], [230, -161], [110, 70], [-93, 331], [-83, 620], [93, 309], [-28, 538], [101, 414], [100, -83], [76, 92], [225, 190], [379, 555], [148, -102], [218, 210], [783, 420], [241, 681], [139, 173], [-42, 513], [219, 392], [165, -541], [85, 178], [-89, 544], [188, 60], [48, 368], [150, 106], [118, 480], [507, 463], [276, -574], [399, -141], [-70, 308], [214, 845], [241, 406], [467, 57], [-29, 375], [146, 50], [118, -264], [251, -73], [320, -91], [242, 115], [133, -234], [-77, -383], [-197, -140], [-9, -540], [-148, -298], [369, -693], [648, -576], [267, -456], [231, 147], [167, 800], [45, 2037], [161, 919], [104, 128]], [[81666, 54489], [309, 224], [204, 328], [258, 845], [269, -367], [8, -277], [177, -65], [238, -342], [-193, -176], [20, -261], [-299, -163], [-34, -418], [179, -675], [-63, -217], [317, -532], [-331, -87], [-103, -770], [-295, -714], [62, -264], [-177, -798], [-373, -323], [-25, 256], [-250, 155], [-143, 126], [-139, -107], [-221, -70], [-132, 289], [-301, 23], [-95, 1094], [-180, 144], [7, 498], [-123, 473], [67, 420], [152, 301], [158, -246], [260, 155], [81, 434], [435, 278], [276, 829]], [[31432, 20057], [-213, -172], [-247, -11], [-131, -232], [-141, -57], [-107, 126], [-130, 115], [-99, 307], [327, -6], [247, -9], [494, -61]], [[29676, 21015], [476, -253], [-215, -133], [-261, 386]], [[29257, 23038], [-134, -153], [-136, 581], [13, 631], [166, 89], [12, -569], [79, -579]], [[29474, 27613], [168, 73], [-134, -1022], [-195, 36], [161, 913]], [[29140, 63299], [-38, 2], [-696, -26], [182, 351], [-273, 142], [-195, 535], [-313, 34], [-155, 213], [-381, 69], [-15, 283], [-251, 9], [-176, -293], [-307, -230], [123, 506], [516, 304], [444, -60], [540, -422], [254, -313], [489, -424], [81, -223], [261, -37], [140, -321], [-230, -99]], [[59170, 71751], [-120, 63], [-56, 141], [57, 163], [118, 13], [20, 117], [157, -30], [233, 162], [-161, -292], [35, -127], [-104, -78], [-37, -103], [-142, -29]], [[30067, 63192], [205, 129], [312, -172], [80, -313], [348, -251], [-137, -163], [-515, 32], [-198, -475], [-100, 250], [-82, 114], [-438, 13], [-142, 230], [285, -97], [103, 224], [-112, 610], [391, -131]], [[99996, 42523], [2, -310], [-315, -200], [-72, 228], [385, 282]], [[99519, 41844], [117, -203], [20, -261], [-105, -144], [-174, 21], [-135, 161], [-13, 272], [97, 182], [193, -28]], [[33555, 22281], [-414, -543], [123, 709], [291, -166]], [[33671, 22279], [359, -43], [-95, -255], [-363, -216], [-244, -4], [343, 518]], [[47986, 83558], [319, 82], [157, -319], [-204, -323], [76, -652], [-193, -577], [-557, -223], [-468, 174], [80, 389], [148, 342], [-171, 153], [92, 527], [382, -30], [53, 510], [286, -53]], [[49070, 85622], [-203, -409], [644, -270], [-394, -816], [429, -272], [545, -1439], [400, -346], [-220, -381], [105, -399], [-301, -221], [-359, 55], [-687, -170], [-42, -186], [-498, -18], [527, 694], [-486, 298], [304, 209], [12, 546], [269, 86], [108, 431], [-660, 509], [154, 280], [-254, 331], [-181, 485], [104, 537], [228, 452], [456, 14]], [[56639, 72302], [518, -110], [132, -171], [-418, -62], [-339, 209], [107, 134]], [[56498, 74314], [253, -249], [-14, -173], [-314, 299], [75, 123]], [[35353, 92117], [163, -260], [-300, -105], [-423, 201], [81, 385], [479, -221]], [[42931, 92514], [-521, -239], [-125, 117], [37, 147], [620, 199], [228, -55], [63, -228], [-302, 59]], [[41053, 99999], [3019, -569], [-14, -312], [37, -326], [1042, -75], [476, 256], [625, -359], [-624, -463], [-914, -74], [34, -649], [-28, -597], [203, -521], [-938, -549], [490, 1], [142, -594], [-651, -454], [341, -570], [-492, -114], [-465, 200], [-600, -205], [445, -471], [777, -538], [76, -544], [-519, -60], [-256, 369], [-365, 61], [-650, -177], [-87, -293], [264, -219], [549, 243], [815, -172], [-1087, -818], [-1034, -328], [-552, -43], [-542, -748], [-591, -470], [-569, -69], [-815, -413], [151, -791], [-531, -511], [-198, -1589], [-383, -24], [-310, 353], [-393, 143], [-443, 196], [-671, 1120], [-307, 618], [-299, 823], [-202, 802], [375, 834], [408, 22], [51, 703], [-1004, 535], [195, 156], [404, -123], [-74, 378], [-387, 167], [-506, -20], [-103, 588], [68, 319], [-212, 474], [-271, 455], [-569, 597], [-1017, 271], [-1376, -172], [-549, 414], [-247, 518], [-444, 263], [85, 212], [1479, 269], [343, 211], [-726, 258], [505, 193], [1618, 779], [1822, 508], [1092, -336], [-166, 415], [1653, -414], [397, 355], [3200, 695]], [[83336, 46449], [248, -120], [131, -237], [-199, -102], [-203, 162], [-275, 174], [298, 123]], [[84738, 46375], [-178, -390], [-350, -214], [-47, 343], [180, 285], [67, 192], [166, 81], [110, 60], [75, 135], [490, 295], [237, -105], [-342, -267], [-408, -415]], [[82450, 47053], [-65, -308], [-147, 56], [51, 273], [161, -21]], [[82769, 47173], [282, -120], [15, -185], [-199, -20], [-242, -94], [-132, 53], [46, 253], [230, 113]], [[84455, 47255], [-1, -122], [-290, -164], [-52, -90], [-376, -216], [-426, 66], [-49, 259], [131, 74], [370, -36], [693, 229]], [[82081, 47144], [114, -162], [-103, -123], [-127, 64], [-92, 121], [4, 91], [204, 9]], [[88478, 47142], [-305, -176], [-54, 400], [137, 277], [227, 89], [73, -267], [-78, -323]], [[81944, 47870], [-95, -176], [-308, -22], [-141, 188], [544, 10]], [[79488, 48377], [331, -41], [305, -166], [153, -248], [409, -84], [159, 218], [433, -194], [172, -408], [346, -126], [-31, -333], [67, -211], [-389, 287], [-146, -98], [-610, 193], [-340, 221], [-257, -51], [-501, 234], [4, 247], [-301, 100], [-32, 186], [228, 274]], [[87383, 48714], [153, 78], [18, -490], [-26, -298], [-193, -93], [24, 391], [24, 412]], [[85297, 50004], [48, -242], [-140, -146], [-174, 59], [-34, 293], [141, 136], [159, -100]], [[85861, 50194], [555, -304], [-72, -277], [-259, 191], [-246, 74], [-248, -19], [-94, 283], [364, 52]], [[79957, 50370], [108, -98], [17, -184], [-109, -98], [-129, 92], [-3, 220], [116, 68]], [[84591, 50897], [745, 16], [-76, -253], [-704, 24], [35, 213]], [[87632, 50923], [-46, 267], [219, -101], [249, 36], [-4, -250], [-226, -18], [-192, 66]], [[79409, 50981], [159, -476], [133, -173], [-21, -161], [-147, -97], [-47, 191], [-96, 309], [-185, 57], [-30, 260], [88, -2], [146, 92]], [[77461, 51384], [113, -302], [51, -238], [-88, -48], [-101, 170], [-99, 277], [25, 177], [99, -36]], [[89159, 46594], [-290, 574], [-304, -17], [71, 333], [-283, 1233], [-584, 519], [-207, 33], [-371, 378], [-256, -177], [-10, 322], [-203, 505], [197, 183], [-233, 146], [-73, 337], [-236, 43], [79, 361], [407, 264], [352, -209], [135, -1232], [280, -288], [259, 658], [229, 84], [157, 340], [575, -511], [309, -132], [847, -497], [496, -805], [-23, -323], [478, -311], [113, -420], [-244, -29], [59, -416], [257, -341], [124, -563], [161, 34], [24, -295], [230, -132], [-32, -200], [209, -285], [-754, 225], [-257, 407], [-270, 790], [-590, 67], [-271, -209], [118, -361], [-209, -212], [-466, 129]], [[77059, 52830], [146, -423], [-66, -238], [-197, 543], [117, 118]], [[84739, 52803], [90, -153], [-296, -581], [-347, 67], [-642, -131], [-85, -366], [61, -604], [229, 309], [489, 204], [225, -49], [-114, -251], [-358, -164], [-188, -344], [172, -587], [-31, -363], [196, -368], [-395, -265], [40, 328], [-204, 315], [52, 450], [-193, -263], [-18, -1322], [-269, 89], [76, 600], [-92, 510], [-148, 194], [159, 646], [-2, 435], [113, 335], [91, 793], [78, 196], [157, 155], [159, -134], [639, -93], [356, 412]], [[85602, 52942], [-86, -436], [252, 278], [93, -145], [-234, -404], [317, -70], [-39, -275], [-285, -34], [111, -418], [-60, -217], [-266, 420], [-70, 441], [0, 436], [124, 607], [143, -183]], [[76528, 55067], [173, -186], [381, -17], [224, -675], [402, -518], [225, -590], [136, 78], [296, -522], [96, -352], [360, -308], [-115, -539], [287, -193], [140, -722], [206, -68], [125, -491], [-81, -1482], [-72, -35], [-113, 189], [-159, -162], [-236, 513], [-384, 553], [-335, 809], [-223, 1020], [-192, 527], [-131, 100], [-168, 958], [-243, 274], [-16, 262], [-604, 1129], [-95, 324], [116, 124]], [[75774, 59507], [77, 368], [75, -234], [-96, -591], [-76, -702], [-44, 254], [-5, 254], [69, 651]], [[45544, 90163], [551, -181], [196, -547], [-332, -500], [-459, -356], [-704, -225], [-677, 276], [-245, 490], [-514, 13], [290, 288], [-467, 149], [9, 445], [432, 234], [344, -370], [331, -206], [173, 324], [538, -116], [534, 282]], [[28693, 62468], [227, -91], [195, -176], [-87, -110], [-188, 29], [-201, -74], [-184, 87], [-255, 223], [191, 90], [302, 22]], [[86383, 71299], [208, -118], [82, -379], [-191, -893], [-189, -213], [-121, 140], [-12, 488], [70, 165], [-59, 261], [-107, -80], [-75, 298], [394, 331]], [[87266, 71631], [200, -128], [-192, -514], [-182, 110], [-195, -318], [-125, 334], [125, 300], [189, -13], [180, 229]], [[89242, 75658], [221, -1044], [-270, -674], [-16, -572], [-132, -631], [77, -311], [-254, -481], [-41, 234], [-435, -346], [-377, 15], [-207, -546], [-257, 32], [63, 410], [-287, 104], [-280, -211], [-646, -185], [-7, 203], [575, 690], [422, 77], [333, -120], [255, 1009], [158, 145], [44, -313], [219, 113], [330, 568], [171, 769], [-53, 625], [192, 276], [202, 164]], [[89448, 78021], [260, 142], [216, -915], [474, -33], [-21, -435], [-478, -369], [-115, -420], [-429, 272], [-239, -116], [56, -299], [-226, -163], [-92, 727], [359, 275], [235, 1334]], [[72335, 57431], [266, -707], [143, -665], [-55, -498], [-303, -310], [-203, 509], [-64, 1337], [216, 334]], [[63708, 44875], [164, -544], [151, -1387], [-71, -304], [-164, 245], [58, -580], [-97, -717], [-444, -2698], [-215, -1413], [-553, -374], [-307, 337], [-90, 341], [14, 549], [-148, 702], [79, 533], [270, 804], [-149, 1416], [253, 708], [379, 299], [209, 293], [493, 1029], [66, 621], [102, 140]], [[56347, 96975], [270, -168], [-387, -552], [-419, 190], [-159, 469], [425, 204], [270, -143]], [[54672, 97846], [1164, -634], [-561, -177], [-606, -1095], [-859, 692], [-836, 1033], [1067, 144], [500, -516], [131, 553]], [[56428, 98137], [1113, -303], [-860, -384], [-579, -35], [-936, 561], [1262, 161]], [[98028, 28506], [117, -328], [210, 74], [59, -449], [-521, -1156], [-298, -312], [-179, -938], [-296, -387], [-338, -13], [-536, 457], [189, 866], [712, 426], [386, 560], [273, 982], [222, 218]], [[98077, 32018], [414, -681], [69, -708], [327, -466], [333, -209], [221, 260], [159, -100], [-194, -795], [-266, -201], [-20, -421], [-418, -825], [-148, 136], [93, 482], [-85, 365], [-316, 243], [247, 370], [76, 619], [-230, 862], [-375, 1030], [113, 39]], [[84900, 57375], [182, -120], [46, -676], [41, -549], [-113, -563], [-82, 449], [-145, -179], [89, -356], [-89, -332], [-175, 4], [-253, 460], [-16, 675], [-160, -132], [-185, 70], [-169, -267], [98, 593], [408, 345], [107, -124], [176, 320], [208, 45], [32, 337]], [[84241, 58162], [85, -88], [-151, -1031], [-177, 462], [134, 162], [109, 495]], [[84443, 58219], [43, -467], [-171, -321], [128, 788]], [[83282, 58448], [43, -482], [-273, -475], [-106, -348], [-392, -504], [451, 1072], [112, 215], [165, 522]], [[84567, 58432], [150, -38], [68, -649], [-125, -59], [-93, 746]], [[83971, 58613], [263, -59], [-153, -622], [-207, -84], [97, 765]], [[84699, 59074], [161, -180], [19, -565], [-89, -101], [-270, 830], [179, 16]], [[83659, 59544], [160, -343], [-141, -327], [-246, 751], [227, -81]], [[83585, 62533], [316, -12], [134, -838], [-83, -445], [-181, -223], [-55, -359], [98, -641], [161, -82], [44, 169], [236, -100], [181, -255], [-94, -127], [223, -349], [-242, -50], [-157, 345], [-86, -108], [-238, 262], [-112, -15], [-223, 89], [1, 337], [-153, 235], [-75, 900], [136, -201], [9, 886], [160, 582]], [[93002, 48680], [307, -595], [-55, -205], [-267, 533], [15, 267]], [[92286, 49425], [-37, -729], [-251, -394], [-435, -92], [-346, 302], [13, 191], [470, -50], [437, 410], [-43, 370], [192, -8]], [[91956, 50277], [303, -193], [252, -570], [-40, -468], [-70, 475], [-176, 353], [-219, 169], [-50, 234]], [[31357, 62525], [455, -87], [54, -142], [-80, -170], [-435, 57], [-42, 228], [48, 114]], [[94913, 46056], [118, -240], [-56, -154], [-125, 107], [-44, 207], [107, 80]], [[94337, 46438], [132, 85], [193, -217], [38, -229], [-145, -43], [-157, 164], [-61, 240]], [[94666, 47024], [114, -119], [47, -543], [-142, 205], [-19, 457]], [[94053, 47469], [458, -399], [1, -245], [-385, 370], [-74, 274]], [[33272, 58060], [-85, -539], [-204, 216], [-37, 386], [326, -63]], [[83787, 66367], [48, -241], [-68, -941], [-136, -708], [-133, -29], [-149, 725], [36, 360], [242, 734], [160, 100]], [[6742, 63469], [205, -219], [275, -342], [-175, -159], [-202, 235], [-183, 213], [-287, 313], [367, -41]], [[4512, 83553], [108, -171], [-442, -103], [334, 274]], [[12908, 84435], [313, -255], [234, -352], [-31, -196], [-353, 371], [-163, 432]], [[12315, 84877], [310, -141], [276, -621], [-586, 762]], [[7496, 85205], [11, -237], [-319, -447], [-168, 396], [476, 288]], [[12301, 85378], [249, -428], [-444, 201], [195, 227]], [[12379, 85439], [298, -197], [322, -587], [-211, 25], [-409, 759]], [[3863, 86662], [217, -346], [-249, -86], [-430, 401], [462, 31]], [[2313, 88585], [873, -293], [3, -393], [-631, 335], [-245, 351]], [[96374, 43185], [132, -419], [104, -261], [-156, 31], [-75, 263], [-104, 114], [-48, 360], [147, -88]], [[26712, 78420], [548, -134], [-6, -303], [-587, 390], [45, 47]], [[32128, 78941], [294, -276], [362, -69], [-158, -278], [-432, 256], [-66, 367]], [[33194, 78911], [192, -479], [-163, -304], [-142, -68], [-176, 297], [289, 554]], [[32185, 80609], [625, -343], [-101, -165], [-372, 186], [-152, 322]], [[34527, 81397], [132, -264], [-126, -465], [-3, -359], [172, -75], [146, 133], [303, -165], [-125, -389], [187, -46], [-9, -310], [80, -169], [10, -498], [-171, -100], [-196, 301], [-275, -128], [-194, -8], [54, 366], [-932, 12], [-80, 184], [198, 416], [359, 1069], [213, 292], [257, 203]], [[27379, 82581], [256, -343], [-153, -81], [-277, 222], [174, 202]], [[13140, 82904], [235, -48], [260, -414], [232, -385], [-328, 238], [-166, 187], [-233, 422]], [[27295, 88162], [-285, -458], [-318, 129], [304, 342], [299, -13]], [[26253, 89737], [961, -529], [510, -617], [-230, -206], [-406, 136], [-148, 291], [-280, -118], [-247, -539], [-196, 360], [-299, 146], [206, 309], [129, 767]], [[29045, 91417], [131, -317], [-25, -312], [-299, 37], [-251, 286], [0, 376], [113, 179], [331, -249]], [[22491, 92265], [926, -399], [-482, -331], [-599, 55], [155, 675]], [[18279, 94063], [1005, -215], [1040, 213], [65, 234], [481, -333], [74, -533], [295, -926], [378, -402], [102, -516], [-428, -124], [-850, 229], [-1269, -368], [-658, 25], [-290, 366], [-439, 42], [-408, 397], [905, 188], [732, -27], [-539, 238], [-1138, -44], [-222, 240], [634, 204], [-819, 144], [-22, 210], [650, 386], [721, 372]], [[27482, 94373], [764, 9], [462, -466], [-394, 69], [-565, -177], [-267, 565]], [[25956, 94378], [446, -108], [-485, -490], [197, -452], [452, 736], [787, 234], [290, -884], [801, 331], [667, -149], [433, -387], [324, -102], [1142, -613], [346, -492], [125, -314], [209, -571], [511, -331], [606, -426], [-195, -700], [-402, -243], [-375, 427], [-408, 322], [-114, -516], [658, -867], [77, -708], [-498, 55], [-486, 186], [1009, -915], [-224, -128], [-1011, 514], [-793, 618], [-379, 421], [-447, 30], [-352, -39], [-539, 140], [-129, 455], [291, 131], [617, -119], [348, 85], [-142, 430], [589, 560], [-179, 643], [-748, 605], [-983, 628], [-704, -146], [-106, -172], [-1146, 166], [-673, 203], [-392, 836], [292, 769], [693, 347]], [[22269, 94402], [714, -20], [-69, -406], [248, -233], [15, -483], [-599, -370], [-873, 647], [503, 328], [-438, 304], [499, 233]], [[24237, 94511], [708, -106], [-192, -607], [-520, -214], [-102, -496], [-416, 338], [-173, 1041], [695, 44]], [[16227, 94782], [1310, -270], [429, -349], [-1372, -714], [-104, -432], [-685, -234], [-747, 498], [560, 1046], [-273, 336], [882, 119]], [[23779, 95386], [361, -517], [-359, -44], [-497, 293], [-239, 579], [734, -311]], [[22664, 95998], [286, -569], [-182, -376], [-638, -7], [-639, 279], [-179, 553], [538, 204], [814, -84]], [[19814, 96089], [911, -671], [-172, -348], [-782, 9], [-1167, -389], [-390, 65], [-856, 399], [-147, 316], [844, 385], [558, -84], [484, -433], [366, 163], [-125, 286], [476, 302]], [[23545, 96198], [1054, -185], [843, -512], [1298, 13], [1135, -206], [71, -341], [-665, -241], [-2267, 43], [-547, 242], [-297, 513], [-760, 379], [135, 295]], [[17743, 96462], [64, -446], [-1102, -483], [-712, 42], [871, 781], [879, 106]], [[19554, 96808], [128, -339], [-824, -92], [-314, 334], [1010, 97]], [[23271, 97132], [547, -621], [-972, 170], [-288, 480], [713, -29]], [[19065, 97493], [407, -412], [-848, -168], [441, 580]], [[21206, 97538], [1139, -427], [150, -406], [-1369, 201], [80, 632]], [[23681, 99139], [1904, -1311], [-434, -968], [-708, 28], [-1281, 963], [-170, 965], [689, 323]], [[30642, 99713], [1386, -119], [940, -411], [-938, -464], [-2356, -1067], [-555, -75], [17, -595], [-847, -477], [108, -509], [-1914, 89], [-210, -287], [-971, 52], [-293, 440], [848, 54], [-159, 495], [243, 393], [182, 322], [-496, 668], [-853, 687], [2250, 380], [316, 236], [3302, 188]], [[14497, 80889], [115, 142], [394, -305], [277, -85], [408, -527], [123, -415], [-327, 56], [-337, 272], [-354, 449], [-299, 413]], [[95422, 40299], [150, -7], [353, -411], [109, -304], [409, -512], [-47, -211], [-624, 659], [-350, 786]], [[80745, 63447], [155, -128], [-135, -346], [-37, -371], [-269, -333], [-267, 228], [-19, 444], [207, 297], [190, 117], [175, 92]]], "bbox": [-179.9999885408, -89.999999, 179.9999885408, 83.61347077], "transform": { "scale": [0.0036000357711737114, 0.001736152059220592], "translate": [-179.9999885408, -89.999999] } };
 'use strict';
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();

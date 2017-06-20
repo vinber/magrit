@@ -1261,7 +1261,7 @@ function render_stewart(){
       .then(res => {
           let data_split = res.split('|||'),
               raw_topojson = data_split[0],
-              options = {result_layer_on_add: true};
+              options = { result_layer_on_add: true, func_name: 'smooth' };
           if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
               options["choosed_name"] = new_user_layer_name;
           }
@@ -1485,7 +1485,7 @@ var fields_Anamorphose = {
                     );
                 xhrequest("POST", '/compute/olson', formToSend, true)
                     .then( result => {
-                        let options = {result_layer_on_add: true};
+                        let options = { result_layer_on_add: true, func_name: 'cartogram' };
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
                         }
@@ -1525,7 +1525,7 @@ var fields_Anamorphose = {
 
                 xhrequest("POST", '/compute/carto_doug', formToSend, true)
                     .then(data => {
-                        let options = {result_layer_on_add: true};
+                        let options = { result_layer_on_add: true, func_name: 'cartogram' };
                         if(new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)){
                             options["choosed_name"] = new_user_layer_name;
                         }
@@ -2998,9 +2998,9 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
       }));
   xhrequest("POST", '/compute/gridded', formToSend, true)
       .then(data => {
-          let options = {result_layer_on_add: true};
+          let options = { result_layer_on_add: true, func_name: 'grid' };
           if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
-              options["choosed_name"] = new_user_layer_name;
+            options["choosed_name"] = new_user_layer_name;
           }
           let rendered_field = field_n + "_densitykm"
           let n_layer_name = add_layer_topojson(data, options);
@@ -3236,7 +3236,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
       xhrequest("POST", '/compute/links', formToSend, true)
           .then(data => {
               // FIXME : should use the user selected new name if any
-              let options = {result_layer_on_add: true};
+              let options = { result_layer_on_add: true, func_name: 'flow' };
               if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
                   options["choosed_name"] = new_user_layer_name;
               }

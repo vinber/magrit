@@ -44,7 +44,7 @@ function setUpInterface(reload_project)
   // Remove some layers from the server when user leave the page
   // (ie. result layers are removed but targeted layer and layout layers stay
   // in cache as they have more chance to be added again)
-  window.addEventListener('unload', function(){
+  window.addEventListener('unload', function () {
     let layer_names = Object.getOwnPropertyNames(current_layers).filter(name => {
       if (!(current_layers[name].hasOwnProperty('key_name')))
         return 0;
@@ -216,7 +216,7 @@ function setUpInterface(reload_project)
       'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent' })
     .html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
-    .on('click', function(){
+    .on('click', function () {
       if (document.getElementById('menu_lang'))
         document.getElementById('menu_lang').remove();
       const click_func = (window_name, target_url) => {
@@ -237,7 +237,7 @@ function setUpInterface(reload_project)
         showConfirmButton: false,
         cancelButtonText: i18next.t('app_page.common.close'),
         animation: 'slide-from-top',
-        onOpen: function(){
+        onOpen: function () {
           let content = document.getElementsByClassName('about_content')[0];
           let credit_link = content.querySelector('#credit_link');
           credit_link.style.fontWeight = 'bold';
@@ -266,7 +266,7 @@ function setUpInterface(reload_project)
       'font-size': '14px', 'vertical-align': 'super',
       background: 'transparent', 'font-weight': 'bold' })
     .html(i18next.language)
-    .on('click', function(){
+    .on('click', function () {
       if (document.getElementById('menu_lang'))
         document.getElementById('menu_lang').remove();
       else {
@@ -385,13 +385,12 @@ function setUpInterface(reload_project)
              'border': '1px solid lightgrey',
              'padding': '3.5px'})
     .html(i18next.t('app_page.box_type_fields.title'))
-    .on('click', function(){
+    .on('click', function () {
         let layer_name = Object.getOwnPropertyNames(user_data)[0];
         make_box_type_fields(layer_name);
     });
 
   make_ico_choice();
-  add_simplified_land_layer();
 
   let section3 = d3.select('#section3');
 
@@ -400,6 +399,39 @@ function setUpInterface(reload_project)
             'data-i18n': '[tooltip-title]app_page.tooltips.section3',
             'data-placement': 'right'})
     .append('ul').attrs({id: 'sortable', class: 'layer_list'});
+  new Sortable(document.getElementById('sortable'), {
+    animation: 100,
+    onUpdate: function(a){
+      // Set the layer order on the map in concordance with the user changes
+      // in the layer manager with a pretty rusty 'sorting' algorythm :
+      const desired_order = [],
+        actual_order = [],
+        layers = svg_map.querySelectorAll('.layer');
+      let at_end = null;
+      if (document.getElementById('info_features').className === 'active') {
+        displayInfoOnMove();
+        at_end = true;
+      }
+
+      for (let i = 0, len_i = a.target.childNodes.length; i < len_i; i++) {
+        let n = a.target.childNodes[i].getAttribute('layer_name');
+        desired_order[i] = _app.layer_to_id.get(n);
+        actual_order[i] = layers[i].id;
+      }
+      for (let i = 0, len = desired_order.length; i < len; i++) {
+        let lyr1 = document.getElementById(desired_order[i]),
+            lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
+        svg_map.insertBefore(lyr2, lyr1);
+      }
+     if(at_end) displayInfoOnMove();
+    },
+    onStart: event => {
+      document.body.classList.add('no-drop')
+    },
+    onEnd: event => {
+      document.body.classList.remove('no-drop');
+    },
+  });
 
   let dv3 = section3.append('div')
     .style('padding-top', '10px').html('');
@@ -433,7 +465,7 @@ function setUpInterface(reload_project)
     .attrs({'id': 'title', 'class': 'list_elem_section4 i18n',
             'placeholder': '', 'data-i18n': '[placeholder]app_page.section4.map_title'})
     .styles({'margin': '0px 0px 0px 3px', 'width': '160px'})
-    .on('keyup', function(){ handle_title(this.value); });
+    .on('keyup', function () { handle_title(this.value); });
   e.append('span')
     .styles({display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub'})
     .html(sys_run_button.replace('submit', 'Title properties'))
@@ -445,7 +477,7 @@ function setUpInterface(reload_project)
   f.append('input')
     .styles({position: 'absolute', right: '20px', 'width': '60px', 'margin-left': '15px'})
     .attrs({type: 'color', id: 'bg_color', value: '#ffffff', 'class': 'list_elem_section4 m_elem_right'})
-    .on('change', function(){
+    .on('change', function () {
         handle_bg_color(this.value);
     });
 
@@ -454,7 +486,7 @@ function setUpInterface(reload_project)
     .attr('data-i18n', '[html]app_page.section4.map_width');
   a1.append('input')
     .attrs({id: 'input-width', type: 'number', value: w, 'class': 'list_elem_section4 m_elem_right'})
-    .on('change', function(){
+    .on('change', function () {
         let new_width = +this.value;
         if(new_width == 0 || isNaN(new_width)){
             this.value = w;
@@ -479,7 +511,7 @@ function setUpInterface(reload_project)
     .attr('data-i18n', '[html]app_page.section4.map_height');
   a2.append('input')
     .attrs({id: 'input-height', type: 'number', 'value': h, class: 'm_elem_right list_elem_section4'})
-    .on('change', function(){
+    .on('change', function () {
         let new_height = +this.value;
         if(new_height == 0 || isNaN(new_height)){
             this.value = h;
@@ -508,7 +540,7 @@ function setUpInterface(reload_project)
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');;
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
-  ratio_select.on('change', function(){
+  ratio_select.on('change', function () {
     let map_xy = get_map_xy0();
     let dispo_w = document.innerWidth - map_xy.x - 1;
     let dispo_h = document.innerHeight - map_xy.y - 1;
@@ -550,7 +582,7 @@ function setUpInterface(reload_project)
     .attrs({id: 'resize_fit',
             class: 'm_elem_right list_elem_section4 button_st4 i18n',
             'data-i18n': '[html]app_page.common.ok'})
-    .on('click', function(){
+    .on('click', function () {
         document.getElementById('btn_s4').click();
         window.scrollTo(0, 0);
         w = Math.round(window.innerWidth - 361);
@@ -566,10 +598,10 @@ function setUpInterface(reload_project)
   c.append('span').attr('id', 'map_center_menu_ico')
     .style('display', 'inline-table')
     .style('cursor', 'pointer');
-  c.on('click', function(){
+  c.on('click', function () {
     let sections = document.getElementsByClassName('to_hide'),
         arg;
-    if(sections[0].style.display == 'none'){
+    if(sections[0].style.display === 'none'){
         arg = '';
         document.getElementById('map_center_menu_ico').classList = 'active';
     } else {
@@ -589,7 +621,7 @@ function setUpInterface(reload_project)
           .style('width', '80px')
           .attrs({id: 'input-center-x', class: 'm_elem_right',
                   type: 'number', value: round_value(zoom_prop.x, 2), step: 'any'})
-          .on('change', function(){
+          .on('change', function () {
               svg_map.__zoom.x = +this.value;
               zoom_without_redraw();
           });
@@ -602,7 +634,7 @@ function setUpInterface(reload_project)
           .attrs({id: 'input-center-y', class: 'list_elem_section4 m_elem_right',
                   type: 'number', 'value': round_value(zoom_prop.y, 2), step: 'any'})
           .style('width', '80px')
-          .on('change', function(){
+          .on('change', function () {
                           svg_map.__zoom.y = +this.value;
                           zoom_without_redraw();
                       });;
@@ -617,7 +649,7 @@ function setUpInterface(reload_project)
                   value: round_value(zoom_prop.k * proj.scale(), 2),
                   step: 'any'})
           .style('width', '80px')
-          .on('change', function(){
+          .on('change', function () {
               svg_map.__zoom.k = +this.value / proj.scale();
               zoom_without_redraw();
           });
@@ -634,7 +666,7 @@ function setUpInterface(reload_project)
       .attrs({id: 'canvas_rotation_value_txt', class: 'without_spinner', type: 'number',
               value: 0, min: 0, max: 360, step: 'any'})
       .styles({width: '30px', 'margin-left': '10px', 'float': 'right', 'font-size': '11.5px'})
-      .on('change', function(){
+      .on('change', function () {
           let val = +this.value,
               old_value = document.getElementById('form_rotate').value;
           if(isNaN(val) || val < -361){
@@ -654,7 +686,7 @@ function setUpInterface(reload_project)
       g.append('input')
           .attrs({type: 'range', id: 'form_rotate', min: 0, max: 360, step: 1})
           .styles({width: '80px', margin: '0px 10px 5px 15px', float: 'right'})
-          .on('input', function(){
+          .on('input', function () {
               rotate_global(this.value);
               document.getElementById('canvas_rotation_value_txt').value = this.value;
           });
@@ -666,7 +698,7 @@ function setUpInterface(reload_project)
         .styles({margin: 0, padding: 0})
         .attrs({id: 'autoalign_features', type: 'checkbox',
                 class: 'm_elem_right list_elem_section4 i18n'})
-        .on('change', function(){
+        .on('change', function () {
             _app.autoalign_features = this.checked ? true : false;
         });
 
@@ -688,6 +720,8 @@ function setUpInterface(reload_project)
     p2.insert('span').insert('img').attrs({id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale'}).on('click', () => add_layout_feature('scale'));
     p2.insert('span').insert('img').attrs({id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class:'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere'}).on('click', () => add_layout_feature('sphere'));
 
+    add_simplified_land_layer();
+
     let section5b = d3.select('#section5');
     let dv5b = section5b.append('div')
                 .attr('class', 'form-item');
@@ -696,114 +730,115 @@ function setUpInterface(reload_project)
     type_export.append('span').attr('class', 'i18n')
             .attr('data-i18n', '[html]app_page.section5b.type');
     let select_type_export = type_export.append('select')
-            .attrs({'id': 'select_export_type', 'class': 'm_elem_right'})
-            .on('change', function(){
-                let type = this.value,
-                    export_filename = document.getElementById('export_filename');
-                if(type === 'svg'){
-                    document.getElementById('export_options_geo').style.display = 'none';
-                    document.getElementById('export_options_png').style.display = 'none';
-                    export_filename.value = 'export.svg';
-                    export_filename.style.display = '';
-                    export_filename.previousSibling.style.display = '';
-                } else if (type === 'png'){
-                    document.getElementById('export_options_geo').style.display = 'none';
-                    document.getElementById('export_options_png').style.display = '';
-                    export_filename.value = 'export.png';
-                    export_filename.style.display = '';
-                    export_filename.previousSibling.style.display = '';
-                } else if (type === 'geo'){
-                    document.getElementById('export_options_png').style.display = 'none';
-                    document.getElementById('export_options_geo').style.display = '';
-                    export_filename.style.display = 'none';
-                    export_filename.previousSibling.style.display = 'none';
-                }
-            });
+      .attrs({ id: 'select_export_type', class: 'm_elem_right' })
+      .on('change', function () {
+        const type = this.value,
+            export_filename = document.getElementById('export_filename');
+        if(type === 'svg'){
+          document.getElementById('export_options_geo').style.display = 'none';
+          document.getElementById('export_options_png').style.display = 'none';
+          export_filename.value = 'export.svg';
+          export_filename.style.display = '';
+          export_filename.previousSibling.style.display = '';
+        } else if (type === 'png'){
+          document.getElementById('export_options_geo').style.display = 'none';
+          document.getElementById('export_options_png').style.display = '';
+          export_filename.value = 'export.png';
+          export_filename.style.display = '';
+          export_filename.previousSibling.style.display = '';
+        } else if (type === 'geo'){
+          document.getElementById('export_options_png').style.display = 'none';
+          document.getElementById('export_options_geo').style.display = '';
+          export_filename.style.display = 'none';
+          export_filename.previousSibling.style.display = 'none';
+        }
+      });
 
     select_type_export.append('option').text('SVG').attr('value', 'svg');
     select_type_export.append('option').text('PNG').attr('value', 'png');
     select_type_export.append('option').text('GEO').attr('value', 'geo');
 
     let export_png_options = dv5b.append('p')
-                                .attr('id', 'export_options_png')
-                                .style('display', 'none');
+      .attr('id', 'export_options_png')
+      .style('display', 'none');
+
     export_png_options.append('span')
-            .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.section5b.format'});
+      .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.format' });
 
     let select_size_png = export_png_options.append('select')
-                                .attrs({'id': 'select_png_format', 'class': 'm_elem_right'});
+      .attrs({ id: 'select_png_format', class: 'm_elem_right' });
     fill_export_png_options('user_defined');
 
-    select_size_png.on('change', function(){
-        let value = this.value,
-            unit = value === 'web' ? ' (px)' : ' (cm)',
-            in_h = document.getElementById('export_png_height'),
-            in_w = document.getElementById('export_png_width');
-        if(value === 'web'){
-            in_h.value = h;
-            in_w.value = w;
-        } else if (value === 'user_defined'){
-            in_h.value = Math.round(h / 118.11 * 10) / 10;
-            in_w.value = Math.round(w / 118.11 * 10) / 10
-        } else if (value === 'A4_landscape'){
-            in_h.value = 21.0;
-            in_w.value = 29.7;
-        } else if (value === 'A4_portrait'){
-            in_h.value = 29.7;
-            in_w.value = 21.0;
-        } else if (value === 'A3_landscape'){
-            in_h.value = 42.0;
-            in_w.value = 29.7;
-        } else if (value === 'A3_portrait'){
-            in_h.value = 29.7;
-            in_w.value = 42.0;
-        } else if (value === 'A5_landscape'){
-            in_h.value = 14.8;
-            in_w.value = 21.0;
-        } else if (value === 'A5_portrait'){
-            in_h.value = 21.0;
-            in_w.value = 14.8;
-        }
-        document.getElementById('export_png_width_txt').innerHTML = unit;
-        document.getElementById('export_png_height_txt').innerHTML = unit;
-        if(value.indexOf('portrait') > -1 || value.indexOf('landscape') > -1){
-            in_h.disabled = 'disabled';
-            in_w.disabled = 'disabled';
-        } else {
-            in_h.disabled = undefined;
-            in_w.disabled = undefined;
-        }
+    select_size_png.on('change', function () {
+      let value = this.value,
+          unit = value === 'web' ? ' (px)' : ' (cm)',
+          in_h = document.getElementById('export_png_height'),
+          in_w = document.getElementById('export_png_width');
+      if(value === 'web'){
+          in_h.value = h;
+          in_w.value = w;
+      } else if (value === 'user_defined'){
+          in_h.value = Math.round(h / 118.11 * 10) / 10;
+          in_w.value = Math.round(w / 118.11 * 10) / 10
+      } else if (value === 'A4_landscape'){
+          in_h.value = 21.0;
+          in_w.value = 29.7;
+      } else if (value === 'A4_portrait'){
+          in_h.value = 29.7;
+          in_w.value = 21.0;
+      } else if (value === 'A3_landscape'){
+          in_h.value = 42.0;
+          in_w.value = 29.7;
+      } else if (value === 'A3_portrait'){
+          in_h.value = 29.7;
+          in_w.value = 42.0;
+      } else if (value === 'A5_landscape'){
+          in_h.value = 14.8;
+          in_w.value = 21.0;
+      } else if (value === 'A5_portrait'){
+          in_h.value = 21.0;
+          in_w.value = 14.8;
+      }
+      document.getElementById('export_png_width_txt').innerHTML = unit;
+      document.getElementById('export_png_height_txt').innerHTML = unit;
+      if(value.indexOf('portrait') > -1 || value.indexOf('landscape') > -1){
+        in_h.disabled = 'disabled';
+        in_w.disabled = 'disabled';
+      } else {
+        in_h.disabled = undefined;
+        in_w.disabled = undefined;
+      }
     });
 
     let exp_a = export_png_options.append('p');
     exp_a.append('span')
-            .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.section5b.width'});
+      .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.section5b.width'});
 
     exp_a.append('input')
-            .style('width', '60px')
-            .attrs({'id': 'export_png_width', 'class': 'm_elem_right', 'type': 'number', step: 0.1, value: w})
-            .on('change', function(){
-                let ratio = h / w,
-                    export_png_height = document.getElementById('export_png_height');
-                export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
-            });
+      .style('width', '60px')
+      .attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1, value: w })
+      .on('change', function () {
+        let ratio = h / w,
+            export_png_height = document.getElementById('export_png_height');
+        export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
+      });
 
     exp_a.append('span')
-            .attr('id', 'export_png_width_txt')
-            .html(' (px)');
+      .attr('id', 'export_png_width_txt')
+      .html(' (px)');
 
     let exp_b = export_png_options.append('p');
     exp_b.append('span')
-            .attrs({'class': 'i18n', 'data-i18n': '[html]app_page.section5b.height'});
+      .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
 
     exp_b.append('input')
-            .style('width', '60px')
-            .attrs({'id': 'export_png_height', 'class': 'm_elem_right', 'type': 'number', step: 0.1, value: h})
-            .on('change', function(){
-                let ratio = h / w,
-                    export_png_width = document.getElementById('export_png_width');
-                export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
-            });
+      .style('width', '60px')
+      .attrs({'id': 'export_png_height', 'class': 'm_elem_right', 'type': 'number', step: 0.1, value: h})
+      .on('change', function () {
+        let ratio = h / w,
+            export_png_width = document.getElementById('export_png_width');
+        export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+      });
 
     exp_b.append('span')
             .attr('id', 'export_png_height_txt')
@@ -849,7 +884,7 @@ function setUpInterface(reload_project)
         .insert('input')
         .attrs({id: 'proj4str'})
         .styles({display: 'none', width: '275px', position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px'})
-        .on('keyup', function(){
+        .on('keyup', function () {
             ok_button.disabled = this.value.length == 0 ? 'true' : '';
         });
 
@@ -869,7 +904,7 @@ function setUpInterface(reload_project)
         selec_projection.append('option').attrs({class: 'i18n', value: projection[1], 'data-i18n': projection[0]}).text(i18next.t(projection[0]));
     });
 
-    selec_type.on('change', function(){
+    selec_type.on('change', function () {
         if(this.value == 'TopoJSON' || this.value == 'KML' || this.value == 'GeoJSON'){
             selec_projection.node().options.selectedIndex = 0;
             selec_projection.attr('disabled', true);
@@ -879,7 +914,7 @@ function setUpInterface(reload_project)
         }
     });
 
-    selec_projection.on('change', function(){
+    selec_projection.on('change', function () {
         if(this.value == 'proj4string'){
             proj4_input.style('display', 'initial');
             if(proj4_input.node().value == '' || proj4_input.node().value == undefined)
@@ -892,7 +927,7 @@ function setUpInterface(reload_project)
     let ok_button = dv5b.append('p').style('float', 'left')
         .append('button')
         .attrs({'id': 'export_button_section5b', 'class': 'i18n button_st4', 'data-i18n': '[html]app_page.section5b.export_button'})
-        .on('click', function(){
+        .on('click', function () {
             let type_export = document.getElementById('select_export_type').value,
                 export_name = document.getElementById('export_filename').value;
             if(type_export === 'svg'){
@@ -962,40 +997,6 @@ function setUpInterface(reload_project)
     accordionize('.accordion');
     document.getElementById('btn_s1').dispatchEvent(new MouseEvent('click'));
     prepare_drop_section();
-
-    new Sortable(document.getElementById('sortable'), {
-      animation: 100,
-      onUpdate: function(a){
-        // Set the layer order on the map in concordance with the user changes
-        // in the layer manager with a pretty rusty 'sorting' algorythm :
-        let at_end = null;
-        if(document.getElementById('info_features').className == 'active'){
-          displayInfoOnMove();
-          at_end = true;
-        }
-        let desired_order = [],
-            actual_order = [],
-            layers = svg_map.querySelectorAll('.layer');
-
-        for(let i=0, len_i = a.target.childNodes.length; i < len_i; i++){
-            let n = a.target.childNodes[i].getAttribute('layer_name');
-            desired_order[i] = _app.layer_to_id.get(n);
-            actual_order[i] = layers[i].id;
-        }
-        for(let i = 0, len = desired_order.length; i < len; i++){
-            let lyr1 = document.getElementById(desired_order[i]),
-                lyr2 = document.getElementById(desired_order[i+1]) || document.getElementById(desired_order[i]);
-            svg_map.insertBefore(lyr2, lyr1);
-        }
-       if(at_end) displayInfoOnMove();
-      },
-      onStart: event => {
-          document.body.classList.add('no-drop')
-      },
-      onEnd: event => {
-          document.body.classList.remove('no-drop');
-      },
-    });
 
     if (reload_project) {
       let url;
@@ -1125,7 +1126,7 @@ function make_ico_choice(){
             .styles({margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none'})
             .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
                     src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
-            .on('click', function(){
+            .on('click', function () {
                 let fill_menu = true;
                 // Do some clean-up related to the previously displayed options :
                 if(window.fields_handler){
@@ -1321,7 +1322,7 @@ function parseQuery(search) {
   return argsParsed;
 }
 
-(function(){
+(function () {
   let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
   let params = {};
   document.querySelector('noscript').remove();
@@ -1537,7 +1538,7 @@ function make_dialog_container(id_box, title, class_box){
   return modal_box;
 }
 
-var overlay_under_modal = (function(){
+var overlay_under_modal = (function () {
   let twbs_div = document.querySelector('.twbs');
   let bg = document.createElement('div');
   bg.id = 'overlay_twbs';
@@ -1551,8 +1552,8 @@ var overlay_under_modal = (function(){
   bg.style.display = 'none';
   twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
   return {
-    display: function(){ bg.style.display = '' },
-    hide: function(){ bg.style.display = 'none'}
+    display: function () { bg.style.display = '' },
+    hide: function () { bg.style.display = 'none'}
   };
 })();
 
@@ -1618,7 +1619,7 @@ var make_confirm_dialog2 = (function(class_box, title, options) {
     };
     container.querySelector('.btn_cancel').onclick = _onclose_false;
     container.querySelector('#xclose').onclick = _onclose_false;
-    container.querySelector('.btn_ok').onclick = function(){
+    container.querySelector('.btn_ok').onclick = function () {
       deferred.resolve(true);
       clean_up_box();
     };
@@ -1778,7 +1779,7 @@ function handle_click_hand(behavior){
     document.getElementById('zoom_in').parentElement.style.display = 'none';
     document.getElementById('zoom_out').parentElement.style.display = 'none';
     document.getElementById('brush_zoom_button').parentElement.style.display = 'none';
-    zoom.on('zoom', function(){ let blocked = svg_map.__zoom; return function(){ this.__zoom = blocked; }}());
+    zoom.on('zoom', function () { let blocked = svg_map.__zoom; return function () { this.__zoom = blocked; }}());
   } else {
     hb.classed('locked', false);
     hb.html('<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="unlocked"/>');
@@ -1804,7 +1805,7 @@ function zoom_without_redraw(){
     map.selectAll('.layer')
       .transition()
       .duration(50)
-      .style('stroke-width', function(){
+      .style('stroke-width', function () {
           let lyr_name = _app.id_to_layer.get(this.id);
           return current_layers[lyr_name].fixed_stroke
                   ? this.style.strokeWidth
@@ -1820,7 +1821,7 @@ function zoom_without_redraw(){
     map.selectAll('.layer')
       .transition()
       .duration(50)
-      .style('stroke-width', function(){
+      .style('stroke-width', function () {
           let lyr_name = _app.id_to_layer.get(this.id);
           return current_layers[lyr_name].fixed_stroke
                   ? this.style.strokeWidth
@@ -2243,26 +2244,26 @@ function handle_title_properties(){
     .html(i18next.t('app_page.title_box.font_size'))
     .insert('input')
     .attrs({type: 'number', min: 2, max:40, step:1, value: +title_props.size.split('px')[0]}).style('width', '65px')
-    .on('change', function(){  title.style('font-size', this.value + 'px');  });
+    .on('change', function () {  title.style('font-size', this.value + 'px'); });
   box_content.append('p')
     .html(i18next.t('app_page.title_box.xpos'))
     .insert('input')
     .attrs({type: 'number', min: 0, max:100, step:1, value: title_props.position_x_pct}).style('width', '65px')
-    .on('change', function(){  title.attr('x', w * +this.value / 100);  });
+    .on('change', function () {  title.attr('x', w * +this.value / 100); });
   box_content.append('p')
     .html(i18next.t('app_page.title_box.ypos'))
     .insert('input')
     .attrs({type: 'number', min: 0, max:100, step:1, value: title_props.position_y_pct}).style('width', '65px')
-    .on('change', function(){  title.attr('y', h * +this.value / 100);  });
+    .on('change', function () {  title.attr('y', h * +this.value / 100); });
   box_content.append('p').html(i18next.t('app_page.title_box.font_color'))
     .insert('input')
     .attrs({type: 'color', value: rgb2hex(title_props.color)})
-    .on('change', function(){  title.style('fill', this.value);  });
+    .on('change', function () {  title.style('fill', this.value); });
 
   var font_select = box_content.append('p').html(i18next.t('app_page.title_box.font_family'))
       .insert('select').attr('class', 'params')
-      .on('change', function(){  title.style('font-family', this.value); });
-  available_fonts.forEach(function(font){
+      .on('change', function () {  title.style('font-family', this.value); });
+  available_fonts.forEach(function (font) {
     font_select.append('option').text(font[0]).attr('value', font[1])
   });
   font_select.node().selectedIndex = available_fonts.map(d => d[1] == title_props.font_family ? '1' : '0').indexOf('1');
@@ -2272,7 +2273,7 @@ function handle_title_properties(){
       btn_italic = options_format.insert('span').attr('class', title_props.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">'),
       btn_underline = options_format.insert('span').attr('class', title_props.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
 
-  btn_bold.on('click', function(){
+  btn_bold.on('click', function () {
     if (this.classList.contains('active')) {
       this.classList.remove('active');
       title.style('font-weight', '');
@@ -2281,7 +2282,7 @@ function handle_title_properties(){
       title.style('font-weight', 'bold');
     }
   });
-  btn_italic.on('click', function(){
+  btn_italic.on('click', function () {
     if (this.classList.contains('active')) {
       this.classList.remove('active');
       title.style('font-style', '');
@@ -2290,7 +2291,7 @@ function handle_title_properties(){
       title.style('font-style', 'italic');
     }
   });
-  btn_underline.on('click', function(){
+  btn_underline.on('click', function () {
     if (this.classList.contains('active')) {
       this.classList.remove('active');
       title.style('text-decoration', '');
@@ -2307,7 +2308,7 @@ function handle_title_properties(){
 
   buffer_section1.append('input')
     .attrs({type: 'checkbox', id: 'title_buffer_chkbox', checked: hasBuffer ? true : null})
-    .on('change', function(){
+    .on('change', function () {
       if (this.checked) {
         buffer_section2.style('display', '');
         title.style('stroke', buffer_color.node().value)
@@ -2326,7 +2327,7 @@ function handle_title_properties(){
   let buffer_color = buffer_section2.insert('input')
     .style('float', 'left')
     .attrs({type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : '#ffffff'})
-    .on('change', function(){
+    .on('change', function () {
         title.style('stroke', this.value);
     });
 
@@ -2337,7 +2338,7 @@ function handle_title_properties(){
   let buffer_width = buffer_section2.insert('input')
     .styles({'float': 'right', 'width': '60px'})
     .attrs({type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1})
-    .on('change', function(){
+    .on('change', function () {
       title.style('stroke-width', this.value + 'px');
     });
 

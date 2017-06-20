@@ -84,7 +84,7 @@ function createLegend(layer, title) {
   } else {
     swal('Oops..',
          `${i18next.t('No legend available for this representation')}.<br>${
-          i18next.t("Want to make a <a href='/'>suggestion</a> ?")}`,
+          i18next.t('Want to make a <a href="/">suggestion</a> ?')}`,
          'warning');
     return;
   }
@@ -303,11 +303,11 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
   const rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle')
-    .text(title || '').style('font', "bold 12px 'Enriqueta', arial, serif")
+    .text(title || '').style('font', 'bold 12px "Enriqueta", arial, serif')
     .attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle')
-    .text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif")
+    .text(subtitle).style('font', 'italic 12px "Enriqueta", arial, serif')
     .attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   const ref_symbols_params = [];
@@ -384,7 +384,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
   legend_root.append('g')
     .insert('text').attr('id', 'legend_bottom_note')
     .attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem })
-    .style('font', "11px 'Enriqueta', arial, serif")
+    .style('font', '11px "Enriqueta", arial, serif')
     .text(note_bottom != null ? note_bottom : '');
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
   // legend_root.select('#legendtitle').text(title || "");
@@ -465,11 +465,11 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
   const rect_under_legend = legend_root.insert('rect');
   legend_root.insert('text').attr('id', 'legendtitle')
     .text(title)
-    .style('font', "bold 12px 'Enriqueta', arial, serif")
+    .style('font', 'bold 12px "Enriqueta", arial, serif')
     .attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
   legend_root.insert('text').attr('id', 'legendsubtitle')
     .text(subtitle)
-    .style('font', "italic 12px 'Enriqueta', arial, serif")
+    .style('font', 'italic 12px "Enriqueta", arial, serif')
     .attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   const ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
@@ -643,7 +643,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
   legend_root.append('g')
     .insert('text').attr('id', 'legend_bottom_note')
     .attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem })
-    .style('font', "11px 'Enriqueta', arial, serif")
+    .style('font', '11px "Enriqueta", arial, serif')
     .text(note_bottom != null ? note_bottom : '');
 
   legend_root.call(drag_legend_func(legend_root));
@@ -697,11 +697,11 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
   const rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle')
-    .text(title || 'Title').style('font', "bold 12px 'Enriqueta', arial, serif")
+    .text(title || 'Title').style('font', 'bold 12px "Enriqueta", arial, serif')
     .attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle')
-    .text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif")
+    .text(subtitle).style('font', 'italic 12px \'Enriqueta\', arial, serif')
     .attrs({ x: xpos + space_elem, y: ypos + 15 });
 
   const legend_elems = legend_root.selectAll('.legend')
@@ -826,11 +826,11 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
   const rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle')
-    .text(title || '').style('font', "bold 12px 'Enriqueta', arial, serif")
+    .text(title || '').style('font', 'bold 12px "Enriqueta", arial, serif')
     .attrs(subtitle != '' ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle')
-    .text(subtitle).style('font', "italic 12px 'Enriqueta', arial, serif")
+    .text(subtitle).style('font', 'italic 12px "Enriqueta", arial, serif')
     .attrs({ x: xpos + boxheight, y: ypos + 15 });
 
   const legend_elems = legend_root.selectAll('.legend')
@@ -839,7 +839,7 @@ function createLegend_choro(layer, field, title, subtitle, boxgap = 0, rect_fill
     .enter().insert('g')
     .attr('class', (d, i) => `lg legend_${i}`);
 
-  if (current_layers[layer].renderer.indexOf('TypoSymbols') == -1) {
+  if (current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
     legend_elems
       .append('rect')
       .attr('x', xpos + boxwidth)
@@ -970,19 +970,15 @@ function display_box_value_symbol(layer_name) {
     .attrs({ width: 200, height: 300, id: 'svg_sample_legend' });
 
   const values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(f => cloneObj(f)));
-  let original_values = [].concat(values_to_use);
-
   const [ref_value, ref_size] = current_layers[layer_name].size;
-
   const propSize = new PropSizer(ref_value, ref_size, symbol_type);
-
   const input_zone = box_body.append('div')
-      .styles({ float: 'right', top: '100px', right: '20px', position: 'relative' });
+    .styles({ float: 'right', top: '100px', right: '20px', position: 'relative' });
   const a = input_zone.append('p');
   const b = input_zone.append('p');
   const c = input_zone.append('p');
   const d = input_zone.append('p');
-
+  let original_values = [].concat(values_to_use);
   let val1 = a.insert('input')
     .style('width', '80px')
     .attrs({ class: 'without_spinner', type: 'number', max: val_max })
@@ -1343,16 +1339,15 @@ function createlegendEditBox(legend_id, layer_name) {
     .attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' })
     .html(i18next.t('app_page.legend_style_box.under_rectangle'));
 
-  let rectangle_options2 = rectangle_options1.insert('span').styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
+  let rectangle_options2 = rectangle_options1.insert('span')
+    .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
   rectangle_options2.insert('input')
     .attrs({ id: 'choice_color_under_rect',
       type: 'color',
       value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) })
     .on('change', function () {
       rect_fill_value = { color: this.value, opacity: 1 };
-      make_underlying_rect(legend_node_d3,
-                           legend_node_d3.select('#under_rect'),
-                           rect_fill_value);
+      make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 }
 
@@ -1391,8 +1386,8 @@ var get_max_nb_dec = function (layer_name) {
   let max = 0;
   current_layers[layer_name].colors_breaks.forEach((el) => {
     const tmp = el[0].split(' - ');
-    let p1 = tmp[0].indexOf('.'),
-      p2 = tmp[1].indexOf('.');
+    const p1 = tmp[0].indexOf('.');
+    const p2 = tmp[1].indexOf('.');
     if (p1 > -1) {
       if (tmp[0].length - 1 - p1 > max) { max = tmp[0].length - 1 - tmp[0].indexOf('.'); }
     }

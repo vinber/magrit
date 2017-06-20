@@ -510,6 +510,7 @@
             "new_random_colors": "New randoms colors"
         },
         "layer_style_popup": {
+            "layer_name": "Layer name",
             "fill_color": "Fill color",
             "toggle_colors": "<b><i>Click to toggle colors</b></i>",
             "categorical_field": "Categorical field :",

@@ -30,6 +30,7 @@ def build_js_file(use_minified, _id):
                'projections.js',
                'projection_others.js',
                'tables.js',
+               'sample_topo.js',
                'text_import_wizard.js',
                'zoom_rect.js'], stderr=PIPE, stdout=PIPE)
     r = p.communicate()

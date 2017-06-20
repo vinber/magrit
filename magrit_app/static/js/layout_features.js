@@ -841,7 +841,7 @@ const scaleBar = {
       .style('fill', 'black');
     scale_gp.insert('text').attr('id', 'text_limit_sup_scale')
       .attrs({ x: x_pos + bar_size, y: y_pos - 5 })
-      .styles({ font: "11px 'Enriqueta', arial, serif",
+      .styles({ font: '11px \'Enriqueta\', arial, serif',
         'text-anchor': 'middle' })
       .text(`${this.dist_txt} km`);
 

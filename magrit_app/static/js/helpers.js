@@ -638,12 +638,12 @@ function change_layer_name(old_name, new_name){
   const new_id = encodeId(new_name);
   current_layers[new_name] = cloneObj(current_layers[old_name]);
   delete current_layers[old_name];
-  const list_elem = document.querySelector(`li.${old_name}`);
-  list_elem.classList.remove(old_name);
+  const list_elem = document.querySelector(`li.${old_id}`);
+  list_elem.classList.remove(old_id);
   list_elem.classList.add(new_id);
   list_elem.setAttribute('layer_name', new_name);
   list_elem.innerHTML = list_elem.innerHTML.replace(old_name, new_name);
-  const b = svg_map.querySelector(`#${old_name}`);
+  const b = svg_map.querySelector(`#${old_id}`);
   b.id = new_id;
   const lgd_elem = document.querySelector(`g[layer_name="${old_name}"]`);
   if (lgd_elem) {
@@ -662,6 +662,10 @@ function change_layer_name(old_name, new_name){
   if (current_layers[new_name].targeted) {
     const name_section1 = document.getElementById('section1').querySelector('#input_geom');
     name_section1.innerHTML = name_section1.innerHTML.replace(old_name, new_name);
+    if (window.fields_handler) {
+      window.fields_handler.unfill();
+      window.fields_handler.fill(new_name);
+    }
   }
   const other_layers = Object.getOwnPropertyNames(current_layers);
   for (let i = 0; i < other_layers.length; i++) {

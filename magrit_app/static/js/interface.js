@@ -1012,7 +1012,7 @@ function add_layer_topojson(text, options = {}){
       .on('click', null);
     _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
     let remove_target = document.getElementById('remove_target');
-    remove_target.onclick = () => { remove_layer(lyr_name_to_add); };
+    remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
     remove_target.onmouseover = function(){ this.style.opacity = 1; };
     remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
     _app.targeted_layer_added = true;
@@ -1574,23 +1574,23 @@ function add_simplified_land_layer(options = {}) {
   const stroke_opacity = options.stroke_opacity || 0.0;
   const fill_opacity = options.fill_opacity || 0.75;
   const stroke_width = options.stroke_width || '0.3px';
-  const visible = options.visible === false ? false : true;
+  const visible = !(options.visible === false);
   const drop_shadow = options.drop_shadow || false;
 
-  d3.json('static/data_sample/World.topojson', (error, json) => {
+  // d3.json('static/data_sample/World.topojson', (error, json) => {
     _app.layer_to_id.set('World', 'World');
     _app.id_to_layer.set('World', 'World');
     current_layers['World'] = {
       type: 'Polygon',
       n_features: 125,
-      'stroke-width-const': +stroke_width.slice(0,-2),
+      'stroke-width-const': +stroke_width.slice(0, -2),
       fill_color: { single: fill },
     };
     map.insert('g', '.legend')
       .attrs({ id: 'World', class: 'layer', 'clip-path': 'url(#clip)' })
       .style('stroke-width', stroke_width)
       .selectAll('.subunit')
-      .data(topojson.feature(json, json.objects.World).features)
+      .data(topojson.feature(world_topology, world_topology.objects.World).features)
       .enter()
       .append('path')
       .attr('d', path)
@@ -1612,7 +1612,7 @@ function add_simplified_land_layer(options = {}) {
       handle_active_layer('World');
     }
     zoom_without_redraw();
-  });
+  // });
 }
 
 function add_sample_geojson(name, options){

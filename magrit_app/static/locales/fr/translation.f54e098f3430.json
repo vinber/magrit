@@ -510,6 +510,7 @@
             "new_random_colors": "Nouvelles couleurs aléatoires"
         },
         "layer_style_popup": {
+            "layer_name": "Nom de la couche",
             "fill_color": "Couleur de remplissage",
             "toggle_colors": "<b><i>Cliquer pour modifier les couleurs</b></i>",
             "categorical_field": "Champ catégoriel :",

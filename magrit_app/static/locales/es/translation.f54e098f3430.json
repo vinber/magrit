@@ -511,6 +511,7 @@
             "new_random_colors": "Colores aleatorios"
         },
         "layer_style_popup": {
+            "layer_name": "Nombre de la capa",
             "fill_color": "Color de relleno",
             "toggle_colors": "<b><i>Seleccionar para modificar los colores</b></i>",
             "categorical_field": "Campo de categorías:",

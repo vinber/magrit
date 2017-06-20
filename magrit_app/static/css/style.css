@@ -768,6 +768,10 @@ div.panel.show {
   clear: both;
 }
 
+.twbs .modal-body > p.inp_bottom {
+  margin: 11px 0px 35px 0px !important;
+}
+
 .fitContent {
   width: intrinsic !important;
   width: -moz-max-content !important;
