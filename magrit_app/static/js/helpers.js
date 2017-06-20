@@ -58,10 +58,10 @@ function path_to_geojson(layerName) {
 }
 
 function display_error_during_computation(msg) {
-  msg = msg ? ['<br><i>', i18next.t('app_page.common.details'), ':</i> ', msg].join('') : '';
+  const message = message ? `<br><i>${i18next.t('app_page.common.details')}:</i> ${msg}` : '';
   swal({
     title: `${i18next.t('app_page.common.error')}!`,
-    text: i18next.t('app_page.common.error_message') + msg,
+    text: `${i18next.t('app_page.common.error_message')}${msg}`,
     customClass: 'swal2_custom',
     type: 'error',
     allowOutsideClick: false
@@ -169,7 +169,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
   if (current_layers[ref_layer].pointRadius) {
     current_layers[new_name].pointRadius = current_layers[ref_layer].pointRadius;
   }
-  let selec_src = node_ref_layer.getElementsByTagName('path'),
+  const selec_src = node_ref_layer.getElementsByTagName('path'),
     selec_dest = node_new_layer.getElementsByTagName('path');
   if (!fields_to_copy) {
     for (let i = 0; i < selec_src.length; i++) {
@@ -179,7 +179,9 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
   } else {
     for (let i = 0; i < selec_src.length; i++) {
       selec_dest[i].__data__ = { type: 'Feature', properties: {}, geometry: cloneObj(selec_src[i].__data__.geometry) };
-      for (const f of fields_to_copy) {
+      const nb_field_to_copy = fields_to_copy.length;
+      for (let j = 0; j < nb_field_to_copy; j++) {
+        const f = fields_to_copy[j];
         selec_dest[i].__data__.properties[f] = selec_src[i].__data__.properties[f];
       }
       result_data[new_name].push(selec_dest[i].__data__.properties);
@@ -665,6 +667,15 @@ function change_layer_name(old_name, new_name){
     if (window.fields_handler) {
       window.fields_handler.unfill();
       window.fields_handler.fill(new_name);
+    }
+  }
+  if (_app.current_functionnality && _app.current_functionnality.name === 'smooth') {
+    let mask_layers = document.querySelectorAll('select#stewart_mask > option');
+    for (let i = 0; i < mask_layers.length; i++) {
+      if (mask_layers[i].value === old_name) {
+        mask_layers[i].value = new_name;
+        mask_layers[i].innerHTML = new_name;
+      }
     }
   }
   const other_layers = Object.getOwnPropertyNames(current_layers);

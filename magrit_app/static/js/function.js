@@ -135,23 +135,23 @@ function unfillSelectInput(select_node){
 *        one to avoid collision or unwanted characters)
 */
 function check_layer_name(name){
-    if(name.match(/^\d+/)){
-        name = "_" + name;
+  let clean_name = name.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  if (clean_name.match(/^\d+/)) {
+    clean_name = "_" + clean_name;
+  }
+  if (!current_layers.hasOwnProperty(clean_name) && ["Graticule", "World"].indexOf(clean_name) < 0) {
+    return clean_name;
+  } else {
+    let i = 1;
+    let match = clean_name.match(/_\d+$/);
+    if (match) {
+      i = match[0];
+      clean_name = clean_name.substring(clean_name, clean_name.indexOf(i));
+      return check_layer_name([clean_name, parseInt(i.slice(1, i.length)) + 1].join('_'));
+    } else {
+      return check_layer_name([clean_name, i].join('_'));
     }
-    if(!current_layers.hasOwnProperty(name) && ["Graticule", "World"].indexOf(name) < 0)
-        return name;
-    else {
-        let i = 1;
-        let match = name.match(/_\d+$/);
-        if(match){
-            i = match[0];
-            name = name.substring(name, name.indexOf(i));
-            return check_layer_name([name, parseInt(i.slice(1, i.length)) + 1].join('_'));
-        }
-        else {
-            return check_layer_name([name, i].join('_'));
-        }
-    }
+  }
 }
 
 /**
@@ -159,9 +159,11 @@ function check_layer_name(name){
 * doesn't have any interesting field to use.
 */
 function display_error_num_field(){
-    swal({title: "",
-          text: i18next.t("app_page.common.error_type_fields"),
-          type: "error"});
+  swal({
+    title: "",
+    text: i18next.t("app_page.common.error_type_fields"),
+    type: "error"
+  });
 };
 
 /**
@@ -170,20 +172,17 @@ function display_error_num_field(){
 * as well as the "resolution" field in grid functionnality.
 *
 */
-var get_first_guess_span = function(func_name){
-    let bbox = _target_layer_file.bbox,
-        layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
-        abs = Math.abs;
-    if(layer_name == "us_states" && func_name == "grid"){
-        return 650;
-    }
-    let const_mult = func_name == "grid" ? 0.08 : 0.04;
-    let width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])],
-                                  [bbox[2], abs(bbox[3]) - abs(bbox[1])]),
-        height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]],
-                                   [abs(bbox[2]) - abs(bbox[0]), bbox[3]]),
-        val = Math.max(width_km , height_km) * const_mult;
-        return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
+const get_first_guess_span = function(func_name){
+  const bbox = _target_layer_file.bbox,
+    layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
+    abs = Math.abs,
+    const_mult = func_name === 'grid' ? 0.09 : 0.05;
+  const width_km = haversine_dist(
+    [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+  const height_km = haversine_dist(
+    [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+  const val = Math.max(width_km , height_km) * const_mult;
+  return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
 }
 
 /**
@@ -192,19 +191,20 @@ var get_first_guess_span = function(func_name){
 *
 */
 function test_maxmin_resolution(cell_value){
-    let bbox = _target_layer_file.bbox,
-        abs = Math.abs;
-    let width_km = haversine_dist(
-            [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
-    let height_km = haversine_dist(
-            [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-    let area = width_km * height_km,
-        bigger_side = Math.max(height_km, width_km);
-    if(area / (cell_value * cell_value) > 15000)
-        return "higher";
-    else if(cell_value > bigger_side / 1.66)
-        return "lower"
-    return;
+  const bbox = _target_layer_file.bbox;
+  const abs = Math.abs;
+  const width_km = haversine_dist(
+    [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+  const height_km = haversine_dist(
+    [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+  // const area = width_km * height_km;
+  const bigger_side = Math.max(height_km, width_km);
+  if ((width_km * height_km) / (cell_value * cell_value) > 15000) {
+    return 'higher';
+  } else if (cell_value > bigger_side / 1.66) {
+    return 'lower';
+  }
+  return;
 }
 
 /*
@@ -212,59 +212,59 @@ function test_maxmin_resolution(cell_value){
 *
 */
 var color_disc_icons = (function(){
-    let types = new Set(['q6', 'equal_interval', 'jenks', 'quantiles']);
-    return function(type_disc){
-        if(!type_disc) return ;
-        type_disc = type_disc.toLowerCase();
-        if(!types.has(type_disc)){
-            return;
-        } else {
-            document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
-        }
+  let types = new Set(['q6', 'equal_interval', 'jenks', 'quantiles']);
+  return function(type_disc){
+    if (!type_disc) return ;
+    type_disc = type_disc.toLowerCase();
+    if (!types.has(type_disc)) {
+      return;
+    } else {
+      document.getElementById('ico_' + type_disc).style.border = "solid 1px green";
     }
+  }
 })();
 
 function make_template_functionnality(parent_node){
-    return parent_node.append('div').attr('class', 'form-rendering');
+  return parent_node.append('div').attr('class', 'form-rendering');
 }
 
 function make_layer_name_button(parent, id, margin_top){
-    let a = parent.append('p').style('clear', 'both');
-    a.append('span')
-      .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output'})
-      .html(i18next.t('app_page.func_options.common.output'));
-    a.insert('input')
-      .styles({'width': '240px', 'font-size': '11.5px', "margin-top": margin_top})
-      .attrs({class: 'params', id: id});
+  let a = parent.append('p').style('clear', 'both');
+  a.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output' })
+    .html(i18next.t('app_page.func_options.common.output'));
+  a.insert('input')
+    .styles({ width: '240px', 'font-size': '11.5px', "margin-top": margin_top })
+    .attrs({class: 'params', id: id});
 }
 
 function make_discretization_icons(discr_section){
-    let subsection1 = discr_section.append('p');
-    subsection1.insert('span')
-      .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n'})
-      .html(i18next.t("app_page.func_options.common.discretization_choice"));
-    let subsection2 = discr_section.append('p');
-    subsection2.append('img')
-      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
-    subsection2.append('img')
-      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
-    subsection2.append('img')
-      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval'});
-    subsection2.append('img')
-      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
-    subsection2.append('img')
-      .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
-      .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
-    subsection2.append('span')
-      .attrs({id: 'choro_mini_choice_disc'})
-      .styles({float: 'right', 'margin-top': '5px', 'margin-left': '15px'});
-    subsection2.append('img')
-      .styles({width: '15px', position: 'absolute', right: '5px'})
-      .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.png'});
+  let subsection1 = discr_section.append('p');
+  subsection1.insert('span')
+    .attrs({'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n'})
+    .html(i18next.t("app_page.func_options.common.discretization_choice"));
+  let subsection2 = discr_section.append('p');
+  subsection2.append('img')
+    .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+    .attrs({'src': '/static/img/discr_icons/q6.png', 'id': 'ico_q6'});
+  subsection2.append('img')
+    .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+    .attrs({'src': '/static/img/discr_icons/jenks.png', 'id': 'ico_jenks'});
+  subsection2.append('img')
+    .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+    .attrs({'src': '/static/img/discr_icons/equal_intervals.png', 'id': 'ico_equal_interval'});
+  subsection2.append('img')
+    .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+    .attrs({'src': '/static/img/discr_icons/quantiles.png', 'id': 'ico_quantiles'});
+  subsection2.append('img')
+    .styles({'margin': '0 7.5px', 'cursor': 'pointer'})
+    .attrs({'src': '/static/img/discr_icons/others.png', 'id': 'ico_others'});
+  subsection2.append('span')
+    .attrs({id: 'choro_mini_choice_disc'})
+    .styles({float: 'right', 'margin-top': '5px', 'margin-left': '15px'});
+  subsection2.append('img')
+    .styles({width: '15px', position: 'absolute', right: '5px'})
+    .attrs({'id': 'img_choice_disc', 'src': '/static/img/Red_x.png'});
 }
 
 
@@ -279,133 +279,124 @@ function make_ok_button(parent, id, disabled=true){
 }
 
 function insert_legend_button(layer_name){
-    let selec = d3.select("#sortable").select(['.', layer_name, ' .layer_buttons'].join('')),
-        inner_html = selec.node().innerHTML,
-        const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png"',
-        split_content = inner_html.split();
-    selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
+  let selec = d3.select("#sortable").select(['.', layer_name, ' .layer_buttons'].join('')),
+      inner_html = selec.node().innerHTML,
+      const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png"',
+      split_content = inner_html.split();
+  selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
 
 function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback){
-    document.getElementById(id_parent).innerHTML = "";
-    if(values && breaks == undefined){
-        let disc_result = discretize_to_size(values, discontinuity_type, nb_class, min_size, max_size);
-        breaks = disc_result[2];
-        if(!breaks)
-            return false;
+  document.getElementById(id_parent).innerHTML = "";
+  if(values && breaks == undefined){
+    let disc_result = discretize_to_size(values, discontinuity_type, nb_class, min_size, max_size);
+    breaks = disc_result[2];
+    if (!breaks) return false;
+  }
+
+  let parent_nd = document.getElementById(id_parent);
+  parent_nd.style.marginTop = '3px';
+  parent_nd.style.marginBottom = '3px';
+  // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
+
+  let title = document.createElement('p');
+  // title.style = "margin: 1px; word-spacing: 1.8em;";
+  title.style.margin = '1px';
+  title.style.wordSpacing = '1.8em';
+  title.innerHTML = "Min - Max - Size";
+  parent_nd.appendChild(title);
+
+  let div_table = document.createElement('div');
+  parent_nd.appendChild(div_table);
+  for (let i = 0; i < breaks.length; i++) {
+    let inner_line = document.createElement('p');
+    inner_line.setAttribute('class', 'breaks_vals');
+    inner_line.id = ["line", i].join('_');
+    inner_line.style.margin = '0px';
+
+    let input1 = document.createElement('input');
+    input1.setAttribute('type', 'number');
+    input1.setAttribute('class', 'min_class');
+    input1.setAttribute('step', 'any');
+    input1.value = (+breaks[i][0][0]).toFixed(2);
+    input1.style.width = '60px';
+    input1.style.position = 'unset';
+    inner_line.appendChild(input1);
+
+    let input2 = document.createElement('input');
+    input2.setAttribute('type', 'number');
+    input2.setAttribute('class', 'max_class');
+    input2.setAttribute('step', 'any');
+    input2.value = (+breaks[i][0][1]).toFixed(2);
+    input2.style.width = '60px';
+    input2.style.position = 'unset';
+    inner_line.appendChild(input2);
+
+    let input3 = document.createElement('input');
+    input3.setAttribute('type', 'number');
+    input3.setAttribute('class', 'size_class');
+    input3.setAttribute('step', 'any');
+    input3.value = (+breaks[i][1]).toFixed(2);
+    input3.style.marginLeft = '20px';
+    input3.style.width = '55px';
+    input3.style.position = 'unset';
+    inner_line.appendChild(input3);
+
+    let px = document.createElement('span');
+    px.innerHTML = " px";
+    inner_line.appendChild(px);
+    div_table.appendChild(inner_line);
+  }
+
+  let mins = document.getElementById(id_parent).querySelectorAll(".min_class"),
+    maxs = document.getElementById(id_parent).querySelectorAll(".max_class");
+
+  for (let i = 0; i < mins.length; i++) {
+    if (i > 0) {
+      let prev_ix = i-1;
+      mins[i].onchange = function() {
+        maxs[prev_ix].value = this.value;
+        if(callback) callback();
+      };
     }
-
-    let parent_nd = document.getElementById(id_parent);
-    parent_nd.style.marginTop = '3px';
-    parent_nd.style.marginBottom = '3px';
-    // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
-
-    let title = document.createElement('p');
-    // title.style = "margin: 1px; word-spacing: 1.8em;";
-    title.style.margin = '1px';
-    title.style.wordSpacing = '1.8em';
-    title.innerHTML = "Min - Max - Size";
-    parent_nd.appendChild(title);
-
-    let div_table = document.createElement('div');
-    parent_nd.appendChild(div_table);
-    for(let i = 0; i < breaks.length; i++){
-        let inner_line = document.createElement('p');
-        inner_line.setAttribute('class', 'breaks_vals');
-        inner_line.id = ["line", i].join('_');
-        inner_line.style.margin = '0px';
-        // inner_line.style = "margin: 0px;"
-
-        let input1 = document.createElement('input');
-        input1.setAttribute('type', 'number');
-        input1.setAttribute('class', 'min_class');
-        input1.setAttribute('step', 'any');
-        input1.value = (+breaks[i][0][0]).toFixed(2);
-        // input1.style = 'width: 60px; position: unset;'
-        input1.style.width = '60px';
-        input1.style.position = 'unset';
-        inner_line.appendChild(input1);
-
-        let input2 = document.createElement('input');
-        input2.setAttribute('type', 'number');
-        input2.setAttribute('class', 'max_class');
-        input2.setAttribute('step', 'any');
-        input2.value = (+breaks[i][0][1]).toFixed(2);
-        // input2.style = 'width: 60px; position: unset;'
-        input2.style.width = '60px';
-        input2.style.position = 'unset';
-        inner_line.appendChild(input2);
-
-        let input3 = document.createElement('input');
-        input3.setAttribute('type', 'number');
-        input3.setAttribute('class', 'size_class');
-        input3.setAttribute('step', 'any');
-        input3.value = (+breaks[i][1]).toFixed(2);
-        // input3.style = 'margin-left: 20px; width: 55px; position: unset;'
-        input3.style.marginLeft = '20px';
-        input3.style.width = '55px';
-        input3.style.position = 'unset';
-        inner_line.appendChild(input3);
-
-        let px = document.createElement('span');
-        px.innerHTML = " px";
-        inner_line.appendChild(px);
-        div_table.appendChild(inner_line);
+    if (i < mins.length - 1) {
+      let next_ix = i+1;
+      maxs[i].onchange = function() {
+        mins[next_ix].value = this.value;
+        if(callback) callback();
+      };
     }
-
-    let mins = document.getElementById(id_parent).querySelectorAll(".min_class"),
-        maxs = document.getElementById(id_parent).querySelectorAll(".max_class");
-
-    for(let i = 0; i < mins.length; i++){
-        if(i > 0){
-            let prev_ix = i-1;
-            mins[i].onchange = function(){
-              maxs[prev_ix].value = this.value;
-              if(callback) callback();
-            };
-        }
-        if(i < mins.length - 1){
-            let next_ix = i+1;
-            maxs[i].onchange = function(){
-              mins[next_ix].value = this.value;
-              if(callback) callback();
-            };
-        }
+  }
+  if (callback) {
+    let sizes = document.getElementById(id_parent).querySelectorAll(".size_class")
+    for (let i = 0; i < sizes.length; i++) {
+      sizes[i].onchange = callback;
     }
-    if(callback){
-      let sizes = document.getElementById(id_parent).querySelectorAll(".size_class")
-      for(let i = 0; i < sizes.length; i++){
-        sizes[i].onchange = callback;
-      }
-    }
+  }
 }
 
 function fetch_min_max_table_value(parent_id){
-    var parent_node = parent_id ? document.getElementById(parent_id)
-                        : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
-                        : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
-                        : null;
+  var parent_node = parent_id ? document.getElementById(parent_id)
+    : _app.current_functionnality.name == "flow" ? document.getElementById("FlowMap_discTable")
+    : _app.current_functionnality.name == "discont" ? document.getElementById("Discont_discTable")
+    : null;
 
-    if(!parent_node) return;
+  if(!parent_node) return;
 
-    let mins = Array.prototype.map.call(parent_node.querySelectorAll(".min_class"), el => +el.value),
-        maxs = Array.prototype.map.call(parent_node.querySelectorAll(".max_class"), el => +el.value),
-        sizes = Array.prototype.map.call(parent_node.querySelectorAll(".size_class"), el => +el.value),
-        nb_class = mins.length,
-        comp_fun = (a,b) => a - b;
+  let mins = Array.prototype.map.call(parent_node.querySelectorAll(".min_class"), el => +el.value),
+    maxs = Array.prototype.map.call(parent_node.querySelectorAll(".max_class"), el => +el.value),
+    sizes = Array.prototype.map.call(parent_node.querySelectorAll(".size_class"), el => +el.value),
+    nb_class = mins.length,
+    comp_fun = (a,b) => a - b;
 
 // Some verification regarding the input values provided by the user :
 // - Values are ordered :
-    if(mins != mins.sort(comp_fun)
-            || maxs != maxs.sort(comp_fun)
-            || sizes != sizes.sort(comp_fun)){
-        swal("",
-             i18next.t("app_page.common.error_values_order"),
-             "error");
-        return false;
-    }
+  if (mins != mins.sort(comp_fun) || maxs != maxs.sort(comp_fun) || sizes != sizes.sort(comp_fun)) {
+    swal("", i18next.t("app_page.common.error_values_order"), "error");
+    return false;
+  }
 
-    return {"mins" : mins.sort(comp_fun), "maxs" : maxs.sort(comp_fun), "sizes" : sizes.sort(comp_fun)};
+  return { mins: mins.sort(comp_fun), maxs: maxs.sort(comp_fun), sizes: sizes.sort(comp_fun) };
 }
 
 function fillMenu_PropSymbolChoro(layer){
@@ -423,9 +414,9 @@ function fillMenu_PropSymbolChoro(layer){
       .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size'})
       .html(i18next.t("app_page.func_options.choroprop.fixed_size"));
     var ref_size = b.insert('input')
-                    .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
-                            min: 0.1, max: 100.0, value: 60.0, step: "any"})
-                    .style("width", "50px");
+      .attrs({type: 'number', class: 'params', id: 'PropSymbolChoro_ref_size',
+              min: 0.1, max: 100.0, value: 60.0, step: "any"})
+      .style("width", "50px");
     b.append('span').html(' (px)');
 
     var c = dv2.append('p').attr('class', 'params_section2');
@@ -702,8 +693,7 @@ var fields_PropSymbolChoro = {
                     color_field = field_color.node().value,
                     new_layer_name = uo_layer_name.node().value;
 
-                new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                                ? check_layer_name(new_layer_name) : check_layer_name(layer + "_PropSymbolsChoro");
+                new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + "_PropSymbolsChoro");
 
                 rd_params.field = field_size.node().value;
                 rd_params.new_name = new_layer_name;
@@ -868,11 +858,7 @@ var fields_Typo = {
               if(self.rendering_params[selected_field]){
                   let layer = Object.getOwnPropertyNames(user_data)[0],
                       output_name = uo_layer_name.node().value;
-                  if(output_name.length > 0 && /^\w+$/.test(output_name)){
-                      self.rendering_params[selected_field].new_name = check_layer_name(output_name);
-                  } else {
-                      self.rendering_params[selected_field].new_name = check_layer_name(["Typo", selected_field, layer].join('_'));
-                  }
+                  self.rendering_params[selected_field].new_name = check_layer_name(output_name.length > 0 ? output_name : ["Typo", selected_field, layer].join('_'));
                   render_categorical(layer, self.rendering_params[selected_field]);
                   switch_accordion_section();
                   handle_legend(self.rendering_params[selected_field].new_name)
@@ -1126,9 +1112,7 @@ var fields_Choropleth = {
           if(self.rendering_params[field_to_render]){
               let user_new_layer_name = uo_layer_name.node().value;
               self.rendering_params[field_to_render].new_name = check_layer_name(
-                  user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name)
-                  ? user_new_layer_name : ["Choro", field_to_render, layer].join('_')
-                  );
+                  user_new_layer_name.length > 0 ? user_new_layer_name : ["Choro", field_to_render, layer].join('_'));
               render_choro(layer, self.rendering_params[field_to_render]);
               handle_legend(self.rendering_params[field_to_render].new_name)
               switch_accordion_section();
@@ -1262,7 +1246,7 @@ function render_stewart(){
           let data_split = res.split('|||'),
               raw_topojson = data_split[0],
               options = { result_layer_on_add: true, func_name: 'smooth' };
-          if(new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)){
+          if(new_user_layer_name.length > 0){
               options["choosed_name"] = new_user_layer_name;
           }
           var n_layer_name = add_layer_topojson(raw_topojson, options);
@@ -2277,8 +2261,7 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
       rendering_params = fields_PropSymbolTypo.rendering_params[color_field],
       rd_params = {};
 
-  new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                  ? check_layer_name(new_layer_name) : check_layer_name(["PropSymbolsTypo", field1, color_field, layer].join('_'));
+  new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : ["PropSymbolsTypo", field1, color_field, layer].join('_'));
 
   rd_params.field = field1;
   rd_params.new_name = new_layer_name;
@@ -2431,8 +2414,7 @@ var render_discont = function(){
         user_color = document.getElementById("color_Discont").value,
         new_layer_name = document.getElementById("Discont_output_name").value;
 
-    new_layer_name = (new_layer_name.length > 0 && /^\w+$/.test(new_layer_name))
-                    ? check_layer_name(new_layer_name) : check_layer_name(["Disc", field, discontinuity_type, layer].join('_'));
+    new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : ["Disc", field, discontinuity_type, layer].join('_'));
 
     let id_layer = encodeId(new_layer_name);
     _app.layer_to_id.set(new_layer_name, id_layer);
@@ -2672,20 +2654,23 @@ var fields_PropSymbol = {
                 field_to_render = field_selec.node().value,
                 symbol_to_use = symb_selec.node().value,
                 user_new_layer_name = uo_layer_name.node().value,
-                new_layer_name = check_layer_name(user_new_layer_name.length > 0 && /^\w+$/.test(user_new_layer_name) ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_')),
-                rendering_params = { "field": field_to_render,
-                                     "nb_features": nb_features,
-                                     "new_name": new_layer_name,
-                                     "ref_layer_name": layer,
-                                     "symbol": symbol_to_use,
-                                     "ref_size": +ref_size.node().value,
-                                     "ref_value": +ref_value_field.node().value,
-                                     "fill_color": fill_color.node().value };
+                new_layer_name = check_layer_name(
+                  user_new_layer_name.length > 0 ? user_new_layer_name : ["PropSymbols", field_to_render, layer].join('_'));
+            let rendering_params = {
+                  field: field_to_render,
+                  nb_features: nb_features,
+                  new_name: new_layer_name,
+                  ref_layer_name: layer,
+                  symbol: symbol_to_use,
+                  ref_size: +ref_size.node().value,
+                  ref_value: +ref_value_field.node().value,
+                  fill_color: fill_color.node().value
+                };
             if(+nb_color.node().value == 2){
                 rendering_params["break_val"] = +fill_color_opt.node().value;
                 rendering_params["fill_color"] = {"two" : [fill_color.node().value, fill_color2.node().value]};
             }
-            if(symbol_to_use == "line")
+            if(symbol_to_use === "line")
                 make_prop_line(rendering_params);
             else
                 make_prop_symbols(rendering_params);
@@ -2796,7 +2781,7 @@ function render_TypoSymbols(rendering_params, new_name){
     let layer_name = Object.getOwnPropertyNames(user_data)[0];
     let ref_layer_id = _app.layer_to_id.get(layer_name);
     let field = rendering_params.field;
-    let layer_to_add = check_layer_name(new_name.length > 0 && /^\w+$/.test(new_name) ? new_name : ["Symbols", field, layer_name].join("_"));
+    let layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ["Symbols", field, layer_name].join("_"));
     let ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName("path");
     let nb_ft = ref_selection.length;
 

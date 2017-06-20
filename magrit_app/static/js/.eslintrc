@@ -12,6 +12,7 @@
     "consistent-return": 1,
     "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
     "no-underscore-dangle": 0,
+    "object-shorthand": 1,
     "one-var": ["warn", "never"],
     "no-mixed-operators": 0,
     "no-undef": 1,

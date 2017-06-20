@@ -69,7 +69,7 @@ def normalize(arr):
     rng = arr.max() - amin
     return (arr - amin) * 255 / rng
 
-    
+
 def assertDeepAlmostEqual(test_case, expected, actual, name, places=1):
     """
     Assert that two complex structures have almost equal contents.
@@ -103,7 +103,201 @@ def assertDeepAlmostEqual(test_case, expected, actual, name, places=1):
         test_case.fail("{}: {}".format(name, exc))
 
 
-class ReloadCompareProjectsTest(unittest.TestCase):
+class TestBase(unittest.TestCase):
+    def make_context_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.context_click(target).perform()
+
+    def make_double_click(self, target):
+        action = webdriver.ActionChains(self.driver)
+        action.double_click(target).perform()
+
+    def validTypefield(self):
+        self.click_elem_retry(
+            self.driver.find_element_by_id(
+                "box_type_fields").find_elements_by_css_selector(
+                ".btn_ok")[0])
+        time.sleep(0.5)
+
+    def changeTypefield(self):
+        pass
+
+    def deeper_test_legend(self, id_legend, type_elem):
+        legend_root = self.driver.find_element_by_id(id_legend)
+        inner_groups = legend_root.find_elements_by_css_selector(".lg")
+        self.assertIsInstance(inner_groups, list)
+        self.assertGreater(len(inner_groups), 0)
+        # Todo : check that right click and dblclick are working too
+
+    def open_menu_section(self, nb_section):
+        b = self.driver.find_element_by_id("btn_s{}".format(nb_section))
+        if b:
+            self.click_elem_retry(b)
+            time.sleep(0.5)
+        else:
+            self.fail("Failed to open menu ", nb_section)
+
+    def clickWaitTransition(self, css_selector, delay=0.5):
+        self.driver.find_element_by_css_selector(css_selector).click()
+        time.sleep(delay)
+
+    @retry(Exception, 3, 1)
+    def click_element_with_retry(self, selector):
+        self.driver.find_element_by_css_selector(selector).click()
+
+    @retry(Exception, 3, 1)
+    def click_elem_retry(self, elem):
+        elem.click()
+
+    def get_button_ok_displayed(self, selector="button.swal2-confirm.swal2-styled", delay=30):
+        if not self.try_element_present(By.CSS_SELECTOR, selector, delay):
+            self.fail("Time out")
+        else:
+            button_ok = self.driver.find_element_by_css_selector(selector)
+            for i in range(delay):
+                if not button_ok.is_displayed():
+                    time.sleep(1)
+                else:
+                    return button_ok
+            self.fail("Time out")
+
+    def waitClickButtonSwal(self, selector="button.swal2-confirm.swal2-styled", delay=30):
+        button_ok = self.get_button_ok_displayed(selector, delay)
+        button_ok.click()
+        time.sleep(0.5)
+
+    def is_element_present(self, how, what):
+        try:
+            self.driver.find_element(by=how, value=what)
+        except NoSuchElementException as e:
+            return False
+        return True
+
+    def is_alert_present(self):
+        try:
+            self.driver.switch_to_alert()
+        except NoAlertPresentException as e:
+            return False
+        return True
+
+    def try_element_present(self, how, what, delay=60):
+        for i in range(delay):
+            try:
+                if self.is_element_present(how, what):
+                    return True
+            except:
+                pass
+            time.sleep(1)
+        return False
+
+    def wait_until_overlay_disapear(self, delay=10):
+        time.sleep(1)
+        for i in range(delay):
+            try:
+                if self.driver.find_element_by_id(
+                        'overlay').value_of_css_property('display') == 'none':
+                    return True
+            except:
+                continue
+            time.sleep(1)
+        return False
+
+    def close_alert_and_get_its_text(self):
+        try:
+            alert = self.driver.switch_to_alert()
+            alert_text = alert.text
+            if self.accept_next_alert:
+                alert.accept()
+            else:
+                alert.dismiss()
+            return alert_text
+        finally:
+            self.accept_next_alert = True
+
+
+class ProjectRoundTrip(TestBase):
+    def setUp(self):
+        self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
+            str(uuid4()).split('-')[4])
+        os.mkdir(self.tmp_folder)
+        chromeOptions = webdriver.ChromeOptions()
+        chromeOptions.add_experimental_option(
+            "prefs", {"download.default_directory": self.tmp_folder})
+        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
+                                       chrome_options=chromeOptions)
+
+        self.driver.set_window_size(1600, 900)
+        self.driver.implicitly_wait(2)
+        self.base_url = "http://localhost:9999/modules"
+        self.verificationErrors = []
+        self.accept_next_alert = True
+
+    def test_simple_map(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2-2013-data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+
+        # Render a gridded map:
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_grid")
+
+        Select(driver.find_element_by_id("Gridded_field")
+            ).select_by_visible_text("POP")
+        driver.find_element_by_id("Gridded_cellsize").clear()
+        driver.find_element_by_id("Gridded_cellsize").send_keys("145")
+        Select(driver.find_element_by_id("Gridded_shape")
+            ).select_by_value("Diamond")
+        driver.find_element_by_id("Gridded_yes").click()
+
+        self.waitClickButtonSwal()
+        time.sleep(0.5)
+        driver.find_element_by_id('save_file_button').click()
+        time.sleep(2)
+        # Export the project file corresponding to the current state :
+        with open(self.tmp_folder + 'magrit_project.json') as f:
+            data_1 = json.loads(f.read())
+
+        os.remove(self.tmp_folder + 'magrit_project.json')
+
+        # Reload the page :
+        driver.get(self.base_url)
+        time.sleep(0.2)
+        # Close the alert asking confirmation for closing the page
+        # (this is when the last state of the current project is saved)
+        driver.switch_to.alert.accept()
+
+        # Click on the button to reload the last project :
+        self.waitClickButtonSwal("button.swal2-cancel")
+        time.sleep(1)
+
+        # The previous map should now be reloaded
+        # Let's export the project file and compare it with the previous version
+        time.sleep(0.5)
+        driver.find_element_by_id('save_file_button').click()
+        time.sleep(2)
+        # Export the project file corresponding to the current state :
+        with open(self.tmp_folder + 'magrit_project.json') as f:
+            data_2 = json.loads(f.read())
+
+        # Are the two projects the same ?
+        assertDeepAlmostEqual(self, data_1, data_2, "Simple Map 1")
+
+    def tearDown(self):
+        self.assertEqual([], self.verificationErrors)
+        files = os.listdir(self.tmp_folder)
+        [os.remove(self.tmp_folder + file) for file in files]
+        os.removedirs(self.tmp_folder)
+        self.driver.quit()
+
+
+class ReloadCompareProjectsTest(TestBase):
     def setUp(self):
         self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
             str(uuid4()).split('-')[4])
@@ -143,13 +337,13 @@ class ReloadCompareProjectsTest(unittest.TestCase):
             input_name.clear()
             input_name.send_keys('{}.png'.format(name))
             driver.find_element_by_id("export_button_section5b").click()
-            time.sleep(2)
+            time.sleep(2.5)
             self.assertTrue(
                 is_same_image(
                     '{}{}.png'.format(self.tmp_folder, name), b_image))
             os.remove('{}{}.png'.format(self.tmp_folder, name))
             driver.find_element_by_id('save_file_button').click()
-            time.sleep(2)
+            time.sleep(2.5)
             with open(self.tmp_folder + 'magrit_project.json') as f:
                 data = json.loads(f.read())
             assertDeepAlmostEqual(self, data, json.loads(project), name)
@@ -158,6 +352,7 @@ class ReloadCompareProjectsTest(unittest.TestCase):
     def test_each_project(self):
         names = list(self.urls.keys())
         for i, name in enumerate(names):
+            if name == "grid_usa": continue
             self.t_reload(i, name)
 
     def tearDown(self):
@@ -166,30 +361,6 @@ class ReloadCompareProjectsTest(unittest.TestCase):
         [os.remove(self.tmp_folder + file) for file in files]
         os.removedirs(self.tmp_folder)
         self.driver.quit()
-
-    def wait_until_overlay_disapear(self, delay=10):
-        time.sleep(1)
-        for i in range(delay):
-            try:
-                if self.driver.find_element_by_id(
-                        'overlay').value_of_css_property('display') == 'none':
-                    return True
-            except:
-                continue
-            time.sleep(1)
-        return False
-
-    def open_menu_section(self, nb_section):
-        b = self.driver.find_element_by_id("btn_s{}".format(nb_section))
-        if b:
-            self.click_elem_retry(b)
-            time.sleep(0.5)
-        else:
-            self.fail("Failed to open menu ", nb_section)
-
-    @retry(Exception, 3, 1)
-    def click_elem_retry(self, elem):
-        elem.click()
 
     def fetch_projets_github(self):
         r = requests.get('https://api.github.com/repos/mthh/example-magrit-projects/contents/')
@@ -210,7 +381,7 @@ class ReloadCompareProjectsTest(unittest.TestCase):
 
 
 @flaky
-class MainFunctionnalitiesTest(unittest.TestCase):
+class MainFunctionnalitiesTest(TestBase):
     """
     Runs a test using travis-ci and saucelabs
     """
@@ -847,6 +1018,93 @@ class MainFunctionnalitiesTest(unittest.TestCase):
 
         self._verif_legend_hide_show_button('result_layer')
 
+    def test_rename(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        time.sleep(0.2)
+
+        # Add a sample layer:
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2-2013-data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+        self.validTypefield()
+        self.open_menu_section(3)
+
+        # Change the name of the target layer:
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.nuts2-2013-data > div > .style_target_layer"))
+        time.sleep(0.3)
+        name_zone = driver.find_element_by_css_selector('input#lyr_change_name')
+        name_zone.clear()
+        name_zone.send_keys('SomeNewNameForMyLayer')
+        driver.find_element_by_css_selector(
+            ".styleBox").find_elements_by_css_selector(
+            ".btn_ok")[0].click()
+        time.sleep(0.1)
+        current_layers, data_layer_name = driver.execute_script('''
+            return [
+                Object.getOwnPropertyNames(current_layers),
+                Object.getOwnPropertyNames(user_data)
+            ];
+        ''')
+        self.assertNotIn('nuts2-2013-data', current_layers)
+        self.assertNotIn('nuts2-2013-data', data_layer_name)
+        self.assertIn('SomeNewNameForMyLayer', current_layers)
+        self.assertIn('SomeNewNameForMyLayer', data_layer_name)
+
+        # Render a smoothed map on our renamed layer...
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_smooth")
+        output_name = driver.find_element_by_id("stewart_output_name")
+        output_name.clear()
+        # ... and ask for a weird name:
+        output_name.send_keys("W€ird output n@me")
+        driver.find_element_by_id("stewart_yes").click()
+        self.waitClickButtonSwal()
+        time.sleep(0.5)
+        current_layers, result_layer_name = driver.execute_script('''
+            return [
+                Object.getOwnPropertyNames(current_layers),
+                Object.getOwnPropertyNames(result_data)
+            ];
+        ''')
+        # Problematic char have been escaped correctly:
+        self.assertIn('W_ird_output_n_me', current_layers)
+        self.assertIn('W_ird_output_n_me', result_layer_name)
+
+        # Change the name of the result layer for something more meaningful:
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.W_ird_output_n_me > div > .style_target_layer"))
+        time.sleep(0.6)
+        name_zone = driver.find_element_by_css_selector('input#lyr_change_name')
+        name_zone.clear()
+        name_zone.send_keys('Smoothed_result')
+        driver.find_element_by_css_selector(
+            ".styleBox").find_elements_by_css_selector(
+            ".btn_ok")[0].click()
+
+        # The new name is correctly in use and the old name is present:
+        current_layers, result_layer_name = driver.execute_script('''
+            return [
+                Object.getOwnPropertyNames(current_layers),
+                Object.getOwnPropertyNames(result_data)
+            ];
+        ''')
+        self.assertIn('Smoothed_result', current_layers)
+        self.assertIn('Smoothed_result', result_layer_name)
+        self.assertNotIn('W_ird_output_n_me', current_layers)
+        self.assertNotIn('W_ird_output_n_me', result_layer_name)
+
+        # Verify that there is no trace of the old name in the whole document:
+        self.assertNotIn('W_ird_output_n_me', driver.page_source)
+
+        # The result can be exported correctly:
+        self._verif_export_result('Smoothed_result')
+
     def test_stewart(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -1406,116 +1664,6 @@ class MainFunctionnalitiesTest(unittest.TestCase):
         if not self.try_element_present(By.CSS_SELECTOR, ".context-menu"):
             self.fail("Context menu of {} won't display".format(info))
         self.click_elem_retry(self.driver.find_element_by_id('svg_map'))
-
-    def make_context_click(self, target):
-        action = webdriver.ActionChains(self.driver)
-        action.context_click(target).perform()
-
-    def make_double_click(self, target):
-        action = webdriver.ActionChains(self.driver)
-        action.double_click(target).perform()
-
-    def validTypefield(self):
-        self.click_elem_retry(
-            self.driver.find_element_by_id(
-                "box_type_fields").find_elements_by_css_selector(
-                ".btn_ok")[0])
-        time.sleep(0.5)
-
-    def changeTypefield(self):
-        pass
-
-    def deeper_test_legend(self, id_legend, type_elem):
-        legend_root = self.driver.find_element_by_id(id_legend)
-        inner_groups = legend_root.find_elements_by_css_selector(".lg")
-        self.assertIsInstance(inner_groups, list)
-        self.assertGreater(len(inner_groups), 0)
-        # Todo : check that right click and dblclick are working too
-
-    def open_menu_section(self, nb_section):
-        b = self.driver.find_element_by_id("btn_s{}".format(nb_section))
-        if b:
-            self.click_elem_retry(b)
-            time.sleep(0.5)
-        else:
-            self.fail("Failed to open menu ", nb_section)
-
-    def clickWaitTransition(self, css_selector, delay=0.5):
-        self.driver.find_element_by_css_selector(css_selector).click()
-        time.sleep(delay)
-
-    @retry(Exception, 3, 1)
-    def click_element_with_retry(self, selector):
-        self.driver.find_element_by_css_selector(selector).click()
-
-    @retry(Exception, 3, 1)
-    def click_elem_retry(self, elem):
-        elem.click()
-
-    def get_button_ok_displayed(self, selector="button.swal2-confirm.swal2-styled", delay=30):
-        if not self.try_element_present(By.CSS_SELECTOR, selector, delay):
-            self.fail("Time out")
-        else:
-            button_ok = self.driver.find_element_by_css_selector(selector)
-            for i in range(delay):
-                if not button_ok.is_displayed():
-                    time.sleep(1)
-                else:
-                    return button_ok
-            self.fail("Time out")
-
-    def waitClickButtonSwal(self, selector="button.swal2-confirm.swal2-styled", delay=30):
-        button_ok = self.get_button_ok_displayed(selector, delay)
-        button_ok.click()
-        time.sleep(0.5)
-
-    def is_element_present(self, how, what):
-        try:
-            self.driver.find_element(by=how, value=what)
-        except NoSuchElementException as e:
-            return False
-        return True
-
-    def is_alert_present(self):
-        try:
-            self.driver.switch_to_alert()
-        except NoAlertPresentException as e:
-            return False
-        return True
-
-    def try_element_present(self, how, what, delay=60):
-        for i in range(delay):
-            try:
-                if self.is_element_present(how, what):
-                    return True
-            except:
-                pass
-            time.sleep(1)
-        return False
-
-    def wait_until_overlay_disapear(self, delay=10):
-        time.sleep(1)
-        for i in range(delay):
-            try:
-                if self.driver.find_element_by_id(
-                        'overlay').value_of_css_property('display') == 'none':
-                    return True
-            except:
-                continue
-            time.sleep(1)
-        return False
-
-    def close_alert_and_get_its_text(self):
-        try:
-            alert = self.driver.switch_to_alert()
-            alert_text = alert.text
-            if self.accept_next_alert:
-                alert.accept()
-            else:
-                alert.dismiss()
-            return alert_text
-        finally:
-            self.accept_next_alert = True
 
 
 if __name__ == "__main__":

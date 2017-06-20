@@ -159,7 +159,7 @@ function createStyleBoxTypoSymbols(layer_name) {
         restore_prev_settings();
       } else {
         if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, new_layer_name.trim())
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
       }
     });
@@ -300,7 +300,7 @@ function createStyleBoxLabel(layer_name) {
       } else {
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, new_layer_name.trim())
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
       }
     });
@@ -656,7 +656,7 @@ function createStyleBox_Line(layer_name) {
 
               // Change the layer name if requested :
               if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, new_layer_name.trim())
+                change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
               }
               zoom_without_redraw();
 
@@ -1020,7 +1020,7 @@ function createStyleBox(layer_name) {
         }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, new_layer_name.trim())
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
         zoom_without_redraw();
       } else {
@@ -1530,7 +1530,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         // }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, new_layer_name.trim())
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
 
       } else {
@@ -1809,7 +1809,7 @@ function make_style_box_indiv_label(label_node) {
       } else {
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, new_layer_name.trim())
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
       }
       // else {

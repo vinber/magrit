@@ -17,13 +17,13 @@ const MAX_INPUT_SIZE = 25200000;
 * browse its file and dispatch the files to the appropriate handler according
 * to the file type
 */
-function click_button_add_layer(){
+function click_button_add_layer() {
   const self = this;
   const input = document.createElement('input');
 
   let target_layer_on_add = false;
 
-  if(self.id === 'img_data_ext' || self.id === 'data_ext'){
+  if (self.id === 'img_data_ext' || self.id === 'data_ext') {
     input.setAttribute('accept', '.xls,.xlsx,.csv,.tsv,.ods,.txt');
     target_layer_on_add = true;
   } else if (self.id === 'input_geom' || self.id === 'img_in_geom') {
@@ -36,7 +36,7 @@ function click_button_add_layer(){
   input.setAttribute('multiple', '');
   input.setAttribute('name', 'file[]');
   input.setAttribute('enctype', 'multipart/form-data');
-  input.onchange = function(event){
+  input.onchange = function(event) {
     let files = event.target.files;
     handle_upload_files(files, target_layer_on_add, self);
     input.remove();
@@ -44,7 +44,7 @@ function click_button_add_layer(){
   input.click();
 }
 
-function handle_upload_files(files, target_layer_on_add, elem){
+function handle_upload_files(files, target_layer_on_add, elem) {
     const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
 
     if (tot_size > MAX_INPUT_SIZE) {
@@ -58,7 +58,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
         allowOutsideClick: false });
     }
 
-    if(!(files.length === 1)){
+    if (!(files.length === 1)) {
         var files_to_send = [];
         Array.prototype.forEach.call(files, f =>
             f.name.indexOf('.shp') > -1
@@ -68,14 +68,14 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.cpg') > -1
                 ? files_to_send.push(f) : null)
         elem.style.border = '';
-        if(target_layer_on_add && _app.targeted_layer_added){
+        if (target_layer_on_add && _app.targeted_layer_added) {
                 swal({title: i18next.t('app_page.common.error') + '!',
                       text: i18next.t('app_page.common.error_only_one'),
                       customClass: 'swal2_custom',
                       type: 'error',
                       allowEscapeKey: false,
                       allowOutsideClick: false});
-        } else if(files_to_send.length >= 4 && files_to_send.length <= 6){
+        } else if (files_to_send.length >= 4 && files_to_send.length <= 6) {
             handle_shapefile(files_to_send, target_layer_on_add);
             elem.style.border = '';
         } else {
@@ -88,12 +88,12 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   allowEscapeKey: false,
                   allowOutsideClick: false});
         }
-   } else if(files[0].name.toLowerCase().indexOf('json') > -1 ||
+   } else if (files[0].name.toLowerCase().indexOf('json') > -1 ||
             files[0].name.toLowerCase().indexOf('zip') > -1 ||
             files[0].name.toLowerCase().indexOf('gml') > -1 ||
-            files[0].name.toLowerCase().indexOf('kml') > -1){
+            files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
-        if(target_layer_on_add && _app.targeted_layer_added){
+        if (target_layer_on_add && _app.targeted_layer_added) {
             swal({title: i18next.t('app_page.common.error') + '!',
                   text: i18next.t('app_page.common.error_only_one'),
                   customClass: 'swal2_custom',
@@ -102,21 +102,21 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   allowOutsideClick: false});
         // Send the file to the server for conversion :
         } else {
-            if(files[0].name.toLowerCase().indexOf('json' < 0)){
+            if (files[0].name.toLowerCase().indexOf('json' < 0)) {
                 handle_single_file(files[0], target_layer_on_add);
             } else {
                 let tmp = JSON.parse(files[0]);
-                if(tmp.type && tmp.type == 'FeatureCollection') {
+                if (tmp.type && tmp.type == 'FeatureCollection') {
                     handle_single_file(files[0], target_layer_on_add);
                 } else if (tmp.type && tmp.type == 'Topology') {
                     handle_TopoJSON_files(files, target_layer_on_add);
                 }
             }
         }
-   } else if(files[0].name.toLowerCase().indexOf('.csv')  > -1
+   } else if (files[0].name.toLowerCase().indexOf('.csv')  > -1
     || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
         elem.style.border = '';
-        if(target_layer_on_add){
+        if (target_layer_on_add) {
             handle_dataset(files[0], target_layer_on_add);
         } else {
             swal({title: i18next.t('app_page.common.error') + '!',
@@ -126,10 +126,10 @@ function handle_upload_files(files, target_layer_on_add, elem){
                   allowEscapeKey: false,
                   allowOutsideClick: false});
         }
-   } else if(files[0].name.toLowerCase().indexOf('.xls')  > -1
+   } else if (files[0].name.toLowerCase().indexOf('.xls')  > -1
     || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
         elem.style.border = '';
-        if(target_layer_on_add) {
+        if (target_layer_on_add) {
             convert_dataset(files[0]);
         } else {
             swal({title: i18next.t('app_page.common.error') + '!',
@@ -148,7 +148,7 @@ function handle_upload_files(files, target_layer_on_add, elem){
                 || f.name.indexOf('.shx') > -1
                 || f.name.indexOf('.prj') > -1
                 ? shp_part = true : null);
-        if(shp_part){
+        if (shp_part) {
             return swal({title: i18next.t('app_page.common.error') + '!',
                   text: i18next.t('app_page.common.alert_upload_shp'),
                   type: 'error',
@@ -166,8 +166,8 @@ function handle_upload_files(files, target_layer_on_add, elem){
     }
 }
 
-function handleOneByOneShp(files, target_layer_on_add){
-  function populate_shp_slot(slots, file){
+function handleOneByOneShp(files, target_layer_on_add) {
+  function populate_shp_slot(slots, file) {
     if (file.name.indexOf('.shp') > -1) {
       slots.set('.shp', file);
       document.getElementById('f_shp').className = 'mini_button_ok';
@@ -244,7 +244,7 @@ function handleOneByOneShp(files, target_layer_on_add){
         inputPlaceholder: i18next.t('app_page.common.layer_type_selection'),
         inputOptions: opts,
         inputValidator: function(value) {
-          return new Promise(function(resolve, reject){
+          return new Promise(function(resolve, reject) {
             if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
               reject(i18next.t('app_page.common.no_value'));
             } else {
@@ -267,7 +267,7 @@ function handleOneByOneShp(files, target_layer_on_add){
   });
   let shp_slots = new Map();
   populate_shp_slot(shp_slots, files[0]);
-  document.getElementById('dv_drop_shp').addEventListener('drop', function(event){
+  document.getElementById('dv_drop_shp').addEventListener('drop', function(event) {
     event.preventDefault(); event.stopPropagation();
     let next_files = event.dataTransfer.files;
     for (let f_ix=0; f_ix < next_files.length; f_ix++) {
@@ -278,11 +278,11 @@ function handleOneByOneShp(files, target_layer_on_add){
       document.getElementById('dv_drop_shp').innerHTML = document.getElementById('dv_drop_shp').innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
     }
   })
-  document.getElementById('dv_drop_shp').addEventListener('dragover', function(event){
+  document.getElementById('dv_drop_shp').addEventListener('dragover', function(event) {
     this.style.border = 'dashed 2.5px green';
     event.preventDefault(); event.stopPropagation();
   });
-  document.getElementById('dv_drop_shp').addEventListener('dragleave', function(event){
+  document.getElementById('dv_drop_shp').addEventListener('dragleave', function(event) {
     this.style.border = 'dashed 1px green';
     event.preventDefault(); event.stopPropagation();
   });
@@ -292,25 +292,23 @@ function handleOneByOneShp(files, target_layer_on_add){
 * Function called to bind the "drop zone" on the 2 desired menu elements
 *
 */
-function prepare_drop_section(){
+function prepare_drop_section() {
   var timeout;
   Array.prototype.forEach.call(
     document.querySelectorAll('#map,.overlay_drop'),
     function (elem) {
         elem.addEventListener('dragenter', e => {
           e.preventDefault(); e.stopPropagation();
-          if (document.body.classList.contains('no-drop'))
-            return;
+          if (document.body.classList.contains('no-drop')) return;
           document.getElementById('overlay_drop').style.display = '';
         });
 
         elem.addEventListener('dragover', e => {
           e.preventDefault(); e.stopPropagation();
-          if(document.body.classList.contains('no-drop'))
-            return;
-          if(timeout){
+          if (document.body.classList.contains('no-drop')) return;
+          if (timeout) {
             clearTimeout(timeout);
-            timeout = setTimeout(function(){
+            timeout = setTimeout(function() {
               e.preventDefault(); e.stopPropagation();
               document.getElementById('overlay_drop').style.display = 'none';
               timeout = null;
@@ -330,12 +328,12 @@ function prepare_drop_section(){
           }, 2500);
         });
 
-        elem.addEventListener('drop', function _drop_func(e){
+        elem.addEventListener('drop', function _drop_func(e) {
           e.preventDefault(); e.stopPropagation();
-          if(timeout){
+          if (timeout) {
             clearTimeout(timeout);
           }
-          if(document.body.classList.contains('no-drop') || !e.dataTransfer.files.length){
+          if (document.body.classList.contains('no-drop') || !e.dataTransfer.files.length) {
             document.getElementById('overlay_drop').style.display = 'none';
             return;
           }
@@ -346,7 +344,7 @@ function prepare_drop_section(){
               && (files[0].name.indexOf('.shp') > -1
                  || files[0].name.indexOf('.shx') > -1
                  || files[0].name.indexOf('.dbf') > -1
-                 || files[0].name.indexOf('.prj') > -1)){
+                 || files[0].name.indexOf('.prj') > -1)) {
             Array.prototype.forEach.call(document.querySelectorAll('#map,.overlay_drop'), (_elem) => {
               _elem.removeEventListener('drop', _drop_func);
             });
@@ -397,19 +395,19 @@ function prepare_drop_section(){
   Array.prototype.forEach.call(
     document.querySelectorAll('#section1,#section3'),
     function (elem) {
-      elem.addEventListener('dragenter', function(e){
+      elem.addEventListener('dragenter', function(e) {
         e.preventDefault();
         e.stopPropagation();
         if (document.body.classList.contains('no-drop')) return;
         elem.style.border = '3px dashed green';
       });
-      elem.addEventListener('dragover', function(e){
+      elem.addEventListener('dragover', function(e) {
         e.preventDefault();
         e.stopPropagation();
         if (document.body.classList.contains('no-drop')) return;
         elem.style.border = '3px dashed green';
       });
-      elem.addEventListener('dragleave', function(e){
+      elem.addEventListener('dragleave', function(e) {
         e.preventDefault();
         e.stopPropagation();
         elem.style.border = '';
@@ -439,7 +437,7 @@ function prepare_drop_section(){
     });
 }
 
-function ask_replace_dataset(){
+function ask_replace_dataset() {
   return swal({
     title: '',
     text: i18next.t('app_page.common.ask_replace_dataset'),
@@ -452,7 +450,7 @@ function ask_replace_dataset(){
   });
 }
 
-function convert_dataset(file){
+function convert_dataset(file) {
   const do_convert = () => {
     var ajaxData = new FormData();
     ajaxData.append('action', 'submit_form');
@@ -485,7 +483,7 @@ function convert_dataset(file){
   }
 }
 
-function handle_shapefile(files, target_layer_on_add){
+function handle_shapefile(files, target_layer_on_add) {
   const ajaxData = new FormData();
   ajaxData.append('action', 'submit_form');
   for (let j=0; j<files.length; j++) {
@@ -509,7 +507,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
   xhrequest('POST', 'cache_topojson/user', ajaxData, false)
     .then(res => {
       const key = JSON.parse(res).key;
-      reader.onloadend = function(){
+      reader.onloadend = function() {
         const text = reader.result;
         const topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
         add_layer_topojson(topoObjText, { target_layer_on_add: target_layer_on_add });
@@ -520,7 +518,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
     });
 };
 
-function handle_reload_TopoJSON(text, param_add_func){
+function handle_reload_TopoJSON(text, param_add_func) {
   const ajaxData = new FormData();
   const f = new Blob([text], { type: 'application/json' });
   ajaxData.append('file[]', f);
@@ -555,7 +553,7 @@ function handle_reload_TopoJSON(text, param_add_func){
 * adding it to the map
 * @param {File} f - The input csv file
 */
-function handle_dataset(f, target_layer_on_add){
+function handle_dataset(f, target_layer_on_add) {
   const check_dataset = () => {
     const reader = new FileReader(),
       name = f.name;
@@ -577,9 +575,9 @@ function handle_dataset(f, target_layer_on_add){
 
         let tmp_dataset = d3.dsvFormat(sep).parse(data);
         let field_names = Object.getOwnPropertyNames(tmp_dataset[0]).map(el => el.toLowerCase ? el.toLowerCase() : el);
-        if(field_names.indexOf('x') > -1 || field_names.indexOf('lat') > -1 || field_names.indexOf('latitude') > -1){
-          if(field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1){
-            if(target_layer_on_add && _app.targeted_layer_added){
+        if (field_names.indexOf('x') > -1 || field_names.indexOf('lat') > -1 || field_names.indexOf('latitude') > -1) {
+          if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
+            if (target_layer_on_add && _app.targeted_layer_added) {
                 swal({
                   title: i18next.t('app_page.common.error') + '!',
                   text: i18next.t('app_page.common.error_only_one'),
@@ -656,7 +654,7 @@ function handle_dataset(f, target_layer_on_add){
 //     }
 // }
 
-function update_menu_dataset(){
+function update_menu_dataset() {
   let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
     nb_features = joined_dataset[0].length,
     field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
@@ -699,7 +697,7 @@ function update_menu_dataset(){
 *
 *
 */
-function add_dataset(readed_dataset){
+function add_dataset(readed_dataset) {
   // Check if their is an empty name in the columns name (typically the first one) and replace it by UID:
   if (readed_dataset[0].hasOwnProperty('')) {
     let new_col_name = !readed_dataset[0].hasOwnProperty('UID') ? 'UID' :'Undefined_Name';
@@ -753,7 +751,7 @@ function add_dataset(readed_dataset){
   }
 }
 
-function add_csv_geom(file, name){
+function add_csv_geom(file, name) {
   const ajaxData = new FormData();
   ajaxData.append('filename', name);
   ajaxData.append('csv_file', file);
@@ -777,19 +775,42 @@ function handle_single_file(file, target_layer_on_add) {
   ajaxData.append('file[]', file);
   xhrequest('POST', '/convert_to_topojson', ajaxData, true)
     .then((data) => {
-      add_layer_topojson(data, {target_layer_on_add: target_layer_on_add});
+      add_layer_topojson(data, { target_layer_on_add: target_layer_on_add });
     }, (error) => {
       display_error_during_computation();
     });
-};
+}
 
-function get_display_name_on_layer_list(layer_name_to_add){
+function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
+  const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
+  const _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
+  const _input_geom = document.getElementById('input_geom');
+  let _button = button_type.get(type);
+
+  _button = _button.substring(10, _button.indexOf('class') - 2);
+
+  _input_geom.classList.remove('i18n');
+  _input_geom.removeAttribute('data-i18n');
+  _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
+  d3.select(_input_geom)
+    .attrs({ src: _button, width: '26', height: '26' })
+    .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
+    .on('click', null);
+  _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">`;
+
+  const remove_target = document.getElementById('remove_target');
+  remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
+  remove_target.onmouseover = function () { this.style.opacity = 1; };
+  remove_target.onmouseout = function () { this.style.opacity = 0.5; };
+}
+
+function get_display_name_on_layer_list(layer_name_to_add) {
   return +layer_name_to_add.length > 40
       ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
       : layer_name_to_add;
 }
 
-function ask_join_now(layer_name, on_add='layer'){
+function ask_join_now(layer_name, on_add = 'layer') {
   swal({
     title: '',
     text: i18next.t('app_page.join_box.before_join_ask'),
@@ -803,14 +824,14 @@ function ask_join_now(layer_name, on_add='layer'){
   }).then(() => {
     createJoinBox(layer_name);
   }, (dismiss) => {
-    if(on_add === 'layer') make_box_type_fields(layer_name);
+    if (on_add === 'layer') make_box_type_fields(layer_name);
   });
 }
 
-function ask_existing_feature(feature_name){
+function ask_existing_feature(feature_name) {
   return swal({
     title: '',
-    text: i18next.t('app_page.common.error_existing_' + feature_name),
+    text: i18next.t(`app_page.common.error_existing_${feature_name}`),
     allowOutsideClick: false,
     allowEscapeKey: false,
     type: 'question',
@@ -822,7 +843,7 @@ function ask_existing_feature(feature_name){
 }
 
 // Add the TopoJSON to the 'svg' element :
-function add_layer_topojson(text, options = {}){
+function add_layer_topojson(text, options = {}) {
   let parsedJSON;
   try {
     parsedJSON = JSON.parse(text);
@@ -864,9 +885,9 @@ function add_layer_topojson(text, options = {}){
 
   for (let _t_ix = 0; _t_ix < nb_ft; _t_ix++) {
     if (topoObj_objects.geometries[_t_ix] && topoObj_objects.geometries[_t_ix].type) {
-      if(topoObj_objects.geometries[_t_ix].type.indexOf('Point') > -1) type = 'Point';
-      else if(topoObj_objects.geometries[_t_ix].type.indexOf('LineString') > -1) type = 'Line';
-      else if(topoObj_objects.geometries[_t_ix].type.indexOf('Polygon') > -1) type = 'Polygon';
+      if (topoObj_objects.geometries[_t_ix].type.indexOf('Point') > -1) type = 'Point';
+      else if (topoObj_objects.geometries[_t_ix].type.indexOf('LineString') > -1) type = 'Line';
+      else if (topoObj_objects.geometries[_t_ix].type.indexOf('Polygon') > -1) type = 'Polygon';
       break;
     }
   }
@@ -876,7 +897,7 @@ function add_layer_topojson(text, options = {}){
     return;
   }
 
-  if ( _app.first_layer) {
+  if (_app.first_layer) {
     // remove_layer_cleanup('World');
     let q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
     if (q) q.click();
@@ -891,13 +912,11 @@ function add_layer_topojson(text, options = {}){
     }
   }
 
-  let field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
-
   current_layers[lyr_name_to_add] = {
     type: type,
     n_features: nb_ft,
     'stroke-width-const': type === 'Line' ? 1.5 : 0.4,
-    fill_color:  { 'single': random_color1 },
+    fill_color: { single: random_color1 },
     key_name: parsedJSON.key
   };
 
@@ -911,10 +930,11 @@ function add_layer_topojson(text, options = {}){
     current_layers[lyr_name_to_add].is_result = true;
   }
 
-  let path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path,
-    nb_fields = field_names.length;
-
+  const field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+  const path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
+  const nb_fields = field_names.length;
   let func_data_idx;
+
   if (data_to_load && nb_fields > 0) {
     func_data_idx = (d, ix) => {
       if (d.id != undefined && d.id != ix) {
@@ -940,8 +960,7 @@ function add_layer_topojson(text, options = {}){
   }
 
   map.insert('g', '.legend')
-    .attr('id', lyr_id)
-    .attr('class', data_to_load ? 'targeted_layer layer' : 'layer')
+    .attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' })
     .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
     .selectAll('.subunit')
     .data(topojson.feature(topoObj, topoObj_objects).features)
@@ -949,23 +968,6 @@ function add_layer_topojson(text, options = {}){
     .append('path')
     .attrs({ d: path_to_use, height: '100%', width: '100%' })
     .attr('id', func_data_idx)
-    //  {
-    //       if(data_to_load){
-    //           if(nb_fields > 0){
-    //               if(d.id != undefined && d.id != ix){
-    //                   d.properties["_uid"] = d.id;
-    //                   d.id = +ix;
-    //               }
-    //               user_data[lyr_name_to_add].push(d.properties);
-    //           } else {
-    //               d.properties.id = d.id || ix;
-    //               user_data[lyr_name_to_add].push({"id": d.properties.id});
-    //           }
-    //       } else if(result_layer_on_add){
-    //           result_data[lyr_name_to_add].push(d.properties);
-    //       }
-    //       return "feature_" + ix;
-    //   })
     .styles({
       stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
       'stroke-opacity': 1,
@@ -989,34 +991,13 @@ function add_layer_topojson(text, options = {}){
     current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
     if (joined_dataset.length !== 0) {
       valid_join_check_display(false)
-      // section1.select(".s1").html("").on("click", null);
     }
 
     document.getElementById('sample_zone').style.display = 'none';
 
-    let _button = button_type.get(type),
-      nb_fields = field_names.length,
-      nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length,
-      _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
-
-    _button = _button.substring(10, _button.indexOf('class') - 2);
-    let _input_geom = document.getElementById('input_geom');
-    _input_geom.classList.remove('i18n');
-    _input_geom.removeAttribute('data-i18n');
-    d3.select(_input_geom)
-      .attrs({ src: _button, width: '26', height: '26' })
-      .html(['<b>', _lyr_name_display, '</b> - <i><span style="font-size:9px;">',
-             nb_ft, ' ', i18next.t('app_page.common.feature', { count: +nb_ft }), ' - ',
-             nb_fields, ' ', i18next.t('app_page.common.field', { count: +nb_fields }),
-             '</i></span>'].join(''))
-      .on('click', null);
-    _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
-    let remove_target = document.getElementById('remove_target');
-    remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
-    remove_target.onmouseover = function(){ this.style.opacity = 1; };
-    remove_target.onmouseout = function(){ this.style.opacity = 0.5; };
+    update_section1(type, nb_fields, nb_ft, lyr_name_to_add);
     _app.targeted_layer_added = true;
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), "</div>"].join('')
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('')
 
     window._target_layer_file = topoObj;
     if (!skip_rescale) {
@@ -1024,20 +1005,20 @@ function add_layer_topojson(text, options = {}){
       center_map(lyr_name_to_add);
     }
     handle_click_hand('lock');
-    if (_app.current_functionnality != undefined) {
-        fields_handler.fill(lyr_name_to_add);
-    } else if (result_layer_on_add) {
-      li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name ? options.func_name : _app.current_functionnality.name), '</div>'].join('');
-    }
-    if (!skip_rescale) {
-        center_map(lyr_name_to_add);
+    if (_app.current_functionnality !== undefined) {
+      fields_handler.fill(lyr_name_to_add);
     }
     handle_click_hand('lock');
+  } else if (result_layer_on_add) {
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
+    if (!skip_rescale) {
+      center_map(lyr_name_to_add);
+    }
   } else {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('')
   }
 
-  if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name === "smooth"){
+  if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name === "smooth") {
     fields_handler.fill();
   }
 
@@ -1056,7 +1037,7 @@ function add_layer_topojson(text, options = {}){
     if (fields_type != undefined) {
       current_layers[lyr_name_to_add].fields_type = fields_type;
     }
-    if (_proj == undefined) {
+    if (_proj === undefined) {
       swal({
         title: '',
         text: i18next.t('app_page.common.layer_success'),
@@ -1140,12 +1121,12 @@ function get_bbox_layer_path(name) {
     let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let bbox_layer_path2 = path.bounds({ 'type': 'MultiPoint', 'coordinates': [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
     let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
-    if(s2 < s1) bbox_layer_path = bbox_layer_path2;
+    if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
     let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     let bbox_layer_path2 = path.bounds({ 'type': 'MultiPoint', 'coordinates': [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
     let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
-    if(s2 < s1) bbox_layer_path = bbox_layer_path2;
+    if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   }
   return bbox_layer_path;
 }
@@ -1174,7 +1155,7 @@ function scale_to_lyr(name) {
 * @param {string} name - The name of layer to zoom on
 * @return {undefined}
 */
-function center_map(name){
+function center_map(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
   const zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
   const zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
@@ -1182,12 +1163,12 @@ function center_map(name){
   _zoom.k = zoom_scale;
   _zoom.x = zoom_translate[0];
   _zoom.y = zoom_translate[1];
-};
+}
 
 function fitLayer(layer_name) {
-  proj.scale(1).translate([0,0])
+  proj.scale(1).translate([0, 0])
   const b = get_bbox_layer_path(layer_name);
-  const s = .95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
+  const s = 0.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
   const t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
   proj.scale(s).translate(t);
   return [s, t];
@@ -1196,9 +1177,9 @@ function fitLayer(layer_name) {
 function setSphereBottom(sphere_id) {
   const layers_list = document.querySelector('.layer_list');
   layers_list.appendChild(layers_list.childNodes[0]);
-  svg_map.insertBefore(svg_map.querySelector('#' + sphere_id + '.layer'), svg_map.childNodes[0]);
+  svg_map.insertBefore(svg_map.querySelector(`#${sphere_id}.layer`), svg_map.childNodes[0]);
   svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
- }
+}
 
 
 function add_layout_feature(selected_feature, options = {}) {
@@ -1255,8 +1236,8 @@ function add_layout_feature(selected_feature, options = {}) {
     alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
     zoom_without_redraw();
     setSphereBottom(layer_id);
-  } else if (selected_feature === 'graticule'){
-    if (current_layers['Graticule'] != undefined) return;
+  } else if (selected_feature === 'graticule') {
+    if (current_layers.Graticule !== undefined) return;
     const stroke = options.stroke || '#808080';
     const stroke_width = options.stroke_width || '1px';
     const stroke_opacity = options.stroke_opacity || 1;
@@ -1264,12 +1245,12 @@ function add_layout_feature(selected_feature, options = {}) {
     const step = options.step || 10;
     let graticule = d3.geoGraticule().step([step, step]);
     if (options.extent) {
-      let bbox_layer = _target_layer_file.bbox,
-          extent = [
-        		[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10],
-        		[Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
+      const bbox_layer = _target_layer_file.bbox;
+      const extent = [
+        [Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10],
+        [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
       graticule = graticule.extent(extent);
-      current_layers['Graticule'].extent = extent;
+      current_layers.Graticule.extent = extent;
     }
     map.insert('g', '.legend')
       .attrs({ id: 'Graticule', class: 'layer' })
@@ -1278,12 +1259,12 @@ function add_layout_feature(selected_feature, options = {}) {
       .datum(graticule)
       .attrs({ d: 'path', class: 'graticule', 'clip-path': 'url(#clip)' })
       .styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: stroke });
-    current_layers['Graticule'] = {
+    current_layers.Graticule = {
       graticule: true,
       type: 'Line',
-      n_features:1,
-      'stroke-width-const': +stroke_width.slice(0,-2),
-      fill_color: {single: stroke},
+      n_features: 1,
+      'stroke-width-const': +stroke_width.slice(0, -2),
+      fill_color: { single: stroke },
       opacity: stroke_opacity,
       step: step,
       dasharray: stroke_dasharray,
@@ -1393,9 +1374,9 @@ function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', sy
     .insert('image')
     .attrs({ x: x, y: y, width: width, height: height,
              'xlink:href': symbol_dataurl })
-    .on('mouseover', function(){ this.style.cursor = 'pointer';})
-    .on('mouseout', function(){ this.style.cursor = 'initial';})
-    .on('dblclick contextmenu', function(){
+    .on('mouseover', function() { this.style.cursor = 'pointer';})
+    .on('mouseout', function() { this.style.cursor = 'initial';})
+    .on('dblclick contextmenu', function() {
       context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
     })
     .call(drag_elem_geo);
@@ -1440,7 +1421,7 @@ function add_layout_layers() {
   layout_layers.forEach(layer_info => {
     layout_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]);
   });
-  layout_layer_selec.on('change', function(){
+  layout_layer_selec.on('change', function() {
     let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
     selec.layout = selected_asArray.map(elem => elem.value)
   });
@@ -1449,14 +1430,14 @@ function add_layout_layers() {
     .html(i18next.t('app_page.layout_layer_box.disclamer_nuts'))
 }
 
-function add_sample_layer(){
+function add_sample_layer() {
   const prepare_extra_dataset_availables = () => {
     request_data('GET', '/extrabasemaps').then((result) => {
       _app.list_extrabasemaps = JSON.parse(result.target.responseText).filter(elem => elem[0] !== 'Tunisia');
     });
   };
   check_remove_existing_box('.sampleDialogBox');
-  if(!_app.list_extrabasemaps){
+  if (!_app.list_extrabasemaps) {
       prepare_extra_dataset_availables();
   }
   const fields_type_sample = new Map([
@@ -1509,7 +1490,7 @@ function add_sample_layer(){
       }
     });
 
-  function make_panel2(){
+  function make_panel2() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel2');
     var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
@@ -1529,7 +1510,7 @@ function add_sample_layer(){
       .styles({margin: 'auto', 'text-align': 'right', cursor: 'pointer'})
       .append('span')
       .html(i18next.t('app_page.sample_layer_box.back_sample'))
-      .on('click', function(){
+      .on('click', function() {
           make_panel1();
       });
     if (selec_url) {
@@ -1545,19 +1526,19 @@ function add_sample_layer(){
     });
   };
 
-  function make_panel1(){
+  function make_panel1() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel1');
     var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
 
     var t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
     target_layers.forEach(layer_info => { t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]); });
-    t_layer_selec.on('change', function(){selec = this.value;});
+    t_layer_selec.on('change', function() {selec = this.value;});
     content.append('p')
       .styles({margin: 'auto', 'text-align': 'right', cursor: 'pointer'})
       .append('span')
       .html(i18next.t('app_page.sample_layer_box.more_basemaps'))
-      .on('click', function(){
+      .on('click', function() {
           make_panel2();
       });
     if (selec) setSelected(t_layer_selec.node(), selec);
@@ -1615,7 +1596,7 @@ function add_simplified_land_layer(options = {}) {
   // });
 }
 
-function add_sample_geojson(name, options){
+function add_sample_geojson(name, options) {
   const formToSend = new FormData();
   formToSend.append('layer_name', name);
   xhrequest('POST', 'cache_topojson/sample_data', formToSend, true)
@@ -1627,19 +1608,19 @@ function add_sample_geojson(name, options){
     });
 }
 
-function send_remove_server(layer_name){
+function send_remove_server(layer_name) {
   let formToSend = new FormData();
   formToSend.append('layer_name', current_layers[layer_name].key_name);
   xhrequest('POST', 'layers/delete', formToSend, true)
     .then((data) => {
       data = JSON.parse(data);
-      if(!data.code || data.code !== 'Ok') console.log(data);
+      if (!data.code || data.code !== 'Ok') console.log(data);
     }).catch(err => {
       console.log(err);
     });
 }
 
-function get_map_xy0(){
+function get_map_xy0() {
   let bbox = svg_map.getBoundingClientRect();
   return {x: bbox.left, y: bbox.top}
 }
@@ -1666,7 +1647,7 @@ const getIdLayoutFeature = (type) => {
   const features = document.getElementsByClassName(class_name);
   if (!features) {
     return 0;
-  } else if (features.length > 30){
+  } else if (features.length > 30) {
     swal(i18next.t('app_page.common.error'), i18next.t('app_page.common.' + error_name), 'error').catch(swal.noop);
     return null;
   } else {
@@ -1687,22 +1668,22 @@ const getIdLayoutFeature = (type) => {
 };
 
 
-function handleClickAddRectangle(){
+function handleClickAddRectangle() {
   const rectangle_id = getIdLayoutFeature('rectangle');
-  if(rectangle_id === null){
+  if (rectangle_id === null) {
     return;
   }
   let start_point, tmp_start_point;
   let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       msg.dismiss();
       start_point = [d3.event.layerX, d3.event.layerY];
       tmp_start_point = map.append('rect')
         .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
         .style('fill', 'red');
-      setTimeout(function(){
+      setTimeout(function() {
         tmp_start_point.remove();
       }, 1000);
       map.style('cursor', '').on('click', null);
@@ -1711,11 +1692,11 @@ function handleClickAddRectangle(){
     });
   }
 
-function handleClickAddOther(type){
+function handleClickAddOther(type) {
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       msg.dismiss();
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
@@ -1727,16 +1708,16 @@ function handleClickAddOther(type){
     });
 }
 
-function handleClickAddEllipse(){
+function handleClickAddEllipse() {
   const ellipse_id = getIdLayoutFeature('ellipse');
-  if(ellipse_id === null){
+  if (ellipse_id === null) {
     return;
   }
   document.body.style.cursor = 'not-allowed';
   let start_point, tmp_start_point;
   let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       msg.dismiss();
       start_point = [d3.event.layerX, d3.event.layerY];
       tmp_start_point = map.append('rect')
@@ -1749,11 +1730,11 @@ function handleClickAddEllipse(){
     });
 }
 
-function handleClickTextBox(text_box_id){
+function handleClickTextBox(text_box_id) {
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       msg.dismiss();
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
@@ -1762,7 +1743,7 @@ function handleClickTextBox(text_box_id){
     });
 }
 
-function handleClickAddPicto(){
+function handleClickAddPicto() {
   const symbol_id = getIdLayoutFeature('single_symbol');
   if (symbol_id === null) {
     return;
@@ -1782,7 +1763,7 @@ function handleClickAddPicto(){
 
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       msg.dismiss();
       click_pt = [d3.event.layerX, d3.event.layerY];
       map_point = map.append('rect')
@@ -1842,9 +1823,9 @@ function handleClickAddPicto(){
 //         }));
 // }
 
-function handleClickAddArrow(){
+function handleClickAddArrow() {
   const arrow_id = getIdLayoutFeature('arrow');
-  if(arrow_id === null){
+  if (arrow_id === null) {
     return;
   }
   let start_point,
@@ -1854,7 +1835,7 @@ function handleClickAddArrow(){
   document.body.style.cursor = 'not-allowed';
   let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
   map.style('cursor', 'crosshair')
-    .on('click', function(){
+    .on('click', function() {
       if (!start_point) {
         start_point = [d3.event.layerX, d3.event.layerY];
         tmp_start_point = map.append('rect')
@@ -1870,7 +1851,7 @@ function handleClickAddArrow(){
       }
       if (start_point && end_point) {
         msg.dismiss();
-        setTimeout(function(){
+        setTimeout(function() {
           tmp_start_point.remove();
           tmp_end_point.remove();
         }, 1000);
@@ -1881,7 +1862,7 @@ function handleClickAddArrow(){
     });
 }
 
-function prepare_available_symbols(){
+function prepare_available_symbols() {
   return xhrequest('GET', 'static/json/list_symbols.json', null)
     .then((list_res) => {
       list_res = JSON.parse(list_res);
@@ -1894,7 +1875,7 @@ function prepare_available_symbols(){
     });
 }
 
-function accordionize(css_selector = '.accordion', parent){
+function accordionize(css_selector = '.accordion', parent) {
   parent = parent && typeof parent === 'object' ? parent
           : parent && typeof parent === 'string' ? document.querySelector(parent)
           : document;
@@ -1914,7 +1895,7 @@ function accordionize(css_selector = '.accordion', parent){
   }
 }
 
-function accordionize2(css_selector='.accordion', parent=document){
+function accordionize2(css_selector='.accordion', parent=document) {
   const acc = parent.querySelectorAll(css_selector);
   for (let i = 0; i < acc.length; i++) {
     acc[i].onclick = function () {

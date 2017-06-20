@@ -1,5 +1,3 @@
-
-
 const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
   const make_box_histo_option = function () {
     const histo_options = newBox.append('div')
@@ -49,12 +47,12 @@ const display_discretization_links_discont = function (layer_name, field_name, n
         if (this.classList.contains('active')) {
           this.classList.remove('active');
           line_median.style('stroke-width', 0)
-                          .classed('active', false);
+            .classed('active', false);
           txt_median.style('fill', 'none');
         } else {
           this.classList.add('active');
           line_median.style('stroke-width', 2)
-                          .classed('active', true);
+            .classed('active', true);
           txt_median.style('fill', 'darkgreen');
         }
       });
@@ -392,7 +390,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       redisplay.draw();
     });
 
-  let svg_h = h / 5 > 90 ? h / 5 : 90,
+  const svg_h = h / 5 > 90 ? h / 5 : 90,
     svg_w = w - (w / 8),
     margin = { top: 17.5, right: 30, bottom: 7.5, left: 30 },
     height = svg_h - margin.top - margin.bottom;
@@ -449,9 +447,23 @@ const display_discretization_links_discont = function (layer_name, field_name, n
   redisplay.compute();
   redisplay.draw();
 
-  let deferred = Promise.pending(),
-    container = document.getElementById('discretiz_charts');
-
+  const deferred = Promise.pending();
+  const container = document.getElementById('discretiz_charts');
+  const _onclose = () => {
+    deferred.resolve(false);
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+    container.remove();
+    const p = reOpenParent('.styleBox');
+    if (!p) overlay_under_modal.hide();
+  };
+  const helper_esc_key_twbs = (evt) => {
+    evt = evt || window.event;
+    const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
+    if (isEscape) {
+      evt.preventDefault();
+      _onclose();
+    }
+  };
   container.querySelector('.btn_ok').onclick = () => {
     breaks[0] = serie.min();
     breaks[nb_class] = serie.max();
@@ -461,23 +473,8 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     const p = reOpenParent('.styleBox');
     if (!p) overlay_under_modal.hide();
   };
-  const _onclose = () => {
-    deferred.resolve(false);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent('.styleBox');
-    if (!p) overlay_under_modal.hide();
-  };
   container.querySelector('.btn_cancel').onclick = _onclose;
   container.querySelector('#xclose').onclick = _onclose;
-  function helper_esc_key_twbs(evt) {
-    evt = evt || window.event;
-    const isEscape = ('key' in evt) ? (evt.key == 'Escape' || evt.key == 'Esc') : (evt.keyCode == 27);
-    if (isEscape) {
-      evt.preventDefault();
-      _onclose();
-    }
-  }
   document.addEventListener('keydown', helper_esc_key_twbs);
   return deferred.promise;
 };
