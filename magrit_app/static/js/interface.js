@@ -1238,7 +1238,10 @@ function add_layout_feature(selected_feature, options = {}) {
       .append('path')
       .datum({ type: 'Sphere' })
       .styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke })
-      .attrs({ d: path, 'clip-path': 'url(#clip)' });
+      .attrs({ d: path });
+    if (isInterrupted(current_proj_name)) {
+      map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
+    }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
     alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
     zoom_without_redraw();
@@ -1264,7 +1267,7 @@ function add_layout_feature(selected_feature, options = {}) {
       .styles({ 'stroke-width': stroke_width })
       .append('path')
       .datum(graticule)
-      .attrs({ d: 'path', class: 'graticule', 'clip-path': 'url(#clip)' })
+      .attrs({ d: path, class: 'graticule' })
       .styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: stroke });
     current_layers.Graticule = {
       graticule: true,
@@ -1276,6 +1279,9 @@ function add_layout_feature(selected_feature, options = {}) {
       step: step,
       dasharray: stroke_dasharray,
     };
+    if (isInterrupted(current_proj_name)) {
+      map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
+    }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');
     alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
     up_legends();
