@@ -44,6 +44,13 @@ function click_button_add_layer() {
   input.click();
 }
 
+/**
+* @param {FileList} files - The files(s) to be handled for this layer
+* @param {Boolean} target_layer_on_add - wether this is the target layer or not
+* @param {HTMLElement} elem - Optionnal The parent element on which the file was dropped
+*
+* @return undefined
+*/
 function handle_upload_files(files, target_layer_on_add, elem) {
     const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
 
@@ -57,7 +64,6 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowEscapeKey: false,
         allowOutsideClick: false });
     }
-
     if (!(files.length === 1)) {
         var files_to_send = [];
         Array.prototype.forEach.call(files, f =>
@@ -93,6 +99,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             files[0].name.toLowerCase().indexOf('gml') > -1 ||
             files[0].name.toLowerCase().indexOf('kml') > -1) {
         elem.style.border = '';
+        console.log(files);
         if (target_layer_on_add && _app.targeted_layer_added) {
             swal({title: i18next.t('app_page.common.error') + '!',
                   text: i18next.t('app_page.common.error_only_one'),
@@ -102,15 +109,41 @@ function handle_upload_files(files, target_layer_on_add, elem) {
                   allowOutsideClick: false});
         // Send the file to the server for conversion :
         } else {
-            if (files[0].name.toLowerCase().indexOf('json' < 0)) {
-                handle_single_file(files[0], target_layer_on_add);
+            if (files[0].name.toLowerCase().indexOf('json') < 0) {
+              handle_single_file(files[0], target_layer_on_add);
             } else {
-                let tmp = JSON.parse(files[0]);
-                if (tmp.type && tmp.type == 'FeatureCollection') {
-                    handle_single_file(files[0], target_layer_on_add);
-                } else if (tmp.type && tmp.type == 'Topology') {
-                    handle_TopoJSON_files(files, target_layer_on_add);
+              let rd = new FileReader();
+              rd.onloadend = () => {
+                let tmp;
+                try {
+                    tmp = JSON.parse(rd.result);
+                } catch (e) {
+                  console.log(e);
+                  return swal({title: i18next.t('app_page.common.error') + '!',
+                        text: i18next.t('app_page.common.alert_upload_invalid'),
+                        type: 'error',
+                        customClass: 'swal2_custom',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false});
                 }
+                if (tmp.type && tmp.type === 'FeatureCollection') {
+                  handle_single_file(files[0], target_layer_on_add);
+                } else if (tmp.type && tmp.type === 'Topology') {
+                  handle_TopoJSON_files(files, target_layer_on_add);
+                } else if (tmp.map_config && tmp.layers) {
+                  apply_user_preferences(rd.result);
+                } else {
+                  return swal({
+                    title: i18next.t('app_page.common.error') + '!',
+                    text: i18next.t('app_page.common.alert_upload_invalid'),
+                    type: 'error',
+                    customClass: 'swal2_custom',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                  });
+                }
+              };
+              rd.readAsText(files[0]);
             }
         }
    } else if (files[0].name.toLowerCase().indexOf('.csv')  > -1
@@ -390,7 +423,6 @@ function prepare_drop_section() {
               }),
             }).then((value) => {
               overlay_drop.style.display = 'none';
-              console.log(value);
             }, dismiss => {
               overlay_drop.style.display = 'none';
               console.log(dismiss);

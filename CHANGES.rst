@@ -6,6 +6,10 @@ Changes
 
 - Fix the "auto-align" feature behavior for the new text annotation.
 
+- Fix graticule not showing correctly when opening result svg file with Adobe Illustrator.
+
+- New: Allow to change the name of the layers at any time.
+
 
 0.3.3 (2017-06-15)
 ------------------

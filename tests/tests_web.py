@@ -214,7 +214,7 @@ class TestBase(unittest.TestCase):
         finally:
             self.accept_next_alert = True
 
-
+@flaky
 class ProjectRoundTrip(TestBase):
     def setUp(self):
         self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
@@ -231,6 +231,93 @@ class ProjectRoundTrip(TestBase):
         self.base_url = "http://localhost:9999/modules"
         self.verificationErrors = []
         self.accept_next_alert = True
+
+    def test_map_and_layout_features(self):
+        driver = self.driver
+        driver.get(self.base_url)
+
+        # Load a sample layer:
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("martinique")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+        self.validTypefield()
+
+        # Change the projection:
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("HEALPix")
+
+        # Open the menu to choose a representation:
+        self.open_menu_section(2)
+
+        # Choropleth representation :
+        self.clickWaitTransition("#button_choro")
+        Select(driver.find_element_by_id("choro_field1")
+            ).select_by_visible_text("Part_Logements_Vacants")
+        driver.find_element_by_css_selector("option[value=\"Part_Logements_Vacants\"]").click()
+        driver.find_element_by_id("ico_jenks").click()
+
+        driver.find_element_by_id('Choro_output_name').clear()
+        driver.find_element_by_id('Choro_output_name').send_keys('choro_martinique')
+        driver.find_element_by_id("choro_yes").click()
+        time.sleep(1)  # Little delay for the map to be rendered
+
+        self.open_menu_section(4)
+        # Now add some layout features:
+        # A title:
+        new_title = 'The new title!'
+        input_title = driver.find_element_by_id('title')
+        input_title.clear()
+        input_title.send_keys(new_title)
+
+        # The sphere background :
+        driver.find_element_by_id('btn_sphere').click()
+        time.sleep(0.2)
+
+        # A scale bar :
+        driver.find_element_by_id('btn_scale').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.2)
+
+        # A north arrow :
+        driver.find_element_by_id('btn_north').click()
+        time.sleep(0.2)
+        driver.find_element_by_id("svg_map").click()
+        time.sleep(0.2)
+
+        driver.find_element_by_id('save_file_button').click()
+        time.sleep(2)
+        # Export the project file corresponding to the current state :
+        with open(self.tmp_folder + 'magrit_project.json') as f:
+            data_1 = json.loads(f.read())
+
+        os.remove(self.tmp_folder + 'magrit_project.json')
+
+        # Reload the page :
+        driver.get(self.base_url)
+        time.sleep(0.2)
+        # Close the alert asking confirmation for closing the page
+        # (this is when the last state of the current project is saved)
+        driver.switch_to.alert.accept()
+
+        # Click on the button to reload the last project :
+        self.waitClickButtonSwal("button.swal2-cancel")
+        time.sleep(1)
+
+        # The previous map should now be reloaded
+        # Let's export the project file and compare it with the previous version
+        time.sleep(0.5)
+        driver.find_element_by_id('save_file_button').click()
+        time.sleep(2)
+        # Export the project file corresponding to the current state :
+        with open(self.tmp_folder + 'magrit_project.json') as f:
+            data_2 = json.loads(f.read())
+
+        # Are the two projects the same ?
+        assertDeepAlmostEqual(self, data_1, data_2, "Simple Map 1")
+
 
     def test_simple_map(self):
         driver = self.driver

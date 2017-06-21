@@ -187,6 +187,8 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
       result_data[new_name].push(selec_dest[i].__data__.properties);
     }
   }
+  // Set the desired class name :
+  node_new_layer.classList = ['layer'];
   // Reset visibility and filter attributes to default values:
   node_new_layer.style.visibility = '';
   node_new_layer.removeAttribute('filter');

@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.6d458196b9d9.json'
+      loadPath: 'static/locales/{{lng}}/translation.c14ce4938e6e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7562,6 +7562,8 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
       result_data[new_name].push(selec_dest[_i].__data__.properties);
     }
   }
+  // Set the desired class name :
+  node_new_layer.classList = ['layer'];
   // Reset visibility and filter attributes to default values:
   node_new_layer.style.visibility = '';
   node_new_layer.removeAttribute('filter');
@@ -8730,7 +8732,16 @@ function click_button_add_layer() {
   input.click();
 }
 
-function handle_upload_files(files, target_layer_on_add, elem) {
+/**
+* @param {FileList} files - The files(s) to be handled for this layer
+* @param {Boolean} target_layer_on_add - wether this is the target layer or not
+* @param {HTMLElement} elem - Optionnal The parent element on which the file was dropped
+* @param {String} type - Optionnal, the type (GeoJson, Topojson or project file) of the
+* file if it is a file in JSON format.
+*
+* @return undefined
+*/
+function handle_upload_files(files, target_layer_on_add, elem, type) {
   var tot_size = Array.prototype.map.call(files, function (f) {
     return f.size;
   }).reduce(function (a, b) {
@@ -8747,7 +8758,6 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       allowEscapeKey: false,
       allowOutsideClick: false });
   }
-
   if (!(files.length === 1)) {
     var files_to_send = [];
     Array.prototype.forEach.call(files, function (f) {
@@ -8776,6 +8786,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     }
   } else if (files[0].name.toLowerCase().indexOf('json') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
     elem.style.border = '';
+    console.log(files);
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({ title: i18next.t('app_page.common.error') + '!',
         text: i18next.t('app_page.common.error_only_one'),
@@ -8785,15 +8796,41 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false });
       // Send the file to the server for conversion :
     } else {
-      if (files[0].name.toLowerCase().indexOf('json' < 0)) {
+      if (files[0].name.toLowerCase().indexOf('json') < 0) {
         handle_single_file(files[0], target_layer_on_add);
       } else {
-        var tmp = JSON.parse(files[0]);
-        if (tmp.type && tmp.type == 'FeatureCollection') {
-          handle_single_file(files[0], target_layer_on_add);
-        } else if (tmp.type && tmp.type == 'Topology') {
-          handle_TopoJSON_files(files, target_layer_on_add);
-        }
+        var rd = new FileReader();
+        rd.onloadend = function () {
+          var tmp = void 0;
+          try {
+            tmp = JSON.parse(rd.result);
+          } catch (e) {
+            console.log(e);
+            return swal({ title: i18next.t('app_page.common.error') + '!',
+              text: i18next.t('app_page.common.alert_upload_invalid'),
+              type: 'error',
+              customClass: 'swal2_custom',
+              allowOutsideClick: false,
+              allowEscapeKey: false });
+          }
+          if (tmp.type && tmp.type === 'FeatureCollection') {
+            handle_single_file(files[0], target_layer_on_add);
+          } else if (tmp.type && tmp.type === 'Topology') {
+            handle_TopoJSON_files(files, target_layer_on_add);
+          } else if (tmp.map_config && tmp.layers) {
+            apply_user_preferences(rd.result);
+          } else {
+            return swal({
+              title: i18next.t('app_page.common.error') + '!',
+              text: i18next.t('app_page.common.alert_upload_invalid'),
+              type: 'error',
+              customClass: 'swal2_custom',
+              allowOutsideClick: false,
+              allowEscapeKey: false
+            });
+          }
+        };
+        rd.readAsText(files[0]);
       }
     }
   } else if (files[0].name.toLowerCase().indexOf('.csv') > -1 || files[0].name.toLowerCase().indexOf('.tsv') > -1) {
@@ -9059,7 +9096,6 @@ function prepare_drop_section() {
           }
         }).then(function (value) {
           overlay_drop.style.display = 'none';
-          console.log(value);
         }, function (dismiss) {
           overlay_drop.style.display = 'none';
           console.log(dismiss);
@@ -15925,7 +15961,7 @@ function apply_user_preferences(json_pref) {
       a.querySelector('button').style.display = '';
       var targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-    }, 250);
+    }, 125);
   };
 
   function apply_layout_lgd_elem() {

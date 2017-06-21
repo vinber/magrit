@@ -500,7 +500,7 @@ function apply_user_preferences(json_pref) {
       a.querySelector('button').style.display = '';
       let targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-    }, 250);
+    }, 200);
   };
 
   function apply_layout_lgd_elem() {
