@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.864efea12d38.json'
+      loadPath: 'static/locales/{{lng}}/translation.824b12a79335.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8862,6 +8862,9 @@ function handleOneByOneShp(files, target_layer_on_add) {
     } else if (file.name.indexOf('.dbf') > -1) {
       slots.set('.dbf', file);
       document.getElementById('f_dbf').className = 'mini_button_ok';
+    } else if (file.name.indexOf('.cpg') > -1) {
+      slots.set('.cpg', file);
+      document.getElementById('f_cpg').className = 'mini_button_ok';
     } else {
       return false;
     }
@@ -8869,7 +8872,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
 
   swal({
     title: '',
-    html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' + '<strong>Shapefile detected - Missing files to upload</strong><br>' + '<p><i>Drop missing files in this area</i></p><br>' + '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' + '<p id="f_shp" class="mini_button_none">.shp</p><p id="f_shx" class="mini_button_none">.shx</p>' + '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p></div>',
+    html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' + '<strong>Shapefile detected - Missing files to upload</strong><br>' + '<p><i>Drop missing files in this area</i></p><br>' + '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' + '<p id="f_shp" class="mini_button_none">.shp</p><p id="f_shx" class="mini_button_none">.shx</p>' + '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p>' + '<p id="f_cpg" class="mini_button_none_orange">.cpg</p></div>',
     type: 'info',
     showCancelButton: true,
     showCloseButton: false,
@@ -8880,7 +8883,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
     preConfirm: function preConfirm() {
       return new Promise(function (resolve, reject) {
         setTimeout(function () {
-          if (shp_slots.size < 4) {
+          if (!(shp_slots.size === 4 && !shp_slots.has('.cpg') || shp_slots.size === 5)) {
             reject('Missing files');
           } else {
             resolve();
@@ -8888,8 +8891,11 @@ function handleOneByOneShp(files, target_layer_on_add) {
         }, 50);
       });
     }
-  }).then(function (value) {
+  }).then(function () {
     var file_list = [shp_slots.get('.shp'), shp_slots.get('.shx'), shp_slots.get('.dbf'), shp_slots.get('.prj')];
+    if (shp_slots.has('.cpg')) {
+      file_list.push(shp_slots.get('.cpg'));
+    }
     for (var i = 0; i < file_list.length; i++) {
       if (file_list[i].size > MAX_INPUT_SIZE) {
         overlay_drop.style.display = 'none';
@@ -8906,7 +8912,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
     if (target_layer_on_add) {
       handle_shapefile(file_list, target_layer_on_add);
     } else {
-      var opts = _app.targeted_layer_added ? { 'layout': i18next.t('app_page.common.layout_l') } : { 'target': i18next.t('app_page.common.target_l'), 'layout': i18next.t('app_page.common.layout_l') };
+      var opts = _app.targeted_layer_added ? { layout: i18next.t('app_page.common.layout_l') } : { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
       swal({
         title: '',
         text: i18next.t('app_page.common.layer_type_selection'),
@@ -8951,7 +8957,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
       // let file = next_files[f_ix];
       populate_shp_slot(shp_slots, next_files[f_ix]);
     }
-    if (shp_slots.size === 4) {
+    if (shp_slots.size === 4 && !shp_slots.has('.cpg') || shp_slots.size === 5) {
       document.getElementById('dv_drop_shp').innerHTML = document.getElementById('dv_drop_shp').innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg');
     }
   });

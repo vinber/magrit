@@ -180,6 +180,9 @@ function handleOneByOneShp(files, target_layer_on_add) {
     } else if (file.name.indexOf('.dbf') > -1) {
       slots.set('.dbf', file);
       document.getElementById('f_dbf').className = 'mini_button_ok';
+    } else if (file.name.indexOf('.cpg') > -1) {
+      slots.set('.cpg', file);
+      document.getElementById('f_cpg').className = 'mini_button_ok';
     } else {
       return false;
     }
@@ -192,7 +195,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
           '<p><i>Drop missing files in this area</i></p><br>' +
           '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' +
           '<p id="f_shp" class="mini_button_none">.shp</p><p id="f_shx" class="mini_button_none">.shx</p>' +
-          '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p></div>',
+          '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p>' +
+          '<p id="f_cpg" class="mini_button_none_orange">.cpg</p></div>',
     type: 'info',
     showCancelButton: true,
     showCloseButton: false,
@@ -202,15 +206,18 @@ function handleOneByOneShp(files, target_layer_on_add) {
     confirmButtonText: i18next.t('app_page.common.confirm'),
     preConfirm: () => new Promise((resolve, reject) => {
       setTimeout(() => {
-        if (shp_slots.size < 4) {
-          reject('Missing files')
+        if (!((shp_slots.size === 4 && !shp_slots.has('.cpg')) || shp_slots.size === 5)) {
+          reject('Missing files');
         } else {
-          resolve()
+          resolve();
         }
       }, 50);
     }),
-  }).then((value) => {
+  }).then(() => {
     let file_list = [shp_slots.get('.shp'), shp_slots.get('.shx'), shp_slots.get('.dbf'), shp_slots.get('.prj')];
+    if (shp_slots.has('.cpg')){
+      file_list.push(shp_slots.get('.cpg'));
+    }
     for (let i = 0; i < file_list.length; i++) {
       if (file_list[i].size > MAX_INPUT_SIZE) {
         overlay_drop.style.display = 'none';
@@ -228,8 +235,8 @@ function handleOneByOneShp(files, target_layer_on_add) {
       handle_shapefile(file_list, target_layer_on_add);
     } else {
       const opts = _app.targeted_layer_added
-                ? {'layout': i18next.t('app_page.common.layout_l') }
-                : { 'target': i18next.t('app_page.common.target_l'), 'layout': i18next.t('app_page.common.layout_l') };
+        ? { layout: i18next.t('app_page.common.layout_l') }
+        : { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
       swal({
         title: '',
         text: i18next.t('app_page.common.layer_type_selection'),
@@ -274,7 +281,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
       // let file = next_files[f_ix];
       populate_shp_slot(shp_slots, next_files[f_ix]);
     }
-    if (shp_slots.size === 4) {
+    if ((shp_slots.size === 4 && !shp_slots.has('.cpg')) || shp_slots.size === 5) {
       document.getElementById('dv_drop_shp').innerHTML = document.getElementById('dv_drop_shp').innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
     }
   })

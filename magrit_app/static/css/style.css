@@ -619,6 +619,30 @@ p.params_section2 > span {
   text-decoration: none;
 }
 
+.mini_button_none_orange {
+  -webkit-border-radius: 12;
+  -moz-border-radius: 12;
+  border-radius: 12px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  background: #ed8228;
+  padding: 3px 10px 3px 10px;
+  margin: 5px;
+  text-decoration: none;
+  display:inline-block;
+}
+
+.mini_button_none_orange:hover {
+  background: #eb7373;
+  background-image: -webkit-linear-gradient(top, #eca366, #e76e09);
+  background-image: -moz-linear-gradient(top, #eca366, #e76e09);
+  background-image: -ms-linear-gradient(top, #eca366, #e76e09);
+  background-image: -o-linear-gradient(top, #eca366, #e76e09);
+  background-image: linear-gradient(to bottom, #eca366, #e76e09);
+  text-decoration: none;
+}
+
 button.accordion, button.accordion_disc, button.accordion_proj  {
     background-color: #595959;
     color: #fff;
