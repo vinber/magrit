@@ -8,6 +8,8 @@ Changes
 
 - Fix graticule not showing correctly when opening result svg file with Adobe Illustrator.
 
+- Fix the jointure failing since 0.3.3.
+
 - New: Allow to change the name of the layers at any time.
 
 

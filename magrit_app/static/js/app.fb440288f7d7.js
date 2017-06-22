@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.c14ce4938e6e.json'
+      loadPath: 'static/locales/{{lng}}/translation.fb440288f7d7.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8736,12 +8736,10 @@ function click_button_add_layer() {
 * @param {FileList} files - The files(s) to be handled for this layer
 * @param {Boolean} target_layer_on_add - wether this is the target layer or not
 * @param {HTMLElement} elem - Optionnal The parent element on which the file was dropped
-* @param {String} type - Optionnal, the type (GeoJson, Topojson or project file) of the
-* file if it is a file in JSON format.
 *
 * @return undefined
 */
-function handle_upload_files(files, target_layer_on_add, elem, type) {
+function handle_upload_files(files, target_layer_on_add, elem) {
   var tot_size = Array.prototype.map.call(files, function (f) {
     return f.size;
   }).reduce(function (a, b) {
@@ -10748,8 +10746,6 @@ function valid_join_on(layer_name, field1, field2) {
 // the geometry layer and the other to the external dataset, in order to choose
 // the common field to do the join.
 var createJoinBox = function createJoinBox(layer) {
-  var _this = this;
-
   var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys()));
   var ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
   var button1 = ['<select id=button_field1>'];
@@ -10780,10 +10776,10 @@ var createJoinBox = function createJoinBox(layer) {
 
   d3.select('.joinBox').styles({ 'text-align': 'center', 'line-height': '0.9em' });
   d3.select('#button_field1').style('float', 'left').on('change', function () {
-    lastChoice.field1 = _this.value;
+    lastChoice.field1 = this.value;
   });
   d3.select('#button_field2').style('float', 'left').on('change', function () {
-    lastChoice.field2 = _this.value;
+    lastChoice.field2 = this.value;
   });
 };
 
@@ -15961,7 +15957,7 @@ function apply_user_preferences(json_pref) {
       a.querySelector('button').style.display = '';
       var targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-    }, 125);
+    }, 200);
   };
 
   function apply_layout_lgd_elem() {

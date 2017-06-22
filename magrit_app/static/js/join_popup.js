@@ -209,13 +209,15 @@ const createJoinBox = function createJoinBox(layer) {
     .then((confirmed) => {
       if (confirmed) {
         valid_join_on(layer, lastChoice.field1, lastChoice.field2)
-            .then((valid) => { if (valid) make_box_type_fields(layer); });
+          .then((valid) => {
+            if (valid) make_box_type_fields(layer);
+          });
       }
     });
 
   d3.select('.joinBox').styles({ 'text-align': 'center', 'line-height': '0.9em' });
-  d3.select('#button_field1').style('float', 'left').on('change', () => { lastChoice.field1 = this.value; });
-  d3.select('#button_field2').style('float', 'left').on('change', () => { lastChoice.field2 = this.value; });
+  d3.select('#button_field1').style('float', 'left').on('change', function() { lastChoice.field1 = this.value; });
+  d3.select('#button_field2').style('float', 'left').on('change', function() { lastChoice.field2 = this.value; });
 };
 
 const removeExistingJointure = (layer_name) => {

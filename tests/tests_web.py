@@ -315,6 +315,8 @@ class ProjectRoundTrip(TestBase):
         with open(self.tmp_folder + 'magrit_project.json') as f:
             data_2 = json.loads(f.read())
 
+        del data_1['info']['version']
+        del data_2['info']['version']
         # Are the two projects the same ?
         assertDeepAlmostEqual(self, data_1, data_2, "Simple Map 1")
 
@@ -404,7 +406,7 @@ class ReloadCompareProjectsTest(TestBase):
 
     def t_reload(self, i, name):
         url, b_image, project = \
-            self.urls[name], self.images[name], self.projects[name]
+            self.urls[name], self.images[name], json.loads(self.projects[name])
         with self.subTest(i=i):
             driver = self.driver
             driver.get(self.base_url + "?reload={}".format(url))
@@ -433,7 +435,9 @@ class ReloadCompareProjectsTest(TestBase):
             time.sleep(2.5)
             with open(self.tmp_folder + 'magrit_project.json') as f:
                 data = json.loads(f.read())
-            assertDeepAlmostEqual(self, data, json.loads(project), name)
+            del data['info']['version']
+            del project['info']['version']
+            assertDeepAlmostEqual(self, data, project, name)
             os.remove(self.tmp_folder + 'magrit_project.json')
 
     def test_each_project(self):
