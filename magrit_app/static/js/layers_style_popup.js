@@ -1067,10 +1067,13 @@ function createStyleBox(layer_name) {
     .select('.modal-body');
 
   let new_layer_name = layer_name;
-  const new_name_section = make_change_layer_name_section(popup, layer_name);
-  new_name_section.on('change', function() {
-    new_layer_name = this.value;
-  });
+  if (layer_name !== 'World') {
+    const new_name_section = make_change_layer_name_section(popup, layer_name);
+    new_name_section.on('change', function() {
+      new_layer_name = this.value;
+    });
+  }
+
 
   if (type === 'Point') {
     var current_pt_size = current_layers[layer_name].pointRadius;

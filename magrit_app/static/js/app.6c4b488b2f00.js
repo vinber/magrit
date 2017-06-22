@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.fb440288f7d7.json'
+      loadPath: 'static/locales/{{lng}}/translation.6c4b488b2f00.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11716,10 +11716,12 @@ function createStyleBox(layer_name) {
   var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
 
   var new_layer_name = layer_name;
-  var new_name_section = make_change_layer_name_section(popup, layer_name);
-  new_name_section.on('change', function () {
-    new_layer_name = this.value;
-  });
+  if (layer_name !== 'World') {
+    var new_name_section = make_change_layer_name_section(popup, layer_name);
+    new_name_section.on('change', function () {
+      new_layer_name = this.value;
+    });
+  }
 
   if (type === 'Point') {
     var current_pt_size = current_layers[layer_name].pointRadius;
