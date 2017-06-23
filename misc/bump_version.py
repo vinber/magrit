@@ -15,16 +15,16 @@ def save_version(version):
         f.write("# -*- coding: utf-8 -*-\n\n__version__ = '{}'\n".format(version))
 
 
-def replace_version_docker_file(old_version, new_version):
-    with open('../misc/Docker/app/Dockerfile', 'r') as f:
-        data = f.read()
-    with open('../misc/Docker/app/Dockerfile', 'w') as f:
-        f.write(data.replace(old_version, new_version))
-
-    with open('../misc/dockerfiles/Dockerfile', 'r') as f:
-        data = f.read()
-    with open('../misc/dockerfiles/Dockerfile', 'w') as f:
-        f.write(data.replace(old_version, new_version))
+# def replace_version_docker_file(old_version, new_version):
+#     with open('../misc/Docker/app/Dockerfile', 'r') as f:
+#         data = f.read()
+#     with open('../misc/Docker/app/Dockerfile', 'w') as f:
+#         f.write(data.replace(old_version, new_version))
+#
+#     with open('../misc/dockerfiles/Dockerfile', 'r') as f:
+#         data = f.read()
+#     with open('../misc/dockerfiles/Dockerfile', 'w') as f:
+#         f.write(data.replace(old_version, new_version))
 
 
 if __name__ == '__main__':
@@ -46,5 +46,5 @@ if __name__ == '__main__':
         current_version[0] += 1
     current_version_txt = '.'.join(map(str, current_version))
     save_version(current_version_txt)
-    replace_version_docker_file(old_version, current_version_txt)
+    # replace_version_docker_file(old_version, current_version_txt)
     print(old_version, ' -> ', current_version_txt)

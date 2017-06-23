@@ -3,15 +3,14 @@
 """
 @author: mthh
 """
-import os
 import pytest
 import ujson as json
 
 from magrit_app.app import rawcsv_to_geo, _init
 from magrit_app.helpers.topo_to_geo import convert_from_topo
 from magrit_app.helpers.geo import check_projection
-from aiohttp import FormData
-from aiohttp.test_utils import make_mocked_request
+#from aiohttp import FormData
+#from aiohttp.test_utils import make_mocked_request
 
 pytest_plugins = 'aiohttp.pytest_plugin'
 
@@ -41,17 +40,14 @@ def cli(loop, test_client):
     return loop.run_until_complete(test_client(app))
 
 async def test_convert_csv_to_geo(read_csv):
-    print("abc")
     res = await rawcsv_to_geo(read_csv)
     "FeatureCollection" in res
 
 def test_convert_from_topo(read_topo, read_verif_topo):
-    print("abc")
     assert json.loads(json.dumps(convert_from_topo(read_topo))) \
             == read_verif_topo
 
 def test_check_proj4_string():
-    print("abc")
     assert check_projection("foobar") is False
     assert check_projection("epsg:3035") == '+init=epsg:3035'
     assert check_projection("epsg:12345") is False

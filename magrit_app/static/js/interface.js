@@ -543,7 +543,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
     reader = new FileReader(),
     ajaxData = new FormData();
   ajaxData.append('file[]', f);
-  xhrequest('POST', 'cache_topojson/user', ajaxData, false)
+  xhrequest('POST', 'convert_topojson', ajaxData, false)
     .then(res => {
       const key = JSON.parse(res).key;
       reader.onloadend = function() {
@@ -564,7 +564,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
 
   // let topoObjText = ['{"key":null,"file":', text, '}'].join('');
   const layer_name = add_layer_topojson(['{"key":null,"file":', text, '}'].join(''), param_add_func);
-  xhrequest('POST', 'cache_topojson/user', ajaxData, false)
+  xhrequest('POST', 'convert_topojson', ajaxData, false)
     .then((response) => {
       const key = JSON.parse(response).key;
       current_layers[layer_name].key_name = key;
@@ -1644,7 +1644,7 @@ function add_simplified_land_layer(options = {}) {
 function add_sample_geojson(name, options) {
   const formToSend = new FormData();
   formToSend.append('layer_name', name);
-  xhrequest('POST', 'cache_topojson/sample_data', formToSend, true)
+  xhrequest('POST', 'sample', formToSend, true)
     .then( data => {
       add_layer_topojson(data, options);
     }).catch( err => {

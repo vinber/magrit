@@ -121,87 +121,87 @@ async def remove_layer(request):
     f_names = posted_data.getall('layer_name')
     for name in f_names:
         f_name = '_'.join([user_id, name])
-        print("Deleting  " + name)
+        request.app['logger'].debug("Deleting  " + name)
         asyncio.ensure_future(
             request.app["redis_conn"].delete(f_name))
     return web.Response(text=json.dumps({"code": "Ok"}))
 
-
-async def cache_input_topojson(request):
+async def get_sample_layer(request):
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
-    params = request.match_info['params']
 
-    if "sample_data" in params:
-        user_id = get_user_id(session_redis, request.app['app_users'])
-        name = posted_data.get('layer_name')
-        path = request.app['db_layers'][name]
-        hash_val = str(mmh3_hash(path))
-        f_name = '_'.join([user_id, hash_val])
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    name = posted_data.get('layer_name')
+    path = request.app['db_layers'][name]
+    hash_val = str(mmh3_hash(path))
+    f_name = '_'.join([user_id, hash_val])
 
+    asyncio.ensure_future(
+        request.app['redis_conn'].incr('sample_layers'))
+
+    result = await request.app['redis_conn'].get(f_name)
+    if result:
+        result = result.decode()
+        request.app['logger'].debug(
+            '{} - Used result from redis'.format(user_id))
+        request.app['redis_conn'].pexpire(f_name, 86400000)
+        return web.Response(text=''.join([
+            '{"key":', hash_val,
+            ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
+            ]))
+    else:
+        res = await request.app.loop.run_in_executor(
+            request.app["ThreadPool"],
+            ogr_to_geojson, path)
+
+        request.app['logger'].debug(
+            '{} - Transform coordinates from GeoJSON'.format(user_id))
+        result = await geojson_to_topojson2(res, name)
         asyncio.ensure_future(
-            request.app['redis_conn'].incr('sample_layers'))
-
-        result = await request.app['redis_conn'].get(f_name)
-        if result:
-            result = result.decode()
-            request.app['logger'].info(
-                '{} - Used result from redis'.format(user_id))
-            request.app['redis_conn'].pexpire(f_name, 86400000)
-            return web.Response(text=''.join([
-                '{"key":', hash_val,
-                ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
-                ]))
-        else:
-            res = await request.app.loop.run_in_executor(
-                request.app["ThreadPool"],
-                ogr_to_geojson, path)
-
-            request.app['logger'].info(
-                '{} - Transform coordinates from GeoJSON'.format(user_id))
-            result = await geojson_to_topojson2(res, name)
-            asyncio.ensure_future(
-                request.app['redis_conn'].set(
-                    f_name, result, pexpire=86400000))
-            print('Caching the TopoJSON')
-            return web.Response(text=''.join(
-                ['{"key":', hash_val, ',"file":', result, '}']
-                ))
-
-    elif "user" in params:
-        try:
-            file_field = posted_data['file[]']
-            name = file_field.filename
-            data = file_field.file.read()
-
-        except Exception as err:
-            print("posted data :\n", posted_data, "\nerr\n", err)
-            return web.Response(text='{"Error": "Incorrect datatype"}')
-
-        user_id = get_user_id(session_redis, request.app['app_users'])
-        hash_val = str(mmh3_hash(data))
-        f_name = '_'.join([user_id, hash_val])
-
-        asyncio.ensure_future(
-            request.app['redis_conn'].incr('layers'))
-
-        result = await request.app['redis_conn'].get(f_name)
-        if result:
-            result = result.decode()
-            request.app['logger'].info(
-                '{} - Used result from redis'.format(user_id))
-            request.app['redis_conn'].pexpire(f_name, 86400000)
-            return web.Response(text=''.join([
-                '{"key":', hash_val,
-                ',"file":', result.replace(hash_val, name), '}'
-                ]))
-
-        asyncio.ensure_future(
-            request.app['redis_conn'].set(f_name, data, pexpire=86400000))
-        print('Caching the TopoJSON')
+            request.app['redis_conn'].set(
+                f_name, result, pexpire=86400000))
         return web.Response(text=''.join(
-            ['{"key":', hash_val, ',"file":null}']
+            ['{"key":', hash_val, ',"file":', result, '}']
             ))
+
+async def convert_topo(request):
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+
+    try:
+        file_field = posted_data['file[]']
+        name = file_field.filename
+        data = file_field.file.read()
+
+    except Exception as err:
+        request.app['logger'].info("posted data :\n{}\nerr:\n{}"
+                   .format(posted_data, err))
+        return web.Response(text='{"Error": "Incorrect datatype"}')
+
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    hash_val = str(mmh3_hash(data))
+    f_name = '_'.join([user_id, hash_val])
+
+    asyncio.ensure_future(
+        request.app['redis_conn'].incr('layers'))
+
+    result = await request.app['redis_conn'].get(f_name)
+    if result:
+        result = result.decode()
+        request.app['logger'].debug(
+            '{} - Used result from redis'.format(user_id))
+        request.app['redis_conn'].pexpire(f_name, 86400000)
+        return web.Response(text=''.join([
+            '{"key":', hash_val,
+            ',"file":', result.replace(hash_val, name), '}'
+            ]))
+
+    asyncio.ensure_future(
+        request.app['redis_conn'].set(f_name, data, pexpire=86400000))
+    request.app['logger'].debug('Caching the TopoJSON')
+    return web.Response(text=''.join(
+        ['{"key":', hash_val, ',"file":null}']
+        ))
 
 
 def get_user_id(session_redis, app_users, app=None):
@@ -259,7 +259,8 @@ async def convert(request):
             hashed_input = mmh3_hash(data)
             filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
-            print("posted data :\n", posted_data, "\nerr\n", err)
+            request.app['logger'].info("posted data :\n{}\nerr:\n{}"
+                       .format(posted_data, err))
             return convert_error('Incorrect datatype')
 
     f_name = '_'.join([user_id, str(hashed_input)])
@@ -269,7 +270,7 @@ async def convert(request):
 
     result = await request.app['redis_conn'].get(f_name)
     if result:
-        request.app['logger'].info(
+        request.app['logger'].debug(
             '{} - Used result from redis'.format(user_id))
         request.app['redis_conn'].pexpire(f_name, 86400000)
         return web.Response(text=''.join(
@@ -377,10 +378,11 @@ async def convert(request):
             request.app['redis_conn'].set(
                 f_name, result, pexpire=86400000))
     else:
-        print(datatype, name)
+        request.app['logger'].info("Incorrect datatype :\n{}name:\n{}"
+                   .format(datatype, name))
         return convert_error('Incorrect datatype')
 
-    request.app['logger'].info(
+    request.app['logger'].debug(
         '{} - Converted, stored in redis and sent back to client'
         .format(user_id))
     return web.Response(text=''.join(
@@ -410,7 +412,7 @@ async def convert_extrabasemap(request):
 
             result = await request.app['redis_conn'].get(f_name)
             if result:
-                request.app['logger'].info(
+                request.app['logger'].debug(
                     '{} - Used result from redis'.format(user_id))
                 request.app['redis_conn'].pexpire(f_name, 86400000)
                 return web.Response(text=''.join(
@@ -426,7 +428,7 @@ async def convert_extrabasemap(request):
                     request.app['redis_conn'].set(
                         f_name, result, pexpire=86400000))
 
-            request.app['logger'].info(
+            request.app['logger'].debug(
                 '{} - Converted, stored in redis and sent back to client'
                 .format(user_id))
             return web.Response(text=''.join(
@@ -958,7 +960,7 @@ async def convert_csv_geo(request):
 
     result = await request.app['redis_conn'].get(f_name)
     if result:
-        request.app['logger'].info(
+        request.app['logger'].debug(
                 '{} - Used result from redis'.format(user_id))
         return web.Response(text=''.join(
             ['{"key":', hash_val, ',"file":', result.decode(), '}']))
@@ -1110,7 +1112,7 @@ async def on_shutdown(app):
             task.cancel()
 
 async def init(loop, port=None, watch_change=False):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("magrit_app.main")
     redis_cookie = await create_pool(
         ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
@@ -1139,11 +1141,13 @@ async def init(loop, port=None, watch_change=False):
     add_route('POST', '/get_layer2', handler_exists_layer2)
     add_route('POST', '/compute/{function}', geo_compute)
     add_route('POST', '/stats', get_stats_json)
+    add_route('POST', '/sample', get_sample_layer)
     add_route('POST', '/convert_to_topojson', convert)
+    add_route('POST', '/convert_topojson', convert_topo)
     add_route('POST', '/convert_csv_geo', convert_csv_geo)
     add_route('POST', '/convert_extrabasemap', convert_extrabasemap)
     add_route('POST', '/convert_tabular', convert_tabular)
-    add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
+    # add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
     app['redis_conn'] = redis_conn

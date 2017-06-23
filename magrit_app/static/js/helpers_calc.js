@@ -12,7 +12,7 @@ function min_fast(arr) {
   let min = arr[0];
   for (let i = 1, len_i = arr.length; i < len_i; ++i) {
     const val = +arr[i];
-    if (val && val < min) { min = val; }
+    if (val && val < min) min = val;
   }
   return min;
 }
@@ -27,7 +27,7 @@ function max_fast(arr) {
   let max = arr[0];
   for (let i = 1, len_i = arr.length; i < len_i; ++i) {
     const val = +arr[i];
-    if (val > max) { max = arr[i]; }
+    if (val > max) max = val;
   }
   return max;
 }
@@ -40,7 +40,7 @@ function max_fast(arr) {
 */
 function has_negative(arr) {
   for (let i = 0; i < arr.length; ++i) {
-    if (+arr[i] < 0) { return true; }
+    if (+arr[i] < 0) return true;
   }
   return false;
 }
