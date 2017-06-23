@@ -1787,6 +1787,36 @@ function createStyleBox_ProbSymbol(layer_name) {
       current_layers[layer_name].size[0] = f_val;
     });
 
+    const allow_move_section = popup.append('p');
+    let chkbx = allow_move_section.insert('input')
+      .style('margin', '0')
+      .attrs({
+        type: 'checkbox',
+        id: 'checkbox_move_symbol',
+        checked: current_layers[layer_name].draggable ? true : null });
+    allow_move_section.insert('label')
+      .attr('for', 'checkbox_move_symbol')
+      .html(i18next.t('app_page.layer_style_popup.let_draggable'));
+    chkbx.on('change', function () {
+      if (this.checked) {
+        current_layers[layer_name].draggable = true;
+      } else {
+        current_layers[layer_name].draggable = false;
+      }
+    });
+
+    popup.append('p').style('text-align', 'center')
+      .insert('button')
+      .attrs({ id: 'reset_symb_loc', class: 'button_st4' })
+      .text(i18next.t('app_page.layer_style_popup.reset_symbols_location'))
+      .on('click', function () {
+        selection.transition()
+          .attrs((d) => {
+            const centroid = path.centroid(d.geometry);
+            return { x: centroid[0], y: centroid[1] };
+          });
+      });
+
   make_generate_labels_section(popup, layer_name);
 }
 

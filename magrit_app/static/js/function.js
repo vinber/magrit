@@ -1821,7 +1821,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
           })
         .style("fill", d => d.properties.color)
         .style("stroke", "black")
-        .style("stroke-width", 1 / zs);
+        .style("stroke-width", 1 / zs)
+        .call(drag_elem_geo2);
     } else if(symbol_type === "rect"){
       map.insert("g", '.legend')
         .attr("id", layer_id)
@@ -1843,7 +1844,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
           })
         .style("fill", d => d.properties.color)
         .style("stroke", "black")
-        .style("stroke-width", 1 / zs);
+        .style("stroke-width", 1 / zs)
+        .call(drag_elem_geo2);
     }
 
     current_layers[layer_to_add] = {
@@ -1855,6 +1857,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
+        draggable: true
         };
 
     if(rendering_params.fill_color.two != undefined){

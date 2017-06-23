@@ -19,6 +19,45 @@ const drag_elem_geo = d3.drag()
     d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
   });
 
+const drag_elem_geo2 = d3.drag()
+  .filter(function () {
+    return current_layers[_app.id_to_layer.get(this.parentElement.id)].draggable;
+  })
+  .subject(function () {
+    // const layer_name = _app.id_to_layer.get(this.parentElement.id);
+    const symbol = current_layers[_app.id_to_layer.get(this.parentElement.id)].symbol;
+    const t = d3.select(this);
+    if (symbol === 'rect') {
+      return {
+        x: t.attr('x'),
+        y: t.attr('y'),
+        symbol: symbol,
+        map_locked: !!map_div.select('#hand_button').classed('locked'),
+      };
+    } else if (symbol === 'circle') {
+      return {
+        x: t.attr('cx'),
+        y: t.attr('cy'),
+        symbol: symbol,
+        map_locked: !!map_div.select('#hand_button').classed('locked'),
+      };
+    }
+  })
+  .on('start', () => {
+    d3.event.sourceEvent.stopPropagation();
+    d3.event.sourceEvent.preventDefault();
+    handle_click_hand('lock');
+  })
+  .on('end', () => {
+    if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
+  })
+  .on('drag', function () {
+    if (d3.event.subject.symbol === 'rect') {
+      d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
+    } else if (d3.event.subject.symbol === 'circle') {
+      d3.select(this).attr('cx', d3.event.x).attr('cy', d3.event.y);
+    }
+  });
 
 function setSelected(selectNode, value) {
   selectNode.value = value;
