@@ -43,13 +43,20 @@ const drag_elem_geo2 = d3.drag()
       };
     }
   })
-  .on('start', () => {
+  .on('start', function () {
     d3.event.sourceEvent.stopPropagation();
     d3.event.sourceEvent.preventDefault();
     handle_click_hand('lock');
+    let centroid = path.centroid(this.__data__.geometry);
+    map.append('rect')
+      .attrs({ x: centroid[0] - 2, y: centroid[1] - 2, height: 4, width: 4, id: 'ref_symbol_location' })
+      .style('fill', 'red');
   })
   .on('end', () => {
-    if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
+    if (d3.event.subject && !d3.event.subject.map_locked) {
+      handle_click_hand('unlock');
+    }
+    map.selectAll('#ref_symbol_location').remove();
   })
   .on('drag', function () {
     if (d3.event.subject.symbol === 'rect') {
