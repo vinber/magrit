@@ -517,8 +517,9 @@
             "rendered_field": "<i>Champ utilisé : <b>{{field}}</b></i><br>",
             "reference_layer": "<i>Couche de référence : <b>{{ layer }}</b></i><br>",
             "reset_symbols_location": "Remise à zéro de la localisation des symboles",
+            "symbols_size": "Taille des symboles (appliqué à tous les symboles)",
             "redraw_symbols": "Redéssiner les symboles supprimés",
-            "modify_symbols": "Modification des symbols",
+            "modify_symbols": "Modification des symboles",
             "reset_labels_location": "Remise à zéro de la localisation des labels",
             "redraw_labels": "Redéssiner les labels supprimés",
             "overrride_warning": "<b><i> Les options suivantes annulent les modifications individuelles apportées! </i></b>",
@@ -557,7 +558,8 @@
             "graticule_clip": "Limiter la taille du graticule à l'emprise de la couche de référence",
             "generate_labels": "Génération de labels pour cette couche...",
             "field_label": "Sélection du champ à utiliser",
-            "layer_shadow": "Ajouter une ombre à la couche"
+            "layer_shadow": "Ajouter une ombre à la couche",
+            "let_draggable": "Autoriser le déplacement des symboles"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",

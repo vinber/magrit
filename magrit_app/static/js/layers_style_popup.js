@@ -202,7 +202,7 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   let size_section = popup.append('p');
   size_section.append('span')
-    .html('Symbol sizes (will be applyed to all symbols)');
+    .html(i18next.t('app_page.layer_style_popup.symbols_size'));
   size_section.append('input')
     .attrs({ min: 0, max: 200, step: 'any', value: 32, type: 'number' })
     .styles({ width: '60px', margin: 'auto' })
@@ -1855,9 +1855,6 @@ function make_style_box_indiv_label(label_node) {
           change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
       }
-      // else {
-      //     label_node.__data__.properties.label = label_node.textContent;
-      // }
     });
   var box_content = d3.select('.styleTextAnnotation')
     .select('.modal-content').style('width', '300px')

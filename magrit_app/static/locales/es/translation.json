@@ -428,7 +428,7 @@
             "choice_break_symbol": "Personalizar el valor de los símbolos..."
         },
         "legend_symbol_values_box": {
-            "reset": "Remise à zéro des valeurs",
+            "reset": "Valores de reseteado",
             "title": "Ajustar el valor de los símbolos"
         },
         "help_box": {
@@ -518,6 +518,7 @@
             "rendered_field": "<i>Campo utilizado: <b>{{field}}</b></i><br>",
             "reference_layer": "<i>Capa de referencia: <b>{{ layer }}</b></i><br>",
             "reset_symbols_location": "Reiniciar la localización de los símbolos",
+            "symbols_size": "Tamaños de símbolos (aplicado a todos los símbolos)",
             "redraw_symbols": "Restaurar los símbolos eliminados",
             "modify_symbols": "Modificar los símbolos",
             "reset_labels_location": "Reiniciar la localización de las etiquetas",
@@ -558,7 +559,8 @@
             "generate_labels": "Generar etiquetas para esta capa...",
             "field_label": "Seleccionar campo",
             "graticule_clip": "Usar los límites de la capa de referencia para la cuadrícula",
-            "layer_shadow": "Añadir una sombra"
+            "layer_shadow": "Añadir una sombra",
+            "let_draggable": "Permitir símbolos mover"
         },
         "lm_buttons":{
             "zoom+": "Acercar",

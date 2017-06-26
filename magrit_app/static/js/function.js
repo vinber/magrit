@@ -1857,7 +1857,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer){
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
-        draggable: true
+        draggable: false
         };
 
     if(rendering_params.fill_color.two != undefined){

@@ -409,7 +409,7 @@
             "title": "Symbol selection",
             "select_symbol": "Select a symbol ...",
             "upload_symbol": "Or upload your symbol/image ",
-            "se": "Browse...",
+            "browse": "Browse...",
             "selected_symbol": "Selected symbol:"
         },
         "legend_style_box": {
@@ -517,6 +517,7 @@
             "rendered_field": "<i>Rendered field : <b>{{field}}</b></i><br>",
             "reference_layer": "<i>Reference layer : <b>{{ layer }}</b></i><br>",
             "reset_symbols_location": "Reset symbols location",
+            "symbols_size": "Symbol sizes (applied to all symbols)",
             "redraw_symbols": "Redraw deleted symbols",
             "modify_symbols": "Modify your symbols",
             "reset_labels_location": "Reset labels location",
@@ -557,7 +558,8 @@
             "graticule_clip": "Clip graticule to layer extent",
             "generate_labels": "Generate labels for this layer ...",
             "field_label": "Select a field",
-            "layer_shadow": "Add a shadow"
+            "layer_shadow": "Add a shadow",
+            "let_draggable": "Allow moving symbols"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

@@ -251,6 +251,7 @@ function get_map_template() {
       if (current_layer_prop.rendered_field2) {
         layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
       }
+      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.size = current_layer_prop.size;
       layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -266,8 +267,6 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
-      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
-      console.log(layer_style_i.current_position);
     } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
       const type_symbol = current_layer_prop.symbol;
       selection = map.select('#' + layer_id).selectAll('path');

@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.444b09ae4d82.json'
+      loadPath: 'static/locales/{{lng}}/translation.5f4709b235f3.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -5916,7 +5916,7 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         "stroke-width-const": 1,
         "is_result": true,
         "ref_layer_name": layer,
-        draggable: true
+        draggable: false
     };
 
     if (rendering_params.fill_color.two != undefined) {
@@ -11023,7 +11023,7 @@ function createStyleBoxTypoSymbols(layer_name) {
   });
 
   var size_section = popup.append('p');
-  size_section.append('span').html('Symbol sizes (will be applyed to all symbols)');
+  size_section.append('span').html(i18next.t('app_page.layer_style_popup.symbols_size'));
   size_section.append('input').attrs({ min: 0, max: 200, step: 'any', value: 32, type: 'number' }).styles({ width: '60px', margin: 'auto' }).on('change', function () {
     var value = this.value;
     selection.transition().attrs(function () {
@@ -12402,9 +12402,6 @@ function make_style_box_indiv_label(label_node) {
         change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
       }
     }
-    // else {
-    //     label_node.__data__.properties.label = label_node.textContent;
-    // }
   });
   var box_content = d3.select('.styleTextAnnotation').select('.modal-content').style('width', '300px').select('.modal-body').insert('div');
   var a = box_content.append('p').attr('class', 'line_elem');
@@ -15756,6 +15753,7 @@ function get_map_template() {
       if (current_layer_prop.rendered_field2) {
         layer_style_i.rendered_field2 = current_layer_prop.rendered_field2;
       }
+      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.size = current_layer_prop.size;
       layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -15771,8 +15769,6 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
-      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
-      console.log(layer_style_i.current_position);
     } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
       var _type_symbol = current_layer_prop.symbol;
       selection = map.select('#' + layer_id).selectAll('path');
