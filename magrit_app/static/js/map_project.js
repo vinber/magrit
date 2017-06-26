@@ -1,6 +1,27 @@
 'use strict';
 
 function get_map_template() {
+  const getPropSymbolCurrentPos = (selection, type_symbol) => {
+    const result = [];
+    const nbFt = selection.length;
+    if (type_symbol === 'circle') {
+      for (let i = 0; i < nbFt; i++) {
+        result.push({
+          cx: selection[i].getAttribute('cx'),
+          cy: selection[i].getAttribute('cy'),
+        });
+      }
+    } else {
+      for (let i = 0; i < nbFt; i++) {
+        result.push({
+          x: selection[i].getAttribute('x'),
+          y: selection[i].getAttribute('y'),
+        });
+      }
+    }
+
+    return result;
+  }
   const get_legend_info = function get_legend_info(lgd_node) {
     const type_lgd = lgd_node.id;
     const rect_fill_value = (lgd_node.getAttribute('visible_rect') === 'true')
@@ -245,6 +266,8 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
+      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
+      console.log(layer_style_i.current_position);
     } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
       const type_symbol = current_layer_prop.symbol;
       selection = map.select('#' + layer_id).selectAll('path');
@@ -463,6 +486,22 @@ function apply_user_preferences(json_pref) {
   a.style.display = '';
   a.querySelector('button').style.display = 'none';
 
+  const restorePreviousPos = (layer_id, current_position, type_symbol) => {
+    const selection = map.select(`#${layer_id}`)
+      .selectAll(type_symbol);
+    if (type_symbol === 'circle') {
+      selection.attrs((d, i) => ({
+        cx: current_position[i].cx,
+        cy: current_position[i].cy,
+      }));
+    } else {
+      selection.attrs((d, i) => ({
+        x: current_position[i].x,
+        y: current_position[i].y,
+      }));
+    }
+  }
+
   const set_final_param = () => {
     setTimeout(() => {
       const _zoom = svg_map.__zoom;
@@ -500,7 +539,10 @@ function apply_user_preferences(json_pref) {
       a.querySelector('button').style.display = '';
       let targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-    }, 200);
+      for (let ii = 0; ii < at_end.length; ii++) {
+        at_end[ii][0](at_end[ii][1], at_end[ii][2], at_end[ii][3]);
+      }
+    }, 150);
   };
 
   function apply_layout_lgd_elem() {
@@ -608,7 +650,7 @@ function apply_user_preferences(json_pref) {
       }
     }
   }
-
+  let at_end = [];
   let done = 0;
   const func_name_corresp = new Map([
     ['Links', 'flow'], ['Carto_doug', 'cartogram'],
@@ -865,17 +907,18 @@ function apply_user_preferences(json_pref) {
         }
         current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
         layer_id = _app.layer_to_id.get(layer_name);
-        map.select(`#${layer_id}`)
-          .selectAll(_layer.symbol)
-          .styles({
-            'stroke-width': _layer['stroke-width-const'] + 'px',
-            'fill-opacity': fill_opacity,
-            'stroke-opacity': stroke_opacity,
+        let layer_selec = map.select(`#${layer_id}`)
+          .selectAll(_layer.symbol);
+        layer_selec.styles({
+          'stroke-width': _layer['stroke-width-const'] + 'px',
+          'fill-opacity': fill_opacity,
+          'stroke-opacity': stroke_opacity,
           });
         if (_layer.fill_color.random) {
-          map.select(`#${layer_id}`)
-            .selectAll(_layer.symbol)
-            .style('fill', _ => Colors.names[Colors.random()]);
+          layer_selec.style('fill', _ => Colors.names[Colors.random()]);
+        }
+        if (_layer.current_position) {
+          at_end.push([restorePreviousPos, layer_id, _layer.current_position, _layer.symbol]);
         }
       // ... or this is a layer of labels :
       } else if (_layer.renderer && _layer.renderer.startsWith('Label')) {
@@ -886,6 +929,7 @@ function apply_user_preferences(json_pref) {
           ref_font_size: _layer.default_size,
           font: _layer.default_font
         };
+        // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
         render_label(null, rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {

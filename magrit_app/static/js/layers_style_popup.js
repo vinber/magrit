@@ -1813,7 +1813,17 @@ function createStyleBox_ProbSymbol(layer_name) {
         selection.transition()
           .attrs((d) => {
             const centroid = path.centroid(d.geometry);
-            return { x: centroid[0], y: centroid[1] };
+            if (type_symbol === 'circle') {
+              return {
+                cx: centroid[0],
+                cy: centroid[1]
+              };
+            } else {
+              return {
+                x: centroid[0] - +d.properties.prop_value / 2,
+                y: centroid[1] - +d.properties.prop_value / 2
+              };
+            }
           });
       });
 

@@ -1092,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.654b89883ecc.json'
+      loadPath: 'static/locales/{{lng}}/translation.444b09ae4d82.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7402,24 +7402,16 @@ var drag_elem_geo = d3.drag().subject(function () {
 });
 
 var drag_elem_geo2 = d3.drag().filter(function () {
-  var layer_name = _app.id_to_layer.get(this.parentElement.id);
-  if (!current_layers[layer_name].draggable) {
-    return false;
-  }
-  return true;
+  return current_layers[_app.id_to_layer.get(this.parentElement.id)].draggable;
 }).subject(function () {
-  var layer_name = _app.id_to_layer.get(this.parentElement.id);
-  if (!current_layers[layer_name].draggable) {
-    return;
-  }
-  var symbol = current_layers[layer_name].symbol;
+  // const layer_name = _app.id_to_layer.get(this.parentElement.id);
+  var symbol = current_layers[_app.id_to_layer.get(this.parentElement.id)].symbol;
   var t = d3.select(this);
   if (symbol === 'rect') {
     return {
       x: t.attr('x'),
       y: t.attr('y'),
       symbol: symbol,
-      draggable: true,
       map_locked: !!map_div.select('#hand_button').classed('locked')
     };
   } else if (symbol === 'circle') {
@@ -7427,22 +7419,18 @@ var drag_elem_geo2 = d3.drag().filter(function () {
       x: t.attr('cx'),
       y: t.attr('cy'),
       symbol: symbol,
-      draggable: true,
       map_locked: !!map_div.select('#hand_button').classed('locked')
     };
   }
 }).on('start', function () {
   d3.event.sourceEvent.stopPropagation();
   d3.event.sourceEvent.preventDefault();
-  if (!d3.event.subject.draggable) return;
   handle_click_hand('lock');
 }).on('end', function () {
-  if (!d3.event.subject.draggable) return;
   if (d3.event.subject && !d3.event.subject.map_locked) {
     handle_click_hand('unlock');
   }
 }).on('drag', function () {
-  if (!d3.event.subject.draggable) return;
   if (d3.event.subject.symbol === 'rect') {
     d3.select(this).attr('x', d3.event.x).attr('y', d3.event.y);
   } else if (d3.event.subject.symbol === 'circle') {
@@ -12373,7 +12361,17 @@ function createStyleBox_ProbSymbol(layer_name) {
   popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_symb_loc', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.reset_symbols_location')).on('click', function () {
     selection.transition().attrs(function (d) {
       var centroid = path.centroid(d.geometry);
-      return { x: centroid[0], y: centroid[1] };
+      if (type_symbol === 'circle') {
+        return {
+          cx: centroid[0],
+          cy: centroid[1]
+        };
+      } else {
+        return {
+          x: centroid[0] - +d.properties.prop_value / 2,
+          y: centroid[1] - +d.properties.prop_value / 2
+        };
+      }
     });
   });
 
@@ -15509,6 +15507,27 @@ var get_max_nb_left_sep = function get_max_nb_left_sep(layer_name) {
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function get_map_template() {
+  var getPropSymbolCurrentPos = function getPropSymbolCurrentPos(selection, type_symbol) {
+    var result = [];
+    var nbFt = selection.length;
+    if (type_symbol === 'circle') {
+      for (var i = 0; i < nbFt; i++) {
+        result.push({
+          cx: selection[i].getAttribute('cx'),
+          cy: selection[i].getAttribute('cy')
+        });
+      }
+    } else {
+      for (var _i = 0; _i < nbFt; _i++) {
+        result.push({
+          x: selection[_i].getAttribute('x'),
+          y: selection[_i].getAttribute('y')
+        });
+      }
+    }
+
+    return result;
+  };
   var get_legend_info = function get_legend_info(lgd_node) {
     var type_lgd = lgd_node.id;
     var rect_fill_value = lgd_node.getAttribute('visible_rect') === 'true' ? { color: lgd_node.querySelector('#under_rect').style.fill,
@@ -15664,10 +15683,10 @@ function get_map_template() {
       }
     }
   }
-  for (var _i = map_config.n_layers - 1; _i > -1; --_i) {
-    layers_style[_i] = {};
-    var layer_style_i = layers_style[_i],
-        layer_id = layers._groups[0][_i].id,
+  for (var _i2 = map_config.n_layers - 1; _i2 > -1; --_i2) {
+    layers_style[_i2] = {};
+    var layer_style_i = layers_style[_i2],
+        layer_id = layers._groups[0][_i2].id,
         layer_name = _app.id_to_layer.get(layer_id),
         current_layer_prop = current_layers[layer_name],
         layer_type = current_layer_prop.sphere ? 'sphere' : current_layer_prop.graticule ? 'graticule' : 'layer',
@@ -15677,7 +15696,7 @@ function get_map_template() {
     layer_style_i.layer_name = layer_name;
     layer_style_i.layer_type = layer_type;
     layer_style_i.n_features = nb_ft;
-    layer_style_i.visible = layers._groups[0][_i].style.visibility !== 'hidden' ? '' : 'hidden';
+    layer_style_i.visible = layers._groups[0][_i2].style.visibility !== 'hidden' ? '' : 'hidden';
     var lgd = document.getElementsByClassName('lgdf_' + layer_id);
     if (lgd.length === 0) {
       layer_style_i.legend = undefined;
@@ -15752,6 +15771,8 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
+      layer_style_i.current_position = getPropSymbolCurrentPos(selection._groups[0], type_symbol);
+      console.log(layer_style_i.current_position);
     } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
       var _type_symbol = current_layer_prop.symbol;
       selection = map.select('#' + layer_id).selectAll('path');
@@ -15830,8 +15851,8 @@ function get_map_template() {
 
       var state_to_save = [];
       var selec = selection._groups[0];
-      for (var _i2 = 0; _i2 < selec.length; _i2++) {
-        var _ft = selec[_i2];
+      for (var _i3 = 0; _i3 < selec.length; _i3++) {
+        var _ft = selec[_i3];
         state_to_save.push({
           display: _ft.style.display,
           data: _ft.__data__,
@@ -15868,9 +15889,9 @@ function get_map_template() {
   return Promise.all(layers_style.map(function (obj) {
     return obj.topo_geom ? serialize_layer_to_topojson(obj.layer_name) : null;
   })).then(function (result) {
-    for (var _i3 = 0; _i3 < layers_style.length; _i3++) {
-      if (result[_i3]) {
-        layers_style[_i3].topo_geom = result[_i3];
+    for (var _i4 = 0; _i4 < layers_style.length; _i4++) {
+      if (result[_i4]) {
+        layers_style[_i4].topo_geom = result[_i4];
       }
     }
     // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
@@ -15965,14 +15986,14 @@ function apply_user_preferences(json_pref) {
     // Make sure there is no layers and legend/layout features on the map :
     _l = svg_map.childNodes;
     _ll = _l.length;
-    for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
-      _l[_i4].remove();
+    for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
+      _l[_i5].remove();
     }
     // And in the layer manager :
     _l = layer_list.node().childNodes;
     _ll = _l.length;
-    for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
-      _l[_i5].remove();
+    for (var _i6 = _ll - 1; _i6 > -1; _i6--) {
+      _l[_i6].remove();
     }
     // Get a new object for where we are storing the main properties :
     current_layers = {};
@@ -15981,6 +16002,25 @@ function apply_user_preferences(json_pref) {
   var a = document.getElementById('overlay');
   a.style.display = '';
   a.querySelector('button').style.display = 'none';
+
+  var restorePreviousPos = function restorePreviousPos(layer_id, current_position, type_symbol) {
+    var selection = map.select('#' + layer_id).selectAll(type_symbol);
+    if (type_symbol === 'circle') {
+      selection.attrs(function (d, i) {
+        return {
+          cx: current_position[i].cx,
+          cy: current_position[i].cy
+        };
+      });
+    } else {
+      selection.attrs(function (d, i) {
+        return {
+          x: current_position[i].x,
+          y: current_position[i].y
+        };
+      });
+    }
+  };
 
   var set_final_param = function set_final_param() {
     setTimeout(function () {
@@ -16024,7 +16064,10 @@ function apply_user_preferences(json_pref) {
       a.querySelector('button').style.display = '';
       var targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
-    }, 200);
+      for (var ii = 0; ii < at_end.length; ii++) {
+        at_end[ii][0](at_end[ii][1], at_end[ii][2], at_end[ii][3]);
+      }
+    }, 150);
   };
 
   function apply_layout_lgd_elem() {
@@ -16072,14 +16115,14 @@ function apply_user_preferences(json_pref) {
         northArrow.displayed = map_config.layout_features.north_arrow.displayed;
       }
       if (map_config.layout_features.arrow) {
-        for (var _i6 = 0; _i6 < map_config.layout_features.arrow.length; _i6++) {
-          var ft = map_config.layout_features.arrow[_i6];
+        for (var _i7 = 0; _i7 < map_config.layout_features.arrow.length; _i7++) {
+          var ft = map_config.layout_features.arrow[_i7];
           new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
         }
       }
       if (map_config.layout_features.user_ellipse) {
-        for (var _i7 = 0; _i7 < map_config.layout_features.user_ellipse.length; _i7++) {
-          var _ft2 = map_config.layout_features.user_ellipse[_i7];
+        for (var _i8 = 0; _i8 < map_config.layout_features.user_ellipse.length; _i8++) {
+          var _ft2 = map_config.layout_features.user_ellipse[_i8];
           var ellps = new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
           var ellps_node = ellps.ellipse.node().querySelector('ellipse');
           ellps_node.setAttribute('rx', _ft2.rx);
@@ -16089,8 +16132,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.user_rectangle) {
-        for (var _i8 = 0; _i8 < map_config.layout_features.user_rectangle.length; _i8++) {
-          var _ft3 = map_config.layout_features.user_rectangle[_i8],
+        for (var _i9 = 0; _i9 < map_config.layout_features.user_rectangle.length; _i9++) {
+          var _ft3 = map_config.layout_features.user_rectangle[_i9],
               rect = new UserRectangle(_ft3.id, [_ft3.x, _ft3.y], svg_map, true),
               rect_node = rect.rectangle.node().querySelector('rect');
           rect_node.setAttribute('height', _ft3.height);
@@ -16099,8 +16142,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.text_annot) {
-        for (var _i9 = 0; _i9 < map_config.layout_features.text_annot.length; _i9++) {
-          var _ft4 = map_config.layout_features.text_annot[_i9];
+        for (var _i10 = 0; _i10 < map_config.layout_features.text_annot.length; _i10++) {
+          var _ft4 = map_config.layout_features.text_annot[_i10];
           var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
           new_txt_box.textAnnot.node().setAttribute('style', _ft4.style);
           new_txt_box.textAnnot.attrs({
@@ -16117,8 +16160,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.single_symbol) {
-        for (var _i10 = 0; _i10 < map_config.layout_features.single_symbol.length; _i10++) {
-          var _ft5 = map_config.layout_features.single_symbol[_i10];
+        for (var _i11 = 0; _i11 < map_config.layout_features.single_symbol.length; _i11++) {
+          var _ft5 = map_config.layout_features.single_symbol[_i11];
           var symb = add_single_symbol(_ft5.href, _ft5.x, _ft5.y, _ft5.width, _ft5.height, _ft5.id);
           if (_ft5.scalable) {
             var parent_symb = symb.node().parentElement;
@@ -16129,7 +16172,7 @@ function apply_user_preferences(json_pref) {
       }
     }
   }
-
+  var at_end = [];
   var done = 0;
   var func_name_corresp = new Map([['Links', 'flow'], ['Carto_doug', 'cartogram'], ['OlsonCarto', 'cartogram'], ['Stewart', 'smooth'], ['Gridded', 'grid'], ['DiscLayer', 'discont'], ['Choropleth', 'choro'], ['Categorical', 'typo']]);
 
@@ -16173,8 +16216,8 @@ function apply_user_preferences(json_pref) {
 
   // Add each layer :
 
-  var _loop = function _loop(_i11) {
-    var _layer = layers[_i11];
+  var _loop = function _loop(_i12) {
+    var _layer = layers[_i12];
     var layer_name = _layer.layer_name,
         layer_type = _layer.layer_type,
         layer_id = void 0,
@@ -16379,15 +16422,19 @@ function apply_user_preferences(json_pref) {
         }
         current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
         layer_id = _app.layer_to_id.get(layer_name);
-        map.select('#' + layer_id).selectAll(_layer.symbol).styles({
+        var _layer_selec = map.select('#' + layer_id).selectAll(_layer.symbol);
+        _layer_selec.styles({
           'stroke-width': _layer['stroke-width-const'] + 'px',
           'fill-opacity': fill_opacity,
           'stroke-opacity': stroke_opacity
         });
         if (_layer.fill_color.random) {
-          map.select('#' + layer_id).selectAll(_layer.symbol).style('fill', function (_) {
+          _layer_selec.style('fill', function (_) {
             return Colors.names[Colors.random()];
           });
+        }
+        if (_layer.current_position) {
+          at_end.push([restorePreviousPos, layer_id, _layer.current_position, _layer.symbol]);
         }
         // ... or this is a layer of labels :
       } else if (_layer.renderer && _layer.renderer.startsWith('Label')) {
@@ -16398,6 +16445,7 @@ function apply_user_preferences(json_pref) {
           ref_font_size: _layer.default_size,
           font: _layer.default_font
         };
+        // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
         render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
@@ -16474,8 +16522,8 @@ function apply_user_preferences(json_pref) {
     }
   };
 
-  for (var _i11 = map_config.n_layers - 1; _i11 > -1; --_i11) {
-    _loop(_i11);
+  for (var _i12 = map_config.n_layers - 1; _i12 > -1; --_i12) {
+    _loop(_i12);
   }
 }
 
