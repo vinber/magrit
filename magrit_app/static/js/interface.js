@@ -36,8 +36,8 @@ function click_button_add_layer() {
   input.setAttribute('multiple', '');
   input.setAttribute('name', 'file[]');
   input.setAttribute('enctype', 'multipart/form-data');
-  input.onchange = function(event) {
-    let files = event.target.files;
+  input.onchange = (event) => {
+    const files = event.target.files;
     handle_upload_files(files, target_layer_on_add, self);
     input.remove();
   };
@@ -52,151 +52,158 @@ function click_button_add_layer() {
 * @return undefined
 */
 function handle_upload_files(files, target_layer_on_add, elem) {
-    const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
+  const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
 
-    if (tot_size > MAX_INPUT_SIZE) {
-      // elem.style.border = '3px dashed red';
-      elem.style.border = '';
-      return swal({ title: i18next.t('app_page.common.error') + '!',
-        text: i18next.t('app_page.common.too_large_input'),
-        type: 'error',
-        customClass: 'swal2_custom',
-        allowEscapeKey: false,
-        allowOutsideClick: false });
-    }
-    if (!(files.length === 1)) {
-        var files_to_send = [];
-        Array.prototype.forEach.call(files, f =>
-            f.name.indexOf('.shp') > -1
-                || f.name.indexOf('.dbf') > -1
-                || f.name.indexOf('.shx') > -1
-                || f.name.indexOf('.prj') > -1
-                || f.name.indexOf('.cpg') > -1
-                ? files_to_send.push(f) : null)
-        elem.style.border = '';
-        if (target_layer_on_add && _app.targeted_layer_added) {
-                swal({title: i18next.t('app_page.common.error') + '!',
-                      text: i18next.t('app_page.common.error_only_one'),
-                      customClass: 'swal2_custom',
-                      type: 'error',
-                      allowEscapeKey: false,
-                      allowOutsideClick: false});
-        } else if (files_to_send.length >= 4 && files_to_send.length <= 6) {
-            handle_shapefile(files_to_send, target_layer_on_add);
-            elem.style.border = '';
-        } else {
-            // elem.style.border = '3px dashed red';
-            elem.style.border = '';
-            return swal({title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.alert_upload1'),
-                  customClass: 'swal2_custom',
-                  type: 'error',
-                  allowEscapeKey: false,
-                  allowOutsideClick: false});
-        }
-   } else if (files[0].name.toLowerCase().indexOf('json') > -1 ||
-            files[0].name.toLowerCase().indexOf('zip') > -1 ||
-            files[0].name.toLowerCase().indexOf('gml') > -1 ||
-            files[0].name.toLowerCase().indexOf('kml') > -1) {
-        elem.style.border = '';
-        console.log(files);
-        if (target_layer_on_add && _app.targeted_layer_added) {
+  if (tot_size > MAX_INPUT_SIZE) {
+    // elem.style.border = '3px dashed red';
+    elem.style.border = '';
+    return swal({ title: i18next.t('app_page.common.error') + '!',
+      text: i18next.t('app_page.common.too_large_input'),
+      type: 'error',
+      customClass: 'swal2_custom',
+      allowEscapeKey: false,
+      allowOutsideClick: false });
+  }
+  if (!(files.length === 1)) {
+    var files_to_send = [];
+    Array.prototype.forEach.call(files, f =>
+        f.name.indexOf('.shp') > -1
+            || f.name.indexOf('.dbf') > -1
+            || f.name.indexOf('.shx') > -1
+            || f.name.indexOf('.prj') > -1
+            || f.name.indexOf('.cpg') > -1
+            ? files_to_send.push(f) : null)
+    elem.style.border = '';
+    if (target_layer_on_add && _app.targeted_layer_added) {
             swal({title: i18next.t('app_page.common.error') + '!',
                   text: i18next.t('app_page.common.error_only_one'),
                   customClass: 'swal2_custom',
                   type: 'error',
                   allowEscapeKey: false,
                   allowOutsideClick: false});
-        // Send the file to the server for conversion :
-        } else {
-            if (files[0].name.toLowerCase().indexOf('json') < 0) {
-              handle_single_file(files[0], target_layer_on_add);
-            } else {
-              let rd = new FileReader();
-              rd.onloadend = () => {
-                let tmp;
-                try {
-                    tmp = JSON.parse(rd.result);
-                } catch (e) {
-                  console.log(e);
-                  return swal({title: i18next.t('app_page.common.error') + '!',
-                        text: i18next.t('app_page.common.alert_upload_invalid'),
-                        type: 'error',
-                        customClass: 'swal2_custom',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false});
-                }
-                if (tmp.type && tmp.type === 'FeatureCollection') {
-                  handle_single_file(files[0], target_layer_on_add);
-                } else if (tmp.type && tmp.type === 'Topology') {
-                  handle_TopoJSON_files(files, target_layer_on_add);
-                } else if (tmp.map_config && tmp.layers) {
-                  apply_user_preferences(rd.result);
-                } else {
-                  return swal({
-                    title: i18next.t('app_page.common.error') + '!',
-                    text: i18next.t('app_page.common.alert_upload_invalid'),
-                    type: 'error',
-                    customClass: 'swal2_custom',
-                    allowOutsideClick: false,
-                    allowEscapeKey: false
-                  });
-                }
-              };
-              rd.readAsText(files[0]);
-            }
-        }
-   } else if (files[0].name.toLowerCase().indexOf('.csv')  > -1
-    || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
+    } else if (files_to_send.length >= 4 && files_to_send.length <= 6) {
+        handle_shapefile(files_to_send, target_layer_on_add);
         elem.style.border = '';
-        if (target_layer_on_add) {
-            handle_dataset(files[0], target_layer_on_add);
-        } else {
-            swal({title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.error_only_layout'),
-                  type: 'error',
-                  customClass: 'swal2_custom',
-                  allowEscapeKey: false,
-                  allowOutsideClick: false});
-        }
-   } else if (files[0].name.toLowerCase().indexOf('.xls')  > -1
-    || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
+    } else {
+        // elem.style.border = '3px dashed red';
         elem.style.border = '';
-        if (target_layer_on_add) {
-            convert_dataset(files[0]);
-        } else {
-            swal({title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.error_only_layout'),
-                  type: 'error',
-                  customClass: 'swal2_custom',
-                  allowEscapeKey: false,
-                  allowOutsideClick: false});
-        }
-   } else {
-        elem.style.border = '';
-        let shp_part;
-        Array.prototype.forEach.call(files, f =>
-            f.name.indexOf('.shp') > -1
-                || f.name.indexOf('.dbf') > -1
-                || f.name.indexOf('.shx') > -1
-                || f.name.indexOf('.prj') > -1
-                ? shp_part = true : null);
-        if (shp_part) {
-            return swal({title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.alert_upload_shp'),
-                  type: 'error',
-                  customClass: 'swal2_custom',
-                  allowOutsideClick: false,
-                  allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
-        } else {
-            return swal({title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.alert_upload_invalid'),
-                  type: 'error',
-                  customClass: 'swal2_custom',
-                  allowOutsideClick: false,
-                  allowEscapeKey: false});
-        }
+        return swal({title: i18next.t('app_page.common.error') + '!',
+              text: i18next.t('app_page.common.alert_upload1'),
+              customClass: 'swal2_custom',
+              type: 'error',
+              allowEscapeKey: false,
+              allowOutsideClick: false});
     }
+  } else if (files[0].name.toLowerCase().indexOf('json') > -1 ||
+          files[0].name.toLowerCase().indexOf('zip') > -1 ||
+          files[0].name.toLowerCase().indexOf('gml') > -1 ||
+          files[0].name.toLowerCase().indexOf('kml') > -1) {
+    elem.style.border = '';
+    if (target_layer_on_add && _app.targeted_layer_added) {
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
+        text: i18next.t('app_page.common.error_only_one'),
+        customClass: 'swal2_custom',
+        type: 'error',
+        allowEscapeKey: false,
+        allowOutsideClick: false
+      });
+    // Send the file to the server for conversion :
+    } else {
+      if (files[0].name.toLowerCase().indexOf('json') < 0) {
+        handle_single_file(files[0], target_layer_on_add);
+      } else {
+        let rd = new FileReader();
+        rd.onloadend = () => {
+          let tmp;
+          try {
+              tmp = JSON.parse(rd.result);
+          } catch (e) {
+            console.log(e);
+            return swal({
+              title: i18next.t('app_page.common.error') + '!',
+              text: i18next.t('app_page.common.alert_upload_invalid'),
+              type: 'error',
+              customClass: 'swal2_custom',
+              allowOutsideClick: false,
+              allowEscapeKey: false
+            });
+          }
+          if (tmp.type && tmp.type === 'FeatureCollection') {
+            handle_single_file(files[0], target_layer_on_add);
+          } else if (tmp.type && tmp.type === 'Topology') {
+            handle_TopoJSON_files(files, target_layer_on_add);
+          } else if (tmp.map_config && tmp.layers) {
+            apply_user_preferences(rd.result);
+          } else {
+            return swal({
+              title: i18next.t('app_page.common.error') + '!',
+              text: i18next.t('app_page.common.alert_upload_invalid'),
+              type: 'error',
+              customClass: 'swal2_custom',
+              allowOutsideClick: false,
+              allowEscapeKey: false
+            });
+          }
+        };
+        rd.readAsText(files[0]);
+      }
+    }
+  } else if (files[0].name.toLowerCase().indexOf('.csv')  > -1
+              || files[0].name.toLowerCase().indexOf('.tsv')  > -1) {
+    elem.style.border = '';
+    if (target_layer_on_add) {
+      handle_dataset(files[0], target_layer_on_add);
+    } else {
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
+        text: i18next.t('app_page.common.error_only_layout'),
+        type: 'error',
+        customClass: 'swal2_custom',
+        allowEscapeKey: false,
+        allowOutsideClick: false
+      });
+    }
+  } else if (files[0].name.toLowerCase().indexOf('.xls')  > -1
+            || files[0].name.toLowerCase().indexOf('.ods')  > -1) {
+    elem.style.border = '';
+    if (target_layer_on_add) {
+      convert_dataset(files[0]);
+    } else {
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
+        text: i18next.t('app_page.common.error_only_layout'),
+        type: 'error',
+        customClass: 'swal2_custom',
+        allowEscapeKey: false,
+        allowOutsideClick: false
+      });
+    }
+  } else {
+    elem.style.border = '';
+    let shp_part;
+    Array.prototype.forEach.call(files, (f) =>
+        f.name.indexOf('.shp') > -1
+            || f.name.indexOf('.dbf') > -1
+            || f.name.indexOf('.shx') > -1
+            || f.name.indexOf('.prj') > -1
+            ? shp_part = true : null);
+    if (shp_part) {
+      return swal({title: i18next.t('app_page.common.error') + '!',
+            text: i18next.t('app_page.common.alert_upload_shp'),
+            type: 'error',
+            customClass: 'swal2_custom',
+            allowOutsideClick: false,
+            allowEscapeKey: false}).then(valid => { null; }, dismiss => { null; });
+    } else {
+      return swal({title: i18next.t('app_page.common.error') + '!',
+            text: i18next.t('app_page.common.alert_upload_invalid'),
+            type: 'error',
+            customClass: 'swal2_custom',
+            allowOutsideClick: false,
+            allowEscapeKey: false});
+    }
+  }
 }
 
 function handleOneByOneShp(files, target_layer_on_add) {
@@ -318,11 +325,11 @@ function handleOneByOneShp(files, target_layer_on_add) {
       document.getElementById('dv_drop_shp').innerHTML = document.getElementById('dv_drop_shp').innerHTML.replace('Ic_file_download_48px.svg', 'Ic_check_36px.svg')
     }
   })
-  document.getElementById('dv_drop_shp').addEventListener('dragover', function(event) {
+  document.getElementById('dv_drop_shp').addEventListener('dragover', function (event) {
     this.style.border = 'dashed 2.5px green';
     event.preventDefault(); event.stopPropagation();
   });
-  document.getElementById('dv_drop_shp').addEventListener('dragleave', function(event) {
+  document.getElementById('dv_drop_shp').addEventListener('dragleave', function (event) {
     this.style.border = 'dashed 1px green';
     event.preventDefault(); event.stopPropagation();
   });
@@ -333,22 +340,22 @@ function handleOneByOneShp(files, target_layer_on_add) {
 *
 */
 function prepare_drop_section() {
-  var timeout;
+  let timeout;
   Array.prototype.forEach.call(
     document.querySelectorAll('#map,.overlay_drop'),
-    function (elem) {
-        elem.addEventListener('dragenter', e => {
+    elem => {
+        elem.addEventListener('dragenter', (e) => {
           e.preventDefault(); e.stopPropagation();
           if (document.body.classList.contains('no-drop')) return;
           document.getElementById('overlay_drop').style.display = '';
         });
 
-        elem.addEventListener('dragover', e => {
+        elem.addEventListener('dragover', (e) => {
           e.preventDefault(); e.stopPropagation();
           if (document.body.classList.contains('no-drop')) return;
           if (timeout) {
             clearTimeout(timeout);
-            timeout = setTimeout(function() {
+            timeout = setTimeout(() => {
               e.preventDefault(); e.stopPropagation();
               document.getElementById('overlay_drop').style.display = 'none';
               timeout = null;
@@ -356,7 +363,7 @@ function prepare_drop_section() {
           }
         });
 
-        elem.addEventListener('dragleave', e => {
+        elem.addEventListener('dragleave', (e) => {
           e.preventDefault(); e.stopPropagation();
           if (document.body.classList.contains('no-drop')) {
             document.body.classList.remove('no-drop');
@@ -377,9 +384,9 @@ function prepare_drop_section() {
             document.getElementById('overlay_drop').style.display = 'none';
             return;
           }
-          let overlay_drop = document.getElementById('overlay_drop');
+          const overlay_drop = document.getElementById('overlay_drop');
           overlay_drop.style.display = '';
-          let files = e.dataTransfer.files;
+          const files = e.dataTransfer.files;
           if (files.length === 1
               && (files[0].name.indexOf('.shp') > -1
                  || files[0].name.indexOf('.shx') > -1
@@ -393,7 +400,7 @@ function prepare_drop_section() {
             let opts;
             if (files[0].name.indexOf('.csv') > -1 || files[0].name.indexOf('.tsv') > -1 || files[0].name.indexOf('.txt') > -1
                     || files[0].name.indexOf('.xls') > -1 || files[0].name.indexOf('.xlsx') > -1 || files[0].name.indexOf('.ods') > -1) {
-              opts = { target: i18next.t('app_page.common.ext_dataset') }
+              opts = { target: i18next.t('app_page.common.ext_dataset') };
             } else {
               opts = _app.targeted_layer_added
                     ? { layout: i18next.t('app_page.common.layout_l') }
@@ -423,7 +430,7 @@ function prepare_drop_section() {
               }),
             }).then((value) => {
               overlay_drop.style.display = 'none';
-            }, dismiss => {
+            }, (dismiss) => {
               overlay_drop.style.display = 'none';
               console.log(dismiss);
             });
@@ -433,20 +440,20 @@ function prepare_drop_section() {
 
   Array.prototype.forEach.call(
     document.querySelectorAll('#section1,#section3'),
-    function (elem) {
-      elem.addEventListener('dragenter', function(e) {
+    (elem) => {
+      elem.addEventListener('dragenter', (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (document.body.classList.contains('no-drop')) return;
         elem.style.border = '3px dashed green';
       });
-      elem.addEventListener('dragover', function(e) {
+      elem.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (document.body.classList.contains('no-drop')) return;
         elem.style.border = '3px dashed green';
       });
-      elem.addEventListener('dragleave', function(e) {
+      elem.addEventListener('dragleave', (e) => {
         e.preventDefault();
         e.stopPropagation();
         elem.style.border = '';
@@ -454,7 +461,7 @@ function prepare_drop_section() {
           document.body.classList.remove('no-drop');
         }
       });
-      elem.addEventListener('drop', function(e) {
+      elem.addEventListener('drop', (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (!e.dataTransfer.files.length) {
@@ -462,7 +469,7 @@ function prepare_drop_section() {
           return;
         }
         const files = e.dataTransfer.files,
-          target_layer_on_add = elem.id === 'section1' ? true : false;
+          target_layer_on_add = (elem.id === 'section1');
         if (files.length === 1
               && (files[0].name.indexOf('.shp') > -1
                  || files[0].name.indexOf('.shx') > -1
@@ -485,13 +492,13 @@ function ask_replace_dataset() {
     allowOutsideClick: false,
     allowEscapeKey: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.confirm')
+    confirmButtonText: i18next.t('app_page.common.confirm'),
   });
 }
 
 function convert_dataset(file) {
   const do_convert = () => {
-    var ajaxData = new FormData();
+    const ajaxData = new FormData();
     ajaxData.append('action', 'submit_form');
     ajaxData.append('file[]', file);
     xhrequest('POST', 'convert_tabular', ajaxData, true)
@@ -506,8 +513,8 @@ function convert_dataset(file) {
           allowEscapeKey: false
         }).then(() => {
           add_dataset(d3.csvParse(data.file));
-        }, (dismiss) => { null; });
-      }, error => {
+        }, dismiss => null);
+      }, (error) => {
         display_error_during_computation();
       });
   };
@@ -525,13 +532,13 @@ function convert_dataset(file) {
 function handle_shapefile(files, target_layer_on_add) {
   const ajaxData = new FormData();
   ajaxData.append('action', 'submit_form');
-  for (let j=0; j<files.length; j++) {
-    ajaxData.append('file['+j+']', files[j]);
+  for (let j = 0; j < files.length; j++) {
+    ajaxData.append(`file[${j}]`, files[j]);
   }
   xhrequest('POST', 'convert_to_topojson', ajaxData, true)
-    .then(data => {
+    .then((data) => {
       add_layer_topojson(data, { target_layer_on_add: target_layer_on_add });
-    }, error => {
+    }, (error) => {
       display_error_during_computation();
     });
 }
@@ -544,9 +551,9 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
     ajaxData = new FormData();
   ajaxData.append('file[]', f);
   xhrequest('POST', 'convert_topojson', ajaxData, false)
-    .then(res => {
+    .then((res) => {
       const key = JSON.parse(res).key;
-      reader.onloadend = function() {
+      reader.onloadend = () => {
         const text = reader.result;
         const topoObjText = ['{"key": ', key, ',"file":', text, '}'].join('');
         add_layer_topojson(topoObjText, { target_layer_on_add: target_layer_on_add });
@@ -568,7 +575,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
     .then((response) => {
       const key = JSON.parse(response).key;
       current_layers[layer_name].key_name = key;
-  });
+    });
   return layer_name;
 }
 
@@ -597,10 +604,10 @@ function handle_dataset(f, target_layer_on_add) {
     const reader = new FileReader(),
       name = f.name;
 
-    reader.onload = function(e) {
+    reader.onload = (e) => {
       let data = e.target.result;
-      let encoding = jschardet.detect(data).encoding;
-      let new_reader = new FileReader();
+      const encoding = jschardet.detect(data).encoding;
+      const new_reader = new FileReader();
       new_reader.onload = function(ev) {
         data = ev.target.result;
         let sep = data.split('\n')[0];
@@ -617,13 +624,13 @@ function handle_dataset(f, target_layer_on_add) {
         if (field_names.indexOf('x') > -1 || field_names.indexOf('lat') > -1 || field_names.indexOf('latitude') > -1) {
           if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
             if (target_layer_on_add && _app.targeted_layer_added) {
-                swal({
-                  title: i18next.t('app_page.common.error') + '!',
-                  text: i18next.t('app_page.common.error_only_one'),
-                  customClass: 'swal2_custom',
-                  type: 'error',
-                  allowEscapeKey: false,
-                  allowOutsideClick: false });
+              swal({
+                title: i18next.t('app_page.common.error') + '!',
+                text: i18next.t('app_page.common.error_only_one'),
+                customClass: 'swal2_custom',
+                type: 'error',
+                allowEscapeKey: false,
+                allowOutsideClick: false });
             } else {
               add_csv_geom(data, name.substring(0, name.indexOf('.csv')));
             }
@@ -642,7 +649,7 @@ function handle_dataset(f, target_layer_on_add) {
     ask_replace_dataset().then(() => {
         remove_ext_dataset_cleanup();
         check_dataset();
-      }, () => { null; });
+      }, dismiss => null);
   } else {
     check_dataset();
   }
@@ -694,27 +701,27 @@ function handle_dataset(f, target_layer_on_add) {
 // }
 
 function update_menu_dataset() {
-  let d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
+  const d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
     nb_features = joined_dataset[0].length,
-    field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
-
-  let data_ext = document.getElementById('data_ext');
+    field_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
+    data_ext = document.getElementById('data_ext');
 
   d3.select(data_ext.parentElement.firstChild)
     .attrs({
-      'id': 'img_data_ext',
-      'class': 'user_panel',
-      'src': 'static/img/b/tabular.png',
-      'width': '26', 'height': '26',
-      'alt': 'Additional dataset' });
+      id: 'img_data_ext',
+      class: 'user_panel',
+      src: 'static/img/b/tabular.png',
+      width: '26',
+      height: '26',
+      alt: 'Additional dataset' });
 
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
   d3.select(data_ext)
     .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
-           nb_features, ' ', i18next.t('app_page.common.feature', {count: +nb_features}), ' - ',
-           field_names.length, ' ', i18next.t('app_page.common.field', {count: +field_names.length}),
-           '</i></span>'].join(''));
+      nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
+      field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
+      '</i></span>'].join(''));
   data_ext.parentElement.innerHTML = data_ext.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
   document.getElementById('remove_dataset').onclick = () => {
@@ -755,7 +762,7 @@ function add_dataset(readed_dataset) {
 
   // Suboptimal way to convert an eventual comma decimal separator to a point decimal separator :
   for (let i = 0; i < cols.length; i++) {
-    let tmp = [];
+    const tmp = [];
     // Check that all values of this field can be coerced to Number :
     for (let j = 0; j < readed_dataset.length; j++) {
       if ((readed_dataset[j][cols[i]].replace &&
@@ -763,7 +770,7 @@ function add_dataset(readed_dataset) {
          || !isNaN(+readed_dataset[j][cols[i]])) {
         // Add the converted value to temporary field if its ok ...
         let t_val = readed_dataset[j][cols[i]].replace(',', '.').split(' ').join('');
-        tmp.push(isFinite(t_val) && t_val != '' && t_val != null ? +t_val : t_val);
+        tmp.push(isFinite(t_val) && t_val !== '' && t_val != null ? +t_val : t_val);
       } else {
         // Or break early if a value can't be coerced :
         break; // So no value of this field will be converted
@@ -956,7 +963,7 @@ function add_layer_topojson(text, options = {}) {
     n_features: nb_ft,
     'stroke-width-const': type === 'Line' ? 1.5 : 0.4,
     fill_color: { single: random_color1 },
-    key_name: parsedJSON.key
+    key_name: parsedJSON.key,
   };
 
   if (target_layer_on_add) {
@@ -1014,7 +1021,7 @@ function add_layer_topojson(text, options = {}) {
       'fill-opacity': type !== 'Line' ? 0.90 : 0,
     });
 
-  let class_name = [
+  const class_name = [
     target_layer_on_add ? 'sortable_target ' : result_layer_on_add ? 'sortable_result ' : null,
     lyr_id,
   ].join('');
@@ -1073,7 +1080,7 @@ function add_layer_topojson(text, options = {}) {
   }
 
   if (!skip_alert) {
-    if (fields_type != undefined) {
+    if (fields_type) {
       current_layers[lyr_name_to_add].fields_type = fields_type;
     }
     if (_proj === undefined) {
@@ -1158,12 +1165,12 @@ function get_bbox_layer_path(name) {
   }
   if (current_proj_name === 'ConicConformal') {
     let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    let bbox_layer_path2 = path.bounds({ 'type': 'MultiPoint', 'coordinates': [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
+    let bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
     let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
     let s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    let bbox_layer_path2 = path.bounds({ 'type': 'MultiPoint', 'coordinates': [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
+    let bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
     let s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   }
@@ -1417,11 +1424,15 @@ function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', sy
   return map.append('g')
     .attrs({ class: 'legend single_symbol', id: symbol_id })
     .insert('image')
-    .attrs({ x: x, y: y, width: width, height: height,
-             'xlink:href': symbol_dataurl })
-    .on('mouseover', function() { this.style.cursor = 'pointer';})
-    .on('mouseout', function() { this.style.cursor = 'initial';})
-    .on('dblclick contextmenu', function() {
+    .attrs({
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      'xlink:href': symbol_dataurl })
+    .on('mouseover', function () { this.style.cursor = 'pointer'; })
+    .on('mouseout', function () { this.style.cursor = 'initial'; })
+    .on('dblclick contextmenu', function () {
       context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
     })
     .call(drag_elem_geo);
@@ -1463,10 +1474,10 @@ function add_layout_layers() {
     .html('')
     .insert('select')
     .attrs({ class: 'sample_layout', multiple: 'multiple', size: layout_layers.length });
-  layout_layers.forEach(layer_info => {
+  layout_layers.forEach((layer_info) => {
     layout_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]);
   });
-  layout_layer_selec.on('change', function() {
+  layout_layer_selec.on('change', function () {
     let selected_asArray = Array.prototype.slice.call(this.selectedOptions);
     selec.layout = selected_asArray.map(elem => elem.value)
   });
@@ -1500,12 +1511,12 @@ function add_sample_layer() {
     ['world_countries_data', ['d3', 'NaturalEarth2']],
   ]);
   const target_layers = [
-   [i18next.t('app_page.sample_layer_box.target_layer'),''],
+   [i18next.t('app_page.sample_layer_box.target_layer'), ''],
    [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
    [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'],
    [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
    [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'],
-   [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data']
+   [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
   ];
   const dialog_res = [];
   let selec, selec_url, content;
@@ -1538,13 +1549,13 @@ function add_sample_layer() {
   function make_panel2() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel2');
-    var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
     content.append('p')
       .append('span')
       .html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
-    var select_extrabasemap = content.append('p')
+    const select_extrabasemap = content.append('p')
       .insert('select')
-      .on('change', function() {
+      .on('change', function () {
         let id_elem = this.value;
         selec_url = [_app.list_extrabasemaps[id_elem][0], _app.list_extrabasemaps[id_elem][1], id_elem];
       });
@@ -1555,7 +1566,7 @@ function add_sample_layer() {
       .styles({margin: 'auto', 'text-align': 'right', cursor: 'pointer'})
       .append('span')
       .html(i18next.t('app_page.sample_layer_box.back_sample'))
-      .on('click', function() {
+      .on('click', () => {
           make_panel1();
       });
     if (selec_url) {
@@ -1574,21 +1585,21 @@ function add_sample_layer() {
   function make_panel1() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel1');
-    var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
 
-    var t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
-    target_layers.forEach(layer_info => { t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]); });
-    t_layer_selec.on('change', function() {selec = this.value;});
+    const t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
+    target_layers.forEach((layer_info) => { t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]); });
+    t_layer_selec.on('change', function () { selec = this.value; });
     content.append('p')
-      .styles({margin: 'auto', 'text-align': 'right', cursor: 'pointer'})
+      .styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' })
       .append('span')
       .html(i18next.t('app_page.sample_layer_box.more_basemaps'))
-      .on('click', function() {
-          make_panel2();
+      .on('click', () => {
+        make_panel2();
       });
     if (selec) setSelected(t_layer_selec.node(), selec);
   }
-  var box_body = d3.select('.sampleDialogBox').select('.modal-body')
+  const box_body = d3.select('.sampleDialogBox').select('.modal-body')
   setTimeout((_) => { document.querySelector('select.sample_target').focus(); }, 500);
   make_panel1();
 }
@@ -1645,33 +1656,35 @@ function add_sample_geojson(name, options) {
   const formToSend = new FormData();
   formToSend.append('layer_name', name);
   xhrequest('POST', 'sample', formToSend, true)
-    .then( data => {
+    .then((data) => {
       add_layer_topojson(data, options);
-    }).catch( err => {
+    }).catch((err) => {
       display_error_during_computation();
       console.log(err);
     });
 }
 
 function send_remove_server(layer_name) {
-  let formToSend = new FormData();
+  const formToSend = new FormData();
   formToSend.append('layer_name', current_layers[layer_name].key_name);
   xhrequest('POST', 'layers/delete', formToSend, true)
     .then((data) => {
-      data = JSON.parse(data);
-      if (!data.code || data.code !== 'Ok') console.log(data);
-    }).catch(err => {
+      let parsed = JSON.parse(data);
+      if (!parsed.code || parsed.code !== 'Ok') console.log(data);
+    }).catch((err) => {
       console.log(err);
     });
 }
 
 function get_map_xy0() {
-  let bbox = svg_map.getBoundingClientRect();
-  return {x: bbox.left, y: bbox.top}
+  const bbox = svg_map.getBoundingClientRect();
+  return { x: bbox.left, y: bbox.top };
 }
 
 const getIdLayoutFeature = (type) => {
-  let class_name, id_prefix, error_name;
+  let class_name,
+    id_prefix,
+    error_name;
   if (type === 'ellipse') {
     class_name = 'user_ellipse';
     id_prefix = 'user_ellipse_';
@@ -1693,23 +1706,22 @@ const getIdLayoutFeature = (type) => {
   if (!features) {
     return 0;
   } else if (features.length > 30) {
-    swal(i18next.t('app_page.common.error'), i18next.t('app_page.common.' + error_name), 'error').catch(swal.noop);
-    return null;
-  } else {
-    let ids = [];
-    for (let i = 0; i < features.length; i++) {
-      ids.push(+features[i].id.split(id_prefix)[1])
-    }
-    if (ids.indexOf(features.length) === -1) {
-      return features.length;
-    }
-    for (let i = 0; i < features.length; i++) {
-      if (ids.indexOf(i) === -1) {
-        return i;
-      }
-    }
+    swal(i18next.t('app_page.common.error'), i18next.t(`app_page.common.${error_name}`), 'error').catch(swal.noop);
     return null;
   }
+  const ids = [];
+  for (let i = 0; i < features.length; i++) {
+    ids.push(+features[i].id.split(id_prefix)[1])
+  }
+  if (ids.indexOf(features.length) === -1) {
+    return features.length;
+  }
+  for (let i = 0; i < features.length; i++) {
+    if (ids.indexOf(i) === -1) {
+      return i;
+    }
+  }
+  return null;
 };
 
 
@@ -1718,17 +1730,18 @@ function handleClickAddRectangle() {
   if (rectangle_id === null) {
     return;
   }
-  let start_point, tmp_start_point;
-  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  let start_point,
+    tmp_start_point;
+  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       msg.dismiss();
       start_point = [d3.event.layerX, d3.event.layerY];
       tmp_start_point = map.append('rect')
         .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
         .style('fill', 'red');
-      setTimeout(function() {
+      setTimeout(() => {
         tmp_start_point.remove();
       }, 1000);
       map.style('cursor', '').on('click', null);
@@ -1741,7 +1754,7 @@ function handleClickAddOther(type) {
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       msg.dismiss();
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
@@ -1759,16 +1772,17 @@ function handleClickAddEllipse() {
     return;
   }
   document.body.style.cursor = 'not-allowed';
-  let start_point, tmp_start_point;
-  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  let start_point,
+    tmp_start_point;
+  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       msg.dismiss();
       start_point = [d3.event.layerX, d3.event.layerY];
       tmp_start_point = map.append('rect')
         .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
         .style('fill', 'red');
-      setTimeout(_ => { tmp_start_point.remove(); }, 1000);
+      setTimeout(() => { tmp_start_point.remove(); }, 1000);
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
       new UserEllipse(`user_ellipse_${ellipse_id}`, start_point, svg_map);
@@ -1779,12 +1793,12 @@ function handleClickTextBox(text_box_id) {
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       msg.dismiss();
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
       const text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
-      setTimeout(_ => { text_box.editStyle(); }, 350);
+      setTimeout(() => { text_box.editStyle(); }, 350);
     });
 }
 
@@ -1793,11 +1807,11 @@ function handleClickAddPicto() {
   if (symbol_id === null) {
     return;
   }
+  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   let map_point,
     click_pt,
     prep_symbols,
-    available_symbols = false,
-    msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+    available_symbols = false;
 
   if (!window.default_symbols) {
     window.default_symbols = [];
@@ -1808,7 +1822,7 @@ function handleClickAddPicto() {
 
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       msg.dismiss();
       click_pt = [d3.event.layerX, d3.event.layerY];
       map_point = map.append('rect')
@@ -1823,14 +1837,14 @@ function handleClickAddPicto() {
         prep_symbols.then((confirmed) => {
           box_choice_symbol(window.default_symbols).then((result) => {
             if (result) {
-              add_single_symbol(result.split('url(')[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
+              add_single_symbol(result.split('url(')[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
             }
           });
         });
       } else {
         box_choice_symbol(window.default_symbols).then((result) => {
           if (result) {
-            add_single_symbol(result.split('url(')[1].substring(1).slice(0,-2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
+            add_single_symbol(result.split('url(')[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
           }
         });
       }
@@ -1880,7 +1894,7 @@ function handleClickAddArrow() {
   document.body.style.cursor = 'not-allowed';
   let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
   map.style('cursor', 'crosshair')
-    .on('click', function() {
+    .on('click', () => {
       if (!start_point) {
         start_point = [d3.event.layerX, d3.event.layerY];
         tmp_start_point = map.append('rect')
@@ -1896,7 +1910,7 @@ function handleClickAddArrow() {
       }
       if (start_point && end_point) {
         msg.dismiss();
-        setTimeout(function() {
+        setTimeout(() => {
           tmp_start_point.remove();
           tmp_end_point.remove();
         }, 1000);
@@ -1909,11 +1923,11 @@ function handleClickAddArrow() {
 
 function prepare_available_symbols() {
   return xhrequest('GET', 'static/json/list_symbols.json', null)
-    .then((list_res) => {
-      list_res = JSON.parse(list_res);
-      return Promise.all(list_res.map(name => getImgDataUrl('static/img/svg_symbols/' + name)))
+    .then((result) => {
+      const list_res = JSON.parse(result);
+      return Promise.all(list_res.map(name => getImgDataUrl(`static/img/svg_symbols/${name}`)))
         .then((symbols) => {
-          for (let i=0; i<list_res.length; i++) {
+          for (let i = 0; i < list_res.length; i++) {
             default_symbols.push([list_res[i], symbols[i]]);
           }
         });
@@ -1921,13 +1935,13 @@ function prepare_available_symbols() {
 }
 
 function accordionize(css_selector = '.accordion', parent) {
-  parent = parent && typeof parent === 'object' ? parent
+  const _parent = parent && typeof parent === 'object' ? parent
           : parent && typeof parent === 'string' ? document.querySelector(parent)
           : document;
-  const acc = parent.querySelectorAll(css_selector);
+  const acc = _parent.querySelectorAll(css_selector);
   for (let i = 0; i < acc.length; i++) {
     acc[i].onclick = function () {
-      let opened = parent.querySelector(`${css_selector}.active`);
+      const opened = _parent.querySelector(`${css_selector}.active`);
       if (opened) {
         opened.classList.toggle('active');
         opened.nextElementSibling.classList.toggle('show');
@@ -1940,12 +1954,12 @@ function accordionize(css_selector = '.accordion', parent) {
   }
 }
 
-function accordionize2(css_selector='.accordion', parent=document) {
+function accordionize2(css_selector = '.accordion', parent = document) {
   const acc = parent.querySelectorAll(css_selector);
   for (let i = 0; i < acc.length; i++) {
     acc[i].onclick = function () {
       this.classList.toggle('active');
       this.nextElementSibling.classList.toggle('show');
-    }
+    };
   }
 }

@@ -3,7 +3,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     const histo_options = newBox.append('div')
       .attrs({ id: 'histo_options', class: 'row equal' })
       .styles({ margin: '5px 5px 10px 15px', width: '100%' });
-    let a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+    const a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
       b = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
       c = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
       d = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3');
@@ -78,7 +78,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
   };
 
   const make_overlay_elements = function () {
-    let mean_val = serie.mean(),
+    const mean_val = serie.mean(),
       stddev = serie.stddev();
 
     line_mean = overlay_svg.append('line')
@@ -172,7 +172,9 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
     }
 
-    for (let i = 0; i < len_breaks; i++) { breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]); }
+    for (let i = 0; i < len_breaks; i++) {
+      breaks_info.push([[tmp_breaks.mins[i], tmp_breaks.maxs[i]], tmp_breaks.sizes[i]]);
+    }
     breaks = [breaks_info[0][0][0]].concat(breaks_info.map(ft => ft[0][1]));
     if (user_defined) {
       make_min_max_tableau(null, nb_class, type, last_min, last_max, 'sizes_div', breaks_info, callback);
@@ -184,7 +186,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       bins = [];
       for (let i = 0, len = breaks_info.length; i < len; i++) {
         const bin = {};
-        bin.offset = i == 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
+        bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
         bin.width = breaks[i + 1] - breaks[i];
         bin.height = breaks_info[i][1];
         bins[i] = bin;
@@ -228,21 +230,21 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     },
   };
 
-  //////////////////////////////////////////////////////////////////////////
-
   const title_box = [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join('');
   const modal_box = make_dialog_container('discretiz_charts', title_box, 'discretiz_charts_dialog');
+  const newBox = d3.select('#discretiz_charts').select('.modal-body');
+  let db_data;
+  if (result_data.hasOwnProperty(layer_name)) {
+    db_data = result_data[layer_name];
+  } else if (user_data.hasOwnProperty(layer_name)) {
+    db_data = user_data[layer_name];
+  }
 
-  var newBox = d3.select('#discretiz_charts').select('.modal-body');
-
-  if (result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];
-  else if (user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
-
-  var color_array = [],
-    nb_values = db_data.length,
-    indexes = [],
-    values = [],
-    no_data;
+  const color_array = [];
+  const indexes = [];
+  let nb_values = db_data.length;
+  let values = [];
+  let no_data;
 
   for (let i = 0; i < nb_values; i++) {
     if (db_data[i][field_name] != null) {
@@ -251,27 +253,26 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     }
   }
 
-  if (nb_values == values.length) {
+  if (nb_values === values.length) {
     no_data = 0;
   } else {
     no_data = nb_values - values.length;
     nb_values = values.length;
   }
-
+  const max_nb_class = nb_values > 20 ? 20 : nb_values;
+  const sizes = current_layers[layer_name].breaks.map(el => el[1]);
+  const stock_class = [];
   let serie = new geostats(values),
     breaks_info = [].concat(current_layers[layer_name].breaks),
     breaks = [+breaks_info[0][0][0]],
-    stock_class = [],
     bins = [],
-    max_nb_class = nb_values > 20 ? 20 : nb_values,
-    sizes = current_layers[layer_name].breaks.map(el => el[1]),
     last_min = min_fast(sizes),
     last_max = max_fast(sizes),
     array_color = d3.schemeCategory20.slice();
 
   breaks_info.forEach((elem) => { breaks.push(elem[0][1]); });
 
-  if (serie.variance() == 0 && serie.stddev() == 0) {
+  if (serie.variance() === 0 && serie.stddev() === 0) {
     serie = new geostats(values);
   }
 
@@ -295,11 +296,13 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
   const discretization = newBox.append('div')
     .attr('id', 'discretization_panel')
-    .insert('p').html('Type ')
-    .insert('select').attr('class', 'params')
+    .insert('p')
+    .html('Type ')
+    .insert('select')
+    .attr('class', 'params')
     .on('change', function () {
       const old_type = type;
-      if (this.value == 'user_defined') {
+      if (this.value === 'user_defined') {
         this.value = old_type;
         return;
       }
@@ -457,10 +460,10 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     if (!p) overlay_under_modal.hide();
   };
   const helper_esc_key_twbs = (evt) => {
-    evt = evt || window.event;
-    const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
+    const _event = evt || window.event;
+    const isEscape = ('key' in _event) ? (_event.key === 'Escape' || _event.key === 'Esc') : (_event.keyCode === 27);
     if (isEscape) {
-      evt.preventDefault();
+      _event.preventDefault();
       _onclose();
     }
   };

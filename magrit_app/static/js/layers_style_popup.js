@@ -1,11 +1,11 @@
 'use strict';
 // TODO : refactor some functions in this file (they are really too messy)
 function handle_click_layer(layer_name) {
-  if (current_layers[layer_name].graticule)
+  if (current_layers[layer_name].graticule) {
     createStyleBoxGraticule();
-  else if (current_layers[layer_name].type === 'Line')
+  } else if (current_layers[layer_name].type === 'Line') {
     createStyleBox_Line(layer_name);
-  else if (current_layers[layer_name].renderer
+  } else if (current_layers[layer_name].renderer
       && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
     createStyleBox_ProbSymbol(layer_name);
   } else if (current_layers[layer_name].renderer
@@ -17,12 +17,11 @@ function handle_click_layer(layer_name) {
   } else {
     createStyleBox(layer_name);
   }
-  return;
-};
+}
 
 function make_single_color_menu(layer, fill_prev, symbol = 'path') {
   const fill_color_section = d3.select('#fill_color_section'),
-    g_lyr_name = '#' + _app.layer_to_id.get(layer),
+    g_lyr_name = `#${_app.layer_to_id.get(layer)}`,
     last_color = (fill_prev && fill_prev.single) ? fill_prev.single : '#FFF';
   const block = fill_color_section.insert('p');
   block.insert('span')
@@ -51,14 +50,14 @@ function make_random_color(layer, symbol = 'path') {
     .styles({ cursor: 'pointer', 'text-align': 'center' })
     .html(i18next.t('app_page.layer_style_popup.toggle_colors'))
     .on('click', (d, i) => {
-      map.select('#' + _app.layer_to_id.get(layer))
+      map.select(`#${_app.layer_to_id.get(layer)}`)
         .selectAll(symbol)
         .transition()
         .style('fill', () => Colors.names[Colors.random()]);
       current_layers[layer].fill_color = { random: true };
       make_random_color(layer, symbol);
     });
-  map.select('#' + _app.layer_to_id.get(layer))
+  map.select(`#${_app.layer_to_id.get(layer)}`)
     .selectAll(symbol)
     .transition()
     .style('fill', () => Colors.names[Colors.random()]);
@@ -73,32 +72,32 @@ function fill_categorical(layer, field_name, symbol, color_cat_map) {
 }
 
 function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') {
-  var fill_color_section = d3.select('#fill_color_section').append('p');
+  const fill_color_section = d3.select('#fill_color_section').append('p');
   fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.categorical_field'));
-  var field_selec = fill_color_section.insert('select');
+  const field_selec = fill_color_section.insert('select');
   fields.forEach((field) => {
-    if (field !== 'id') field_selec.append('option').text(field).attr('value', field)
+    if (field !== 'id') field_selec.append('option').text(field).attr('value', field);
   });
   if (fill_prev.categorical && fill_prev.categorical instanceof Array) {
     setSelected(field_selec.node(), fill_prev.categorical[0]);
   }
   field_selec.on('change', function () {
-    let field_name = this.value,
+    const field_name = this.value,
       data_layer = current_layers[layer].is_result ? result_data[layer] : user_data[layer],
       values = data_layer.map(i => i[field_name]),
       cats = new Set(values),
       txt = [cats.size, ' cat.'].join('');
-    d3.select('#nb_cat_txt').html(txt)
+    d3.select('#nb_cat_txt').html(txt);
     const color_cat_map = new Map();
     for (let val of cats) {
-      color_cat_map.set(val, Colors.names[Colors.random()])
+      color_cat_map.set(val, Colors.names[Colors.random()]);
     }
     current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
     fill_categorical(layer, field_name, symbol, color_cat_map);
   });
 
   if ((!fill_prev || !fill_prev.categorical) && field_selec.node().options.length > 0) {
-    setSelected(field_selec.node(), field_selec.node().options[0].value)
+    setSelected(field_selec.node(), field_selec.node().options[0].value);
   }
   fill_color_section.append('span').attr('id', 'nb_cat_txt').html('');
 }
@@ -117,15 +116,15 @@ function make_change_layer_name_section(parent, layer_name) {
 
 function createStyleBoxTypoSymbols(layer_name) {
   function get_prev_settings() {
-    let features = selection._groups[0];
+    const features = selection._groups[0];
     for (let i = 0; i < features.length; i++) {
       prev_settings.push({
         display: features[i].style.display ? features[i].style.display : null,
         size: features[i].getAttribute('width'),
-        position: [features[i].getAttribute('x'), features[i].getAttribute('y')]
+        position: [features[i].getAttribute('x'), features[i].getAttribute('y')],
       });
     }
-    prev_settings_defaults['size'] = current_layers[layer_name].default_size;
+    prev_settings_defaults.size = current_layers[layer_name].default_size;
   }
 
   const restore_prev_settings = () => {
@@ -142,14 +141,14 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   check_remove_existing_box('.styleBox');
 
-  var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('image'),
-      ref_layer_name = current_layers[layer_name].ref_layer_name,
-      symbols_map = current_layers[layer_name].symbols_map,
-      rendered_field = current_layers[layer_name].rendered_field;
+  const selection = map.select(`#${_app.layer_to_id.get(layer)}`).selectAll('image'),
+    ref_layer_name = current_layers[layer_name].ref_layer_name,
+    symbols_map = current_layers[layer_name].symbols_map,
+    rendered_field = current_layers[layer_name].rendered_field;
 
-  var prev_settings = [],
-      prev_settings_defaults = {},
-      zs = d3.zoomTransform(svg_map).k;
+  const prev_settings = [],
+    prev_settings_defaults = {},
+    zs = d3.zoomTransform(svg_map).k;
 
   get_prev_settings();
 
@@ -157,15 +156,13 @@ function createStyleBoxTypoSymbols(layer_name) {
     .then((confirmed) => {
       if (!confirmed) {
         restore_prev_settings();
-      } else {
-        if (new_layer_name !== layer_name) {
-          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
-        }
+      } else if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
       }
     });
 
-  var container = document.querySelector('.twbs > .styleBox');
-  var popup = d3.select(container)
+  const container = document.querySelector('.twbs > .styleBox');
+  const popup = d3.select(container)
     .select('.modal-content').style('width', '300px')
     .select('.modal-body');
 
@@ -183,11 +180,11 @@ function createStyleBoxTypoSymbols(layer_name) {
     .insert('button')
     .attrs({ id: 'reset_symb_loc', class: 'button_st4' })
     .text(i18next.t('app_page.layer_style_popup.reset_symbols_location'))
-    .on('click', function () {
+    .on('click', () => {
       selection.transition()
         .attrs((d) => {
           const centroid = path.centroid(d.geometry),
-            size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2
+            size_symbol = symbols_map.get(d.properties.symbol_field)[1] / 2;
           return { x: centroid[0] - size_symbol, y: centroid[1] - size_symbol };
         });
     });
@@ -197,10 +194,10 @@ function createStyleBoxTypoSymbols(layer_name) {
     .attrs({ id: 'reset_symb_display', class: 'button_st4' })
     .text(i18next.t('app_page.layer_style_popup.redraw_symbols'))
     .on('click', () => {
-        selection.style('display', undefined);
+      selection.style('display', undefined);
     });
 
-  let size_section = popup.append('p');
+  const size_section = popup.append('p');
   size_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.symbols_size'));
   size_section.append('input')
@@ -248,15 +245,15 @@ function createStyleBoxTypoSymbols(layer_name) {
 
 function createStyleBoxLabel(layer_name) {
   function get_prev_settings() {
-    let features = selection._groups[0];
+    const features = selection._groups[0];
     prev_settings = [];
     for (let i = 0; i < features.length; i++) {
       prev_settings.push({
-        'color': features[i].style.fill,
-        'size': features[i].style.fontSize,
-        'display': features[i].style.display ? features[i].style.display : null,
-        'position': [features[i].getAttribute('x'), features[i].getAttribute('y')],
-        'font': features[i].style.fontFamily
+        color: features[i].style.fill,
+        size: features[i].style.fontSize,
+        display: features[i].style.display ? features[i].style.display : null,
+        position: [features[i].getAttribute('x'), features[i].getAttribute('y')],
+        font: features[i].style.fontFamily,
       });
     }
     prev_settings_defaults = {
@@ -267,20 +264,20 @@ function createStyleBoxLabel(layer_name) {
   };
 
   function restore_prev_settings() {
-      let features = selection._groups[0];
-      for (let i = 0; i < features.length; i++) {
-          features[i].style.fill = prev_settings[i]['color'];
-          features[i].style.fontSize = prev_settings[i]['size'];
-          features[i].style.display = prev_settings[i]['display'];
-          features[i].setAttribute('x', prev_settings[i]['position'][0]);
-          features[i].setAttribute('y', prev_settings[i]['position'][1]);
-          features[i].style.fontFamily = prev_settings[i]['font'];
-      }
+    let features = selection._groups[0];
+    for (let i = 0; i < features.length; i++) {
+      features[i].style.fill = prev_settings[i]['color'];
+      features[i].style.fontSize = prev_settings[i]['size'];
+      features[i].style.display = prev_settings[i]['display'];
+      features[i].setAttribute('x', prev_settings[i]['position'][0]);
+      features[i].setAttribute('y', prev_settings[i]['position'][1]);
+      features[i].style.fontFamily = prev_settings[i]['font'];
+    }
 
-      current_layers[layer_name].fill_color = prev_settings_defaults.color;
-      current_layers[layer_name].default_size = prev_settings_defaults.size;
-      current_layers[layer_name].default_font = prev_settings_defaults.font;
-  };
+    current_layers[layer_name].fill_color = prev_settings_defaults.color;
+    current_layers[layer_name].default_size = prev_settings_defaults.size;
+    current_layers[layer_name].default_font = prev_settings_defaults.font;
+  }
 
   check_remove_existing_box('.styleBox');
 
@@ -305,15 +302,17 @@ function createStyleBoxLabel(layer_name) {
       }
     });
 
-  var container = document.querySelector('.twbs > .styleBox');
-  var popup = d3.select(container)
+  const container = document.querySelector('.twbs > .styleBox');
+  const popup = d3.select(container)
     .select('.modal-content').style('width', '300px')
     .select('.modal-body');
 
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
-    .html([i18next.t('app_page.layer_style_popup.rendered_field', {field: current_layers[layer_name].rendered_field}),
-           i18next.t('app_page.layer_style_popup.reference_layer', {layer: ref_layer_name})].join(''));
+    .html([
+      i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }),
+      i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
+    ].join(''));
 
   let new_layer_name = layer_name;
   const new_name_section = make_change_layer_name_section(popup, layer_name);
@@ -324,26 +323,26 @@ function createStyleBoxLabel(layer_name) {
     .insert('button')
     .attrs({ id: 'reset_labels_loc', class: 'button_st4' })
     .text(i18next.t('app_page.layer_style_popup.reset_labels_location'))
-    .on('click', function () {
-        selection.transition()
-          .attrs(d => {
-            const coords = path.centroid(d.geometry);
-            return { x: coords[0], y: coords[1] }
-          });
+    .on('click', () => {
+      selection.transition()
+        .attrs((d) => {
+          const coords = path.centroid(d.geometry);
+          return { x: coords[0], y: coords[1] }
+        });
     });
 
   popup.append('p').style('text-align', 'center')
     .insert('button')
-    .attr('id','reset_labels_display')
+    .attr('id', 'reset_labels_display')
     .attr('class', 'button_st4')
     .text(i18next.t('app_page.layer_style_popup.redraw_labels'))
-    .on('click', function () {
-        selection.style('display', undefined);
+    .on('click', () => {
+      selection.style('display', undefined);
     });
 
   popup.insert('p').style('text-align', 'center').style('font-size', '9px')
-          .html(i18next.t('app_page.layer_style_popup.overrride_warning'));
-  let label_sizes = popup.append('p').attr('class', 'line_elem');
+    .html(i18next.t('app_page.layer_style_popup.overrride_warning'));
+  const label_sizes = popup.append('p').attr('class', 'line_elem');
   label_sizes.append('span')
     .html(i18next.t('app_page.layer_style_popup.labels_default_size'));
   label_sizes.insert('span')
@@ -354,12 +353,12 @@ function createStyleBoxLabel(layer_name) {
     .attr('type', 'number')
     .attr('value', +current_layers[layer_name].default_size.replace('px', ''))
     .on('change', function () {
-      let size = `${this.value}px`;
+      const size = `${this.value}px`;
       current_layers[layer_name].default_size = size;
       selection.style('font-size', size);
     });
 
-  let default_color = popup.insert('p').attr('class', 'line_elem');
+  const default_color = popup.insert('p').attr('class', 'line_elem');
   default_color.append('span')
     .html(i18next.t('app_page.layer_style_popup.labels_default_color'));
   default_color.insert('input')
@@ -370,585 +369,584 @@ function createStyleBoxLabel(layer_name) {
       selection.transition().style('fill', this.value);
     });
 
-  let font_section = popup.insert('p').attr('class', 'line_elem')
+  const font_section = popup.insert('p').attr('class', 'line_elem');
   font_section.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_font'));
-  let choice_font = font_section.insert('select')
+  const choice_font = font_section.insert('select')
     .style('float', 'right')
     .on('change', function () {
-        current_layers[layer_name].default_font = this.value;
-        selection.transition().style('font-family', this.value);
+      current_layers[layer_name].default_font = this.value;
+      selection.transition().style('font-family', this.value);
     });
 
-  available_fonts.forEach( name => {
-      choice_font.append('option').attr('value', name[1]).text(name[0]);
+  available_fonts.forEach((name) => {
+    choice_font.append('option').attr('value', name[1]).text(name[0]);
   });
   choice_font.node().value = current_layers[layer_name].default_font;
 }
 
 function createStyleBoxGraticule(layer_name) {
-    check_remove_existing_box('.styleBox');
-    let current_params = cloneObj(current_layers['Graticule']);
-    let selection = map.select('#Graticule > path');
-    let selection_strokeW = map.select('#Graticule');
+  check_remove_existing_box('.styleBox');
+  const current_params = cloneObj(current_layers['Graticule']);
+  let selection = map.select('#Graticule > path');
+  let selection_strokeW = map.select('#Graticule');
 
-    make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
-      .then((confirmed) => {
-        if (confirmed) {
-          null;
-        } else {
-          null;
-        }
-      });
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
+    .then((confirmed) => {
+      if (confirmed) {
+        return null;
+      } else {
+        return null;
+      }
+    });
 
-    const container = document.querySelector('.twbs > .styleBox');
-    const popup = d3.select(container)
-      .select('.modal-content').style('width', '300px')
-      .select('.modal-body');
-    // let new_layer_name = layer_name;
-    // const new_name_section = make_change_layer_name_section(popup, layer_name);
-    // new_name_section.on('change', function() {
-    //   new_layer_name = this.value;
-    // });
+  const container = document.querySelector('.twbs > .styleBox');
+  const popup = d3.select(container)
+    .select('.modal-content').style('width', '300px')
+    .select('.modal-body');
+  // let new_layer_name = layer_name;
+  // const new_name_section = make_change_layer_name_section(popup, layer_name);
+  // new_name_section.on('change', function() {
+  //   new_layer_name = this.value;
+  // });
 
-    let color_choice = popup.append('p').attr('class', 'line_elem');
-    color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
-    color_choice.append('input')
-      .style('float', 'right')
-      .attrs({ type: 'color', value: current_params.fill_color.single })
-      .on('change', function () {
-        selection.style('stroke', this.value);
-        current_layers['Graticule'].fill_color.single = this.value;
-      });
+  const color_choice = popup.append('p').attr('class', 'line_elem');
+  color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
+  color_choice.append('input')
+    .style('float', 'right')
+    .attrs({ type: 'color', value: current_params.fill_color.single })
+    .on('change', function () {
+      selection.style('stroke', this.value);
+      current_layers['Graticule'].fill_color.single = this.value;
+    });
 
-    let opacity_choice = popup.append('p').attr('class', 'line_elem');
-    opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
-    opacity_choice.append('input')
-      .attrs({ type: 'range', value: current_params.opacity, min: 0, max: 1, step: 0.1 })
-      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
-      .on('change', function () {
-          selection.style('stroke-opacity', this.value);
-          current_layers['Graticule'].opacity = +this.value;
-          popup.select('#graticule_opacity_txt').html((+this.value * 100) + '%')
-      });
-    opacity_choice.append('span')
-      .attr('id', 'graticule_opacity_txt')
-      .style('float', 'right')
-      .html((current_params.opacity * 100) + '%');
+  const opacity_choice = popup.append('p').attr('class', 'line_elem');
+  opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
+  opacity_choice.append('input')
+    .attrs({ type: 'range', value: current_params.opacity, min: 0, max: 1, step: 0.1 })
+    .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .on('change', function () {
+      selection.style('stroke-opacity', this.value);
+      current_layers['Graticule'].opacity = +this.value;
+      popup.select('#graticule_opacity_txt').html((+this.value * 100) + '%')
+    });
+  opacity_choice.append('span')
+    .attr('id', 'graticule_opacity_txt')
+    .style('float', 'right')
+    .html((current_params.opacity * 100) + '%');
 
-    let stroke_width_choice = popup.append('p').attr('class', 'line_elem');
-    stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
-    stroke_width_choice.append('input')
-      .attrs({type: 'number', value: current_params['stroke-width-const']})
-      .styles({ width: '60px', float: 'right'})
-      .on('change', function () {
-        selection_strokeW.style('stroke-width', this.value)
-        current_layers['Graticule']['stroke-width-const'] = +this.value;
-      });
+  const stroke_width_choice = popup.append('p').attr('class', 'line_elem');
+  stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
+  stroke_width_choice.append('input')
+    .attrs({ type: 'number', value: current_params['stroke-width-const'] })
+    .styles({ width: '60px', float: 'right' })
+    .on('change', function () {
+      selection_strokeW.style('stroke-width', this.value);
+      current_layers['Graticule']['stroke-width-const'] = +this.value;
+    });
 
-    let steps_choice = popup.append('p').attr('class', 'line_elem');
-    steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
-    steps_choice.append('input')
-      .attrs({ id: 'graticule_range_steps', type: 'range', value: current_params.step, min: 0, max: 100, step: 1 })
-      .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
-      .on('change', function () {
-        let next_layer = selection_strokeW.node().nextSibling;
-        let step_val = +this.value;
-        let dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
-        current_layers['Graticule'].step = step_val;
-        map.select('#Graticule').remove()
-        map.append('g')
-          .attrs({ id: 'Graticule', class: 'layer' })
-          .append('path')
-          .datum(d3.geoGraticule().step([step_val, step_val]))
-          .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
-          .styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
-        zoom_without_redraw();
-        selection = map.select('#Graticule').selectAll('path');
-        selection_strokeW = map.select('#Graticule');
-        svg_map.insertBefore(selection_strokeW.node(), next_layer);
-        popup.select('#graticule_step_txt').attr('value', step_val);
-      });
-    steps_choice.append('input')
-      .attrs({ type: 'number', value: current_params.step, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' })
-      .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
-      .on('change', function () {
-          let grat_range = document.getElementById('graticule_range_steps');
-          grat_range.value = +this.value;
-          grat_range.dispatchEvent(new MouseEvent('change'));
-      });
+  const steps_choice = popup.append('p').attr('class', 'line_elem');
+  steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
+  steps_choice.append('input')
+    .attrs({ id: 'graticule_range_steps', type: 'range', value: current_params.step, min: 0, max: 100, step: 1 })
+    .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
+    .on('change', function () {
+      const next_layer = selection_strokeW.node().nextSibling;
+      const step_val = +this.value;
+      const dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
+      current_layers['Graticule'].step = step_val;
+      map.select('#Graticule').remove();
+      map.append('g')
+        .attrs({ id: 'Graticule', class: 'layer' })
+        .append('path')
+        .datum(d3.geoGraticule().step([step_val, step_val]))
+        .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
+        .styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+      zoom_without_redraw();
+      selection = map.select('#Graticule').selectAll('path');
+      selection_strokeW = map.select('#Graticule');
+      svg_map.insertBefore(selection_strokeW.node(), next_layer);
+      popup.select('#graticule_step_txt').attr('value', step_val);
+    });
+  steps_choice.append('input')
+    .attrs({ type: 'number', value: current_params.step, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' })
+    .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+    .on('change', function () {
+      const grat_range = document.getElementById('graticule_range_steps');
+      grat_range.value = +this.value;
+      grat_range.dispatchEvent(new MouseEvent('change'));
+    });
 
-    let dasharray_choice = popup.append('p').attr('class', 'line_elem');
-    dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
-    dasharray_choice.append('input')
-      .attrs({ type: 'range', value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' })
-      .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
-      .on('change', function () {
-        selection.style('stroke-dasharray', this.value);
-        current_layers['Graticule'].dasharray = +this.value;
-        popup.select('#graticule_dasharray_txt').attr('value', this.value);
-      });
-    dasharray_choice.append('input')
-      .attrs({ type: 'number', value: current_params.dasharray, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' })
-      .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
-      .on('change', function () {
-        let grat_range = document.getElementById('graticule_range_dasharray');
-        grat_range.value = +this.value;
-        grat_range.dispatchEvent(new MouseEvent('change'));
-      });
+  const dasharray_choice = popup.append('p').attr('class', 'line_elem');
+  dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
+  dasharray_choice.append('input')
+    .attrs({ type: 'range', value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' })
+    .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
+    .on('change', function () {
+      selection.style('stroke-dasharray', this.value);
+      current_layers['Graticule'].dasharray = +this.value;
+      popup.select('#graticule_dasharray_txt').attr('value', this.value);
+    });
+  dasharray_choice.append('input')
+    .attrs({ type: 'number', value: current_params.dasharray, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' })
+    .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+    .on('change', function () {
+      const grat_range = document.getElementById('graticule_range_dasharray');
+      grat_range.value = +this.value;
+      grat_range.dispatchEvent(new MouseEvent('change'));
+    });
 
-    let clip_extent_section = popup.append('p').attr('class', 'line_elem');
-    clip_extent_section.append('input')
-      .attrs({type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null})
-      .on('change', function () {
-        let next_layer = selection_strokeW.node().nextSibling,
-            step_val = +document.getElementById('graticule_step_txt').value,
-            dasharray_val = +document.getElementById('graticule_dasharray_txt').value,
-            graticule = d3.geoGraticule().step([step_val, step_val]);
-        map.select('#Graticule').remove();
-        if (this.checked) {
-          const bbox_layer = _target_layer_file.bbox;
-          const extent_grat = [
-            		[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10],
-            		[Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
+  const clip_extent_section = popup.append('p').attr('class', 'line_elem');
+  clip_extent_section.append('input')
+    .attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null })
+    .on('change', function () {
+      const next_layer = selection_strokeW.node().nextSibling,
+        step_val = +document.getElementById('graticule_step_txt').value,
+        dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
+      let graticule = d3.geoGraticule().step([step_val, step_val]);
+      map.select('#Graticule').remove();
+      if (this.checked) {
+        const bbox_layer = _target_layer_file.bbox;
+        const extent_grat = [
+      		[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10],
+      		[Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
 
-          if (extent_grat[0] < -180) extent_grat[0] = -180;
-          if (extent_grat[1] < -90) extent_grat[1] = -90;
-          if (extent_grat[2] > 180) extent_grat[2] = 180;
-          if (extent_grat[3] > 90) extent_grat[3] = 90;
-          graticule = graticule.extent(extent_grat);
-          current_layers['Graticule'].extent = extent_grat;
-        } else {
-          current_layers['Graticule'].extent = undefined;
-        }
-        map.append('g')
-          .attrs({ id: 'Graticule', class: 'layer' })
-          .append('path')
-          .datum(graticule)
-          .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
-          .styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
-        zoom_without_redraw();
-        selection = map.select('#Graticule').selectAll('path');
-        selection_strokeW = map.select('#Graticule');
-        svg_map.insertBefore(selection_strokeW.node(), next_layer);
-      });
-    clip_extent_section.append('label')
-      .attrs({ for: 'clip_graticule' })
-      .html(i18next.t('app_page.layer_style_popup.graticule_clip'));
+        if (extent_grat[0] < -180) extent_grat[0] = -180;
+        if (extent_grat[1] < -90) extent_grat[1] = -90;
+        if (extent_grat[2] > 180) extent_grat[2] = 180;
+        if (extent_grat[3] > 90) extent_grat[3] = 90;
+        graticule = graticule.extent(extent_grat);
+        current_layers['Graticule'].extent = extent_grat;
+      } else {
+        current_layers['Graticule'].extent = undefined;
+      }
+      map.append('g')
+        .attrs({ id: 'Graticule', class: 'layer' })
+        .append('path')
+        .datum(graticule)
+        .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
+        .styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+      zoom_without_redraw();
+      selection = map.select('#Graticule').selectAll('path');
+      selection_strokeW = map.select('#Graticule');
+      svg_map.insertBefore(selection_strokeW.node(), next_layer);
+    });
+  clip_extent_section.append('label')
+    .attrs({ for: 'clip_graticule' })
+    .html(i18next.t('app_page.layer_style_popup.graticule_clip'));
 
-    make_generate_labels_graticule_section(popup);
+  make_generate_labels_graticule_section(popup);
 }
 
 function redraw_legend(type_legend, layer_name, field) {
-  let [selector, func] = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
+  const [selector, func] = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
                          type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] :
                          type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined;
   let lgd = document.querySelector(selector);
   if (lgd) {
-      let transform_param = lgd.getAttribute('transform'),
-          lgd_title = lgd.querySelector('#legendtitle').innerHTML,
-          lgd_subtitle = lgd.querySelector('#legendsubtitle').innerHTML,
-          rounding_precision = lgd.getAttribute('rounding_precision'),
-          note = lgd.querySelector('#legend_bottom_note').innerHTML,
-          boxgap = lgd.getAttribute('boxgap');
-      let rect_fill_value = (lgd.getAttribute('visible_rect') === 'true') ? {
-                color: lgd.querySelector('#under_rect').style.fill,
-                opacity: lgd.querySelector('#under_rect').style.fillOpacity
-            } : undefined;
+    const transform_param = lgd.getAttribute('transform'),
+      lgd_title = lgd.querySelector('#legendtitle').innerHTML,
+      lgd_subtitle = lgd.querySelector('#legendsubtitle').innerHTML,
+      rounding_precision = lgd.getAttribute('rounding_precision'),
+      note = lgd.querySelector('#legend_bottom_note').innerHTML,
+      boxgap = lgd.getAttribute('boxgap');
+    const rect_fill_value = (lgd.getAttribute('visible_rect') === 'true') ? {
+              color: lgd.querySelector('#under_rect').style.fill,
+              opacity: lgd.querySelector('#under_rect').style.fillOpacity
+          } : undefined;
 
-      if (type_legend === 'default') {
-          let no_data_txt = lgd.querySelector('#no_data_txt');
-          no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
+    if (type_legend === 'default') {
+      let no_data_txt = lgd.querySelector('#no_data_txt');
+      no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
-          lgd.remove();
-          func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
-      } else {
-          lgd.remove();
-          func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
-      }
-      lgd = document.querySelector(selector);
-      if (transform_param) {
-          lgd.setAttribute('transform', transform_param);
-      }
+      lgd.remove();
+      func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+    } else {
+      lgd.remove();
+      func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
+    }
+    lgd = document.querySelector(selector);
+    if (transform_param) {
+      lgd.setAttribute('transform', transform_param);
+    }
   }
 }
 
 function createStyleBox_Line(layer_name) {
-    check_remove_existing_box('.styleBox');
-    var rendering_params,
-        renderer = current_layers[layer_name].renderer,
-        g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
-        selection = map.select(g_lyr_name).selectAll('path'),
-        opacity = selection.style('fill-opacity');
+  check_remove_existing_box('.styleBox');
+  const renderer = current_layers[layer_name].renderer,
+    g_lyr_name = `#${_app.layer_to_id.get(layer_name)}`,
+    selection = map.select(g_lyr_name).selectAll('path'),
+    opacity = selection.style('fill-opacity');
 
-    var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-        prev_col_breaks;
+  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  let prev_col_breaks;
+  let rendering_params;
 
-    if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array)
-        prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  }
 
+  const border_opacity = selection.style('stroke-opacity'),
+    stroke_width = +current_layers[layer_name]['stroke-width-const'];
+  let stroke_prev = selection.style('stroke');
+  let prev_min_display, prev_size, prev_breaks;
 
-    var stroke_prev = selection.style('stroke'),
-        border_opacity = selection.style('stroke-opacity'),
-        stroke_width = +current_layers[layer_name]['stroke-width-const'],
-        prev_min_display, prev_size, prev_breaks;
+  if (stroke_prev.startsWith('rgb')) {
+      stroke_prev = rgb2hex(stroke_prev);
+  }
 
-    if (stroke_prev.startsWith('rgb'))
-        stroke_prev = rgb2hex(stroke_prev);
+  const table = [];
+  Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
+    table.push(d.__data__.properties);
+  });
 
-    var table = [];
-    Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), d => {
-        table.push(d.__data__.properties);
-    });
+  let redraw_prop_val = function(prop_values) {
+      let selec = selection._groups[0];
+      for (let i = 0, len = prop_values.length; i < len; i++) {
+          selec[i].style.strokeWidth = prop_values[i];
+      }
+  }
 
-
-    let redraw_prop_val = function(prop_values) {
-        let selec = selection._groups[0];
-        for (let i = 0, len = prop_values.length; i < len; i++) {
-            selec[i].style.strokeWidth = prop_values[i];
-        }
-    }
-
-    make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
-        .then((confirmed) => {
-            if (confirmed) {
-                if (renderer != undefined
-                     && rendering_params != undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
-                  current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
-                  let colors_breaks = [];
-                  for (let i = rendering_params['breaks'].length-1; i > 0; --i) {
-                    colors_breaks.push([
-                      [rendering_params['breaks'][i-1], ' - ', rendering_params['breaks'][i]].join(''),
-                      rendering_params['colors'][i-1]
-                    ]);
-                  }
-                  current_layers[layer_name].colors_breaks = colors_breaks;
-                  current_layers[layer_name].rendered_field = rendering_params.field;
-                  current_layers[layer_name].options_disc = {
-                    schema: rendering_params.schema,
-                    colors: rendering_params.colors,
-                    no_data: rendering_params.no_data,
-                    type: rendering_params.type,
-                    breaks: rendering_params.breaks,
-                    extra_options: rendering_params.extra_options
-                  };
-                  redraw_legend('default', layer_name, rendering_params.field);
-              } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params != undefined) {
-                current_layers[layer_name].color_map = rendering_params.color_map;
-                current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
-                redraw_legend('default', layer_name, rendering_params.field);
-              } else if (renderer === 'DiscLayer') {
-                selection.each(function(d) {
-                    d.properties.prop_val = this.style.strokeWidth;
-                });
-                // Also change the legend if there is one displayed :
-                redraw_legend('line_class', layer_name);
-              } else if (renderer === 'Links') {
-                selection.each(function(d, i) {
-                  current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
-                });
-                // Also change the legend if there is one displayed :
-                redraw_legend('line_class', layer_name);
-              }
-
-              if (renderer.startsWith('PropSymbols')) {
-                redraw_legend('line_symbol', layer_name);
-              }
-
-              // Change the layer name if requested :
-              if (new_layer_name !== layer_name) {
-                change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
-              }
-              zoom_without_redraw();
-
-            } else {
-              // Reset to original values the rendering parameters if "no" is clicked
-              selection.style('fill-opacity', opacity)
-                .style('stroke-opacity', border_opacity);
-              let zoom_scale = +d3.zoomTransform(map.node()).k;
-              map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
-              current_layers[layer_name]['stroke-width-const'] = stroke_width;
-              let fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-
-              if (current_layers[layer_name].renderer === 'Links' && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].breaks = prev_breaks;
-                selection.style('fill-opacity', 0)
-                  .style('stroke', fill_prev.single)
-                  .style('display', d => (+d.properties.fij > prev_min_display) ? null : 'none')
-                  .style('stroke-opacity', border_opacity)
-                  .style('stroke-width', (d, i) => current_layers[layer_name].linksbyId[i][2]);
-              } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display != undefined) {
-                current_layers[layer_name].min_display = prev_min_display;
-                current_layers[layer_name].size = prev_size;
-                current_layers[layer_name].breaks = prev_breaks;
-                const lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-                selection.style('fill-opacity', 0)
-                 .style('stroke', fill_prev.single)
-                 .style('stroke-opacity', border_opacity)
-                 .style('display', (d, i) => +i <= lim ? null : 'none' )
-                 .style('stroke-width', d => d.properties.prop_val);
-              } else {
-                if (fill_meth === 'single') {
-                  selection.style('stroke', fill_prev.single)
-                   .style('stroke-opacity', border_opacity);
-                } else if (fill_meth === 'random') {
-                  selection.style('stroke-opacity', border_opacity)
-                   .style('stroke', () => Colors.names[Colors.random()]);
-                } else if (fill_meth === 'class' && renderer === 'Links') {
-                  selection.style('stroke-opacity', (d, i) => current_layers[layer_name].linksbyId[i][0])
-                   .style('stroke', stroke_prev);
-                 }
-              }
-              if (current_layers[layer_name].colors_breaks)
-                  current_layers[layer_name].colors_breaks = prev_col_breaks;
-              current_layers[layer_name].fill_color = fill_prev;
-              zoom_without_redraw();
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
+    .then((confirmed) => {
+      if (confirmed) {
+          if (renderer != undefined
+               && rendering_params != undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
+            current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+            let colors_breaks = [];
+            for (let i = rendering_params['breaks'].length-1; i > 0; --i) {
+              colors_breaks.push([
+                [rendering_params['breaks'][i-1], ' - ', rendering_params['breaks'][i]].join(''),
+                rendering_params['colors'][i-1]
+              ]);
             }
+            current_layers[layer_name].colors_breaks = colors_breaks;
+            current_layers[layer_name].rendered_field = rendering_params.field;
+            current_layers[layer_name].options_disc = {
+              schema: rendering_params.schema,
+              colors: rendering_params.colors,
+              no_data: rendering_params.no_data,
+              type: rendering_params.type,
+              breaks: rendering_params.breaks,
+              extra_options: rendering_params.extra_options
+            };
+            redraw_legend('default', layer_name, rendering_params.field);
+        } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params != undefined) {
+          current_layers[layer_name].color_map = rendering_params.color_map;
+          current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+          redraw_legend('default', layer_name, rendering_params.field);
+        } else if (renderer === 'DiscLayer') {
+          selection.each(function(d) {
+              d.properties.prop_val = this.style.strokeWidth;
+          });
+          // Also change the legend if there is one displayed :
+          redraw_legend('line_class', layer_name);
+        } else if (renderer === 'Links') {
+          selection.each(function(d, i) {
+            current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
+          });
+          // Also change the legend if there is one displayed :
+          redraw_legend('line_class', layer_name);
+        }
+
+        if (renderer.startsWith('PropSymbols')) {
+          redraw_legend('line_symbol', layer_name);
+        }
+
+        // Change the layer name if requested :
+        if (new_layer_name !== layer_name) {
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
+        }
+        zoom_without_redraw();
+      } else {
+        // Reset to original values the rendering parameters if "no" is clicked
+        selection.style('fill-opacity', opacity)
+          .style('stroke-opacity', border_opacity);
+        const zoom_scale = +d3.zoomTransform(map.node()).k;
+        map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
+        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+
+        if (current_layers[layer_name].renderer === 'Links' && prev_min_display != undefined) {
+          current_layers[layer_name].min_display = prev_min_display;
+          current_layers[layer_name].breaks = prev_breaks;
+          selection.style('fill-opacity', 0)
+            .style('stroke', fill_prev.single)
+            .style('display', d => (+d.properties.fij > prev_min_display) ? null : 'none')
+            .style('stroke-opacity', border_opacity)
+            .style('stroke-width', (d, i) => current_layers[layer_name].linksbyId[i][2]);
+        } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display != undefined) {
+          current_layers[layer_name].min_display = prev_min_display;
+          current_layers[layer_name].size = prev_size;
+          current_layers[layer_name].breaks = prev_breaks;
+          const lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+          selection.style('fill-opacity', 0)
+           .style('stroke', fill_prev.single)
+           .style('stroke-opacity', border_opacity)
+           .style('display', (d, i) => +i <= lim ? null : 'none' )
+           .style('stroke-width', d => d.properties.prop_val);
+        } else {
+          if (fill_meth === 'single') {
+            selection.style('stroke', fill_prev.single)
+             .style('stroke-opacity', border_opacity);
+          } else if (fill_meth === 'random') {
+            selection.style('stroke-opacity', border_opacity)
+             .style('stroke', () => Colors.names[Colors.random()]);
+          } else if (fill_meth === 'class' && renderer === 'Links') {
+            selection.style('stroke-opacity', (d, i) => current_layers[layer_name].linksbyId[i][0])
+             .style('stroke', stroke_prev);
+           }
+        }
+        if (current_layers[layer_name].colors_breaks) {
+          current_layers[layer_name].colors_breaks = prev_col_breaks;
+        }
+        current_layers[layer_name].fill_color = fill_prev;
+        zoom_without_redraw();
+      }
     });
 
-    var container = document.querySelector('.twbs > .styleBox');
-    var popup = d3.select(container)
-      .select('.modal-content').style('width', '300px')
-      .select('.modal-body');
+  const container = document.querySelector('.twbs > .styleBox');
+  const popup = d3.select(container)
+    .select('.modal-content').style('width', '300px')
+    .select('.modal-body');
 
-    let new_layer_name = layer_name;
-    const new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function() {
-      new_layer_name = this.value;
-    });
+  let new_layer_name = layer_name;
+  const new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
 
-    if (renderer === 'Categorical' || renderer === 'PropSymbolsTypo') {
-      let color_field = renderer === 'Categorical' ? current_layers[layer_name].rendered_field
-                                                   : current_layers[layer_name].rendered_field2;
+  if (renderer === 'Categorical' || renderer === 'PropSymbolsTypo') {
+    let color_field = renderer === 'Categorical' ? current_layers[layer_name].rendered_field
+                                                 : current_layers[layer_name].rendered_field2;
 
-      popup.insert('p')
-        .styles({ margin: 'auto', 'text-align': 'center' })
-        .append('button')
-        .attr('class', 'button_disc')
-        .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-        .html(i18next.t('app_page.layer_style_popup.choose_colors'))
-        .on('click', function () {
-            let [cats, _] = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map);
-            container.modal.hide();
-            display_categorical_box(result_data[layer_name], layer_name, color_field, cats)
-              .then((confirmed) => {
-                container.modal.show();
-                if (confirmed) {
-                    rendering_params = {
-                      nb_class: confirmed[0],
-                      color_map :confirmed[1],
-                      colorsByFeature: confirmed[2],
-                      renderer: 'Categorical',
-                      rendered_field: color_field,
-                      field: color_field,
-                    };
-                    selection.transition()
-                        .style('stroke', (d, i) => rendering_params.colorsByFeature[i]);
-                }
-              });
-        });
-    } else if (renderer === 'Choropleth' || renderer === 'PropSymbolsChoro') {
-      popup.append('p')
-        .styles({ margin: 'auto', 'text-align': 'center' })
-        .append('button')
-        .attr('class', 'button_disc')
-        .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
-        .on('click', function () {
-          container.modal.hide();
-          display_discretization(layer_name,
-                                 current_layers[layer_name].rendered_field,
-                                 current_layers[layer_name].colors_breaks.length,
-                                 current_layers[layer_name].options_disc)
-           .then((confirmed) => {
-               container.modal.show();
-               if (confirmed) {
-                 rendering_params = {
-                   nb_class: confirmed[0],
-                   type: confirmed[1],
-                   breaks: confirmed[2],
-                   colors: confirmed[3],
-                   colorsByFeature: confirmed[4],
-                   schema: confirmed[5],
-                   no_data: confirmed[6],
-                  //  renderer:"Choropleth",
-                   field: current_layers[layer_name].rendered_field,
-                   extra_options: confirmed[7]
-                 };
-                 selection.transition()
-                   .style('stroke', (d, i) => rendering_params.colorsByFeature[i]);
-               }
-             });
-         });
-    } else {
-      let c_section = popup.append('p').attr('class', 'line_elem');
-      c_section.insert('span')
-        .html(i18next.t('app_page.layer_style_popup.color'));
-      c_section.insert('input')
-        .attrs({ type: 'color', value: stroke_prev })
-        .style('float', 'right')
-        .on('change', function () {
-          selection.style('stroke', this.value);
-          current_layers[layer_name].fill_color = { single: this.value };
-          // current_layers[layer_name].fill_color.single = this.value;
-        });
-    }
-
-    if (renderer === 'Links') {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        let max_val = 0;
-        selection.each((d) => { if (+d.properties.fij > max_val) max_val = d.properties.fij; })
-        let threshold_section = popup.append('p').attr('class', 'line_elem');
-        threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
-        // The legend will be updated in order to start on the minimum value displayed instead of
-        //   using the minimum value of the serie (skipping unused class if necessary)
-        threshold_section.insert('input')
-          .attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display })
-          .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right',  'margin-right': '0px' })
-          .on('change', function () {
-            const val = +this.value;
-            popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
-            selection.style('display', d => (+d.properties.fij > val) ? null : 'none');
-            current_layers[layer_name].min_display = val;
+    popup.insert('p')
+      .styles({ margin: 'auto', 'text-align': 'center' })
+      .append('button')
+      .attr('class', 'button_disc')
+      .styles({ 'font-size': '0.8em', 'text-align': 'center' })
+      .html(i18next.t('app_page.layer_style_popup.choose_colors'))
+      .on('click', function () {
+        let [cats, _] = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map);
+        container.modal.hide();
+        display_categorical_box(result_data[layer_name], layer_name, color_field, cats)
+          .then((confirmed) => {
+            container.modal.show();
+            if (confirmed) {
+              rendering_params = {
+                nb_class: confirmed[0],
+                color_map :confirmed[1],
+                colorsByFeature: confirmed[2],
+                renderer: 'Categorical',
+                rendered_field: color_field,
+                field: color_field,
+              };
+              selection.transition()
+                .style('stroke', (d, i) => rendering_params.colorsByFeature[i]);
+            }
           });
-        threshold_section.insert('label')
-          .attr('id', 'larger_than')
-          .style('float', 'right')
-          .html(`<i> ${prev_min_display} </i>`);
-        popup.append('p')
-          .style('text-align', 'center')
-          .append('button')
-          .attr('class', 'button_disc')
-          .html(i18next.t('app_page.layer_style_popup.modify_size_class'))
-          .on('click', function () {
-              container.modal.hide();
-              display_discretization_links_discont(layer_name,
-                                                   current_layers[layer_name].rendered_field,
-                                                   current_layers[layer_name].breaks.length,
-                                                   'user_defined')
-                .then((result) => {
-                  container.modal.show();
-                  if (result) {
-                    let serie = result[0],
-                      sizes = result[1].map(ft => ft[1]),
-                      links_byId = current_layers[layer_name].linksbyId;
-                    serie.setClassManually(result[2]);
-                    current_layers[layer_name].breaks = result[1];
-                    selection.style('fill-opacity', 0)
-                      .style('stroke-width', (d, i) => sizes[serie.getClass(+links_byId[i][1])]);
-                  }
-                });
-          });
-
-    } else if (renderer === 'DiscLayer') {
-        prev_min_display = current_layers[layer_name].min_display || 0;
-        prev_size = current_layers[layer_name].size.slice();
-        prev_breaks = current_layers[layer_name].breaks.slice();
-        let max_val = Math.max.apply(null, result_data[layer_name].map( i => i.disc_value));
-        let disc_part = popup.append('p').attr('class', 'line_elem');
-        disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
-        disc_part.insert('input')
-          .attrs({type: 'range', min: 0, max: 1, step: 0.1, value: prev_min_display})
-          .styles({width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px'})
-          .on('change', function () {
-            let val = +this.value;
-            let lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
-            popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
-            selection.style('display', (d, i) => i <= lim ? null : 'none' );
-            current_layers[layer_name].min_display = val;
-          });
-        disc_part.insert('label')
-          .attr('id', 'larger_than')
-          .style('float', 'right')
-          .html(['<i> ', prev_min_display * 100, ' % </i>'].join(''));
-        popup.append('p')
-          .style('text-align', 'center')
-          .append('button')
-          .attr('class', 'button_disc')
-          .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
-          .on('click', function () {
-            container.modal.hide();
-            display_discretization_links_discont(layer_name,
-                                                 'disc_value',
-                                                 current_layers[layer_name].breaks.length,
-                                                 'user_defined')
-              .then((result) => {
-                container.modal.show();
-                if (result) {
-                  let serie = result[0],
-                      sizes = result[1].map(ft => ft[1]);
-
-                  serie.setClassManually(result[2]);
-                  current_layers[layer_name].breaks = result[1];
-                  current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-                  selection.style('fill-opacity', 0)
-                    .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
-                }
-              });
-          });
-    }
-
-    let opacity_section = popup.append('p').attr('class', 'line_elem');
-    opacity_section.insert('span')
-      .html(i18next.t('app_page.layer_style_popup.opacity'));
-    opacity_section.insert('input')
-      .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity })
-      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
-      .on('change', function () {
-        opacity_section.select('#opacity_val_txt').html(' ' + this.value);
-        selection.style('stroke-opacity', this.value);
       });
+  } else if (renderer === 'Choropleth' || renderer === 'PropSymbolsChoro') {
+    popup.append('p')
+      .styles({ margin: 'auto', 'text-align': 'center' })
+      .append('button')
+      .attr('class', 'button_disc')
+      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .on('click', () => {
+        container.modal.hide();
+        display_discretization(layer_name,
+                               current_layers[layer_name].rendered_field,
+                               current_layers[layer_name].colors_breaks.length,
+                               current_layers[layer_name].options_disc)
+         .then((confirmed) => {
+             container.modal.show();
+             if (confirmed) {
+               rendering_params = {
+                 nb_class: confirmed[0],
+                 type: confirmed[1],
+                 breaks: confirmed[2],
+                 colors: confirmed[3],
+                 colorsByFeature: confirmed[4],
+                 schema: confirmed[5],
+                 no_data: confirmed[6],
+                //  renderer:"Choropleth",
+                 field: current_layers[layer_name].rendered_field,
+                 extra_options: confirmed[7]
+               };
+               selection.transition()
+                 .style('stroke', (d, i) => rendering_params.colorsByFeature[i]);
+             }
+           });
+       });
+  } else {
+    const c_section = popup.append('p').attr('class', 'line_elem');
+    c_section.insert('span')
+      .html(i18next.t('app_page.layer_style_popup.color'));
+    c_section.insert('input')
+      .attrs({ type: 'color', value: stroke_prev })
+      .style('float', 'right')
+      .on('change', function () {
+        selection.style('stroke', this.value);
+        current_layers[layer_name].fill_color = { single: this.value };
+        // current_layers[layer_name].fill_color.single = this.value;
+      });
+  }
 
-    opacity_section.append('span').attr('id', 'opacity_val_txt')
-       .style('display', 'inline').style('float', 'right')
-       .html(' ' + border_opacity);
-
-    if (!renderer || (!renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'Links')) {
-      let width_section = popup.append('p');
-      width_section.append('span')
-        .html(i18next.t('app_page.layer_style_popup.width'));
-      width_section.insert('input')
-        .attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width })
-        .styles({ width: '60px', float: 'right' })
+  if (renderer === 'Links') {
+      prev_min_display = current_layers[layer_name].min_display || 0;
+      prev_breaks = current_layers[layer_name].breaks.slice();
+      let max_val = 0;
+      selection.each((d) => { if (+d.properties.fij > max_val) max_val = d.properties.fij; })
+      let threshold_section = popup.append('p').attr('class', 'line_elem');
+      threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
+      // The legend will be updated in order to start on the minimum value displayed instead of
+      //   using the minimum value of the serie (skipping unused class if necessary)
+      threshold_section.insert('input')
+        .attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display })
+        .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right',  'margin-right': '0px' })
         .on('change', function () {
-          let val = +this.value;
-          let zoom_scale = +d3.zoomTransform(map.node()).k;
-          map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
-          current_layers[layer_name]['stroke-width-const'] = val;
+          const val = +this.value;
+          popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
+          selection.style('display', d => (+d.properties.fij > val) ? null : 'none');
+          current_layers[layer_name].min_display = val;
         });
-    } else if (renderer.startsWith('PropSymbols')) {
-      let field_used = current_layers[layer_name].rendered_field;
-      let d_values = result_data[layer_name].map(f => +f[field_used]);
-      let prop_val_content = popup.append('p');
-      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', {field: current_layers[layer_name].rendered_field}));
-      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
-      prop_val_content.insert('input')
-        .styles({ width: '60px', float: 'right' })
-        .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] })
-        .on('change', function () {
-          const f_size = +this.value;
-          const prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
-          current_layers[layer_name].size[1] = f_size;
-          redraw_prop_val(prop_values);
+      threshold_section.insert('label')
+        .attr('id', 'larger_than')
+        .style('float', 'right')
+        .html(`<i> ${prev_min_display} </i>`);
+      popup.append('p')
+        .style('text-align', 'center')
+        .append('button')
+        .attr('class', 'button_disc')
+        .html(i18next.t('app_page.layer_style_popup.modify_size_class'))
+        .on('click', () => {
+          container.modal.hide();
+          display_discretization_links_discont(layer_name,
+                                               current_layers[layer_name].rendered_field,
+                                               current_layers[layer_name].breaks.length,
+                                               'user_defined')
+            .then((result) => {
+              container.modal.show();
+              if (result) {
+                const serie = result[0],
+                  sizes = result[1].map(ft => ft[1]),
+                  links_byId = current_layers[layer_name].linksbyId;
+                serie.setClassManually(result[2]);
+                current_layers[layer_name].breaks = result[1];
+                selection.style('fill-opacity', 0)
+                  .style('stroke-width', (d, i) => sizes[serie.getClass(+links_byId[i][1])]);
+              }
+            });
         });
-      prop_val_content.append('span')
-          .style('float', 'right')
-          .html('(px)');
+  } else if (renderer === 'DiscLayer') {
+    prev_min_display = current_layers[layer_name].min_display || 0;
+    prev_size = current_layers[layer_name].size.slice();
+    prev_breaks = current_layers[layer_name].breaks.slice();
+    const max_val = Math.max.apply(null, result_data[layer_name].map(i => i.disc_value));
+    const disc_part = popup.append('p').attr('class', 'line_elem');
+    disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
+    disc_part.insert('input')
+      .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: prev_min_display })
+      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+      .on('change', function () {
+        const val = +this.value;
+        const lim = val !== 0 ? val * current_layers[layer_name].n_features : -1;
+        popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
+        selection.style('display', (d, i) => i <= lim ? null : 'none');
+        current_layers[layer_name].min_display = val;
+      });
+    disc_part.insert('label')
+      .attr('id', 'larger_than')
+      .style('float', 'right')
+      .html(['<i> ', prev_min_display * 100, ' % </i>'].join(''));
+    popup.append('p')
+      .style('text-align', 'center')
+      .append('button')
+      .attr('class', 'button_disc')
+      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .on('click', () => {
+        container.modal.hide();
+        display_discretization_links_discont(layer_name,
+                                             'disc_value',
+                                             current_layers[layer_name].breaks.length,
+                                             'user_defined')
+          .then((result) => {
+            container.modal.show();
+            if (result) {
+              let serie = result[0],
+                  sizes = result[1].map(ft => ft[1]);
 
-      let prop_val_content2 = popup.append('p').attr('class', 'line_elem');
-      prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
-      prop_val_content2.insert('input')
-        .styles({ width: '100px', float: 'right' })
-        .attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] })
-        .on('change', function () {
-            let f_val = +this.value,
-                prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
-            redraw_prop_val(prop_values);
-            current_layers[layer_name].size[0] = f_val;
-        });
-    }
+              serie.setClassManually(result[2]);
+              current_layers[layer_name].breaks = result[1];
+              current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+              selection.style('fill-opacity', 0)
+                .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
+            }
+          });
+      });
+  }
 
-    make_generate_labels_section(popup, layer_name);
+  const opacity_section = popup.append('p').attr('class', 'line_elem');
+  opacity_section.insert('span')
+    .html(i18next.t('app_page.layer_style_popup.opacity'));
+  opacity_section.insert('input')
+    .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity })
+    .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .on('change', function () {
+      opacity_section.select('#opacity_val_txt').html(' ' + this.value);
+      selection.style('stroke-opacity', this.value);
+    });
+
+  opacity_section.append('span').attr('id', 'opacity_val_txt')
+     .style('display', 'inline').style('float', 'right')
+     .html(' ' + border_opacity);
+
+  if (!renderer || (!renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'Links')) {
+    const width_section = popup.append('p');
+    width_section.append('span')
+      .html(i18next.t('app_page.layer_style_popup.width'));
+    width_section.insert('input')
+      .attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width })
+      .styles({ width: '60px', float: 'right' })
+      .on('change', function () {
+        const val = +this.value;
+        const zoom_scale = +d3.zoomTransform(map.node()).k;
+        map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
+        current_layers[layer_name]['stroke-width-const'] = val;
+      });
+  } else if (renderer.startsWith('PropSymbols')) {
+    const field_used = current_layers[layer_name].rendered_field;
+    const d_values = result_data[layer_name].map(f => +f[field_used]);
+    const prop_val_content = popup.append('p');
+    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', {field: current_layers[layer_name].rendered_field}));
+    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+    prop_val_content.insert('input')
+      .styles({ width: '60px', float: 'right' })
+      .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] })
+      .on('change', function () {
+        const f_size = +this.value;
+        const prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
+        current_layers[layer_name].size[1] = f_size;
+        redraw_prop_val(prop_values);
+      });
+    prop_val_content.append('span')
+        .style('float', 'right')
+        .html('(px)');
+
+    const prop_val_content2 = popup.append('p').attr('class', 'line_elem');
+    prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+    prop_val_content2.insert('input')
+      .styles({ width: '100px', float: 'right' })
+      .attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] })
+      .on('change', function () {
+        const f_val = +this.value;
+        const prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
+        redraw_prop_val(prop_values);
+        current_layers[layer_name].size[0] = f_val;
+      });
+  }
+
+  make_generate_labels_section(popup, layer_name);
 }
 
 function createStyleBox(layer_name) {
@@ -956,7 +954,7 @@ function createStyleBox(layer_name) {
   const type = current_layers[layer_name].type,
     isSphere = current_layers[layer_name].sphere === true,
     renderer = current_layers[layer_name].renderer,
-    g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
+    g_lyr_name = `#${_app.layer_to_id.get(layer_name)}`,
     selection = map.select(g_lyr_name).selectAll('path'),
     opacity = selection.style('fill-opacity');
   const fill_prev = cloneObj(current_layers[layer_name].fill_color);
@@ -1069,15 +1067,14 @@ function createStyleBox(layer_name) {
   let new_layer_name = layer_name;
   if (layer_name !== 'World') {
     const new_name_section = make_change_layer_name_section(popup, layer_name);
-    new_name_section.on('change', function() {
+    new_name_section.on('change', function () {
       new_layer_name = this.value;
     });
   }
 
-
   if (type === 'Point') {
-    var current_pt_size = current_layers[layer_name].pointRadius;
-    let pt_size = popup.append('p').attr('class', 'line_elem');
+    let current_pt_size = current_layers[layer_name].pointRadius;
+    const pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
     pt_size.append('input')
       .attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' })
@@ -1110,7 +1107,7 @@ function createStyleBox(layer_name) {
         [[i18next.t('app_page.layer_style_popup.single_color'), 'single'],
          [i18next.t('app_page.layer_style_popup.categorical_color'), 'categorical'],
          [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach((d, i) => {
-                fill_method.append('option').text(d[0]).attr('value', d[1]);
+           fill_method.append('option').text(d[0]).attr('value', d[1]);
          });
         popup.append('div').attrs({ id: 'fill_color_section' })
         fill_method.on('change', function () {
@@ -1123,9 +1120,9 @@ function createStyleBox(layer_name) {
             make_random_color(layer_name);
           }
         });
-        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0])
+        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
       } else {
-        popup.append('div').attrs({ id: 'fill_color_section' })
+        popup.append('div').attrs({ id: 'fill_color_section' });
         make_single_color_menu(layer_name, fill_prev);
       }
   } else if (renderer === 'Categorical') {
@@ -1158,73 +1155,72 @@ function createStyleBox(layer_name) {
       });
   } else if (renderer === 'Choropleth') {
       popup.append('p')
-          .styles({ margin: 'auto', 'text-align': 'center' })
-          .append('button')
-          .attr('class', 'button_disc')
-          .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
-          .on('click', function () {
-              container.modal.hide();
-              display_discretization(layer_name,
-                                     current_layers[layer_name].rendered_field,
-                                     current_layers[layer_name].colors_breaks.length,
-                                    //  "quantiles",
-                                     current_layers[layer_name].options_disc)
-                 .then((confirmed) => {
-                     container.modal.show();
-                     if (confirmed) {
-                         rendering_params = {
-                             nb_class: confirmed[0],
-                             type: confirmed[1],
-                             breaks: confirmed[2],
-                             colors:confirmed[3],
-                             colorsByFeature: confirmed[4],
-                             schema: confirmed[5],
-                             no_data: confirmed[6],
-                            //  renderer:"Choropleth",
-                             field: current_layers[layer_name].rendered_field,
-                             extra_options: confirmed[7]
-                         };
-                         let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
-                         selection.transition()
-                             .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
-                     }
-                 });
-         });
-
-  } else if (renderer === 'Gridded') {
-      let field_to_discretize = current_layers[layer_name].rendered_field;
-      popup.append('p').style('margin', 'auto').style('text-align', 'center')
+        .styles({ margin: 'auto', 'text-align': 'center' })
         .append('button')
         .attr('class', 'button_disc')
         .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
         .on('click', function () {
-          container.modal.hide();
-          display_discretization(layer_name,
-                                 field_to_discretize,
-                                 current_layers[layer_name].colors_breaks.length,
-                                //  "quantiles",
-                                 current_layers[layer_name].options_disc)
-              .then((confirmed) => {
-                container.modal.show();
-                if (confirmed) {
-                  rendering_params = {
-                      nb_class: confirmed[0],
-                      type: confirmed[1],
-                      breaks: confirmed[2],
-                      colors:confirmed[3],
-                      colorsByFeature: confirmed[4],
-                      schema: confirmed[5],
-                      no_data: confirmed[6],
-                      renderer:'Choropleth',
-                      field: field_to_discretize,
-                      extra_options: confirmed[7]
-                  };
-                  let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
-                  selection.transition()
-                    .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
-                }
-              });
+            container.modal.hide();
+            display_discretization(layer_name,
+                                   current_layers[layer_name].rendered_field,
+                                   current_layers[layer_name].colors_breaks.length,
+                                  //  "quantiles",
+                                   current_layers[layer_name].options_disc)
+               .then((confirmed) => {
+                 container.modal.show();
+                 if (confirmed) {
+                   rendering_params = {
+                     nb_class: confirmed[0],
+                     type: confirmed[1],
+                     breaks: confirmed[2],
+                     colors:confirmed[3],
+                     colorsByFeature: confirmed[4],
+                     schema: confirmed[5],
+                     no_data: confirmed[6],
+                    //  renderer:"Choropleth",
+                     field: current_layers[layer_name].rendered_field,
+                     extra_options: confirmed[7]
+                   };
+                  //  let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                   selection.transition()
+                       .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
+                 }
+               });
         });
+  } else if (renderer === 'Gridded') {
+    const field_to_discretize = current_layers[layer_name].rendered_field;
+    popup.append('p').style('margin', 'auto').style('text-align', 'center')
+      .append('button')
+      .attr('class', 'button_disc')
+      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .on('click', function () {
+        container.modal.hide();
+        display_discretization(layer_name,
+                               field_to_discretize,
+                               current_layers[layer_name].colors_breaks.length,
+                              //  "quantiles",
+                               current_layers[layer_name].options_disc)
+            .then((confirmed) => {
+              container.modal.show();
+              if (confirmed) {
+                rendering_params = {
+                  nb_class: confirmed[0],
+                  type: confirmed[1],
+                  breaks: confirmed[2],
+                  colors: confirmed[3],
+                  colorsByFeature: confirmed[4],
+                  schema: confirmed[5],
+                  no_data: confirmed[6],
+                  renderer: 'Choropleth',
+                  field: field_to_discretize,
+                  extra_options: confirmed[7]
+                };
+                let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
+                selection.transition()
+                  .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
+              }
+            });
+      });
    } else if (renderer === 'Stewart') {
       let field_to_colorize = 'min',
           nb_ft = current_layers[layer_name].n_features;
@@ -1396,8 +1392,8 @@ function make_generate_labels_section(parent_node, layer_name) {
           input: 'select',
           inputPlaceholder: i18next.t('app_page.common.field'),
           inputOptions: input_fields,
-          inputValidator: function(value) {
-            return new Promise(function(resolve, reject) {
+          inputValidator: (value) => {
+            return new Promise((resolve, reject) => {
               if (_fields.indexOf(value) < 0) {
                 reject(i18next.t('app_page.common.no_value'));
               } else {
@@ -1422,7 +1418,7 @@ function make_generate_labels_section(parent_node, layer_name) {
 }
 
 function get_fields_name(layer_name) {
-  let elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
+  const elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
   if (!elem.__data__ || !elem.__data__.properties) {
     return null;
   } else {
@@ -1444,18 +1440,17 @@ function createStyleBox_ProbSymbol(layer_name) {
       current_layers[layer_name].size[1],
     ];
   let rendering_params;
-  var stroke_prev = selection.style('stroke'),
-      opacity = selection.style('fill-opacity'),
-      border_opacity = selection.style('stroke-opacity'),
-      stroke_width = selection.style('stroke-width');
+  let stroke_prev = selection.style('stroke');
+  let stroke_width = selection.style('stroke-width');
 
-  var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-      prev_col_breaks;
+  const opacity = selection.style('fill-opacity'),
+    border_opacity = selection.style('stroke-opacity');
 
-  var d_values = result_data[layer_name].map(v => +v[field_used]);
-
-  let redraw_prop_val = (prop_values) => {
-    let selec = selection._groups[0];
+  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  const d_values = result_data[layer_name].map(v => +v[field_used]);
+  let prev_col_breaks;
+  const redraw_prop_val = (prop_values) => {
+    const selec = selection._groups[0];
 
     if (type_symbol === 'circle') {
       for (let i = 0, len = prop_values.length; i < len; i++) {
@@ -1463,7 +1458,7 @@ function createStyleBox_ProbSymbol(layer_name) {
       }
     } else if (type_symbol === 'rect') {
       for (let i = 0, len = prop_values.length; i < len; i++) {
-        let old_rect_size = +selec[i].getAttribute('height'),
+        const old_rect_size = +selec[i].getAttribute('height'),
             centr = [+selec[i].getAttribute('x') + (old_rect_size/2) - (prop_values[i] / 2),
                      +selec[i].getAttribute('y') + (old_rect_size/2) - (prop_values[i] / 2)];
         selec[i].setAttribute('x', centr[0]);
@@ -1472,7 +1467,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         selec[i].setAttribute('width', prop_values[i]);
       }
     }
-  }
+  };
 
   if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
@@ -1489,12 +1484,12 @@ function createStyleBox_ProbSymbol(layer_name) {
         let lgd_prop_symb = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
         if (lgd_prop_symb) { redraw_legends_symbols(lgd_prop_symb); }
         if (type_symbol === 'circle') {
-          selection.each(function(d, i) {
+          selection.each(function (d, i) {
             d.properties.prop_value = this.getAttribute('r');
             d.properties.color = rgb2hex(this.style.fill);
           });
         } else {
-          selection.each(function(d, i) {
+          selection.each(function (d, i) {
             d.properties.prop_value = this.getAttribute('height');
             d.properties.color = rgb2hex(this.style.fill);
           });
@@ -1737,8 +1732,8 @@ function createStyleBox_ProbSymbol(layer_name) {
   border_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
 
   border_opacity_section.insert('input')
-    .attrs({type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity})
-    .styles({width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right'})
+    .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity })
+    .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
     .on('change', function () {
       selection.style('stroke-opacity', this.value);
       border_opacity_section.select('#border_opacity_txt').html((+this.value * 100) + '%');
@@ -1816,12 +1811,12 @@ function createStyleBox_ProbSymbol(layer_name) {
             if (type_symbol === 'circle') {
               return {
                 cx: centroid[0],
-                cy: centroid[1]
+                cy: centroid[1],
               };
             } else {
               return {
                 x: centroid[0] - +d.properties.prop_value / 2,
-                y: centroid[1] - +d.properties.prop_value / 2
+                y: centroid[1] - +d.properties.prop_value / 2,
               };
             }
           });
@@ -1856,21 +1851,23 @@ function make_style_box_indiv_label(label_node) {
         }
       }
     });
-  var box_content = d3.select('.styleTextAnnotation')
-    .select('.modal-content').style('width', '300px')
-    .select('.modal-body').insert('div');
-  let a = box_content.append('p').attr('class', 'line_elem');
+  const box_content = d3.select('.styleTextAnnotation')
+    .select('.modal-content')
+    .style('width', '300px')
+    .select('.modal-body')
+    .insert('div');
+  const a = box_content.append('p').attr('class', 'line_elem');
   a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
   a.append('input')
-    .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any', value: +label_node.style.fontSize.slice(0,-2) })
+    .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any', value: +label_node.style.fontSize.slice(0, -2) })
     .styles({ width: '70px', float: 'right' })
     .on('change', function () {
-      label_node.style.fontSize = `${this.value}px`
+      label_node.style.fontSize = `${this.value}px`;
     });
-  let b = box_content.append('p').attr('class', 'line_elem');
+  const b = box_content.append('p').attr('class', 'line_elem');
   b.insert('span').html(i18next.t('app_page.func_options.label.content'));
   b.append('input').attrs({ value: label_node.textContent, id: 'label_content' })
-    .styles({ 'width': '70px', float: 'right' })
+    .styles({ width: '70px', float: 'right' })
     .on('keyup', function () {
       label_node.textContent = this.value;
     });

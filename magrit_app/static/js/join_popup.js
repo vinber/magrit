@@ -70,9 +70,9 @@ function valid_join_check_display(val, prop) {
 //       (storing the relation between index of the geometry layer and index of the external dataset)
 //    -the update of the global "user_data" object, adding actualy the value to each object representing each feature of the layer
 function valid_join_on(layer_name, field1, field2) {
-  let join_values1 = [],
-    join_values2 = [],
-    hits = 0,
+  const join_values1 = [],
+    join_values2 = [];
+  let hits = 0,
     val;
 
   field_join_map = [];
@@ -91,29 +91,49 @@ function valid_join_on(layer_name, field1, field2) {
   if (typeof join_values1[0] === 'number' && typeof join_values2[0] === 'string') {
     for (let i = 0, len = join_values1.length; i < len; i++) {
       val = join_values2.indexOf(String(join_values1[i]));
-      if (val != -1) { field_join_map.push(val); hits++; } else { field_join_map.push(undefined); }
+      if (val !== -1) {
+        field_join_map.push(val);
+        hits += 1;
+      } else {
+        field_join_map.push(undefined);
+      }
     }
   } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'string') {
     for (let i = 0, len = join_values1.length; i < len; i++) {
       val = join_values2.indexOf(Number(join_values1[i]));
-      if (val != -1) { field_join_map.push(val); hits++; } else { field_join_map.push(undefined); }
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
+      } else {
+        field_join_map.push(undefined);
+      }
     }
   } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'number') {
     for (let i = 0, len = join_values1.length; i < len; i++) {
       val = join_values2.indexOf(join_values1[i]);
-      if (val != -1) { field_join_map.push(val); hits++; } else { field_join_map.push(undefined); }
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
+      } else {
+        field_join_map.push(undefined);
+      }
     }
   } else {
     for (let i = 0, len = join_values1.length; i < len; i++) {
       val = join_values2.indexOf(String(join_values1[i]));
-      if (val != -1) { field_join_map.push(val); hits++; } else { field_join_map.push(undefined); }
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
+      } else {
+        field_join_map.push(undefined);
+      }
     }
   }
 
-  let prop = [hits, '/', join_values1.length].join(''),
-    f_name = '';
+  const prop = [hits, '/', join_values1.length].join('');
+  let f_name = '';
 
-  if (hits == join_values1.length) {
+  if (hits === join_values1.length) {
     swal({ title: '',
       text: i18next.t('app_page.common.success'),
       type: 'success',
@@ -216,8 +236,8 @@ const createJoinBox = function createJoinBox(layer) {
     });
 
   d3.select('.joinBox').styles({ 'text-align': 'center', 'line-height': '0.9em' });
-  d3.select('#button_field1').style('float', 'left').on('change', function() { lastChoice.field1 = this.value; });
-  d3.select('#button_field2').style('float', 'left').on('change', function() { lastChoice.field2 = this.value; });
+  d3.select('#button_field1').style('float', 'left').on('change', function () { lastChoice.field1 = this.value; });
+  d3.select('#button_field2').style('float', 'left').on('change', function () { lastChoice.field2 = this.value; });
 };
 
 const removeExistingJointure = (layer_name) => {

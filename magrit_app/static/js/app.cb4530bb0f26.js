@@ -53,11 +53,13 @@ function setUpInterface(reload_project) {
       return 1;
     });
     if (layer_names.length) {
-      var formToSend = new FormData();
-      layer_names.forEach(function (name) {
-        formToSend.append('layer_name', current_layers[name].key_name);
-      });
-      navigator.sendBeacon('/layers/delete', formToSend);
+      (function () {
+        var formToSend = new FormData();
+        layer_names.forEach(function (name) {
+          formToSend.append('layer_name', current_layers[name].key_name);
+        });
+        navigator.sendBeacon('/layers/delete', formToSend);
+      })();
     }
   }, false);
   var bg = document.createElement('div');
@@ -813,31 +815,33 @@ function setUpInterface(reload_project) {
       apply_user_preferences(data);
     });
   } else {
-    // Check if there is a project to reload in the localStorage :
-    var last_project = window.localStorage.getItem('magrit_project');
-    if (last_project && last_project.length && last_project.length > 0) {
-      swal({ title: '',
-        // text: i18next.t('app_page.common.resume_last_project'),
-        allowOutsideClick: false,
-        allowEscapeKey: false,
-        type: 'question',
-        showConfirmButton: true,
-        showCancelButton: true,
-        confirmButtonText: i18next.t('app_page.common.new_project'),
-        cancelButtonText: i18next.t('app_page.common.resume_last')
-      }).then(function () {
-        // If we don't want to resume from the last project, we can
-        // remove it :
-        window.localStorage.removeItem('magrit_project');
+    (function () {
+      // Check if there is a project to reload in the localStorage :
+      var last_project = window.localStorage.getItem('magrit_project');
+      if (last_project && last_project.length && last_project.length > 0) {
+        swal({ title: '',
+          // text: i18next.t('app_page.common.resume_last_project'),
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          type: 'question',
+          showConfirmButton: true,
+          showCancelButton: true,
+          confirmButtonText: i18next.t('app_page.common.new_project'),
+          cancelButtonText: i18next.t('app_page.common.resume_last')
+        }).then(function () {
+          // If we don't want to resume from the last project, we can
+          // remove it :
+          window.localStorage.removeItem('magrit_project');
+          // Indicate that that no layer have been added for now :*
+          _app.first_layer = true;
+        }, function (dismiss) {
+          apply_user_preferences(last_project);
+        });
+      } else {
         // Indicate that that no layer have been added for now :*
         _app.first_layer = true;
-      }, function (dismiss) {
-        apply_user_preferences(last_project);
-      });
-    } else {
-      // Indicate that that no layer have been added for now :*
-      _app.first_layer = true;
-    }
+      }
+    })();
   }
   // Set the properties for the notification zone :
   alertify.set('notifier', 'position', 'bottom-left');
@@ -1092,7 +1096,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.8f43f9913d84.json'
+      loadPath: 'static/locales/{{lng}}/translation.cb4530bb0f26.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1165,42 +1169,48 @@ function displayInfoOnMove() {
     info_features.style('display', 'none').html('');
     svg_map.style.cursor = '';
   } else {
-    map.select('.brush').remove();
-    var layers = svg_map.querySelectorAll('.layer'),
-        nb_layer = layers.length,
-        top_visible_layer = null;
+    var _ret6 = function () {
+      map.select('.brush').remove();
+      var layers = svg_map.querySelectorAll('.layer'),
+          nb_layer = layers.length,
+          top_visible_layer = null;
 
-    for (var i = nb_layer - 1; i > -1; i--) {
-      if (layers[i].style.visibility !== 'hidden') {
-        top_visible_layer = _app.id_to_layer.get(layers[i].id);
-        break;
+      for (var i = nb_layer - 1; i > -1; i--) {
+        if (layers[i].style.visibility !== 'hidden') {
+          top_visible_layer = _app.id_to_layer.get(layers[i].id);
+          break;
+        }
       }
-    }
 
-    if (!top_visible_layer) {
-      swal('', i18next.t('app_page.common.error_no_visible'), 'error');
-      return;
-    }
+      if (!top_visible_layer) {
+        swal('', i18next.t('app_page.common.error_no_visible'), 'error');
+        return {
+          v: void 0
+        };
+      }
 
-    var id_top_layer = '#' + _app.layer_to_id.get(top_visible_layer);
-    var symbol = current_layers[top_visible_layer].symbol || 'path';
+      var id_top_layer = '#' + _app.layer_to_id.get(top_visible_layer);
+      var symbol = current_layers[top_visible_layer].symbol || 'path';
 
-    map.select(id_top_layer).selectAll(symbol).on('mouseover', function (d, i) {
-      var txt_info = ['<h3>', top_visible_layer, '</h3><i>Feature ', i + 1, '/', current_layers[top_visible_layer].n_features, '</i><p>'];
-      var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
-      Object.getOwnPropertyNames(properties).forEach(function (el) {
-        txt_info.push('<br><b>' + el + '</b> : ' + properties[el]);
+      map.select(id_top_layer).selectAll(symbol).on('mouseover', function (d, i) {
+        var txt_info = ['<h3>', top_visible_layer, '</h3><i>Feature ', i + 1, '/', current_layers[top_visible_layer].n_features, '</i><p>'];
+        var properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+        Object.getOwnPropertyNames(properties).forEach(function (el) {
+          txt_info.push('<br><b>' + el + '</b> : ' + properties[el]);
+        });
+        txt_info.push('</p>');
+        info_features.style('display', null).html(txt_info.join(''));
       });
-      txt_info.push('</p>');
-      info_features.style('display', null).html(txt_info.join(''));
-    });
 
-    map.select(id_top_layer).selectAll(symbol).on('mouseout', function () {
-      info_features.style('display', 'none').html('');
-    });
+      map.select(id_top_layer).selectAll(symbol).on('mouseout', function () {
+        info_features.style('display', 'none').html('');
+      });
 
-    info_features.classed('active', true);
-    svg_map.style.cursor = 'help';
+      info_features.classed('active', true);
+      svg_map.style.cursor = 'help';
+    }();
+
+    if ((typeof _ret6 === 'undefined' ? 'undefined' : _typeof(_ret6)) === "object") return _ret6.v;
   }
 }
 
@@ -2089,15 +2099,17 @@ function patchSvgForFonts() {
   if (needed_definitions.length == 0) {
     return;
   } else {
-    var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
-      return i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null;
-    })[0].cssRules;
-    var fonts_to_add = needed_definitions.map(function (name) {
-      return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
-    });
-    var style_elem = document.createElement('style');
-    style_elem.innerHTML = fonts_to_add.join(' ');
-    svg_map.querySelector('defs').appendChild(style_elem);
+    (function () {
+      var fonts_definitions = Array.prototype.filter.call(document.styleSheets, function (i) {
+        return i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null;
+      })[0].cssRules;
+      var fonts_to_add = needed_definitions.map(function (name) {
+        return String(fonts_definitions[customs_fonts.indexOf(name)].cssText);
+      });
+      var style_elem = document.createElement('style');
+      style_elem.innerHTML = fonts_to_add.join(' ');
+      svg_map.querySelector('defs').appendChild(style_elem);
+    })();
   }
 }
 
@@ -2703,950 +2715,986 @@ function ContextMenu() {
     parent.appendChild(menu);
   };
 }
-"use strict";
+'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function getBreaks(values, type, n_class) {
-    var _values = values.filter(function (v) {
-        return v;
-    }),
-        no_data = values.length - _values.length,
-        nb_class = +n_class || getOptNbClass(_values.length);
-    var serie = new geostats(_values),
-        breaks = [];
-    if (type === "Q6") {
-        var tmp = getBreaksQ6(serie.sorted(), serie.precision);
-        breaks = tmp.breaks;
-        breaks[0] = serie.min();
-        breaks[nb_class] = serie.max();
-        serie.setClassManually(breaks);
-    } else {
-        var _func = discretiz_geostats_switch.get(type);
-        breaks = serie[_func](nb_class);
-        if (serie.precision) breaks = breaks.map(function (val) {
-            return round_value(val, serie.precision);
-        });
-    }
-    return [serie, breaks, nb_class, no_data];
+  var _values = values.filter(function (v) {
+    return v;
+  }),
+      no_data = values.length - _values.length,
+      nb_class = +n_class || getOptNbClass(_values.length);
+  var serie = new geostats(_values);
+  var breaks = void 0;
+  if (type === 'Q6') {
+    var tmp = getBreaksQ6(serie.sorted(), serie.precision);
+    breaks = tmp.breaks;
+    breaks[0] = serie.min();
+    breaks[nb_class] = serie.max();
+    serie.setClassManually(breaks);
+  } else {
+    var _func = discretiz_geostats_switch.get(type);
+    breaks = serie[_func](nb_class);
+    if (serie.precision) breaks = breaks.map(function (val) {
+      return round_value(val, serie.precision);
+    });
+  }
+  return [serie, breaks, nb_class, no_data];
 }
 
 function discretize_to_size(values, type, nb_class, min_size, max_size) {
-    var _getBreaks = getBreaks(values, type, nb_class),
-        _getBreaks2 = _slicedToArray(_getBreaks, 3),
-        serie = _getBreaks2[0],
-        breaks = _getBreaks2[1],
-        nb_class = _getBreaks2[2];
+  var _getBreaks = getBreaks(values, type, nb_class),
+      _getBreaks2 = _slicedToArray(_getBreaks, 3),
+      serie = _getBreaks2[0],
+      breaks = _getBreaks2[1],
+      n_class = _getBreaks2[2];
 
-    var step = (max_size - min_size) / (nb_class - 1),
-        class_size = Array(nb_class).fill(0).map(function (d, i) {
-        return min_size + i * step;
-    }),
-        breaks_prop = [];
+  var step = (max_size - min_size) / (n_class - 1),
+      class_size = Array(n_class).fill(0).map(function (d, i) {
+    return min_size + i * step;
+  }),
+      breaks_prop = [];
 
-    for (var i = 0; i < breaks.length - 1; ++i) {
-        breaks_prop.push([[breaks[i], breaks[i + 1]], class_size[i]]);
-    }return [nb_class, type, breaks_prop, serie];
+  for (var i = 0; i < breaks.length - 1; ++i) {
+    breaks_prop.push([[breaks[i], breaks[i + 1]], class_size[i]]);
+  }
+  return [n_class, type, breaks_prop, serie];
 }
 
 var discretize_to_colors = function discretize_to_colors(values, type, nb_class, col_ramp_name) {
-    col_ramp_name = col_ramp_name || "Reds";
+  var name_col_ramp = col_ramp_name || 'Reds';
 
-    var _getBreaks3 = getBreaks(values, type, nb_class),
-        _getBreaks4 = _slicedToArray(_getBreaks3, 4),
-        serie = _getBreaks4[0],
-        breaks = _getBreaks4[1],
-        nb_class = _getBreaks4[2],
-        nb_no_data = _getBreaks4[3],
-        color_array = getColorBrewerArray(nb_class, col_ramp_name),
-        no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
-        colors_map = [];
+  var _getBreaks3 = getBreaks(values, type, nb_class),
+      _getBreaks4 = _slicedToArray(_getBreaks3, 4),
+      serie = _getBreaks4[0],
+      breaks = _getBreaks4[1],
+      n_class = _getBreaks4[2],
+      nb_no_data = _getBreaks4[3],
+      color_array = getColorBrewerArray(n_class, name_col_ramp),
+      no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
+      colors_map = [];
 
-    for (var j = 0; j < values.length; ++j) {
-        if (values[j] != null && values[j] != "") {
-            var idx = serie.getClass(values[j]);
-            colors_map.push(color_array[idx]);
-        } else {
-            colors_map.push(no_data_color);
-        }
+  for (var j = 0; j < values.length; ++j) {
+    if (values[j] != null && values[j] != '') {
+      var idx = serie.getClass(values[j]);
+      colors_map.push(color_array[idx]);
+    } else {
+      colors_map.push(no_data_color);
     }
-    return [nb_class, type, breaks, color_array, colors_map, no_data_color];
+  }
+  return [n_class, type, breaks, color_array, colors_map, no_data_color];
 }.memoize();
 
 var display_discretization = function display_discretization(layer_name, field_name, nb_class, options) {
-    var make_no_data_section = function make_no_data_section() {
-        var section = d3.select("#color_div").append("div").attr("id", "no_data_section").append("p").html(i18next.t("disc_box.withnodata", { count: +no_data }));
+  var make_no_data_section = function make_no_data_section() {
+    var section = d3.select('#color_div').append('div').attr('id', 'no_data_section').append('p').html(i18next.t('disc_box.withnodata', { count: +no_data }));
 
-        section.append("input").attrs({ type: "color", value: "#ebebcd", id: "no_data_color" }).style("margin", "0px 10px");
-    };
+    section.append('input').attrs({ type: 'color', value: '#ebebcd', id: 'no_data_color' }).style('margin', '0px 10px');
+  };
 
-    var make_sequ_button = function make_sequ_button() {
-        var col_div = d3.select("#color_div");
-        col_div.selectAll('.color_params').remove();
-        col_div.selectAll('.color_txt').remove();
-        col_div.selectAll('.color_txt2').remove();
-        col_div.selectAll('.central_class').remove();
-        col_div.selectAll('.central_color').remove();
-        col_div.selectAll('#reverse_pal_btn').remove();
-        var sequential_color_select = col_div.insert("p").attr("class", "color_txt").style("margin-left", "10px").html(i18next.t("disc_box.color_palette")).insert("select").attr("class", "color_params").styles({ 'background-image': 'url(/static/img/palettes/Blues.png)', 'width': '116px' }).on("change", function () {
-            this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
-            redisplay.draw();
-        });
+  var make_sequ_button = function make_sequ_button() {
+    var col_div = d3.select('#color_div');
+    col_div.selectAll('.color_params').remove();
+    col_div.selectAll('.color_txt').remove();
+    col_div.selectAll('.color_txt2').remove();
+    col_div.selectAll('.central_class').remove();
+    col_div.selectAll('.central_color').remove();
+    col_div.selectAll('#reverse_pal_btn').remove();
+    var sequential_color_select = col_div.insert('p').attr('class', 'color_txt').style('margin-left', '10px').html(i18next.t('disc_box.color_palette')).insert('select').attr('class', 'color_params').styles({
+      width: '116px',
+      'background-image': 'url(/static/img/palettes/Blues.png)' }).on('change', function () {
+      this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
+      redisplay.draw();
+    });
 
-        ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-            sequential_color_select.append("option").text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
-        });
-        var button_reverse = d3.select(".color_txt").insert('p').style('text-align', 'center').insert("button").styles({ "margin-top": "10px" }).attrs({ "class": "button_st3", "id": "reverse_pal_btn" }).html(i18next.t("disc_box.reverse_palette")).on("click", function () {
-            to_reverse = true;
-            redisplay.draw();
-        });
-    };
+    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+      sequential_color_select.append('option').text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
+    });
 
-    var make_diverg_button = function make_diverg_button() {
-        var col_div = d3.select("#color_div");
-        col_div.selectAll('.color_params').remove();
-        col_div.selectAll('.color_txt').remove();
-        col_div.selectAll('.color_txt2').remove();
-        col_div.selectAll('#reverse_pal_btn').remove();
-        col_div.insert('p').attr("class", "central_class").html(i18next.t("disc_box.break_on")).insert("input").attrs({
-            type: "number", class: "central_class", id: "centr_class",
-            min: 1, max: nb_class - 1, step: 1, value: Math.round(nb_class / 2)
-        }).style("width", "50px").on("change", function (_) {
-            redisplay.draw();
-        });
+    var button_reverse = d3.select('.color_txt').insert('p').style('text-align', 'center').insert('button').styles({ 'margin-top': '10px' }).attrs({ class: 'button_st3', id: 'reverse_pal_btn' }).html(i18next.t('disc_box.reverse_palette')).on('click', function () {
+      to_reverse = true;
+      redisplay.draw();
+    });
+  };
 
-        var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
-        var left_color_select = col_div.insert("p").attr("class", "color_txt").style("display", "inline").html(i18next.t("disc_box.left_colramp")).insert("select").style('width', '116px').attr("class", "color_params_left").on("change", function () {
-            this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
-            redisplay.draw();
-        });
-        var right_color_select = col_div.insert("p").styles({ display: "inline", "margin-left": "70px" }).attr("class", "color_txt2").html(i18next.t("disc_box.right_colramp")).insert("select").style('width', '116px').attr("class", "color_params_right").on("change", function () {
-            this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
-            redisplay.draw();
-        });
-        pal_names.forEach(function (name) {
-            left_color_select.append("option").text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
-            right_color_select.append("option").text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
-        });
-        document.getElementsByClassName("color_params_right")[0].selectedIndex = 14;
+  var make_diverg_button = function make_diverg_button() {
+    var col_div = d3.select('#color_div');
+    col_div.selectAll('.color_params').remove();
+    col_div.selectAll('.color_txt').remove();
+    col_div.selectAll('.color_txt2').remove();
+    col_div.selectAll('#reverse_pal_btn').remove();
+    col_div.insert('p').attr('class', 'central_class').html(i18next.t('disc_box.break_on')).insert('input').style('width', '50px').attrs({
+      type: 'number',
+      class: 'central_class',
+      id: 'centr_class',
+      min: 1,
+      max: nb_class - 1,
+      step: 1,
+      value: Math.round(nb_class / 2) }).on('change', function () {
+      redisplay.draw();
+    });
 
-        var central_color = col_div.insert('p').attr("class", "central_color");
-        central_color.insert("input").attrs({ "type": "checkbox", "id": "central_color_chkbx" }).on("change", function () {
-            redisplay.draw();
-            if (this.checked) col_div.select("#central_color_val").style("display", "");else {
-                col_div.select('#central_color_val').style('display', 'none');
-            }
-        });
-        central_color.select("input").node().checked = true;
-        central_color.insert("label").attr("for", "central_color_chkbx").html(i18next.t("disc_box.colored_central_class"));
-        central_color.insert("input").attrs({ type: "color", id: "central_color_val", value: "#e5e5e5" }).style("margin", "0px 10px").on("change", redisplay.draw);
-    };
+    var pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'];
+    var left_color_select = col_div.insert('p').attr('class', 'color_txt').style('display', 'inline').html(i18next.t('disc_box.left_colramp')).insert('select').style('width', '116px').attr('class', 'color_params_left').on('change', function () {
+      this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
+      redisplay.draw();
+    });
+    var right_color_select = col_div.insert('p').styles({ display: 'inline', 'margin-left': '70px' }).attr('class', 'color_txt2').html(i18next.t('disc_box.right_colramp')).insert('select').style('width', '116px').attr('class', 'color_params_right').on('change', function () {
+      this.style.backgroundImage = 'url(/static/img/palettes/' + this.value + '.png)';
+      redisplay.draw();
+    });
+    pal_names.forEach(function (name) {
+      left_color_select.append('option').attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' }).text(name);
+      right_color_select.append('option').attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' }).text(name);
+    });
+    document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
-    var make_box_histo_option = function make_box_histo_option() {
+    var central_color = col_div.insert('p').attr('class', 'central_color');
+    central_color.insert('input').attrs({ type: 'checkbox', id: 'central_color_chkbx' }).on('change', function () {
+      redisplay.draw();
+      if (this.checked) {
+        col_div.select('#central_color_val').style('display', '');
+      } else {
+        col_div.select('#central_color_val').style('display', 'none');
+      }
+    });
+    central_color.select('input').node().checked = true;
+    central_color.insert('label').attr('for', 'central_color_chkbx').html(i18next.t('disc_box.colored_central_class'));
+    central_color.insert('input').attrs({ type: 'color', id: 'central_color_val', value: '#e5e5e5' }).style('margin', '0px 10px').on('change', redisplay.draw);
+  };
 
-        var histo_options = newBox.append('div').attrs({ id: 'histo_options', class: 'row equal' }).styles({ 'margin': '5px 5px 10px 15px', 'width': '100%' });
-        var a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
-            b = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
-            c = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
-            d = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3');
+  var make_box_histo_option = function make_box_histo_option() {
+    var histo_options = newBox.append('div').attrs({ id: 'histo_options', class: 'row equal' }).styles({ margin: '5px 5px 10px 15px', width: '100%' });
+    var a = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+        b = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+        c = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3'),
+        d = histo_options.append('div').attr('class', 'col-xs-6 col-sm-3');
 
-        a.insert('button').attrs({ class: 'btn_population' }).html(i18next.t('disc_box.disp_rug_pop')).on('click', function () {
-            if (this.classList.contains('active')) {
-                this.classList.remove('active');
-                rug_plot.style('display', 'none');
-                rug_plot.classed('active', false);
-            } else {
-                this.classList.add('active');
-                rug_plot.style('display', '');
-                rug_plot.classed('active', true);
-            }
-        });
+    a.insert('button').attrs({ class: 'btn_population' }).html(i18next.t('disc_box.disp_rug_pop')).on('click', function () {
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        rug_plot.style('display', 'none');
+        rug_plot.classed('active', false);
+      } else {
+        this.classList.add('active');
+        rug_plot.style('display', '');
+        rug_plot.classed('active', true);
+      }
+    });
 
-        b.insert('button').attrs({ class: 'btn_mean' }).html(i18next.t('disc_box.disp_mean')).on('click', function () {
-            if (this.classList.contains('active')) {
-                this.classList.remove('active');
-                line_mean.style("stroke-width", 0);
-                txt_mean.style("fill", "none");
-                line_mean.classed("active", false);
-            } else {
-                this.classList.add('active');
-                line_mean.style("stroke-width", 2);
-                txt_mean.style("fill", "blue");
-                line_mean.classed("active", true);
-            }
-        });
+    b.insert('button').attrs({ class: 'btn_mean' }).html(i18next.t('disc_box.disp_mean')).on('click', function () {
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        line_mean.style('stroke-width', 0);
+        txt_mean.style('fill', 'none');
+        line_mean.classed('active', false);
+      } else {
+        this.classList.add('active');
+        line_mean.style('stroke-width', 2);
+        txt_mean.style('fill', 'blue');
+        line_mean.classed('active', true);
+      }
+    });
 
-        c.insert('button').attrs({ class: 'btn_median' }).html(i18next.t('disc_box.disp_median')).on('click', function () {
-            if (this.classList.contains('active')) {
-                this.classList.remove('active');
-                line_median.style('stroke-width', 0).classed('active', false);
-                txt_median.style('fill', 'none');
-            } else {
-                this.classList.add('active');
-                line_median.style('stroke-width', 2).classed('active', true);
-                txt_median.style('fill', 'darkgreen');
-            }
-        });
+    c.insert('button').attrs({ class: 'btn_median' }).html(i18next.t('disc_box.disp_median')).on('click', function () {
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        line_median.style('stroke-width', 0).classed('active', false);
+        txt_median.style('fill', 'none');
+      } else {
+        this.classList.add('active');
+        line_median.style('stroke-width', 2).classed('active', true);
+        txt_median.style('fill', 'darkgreen');
+      }
+    });
 
-        d.insert('button').attrs({ class: 'btn_stddev' }).html(i18next.t('disc_box.disp_sd')).on('click', function () {
-            if (this.classList.contains('active')) {
-                this.classList.remove('active');
-                line_std_left.style("stroke-width", 0);
-                line_std_left.classed("active", false);
-                line_std_right.style("stroke-width", 0);
-                line_std_right.classed("active", false);
-            } else {
-                this.classList.add('active');
-                line_std_left.style("stroke-width", 2);
-                line_std_left.classed("active", true);
-                line_std_right.style("stroke-width", 2);
-                line_std_right.classed("active", true);
-            }
-        });
-    };
+    d.insert('button').attrs({ class: 'btn_stddev' }).html(i18next.t('disc_box.disp_sd')).on('click', function () {
+      if (this.classList.contains('active')) {
+        this.classList.remove('active');
+        line_std_left.style('stroke-width', 0);
+        line_std_left.classed('active', false);
+        line_std_right.style('stroke-width', 0);
+        line_std_right.classed('active', false);
+      } else {
+        this.classList.add('active');
+        line_std_left.style('stroke-width', 2);
+        line_std_left.classed('active', true);
+        line_std_right.style('stroke-width', 2);
+        line_std_right.classed('active', true);
+      }
+    });
+  };
 
-    var update_nb_class = function update_nb_class(value) {
-        txt_nb_class.node().value = value;
-        document.getElementById("nb_class_range").value = value;
-        nb_class = value;
-    };
+  var update_nb_class = function update_nb_class(value) {
+    txt_nb_class.node().value = value;
+    document.getElementById('nb_class_range').value = value;
+    nb_class = value;
+  };
 
-    var update_axis = function update_axis(group) {
-        group.call(d3.axisBottom().scale(x).tickFormat(formatCount));
-    };
+  var update_axis = function update_axis(group) {
+    group.call(d3.axisBottom().scale(x).tickFormat(formatCount));
+  };
 
-    var update_overlay_elements = function update_overlay_elements() {
-        var x_mean = x(mean_serie),
-            x_med = x(serie.median()),
-            x_std_left = x(mean_serie - stddev_serie),
-            x_std_right = x(mean_serie + stddev_serie);
-        line_mean.transition().attrs({ x1: x_mean, x2: x_mean });
-        txt_mean.transition().attr('x', x_mean);
-        line_median.transition().attrs({ x1: x_med, x2: x_med });
-        txt_median.transition().attr('x', x_med);
-        line_std_left.transition().attrs({ x1: x_std_left, x2: x_std_left });
-        line_std_right.transition().attrs({ x1: x_std_right, x2: x_std_right });
-        rug_plot.selectAll('.indiv').attrs(function (d) {
-            return { x1: x(d.value), x2: x(d.value) };
-        });
-    };
+  var update_overlay_elements = function update_overlay_elements() {
+    var x_mean = x(mean_serie),
+        x_med = x(serie.median()),
+        x_std_left = x(mean_serie - stddev_serie),
+        x_std_right = x(mean_serie + stddev_serie);
+    line_mean.transition().attrs({ x1: x_mean, x2: x_mean });
+    txt_mean.transition().attr('x', x_mean);
+    line_median.transition().attrs({ x1: x_med, x2: x_med });
+    txt_median.transition().attr('x', x_med);
+    line_std_left.transition().attrs({ x1: x_std_left, x2: x_std_left });
+    line_std_right.transition().attrs({ x1: x_std_right, x2: x_std_right });
+    rug_plot.selectAll('.indiv').attrs(function (d) {
+      return { x1: x(d.value), x2: x(d.value) };
+    });
+  };
 
-    var make_overlay_elements = function make_overlay_elements() {
+  var make_overlay_elements = function make_overlay_elements() {
+    line_mean = overlay_svg.append('line').attr('class', 'line_mean').attr('x1', x(mean_serie)).attr('y1', 10).attr('x2', x(mean_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'blue', fill: 'none' }).classed('active', false);
 
-        line_mean = overlay_svg.append("line").attr("class", "line_mean").attr("x1", x(mean_serie)).attr("y1", 10).attr("x2", x(mean_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "blue", fill: "none" }).classed("active", false);
+    txt_mean = overlay_svg.append('text').attr('y', 0).attr('dy', '0.75em').attr('x', x(mean_serie)).style('fill', 'none').attr('text-anchor', 'middle').text(i18next.t('disc_box.mean'));
 
-        txt_mean = overlay_svg.append("text").attr("y", 0).attr("dy", "0.75em").attr("x", x(mean_serie)).style("fill", "none").attr("text-anchor", "middle").text(i18next.t("disc_box.mean"));
+    line_median = overlay_svg.append('line').attr('class', 'line_med').attr('x1', x(serie.median())).attr('y1', 10).attr('x2', x(serie.median())).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'darkgreen', fill: 'none' }).classed('active', false);
 
-        line_median = overlay_svg.append("line").attr("class", "line_med").attr("x1", x(serie.median())).attr("y1", 10).attr("x2", x(serie.median())).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "darkgreen", fill: "none" }).classed("active", false);
+    txt_median = overlay_svg.append('text').attr('y', 0).attr('dy', '0.75em').attr('x', x(serie.median())).style('fill', 'none').attr('text-anchor', 'middle').text(i18next.t('disc_box.median'));
 
-        txt_median = overlay_svg.append("text").attr("y", 0).attr("dy", "0.75em").attr("x", x(serie.median())).style("fill", "none").attr("text-anchor", "middle").text(i18next.t("disc_box.median"));
+    line_std_left = overlay_svg.append('line').attr('class', 'lines_std').attr('x1', x(mean_serie - stddev_serie)).attr('y1', 10).attr('x2', x(mean_serie - stddev_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
 
-        line_std_left = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_serie - stddev_serie)).attr("y1", 10).attr("x2", x(mean_serie - stddev_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
+    line_std_right = overlay_svg.append('line').attr('class', 'lines_std').attr('x1', x(mean_serie + stddev_serie)).attr('y1', 10).attr('x2', x(mean_serie + stddev_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
 
-        line_std_right = overlay_svg.append("line").attr("class", "lines_std").attr("x1", x(mean_serie + stddev_serie)).attr("y1", 10).attr("x2", x(mean_serie + stddev_serie)).attr("y2", svg_h - margin.bottom).styles({ "stroke-width": 0, stroke: "grey", fill: "none" }).classed("active", false);
+    rug_plot = overlay_svg.append('g').style('display', 'none');
+    rug_plot.selectAll('.indiv').data(values.map(function (i) {
+      return { value: +i };
+    })).enter().insert('line').attrs(function (d) {
+      return { class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom };
+    }).styles({ stroke: 'red', fill: 'none', 'stroke-width': 1 });
+  };
 
-        rug_plot = overlay_svg.append('g').style('display', 'none');
-        rug_plot.selectAll('.indiv').data(values.map(function (i) {
-            return { value: +i };
-        })).enter().insert('line').attrs(function (d) {
-            return { class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom };
-        }).styles({ 'stroke': 'red', 'fill': 'none', 'stroke-width': 1 });
-    };
+  var make_summary = function make_summary() {
+    var content_summary = make_content_summary(serie);
+    newBox.append('div').attr('id', 'summary').styles({ 'font-size': '11px', float: 'right', margin: '10px 10px 0px 10px' }).insert('p').html(['<b>', i18next.t('disc_box.summary'), '</b><br>', content_summary].join(''));
+  };
 
-    var make_summary = function make_summary() {
-        var content_summary = make_content_summary(serie);
-        newBox.append("div").attr("id", "summary").styles({ 'font-size': '11px', 'float': 'right', 'margin': '10px 10px 0px 10px' }).insert("p").html(["<b>", i18next.t("disc_box.summary"), "</b><br>", content_summary].join(""));
-    };
+  var redisplay = {
+    compute: function compute() {
+      var tmp = void 0;
+      serie = new geostats(values);
+      breaks = [];
+      values = serie.sorted();
 
-    var redisplay = {
-        compute: function compute() {
-            serie = new geostats(values);
-            breaks = [];
-            values = serie.sorted();
+      if (type === 'Q6') {
+        tmp = getBreaksQ6(values, serie.precision);
+        // stock_class = tmp.stock_class;
+        breaks = tmp.breaks;
+        breaks[0] = min_serie;
+        breaks[6] = max_serie;
+        serie.setClassManually(breaks);
+        serie.doCount();
+        stock_class = Array.prototype.slice.call(serie.counter);
+      } else if (type === 'stddev_f') {
+        tmp = getBreaksStdDev(serie, std_dev_params.share, std_dev_params.role_mean, serie.precision);
+        update_nb_class(nb_class = tmp.nb_class);
+        breaks = tmp.breaks;
+        serie.setClassManually(tmp.breaks);
+        serie.doCount();
+        stock_class = Array.prototype.slice.call(serie.counter);
+      } else if (type === 'user_defined') {
+        tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+        stock_class = tmp.stock_class;
+        breaks = tmp.breaks;
+        nb_class = tmp.breaks.length - 1;
+        update_nb_class(nb_class);
 
-            if (type === "Q6") {
-                var tmp = getBreaksQ6(values, serie.precision);
-                // stock_class = tmp.stock_class;
-                breaks = tmp.breaks;
-                breaks[0] = min_serie;
-                breaks[6] = max_serie;
-                serie.setClassManually(breaks);
-                serie.doCount();
-                stock_class = Array.prototype.slice.call(serie.counter);
-            } else if (type === "stddev_f") {
-                var tmp = getBreaksStdDev(serie, std_dev_params.share, std_dev_params.role_mean, serie.precision);
-                update_nb_class(nb_class = tmp.nb_class);
-                breaks = tmp.breaks;
-                serie.setClassManually(tmp.breaks);
-                serie.doCount();
-                stock_class = Array.prototype.slice.call(serie.counter);
-            } else if (type === "user_defined") {
-                var tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
-                stock_class = tmp.stock_class;
-                breaks = tmp.breaks;
+        if (breaks[0] > min_serie) breaks[0] = min_serie;
+        if (breaks[nb_class] < max_serie) breaks[nb_class] = max_serie;
 
-                nb_class = tmp.breaks.length - 1;
-                update_nb_class(nb_class);
-
-                if (breaks[0] > min_serie) breaks[0] = min_serie;
-                if (breaks[nb_class] < max_serie) breaks[nb_class] = max_serie;
-
-                var breaks_serie = breaks.slice();
-                if (breaks_serie[0] < min_serie) {
-                    breaks_serie[0] = min_serie;
-                }
-                if (breaks_serie[nb_class] > max_serie) {
-                    breaks_serie[nb_class] = max_serie;
-                }
-                serie.setClassManually(breaks_serie);
-            } else {
-                var _func = discretiz_geostats_switch.get(type);
-                breaks = serie[_func](nb_class);
-                // if(serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
-                serie.doCount();
-                stock_class = Array.prototype.slice.call(serie.counter);
-                if (stock_class.length == 0) {
-                    return;
-                }
-            }
-            // In order to avoid class limit falling out the serie limits with Std class :
-            //            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-            //            ^^^ well finally not ?
-            bins = [];
-            for (var i = 0, len = stock_class.length, offset = 0; i < len; i++) {
-                var bin = {};
-                bin.val = stock_class[i];
-                bin.offset = i == 0 ? 0 : bins[i - 1].width + bins[i - 1].offset;
-                bin.width = breaks[i + 1] - breaks[i];
-                bin.height = bin.val / (breaks[i + 1] - breaks[i]);
-                bins[i] = bin;
-            }
-            return true;
-        },
-        draw: function draw(provided_colors) {
-            // Clean-up previously made histogram :
-            newBox.select("#svg_discretization").selectAll(".bar").remove();
-            newBox.select("#svg_discretization").selectAll(".text_bar").remove();
-
-            if (!provided_colors) {
-                var col_scheme = newBox.select('.color_params_left').node() ? "diverging" : "sequential";
-                if (col_scheme === "sequential") {
-                    if (to_reverse) {
-                        color_array = color_array.reverse();
-                        to_reverse = false;
-                    } else {
-                        var selected_palette = document.querySelector('.color_params').value;
-                        color_array = getColorBrewerArray(nb_class, selected_palette);
-                        color_array = color_array.slice(0, nb_class);
-                    }
-                } else if (col_scheme === "diverging") {
-                    var left_palette = document.querySelector('.color_params_left').value,
-                        right_palette = document.querySelector('.color_params_right').value,
-                        ctl_class_value = +document.getElementById('centr_class').value,
-                        ctl_class_color = document.querySelector(".central_color > input").checked ? document.getElementById("central_color_val").value : [];
-
-                    var class_right = nb_class - ctl_class_value + 1,
-                        class_left = ctl_class_value - 1,
-                        max_col_nb = Math.max(class_right, class_left),
-                        right_pal = getColorBrewerArray(max_col_nb, right_palette),
-                        left_pal = getColorBrewerArray(max_col_nb, left_palette);
-
-                    left_pal = left_pal.slice(0, class_left).reverse();
-                    right_pal = right_pal.slice(0, class_right);
-
-                    color_array = [].concat(left_pal, ctl_class_color, right_pal);
-                }
-            } else {
-                color_array = provided_colors.slice();
-            }
-            for (var i = 0, len = bins.length; i < len; ++i) {
-                bins[i].color = color_array[i];
-            }x.domain([breaks[0], breaks[breaks.length - 1]]);
-            y.domain([0, d3.max(bins.map(function (d) {
-                return d.height + d.height / 3;
-            }))]);
-
-            svg_histo.select('.x_axis').transition().call(update_axis);
-            update_overlay_elements();
-
-            var xx = d3.scaleLinear().range([0, svg_w]).domain([0, d3.max(bins.map(function (d) {
-                return d.offset + d.width;
-            }))]);
-
-            var bar = svg_histo.selectAll(".bar").data(bins).enter().append("rect").attrs(function (d, i) {
-                return {
-                    "class": "bar", "id": "bar_" + i, "transform": "translate(0, -7.5)",
-                    "x": xx(d.offset), "y": y(d.height) - margin.bottom,
-                    "width": xx(d.width), "height": svg_h - y(d.height)
-                };
-            }).styles(function (d) {
-                return {
-                    "opacity": 0.95,
-                    "stroke-opacity": 1,
-                    "fill": d.color
-                };
-            }).on("mouseover", function () {
-                this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = null;
-            }).on("mouseout", function () {
-                this.parentElement.querySelector("#text_bar_" + this.id.split('_')[1]).style.display = "none";
-            });
-
-            svg_histo.selectAll(".txt_bar").data(bins).enter().append("text").attrs(function (d, i) {
-                return {
-                    "id": "text_bar_" + i, "class": "text_bar", "text-anchor": "middle",
-                    "dy": ".75em", "x": xx(d.offset + d.width / 2), "y": y(d.height) - margin.top * 2 - margin.bottom - 1.5
-                };
-            }).styles({ "color": "black", "cursor": "default", "display": "none" }).text(function (d) {
-                return formatCount(d.val);
-            });
-
-            document.getElementById("user_breaks_area").value = breaks.join(' - ');
-            return true;
+        var breaks_serie = breaks.slice();
+        if (breaks_serie[0] < min_serie) {
+          breaks_serie[0] = min_serie;
         }
-    };
+        if (breaks_serie[nb_class] > max_serie) {
+          breaks_serie[nb_class] = max_serie;
+        }
+        serie.setClassManually(breaks_serie);
+      } else {
+        breaks = serie[discretiz_geostats_switch.get(type)](nb_class);
+        // if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
+        serie.doCount();
+        stock_class = Array.prototype.slice.call(serie.counter);
+        if (stock_class.length === 0) {
+          return;
+        }
+      }
+      // In order to avoid class limit falling out the serie limits with Std class :
+      //            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+      //            ^^^ well finally not ?
+      bins = [];
+      for (var i = 0, len = stock_class.length, offset = 0; i < len; i++) {
+        var bin = {};
+        bin.val = stock_class[i];
+        bin.offset = i === 0 ? 0 : bins[i - 1].width + bins[i - 1].offset;
+        bin.width = breaks[i + 1] - breaks[i];
+        bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+        bins[i] = bin;
+      }
+      return true;
+    },
+    draw: function draw(provided_colors) {
+      // Clean-up previously made histogram :
+      newBox.select('#svg_discretization').selectAll('.bar').remove();
+      newBox.select('#svg_discretization').selectAll('.text_bar').remove();
 
-    //////////////////////////////////////////////////////////////////////////
+      if (!provided_colors) {
+        var col_scheme = newBox.select('.color_params_left').node() ? 'diverging' : 'sequential';
+        if (col_scheme === 'sequential') {
+          if (to_reverse) {
+            color_array = color_array.reverse();
+            to_reverse = false;
+          } else {
+            var selected_palette = document.querySelector('.color_params').value;
+            color_array = getColorBrewerArray(nb_class, selected_palette);
+            color_array = color_array.slice(0, nb_class);
+          }
+        } else if (col_scheme === 'diverging') {
+          var left_palette = document.querySelector('.color_params_left').value,
+              right_palette = document.querySelector('.color_params_right').value,
+              ctl_class_value = +document.getElementById('centr_class').value,
+              ctl_class_color = document.querySelector('.central_color > input').checked ? document.getElementById('central_color_val').value : [];
 
-    var modal_box = make_dialog_container("discretiz_charts", [i18next.t("disc_box.title"), " - ", layer_name, " - ", field_name].join(''), "discretiz_charts_dialog");
+          var class_right = nb_class - ctl_class_value + 1,
+              class_left = ctl_class_value - 1,
+              max_col_nb = Math.max(class_right, class_left);
+          var right_pal = getColorBrewerArray(max_col_nb, right_palette),
+              left_pal = getColorBrewerArray(max_col_nb, left_palette);
 
-    var newBox = d3.select("#discretiz_charts").select(".modal-body");
-    var db_data = void 0;
-    if (result_data.hasOwnProperty(layer_name)) {
-        db_data = result_data[layer_name];
-    } else if (user_data.hasOwnProperty(layer_name)) {
-        db_data = user_data[layer_name];
+          left_pal = left_pal.slice(0, class_left).reverse();
+          right_pal = right_pal.slice(0, class_right);
+
+          color_array = [].concat(left_pal, ctl_class_color, right_pal);
+        }
+      } else {
+        color_array = provided_colors.slice();
+      }
+      for (var i = 0, len = bins.length; i < len; ++i) {
+        bins[i].color = color_array[i];
+      }
+      x.domain([breaks[0], breaks[breaks.length - 1]]);
+      y.domain([0, d3.max(bins.map(function (d) {
+        return d.height + d.height / 3;
+      }))]);
+
+      svg_histo.select('.x_axis').transition().call(update_axis);
+      update_overlay_elements();
+
+      var xx = d3.scaleLinear().range([0, svg_w]).domain([0, d3.max(bins.map(function (d) {
+        return d.offset + d.width;
+      }))]);
+
+      var bar = svg_histo.selectAll('.bar').data(bins).enter().append('rect').attrs(function (d, i) {
+        return {
+          class: 'bar',
+          id: 'bar_' + i,
+          transform: 'translate(0, -7.5)',
+          x: xx(d.offset),
+          y: y(d.height) - margin.bottom,
+          width: xx(d.width),
+          height: svg_h - y(d.height) };
+      }).styles(function (d) {
+        return {
+          fill: d.color,
+          opacity: 0.95,
+          'stroke-opacity': 1 };
+      }).on('mouseover', function () {
+        this.parentElement.querySelector('#text_bar_' + this.id.split('_')[1]).style.display = null;
+      }).on('mouseout', function () {
+        this.parentElement.querySelector('#text_bar_' + this.id.split('_')[1]).style.display = 'none';
+      });
+
+      svg_histo.selectAll('.txt_bar').data(bins).enter().append('text').attrs(function (d, i) {
+        return {
+          id: 'text_bar_' + i,
+          class: 'text_bar',
+          'text-anchor': 'middle',
+          dy: '.75em',
+          x: xx(d.offset + d.width / 2),
+          y: y(d.height) - margin.top * 2 - margin.bottom - 1.5 };
+      }).styles({ color: 'black', cursor: 'default', display: 'none' }).text(function (d) {
+        return formatCount(d.val);
+      });
+
+      document.getElementById('user_breaks_area').value = breaks.join(' - ');
+      return true;
+    }
+  };
+
+  var modal_box = make_dialog_container('discretiz_charts', [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join(''), 'discretiz_charts_dialog');
+
+  var newBox = d3.select('#discretiz_charts').select('.modal-body');
+  var db_data = void 0;
+  if (result_data.hasOwnProperty(layer_name)) {
+    db_data = result_data[layer_name];
+  } else if (user_data.hasOwnProperty(layer_name)) {
+    db_data = user_data[layer_name];
+  } else {
+    var layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
+    db_data = Array.prototype.map.call(layer.children, function (d) {
+      return d.__data__.properties;
+    });
+  }
+  var indexes = [];
+  var color_array = [],
+      nb_values = db_data.length,
+      values = [],
+      no_data = void 0;
+
+  var type = options.type;
+
+  for (var i = 0; i < nb_values; i++) {
+    if (db_data[i][field_name] != null && db_data[i][field_name] != '') {
+      values.push(+db_data[i][field_name]);
+      indexes.push(i);
+    }
+  }
+
+  if (nb_values === values.length) {
+    no_data = 0;
+  } else {
+    no_data = nb_values - values.length;
+    nb_values = values.length;
+  }
+
+  var max_nb_class = nb_values > 20 ? 20 : nb_values;
+  var serie = new geostats(values),
+      breaks = [],
+      stock_class = [],
+      bins = [],
+      user_break_list = null,
+      std_dev_params = options.extra_options && options.extra_options.role_mean ? options.extra_options : { role_mean: 'center', share: 1 };
+
+  if (serie.variance() === 0 && serie.stddev() === 0) {
+    serie = new geostats(values);
+  }
+
+  var min_serie = serie.min();
+  var max_serie = serie.max();
+  var mean_serie = serie.mean();
+  var stddev_serie = serie.stddev();
+
+  values = serie.sorted();
+
+  var available_functions = [[i18next.t('app_page.common.equal_interval'), 'equal_interval'], [i18next.t('app_page.common.quantiles'), 'quantiles'], [i18next.t('app_page.common.stddev_f'), 'stddev_f'], [i18next.t('app_page.common.Q6'), 'Q6'], [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'], [i18next.t('app_page.common.jenks'), 'jenks']];
+
+  if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
+    available_functions.push([i18next.t('app_page.common.geometric_progression'), 'geometric_progression']);
+  }
+  var precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
+  var formatCount = d3.format(precision_axis);
+  var discretization = newBox.append('div').attr('id', 'discretization_panel').insert('p').insert('select').attr('class', 'params').on('change', function () {
+    type = this.value;
+    if (type === 'stddev_f') {
+      input_section_stddev.style('display', '');
+      document.getElementById('nb_class_range').disabled = 'disabled';
+      txt_nb_class.style('disabled', 'disabled');
+      disc_nb_class.style('display', 'none');
     } else {
-        var layer = svg_map.querySelector('#' + _app.idLayer.get(layer_name));
-        db_data = Array.prototype.map.call(layer.children, function (d) {
-            return d.__data__.properties;
-        });
+      input_section_stddev.style('display', 'none');
+      document.getElementById('nb_class_range').disabled = false;
+      txt_nb_class.style('disabled', false);
+      disc_nb_class.style('display', 'inline');
     }
-    var color_array = [],
-        nb_values = db_data.length,
-        indexes = [],
-        values = [],
-        no_data = void 0;
-
-    var type = options.type;
-
-    for (var i = 0; i < nb_values; i++) {
-        if (db_data[i][field_name] != null && db_data[i][field_name] != "") {
-            values.push(+db_data[i][field_name]);
-            indexes.push(i);
-        }
+    if (type === 'Q6') {
+      update_nb_class(6);
     }
-
-    if (nb_values == values.length) {
-        no_data = 0;
-    } else {
-        no_data = nb_values - values.length;
-        nb_values = values.length;
-    }
-
-    var serie = new geostats(values),
-        breaks = [],
-        stock_class = [],
-        bins = [],
-        user_break_list = null,
-        max_nb_class = 20 < nb_values ? 20 : nb_values,
-        std_dev_params = options.extra_options && options.extra_options.role_mean != undefined ? options.extra_options : { role_mean: 'center', share: 1 };
-
-    if (serie.variance() == 0 && serie.stddev() == 0) {
-        serie = new geostats(values);
-    }
-
-    var min_serie = serie.min();
-    var max_serie = serie.max();
-    var mean_serie = serie.mean();
-    var stddev_serie = serie.stddev();
-
-    values = serie.sorted();
-
-    var available_functions = [[i18next.t("app_page.common.equal_interval"), "equal_interval"], [i18next.t("app_page.common.quantiles"), "quantiles"], [i18next.t("app_page.common.stddev_f"), "stddev_f"], [i18next.t("app_page.common.Q6"), "Q6"], [i18next.t("app_page.common.arithmetic_progression"), "arithmetic_progression"], [i18next.t("app_page.common.jenks"), "jenks"]];
-
-    if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
-        available_functions.push([i18next.t("app_page.common.geometric_progression"), "geometric_progression"]);
-    }
-    var precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
-    var formatCount = d3.format(precision_axis);
-    var discretization = newBox.append('div').attr("id", "discretization_panel").insert("p").insert("select").attr("class", "params").on("change", function () {
-        type = this.value;
-        if (type === "stddev_f") {
-            input_section_stddev.style('display', '');
-            document.getElementById("nb_class_range").disabled = 'disabled';
-            txt_nb_class.style('disabled', 'disabled');
-            disc_nb_class.style('display', 'none');
-        } else {
-            input_section_stddev.style('display', 'none');
-            document.getElementById("nb_class_range").disabled = false;
-            txt_nb_class.style('disabled', false);
-            disc_nb_class.style('display', 'inline');
-        }
-        if (type === "Q6") {
-            update_nb_class(6);
-        }
-        redisplay.compute();
-        redisplay.draw();
-    });
-
-    available_functions.forEach(function (func) {
-        discretization.append("option").text(func[0]).attr("value", func[1]);
-    });
-
-    var input_section_stddev = d3.select('#discretization_panel').insert('p').styles({ 'display': type === 'stddev_f' ? '' : 'none',
-        'margin': 'auto' });
-    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
-    input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ 'width': '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
-        var val = this.value;
-        if (val == 0 || val * stddev_serie > max_serie - min_serie || val * stddev_serie * 21 < max_serie - min_serie) {
-            // If the new value is too big or too small:
-            this.value = std_dev_params.share;
-            return;
-        }
-        std_dev_params.share = val;
-        redisplay.compute();
-        redisplay.draw();
-    });
-    input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt2'));
-    var std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
-    std_dev_mean_choice.insert('p').style('margin', 'auto').html(i18next.t('disc_box.stddev_role_mean'));
-    [[i18next.t("disc_box.stddev_center_mean"), "center"], [i18next.t("disc_box.stddev_break_mean"), "bound"]].forEach(function (el) {
-        std_dev_mean_choice.insert('input').attrs({ type: "radio", name: "role_mean", value: el[1], id: "button_stddev_" + el[1] }).on("change", function () {
-            std_dev_params.role_mean = this.value;
-            redisplay.compute();
-            redisplay.draw();
-        });
-        std_dev_mean_choice.insert("label").style('font-weight', '400').attrs({ 'for': "button_stddev_" + el[1] }).html(el[0]);
-    });
-    document.getElementById("button_stddev_" + std_dev_params.role_mean).checked = true;
-    var txt_nb_class = d3.select("#discretization_panel").append("input").attrs({ type: "number", class: "without_spinner", min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: "30px", "margin": "0 10px", "vertical-align": "calc(20%)" }).on("change", function () {
-        var a = disc_nb_class.node();
-        a.value = this.value;
-        a.dispatchEvent(new Event('change'));
-    });
-
-    d3.select("#discretization_panel").append('span').html(i18next.t("disc_box.class"));
-
-    var disc_nb_class = d3.select("#discretization_panel").insert("input").styles({ display: "inline", width: "60px", "vertical-align": "middle", margin: "10px" }).attrs({ id: "nb_class_range", type: "range" }).attrs({ min: 2, max: max_nb_class, value: nb_class, step: 1 }).on("change", function () {
-        type = discretization.node().value;
-        var old_nb_class = nb_class;
-        if (type === "Q6") {
-            update_nb_class(6);
-        } else if (type === "stddev_f") {
-            update_nb_class(nb_class);
-            return;
-        }
-        nb_class = +this.value;
-        txt_nb_class.node().value = nb_class;
-        var ret_val = redisplay.compute();
-        if (!ret_val) {
-            this.value = old_nb_class;
-            txt_nb_class.node().value = +old_nb_class;
-        } else {
-            redisplay.draw();
-            var ctl_class = document.getElementById("centr_class");
-            if (ctl_class) {
-                ctl_class.max = nb_class;
-                if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
-            }
-        }
-    });
-
-    var ref_histo_box = newBox.append('div').attr("id", "ref_histo_box");
-    ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
-
-    discretization.node().value = type;
-    make_summary();
-    var refDisplay = prepare_ref_histo(newBox, serie, formatCount);
-    refDisplay("histogram");
-
-    var svg_h = h / 5 > 100 ? h / 5 : 100,
-        svg_w = 760 < window.innerWidth - 40 ? 760 : window.innerWidth - 40,
-        margin = { top: 7.5, right: 30, bottom: 7.5, left: 30 },
-        height = svg_h - margin.top - margin.bottom;
-
-    d3.select("#discretiz_charts").select(".modal-dialog").styles({ width: svg_w + margin.top + margin.bottom + 90 + "px",
-        height: window.innerHeight - 60 + "px" });
-
-    if (values.length < 500) {
-        // Only allow for beeswarm plot if there isn't too many values
-        // as it seems to be costly due to the "simulation" + the voronoi
-        var current_histo = "histogram",
-            choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-        choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-            var str_tr = void 0;
-            if (current_histo == 'histogram') {
-                refDisplay("box_plot");
-                current_histo = "box_plot";
-                str_tr = "_boxplot";
-            } else if (current_histo == "box_plot") {
-                refDisplay("beeswarm");
-                current_histo = "beeswarm";
-                str_tr = '_beeswarm';
-            } else if (current_histo == "beeswarm") {
-                refDisplay("histogram");
-                current_histo = "histogram";
-                str_tr = '';
-            }
-            document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
-        });
-    }
-    var div_svg = newBox.append('div').append("svg").attr("id", "svg_discretization").attr("width", svg_w + margin.left + margin.right).attr("height", svg_h + margin.top + margin.bottom);
-
-    make_box_histo_option();
-
-    var svg_histo = div_svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var x = d3.scaleLinear().domain([min_serie, max_serie]).range([0, svg_w]);
-
-    var y = d3.scaleLinear().range([svg_h, 0]);
-
-    var overlay_svg = div_svg.append("g").attr('transform', 'translate(30, 0)'),
-        line_mean = void 0,
-        line_std_right = void 0,
-        line_std_left = void 0,
-        line_median = void 0,
-        txt_median = void 0,
-        txt_mean = void 0,
-        rug_plot = void 0;
-
-    make_overlay_elements();
-
-    svg_histo.append("g").attr("class", "x_axis").attr("transform", "translate(0," + height + ")").call(d3.axisBottom().scale(x).tickFormat(formatCount));
-
-    var b_accordion_colors = newBox.append("button").attrs({ "class": "accordion_disc active", "id": "btn_acc_disc_color" }).style("padding", "0 6px").html(i18next.t("disc_box.title_color_scheme")),
-        accordion_colors = newBox.append("div").attrs({ "class": "panel show", "id": "accordion_colors" }).style("width", "98%"),
-        color_scheme = d3.select("#accordion_colors").append("div").attr("id", "color_div").style("text-align", "center");
-
-    [[i18next.t("disc_box.sequential"), "sequential"], [i18next.t("disc_box.diverging"), "diverging"]].forEach(function (el) {
-        color_scheme.insert("label").style("margin", "20px").html(el[0]).insert('input').attrs({ type: "radio", name: "color_scheme", value: el[1], id: "button_" + el[1] }).on("change", function () {
-            this.value === "sequential" ? make_sequ_button() : make_diverg_button();
-            redisplay.draw();
-        });
-    });
-    var to_reverse = false;
-    document.getElementById("button_sequential").checked = true;
-
-    var b_accordion_breaks = newBox.append("button").attrs({ "class": "accordion_disc", "id": "btn_acc_disc_break" }).style("padding", "0 6px").html(i18next.t("disc_box.title_break_values")),
-        accordion_breaks = newBox.append("div").attrs({ "class": "panel", "id": "accordion_breaks_vals" }).style("width", "98%");
-
-    var user_defined_breaks = accordion_breaks.append("div").attr("id", "user_breaks");
-
-    user_defined_breaks.insert("textarea").attr("id", "user_breaks_area").attr("placeholder", i18next.t("app_page.common.expected_class")).style("width", "600px");
-
-    user_defined_breaks.insert("button").text(i18next.t("app_page.common.valid")).on("click", function () {
-        var old_nb_class = nb_class;
-        user_break_list = document.getElementById("user_breaks_area").value;
-        type = "user_defined";
-        // nb_class = user_break_list.split('-').length - 1;
-        // txt_nb_class.node().value = +nb_class;
-        // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
-        // document.getElementById("nb_class_range").value = nb_class;
-        redisplay.compute();
-        redisplay.draw();
-    });
-
-    accordionize(".accordion_disc", d3.select("#discretiz_charts").node());
-
-    if (no_data > 0) {
-        make_no_data_section();
-        if (options.no_data) {
-            document.getElementById("no_data_color").value = options.no_data;
-        }
-    }
-
-    if (!options.schema) {
-        make_sequ_button();
-    } else if (options.schema.length == 1) {
-        make_sequ_button();
-        document.querySelector(".color_params").value = options.schema[0];
-        document.querySelector(".color_params").style.backgroundImage = 'url(/static/img/palettes/' + options.schema[0] + '.png)';
-    } else if (options.schema.length > 1) {
-        make_diverg_button();
-        document.getElementById("button_diverging").checked = true;
-        var tmp = 0;
-        setSelected(document.querySelector(".color_params_left"), options.schema[0]);
-        // document.querySelector(".color_params_left").value = options.schema[0];
-        if (options.schema.length > 2) {
-            var e = document.getElementById('central_color_val');
-            e.style.display = '';
-            e.value = options.schema[1];
-            tmp = 1;
-            document.querySelector(".central_color").querySelector("input").checked = true;
-        } else {
-            document.querySelector(".central_color").querySelector("input").checked = false;
-        }
-        setSelected(document.querySelector(".color_params_right"), options.schema[1 + tmp]);
-        // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
-    }
-
-    if (options.type && options.type == "user_defined") {
-        user_break_list = options.breaks;
-    }
-
     redisplay.compute();
-    redisplay.draw(options.colors);
+    redisplay.draw();
+  });
 
-    var deferred = Promise.pending(),
-        container = document.getElementById("discretiz_charts");
+  available_functions.forEach(function (func) {
+    discretization.append('option').text(func[0]).attr('value', func[1]);
+  });
 
-    container.querySelector(".btn_ok").onclick = function () {
-        breaks = breaks.map(function (i) {
-            return +i;
-        });
-        var colors_map = [];
-        var no_data_color = null;
-        if (no_data > 0) {
-            no_data_color = document.getElementById("no_data_color").value;
-        }
-        for (var j = 0; j < db_data.length; ++j) {
-            var value = db_data[j][field_name];
-            if (value !== null && isFinite(value) && value != "") {
-                var idx = serie.getClass(+value);
-                colors_map.push(color_array[idx]);
-            } else {
-
-                colors_map.push(no_data_color);
-            }
-        }
-        var col_schema = [];
-        if (!d3.select('.color_params_left').node()) {
-            col_schema.push(document.querySelector(".color_params").value);
-        } else {
-            col_schema.push(document.querySelector(".color_params_left").value);
-            if (document.querySelector(".central_color").querySelector("input").checked) {
-                col_schema.push(document.getElementById("central_color_val").value);
-            }
-            col_schema.push(document.querySelector(".color_params_right").value);
-        }
-        deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color, type === 'stddev_f' ? std_dev_params : undefined]);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        container.remove();
-        var p = reOpenParent();
-        if (!p) overlay_under_modal.hide();
-    };
-
-    var _onclose = function _onclose() {
-        deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        container.remove();
-        var p = reOpenParent();
-        if (!p) overlay_under_modal.hide();
-    };
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.stopPropagation();
-            _onclose();
-        }
+  var input_section_stddev = d3.select('#discretization_panel').insert('p').styles({ margin: 'auto', display: type === 'stddev_f' ? '' : 'none' });
+  input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
+  input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
+    var val = this.value;
+    if (val === 0 || val * stddev_serie > max_serie - min_serie || val * stddev_serie * 21 < max_serie - min_serie) {
+      // If the new value is too big or too small:
+      this.value = std_dev_params.share;
+      return;
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
-    overlay_under_modal.display();
-    return deferred.promise;
+    std_dev_params.share = val;
+    redisplay.compute();
+    redisplay.draw();
+  });
+  input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt2'));
+  var std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
+  std_dev_mean_choice.insert('p').style('margin', 'auto').html(i18next.t('disc_box.stddev_role_mean'));
+  [[i18next.t('disc_box.stddev_center_mean'), 'center'], [i18next.t('disc_box.stddev_break_mean'), 'bound']].forEach(function (el) {
+    std_dev_mean_choice.insert('input').attrs({ type: 'radio', name: 'role_mean', value: el[1], id: 'button_stddev_' + el[1] }).on('change', function () {
+      std_dev_params.role_mean = this.value;
+      redisplay.compute();
+      redisplay.draw();
+    });
+    std_dev_mean_choice.insert('label').style('font-weight', '400').attrs({ for: 'button_stddev_' + el[1] }).html(el[0]);
+  });
+  document.getElementById('button_stddev_' + std_dev_params.role_mean).checked = true;
+  var txt_nb_class = d3.select('#discretization_panel').append('input').attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' }).on('change', function () {
+    var a = disc_nb_class.node();
+    a.value = this.value;
+    a.dispatchEvent(new Event('change'));
+  });
+
+  d3.select('#discretization_panel').append('span').html(i18next.t('disc_box.class'));
+
+  var disc_nb_class = d3.select('#discretization_panel').insert('input').styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' }).attrs({
+    id: 'nb_class_range',
+    type: 'range',
+    min: 2,
+    max: max_nb_class,
+    value: nb_class,
+    step: 1 }).on('change', function () {
+    type = discretization.node().value;
+    var old_nb_class = nb_class;
+    if (type === 'Q6') {
+      update_nb_class(6);
+    } else if (type === 'stddev_f') {
+      update_nb_class(nb_class);
+      return;
+    }
+    nb_class = +this.value;
+    txt_nb_class.node().value = nb_class;
+    var ret_val = redisplay.compute();
+    if (!ret_val) {
+      this.value = old_nb_class;
+      txt_nb_class.node().value = +old_nb_class;
+    } else {
+      redisplay.draw();
+      var ctl_class = document.getElementById('centr_class');
+      if (ctl_class) {
+        ctl_class.max = nb_class;
+        if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+      }
+    }
+  });
+
+  var ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
+  ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
+
+  discretization.node().value = type;
+  make_summary();
+  var refDisplay = prepare_ref_histo(newBox, serie, formatCount);
+  refDisplay('histogram');
+
+  var svg_h = h / 5 > 100 ? h / 5 : 100,
+      svg_w = window.innerWidth - 40 > 760 ? 760 : window.innerWidth - 40,
+      margin = { top: 7.5, right: 30, bottom: 7.5, left: 30 },
+      height = svg_h - margin.top - margin.bottom;
+
+  d3.select('#discretiz_charts').select('.modal-dialog').styles({
+    width: svg_w + margin.top + margin.bottom + 90 + 'px',
+    height: window.innerHeight - 60 + 'px' });
+
+  if (values.length < 500) {
+    (function () {
+      // Only allow for beeswarm plot if there isn't too many values
+      // as it seems to be costly due to the "simulation" + the voronoi
+      var current_histo = 'histogram';
+      var choice_histo = ref_histo_box.append('p').style('text-align', 'center');
+      choice_histo.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+        var str_tr = void 0;
+        if (current_histo === 'histogram') {
+          refDisplay('box_plot');
+          current_histo = 'box_plot';
+          str_tr = '_boxplot';
+        } else if (current_histo === 'box_plot') {
+          refDisplay('beeswarm');
+          current_histo = 'beeswarm';
+          str_tr = '_beeswarm';
+        } else if (current_histo === 'beeswarm') {
+          refDisplay('histogram');
+          current_histo = 'histogram';
+          str_tr = '';
+        }
+        document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
+      });
+    })();
+  }
+  var div_svg = newBox.append('div').append('svg').attr('id', 'svg_discretization').attr('width', svg_w + margin.left + margin.right).attr('height', svg_h + margin.top + margin.bottom);
+
+  make_box_histo_option();
+
+  var svg_histo = div_svg.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+  var x = d3.scaleLinear().domain([min_serie, max_serie]).range([0, svg_w]);
+
+  var y = d3.scaleLinear().range([svg_h, 0]);
+
+  var overlay_svg = div_svg.append('g').attr('transform', 'translate(30, 0)'),
+      line_mean = void 0,
+      line_std_right = void 0,
+      line_std_left = void 0,
+      line_median = void 0,
+      txt_median = void 0,
+      txt_mean = void 0,
+      rug_plot = void 0;
+
+  make_overlay_elements();
+
+  svg_histo.append('g').attr('class', 'x_axis').attr('transform', 'translate(0,' + height + ')').call(d3.axisBottom().scale(x).tickFormat(formatCount));
+
+  var b_accordion_colors = newBox.append('button').attrs({ class: 'accordion_disc active', id: 'btn_acc_disc_color' }).style('padding', '0 6px').html(i18next.t('disc_box.title_color_scheme'));
+  var accordion_colors = newBox.append('div').attrs({ class: 'panel show', id: 'accordion_colors' }).style('width', '98%');
+  var color_scheme = d3.select('#accordion_colors').append('div').attr('id', 'color_div').style('text-align', 'center');
+
+  [[i18next.t('disc_box.sequential'), 'sequential'], [i18next.t('disc_box.diverging'), 'diverging']].forEach(function (el) {
+    color_scheme.insert('label').style('margin', '20px').html(el[0]).insert('input').attrs({ type: 'radio', name: 'color_scheme', value: el[1], id: 'button_' + el[1] }).on('change', function () {
+      if (this.value === 'sequential') {
+        make_sequ_button();
+      } else {
+        make_diverg_button();
+      }
+      redisplay.draw();
+    });
+  });
+  var to_reverse = false;
+  document.getElementById('button_sequential').checked = true;
+
+  var b_accordion_breaks = newBox.append('button').attrs({ class: 'accordion_disc', id: 'btn_acc_disc_break' }).style('padding', '0 6px').html(i18next.t('disc_box.title_break_values'));
+  var accordion_breaks = newBox.append('div').attrs({ class: 'panel', id: 'accordion_breaks_vals' }).style('width', '98%');
+  var user_defined_breaks = accordion_breaks.append('div').attr('id', 'user_breaks');
+
+  user_defined_breaks.insert('textarea').attr('id', 'user_breaks_area').attr('placeholder', i18next.t('app_page.common.expected_class')).style('width', '600px');
+
+  user_defined_breaks.insert('button').text(i18next.t('app_page.common.valid')).on('click', function () {
+    var old_nb_class = nb_class;
+    user_break_list = document.getElementById('user_breaks_area').value;
+    type = 'user_defined';
+    // nb_class = user_break_list.split('-').length - 1;
+    // txt_nb_class.node().value = +nb_class;
+    // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
+    // document.getElementById("nb_class_range").value = nb_class;
+    redisplay.compute();
+    redisplay.draw();
+  });
+
+  accordionize('.accordion_disc', d3.select('#discretiz_charts').node());
+
+  if (no_data > 0) {
+    make_no_data_section();
+    if (options.no_data) {
+      document.getElementById('no_data_color').value = options.no_data;
+    }
+  }
+
+  if (!options.schema) {
+    make_sequ_button();
+  } else if (options.schema.length === 1) {
+    make_sequ_button();
+    document.querySelector('.color_params').value = options.schema[0];
+    document.querySelector('.color_params').style.backgroundImage = 'url(/static/img/palettes/' + options.schema[0] + '.png)';
+  } else if (options.schema.length > 1) {
+    make_diverg_button();
+    document.getElementById('button_diverging').checked = true;
+    var tmp = 0;
+    setSelected(document.querySelector('.color_params_left'), options.schema[0]);
+    // document.querySelector(".color_params_left").value = options.schema[0];
+    if (options.schema.length > 2) {
+      var elem = document.getElementById('central_color_val');
+      elem.style.display = '';
+      elem.value = options.schema[1];
+      tmp = 1;
+      document.querySelector('.central_color').querySelector('input').checked = true;
+    } else {
+      document.querySelector('.central_color').querySelector('input').checked = false;
+    }
+    setSelected(document.querySelector('.color_params_right'), options.schema[1 + tmp]);
+    // document.querySelector(".color_params_right").value = options.schema[1 + tmp];
+  }
+
+  if (options.type && options.type === 'user_defined') {
+    user_break_list = options.breaks;
+  }
+
+  redisplay.compute();
+  redisplay.draw(options.colors);
+
+  var deferred = Promise.pending(),
+      container = document.getElementById('discretiz_charts');
+
+  container.querySelector('.btn_ok').onclick = function () {
+    breaks = breaks.map(function (i) {
+      return +i;
+    });
+    var colors_map = [];
+    var no_data_color = null;
+    if (no_data > 0) {
+      no_data_color = document.getElementById('no_data_color').value;
+    }
+    for (var j = 0; j < db_data.length; ++j) {
+      var value = db_data[j][field_name];
+      if (value !== null && isFinite(value) && value != '') {
+        var idx = serie.getClass(+value);
+        colors_map.push(color_array[idx]);
+      } else {
+        colors_map.push(no_data_color);
+      }
+    }
+    var col_schema = [];
+    if (!d3.select('.color_params_left').node()) {
+      col_schema.push(document.querySelector('.color_params').value);
+    } else {
+      col_schema.push(document.querySelector('.color_params_left').value);
+      if (document.querySelector('.central_color').querySelector('input').checked) {
+        col_schema.push(document.getElementById('central_color_val').value);
+      }
+      col_schema.push(document.querySelector('.color_params_right').value);
+    }
+    deferred.resolve([nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color, type === 'stddev_f' ? std_dev_params : undefined]);
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+    container.remove();
+    var p = reOpenParent();
+    if (!p) overlay_under_modal.hide();
+  };
+
+  var _onclose = function _onclose() {
+    deferred.resolve(false);
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+    container.remove();
+    var p = reOpenParent();
+    if (!p) overlay_under_modal.hide();
+  };
+  container.querySelector('.btn_cancel').onclick = _onclose;
+  container.querySelector('#xclose').onclick = _onclose;
+  var helper_esc_key_twbs = function helper_esc_key_twbs(evt) {
+    var _event = evt || window.event;
+    var isEscape = 'key' in _event ? _event.key === 'Escape' || _event.key === 'Esc' : _event.keyCode === 27;
+    if (isEscape) {
+      _event.stopPropagation();
+      _onclose();
+    }
+  };
+  document.addEventListener('keydown', helper_esc_key_twbs);
+  overlay_under_modal.display();
+  return deferred.promise;
 };
 
 function fetch_categorical_colors() {
-    var categ = document.getElementsByClassName("typo_class"),
-        color_map = new Map();
-    for (var i = 0; i < categ.length; i++) {
-        var color = rgb2hex(categ[i].querySelector(".color_square").style.backgroundColor),
-            new_name = categ[i].querySelector(".typo_name").value,
-            nb_features = categ[i].querySelector('.typo_count_ft').getAttribute('data-count');
-        color_map.set(categ[i].__data__.name, [color, new_name, nb_features]);
-    }
-    return color_map;
+  var categ = document.getElementsByClassName('typo_class'),
+      color_map = new Map();
+  for (var i = 0; i < categ.length; i++) {
+    var color = rgb2hex(categ[i].querySelector('.color_square').style.backgroundColor),
+        new_name = categ[i].querySelector('.typo_name').value,
+        nb_features = categ[i].querySelector('.typo_count_ft').getAttribute('data-count');
+    color_map.set(categ[i].__data__.name, [color, new_name, nb_features]);
+  }
+  return color_map;
 }
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
-    var nb_features = current_layers[layer_name].n_features,
-        nb_class = cats.length;
+  var nb_features = current_layers[layer_name].n_features;
+  var nb_class = cats.length;
+  var modal_box = make_dialog_container('categorical_box', i18next.t('app_page.categorical_box.title', { layer: layer_name, nb_features: nb_features }), 'dialog');
 
-    var modal_box = make_dialog_container("categorical_box", i18next.t("app_page.categorical_box.title", { layer: layer_name, nb_features: nb_features }), "dialog");
+  var newbox = d3.select('#categorical_box').select('.modal-body').styles({ 'overflow-y': 'scroll', 'max-height': window.innerHeight - 145 + 'px' });
 
-    var newbox = d3.select("#categorical_box").select(".modal-body").styles({ 'overflow-y': 'scroll', 'max-height': window.innerHeight - 145 + 'px' });
+  newbox.append('h3').html('');
+  newbox.append('p').html(i18next.t('app_page.symbol_typo_box.field_categ', { field: field, nb_class: +nb_class, nb_features: +nb_features }));
 
-    newbox.append("h3").html("");
-    newbox.append("p").html(i18next.t("app_page.symbol_typo_box.field_categ", { field: field, nb_class: +nb_class, nb_features: +nb_features }));
+  newbox.append('ul').style('padding', 'unset').attr('id', 'sortable_typo_name').selectAll('li').data(cats).enter().append('li').styles({ margin: 'auto', 'list-style': 'none' }).attr('class', 'typo_class').attr('id', function (d, i) {
+    return ['line', i].join('_');
+  });
 
-    newbox.append("ul").style("padding", "unset").attr("id", "sortable_typo_name").selectAll("li").data(cats).enter().append("li").styles({ margin: "auto", "list-style": "none" }).attr("class", "typo_class").attr("id", function (d, i) {
-        return ["line", i].join('_');
-    });
+  newbox.selectAll('.typo_class').append('input').styles({ width: '140px', height: 'auto', display: 'inline-block', 'vertical-align': 'middle', 'margin-right': '20px' }).attrs(function (d) {
+    return { class: 'typo_name', value: d.display_name, id: d.name };
+  });
 
-    newbox.selectAll(".typo_class").append("input").styles({ width: "140px", height: "auto", display: "inline-block", "vertical-align": "middle", "margin-right": "20px" }).attrs(function (d) {
-        return { class: 'typo_name', value: d.display_name, id: d.name };
-    });
-
-    newbox.selectAll(".typo_class").insert("p").attr("class", "color_square").style("background-color", function (d) {
-        return d.color;
-    }).styles({ width: "22px", height: "22px", margin: 'auto', 'vertical-align': 'middle',
-        "border-radius": "10%", display: "inline-block" }).on("click", function () {
-        var self = this;
-        var this_color = self.style.backgroundColor;
-        var input_col = document.createElement("input");
-        input_col.setAttribute("type", "color");
-        input_col.setAttribute("value", rgb2hex(this_color));
-        input_col.className = "color_input";
-        input_col.onchange = function (change) {
-            self.style.backgroundColor = hexToRgb(change.target.value, "string");
-        };
-        var t = input_col.dispatchEvent(new MouseEvent("click"));
-    });
-
-    newbox.selectAll(".typo_class").insert("span").attrs(function (d) {
-        return { class: 'typo_count_ft', 'data-count': d.nb_elem };
-    }).html(function (d) {
-        return i18next.t("app_page.symbol_typo_box.count_feature", { nb_features: +d.nb_elem });
-    });
-
-    newbox.insert("p").insert("button").attr("class", "button_st3").html(i18next.t("app_page.categorical_box.new_random_colors")).on("click", function () {
-        var lines = document.getElementsByClassName("typo_class");
-        for (var i = 0; i < lines.length; ++i) {
-            lines[i].querySelector(".color_square").style.backgroundColor = randomColor();
-        }
-    });
-
-    new Sortable(document.getElementById("sortable_typo_name"));
-
-    var deferred = Promise.pending(),
-        container = document.getElementById("categorical_box"),
-        _onclose = function _onclose() {
-        deferred.resolve(false);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        container.remove();
-        var p = reOpenParent();
-        if (!p) overlay_under_modal.hide();
+  newbox.selectAll('.typo_class').insert('p').attr('class', 'color_square').style('background-color', function (d) {
+    return d.color;
+  }).styles({ width: '22px',
+    height: '22px',
+    margin: 'auto',
+    display: 'inline-block',
+    'vertical-align': 'middle',
+    'border-radius': '10%' }).on('click', function () {
+    var self = this;
+    var this_color = self.style.backgroundColor;
+    var input_col = document.createElement('input');
+    input_col.setAttribute('type', 'color');
+    input_col.setAttribute('value', rgb2hex(this_color));
+    input_col.className = 'color_input';
+    input_col.onchange = function (change) {
+      self.style.backgroundColor = hexToRgb(change.target.value, 'string');
     };
+    input_col.dispatchEvent(new MouseEvent('click'));
+  });
 
-    container.querySelector(".btn_ok").onclick = function () {
-        var color_map = fetch_categorical_colors();
-        var colorByFeature = data_layer.map(function (ft) {
-            return color_map.get(ft[field])[0];
-        });
-        deferred.resolve([nb_class, color_map, colorByFeature]);
-        document.removeEventListener('keydown', helper_esc_key_twbs);
-        container.remove();
-        var p = reOpenParent();
-        if (!p) overlay_under_modal.hide();
-    };
+  newbox.selectAll('.typo_class').insert('span').attrs(function (d) {
+    return { class: 'typo_count_ft', 'data-count': d.nb_elem };
+  }).html(function (d) {
+    return i18next.t('app_page.symbol_typo_box.count_feature', { nb_features: +d.nb_elem });
+  });
 
-    container.querySelector(".btn_cancel").onclick = _onclose;
-    container.querySelector("#xclose").onclick = _onclose;
-    function helper_esc_key_twbs(evt) {
-        evt = evt || window.event;
-        var isEscape = "key" in evt ? evt.key == "Escape" || evt.key == "Esc" : evt.keyCode == 27;
-        if (isEscape) {
-            evt.stopPropagation();
-            _onclose();
-        }
+  newbox.insert('p').insert('button').attr('class', 'button_st3').html(i18next.t('app_page.categorical_box.new_random_colors')).on('click', function () {
+    var lines = document.getElementsByClassName('typo_class');
+    for (var i = 0; i < lines.length; ++i) {
+      lines[i].querySelector('.color_square').style.backgroundColor = randomColor();
     }
-    document.addEventListener('keydown', helper_esc_key_twbs);
-    overlay_under_modal.display();
-    return deferred.promise;
-};
+  });
+
+  new Sortable(document.getElementById('sortable_typo_name'));
+
+  var deferred = Promise.pending();
+  var container = document.getElementById('categorical_box');
+  var _onclose = function _onclose() {
+    deferred.resolve(false);
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+    container.remove();
+    var p = reOpenParent();
+    if (!p) overlay_under_modal.hide();
+  };
+
+  container.querySelector('.btn_ok').onclick = function () {
+    var color_map = fetch_categorical_colors();
+    var colorByFeature = data_layer.map(function (ft) {
+      return color_map.get(ft[field])[0];
+    });
+    deferred.resolve([nb_class, color_map, colorByFeature]);
+    document.removeEventListener('keydown', helper_esc_key_twbs);
+    container.remove();
+    var p = reOpenParent();
+    if (!p) overlay_under_modal.hide();
+  };
+
+  container.querySelector('.btn_cancel').onclick = _onclose;
+  container.querySelector('#xclose').onclick = _onclose;
+  function helper_esc_key_twbs(evt) {
+    var _event = evt || window.event;
+    var isEscape = 'key' in _event ? _event.key === 'Escape' || _event.key === 'Esc' : _event.keyCode === 27;
+    if (isEscape) {
+      _event.stopPropagation();
+      _onclose();
+    }
+  }
+  document.addEventListener('keydown', helper_esc_key_twbs);
+  overlay_under_modal.display();
+  return deferred.promise;
+}
 
 function reOpenParent(css_selector) {
-    var parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
-    if (parent_style_box && parent_style_box.modal && parent_style_box.modal.show) {
-        parent_style_box.modal.show();
-        return true;
-    } else {
-        return false;
-    }
+  var parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
+  if (parent_style_box && parent_style_box.modal && parent_style_box.modal.show) {
+    parent_style_box.modal.show();
+    return true;
+  }
+  return false;
 }
 
 var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCount) {
-    var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
-        svg_w = w / 4 > 320 ? 320 : w / 4,
-        values = serie.sorted(),
-        nb_bins = 51 < values.length / 3 ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
-    var q5 = serie.getQuantile(4).map(function (v) {
-        return +v;
-    });
+  var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
+      svg_w = w / 4 > 320 ? 320 : w / 4,
+      values = serie.sorted(),
+      nb_bins = values.length / 3 > 51 ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
 
-    var m_margin = { top: 10, right: 20, bottom: 10, left: 20 },
-        m_width = svg_w - m_margin.right - m_margin.left,
-        m_height = svg_h - m_margin.top - m_margin.bottom;
+  var q5 = serie.getQuantile(4).map(function (v) {
+    return +v;
+  });
 
-    var ref_histo = parent_node.select("#ref_histo_box").select('#inner_ref_histo_box');
+  var m_margin = { top: 10, right: 20, bottom: 10, left: 20 },
+      m_width = svg_w - m_margin.right - m_margin.left,
+      m_height = svg_h - m_margin.top - m_margin.bottom;
 
-    ref_histo.append('p').attrs({ id: 'ref_histo_title' }).styles({ "margin": "auto", "text-align": "center" }).html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
+  var ref_histo = parent_node.select('#ref_histo_box').select('#inner_ref_histo_box');
 
-    var c = ref_histo.append("svg").attr("id", "svg_ref_histo").attr("width", svg_w + m_margin.left + m_margin.right).attr("height", svg_h + m_margin.top + m_margin.bottom);
-    var svg_ref_histo = c.append("g").attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
+  ref_histo.append('p').attrs({ id: 'ref_histo_title' }).styles({ margin: 'auto', 'text-align': 'center' }).html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
-    var x = d3.scaleLinear().domain([serie.min(), serie.max()]).rangeRound([0, m_width]);
+  var c = ref_histo.append('svg').attr('id', 'svg_ref_histo').attr('width', svg_w + m_margin.left + m_margin.right).attr('height', svg_h + m_margin.top + m_margin.bottom);
 
-    return function (type) {
-        svg_ref_histo.remove();
-        svg_ref_histo = c.append("g").attr("transform", "translate(" + (m_margin.left + m_margin.right) + "," + m_margin.top + ")");
-        if (type == 'histogram') {
-            var data = d3.histogram().domain(x.domain()).thresholds(x.ticks(nb_bins))(values);
+  var x = d3.scaleLinear().domain([serie.min(), serie.max()]).rangeRound([0, m_width]);
 
-            var y = d3.scaleLinear().domain([0, d3.max(data, function (d) {
-                return d.length;
-            })]).range([m_height, 0]);
+  var svg_ref_histo = c.append('g').attr('transform', 'translate(' + (m_margin.left + m_margin.right) + ',' + m_margin.top + ')');
 
-            var bar = svg_ref_histo.selectAll(".bar").data(data).enter().append("rect").attrs(function (d) {
-                return {
-                    "class": "bar", "width": Math.abs(x(d.x1)) - Math.abs(x(d.x0)), "height": m_height - y(d.length), "x": 0,
-                    "transform": "translate(" + x(d.x0) + "," + y(d.length) + ")"
-                };
-            }).styles({ fill: "beige", stroke: "black", "stroke-width": "0.4px" });
+  return function (type) {
+    svg_ref_histo.remove();
+    svg_ref_histo = c.append('g').attr('transform', 'translate(' + (m_margin.left + m_margin.right) + ',' + m_margin.top + ')');
+    if (type === 'histogram') {
+      (function () {
+        var data = d3.histogram().domain(x.domain()).thresholds(x.ticks(nb_bins))(values);
 
-            svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
+        var y = d3.scaleLinear().domain([0, d3.max(data, function (d) {
+          return d.length;
+        })]).range([m_height, 0]);
 
-            svg_ref_histo.append("g").attr("class", "y_axis").style("font-size", "10px").call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format(".0f")));
-        } else if (type == "box_plot") {
-            svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
+        var bar = svg_ref_histo.selectAll('.bar').data(data).enter().append('rect').attrs(function (d) {
+          return {
+            class: 'bar',
+            width: Math.abs(x(d.x1)) - Math.abs(x(d.x0)),
+            height: m_height - y(d.length),
+            x: 0,
+            transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')' };
+        }).styles({ fill: 'beige', stroke: 'black', 'stroke-width': '0.4px' });
 
-            var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2;
+        svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
 
-            var min = svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2 }).styles({ "stroke-width": 1, stroke: "black", fill: "none" });
+        svg_ref_histo.append('g').attr('class', 'y_axis').style('font-size', '10px').call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format('.0f')));
+      })();
+    } else if (type === 'box_plot') {
+      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
 
-            var rect = svg_ref_histo.append('g').insert('rect').attrs({ x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top }).styles({ "stroke-width": 1, stroke: "black", fill: "lightblue" });
+      var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2;
 
-            var med = svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2: m_height - m_margin.bottom }).styles({ "stroke-width": 3, stroke: "black", fill: "none" });
+      svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2 }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'none' });
 
-            var rect = svg_ref_histo.append('g').insert('rect').attrs({ x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top }).styles({ "stroke-width": 1, stroke: "black", fill: "lightblue" });
+      svg_ref_histo.append('g').insert('rect').attrs({ x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'lightblue' });
 
-            var max = svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2 }).styles({ "stroke-width": 1, stroke: "black", fill: "none" });
+      svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2: m_height - m_margin.bottom }).styles({ 'stroke-width': 3, stroke: 'black', fill: 'none' });
 
-            var interline_min = svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid }).styles({ "stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3' });
+      svg_ref_histo.append('g').insert('rect').attrs({ x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'lightblue' });
 
-            var interline_max = svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid }).styles({ "stroke-width": 1, stroke: "black", fill: "none", 'stroke-dasharray': '3,3' });
-        } else if (type == "beeswarm") {
-            var data = values.map(function (v) {
-                return { value: +v };
-            });
+      svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2 }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'none' });
 
-            var simulation = d3.forceSimulation(data).force("x", d3.forceX(function (d) {
-                return x(d.value);
-            }).strength(1)).force("y", d3.forceY(m_height / 2).strength(2)).force("collide", d3.forceCollide(4)).stop();
+      svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'none', 'stroke-dasharray': '3,3' });
 
-            for (var i = 0; i < 75; ++i) {
-                simulation.tick();
-            }
-            svg_ref_histo.append("g").style("font-size", "10px").attrs({ 'class': 'x_axis', 'transform': 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll("text").attr("y", 4).attr("x", -4).attr("dy", ".45em").attr("transform", "rotate(-40)").style("text-anchor", "end");
+      svg_ref_histo.append('g').insert('line').attrs({ x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid }).styles({ 'stroke-width': 1, stroke: 'black', fill: 'none', 'stroke-dasharray': '3,3' });
+    } else if (type === 'beeswarm') {
+      (function () {
+        var data = values.map(function (v) {
+          return { value: +v };
+        });
 
-            var cell = svg_ref_histo.append("g").attr("class", "cells").selectAll("g").data(d3.voronoi().extent([[0, 0], [m_width, m_height]]).x(function (d) {
-                return d.x;
-            }).y(function (d) {
-                return d.y;
-            }).polygons(data)).enter().append("g");
+        var simulation = d3.forceSimulation(data).force('x', d3.forceX(function (d) {
+          return x(d.value);
+        }).strength(1)).force('y', d3.forceY(m_height / 2).strength(2)).force('collide', d3.forceCollide(4)).stop();
 
-            cell.append("circle").attrs(function (d) {
-                if (d) return {
-                    r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1, transform: 'translate(' + d.data.x + ',' + d.data.y + ')' };
-            });
-
-            cell.append("path").attr('d', function (d) {
-                if (d) return 'M' + d.join('L') + 'Z';
-            });
+        for (var i = 0; i < 75; ++i) {
+          simulation.tick();
         }
-    };
+        svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
+
+        var cell = svg_ref_histo.append('g').attr('class', 'cells').selectAll('g').data(d3.voronoi().extent([[0, 0], [m_width, m_height]]).x(function (d) {
+          return d.x;
+        }).y(function (d) {
+          return d.y;
+        }).polygons(data)).enter().append('g');
+
+        cell.append('circle').attrs(function (d) {
+          if (d) {
+            return {
+              r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1,
+              transform: 'translate(' + d.data.x + ',' + d.data.y + ')' };
+          }
+          return undefined;
+        });
+
+        cell.append('path').attr('d', function (d) {
+          if (d) return 'M' + d.join('L') + 'Z';
+          return undefined;
+        });
+      })();
+    }
+  };
 };
 'use strict';
 
@@ -3778,7 +3826,7 @@ var display_discretization_links_discont = function display_discretization_links
       bins = [];
       for (var i = 0, len = breaks_info.length; i < len; i++) {
         var bin = {};
-        bin.offset = i == 0 ? 0 : bins[i - 1].width + bins[i - 1].offset;
+        bin.offset = i === 0 ? 0 : bins[i - 1].width + bins[i - 1].offset;
         bin.width = breaks[i + 1] - breaks[i];
         bin.height = breaks_info[i][1];
         bins[i] = bin;
@@ -3826,20 +3874,21 @@ var display_discretization_links_discont = function display_discretization_links
     }
   };
 
-  //////////////////////////////////////////////////////////////////////////
-
   var title_box = [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join('');
   var modal_box = make_dialog_container('discretiz_charts', title_box, 'discretiz_charts_dialog');
-
   var newBox = d3.select('#discretiz_charts').select('.modal-body');
+  var db_data = void 0;
+  if (result_data.hasOwnProperty(layer_name)) {
+    db_data = result_data[layer_name];
+  } else if (user_data.hasOwnProperty(layer_name)) {
+    db_data = user_data[layer_name];
+  }
 
-  if (result_data.hasOwnProperty(layer_name)) var db_data = result_data[layer_name];else if (user_data.hasOwnProperty(layer_name)) var db_data = user_data[layer_name];
-
-  var color_array = [],
-      nb_values = db_data.length,
-      indexes = [],
-      values = [],
-      no_data;
+  var color_array = [];
+  var indexes = [];
+  var nb_values = db_data.length;
+  var values = [];
+  var no_data = void 0;
 
   for (var i = 0; i < nb_values; i++) {
     if (db_data[i][field_name] != null) {
@@ -3848,22 +3897,21 @@ var display_discretization_links_discont = function display_discretization_links
     }
   }
 
-  if (nb_values == values.length) {
+  if (nb_values === values.length) {
     no_data = 0;
   } else {
     no_data = nb_values - values.length;
     nb_values = values.length;
   }
-
+  var max_nb_class = nb_values > 20 ? 20 : nb_values;
+  var sizes = current_layers[layer_name].breaks.map(function (el) {
+    return el[1];
+  });
+  var stock_class = [];
   var serie = new geostats(values),
       breaks_info = [].concat(current_layers[layer_name].breaks),
       breaks = [+breaks_info[0][0][0]],
-      stock_class = [],
       bins = [],
-      max_nb_class = nb_values > 20 ? 20 : nb_values,
-      sizes = current_layers[layer_name].breaks.map(function (el) {
-    return el[1];
-  }),
       last_min = min_fast(sizes),
       last_max = max_fast(sizes),
       array_color = d3.schemeCategory20.slice();
@@ -3872,7 +3920,7 @@ var display_discretization_links_discont = function display_discretization_links
     breaks.push(elem[0][1]);
   });
 
-  if (serie.variance() == 0 && serie.stddev() == 0) {
+  if (serie.variance() === 0 && serie.stddev() === 0) {
     serie = new geostats(values);
   }
 
@@ -3890,7 +3938,7 @@ var display_discretization_links_discont = function display_discretization_links
 
   var discretization = newBox.append('div').attr('id', 'discretization_panel').insert('p').html('Type ').insert('select').attr('class', 'params').on('change', function () {
     var old_type = type;
-    if (this.value == 'user_defined') {
+    if (this.value === 'user_defined') {
       this.value = old_type;
       return;
     }
@@ -3920,22 +3968,24 @@ var display_discretization_links_discont = function display_discretization_links
   refDisplay('histogram');
 
   if (values.length < 750) {
-    // Only allow for beeswarm plot if there isn't too many values
-    // as it seems to be costly due to the "simulation" + the voronoi
-    var choiceHisto = ref_histo_box.append('p').style('text-align', 'center');
-    var currentHisto = 'histogram';
-    choiceHisto.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
-      if (currentHisto === 'histogram') {
-        refDisplay('box_plot');
-        currentHisto = 'box_plot';
-      } else if (currentHisto === 'box_plot') {
-        refDisplay('beeswarm');
-        currentHisto = 'beeswarm';
-      } else if (currentHisto === 'beeswarm') {
-        refDisplay('histogram');
-        currentHisto = 'histogram';
-      }
-    });
+    (function () {
+      // Only allow for beeswarm plot if there isn't too many values
+      // as it seems to be costly due to the "simulation" + the voronoi
+      var choiceHisto = ref_histo_box.append('p').style('text-align', 'center');
+      var currentHisto = 'histogram';
+      choiceHisto.insert('button').attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' }).styles({ padding: '3px', 'font-size': '10px' }).html(i18next.t('disc_box.switch_ref_histo')).on('click', function () {
+        if (currentHisto === 'histogram') {
+          refDisplay('box_plot');
+          currentHisto = 'box_plot';
+        } else if (currentHisto === 'box_plot') {
+          refDisplay('beeswarm');
+          currentHisto = 'beeswarm';
+        } else if (currentHisto === 'beeswarm') {
+          refDisplay('histogram');
+          currentHisto = 'histogram';
+        }
+      });
+    })();
   }
 
   var txt_nb_class = d3.select('#discretization_panel').append('input').attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' }).on('change', function () {
@@ -4023,10 +4073,10 @@ var display_discretization_links_discont = function display_discretization_links
     if (!p) overlay_under_modal.hide();
   };
   var helper_esc_key_twbs = function helper_esc_key_twbs(evt) {
-    evt = evt || window.event;
-    var isEscape = 'key' in evt ? evt.key === 'Escape' || evt.key === 'Esc' : evt.keyCode === 27;
+    var _event = evt || window.event;
+    var isEscape = 'key' in _event ? _event.key === 'Escape' || _event.key === 'Esc' : _event.keyCode === 27;
     if (isEscape) {
-      evt.preventDefault();
+      _event.preventDefault();
       _onclose();
     }
   };
@@ -4045,6 +4095,8 @@ var display_discretization_links_discont = function display_discretization_links
   return deferred.promise;
 };
 'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -5282,27 +5334,33 @@ var fields_Stewart = {
         if (default_selected_mask) setSelected(mask_selec.node(), default_selected_mask);
 
         if (layer) {
-            // let fields = type_col(layer, "number"),
-            var fields = getFieldsType('stock', layer),
-                field_selec = section2.select('#stewart_field'),
-                field_selec2 = section2.select('#stewart_field2');
+            var _ret3 = function () {
+                // let fields = type_col(layer, "number"),
+                var fields = getFieldsType('stock', layer),
+                    field_selec = section2.select('#stewart_field'),
+                    field_selec2 = section2.select('#stewart_field2');
 
-            if (fields.length === 0) {
-                display_error_num_field();
-                return;
-            }
+                if (fields.length === 0) {
+                    display_error_num_field();
+                    return {
+                        v: void 0
+                    };
+                }
 
-            field_selec2.append('option').text(' ').attr('value', 'None');
-            fields.forEach(function (field) {
-                field_selec.append('option').text(field).attr('value', field);
-                field_selec2.append('option').text(field).attr('value', field);
-            });
-            document.getElementById('stewart_span').value = get_first_guess_span('stewart');
+                field_selec2.append('option').text(' ').attr('value', 'None');
+                fields.forEach(function (field) {
+                    field_selec.append('option').text(field).attr('value', field);
+                    field_selec2.append('option').text(field).attr('value', field);
+                });
+                document.getElementById('stewart_span').value = get_first_guess_span('stewart');
 
-            field_selec.on('change', function () {
-                document.getElementById('stewart_output_name').value = ['Smoothed', this.value, layer].join('_');
-            });
-            section2.select('#stewart_yes').on('click', render_stewart);
+                field_selec.on('change', function () {
+                    document.getElementById('stewart_output_name').value = ['Smoothed', this.value, layer].join('_');
+                });
+                section2.select('#stewart_yes').on('click', render_stewart);
+            }();
+
+            if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
         }
         section2.selectAll('.params').attr('disabled', null);
     },
@@ -5513,72 +5571,74 @@ var fields_Anamorphose = {
                 new_user_layer_name = document.getElementById('Anamorph_output_name').value;
 
             if (algo === 'olson') {
-                // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
-                // let opt_scale_max = document.getElementById("Anamorph_opt2");
-                // if (opt_scale_max.value > 100) {
-                //     opt_scale_max.value = 100;
-                // }
-                // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
-                var nb_ft = current_layers[layer].n_features,
-                    dataset = user_data[layer];
+                (function () {
+                    // let ref_size = document.getElementById("Anamorph_olson_scale_kind").value,
+                    // let opt_scale_max = document.getElementById("Anamorph_opt2");
+                    // if (opt_scale_max.value > 100) {
+                    //     opt_scale_max.value = 100;
+                    // }
+                    // let scale_max = +document.getElementById("Anamorph_opt2").value / 100,
+                    var nb_ft = current_layers[layer].n_features,
+                        dataset = user_data[layer];
 
-                // if (contains_empty_val(dataset.map(a => a[field_name]))) {
-                //   discard_rendering_empty_val();
-                //   return;
-                // }
+                    // if (contains_empty_val(dataset.map(a => a[field_name]))) {
+                    //   discard_rendering_empty_val();
+                    //   return;
+                    // }
 
-                var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
-                    sqrt = Math.sqrt,
-                    abs = Math.abs,
-                    d_val = [],
-                    transform = [];
+                    var layer_select = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
+                        sqrt = Math.sqrt,
+                        abs = Math.abs,
+                        d_val = [],
+                        transform = [];
 
-                for (var i = 0; i < nb_ft; ++i) {
-                    var val = +dataset[i][field_name];
-                    // We deliberatly use 0 if this is a missing value :
-                    if (isNaN(val) || !isFinite(val)) val = 0;
-                    d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
-                }
-                d_val.sort(function (a, b) {
-                    return b[1] - a[1];
-                });
-                var ref = d_val[0][1] / d_val[0][2];
-                d_val[0].push(1);
-
-                for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
-                    var _val = d_val[_i3][1] / d_val[_i3][2];
-                    var scale = sqrt(_val / ref);
-                    d_val[_i3].push(scale);
-                }
-                d_val.sort(function (a, b) {
-                    return a[0] - b[0];
-                });
-                var formToSend = new FormData();
-                formToSend.append('json', JSON.stringify({
-                    topojson: current_layers[layer].key_name,
-                    scale_values: d_val.map(function (ft) {
-                        return ft[3];
-                    }),
-                    field_name: field_name }));
-                xhrequest('POST', '/compute/olson', formToSend, true).then(function (result) {
-                    var options = { result_layer_on_add: true, func_name: 'cartogram' };
-                    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-                        options['choosed_name'] = new_user_layer_name;
+                    for (var i = 0; i < nb_ft; ++i) {
+                        var val = +dataset[i][field_name];
+                        // We deliberatly use 0 if this is a missing value :
+                        if (isNaN(val) || !isFinite(val)) val = 0;
+                        d_val.push([i, val, +path.area(layer_select[i].__data__.geometry)]);
                     }
-                    var n_layer_name = add_layer_topojson(result, options);
-                    current_layers[n_layer_name].renderer = 'OlsonCarto';
-                    current_layers[n_layer_name].rendered_field = field_name;
-                    current_layers[n_layer_name].scale_max = 1;
-                    current_layers[n_layer_name].ref_layer_name = layer;
-                    current_layers[n_layer_name].scale_byFeature = transform;
-                    map.select('#' + _app.layer_to_id.get(n_layer_name)).selectAll('path').style('fill-opacity', 0.8).style('stroke', 'black').style('stroke-opacity', 0.8);
-                    switch_accordion_section();
-                }, function (err) {
-                    display_error_during_computation();
-                    console.log(err);
-                });
+                    d_val.sort(function (a, b) {
+                        return b[1] - a[1];
+                    });
+                    var ref = d_val[0][1] / d_val[0][2];
+                    d_val[0].push(1);
+
+                    for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+                        var _val = d_val[_i3][1] / d_val[_i3][2];
+                        var scale = sqrt(_val / ref);
+                        d_val[_i3].push(scale);
+                    }
+                    d_val.sort(function (a, b) {
+                        return a[0] - b[0];
+                    });
+                    var formToSend = new FormData();
+                    formToSend.append('json', JSON.stringify({
+                        topojson: current_layers[layer].key_name,
+                        scale_values: d_val.map(function (ft) {
+                            return ft[3];
+                        }),
+                        field_name: field_name }));
+                    xhrequest('POST', '/compute/olson', formToSend, true).then(function (result) {
+                        var options = { result_layer_on_add: true, func_name: 'cartogram' };
+                        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+                            options['choosed_name'] = new_user_layer_name;
+                        }
+                        var n_layer_name = add_layer_topojson(result, options);
+                        current_layers[n_layer_name].renderer = 'OlsonCarto';
+                        current_layers[n_layer_name].rendered_field = field_name;
+                        current_layers[n_layer_name].scale_max = 1;
+                        current_layers[n_layer_name].ref_layer_name = layer;
+                        current_layers[n_layer_name].scale_byFeature = transform;
+                        map.select('#' + _app.layer_to_id.get(n_layer_name)).selectAll('path').style('fill-opacity', 0.8).style('stroke', 'black').style('stroke-opacity', 0.8);
+                        switch_accordion_section();
+                    }, function (err) {
+                        display_error_during_computation();
+                        console.log(err);
+                    });
+                })();
             } else if (algo === 'dougenik') {
-                var _formToSend = new FormData(),
+                var formToSend = new FormData(),
                     var_to_send = {},
                     nb_iter = document.getElementById('Anamorph_dougenik_iterations').value;
 
@@ -5586,17 +5646,17 @@ var fields_Anamorphose = {
                 if (!current_layers[layer].original_fields.has(field_name)) {
                     var table = user_data[layer],
                         to_send = var_to_send[field_name];
-                    for (var _i4 = 0, i_len = table.length; _i4 < i_len; ++_i4) {
-                        to_send.push(+table[_i4][field_name]);
+                    for (var i = 0, i_len = table.length; i < i_len; ++i) {
+                        to_send.push(+table[i][field_name]);
                     }
                 }
-                _formToSend.append('json', JSON.stringify({
+                formToSend.append('json', JSON.stringify({
                     topojson: current_layers[layer].key_name,
                     var_name: var_to_send,
                     iterations: nb_iter
                 }));
 
-                xhrequest('POST', '/compute/carto_doug', _formToSend, true).then(function (data) {
+                xhrequest('POST', '/compute/carto_doug', formToSend, true).then(function (data) {
                     var options = { result_layer_on_add: true, func_name: 'cartogram' };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
                         options['choosed_name'] = new_user_layer_name;
@@ -5695,62 +5755,64 @@ function make_prop_line(rendering_params, geojson_line_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_line_layer) {
-        var make_geojson_line_layer = function make_geojson_line_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
-                result = [];
-            for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: 'Feature',
-                    properties: {},
-                    geometry: cloneObj(ft.geometry)
-                };
-                if (f_ix_len) {
-                    for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                        new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_line_layer = function make_geojson_line_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
+                    result = [];
+                for (var i = 0, _nb_features2 = ref_layer_selection.length; i < _nb_features2; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: 'Feature',
+                        properties: {},
+                        geometry: cloneObj(ft.geometry)
+                    };
+                    if (f_ix_len) {
+                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                        }
                     }
+                    new_obj.properties[field] = value;
+                    new_obj.properties[t_field_name] = propSize.scale(value);
+                    new_obj.properties['color'] = get_color(value, i);
+                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                    result.push([value, new_obj]);
                 }
-                new_obj.properties[field] = value;
-                new_obj.properties[t_field_name] = propSize.scale(value);
-                new_obj.properties['color'] = get_color(value, i);
-                if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                result.push([value, new_obj]);
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: 'FeatureCollection',
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: 'FeatureCollection',
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_line_layer = make_geojson_line_layer();
+            geojson_line_layer = make_geojson_line_layer();
+        })();
     }
 
     var layer_id = encodeId(layer_to_add);
@@ -5806,85 +5868,87 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
     if (!geojson_pt_layer) {
-        var make_geojson_pt_layer = function make_geojson_pt_layer() {
-            var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
-                result = [];
-            for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
-                var ft = ref_layer_selection[i].__data__,
-                    value = +ft.properties[field],
-                    new_obj = {
-                    id: i,
-                    type: 'Feature',
-                    properties: {},
-                    geometry: { type: 'Point' }
-                };
-                if (ft.geometry.type.indexOf('Multi') < 0) {
-                    if (f_ix_len) {
-                        for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
-                            new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+        (function () {
+            var make_geojson_pt_layer = function make_geojson_pt_layer() {
+                var ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path'),
+                    result = [];
+                for (var i = 0, _nb_features3 = ref_layer_selection.length; i < _nb_features3; ++i) {
+                    var ft = ref_layer_selection[i].__data__,
+                        value = +ft.properties[field],
+                        new_obj = {
+                        id: i,
+                        type: 'Feature',
+                        properties: {},
+                        geometry: { type: 'Point' }
+                    };
+                    if (ft.geometry.type.indexOf('Multi') < 0) {
+                        if (f_ix_len) {
+                            for (var f_ix = 0; f_ix < f_ix_len; f_ix++) {
+                                new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
+                            }
                         }
-                    }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
-                } else {
-                    var areas = [];
-                    for (var j = 0; j < ft.geometry.coordinates.length; j++) {
-                        areas.push(path.area({
-                            type: ft.geometry.type,
-                            coordinates: [ft.geometry.coordinates[j]]
-                        }));
-                    }
-                    var ix_max = areas.indexOf(max_fast(areas));
-                    if (f_ix_len) {
-                        for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
-                            new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid(ft.geometry);
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
+                    } else {
+                        var areas = [];
+                        for (var j = 0; j < ft.geometry.coordinates.length; j++) {
+                            areas.push(path.area({
+                                type: ft.geometry.type,
+                                coordinates: [ft.geometry.coordinates[j]]
+                            }));
                         }
+                        var ix_max = areas.indexOf(max_fast(areas));
+                        if (f_ix_len) {
+                            for (var _f_ix = 0; _f_ix < f_ix_len; _f_ix++) {
+                                new_obj.properties[fields_id[_f_ix]] = ft.properties[fields_id[_f_ix]];
+                            }
+                        }
+                        new_obj.properties[field] = value;
+                        new_obj.properties[t_field_name] = propSize.scale(value);
+                        new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
+                        new_obj.properties['color'] = get_color(value, i);
+                        if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
+                        result.push([value, new_obj]);
                     }
-                    new_obj.properties[field] = value;
-                    new_obj.properties[t_field_name] = propSize.scale(value);
-                    new_obj.geometry['coordinates'] = d3.geoCentroid({ type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
-                    new_obj.properties['color'] = get_color(value, i);
-                    if (color_field) new_obj.properties[color_field] = ft.properties[color_field];
-                    result.push([value, new_obj]);
                 }
+                result.sort(function (a, b) {
+                    return abs(b[0]) - abs(a[0]);
+                });
+                return {
+                    type: 'FeatureCollection',
+                    features: result.map(function (d) {
+                        return d[1];
+                    })
+                };
+            };
+
+            var get_color = void 0,
+                col1 = void 0,
+                col2 = void 0,
+                fields_id = getFieldsType('id', layer),
+                f_ix_len = fields_id ? fields_id.length : 0;
+
+            if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
+                col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
+                get_color = function get_color(val, ix) {
+                    return val > rendering_params.break_val ? col2 : col1;
+                };
+            } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
+                get_color = function get_color(val, ix) {
+                    return rendering_params.fill_color[ix];
+                };
+            } else {
+                get_color = function get_color() {
+                    return rendering_params.fill_color;
+                };
             }
-            result.sort(function (a, b) {
-                return abs(b[0]) - abs(a[0]);
-            });
-            return {
-                type: 'FeatureCollection',
-                features: result.map(function (d) {
-                    return d[1];
-                })
-            };
-        };
 
-        var get_color = void 0,
-            col1 = void 0,
-            col2 = void 0,
-            fields_id = getFieldsType('id', layer),
-            f_ix_len = fields_id ? fields_id.length : 0;
-
-        if (rendering_params.break_val != undefined && rendering_params.fill_color.two) {
-            col1 = rendering_params.fill_color.two[0], col2 = rendering_params.fill_color.two[1];
-            get_color = function get_color(val, ix) {
-                return val > rendering_params.break_val ? col2 : col1;
-            };
-        } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
-            get_color = function get_color(val, ix) {
-                return rendering_params.fill_color[ix];
-            };
-        } else {
-            get_color = function get_color() {
-                return rendering_params.fill_color;
-            };
-        }
-
-        geojson_pt_layer = make_geojson_pt_layer();
+            geojson_pt_layer = make_geojson_pt_layer();
+        })();
     }
     var layer_id = encodeId(layer_to_add);
     _app.layer_to_id.set(layer_to_add, layer_id);
@@ -6121,8 +6185,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
             cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
         });
         col_map = new Map();
-        for (var _i5 = 0; _i5 < cats.length; _i5++) {
-            col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
+        for (var _i4 = 0; _i4 < cats.length; _i4++) {
+            col_map.set(cats[_i4].name, [cats[_i4].color, cats[_i4].name, cats[_i4].nb_elem]);
         }
     } else {
         col_map.forEach(function (v, k) {
@@ -6520,13 +6584,15 @@ var render_discont = function render_discont() {
         create_li_layer_elem(new_layer_name, nb_ft, ['Line', 'discont'], 'result');
 
         {
-            // Only display the 50% most important values :
-            // TODO : reintegrate this upstream in the layer creation :
-            var lim = 0.5 * current_layers[new_layer_name].n_features;
-            result_layer.selectAll('path').style('display', function (d, i) {
-                return i <= lim ? null : 'none';
-            });
-            current_layers[new_layer_name].min_display = 0.5;
+            (function () {
+                // Only display the 50% most important values :
+                // TODO : reintegrate this upstream in the layer creation :
+                var lim = 0.5 * current_layers[new_layer_name].n_features;
+                result_layer.selectAll('path').style('display', function (d, i) {
+                    return i <= lim ? null : 'none';
+                });
+                current_layers[new_layer_name].min_display = 0.5;
+            })();
         }
 
         d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
@@ -7181,8 +7247,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
             var val = +fij_values[i];
             links_byId.push([i, val, sizes[serie.getClass(val)]]);
         }
-        for (var _i6 = 0; _i6 < nb_class; ++_i6) {
-            current_layers[new_layer_name].breaks.push([[user_breaks[_i6], user_breaks[_i6 + 1]], sizes[_i6]]);
+        for (var _i5 = 0; _i5 < nb_class; ++_i5) {
+            current_layers[new_layer_name].breaks.push([[user_breaks[_i5], user_breaks[_i5 + 1]], sizes[_i5]]);
         }
         layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style('stroke-width', function (d, i) {
             return links_byId[i][2];
@@ -8833,51 +8899,56 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     }
   } else if (files[0].name.toLowerCase().indexOf('json') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
     elem.style.border = '';
-    console.log(files);
     if (target_layer_on_add && _app.targeted_layer_added) {
-      swal({ title: i18next.t('app_page.common.error') + '!',
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
         text: i18next.t('app_page.common.error_only_one'),
         customClass: 'swal2_custom',
         type: 'error',
         allowEscapeKey: false,
-        allowOutsideClick: false });
+        allowOutsideClick: false
+      });
       // Send the file to the server for conversion :
     } else {
       if (files[0].name.toLowerCase().indexOf('json') < 0) {
         handle_single_file(files[0], target_layer_on_add);
       } else {
-        var rd = new FileReader();
-        rd.onloadend = function () {
-          var tmp = void 0;
-          try {
-            tmp = JSON.parse(rd.result);
-          } catch (e) {
-            console.log(e);
-            return swal({ title: i18next.t('app_page.common.error') + '!',
-              text: i18next.t('app_page.common.alert_upload_invalid'),
-              type: 'error',
-              customClass: 'swal2_custom',
-              allowOutsideClick: false,
-              allowEscapeKey: false });
-          }
-          if (tmp.type && tmp.type === 'FeatureCollection') {
-            handle_single_file(files[0], target_layer_on_add);
-          } else if (tmp.type && tmp.type === 'Topology') {
-            handle_TopoJSON_files(files, target_layer_on_add);
-          } else if (tmp.map_config && tmp.layers) {
-            apply_user_preferences(rd.result);
-          } else {
-            return swal({
-              title: i18next.t('app_page.common.error') + '!',
-              text: i18next.t('app_page.common.alert_upload_invalid'),
-              type: 'error',
-              customClass: 'swal2_custom',
-              allowOutsideClick: false,
-              allowEscapeKey: false
-            });
-          }
-        };
-        rd.readAsText(files[0]);
+        (function () {
+          var rd = new FileReader();
+          rd.onloadend = function () {
+            var tmp = void 0;
+            try {
+              tmp = JSON.parse(rd.result);
+            } catch (e) {
+              console.log(e);
+              return swal({
+                title: i18next.t('app_page.common.error') + '!',
+                text: i18next.t('app_page.common.alert_upload_invalid'),
+                type: 'error',
+                customClass: 'swal2_custom',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+              });
+            }
+            if (tmp.type && tmp.type === 'FeatureCollection') {
+              handle_single_file(files[0], target_layer_on_add);
+            } else if (tmp.type && tmp.type === 'Topology') {
+              handle_TopoJSON_files(files, target_layer_on_add);
+            } else if (tmp.map_config && tmp.layers) {
+              apply_user_preferences(rd.result);
+            } else {
+              return swal({
+                title: i18next.t('app_page.common.error') + '!',
+                text: i18next.t('app_page.common.alert_upload_invalid'),
+                type: 'error',
+                customClass: 'swal2_custom',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+              });
+            }
+          };
+          rd.readAsText(files[0]);
+        })();
       }
     }
   } else if (files[0].name.toLowerCase().indexOf('.csv') > -1 || files[0].name.toLowerCase().indexOf('.tsv') > -1) {
@@ -8885,24 +8956,28 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     if (target_layer_on_add) {
       handle_dataset(files[0], target_layer_on_add);
     } else {
-      swal({ title: i18next.t('app_page.common.error') + '!',
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
         text: i18next.t('app_page.common.error_only_layout'),
         type: 'error',
         customClass: 'swal2_custom',
         allowEscapeKey: false,
-        allowOutsideClick: false });
+        allowOutsideClick: false
+      });
     }
   } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
     elem.style.border = '';
     if (target_layer_on_add) {
       convert_dataset(files[0]);
     } else {
-      swal({ title: i18next.t('app_page.common.error') + '!',
+      swal({
+        title: i18next.t('app_page.common.error') + '!',
         text: i18next.t('app_page.common.error_only_layout'),
         type: 'error',
         customClass: 'swal2_custom',
         allowEscapeKey: false,
-        allowOutsideClick: false });
+        allowOutsideClick: false
+      });
     }
   } else {
     elem.style.border = '';
@@ -9060,7 +9135,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
 *
 */
 function prepare_drop_section() {
-  var timeout;
+  var timeout = void 0;
   Array.prototype.forEach.call(document.querySelectorAll('#map,.overlay_drop'), function (elem) {
     elem.addEventListener('dragenter', function (e) {
       e.preventDefault();e.stopPropagation();
@@ -9180,7 +9255,7 @@ function prepare_drop_section() {
         return;
       }
       var files = e.dataTransfer.files,
-          target_layer_on_add = elem.id === 'section1' ? true : false;
+          target_layer_on_add = elem.id === 'section1';
       if (files.length === 1 && (files[0].name.indexOf('.shp') > -1 || files[0].name.indexOf('.shx') > -1 || files[0].name.indexOf('.dbf') > -1 || files[0].name.indexOf('.prj') > -1)) {
         handleOneByOneShp(files, target_layer_on_add);
       } else {
@@ -9220,7 +9295,7 @@ function convert_dataset(file) {
       }).then(function () {
         add_dataset(d3.csvParse(data.file));
       }, function (dismiss) {
-        null;
+        return null;
       });
     }, function (error) {
       display_error_during_computation();
@@ -9357,8 +9432,8 @@ function handle_dataset(f, target_layer_on_add) {
     ask_replace_dataset().then(function () {
       remove_ext_dataset_cleanup();
       check_dataset();
-    }, function () {
-      null;
+    }, function (dismiss) {
+      return null;
     });
   } else {
     check_dataset();
@@ -9413,16 +9488,16 @@ function handle_dataset(f, target_layer_on_add) {
 function update_menu_dataset() {
   var d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
       nb_features = joined_dataset[0].length,
-      field_names = Object.getOwnPropertyNames(joined_dataset[0][0]);
-
-  var data_ext = document.getElementById('data_ext');
+      field_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
+      data_ext = document.getElementById('data_ext');
 
   d3.select(data_ext.parentElement.firstChild).attrs({
-    'id': 'img_data_ext',
-    'class': 'user_panel',
-    'src': 'static/img/b/tabular.png',
-    'width': '26', 'height': '26',
-    'alt': 'Additional dataset' });
+    id: 'img_data_ext',
+    class: 'user_panel',
+    src: 'static/img/b/tabular.png',
+    width: '26',
+    height: '26',
+    alt: 'Additional dataset' });
 
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
@@ -9476,7 +9551,7 @@ function add_dataset(readed_dataset) {
       if (readed_dataset[j][cols[_i]].replace && (!isNaN(+readed_dataset[j][cols[_i]].replace(',', '.')) || !isNaN(+readed_dataset[j][cols[_i]].split(' ').join(''))) || !isNaN(+readed_dataset[j][cols[_i]])) {
         // Add the converted value to temporary field if its ok ...
         var t_val = readed_dataset[j][cols[_i]].replace(',', '.').split(' ').join('');
-        tmp.push(isFinite(t_val) && t_val != '' && t_val != null ? +t_val : t_val);
+        tmp.push(isFinite(t_val) && t_val !== '' && t_val != null ? +t_val : t_val);
       } else {
         // Or break early if a value can't be coerced :
         break; // So no value of this field will be converted
@@ -9778,7 +9853,7 @@ function add_layer_topojson(text) {
   }
 
   if (!skip_alert) {
-    if (fields_type != undefined) {
+    if (fields_type) {
       current_layers[lyr_name_to_add].fields_type = fields_type;
     }
     if (_proj === undefined) {
@@ -9862,12 +9937,12 @@ function get_bbox_layer_path(name) {
   }
   if (current_proj_name === 'ConicConformal') {
     var s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    var bbox_layer_path2 = path.bounds({ 'type': 'MultiPoint', 'coordinates': [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
+    var bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
     var s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
     var _s = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    var _bbox_layer_path = path.bounds({ 'type': 'MultiPoint', 'coordinates': [[-69.3, -35.0], [20.9, -35.0], [147.2, -35.0], [175.0, 75.0], [-175.0, 75.0]] });
+    var _bbox_layer_path = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -35.0], [20.9, -35.0], [147.2, -35.0], [175.0, 75.0], [-175.0, 75.0]] });
     var _s2 = Math.max((_bbox_layer_path[1][0] - _bbox_layer_path[0][0]) / w, (_bbox_layer_path[1][1] - _bbox_layer_path[0][1]) / h);
     if (_s2 < _s) bbox_layer_path = _bbox_layer_path;
   }
@@ -10115,7 +10190,11 @@ function add_single_symbol(symbol_dataurl, x, y) {
 
   x = x || w / 2;
   y = y || h / 2;
-  return map.append('g').attrs({ class: 'legend single_symbol', id: symbol_id }).insert('image').attrs({ x: x, y: y, width: width, height: height,
+  return map.append('g').attrs({ class: 'legend single_symbol', id: symbol_id }).insert('image').attrs({
+    x: x,
+    y: y,
+    width: width,
+    height: height,
     'xlink:href': symbol_dataurl }).on('mouseover', function () {
     this.style.cursor = 'pointer';
   }).on('mouseout', function () {
@@ -10204,7 +10283,7 @@ function add_sample_layer() {
   function make_panel2() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel2');
-    var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
     content.append('p').append('span').html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
     var select_extrabasemap = content.append('p').insert('select').on('change', function () {
       var id_elem = this.value;
@@ -10232,7 +10311,7 @@ function add_sample_layer() {
   function make_panel1() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel1');
-    var title_tgt_layer = content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
 
     var t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
     target_layers.forEach(function (layer_info) {
@@ -10310,8 +10389,8 @@ function send_remove_server(layer_name) {
   var formToSend = new FormData();
   formToSend.append('layer_name', current_layers[layer_name].key_name);
   xhrequest('POST', 'layers/delete', formToSend, true).then(function (data) {
-    data = JSON.parse(data);
-    if (!data.code || data.code !== 'Ok') console.log(data);
+    var parsed = JSON.parse(data);
+    if (!parsed.code || parsed.code !== 'Ok') console.log(data);
   }).catch(function (err) {
     console.log(err);
   });
@@ -10349,21 +10428,20 @@ var getIdLayoutFeature = function getIdLayoutFeature(type) {
   } else if (features.length > 30) {
     swal(i18next.t('app_page.common.error'), i18next.t('app_page.common.' + error_name), 'error').catch(swal.noop);
     return null;
-  } else {
-    var ids = [];
-    for (var i = 0; i < features.length; i++) {
-      ids.push(+features[i].id.split(id_prefix)[1]);
-    }
-    if (ids.indexOf(features.length) === -1) {
-      return features.length;
-    }
-    for (var _i2 = 0; _i2 < features.length; _i2++) {
-      if (ids.indexOf(_i2) === -1) {
-        return _i2;
-      }
-    }
-    return null;
   }
+  var ids = [];
+  for (var i = 0; i < features.length; i++) {
+    ids.push(+features[i].id.split(id_prefix)[1]);
+  }
+  if (ids.indexOf(features.length) === -1) {
+    return features.length;
+  }
+  for (var _i2 = 0; _i2 < features.length; _i2++) {
+    if (ids.indexOf(_i2) === -1) {
+      return _i2;
+    }
+  }
+  return null;
 };
 
 function handleClickAddRectangle() {
@@ -10416,7 +10494,7 @@ function handleClickAddEllipse() {
     msg.dismiss();
     start_point = [d3.event.layerX, d3.event.layerY];
     tmp_start_point = map.append('rect').attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style('fill', 'red');
-    setTimeout(function (_) {
+    setTimeout(function () {
       tmp_start_point.remove();
     }, 1000);
     map.style('cursor', '').on('click', null);
@@ -10433,7 +10511,7 @@ function handleClickTextBox(text_box_id) {
     map.style('cursor', '').on('click', null);
     document.body.style.cursor = '';
     var text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
-    setTimeout(function (_) {
+    setTimeout(function () {
       text_box.editStyle();
     }, 350);
   });
@@ -10444,11 +10522,11 @@ function handleClickAddPicto() {
   if (symbol_id === null) {
     return;
   }
+  var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   var map_point = void 0,
       click_pt = void 0,
       prep_symbols = void 0,
-      available_symbols = false,
-      msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+      available_symbols = false;
 
   if (!window.default_symbols) {
     window.default_symbols = [];
@@ -10551,8 +10629,8 @@ function handleClickAddArrow() {
 }
 
 function prepare_available_symbols() {
-  return xhrequest('GET', 'static/json/list_symbols.json', null).then(function (list_res) {
-    list_res = JSON.parse(list_res);
+  return xhrequest('GET', 'static/json/list_symbols.json', null).then(function (result) {
+    var list_res = JSON.parse(result);
     return Promise.all(list_res.map(function (name) {
       return getImgDataUrl('static/img/svg_symbols/' + name);
     })).then(function (symbols) {
@@ -10567,11 +10645,11 @@ function accordionize() {
   var css_selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '.accordion';
   var parent = arguments[1];
 
-  parent = parent && (typeof parent === 'undefined' ? 'undefined' : _typeof(parent)) === 'object' ? parent : parent && typeof parent === 'string' ? document.querySelector(parent) : document;
-  var acc = parent.querySelectorAll(css_selector);
+  var _parent = parent && (typeof parent === 'undefined' ? 'undefined' : _typeof(parent)) === 'object' ? parent : parent && typeof parent === 'string' ? document.querySelector(parent) : document;
+  var acc = _parent.querySelectorAll(css_selector);
   for (var i = 0; i < acc.length; i++) {
     acc[i].onclick = function () {
-      var opened = parent.querySelector(css_selector + '.active');
+      var opened = _parent.querySelector(css_selector + '.active');
       if (opened) {
         opened.classList.toggle('active');
         opened.nextElementSibling.classList.toggle('show');
@@ -10680,8 +10758,8 @@ function valid_join_check_display(val, prop) {
 //    -the update of the global "user_data" object, adding actualy the value to each object representing each feature of the layer
 function valid_join_on(layer_name, field1, field2) {
   var join_values1 = [],
-      join_values2 = [],
-      hits = 0,
+      join_values2 = [];
+  var hits = 0,
       val = void 0;
 
   field_join_map = [];
@@ -10700,8 +10778,9 @@ function valid_join_on(layer_name, field1, field2) {
   if (typeof join_values1[0] === 'number' && typeof join_values2[0] === 'string') {
     for (var _i2 = 0, _len2 = join_values1.length; _i2 < _len2; _i2++) {
       val = join_values2.indexOf(String(join_values1[_i2]));
-      if (val != -1) {
-        field_join_map.push(val);hits++;
+      if (val !== -1) {
+        field_join_map.push(val);
+        hits += 1;
       } else {
         field_join_map.push(undefined);
       }
@@ -10709,8 +10788,9 @@ function valid_join_on(layer_name, field1, field2) {
   } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'string') {
     for (var _i3 = 0, _len3 = join_values1.length; _i3 < _len3; _i3++) {
       val = join_values2.indexOf(Number(join_values1[_i3]));
-      if (val != -1) {
-        field_join_map.push(val);hits++;
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
       } else {
         field_join_map.push(undefined);
       }
@@ -10718,8 +10798,9 @@ function valid_join_on(layer_name, field1, field2) {
   } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'number') {
     for (var _i4 = 0, _len4 = join_values1.length; _i4 < _len4; _i4++) {
       val = join_values2.indexOf(join_values1[_i4]);
-      if (val != -1) {
-        field_join_map.push(val);hits++;
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
       } else {
         field_join_map.push(undefined);
       }
@@ -10727,18 +10808,19 @@ function valid_join_on(layer_name, field1, field2) {
   } else {
     for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
       val = join_values2.indexOf(String(join_values1[_i5]));
-      if (val != -1) {
-        field_join_map.push(val);hits++;
+      if (val !== -1) {
+        field_join_map.push(val);
+        hist += 1;
       } else {
         field_join_map.push(undefined);
       }
     }
   }
 
-  var prop = [hits, '/', join_values1.length].join(''),
-      f_name = '';
+  var prop = [hits, '/', join_values1.length].join('');
+  var f_name = '';
 
-  if (hits == join_values1.length) {
+  if (hits === join_values1.length) {
     swal({ title: '',
       text: i18next.t('app_page.common.success'),
       type: 'success',
@@ -10852,7 +10934,11 @@ var removeExistingJointure = function removeExistingJointure(layer_name) {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function handle_click_layer(layer_name) {
-  if (current_layers[layer_name].graticule) createStyleBoxGraticule();else if (current_layers[layer_name].type === 'Line') createStyleBox_Line(layer_name);else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
+  if (current_layers[layer_name].graticule) {
+    createStyleBoxGraticule();
+  } else if (current_layers[layer_name].type === 'Line') {
+    createStyleBox_Line(layer_name);
+  } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
     createStyleBox_ProbSymbol(layer_name);
   } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'Label') {
     createStyleBoxLabel(layer_name);
@@ -10861,8 +10947,7 @@ function handle_click_layer(layer_name) {
   } else {
     createStyleBox(layer_name);
   }
-  return;
-};
+}
 
 function make_single_color_menu(layer, fill_prev) {
   var symbol = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'path';
@@ -10979,7 +11064,7 @@ function createStyleBoxTypoSymbols(layer_name) {
         position: [features[i].getAttribute('x'), features[i].getAttribute('y')]
       });
     }
-    prev_settings_defaults['size'] = current_layers[layer_name].default_size;
+    prev_settings_defaults.size = current_layers[layer_name].default_size;
   }
 
   var restore_prev_settings = function restore_prev_settings() {
@@ -10996,7 +11081,7 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   check_remove_existing_box('.styleBox');
 
-  var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('image'),
+  var selection = map.select('#' + _app.layer_to_id.get(layer)).selectAll('image'),
       ref_layer_name = current_layers[layer_name].ref_layer_name,
       symbols_map = current_layers[layer_name].symbols_map,
       rendered_field = current_layers[layer_name].rendered_field;
@@ -11010,10 +11095,8 @@ function createStyleBoxTypoSymbols(layer_name) {
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (!confirmed) {
       restore_prev_settings();
-    } else {
-      if (new_layer_name !== layer_name) {
-        change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
-      }
+    } else if (new_layer_name !== layer_name) {
+      change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
     }
   });
 
@@ -11086,11 +11169,11 @@ function createStyleBoxLabel(layer_name) {
     prev_settings = [];
     for (var i = 0; i < features.length; i++) {
       prev_settings.push({
-        'color': features[i].style.fill,
-        'size': features[i].style.fontSize,
-        'display': features[i].style.display ? features[i].style.display : null,
-        'position': [features[i].getAttribute('x'), features[i].getAttribute('y')],
-        'font': features[i].style.fontFamily
+        color: features[i].style.fill,
+        size: features[i].style.fontSize,
+        display: features[i].style.display ? features[i].style.display : null,
+        position: [features[i].getAttribute('x'), features[i].getAttribute('y')],
+        font: features[i].style.fontFamily
       });
     }
     prev_settings_defaults = {
@@ -11114,7 +11197,7 @@ function createStyleBoxLabel(layer_name) {
     current_layers[layer_name].fill_color = prev_settings_defaults.color;
     current_layers[layer_name].default_size = prev_settings_defaults.size;
     current_layers[layer_name].default_font = prev_settings_defaults.font;
-  };
+  }
 
   check_remove_existing_box('.styleBox');
 
@@ -11197,9 +11280,9 @@ function createStyleBoxGraticule(layer_name) {
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (confirmed) {
-      null;
+      return null;
     } else {
-      null;
+      return null;
     }
   });
 
@@ -11242,7 +11325,7 @@ function createStyleBoxGraticule(layer_name) {
     var dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
     current_layers['Graticule'].step = step_val;
     map.select('#Graticule').remove();
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
     selection = map.select('#Graticule').selectAll('path');
     selection_strokeW = map.select('#Graticule');
@@ -11272,8 +11355,8 @@ function createStyleBoxGraticule(layer_name) {
   clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null }).on('change', function () {
     var next_layer = selection_strokeW.node().nextSibling,
         step_val = +document.getElementById('graticule_step_txt').value,
-        dasharray_val = +document.getElementById('graticule_dasharray_txt').value,
-        graticule = d3.geoGraticule().step([step_val, step_val]);
+        dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
+    var graticule = d3.geoGraticule().step([step_val, step_val]);
     map.select('#Graticule').remove();
     if (this.checked) {
       var bbox_layer = _target_layer_file.bbox;
@@ -11288,7 +11371,7 @@ function createStyleBoxGraticule(layer_name) {
     } else {
       current_layers['Graticule'].extent = undefined;
     }
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', 'stroke': current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
     selection = map.select('#Graticule').selectAll('path');
     selection_strokeW = map.select('#Graticule');
@@ -11337,25 +11420,29 @@ function redraw_legend(type_legend, layer_name, field) {
 
 function createStyleBox_Line(layer_name) {
   check_remove_existing_box('.styleBox');
-  var rendering_params,
-      renderer = current_layers[layer_name].renderer,
+  var renderer = current_layers[layer_name].renderer,
       g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
       selection = map.select(g_lyr_name).selectAll('path'),
       opacity = selection.style('fill-opacity');
 
-  var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-      prev_col_breaks;
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  var prev_col_breaks = void 0;
+  var rendering_params = void 0;
 
-  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  }
 
-  var stroke_prev = selection.style('stroke'),
-      border_opacity = selection.style('stroke-opacity'),
-      stroke_width = +current_layers[layer_name]['stroke-width-const'],
-      prev_min_display,
-      prev_size,
-      prev_breaks;
+  var border_opacity = selection.style('stroke-opacity'),
+      stroke_width = +current_layers[layer_name]['stroke-width-const'];
+  var stroke_prev = selection.style('stroke');
+  var prev_min_display = void 0,
+      prev_size = void 0,
+      prev_breaks = void 0;
 
-  if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
+  if (stroke_prev.startsWith('rgb')) {
+    stroke_prev = rgb2hex(stroke_prev);
+  }
 
   var table = [];
   Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), function (d) {
@@ -11432,15 +11519,17 @@ function createStyleBox_Line(layer_name) {
           return current_layers[layer_name].linksbyId[i][2];
         });
       } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display != undefined) {
-        current_layers[layer_name].min_display = prev_min_display;
-        current_layers[layer_name].size = prev_size;
-        current_layers[layer_name].breaks = prev_breaks;
-        var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
-        selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('stroke-opacity', border_opacity).style('display', function (d, i) {
-          return +i <= lim ? null : 'none';
-        }).style('stroke-width', function (d) {
-          return d.properties.prop_val;
-        });
+        (function () {
+          current_layers[layer_name].min_display = prev_min_display;
+          current_layers[layer_name].size = prev_size;
+          current_layers[layer_name].breaks = prev_breaks;
+          var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+          selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('stroke-opacity', border_opacity).style('display', function (d, i) {
+            return +i <= lim ? null : 'none';
+          }).style('stroke-width', function (d) {
+            return d.properties.prop_val;
+          });
+        })();
       } else {
         if (fill_meth === 'single') {
           selection.style('stroke', fill_prev.single).style('stroke-opacity', border_opacity);
@@ -11454,7 +11543,9 @@ function createStyleBox_Line(layer_name) {
           }).style('stroke', stroke_prev);
         }
       }
-      if (current_layers[layer_name].colors_breaks) current_layers[layer_name].colors_breaks = prev_col_breaks;
+      if (current_layers[layer_name].colors_breaks) {
+        current_layers[layer_name].colors_breaks = prev_col_breaks;
+      }
       current_layers[layer_name].fill_color = fill_prev;
       zoom_without_redraw();
     }
@@ -11470,32 +11561,34 @@ function createStyleBox_Line(layer_name) {
   });
 
   if (renderer === 'Categorical' || renderer === 'PropSymbolsTypo') {
-    var color_field = renderer === 'Categorical' ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
+    (function () {
+      var color_field = renderer === 'Categorical' ? current_layers[layer_name].rendered_field : current_layers[layer_name].rendered_field2;
 
-    popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
-      var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
-          _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
-          cats = _prepare_categories_a2[0],
-          _ = _prepare_categories_a2[1];
+      popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        var _prepare_categories_a = prepare_categories_array(layer_name, color_field, current_layers[layer_name].color_map),
+            _prepare_categories_a2 = _slicedToArray(_prepare_categories_a, 2),
+            cats = _prepare_categories_a2[0],
+            _ = _prepare_categories_a2[1];
 
-      container.modal.hide();
-      display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
-        container.modal.show();
-        if (confirmed) {
-          rendering_params = {
-            nb_class: confirmed[0],
-            color_map: confirmed[1],
-            colorsByFeature: confirmed[2],
-            renderer: 'Categorical',
-            rendered_field: color_field,
-            field: color_field
-          };
-          selection.transition().style('stroke', function (d, i) {
-            return rendering_params.colorsByFeature[i];
-          });
-        }
+        container.modal.hide();
+        display_categorical_box(result_data[layer_name], layer_name, color_field, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              color_map: confirmed[1],
+              colorsByFeature: confirmed[2],
+              renderer: 'Categorical',
+              rendered_field: color_field,
+              field: color_field
+            };
+            selection.transition().style('stroke', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
       });
-    });
+    })();
   } else if (renderer === 'Choropleth' || renderer === 'PropSymbolsChoro') {
     popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
@@ -11531,55 +11624,59 @@ function createStyleBox_Line(layer_name) {
   }
 
   if (renderer === 'Links') {
-    prev_min_display = current_layers[layer_name].min_display || 0;
-    prev_breaks = current_layers[layer_name].breaks.slice();
-    var max_val = 0;
-    selection.each(function (d) {
-      if (+d.properties.fij > max_val) max_val = d.properties.fij;
-    });
-    var threshold_section = popup.append('p').attr('class', 'line_elem');
-    threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
-    // The legend will be updated in order to start on the minimum value displayed instead of
-    //   using the minimum value of the serie (skipping unused class if necessary)
-    threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
-      var val = +this.value;
-      popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
-      selection.style('display', function (d) {
-        return +d.properties.fij > val ? null : 'none';
+    (function () {
+      prev_min_display = current_layers[layer_name].min_display || 0;
+      prev_breaks = current_layers[layer_name].breaks.slice();
+      var max_val = 0;
+      selection.each(function (d) {
+        if (+d.properties.fij > max_val) max_val = d.properties.fij;
       });
-      current_layers[layer_name].min_display = val;
-    });
-    threshold_section.insert('label').attr('id', 'larger_than').style('float', 'right').html('<i> ' + prev_min_display + ' </i>');
-    popup.append('p').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.modify_size_class')).on('click', function () {
-      container.modal.hide();
-      display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, 'user_defined').then(function (result) {
-        container.modal.show();
-        if (result) {
-          var serie = result[0],
-              sizes = result[1].map(function (ft) {
-            return ft[1];
-          }),
-              links_byId = current_layers[layer_name].linksbyId;
-          serie.setClassManually(result[2]);
-          current_layers[layer_name].breaks = result[1];
-          selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
-            return sizes[serie.getClass(+links_byId[i][1])];
-          });
-        }
+      var threshold_section = popup.append('p').attr('class', 'line_elem');
+      threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
+      // The legend will be updated in order to start on the minimum value displayed instead of
+      //   using the minimum value of the serie (skipping unused class if necessary)
+      threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+        var val = +this.value;
+        popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
+        selection.style('display', function (d) {
+          return +d.properties.fij > val ? null : 'none';
+        });
+        current_layers[layer_name].min_display = val;
       });
-    });
+      threshold_section.insert('label').attr('id', 'larger_than').style('float', 'right').html('<i> ' + prev_min_display + ' </i>');
+      popup.append('p').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.modify_size_class')).on('click', function () {
+        container.modal.hide();
+        display_discretization_links_discont(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].breaks.length, 'user_defined').then(function (result) {
+          container.modal.show();
+          if (result) {
+            (function () {
+              var serie = result[0],
+                  sizes = result[1].map(function (ft) {
+                return ft[1];
+              }),
+                  links_byId = current_layers[layer_name].linksbyId;
+              serie.setClassManually(result[2]);
+              current_layers[layer_name].breaks = result[1];
+              selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
+                return sizes[serie.getClass(+links_byId[i][1])];
+              });
+            })();
+          }
+        });
+      });
+    })();
   } else if (renderer === 'DiscLayer') {
     prev_min_display = current_layers[layer_name].min_display || 0;
     prev_size = current_layers[layer_name].size.slice();
     prev_breaks = current_layers[layer_name].breaks.slice();
-    var _max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
+    var max_val = Math.max.apply(null, result_data[layer_name].map(function (i) {
       return i.disc_value;
     }));
     var disc_part = popup.append('p').attr('class', 'line_elem');
     disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
     disc_part.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
       var val = +this.value;
-      var lim = val != 0 ? val * current_layers[layer_name].n_features : -1;
+      var lim = val !== 0 ? val * current_layers[layer_name].n_features : -1;
       popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
       selection.style('display', function (d, i) {
         return i <= lim ? null : 'none';
@@ -11592,17 +11689,19 @@ function createStyleBox_Line(layer_name) {
       display_discretization_links_discont(layer_name, 'disc_value', current_layers[layer_name].breaks.length, 'user_defined').then(function (result) {
         container.modal.show();
         if (result) {
-          var serie = result[0],
-              sizes = result[1].map(function (ft) {
-            return ft[1];
-          });
+          (function () {
+            var serie = result[0],
+                sizes = result[1].map(function (ft) {
+              return ft[1];
+            });
 
-          serie.setClassManually(result[2]);
-          current_layers[layer_name].breaks = result[1];
-          current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-          selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
-            return sizes[serie.getClass(+d.properties.disc_value)];
-          });
+            serie.setClassManually(result[2]);
+            current_layers[layer_name].breaks = result[1];
+            current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+            selection.style('fill-opacity', 0).style('stroke-width', function (d, i) {
+              return sizes[serie.getClass(+d.properties.disc_value)];
+            });
+          })();
         }
       });
     });
@@ -11627,29 +11726,31 @@ function createStyleBox_Line(layer_name) {
       current_layers[layer_name]['stroke-width-const'] = val;
     });
   } else if (renderer.startsWith('PropSymbols')) {
-    var field_used = current_layers[layer_name].rendered_field;
-    var d_values = result_data[layer_name].map(function (f) {
-      return +f[field_used];
-    });
-    var prop_val_content = popup.append('p');
-    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
-    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
-    prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
-      var f_size = +this.value;
-      var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
-      current_layers[layer_name].size[1] = f_size;
-      redraw_prop_val(prop_values);
-    });
-    prop_val_content.append('span').style('float', 'right').html('(px)');
+    (function () {
+      var field_used = current_layers[layer_name].rendered_field;
+      var d_values = result_data[layer_name].map(function (f) {
+        return +f[field_used];
+      });
+      var prop_val_content = popup.append('p');
+      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
+      prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+      prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
+        var f_size = +this.value;
+        var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
+        current_layers[layer_name].size[1] = f_size;
+        redraw_prop_val(prop_values);
+      });
+      prop_val_content.append('span').style('float', 'right').html('(px)');
 
-    var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
-    prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
-    prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
-      var f_val = +this.value,
-          prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
-      redraw_prop_val(prop_values);
-      current_layers[layer_name].size[0] = f_val;
-    });
+      var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
+      prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+      prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
+        var f_val = +this.value;
+        var prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
+        redraw_prop_val(prop_values);
+        current_layers[layer_name].size[0] = f_val;
+      });
+    })();
   }
 
   make_generate_labels_section(popup, layer_name);
@@ -11773,78 +11874,84 @@ function createStyleBox(layer_name) {
   }
 
   if (type === 'Point') {
-    var current_pt_size = current_layers[layer_name].pointRadius;
-    var pt_size = popup.append('p').attr('class', 'line_elem');
-    pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
-    pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
-      current_pt_size = +this.value;
-      document.getElementById('point_radius_size_txt').value = current_pt_size;
-      selection.attr('d', path.pointRadius(current_pt_size));
-    });
-    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
-      var pt_size_range = document.getElementById('point_radius_size');
-      var old_value = pt_size_range.value;
-      if (this.value === '' || isNaN(+this.value)) {
-        this.value = old_value;
-      } else {
-        this.value = round_value(+this.value, 2);
-        pt_size_range.value = this.value;
-        selection.attr('d', path.pointRadius(this.value));
-      }
-    });
+    (function () {
+      var current_pt_size = current_layers[layer_name].pointRadius;
+      var pt_size = popup.append('p').attr('class', 'line_elem');
+      pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
+      pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+        current_pt_size = +this.value;
+        document.getElementById('point_radius_size_txt').value = current_pt_size;
+        selection.attr('d', path.pointRadius(current_pt_size));
+      });
+      pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+        var pt_size_range = document.getElementById('point_radius_size');
+        var old_value = pt_size_range.value;
+        if (this.value === '' || isNaN(+this.value)) {
+          this.value = old_value;
+        } else {
+          this.value = round_value(+this.value, 2);
+          pt_size_range.value = this.value;
+          selection.attr('d', path.pointRadius(this.value));
+        }
+      });
+    })();
   }
 
   if (current_layers[layer_name].colors_breaks == undefined && renderer !== 'Categorical') {
     if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
-      var fields = getFieldsType('category', null, fields_layer);
-      var fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
-      [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.categorical_color'), 'categorical'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d, i) {
-        fill_method.append('option').text(d[0]).attr('value', d[1]);
-      });
-      popup.append('div').attrs({ id: 'fill_color_section' });
-      fill_method.on('change', function () {
-        d3.select('#fill_color_section').html('').on('click', null);
-        if (this.value === 'single') {
-          make_single_color_menu(layer_name, fill_prev);
-        } else if (this.value === 'categorical') {
-          make_categorical_color_menu(fields, layer_name, fill_prev);
-        } else if (this.value === 'random') {
-          make_random_color(layer_name);
-        }
-      });
-      setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+      (function () {
+        var fields = getFieldsType('category', null, fields_layer);
+        var fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
+        [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.categorical_color'), 'categorical'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d, i) {
+          fill_method.append('option').text(d[0]).attr('value', d[1]);
+        });
+        popup.append('div').attrs({ id: 'fill_color_section' });
+        fill_method.on('change', function () {
+          d3.select('#fill_color_section').html('').on('click', null);
+          if (this.value === 'single') {
+            make_single_color_menu(layer_name, fill_prev);
+          } else if (this.value === 'categorical') {
+            make_categorical_color_menu(fields, layer_name, fill_prev);
+          } else if (this.value === 'random') {
+            make_random_color(layer_name);
+          }
+        });
+        setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+      })();
     } else {
       popup.append('div').attrs({ id: 'fill_color_section' });
       make_single_color_menu(layer_name, fill_prev);
     }
   } else if (renderer === 'Categorical') {
-    var rendered_field = current_layers[layer_name].rendered_field;
+    (function () {
+      var rendered_field = current_layers[layer_name].rendered_field;
 
-    popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
-      container.modal.hide();
+      popup.insert('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        container.modal.hide();
 
-      var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
-          _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
-          cats = _prepare_categories_a4[0],
-          _ = _prepare_categories_a4[1];
+        var _prepare_categories_a3 = prepare_categories_array(layer_name, rendered_field, current_layers[layer_name].color_map),
+            _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+            cats = _prepare_categories_a4[0],
+            _ = _prepare_categories_a4[1];
 
-      display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
-        container.modal.show();
-        if (confirmed) {
-          rendering_params = {
-            nb_class: confirmed[0],
-            color_map: confirmed[1],
-            colorsByFeature: confirmed[2],
-            renderer: 'Categorical',
-            rendered_field: rendered_field,
-            field: rendered_field
-          };
-          selection.transition().style('fill', function (d, i) {
-            return rendering_params.colorsByFeature[i];
-          });
-        }
+        display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              color_map: confirmed[1],
+              colorsByFeature: confirmed[2],
+              renderer: 'Categorical',
+              rendered_field: rendered_field,
+              field: rendered_field
+            };
+            selection.transition().style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
       });
-    });
+    })();
   } else if (renderer === 'Choropleth') {
     popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
@@ -11865,7 +11972,7 @@ function createStyleBox(layer_name) {
             field: current_layers[layer_name].rendered_field,
             extra_options: confirmed[7]
           };
-          var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+          //  let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
           selection.transition().style('fill', function (d, i) {
             return rendering_params.colorsByFeature[i];
           });
@@ -11873,64 +11980,74 @@ function createStyleBox(layer_name) {
       });
     });
   } else if (renderer === 'Gridded') {
-    var field_to_discretize = current_layers[layer_name].rendered_field;
-    popup.append('p').style('margin', 'auto').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
-      container.modal.hide();
-      display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
-      //  "quantiles",
-      current_layers[layer_name].options_disc).then(function (confirmed) {
-        container.modal.show();
-        if (confirmed) {
-          rendering_params = {
-            nb_class: confirmed[0],
-            type: confirmed[1],
-            breaks: confirmed[2],
-            colors: confirmed[3],
-            colorsByFeature: confirmed[4],
-            schema: confirmed[5],
-            no_data: confirmed[6],
-            renderer: 'Choropleth',
-            field: field_to_discretize,
-            extra_options: confirmed[7]
-          };
-          var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
-          selection.transition().style('fill', function (d, i) {
-            return rendering_params.colorsByFeature[i];
-          });
-        }
+    (function () {
+      var field_to_discretize = current_layers[layer_name].rendered_field;
+      popup.append('p').style('margin', 'auto').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+        container.modal.hide();
+        display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
+        //  "quantiles",
+        current_layers[layer_name].options_disc).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              type: confirmed[1],
+              breaks: confirmed[2],
+              colors: confirmed[3],
+              colorsByFeature: confirmed[4],
+              schema: confirmed[5],
+              no_data: confirmed[6],
+              renderer: 'Choropleth',
+              field: field_to_discretize,
+              extra_options: confirmed[7]
+            };
+            var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+            selection.transition().style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
       });
-    });
+    })();
   } else if (renderer === 'Stewart') {
-    var field_to_colorize = 'min',
-        nb_ft = current_layers[layer_name].n_features;
-    var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-    rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+    var prev_palette;
+    var recolor_stewart;
+    var color_palette_section;
 
-    var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
-      var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-      if (reversed) new_coloramp.reverse();
-      for (var i = 0; i < nb_ft; ++i) {
-        rendering_params.breaks[i][1] = new_coloramp[i];
-      }selection.transition().style('fill', function (d, i) {
-        return new_coloramp[i];
+    (function () {
+      var field_to_colorize = 'min',
+          nb_ft = current_layers[layer_name].n_features;
+      prev_palette = cloneObj(current_layers[layer_name].color_palette);
+
+      rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+
+      recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
+        var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+        if (reversed) new_coloramp.reverse();
+        for (var i = 0; i < nb_ft; ++i) {
+          rendering_params.breaks[i][1] = new_coloramp[i];
+        }selection.transition().style('fill', function (d, i) {
+          return new_coloramp[i];
+        });
+        current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+      };
+
+      color_palette_section = popup.insert('p').attr('class', 'line_elem');
+
+      color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
+      var seq_color_select = color_palette_section.insert('select').attr('id', 'coloramp_params').style('float', 'right').on('change', function () {
+        recolor_stewart(this.value, false);
       });
-      current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
-    };
 
-    var color_palette_section = popup.insert('p').attr('class', 'line_elem');
-    color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
-    var seq_color_select = color_palette_section.insert('select').attr('id', 'coloramp_params').style('float', 'right').on('change', function () {
-      recolor_stewart(this.value, false);
-    });
-
-    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-      seq_color_select.append('option').text(name).attr('value', name);
-    });
-    seq_color_select.node().value = prev_palette.name;
-    popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', margin: '0 !important' }).insert('button').attrs({ class: 'button_st3', id: 'reverse_colramp' }).html(i18next.t('app_page.layer_style_popup.reverse_palette')).on('click', function () {
-      var pal_name = document.getElementById('coloramp_params').value;
-      recolor_stewart(pal_name, true);
-    });
+      ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+        seq_color_select.append('option').text(name).attr('value', name);
+      });
+      seq_color_select.node().value = prev_palette.name;
+      popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', margin: '0 !important' }).insert('button').attrs({ class: 'button_st3', id: 'reverse_colramp' }).html(i18next.t('app_page.layer_style_popup.reverse_palette')).on('click', function () {
+        var pal_name = document.getElementById('coloramp_params').value;
+        recolor_stewart(pal_name, true);
+      });
+    })();
   }
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
@@ -12001,52 +12118,54 @@ function make_generate_labels_graticule_section(parent_node) {
 function make_generate_labels_section(parent_node, layer_name) {
   var _fields = get_fields_name(layer_name) || [];
   if (_fields && _fields.length > 0) {
-    var labels_section = parent_node.append('p');
-    var input_fields = {};
-    for (var i = 0; i < _fields.length; i++) {
-      input_fields[_fields[i]] = _fields[i];
-    }
-    labels_section.append('span').attr('id', 'generate_labels').styles({ cursor: 'pointer', 'margin-top': '15px' }).html(i18next.t('app_page.layer_style_popup.generate_labels')).on('mouseover', function () {
-      this.style.fontWeight = 'bold';
-    }).on('mouseout', function () {
-      this.style.fontWeight = '';
-    }).on('click', function () {
-      swal({
-        title: '',
-        text: i18next.t('app_page.layer_style_popup.field_label'),
-        type: 'question',
-        customClass: 'swal2_custom',
-        showCancelButton: true,
-        showCloseButton: false,
-        allowEscapeKey: false,
-        allowOutsideClick: false,
-        confirmButtonColor: '#DD6B55',
-        confirmButtonText: i18next.t('app_page.common.confirm'),
-        input: 'select',
-        inputPlaceholder: i18next.t('app_page.common.field'),
-        inputOptions: input_fields,
-        inputValidator: function inputValidator(value) {
-          return new Promise(function (resolve, reject) {
-            if (_fields.indexOf(value) < 0) {
-              reject(i18next.t('app_page.common.no_value'));
-            } else {
-              render_label(layer_name, {
-                label_field: value,
-                color: '#000',
-                font: 'Arial,Helvetica,sans-serif',
-                ref_font_size: 12,
-                uo_layer_name: ['Labels', value, layer_name].join('_')
-              });
-              resolve();
-            }
-          });
-        }
-      }).then(function (value) {
-        console.log(value);
-      }, function (dismiss) {
-        console.log(dismiss);
+    (function () {
+      var labels_section = parent_node.append('p');
+      var input_fields = {};
+      for (var i = 0; i < _fields.length; i++) {
+        input_fields[_fields[i]] = _fields[i];
+      }
+      labels_section.append('span').attr('id', 'generate_labels').styles({ cursor: 'pointer', 'margin-top': '15px' }).html(i18next.t('app_page.layer_style_popup.generate_labels')).on('mouseover', function () {
+        this.style.fontWeight = 'bold';
+      }).on('mouseout', function () {
+        this.style.fontWeight = '';
+      }).on('click', function () {
+        swal({
+          title: '',
+          text: i18next.t('app_page.layer_style_popup.field_label'),
+          type: 'question',
+          customClass: 'swal2_custom',
+          showCancelButton: true,
+          showCloseButton: false,
+          allowEscapeKey: false,
+          allowOutsideClick: false,
+          confirmButtonColor: '#DD6B55',
+          confirmButtonText: i18next.t('app_page.common.confirm'),
+          input: 'select',
+          inputPlaceholder: i18next.t('app_page.common.field'),
+          inputOptions: input_fields,
+          inputValidator: function inputValidator(value) {
+            return new Promise(function (resolve, reject) {
+              if (_fields.indexOf(value) < 0) {
+                reject(i18next.t('app_page.common.no_value'));
+              } else {
+                render_label(layer_name, {
+                  label_field: value,
+                  color: '#000',
+                  font: 'Arial,Helvetica,sans-serif',
+                  ref_font_size: 12,
+                  uo_layer_name: ['Labels', value, layer_name].join('_')
+                });
+                resolve();
+              }
+            });
+          }
+        }).then(function (value) {
+          console.log(value);
+        }, function (dismiss) {
+          console.log(dismiss);
+        });
       });
-    });
+    })();
   }
 }
 
@@ -12070,18 +12189,17 @@ function createStyleBox_ProbSymbol(layer_name) {
       selection = map.select(g_lyr_name).selectAll(type_symbol),
       old_size = [current_layers[layer_name].size[0], current_layers[layer_name].size[1]];
   var rendering_params = void 0;
-  var stroke_prev = selection.style('stroke'),
-      opacity = selection.style('fill-opacity'),
-      border_opacity = selection.style('stroke-opacity'),
-      stroke_width = selection.style('stroke-width');
+  var stroke_prev = selection.style('stroke');
+  var stroke_width = selection.style('stroke-width');
 
-  var fill_prev = cloneObj(current_layers[layer_name].fill_color),
-      prev_col_breaks;
+  var opacity = selection.style('fill-opacity'),
+      border_opacity = selection.style('stroke-opacity');
 
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color);
   var d_values = result_data[layer_name].map(function (v) {
     return +v[field_used];
   });
-
+  var prev_col_breaks = void 0;
   var redraw_prop_val = function redraw_prop_val(prop_values) {
     var selec = selection._groups[0];
 
@@ -12207,32 +12325,34 @@ function createStyleBox_ProbSymbol(layer_name) {
   });
 
   if (type_method === 'PropSymbolsChoro') {
-    var field_color = current_layers[layer_name].rendered_field2;
-    popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color })).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
-      container.modal.hide();
-      display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
-      //  "quantiles",
-      current_layers[layer_name].options_disc).then(function (confirmed) {
-        container.modal.show();
-        if (confirmed) {
-          rendering_params = {
-            nb_class: confirmed[0],
-            type: confirmed[1],
-            breaks: confirmed[2],
-            colors: confirmed[3],
-            colorsByFeature: confirmed[4],
-            schema: confirmed[5],
-            no_data: confirmed[6],
-            renderer: 'PropSymbolsChoro',
-            field: field_color,
-            extra_options: confirmed[7]
-          };
-          selection.style('fill', function (d, i) {
-            return rendering_params.colorsByFeature[i];
-          });
-        }
+    (function () {
+      var field_color = current_layers[layer_name].rendered_field2;
+      popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color })).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
+        container.modal.hide();
+        display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
+        //  "quantiles",
+        current_layers[layer_name].options_disc).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0],
+              type: confirmed[1],
+              breaks: confirmed[2],
+              colors: confirmed[3],
+              colorsByFeature: confirmed[4],
+              schema: confirmed[5],
+              no_data: confirmed[6],
+              renderer: 'PropSymbolsChoro',
+              field: field_color,
+              extra_options: confirmed[7]
+            };
+            selection.style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
       });
-    });
+    })();
   } else if (current_layers[layer_name].break_val != undefined) {
     var fill_color_section = popup.append('div').attr('id', 'fill_color_section');
     fill_color_section.append('p').style('text-align', 'center').html(i18next.t('app_page.layer_style_popup.color_break'));
@@ -12264,48 +12384,52 @@ function createStyleBox_ProbSymbol(layer_name) {
       });
     });
   } else if (type_method === 'PropSymbolsTypo') {
-    var _field_color = current_layers[layer_name].rendered_field2;
-    popup.append('p').style('margin', 'auto').html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: _field_color }));
-    popup.append('p').style('text-align', 'center').insert('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
-      var _prepare_categories_a5 = prepare_categories_array(layer_name, _field_color, current_layers[layer_name].color_map),
-          _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
-          cats = _prepare_categories_a6[0],
-          _ = _prepare_categories_a6[1];
+    (function () {
+      var field_color = current_layers[layer_name].rendered_field2;
+      popup.append('p').style('margin', 'auto').html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color }));
+      popup.append('p').style('text-align', 'center').insert('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_colors')).on('click', function () {
+        var _prepare_categories_a5 = prepare_categories_array(layer_name, field_color, current_layers[layer_name].color_map),
+            _prepare_categories_a6 = _slicedToArray(_prepare_categories_a5, 2),
+            cats = _prepare_categories_a6[0],
+            _ = _prepare_categories_a6[1];
 
-      container.modal.hide();
-      display_categorical_box(result_data[layer_name], layer_name, _field_color, cats).then(function (confirmed) {
-        container.modal.show();
-        if (confirmed) {
-          rendering_params = {
-            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-            renderer: 'Categorical', rendered_field: _field_color, field: _field_color
-          };
-          selection.style('fill', function (d, i) {
-            return rendering_params.colorsByFeature[i];
-          });
+        container.modal.hide();
+        display_categorical_box(result_data[layer_name], layer_name, field_color, cats).then(function (confirmed) {
+          container.modal.show();
+          if (confirmed) {
+            rendering_params = {
+              nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
+              renderer: 'Categorical', rendered_field: field_color, field: field_color
+            };
+            selection.style('fill', function (d, i) {
+              return rendering_params.colorsByFeature[i];
+            });
+          }
+        });
+      });
+    })();
+  } else {
+    (function () {
+      var fields_all = type_col2(result_data[layer_name]),
+          fields = getFieldsType('category', null, fields_all),
+          fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
+
+      [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d) {
+        fill_method.append('option').text(d[0]).attr('value', d[1]);
+      });
+      popup.append('div').attr('id', 'fill_color_section');
+      fill_method.on('change', function () {
+        popup.select('#fill_color_section').html('').on('click', null);
+        if (this.value === 'single') {
+          make_single_color_menu(layer_name, fill_prev, type_symbol);
+          map.select(g_lyr_name).selectAll(type_symbol).transition().style('fill', fill_prev.single);
+          current_layers[layer_name].fill_color = cloneObj(fill_prev);
+        } else if (this.value === 'random') {
+          make_random_color(layer_name, type_symbol);
         }
       });
-    });
-  } else {
-    var fields_all = type_col2(result_data[layer_name]),
-        fields = getFieldsType('category', null, fields_all),
-        fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
-
-    [[i18next.t('app_page.layer_style_popup.single_color'), 'single'], [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach(function (d) {
-      fill_method.append('option').text(d[0]).attr('value', d[1]);
-    });
-    popup.append('div').attr('id', 'fill_color_section');
-    fill_method.on('change', function () {
-      popup.select('#fill_color_section').html('').on('click', null);
-      if (this.value === 'single') {
-        make_single_color_menu(layer_name, fill_prev, type_symbol);
-        map.select(g_lyr_name).selectAll(type_symbol).transition().style('fill', fill_prev.single);
-        current_layers[layer_name].fill_color = cloneObj(fill_prev);
-      } else if (this.value === 'random') {
-        make_random_color(layer_name, type_symbol);
-      }
-    });
-    setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+      setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
+    })();
   }
 
   var fill_opct_section = popup.append('p').attr('class', 'line_elem');
@@ -12428,7 +12552,7 @@ function make_style_box_indiv_label(label_node) {
   });
   var b = box_content.append('p').attr('class', 'line_elem');
   b.insert('span').html(i18next.t('app_page.func_options.label.content'));
-  b.append('input').attrs({ value: label_node.textContent, id: 'label_content' }).styles({ 'width': '70px', float: 'right' }).on('keyup', function () {
+  b.append('input').attrs({ value: label_node.textContent, id: 'label_content' }).styles({ width: '70px', float: 'right' }).on('keyup', function () {
     label_node.textContent = this.value;
   });
   var c = box_content.append('p').attr('class', 'line_elem');
@@ -15036,17 +15160,19 @@ function createLegend_choro(layer, field, title, subtitle) {
   }
 
   if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
-    var tmp_pos = void 0;
-    legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
-      tmp_pos = y_pos2 + i * boxheight + i * boxgap;
-      return tmp_pos;
-    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
-    });
+    (function () {
+      var tmp_pos = void 0;
+      legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
+        tmp_pos = y_pos2 + i * boxheight + i * boxgap;
+        return tmp_pos;
+      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
+      });
 
-    legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + boxwidth * 2 + 10).attr('y', tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-      return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
-    });
+      legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + boxwidth * 2 + 10).attr('y', tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+        return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+      });
+    })();
   } else {
     legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
       return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
@@ -15300,29 +15426,33 @@ function createlegendEditBox(legend_id, layer_name) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
     } else {
-      var nb_dec = [],
-          nb_left = [];
-      legend_boxes.each(function (d) {
-        nb_dec.push(get_nb_decimals(d.value));
-        nb_left.push(get_nb_left_separator(d.value));
-      });
-      max_nb_decimals = max_fast(nb_dec);
-      max_nb_left = min_fast(nb_left);
+      (function () {
+        var nb_dec = [],
+            nb_left = [];
+        legend_boxes.each(function (d) {
+          nb_dec.push(get_nb_decimals(d.value));
+          nb_left.push(get_nb_left_separator(d.value));
+        });
+        max_nb_decimals = max_fast(nb_dec);
+        max_nb_left = min_fast(nb_left);
+      })();
     }
     max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
     if (max_nb_decimals > 0 || max_nb_left >= 2) {
       if (legend_node.getAttribute('rounding_precision')) {
         current_nb_dec = legend_node.getAttribute('rounding_precision');
       } else {
-        var nbs = [],
-            _nb_dec = [];
-        legend_boxes.each(function () {
-          nbs.push(this.textContent);
-        });
-        for (var i = 0; i < nbs.length; i++) {
-          _nb_dec.push(get_nb_decimals(nbs[i]));
-        }
-        current_nb_dec = max_fast(_nb_dec);
+        (function () {
+          var nbs = [],
+              nb_dec = [];
+          legend_boxes.each(function () {
+            nbs.push(this.textContent);
+          });
+          for (var i = 0; i < nbs.length; i++) {
+            nb_dec.push(get_nb_decimals(nbs[i]));
+          }
+          current_nb_dec = max_fast(nb_dec);
+        })();
       }
       if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) {
         max_nb_decimals = 18;
@@ -15335,21 +15465,21 @@ function createlegendEditBox(legend_id, layer_name) {
         d3.select('#precision_change_txt').html(nb_float);
         legend_node.setAttribute('rounding_precision', nb_float);
         if (legend_id === 'legend_root') {
-          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
-            var values = legend_boxes._groups[0][_i].__data__.value.split(' - ');
-            legend_boxes._groups[0][_i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
+          for (var i = 0; i < legend_boxes._groups[0].length; i++) {
+            var values = legend_boxes._groups[0][i].__data__.value.split(' - ');
+            legend_boxes._groups[0][i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
           }
           var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
         } else if (legend_id === 'legend_root_symbol') {
-          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
-            var value = legend_boxes._groups[0][_i2].__data__.value;
-            legend_boxes._groups[0][_i2].innerHTML = round_value(+value, nb_float).toLocaleString();
+          for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
+            var value = legend_boxes._groups[0][_i].__data__.value;
+            legend_boxes._groups[0][_i].innerHTML = round_value(+value, nb_float).toLocaleString();
           }
         } else if (legend_id === 'legend_root_lines_class') {
-          for (var _i3 = 0; _i3 < legend_boxes._groups[0].length; _i3++) {
-            var _value = legend_boxes._groups[0][_i3].__data__.value[1];
-            legend_boxes._groups[0][_i3].innerHTML = round_value(+_value, nb_float).toLocaleString();
+          for (var _i2 = 0; _i2 < legend_boxes._groups[0].length; _i2++) {
+            var _value = legend_boxes._groups[0][_i2].__data__.value[1];
+            legend_boxes._groups[0][_i2].innerHTML = round_value(+_value, nb_float).toLocaleString();
           }
           var _min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
@@ -16250,109 +16380,113 @@ function apply_user_preferences(json_pref) {
 
     // This is a layer for which a geometries have been stocked as TopoJSON :
     if (_layer.topo_geom) {
-      var tmp = {
-        skip_alert: true,
-        choosed_name: layer_name,
-        skip_rescale: true
-      };
-      if (_layer.targeted) {
-        tmp['target_layer_on_add'] = true;
-      } else if (_layer.renderer) {
-        tmp['func_name'] = func_name_corresp.get(_layer.renderer);
-        tmp['result_layer_on_add'] = true;
-      }
-      if (_layer.pointRadius !== undefined) {
-        tmp['pointRadius'] = _layer.pointRadius;
-      }
-      // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
-      layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
-      var current_layer_prop = current_layers[layer_name];
-      if (_layer.renderer) {
-        current_layer_prop.renderer = _layer.renderer;
-      }
-      if (_layer.targeted && _layer.fields_type) {
-        current_layer_prop.fields_type = _layer.fields_type;
-        document.getElementById('btn_type_fields').removeAttribute('disabled');
-      }
-      layer_id = _app.layer_to_id.get(layer_name);
-      var layer_selec = map.select('#' + layer_id);
+      (function () {
+        var tmp = {
+          skip_alert: true,
+          choosed_name: layer_name,
+          skip_rescale: true
+        };
+        if (_layer.targeted) {
+          tmp['target_layer_on_add'] = true;
+        } else if (_layer.renderer) {
+          tmp['func_name'] = func_name_corresp.get(_layer.renderer);
+          tmp['result_layer_on_add'] = true;
+        }
+        if (_layer.pointRadius !== undefined) {
+          tmp['pointRadius'] = _layer.pointRadius;
+        }
+        // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
+        layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
+        var current_layer_prop = current_layers[layer_name];
+        if (_layer.renderer) {
+          current_layer_prop.renderer = _layer.renderer;
+        }
+        if (_layer.targeted && _layer.fields_type) {
+          current_layer_prop.fields_type = _layer.fields_type;
+          document.getElementById('btn_type_fields').removeAttribute('disabled');
+        }
+        layer_id = _app.layer_to_id.get(layer_name);
+        var layer_selec = map.select('#' + layer_id);
 
-      current_layer_prop.rendered_field = _layer.rendered_field;
+        current_layer_prop.rendered_field = _layer.rendered_field;
 
-      if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
-      if (_layer.size) current_layer_prop.size = _layer.size;
-      if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
-      if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
-      if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
-      if (_layer.color_palette) current_layer_prop.color_palette = _layer.color_palette;
-      if (_layer.renderer) {
-        if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
-          layer_selec.selectAll('path').style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', function (d, j) {
-            return _layer.color_by_id[j];
-          });
-        } else if (_layer.renderer === 'Links') {
-          current_layer_prop.linksbyId = _layer.linksbyId;
-          current_layer_prop.min_display = _layer.min_display;
-          current_layer_prop.breaks = _layer.breaks;
-          layer_selec.selectAll('path').styles(function (d, j) {
-            return {
-              display: +d.properties.fij > _layer.min_display ? null : 'none',
-              stroke: _layer.fill_color.single,
-              'stroke-width': current_layer_prop.linksbyId[j][2]
-            };
-          });
-        } else if (_layer.renderer === 'DiscLayer') {
-          current_layer_prop.min_display = _layer.min_display || 0;
-          current_layer_prop.breaks = _layer.breaks;
-          var lim = current_layer_prop.min_display !== 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
-          layer_selec.selectAll('path').styles(function (d, j) {
-            return {
-              fill: 'none',
-              stroke: _layer.fill_color.single,
-              display: j <= lim ? null : 'none',
-              'stroke-width': d.properties.prop_val
-            };
-          });
-        } else if (_layer.renderer.startsWith('Categorical')) {
-          render_categorical(layer_name, {
-            colorByFeature: _layer.color_by_id,
-            color_map: new Map(_layer.color_map),
-            rendered_field: _layer.rendered_field,
-            renderer: 'Categorical'
+        if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
+        if (_layer.size) current_layer_prop.size = _layer.size;
+        if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
+        if (_layer.options_disc) current_layer_prop.options_disc = _layer.options_disc;
+        if (_layer.fill_color) current_layer_prop.fill_color = _layer.fill_color;
+        if (_layer.color_palette) current_layer_prop.color_palette = _layer.color_palette;
+        if (_layer.renderer) {
+          if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
+            layer_selec.selectAll('path').style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', function (d, j) {
+              return _layer.color_by_id[j];
+            });
+          } else if (_layer.renderer === 'Links') {
+            current_layer_prop.linksbyId = _layer.linksbyId;
+            current_layer_prop.min_display = _layer.min_display;
+            current_layer_prop.breaks = _layer.breaks;
+            layer_selec.selectAll('path').styles(function (d, j) {
+              return {
+                display: +d.properties.fij > _layer.min_display ? null : 'none',
+                stroke: _layer.fill_color.single,
+                'stroke-width': current_layer_prop.linksbyId[j][2]
+              };
+            });
+          } else if (_layer.renderer === 'DiscLayer') {
+            (function () {
+              current_layer_prop.min_display = _layer.min_display || 0;
+              current_layer_prop.breaks = _layer.breaks;
+              var lim = current_layer_prop.min_display !== 0 ? current_layer_prop.min_display * current_layers[layer_name].n_features : -1;
+              layer_selec.selectAll('path').styles(function (d, j) {
+                return {
+                  fill: 'none',
+                  stroke: _layer.fill_color.single,
+                  display: j <= lim ? null : 'none',
+                  'stroke-width': d.properties.prop_val
+                };
+              });
+            })();
+          } else if (_layer.renderer.startsWith('Categorical')) {
+            render_categorical(layer_name, {
+              colorByFeature: _layer.color_by_id,
+              color_map: new Map(_layer.color_map),
+              rendered_field: _layer.rendered_field,
+              renderer: 'Categorical'
+            });
+          }
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        }
+        if (_layer.stroke_color) {
+          layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
+        }
+        if (_layer['stroke-width-const']) {
+          current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
+          layer_selec.style('stroke-width', _layer['stroke-width-const']);
+        }
+        if (_layer.fixed_stroke) {
+          current_layer_prop.fixed_stroke = _layer.fixed_stroke;
+        }
+        if (_layer.fill_color && _layer.fill_color.single && _layer.renderer !== 'DiscLayer') {
+          layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', _layer.fill_color.single);
+        } else if (_layer.fill_color && _layer.fill_color.random) {
+          layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', function () {
+            return Colors.names[Colors.random()];
           });
         }
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
-      }
-      if (_layer.stroke_color) {
-        layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
-      }
-      if (_layer['stroke-width-const']) {
-        current_layer_prop['stroke-width-const'] = _layer['stroke-width-const'];
-        layer_selec.style('stroke-width', _layer['stroke-width-const']);
-      }
-      if (_layer.fixed_stroke) {
-        current_layer_prop.fixed_stroke = _layer.fixed_stroke;
-      }
-      if (_layer.fill_color && _layer.fill_color.single && _layer.renderer !== 'DiscLayer') {
-        layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', _layer.fill_color.single);
-      } else if (_layer.fill_color && _layer.fill_color.random) {
-        layer_selec.selectAll('path').style(current_layer_prop.type !== 'Line' ? 'fill' : 'stroke', function () {
-          return Colors.names[Colors.random()];
-        });
-      }
 
-      layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
-      if (_layer.visible === 'hidden') {
-        handle_active_layer(layer_name);
-      }
-      if (_layer.filter_shadow) {
-        createDropShadow(layer_id);
-      }
-      done += 1;
-      if (done === map_config.n_layers) set_final_param();
-      // });
+        layer_selec.selectAll('path').styles({ 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity });
+        if (_layer.visible === 'hidden') {
+          handle_active_layer(layer_name);
+        }
+        if (_layer.filter_shadow) {
+          createDropShadow(layer_id);
+        }
+        done += 1;
+        if (done === map_config.n_layers) set_final_param();
+        // });
+      })();
     } else if (layer_name === 'World') {
       add_simplified_land_layer({
         skip_rescale: true,
@@ -16435,14 +16569,14 @@ function apply_user_preferences(json_pref) {
         }
         current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
         layer_id = _app.layer_to_id.get(layer_name);
-        var _layer_selec = map.select('#' + layer_id).selectAll(_layer.symbol);
-        _layer_selec.styles({
+        var layer_selec = map.select('#' + layer_id).selectAll(_layer.symbol);
+        layer_selec.styles({
           'stroke-width': _layer['stroke-width-const'] + 'px',
           'fill-opacity': fill_opacity,
           'stroke-opacity': stroke_opacity
         });
         if (_layer.fill_color.random) {
-          _layer_selec.style('fill', function (_) {
+          layer_selec.style('fill', function (_) {
             return Colors.names[Colors.random()];
           });
         }
@@ -16462,61 +16596,63 @@ function apply_user_preferences(json_pref) {
         render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
-        var symbols_map = new Map(_layer.symbols_map);
-        var new_layer_data = {
-          type: 'FeatureCollection',
-          features: _layer.current_state.map(function (d) {
-            return d.data;
-          })
-        };
-
-        var nb_features = new_layer_data.features.length;
-        var context_menu = new ContextMenu();
-        var getItems = function getItems(self_parent) {
-          return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-              make_style_box_indiv_symbol(self_parent);
-            } }, { name: i18next.t('app_page.common.delete'), action: function action() {
-              self_parent.style.display = 'none';
-            } }];
-        };
-        layer_id = encodeId(layer_name);
-        _app.layer_to_id.set(layer_name, layer_id);
-        _app.id_to_layer.set(layer_id, layer_name);
-        // Add the features at there original positions :
-        map.append('g').attrs({ id: layer_id, class: 'layer' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d, j) {
-          var symb = symbols_map.get(d.properties.symbol_field),
-              prop = _layer.current_state[j],
-              coords = prop.pos;
-          return {
-            x: coords[0] - symb[1] / 2,
-            y: coords[1] - symb[1] / 2,
-            width: prop.size,
-            height: prop.size,
-            'xlink:href': symb[0]
+        (function () {
+          var symbols_map = new Map(_layer.symbols_map);
+          var new_layer_data = {
+            type: 'FeatureCollection',
+            features: _layer.current_state.map(function (d) {
+              return d.data;
+            })
           };
-        }).style('display', function (d, j) {
-          return _layer.current_state[j].display;
-        }).on('mouseover', function () {
-          this.style.cursor = 'pointer';
-        }).on('mouseout', function () {
-          this.style.cursor = 'initial';
-        }).on('contextmenu dblclick', function () {
-          context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
-        }).call(drag_elem_geo);
 
-        create_li_layer_elem(layer_name, nb_features, ['Point', 'symbol'], 'result');
-        current_layers[layer_name] = {
-          n_features: nb_features,
-          renderer: 'TypoSymbols',
-          symbols_map: symbols_map,
-          rendered_field: _layer.rendered_field,
-          is_result: true,
-          symbol: 'image',
-          ref_layer_name: _layer.ref_layer_name
-        };
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
+          var nb_features = new_layer_data.features.length;
+          var context_menu = new ContextMenu();
+          var getItems = function getItems(self_parent) {
+            return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
+                make_style_box_indiv_symbol(self_parent);
+              } }, { name: i18next.t('app_page.common.delete'), action: function action() {
+                self_parent.style.display = 'none';
+              } }];
+          };
+          layer_id = encodeId(layer_name);
+          _app.layer_to_id.set(layer_name, layer_id);
+          _app.id_to_layer.set(layer_id, layer_name);
+          // Add the features at there original positions :
+          map.append('g').attrs({ id: layer_id, class: 'layer' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d, j) {
+            var symb = symbols_map.get(d.properties.symbol_field),
+                prop = _layer.current_state[j],
+                coords = prop.pos;
+            return {
+              x: coords[0] - symb[1] / 2,
+              y: coords[1] - symb[1] / 2,
+              width: prop.size,
+              height: prop.size,
+              'xlink:href': symb[0]
+            };
+          }).style('display', function (d, j) {
+            return _layer.current_state[j].display;
+          }).on('mouseover', function () {
+            this.style.cursor = 'pointer';
+          }).on('mouseout', function () {
+            this.style.cursor = 'initial';
+          }).on('contextmenu dblclick', function () {
+            context_menu.showMenu(d3.event, document.querySelector('body'), getItems(this));
+          }).call(drag_elem_geo);
+
+          create_li_layer_elem(layer_name, nb_features, ['Point', 'symbol'], 'result');
+          current_layers[layer_name] = {
+            n_features: nb_features,
+            renderer: 'TypoSymbols',
+            symbols_map: symbols_map,
+            rendered_field: _layer.rendered_field,
+            is_result: true,
+            symbol: 'image',
+            ref_layer_name: _layer.ref_layer_name
+          };
+          if (_layer.legend) {
+            rehandle_legend(layer_name, _layer.legend);
+          }
+        })();
       } else {
         null;
       }
