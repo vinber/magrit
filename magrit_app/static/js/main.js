@@ -1757,6 +1757,13 @@ function remove_layer_cleanup(name){
     document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
     reset_user_values();
+
+    // Reset the projection (if the projection was defined via proj4):
+    if (current_proj_name === 'def_proj4') {
+      current_proj_name = 'NaturalEarth2';
+      change_projection(current_proj_name);
+      addLastProjectionSelect(current_proj_name);
+    }
   }
 
   // There is probably better ways in JS to delete the object,

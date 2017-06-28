@@ -225,6 +225,13 @@ def get_user_id(session_redis, app_users, app=None):
             app_users.add(user_id)
         return user_id
 
+
+def read_shp_crs(path):
+    with open(path, 'r') as f:
+        proj_info_str = f.read()
+    return proj_info_str
+
+
 def convert_error(message='Error converting input file'):
     return web.Response(text='{{"Error": "{}"}}'.format(message))
 
@@ -273,9 +280,14 @@ async def convert(request):
         request.app['logger'].debug(
             '{} - Used result from redis'.format(user_id))
         request.app['redis_conn'].pexpire(f_name, 86400000)
+        if "shp" in datatype:
+            proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
+
         return web.Response(text=''.join(
-            ['{"key":', str(hashed_input), ',"file":', result.decode(), '}']
-            ))
+            ['{"key":', str(hashed_input),
+             ',"file":', result.decode(),
+             ',"proj":', json.dumps(get_proj4_string(proj_info_str)),
+             '}']))
 
     if "shp" in datatype:
         clean_files = lambda: [os.remove(_file) for _file in list_files]
@@ -292,10 +304,8 @@ async def convert(request):
 
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_name, result, pexpire=86400000))
-        with open('/tmp/' + name.replace('.shp', '.prj'), 'r') as f:
-            proj_info_str = f.read()
+        proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
         clean_files()
-
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
         dir_path = '/tmp/{}{}/'.format(user_id, hashed_input)
@@ -339,8 +349,7 @@ async def convert(request):
                 if not result:
                     return convert_error()
 
-                with open(slots['prj'], 'r') as f:
-                    proj_info_str = f.read()
+                proj_info_str = read_shp_crs(slots['prj'])
 
                 asyncio.ensure_future(
                     request.app['redis_conn'].set(

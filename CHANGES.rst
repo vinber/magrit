@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.3.5 (2017-06-28)
+------------------
+
+- Allow to edit the location of proportionnal symbols
+
+- Slightly change the behavior with proj4 projections when layers are added/removed
+
+
 0.3.4 (2017-06-22)
 ------------------
 
