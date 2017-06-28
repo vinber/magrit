@@ -1488,7 +1488,7 @@ function add_layout_layers() {
 
 function add_sample_layer() {
   const prepare_extra_dataset_availables = () => {
-    request_data('GET', '/extrabasemaps').then((result) => {
+    request_data('GET', 'extrabasemaps').then((result) => {
       _app.list_extrabasemaps = JSON.parse(result.target.responseText).filter(elem => elem[0] !== 'Tunisia');
     });
   };

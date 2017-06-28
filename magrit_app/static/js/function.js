@@ -4,69 +4,56 @@ const get_menu_option = (function () {
   const menu_option = {
     'smooth':{
       'name': 'smooth',
-      'title': i18next.t('app_page.func_title.smooth'),
       'menu_factory': 'fillMenu_Stewart',
       'fields_handler': 'fields_Stewart',
     },
     'prop':{
       'name': 'prop',
-      'title': i18next.t('app_page.func_title.prop'),
       'menu_factory': 'fillMenu_PropSymbol',
       'fields_handler': 'fields_PropSymbol',
     },
     'choroprop':{
       'name': 'choroprop',
-      'title': i18next.t('app_page.func_title.choroprop'),
       'menu_factory': 'fillMenu_PropSymbolChoro',
       'fields_handler': 'fields_PropSymbolChoro',
     },
     'proptypo':{
       'name': 'proptypo',
-      'title': i18next.t('app_page.func_title.proptypo'),
       'menu_factory': 'fillMenu_PropSymbolTypo',
       'fields_handler': 'fields_PropSymbolTypo',
     },
     'choro':{
       'name': 'choro',
-      'title': i18next.t('app_page.func_title.choro'),
       'menu_factory': 'fillMenu_Choropleth',
       'fields_handler': 'fields_Choropleth',
     },
     'cartogram':{
       'name': 'cartogram',
-      'title': i18next.t('app_page.func_title.cartogram'),
       'menu_factory': 'fillMenu_Anamorphose',
       'fields_handler': 'fields_Anamorphose',
-      'add_options': 'keep_file',
     },
     'grid':{
       'name': 'grid',
-      'title': i18next.t('app_page.func_title.grid'),
       'menu_factory': 'fillMenu_griddedMap',
       'fields_handler': 'fields_griddedMap',
     },
     'flow':{
       'name': 'flow',
-      'title': i18next.t('app_page.func_title.flow'),
       'menu_factory': 'fillMenu_FlowMap',
       'fields_handler': 'fields_FlowMap',
     },
     'discont':{
       'name': 'discont',
-      'title': i18next.t('app_page.func_title.discont'),
       'menu_factory': 'fillMenu_Discont',
       'fields_handler': 'fields_Discont',
-      'add_options': 'keep_file',
     },
     'typo':{
       'name': 'typo',
-      'title': i18next.t('app_page.func_title.typo'),
       'menu_factory': 'fillMenu_Typo',
       'fields_handler': 'fields_Typo',
     },
     'typosymbol':{
       'name': 'typosymbol',
-      'title': i18next.t('app_page.func_title.typosymbol'),
       'menu_factory': 'fillMenu_TypoSymbol',
       'fields_handler': 'fields_TypoSymbol',
     }
@@ -170,6 +157,9 @@ function display_error_num_field() {
 * to fill the "span" field in stewart functionnality
 * as well as the "resolution" field in grid functionnality.
 *
+* @param {String} func_name - the name of the representation for which this function
+*                             is called (between 'grid' and 'stewart').
+* @return Number - A first guess for the span value (with no decimal if possible)
 */
 const get_first_guess_span = function(func_name) {
   const bbox = _target_layer_file.bbox,
@@ -188,6 +178,8 @@ const get_first_guess_span = function(func_name) {
 * Check if the wanted resolution isn't too big before sending the request
 * to the server.
 *
+* @param {Number} cell_value - The cell value to test
+* @return
 */
 function test_maxmin_resolution(cell_value) {
   const bbox = _target_layer_file.bbox;
@@ -227,6 +219,15 @@ function make_template_functionnality(parent_node) {
   return parent_node.append('div').attr('class', 'form-rendering');
 }
 
+
+/**
+* Make the input element allowing to choose the resulting layer name
+* (used for each representation type)
+* @param {Object} parent - The parent of the element to be created.
+* @param {String} id - the id of the element to be created.
+* @param {String} margin_top - The margin on the top of the input element (in px).
+* @return void
+*/
 function make_layer_name_button(parent, id, margin_top) {
   let a = parent.append('p').style('clear', 'both');
   a.append('span')
@@ -275,14 +276,6 @@ function make_ok_button(parent, id, disabled=true) {
       'data-i18n': '[html]app_page.func_options.common.render',
       'disabled': disabled ? true : null })
     .html(i18next.t('app_page.func_options.common.render'));
-}
-
-function insert_legend_button(layer_name) {
-  let selec = d3.select('#sortable').select(['.', layer_name, ' .layer_buttons'].join('')),
-      inner_html = selec.node().innerHTML,
-      const_delim = ' <img src="/static/img/Inkscape_icons_zoom_fit_page.png"',
-      split_content = inner_html.split();
-  selec.node().innerHTML = [split_content[0], button_legend, const_delim, split_content[1]].join('');
 }
 
 function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback) {
@@ -347,27 +340,27 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     div_table.appendChild(inner_line);
   }
 
-  let mins = document.getElementById(id_parent).querySelectorAll('.min_class'),
+  const mins = document.getElementById(id_parent).querySelectorAll('.min_class'),
     maxs = document.getElementById(id_parent).querySelectorAll('.max_class');
 
   for (let i = 0; i < mins.length; i++) {
     if (i > 0) {
-      let prev_ix = i-1;
-      mins[i].onchange = function() {
+      const prev_ix = i - 1;
+      mins[i].onchange = function () {
         maxs[prev_ix].value = this.value;
         if (callback) callback();
       };
     }
     if (i < mins.length - 1) {
-      let next_ix = i+1;
-      maxs[i].onchange = function() {
+      const next_ix = i + 1;
+      maxs[i].onchange = function () {
         mins[next_ix].value = this.value;
         if (callback) callback();
       };
     }
   }
   if (callback) {
-    let sizes = document.getElementById(id_parent).querySelectorAll('.size_class')
+    const sizes = document.getElementById(id_parent).querySelectorAll('.size_class')
     for (let i = 0; i < sizes.length; i++) {
       sizes[i].onchange = callback;
     }
@@ -375,14 +368,14 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 }
 
 function fetch_min_max_table_value(parent_id) {
-  var parent_node = parent_id ? document.getElementById(parent_id)
+  const parent_node = parent_id ? document.getElementById(parent_id)
     : _app.current_functionnality.name === 'flow' ? document.getElementById('FlowMap_discTable')
     : _app.current_functionnality.name === 'discont' ? document.getElementById('Discont_discTable')
     : null;
 
   if (!parent_node) return;
 
-  let mins = Array.prototype.map.call(parent_node.querySelectorAll('.min_class'), el => +el.value),
+  const mins = Array.prototype.map.call(parent_node.querySelectorAll('.min_class'), el => +el.value),
     maxs = Array.prototype.map.call(parent_node.querySelectorAll('.max_class'), el => +el.value),
     sizes = Array.prototype.map.call(parent_node.querySelectorAll('.size_class'), el => +el.value),
     nb_class = mins.length,
@@ -399,20 +392,20 @@ function fetch_min_max_table_value(parent_id) {
 }
 
 function fillMenu_PropSymbolChoro(layer) {
-  var dv2 = make_template_functionnality(section2);
+  const dv2 = make_template_functionnality(section2);
 
-  var a = dv2.append('p').attr('class', 'params_section2');
+  const a = dv2.append('p').attr('class', 'params_section2');
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' })
     .html(i18next.t('app_page.func_options.choroprop.field1'));
-  var field1_selec = a.insert('select')
+  const field1_selec = a.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
 
-  var b = dv2.append('p').attr('class', 'params_section2');
+  const b = dv2.append('p').attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' })
     .html(i18next.t('app_page.func_options.choroprop.fixed_size'));
-  var ref_size = b.insert('input')
+  const ref_size = b.insert('input')
     .attrs({
       id: 'PropSymbolChoro_ref_size',
       type: 'number',
@@ -424,29 +417,29 @@ function fillMenu_PropSymbolChoro(layer) {
     .style('width', '50px');
   b.append('span').html(' (px)');
 
-  var c = dv2.append('p').attr('class', 'params_section2');
+  const c = dv2.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' })
     .html(i18next.t('app_page.func_options.choroprop.on_value'));
-  var ref_value = c.insert('input')
+  const ref_value = c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' })
     .attrs({ min: 0.1, step: 0.1 });
 
   // Other symbols could probably easily be proposed :
-  var d = dv2.append('p').attr('class', 'params_section2');
+  const d = dv2.append('p').attr('class', 'params_section2');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' })
     .html(i18next.t('app_page.func_options.choroprop.symbol_type'));
-  var symb_selec = d.insert('select')
+  const symb_selec = d.insert('select')
     .attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
-  var e = dv2.append('p').attr('class', 'params_section2');
+  const e = dv2.append('p').attr('class', 'params_section2');
   e.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' })
     .html(i18next.t('app_page.func_options.choroprop.field2'));
 
-  var field2_selec = e.insert('select')
+  const field2_selec = e.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
 
   let discr_section = dv2.insert('p').style('margin', 'auto');
@@ -465,282 +458,285 @@ function fillMenu_PropSymbolChoro(layer) {
   dv2.selectAll('.params').attr('disabled', true);
 }
 
-var fields_PropSymbolChoro = {
-  fill: function(layer) {
+const fields_PropSymbolChoro = {
+  fill(layer) {
     if (!layer) return;
     section2.selectAll('.params').attr('disabled', null);
     let self = this,
-        fields_stock = getFieldsType('stock', layer),
-        fields_ratio = getFieldsType('ratio', layer),
-        nb_features = user_data[layer].length,
-        field_size = section2.select('#PropSymbolChoro_field_1'),
-        field_color = section2.select('#PropSymbolChoro_field_2'),
-        ico_disc = section2.select('#ico_others'),
-        ico_jenks = section2.select('#ico_jenks'),
-        ico_quantiles = section2.select('#ico_quantiles'),
-        ico_equal_interval = section2.select('#ico_equal_interval'),
-        ico_q6 = section2.select('#ico_q6'),
-        uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
-        ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
-        symb_selec = section2.select('#PropSymbolChoro_symbol_type'),
-        ref_size = section2.select('#PropSymbolChoro_ref_size'),
-        choro_mini_choice_disc = section2.select('#choro_mini_choice_disc'),
-        img_valid_disc = section2.select('#img_choice_disc'),
-        ok_button = section2.select('#propChoro_yes');
+      fields_stock = getFieldsType('stock', layer),
+      fields_ratio = getFieldsType('ratio', layer),
+      nb_features = user_data[layer].length,
+      field_size = section2.select('#PropSymbolChoro_field_1'),
+      field_color = section2.select('#PropSymbolChoro_field_2'),
+      ico_disc = section2.select('#ico_others'),
+      ico_jenks = section2.select('#ico_jenks'),
+      ico_quantiles = section2.select('#ico_quantiles'),
+      ico_equal_interval = section2.select('#ico_equal_interval'),
+      ico_q6 = section2.select('#ico_q6'),
+      uo_layer_name = section2.select('#PropSymbolChoro_output_name'),
+      ref_value_field = section2.select('#PropSymbolChoro_ref_value'),
+      symb_selec = section2.select('#PropSymbolChoro_symbol_type'),
+      ref_size = section2.select('#PropSymbolChoro_ref_size'),
+      choro_mini_choice_disc = section2.select('#choro_mini_choice_disc'),
+      img_valid_disc = section2.select('#img_choice_disc'),
+      ok_button = section2.select('#propChoro_yes');
 
-    let uncolor_icons = () => {
-        ico_jenks.style('border', null);
-        ico_q6.style('border', null);
-        ico_quantiles.style('border', null);
-        ico_equal_interval.style('border', null);
+    const uncolor_icons = () => {
+      ico_jenks.style('border', null);
+      ico_q6.style('border', null);
+      ico_quantiles.style('border', null);
+      ico_equal_interval.style('border', null);
     };
 
     if (current_layers[layer].type === 'Line') {
-        ref_size.attr('value', 10.0);
-        [['app_page.func_options.common.symbol_line', 'line'],
-         ['app_page.func_options.common.symbol_circle', 'circle'],
-         ['app_page.func_options.common.symbol_square', 'rect']
-        ].forEach(function(symb) {
-            symb_selec.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
-        });
+      ref_size.attr('value', 10.0);
+      [['app_page.func_options.common.symbol_line', 'line'],
+       ['app_page.func_options.common.symbol_circle', 'circle'],
+       ['app_page.func_options.common.symbol_square', 'rect']
+      ].forEach((symb) => {
+        symb_selec.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
+      });
     } else {
       ref_size.attr('value', 60.0);
       [['app_page.func_options.common.symbol_circle', 'circle'],
        ['app_page.func_options.common.symbol_square', 'rect']
-      ].forEach(function(symb) {
-          symb_selec.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
+      ].forEach((symb) => {
+        symb_selec.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
       });
     }
 
-
-    let prepare_disc_quantiles = (field) => {
-        let _values = user_data[layer].map(v => v[field]),
-            n_class = getOptNbClass(_values.length);
-        render_mini_chart_serie(_values.map(v => +v), document.getElementById('container_sparkline_propsymbolchoro'));
-        let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class);
-        self.rendering_params[field] = {
-            nb_class: nb_class, type: 'quantiles', colors: color_array,
-            breaks: breaks, no_data: no_data_color,
-            colorsByFeature: colors_map, renderer: 'Choropleth',
-            rendered_field: field, schema: ['Reds']
-        };
-        choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
-        ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-        uncolor_icons();
-        ico_quantiles.style('border', 'solid 1px green');
-    }
+    const prepare_disc_quantiles = (field) => {
+      const _values = user_data[layer].map(v => v[field]);
+      const n_class = getOptNbClass(_values.length);
+      render_mini_chart_serie(_values.map(v => +v), document.getElementById('container_sparkline_propsymbolchoro'));
+      const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class);
+      self.rendering_params[field] = {
+        nb_class: nb_class, type: 'quantiles', colors: color_array,
+        breaks: breaks, no_data: no_data_color,
+        colorsByFeature: colors_map, renderer: 'Choropleth',
+        rendered_field: field, schema: ['Reds']
+      };
+      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
+      ok_button.attr('disabled', null);
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      uncolor_icons();
+      ico_quantiles.style('border', 'solid 1px green');
+    };
 
     if (fields_stock.length === 0 || fields_ratio.length === 0) {
-        display_error_num_field();
-        return;
+      display_error_num_field();
+      return;
     }
 
     // Set some default colors in order to not force to open the box for selecting them :
     {
-        let first_field = fields_ratio[0];
-        prepare_disc_quantiles(first_field);
-        ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+      let first_field = fields_ratio[0];
+      prepare_disc_quantiles(first_field);
+      ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
     }
 
     fields_stock.forEach(function(field) {
-        field_size.append('option').text(field).attr('value', field);
+      field_size.append('option').text(field).attr('value', field);
     });
     fields_ratio.forEach(field => {
-        field_color.append('option').text(field).attr('value', field);
+      field_color.append('option').text(field).attr('value', field);
     });
     field_size.on('change', function () {
-        let field_name = this.value,
-            max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+      let field_name = this.value,
+        max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
 
-        ref_value_field.attrs({ max: max_val_field, value: max_val_field });
-        uo_layer_name.attr('value', ['PropSymbols', field_name, field_color.node().value, layer].join('_'));
+      ref_value_field.attrs({ max: max_val_field, value: max_val_field });
+      uo_layer_name.attr('value', ['PropSymbols', field_name, field_color.node().value, layer].join('_'));
     });
 
     field_color.on('change', function () {
-        let field_name = this.value,
-            vals = user_data[layer].map(a => +a[field_name]);
-        render_mini_chart_serie(vals, document.getElementById('container_sparkline_propsymbolchoro'));
-        uo_layer_name.attr('value', ['PropSymbols', field_size.node().value, field_name, layer].join('_'));
-        if (self.rendering_params[field_name] !== undefined) {
-            // ok_button.attr('disabled', null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-            choro_mini_choice_disc.html(
-                i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ', ' + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
-            uncolor_icons();
-            color_disc_icons(self.rendering_params[field_name].type);
-            // console.log(section2); console.log(self.rendering_params[field_name].type);
-        } else {
-            prepare_disc_quantiles(field_name);
-            // ok_button.attr('disabled', true);
-            // img_valid_disc.attr('src', '/static/img/Red_x.png');
-            // choro_mini_choice_disc.html('');
-        }
-
+      let field_name = this.value,
+          vals = user_data[layer].map(a => +a[field_name]);
+      render_mini_chart_serie(vals, document.getElementById('container_sparkline_propsymbolchoro'));
+      uo_layer_name.attr('value', ['PropSymbols', field_size.node().value, field_name, layer].join('_'));
+      if (self.rendering_params[field_name] !== undefined) {
+        // ok_button.attr('disabled', null);
+        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+        choro_mini_choice_disc.html(
+            i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ', ' + i18next.t('app_page.common.class', {count: self.rendering_params[field_name].nb_class}));
+        uncolor_icons();
+        color_disc_icons(self.rendering_params[field_name].type);
+        // console.log(section2); console.log(self.rendering_params[field_name].type);
+      } else {
+        prepare_disc_quantiles(field_name);
+        // ok_button.attr('disabled', true);
+        // img_valid_disc.attr('src', '/static/img/Red_x.png');
+        // choro_mini_choice_disc.html('');
+      }
     });
 
     ico_jenks.on('click', function () {
-        uncolor_icons();
-        this.style.border = 'solid 1px green';
-        let selected_field = field_color.node().value,
-            _values = user_data[layer].map(v => v[selected_field]),
-            n_class = getOptNbClass(_values.length);
-        let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'jenks', n_class, 'BuGn');
-        self.rendering_params[selected_field] = {
-            nb_class: nb_class, type: 'jenks', colors: color_array,
-            breaks: breaks, no_data: no_data_color,
-            colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
-            rendered_field: selected_field, schema: ['BuGn']
-        };
-        choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
-        ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      uncolor_icons();
+      this.style.border = 'solid 1px green';
+      const selected_field = field_color.node().value,
+        _values = user_data[layer].map(v => v[selected_field]),
+        n_class = getOptNbClass(_values.length);
+      const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'jenks', n_class, 'BuGn');
+      self.rendering_params[selected_field] = {
+        nb_class: nb_class, type: 'jenks', colors: color_array,
+        breaks: breaks, no_data: no_data_color,
+        colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
+        rendered_field: selected_field, schema: ['BuGn']
+      };
+      choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
+      ok_button.attr('disabled', null);
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_quantiles.on('click', function () {
-        uncolor_icons();
-        this.style.border = 'solid 1px green';
-        let selected_field = field_color.node().value,
-            _values = user_data[layer].map(v => v[selected_field]),
-            n_class = getOptNbClass(_values.length);
-        let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class, 'BuGn');
-        self.rendering_params[selected_field] = {
-            nb_class: nb_class, type: 'quantiles', colors: color_array,
-            breaks: breaks, no_data: no_data_color,
-            colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
-            rendered_field: selected_field, schema: ['BuGn']
-        };
-        choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
-        ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      uncolor_icons();
+      this.style.border = 'solid 1px green';
+      const selected_field = field_color.node().value,
+        _values = user_data[layer].map(v => v[selected_field]),
+        n_class = getOptNbClass(_values.length);
+      const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class, 'BuGn');
+      self.rendering_params[selected_field] = {
+        nb_class: nb_class, type: 'quantiles', colors: color_array,
+        breaks: breaks, no_data: no_data_color,
+        colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
+        rendered_field: selected_field, schema: ['BuGn']
+      };
+      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
+      ok_button.attr('disabled', null);
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_equal_interval.on('click', function () {
-        uncolor_icons();
-        this.style.border = 'solid 1px green';
-        let selected_field = field_color.node().value,
-            _values = user_data[layer].map(v => v[selected_field]),
-            n_class = getOptNbClass(_values.length);
-        let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'equal_interval', n_class, 'BuGn');
-        self.rendering_params[selected_field] = {
-            nb_class: nb_class, type: 'equal_interval', colors: color_array,
-            breaks: breaks, no_data: no_data_color,
-            colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
-            rendered_field: selected_field, schema: ['BuGn']
-        };
-        choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
-        ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      uncolor_icons();
+      this.style.border = 'solid 1px green';
+      let selected_field = field_color.node().value,
+        _values = user_data[layer].map(v => v[selected_field]),
+        n_class = getOptNbClass(_values.length);
+      let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'equal_interval', n_class, 'BuGn');
+      self.rendering_params[selected_field] = {
+        nb_class: nb_class, type: 'equal_interval', colors: color_array,
+        breaks: breaks, no_data: no_data_color,
+        colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
+        rendered_field: selected_field, schema: ['BuGn']
+      };
+      choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
+      ok_button.attr('disabled', null);
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_q6.on('click', function () {
-        uncolor_icons();
-        this.style.border = 'solid 1px green';
-        let selected_field = field_color.node().value,
-            _values = user_data[layer].map(v => v[selected_field]);
-        let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'Q6', 6, 'BuGn');
-        self.rendering_params[selected_field] = {
-            nb_class: nb_class, type: 'Q6', colors: color_array,
-            breaks: breaks, no_data: no_data_color,
-            colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
-            rendered_field: selected_field, schema: ['BuGn']
-        };
-        choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
-        ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      uncolor_icons();
+      this.style.border = 'solid 1px green';
+      let selected_field = field_color.node().value,
+        _values = user_data[layer].map(v => v[selected_field]);
+      let [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'Q6', 6, 'BuGn');
+      self.rendering_params[selected_field] = {
+        nb_class: nb_class, type: 'Q6', colors: color_array,
+        breaks: breaks, no_data: no_data_color,
+        colorsByFeature: colors_map, renderer: 'PropSymbolsChoro',
+        rendered_field: selected_field, schema: ['BuGn']
+      };
+      choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
+      ok_button.attr('disabled', null);
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_disc.on('click', function () {
-        let selected_field = field_color.node().value,
-            opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
-            conf_disc_box;
+      let selected_field = field_color.node().value,
+          opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
+          conf_disc_box;
 
-        if (self.rendering_params[selected_field])
-            conf_disc_box = display_discretization(layer,
-                                                   selected_field,
-                                                   self.rendering_params[selected_field].nb_class,
-                                                   {schema: self.rendering_params[selected_field].schema,
-                                                    colors: self.rendering_params[selected_field].colors,
-                                                    no_data: self.rendering_params[selected_field].no_data,
-                                                    type: self.rendering_params[selected_field].type,
-                                                    breaks: self.rendering_params[selected_field].breaks,
-                                                    extra_options: self.rendering_params[selected_field].extra_options});
-        else
-            conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
+      if (self.rendering_params[selected_field])
+        conf_disc_box = display_discretization(layer,
+                                               selected_field,
+                                               self.rendering_params[selected_field].nb_class,
+                                               {schema: self.rendering_params[selected_field].schema,
+                                                colors: self.rendering_params[selected_field].colors,
+                                                no_data: self.rendering_params[selected_field].no_data,
+                                                type: self.rendering_params[selected_field].type,
+                                                breaks: self.rendering_params[selected_field].breaks,
+                                                extra_options: self.rendering_params[selected_field].extra_options});
+      else
+        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
 
-        conf_disc_box.then(function(confirmed) {
-            if (confirmed) {
-                img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-                choro_mini_choice_disc.html(
-                    i18next.t('app_page.common.' + confirmed[1]) + ', ' + i18next.t('app_page.common.class', {count: confirmed[0]}));
-                uncolor_icons();
-                color_disc_icons(confirmed[1]);
-                self.rendering_params[selected_field] = {
-                    nb_class: confirmed[0], type: confirmed[1],
-                    schema: confirmed[5], no_data: confirmed[6],
-                    breaks: confirmed[2], colors: confirmed[3],
-                    colorsByFeature: confirmed[4],
-                    renderer: 'PropSymbolsChoro',
-                    extra_options: confirmed[7]
-                    };
-            } else
-                return;
-        });
+      conf_disc_box.then((confirmed) => {
+        if (confirmed) {
+            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+            choro_mini_choice_disc.html(
+                i18next.t('app_page.common.' + confirmed[1]) + ', ' + i18next.t('app_page.common.class', {count: confirmed[0]}));
+            uncolor_icons();
+            color_disc_icons(confirmed[1]);
+            self.rendering_params[selected_field] = {
+              nb_class: confirmed[0],
+              type: confirmed[1],
+              schema: confirmed[5],
+              no_data: confirmed[6],
+              breaks: confirmed[2],
+              colors: confirmed[3],
+              colorsByFeature: confirmed[4],
+              renderer: 'PropSymbolsChoro',
+              extra_options: confirmed[7]
+            };
+        } else
+            return;
+      });
     });
     ok_button.on('click', function () {
-        if (!ref_value_field.node().value) return;
-        let rendering_params = self.rendering_params;
-        if (rendering_params[field_color.node().value]) {
-            let layer = Object.getOwnPropertyNames(user_data)[0],
-                symbol_to_use = symb_selec.node().value,
-                nb_features = user_data[layer].length,
-                rd_params = {},
-                color_field = field_color.node().value,
-                new_layer_name = uo_layer_name.node().value;
+      if (!ref_value_field.node().value) return;
+      let rendering_params = self.rendering_params;
+      if (rendering_params[field_color.node().value]) {
+        let layer = Object.getOwnPropertyNames(user_data)[0],
+            symbol_to_use = symb_selec.node().value,
+            nb_features = user_data[layer].length,
+            rd_params = {},
+            color_field = field_color.node().value,
+            new_layer_name = uo_layer_name.node().value;
 
-            new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_PropSymbolsChoro');
+        new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_PropSymbolsChoro');
 
-            rd_params.field = field_size.node().value;
-            rd_params.new_name = new_layer_name;
-            rd_params.nb_features = nb_features;
-            rd_params.ref_layer_name = layer;
-            rd_params.symbol = symbol_to_use;
-            rd_params.ref_value = +ref_value_field.node().value;
-            rd_params.ref_size = +ref_size.node().value;
-            rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
-            rd_params.color_field = color_field;
+        rd_params.field = field_size.node().value;
+        rd_params.new_name = new_layer_name;
+        rd_params.nb_features = nb_features;
+        rd_params.ref_layer_name = layer;
+        rd_params.symbol = symbol_to_use;
+        rd_params.ref_value = +ref_value_field.node().value;
+        rd_params.ref_size = +ref_size.node().value;
+        rd_params.fill_color = rendering_params[color_field]['colorsByFeature'];
+        rd_params.color_field = color_field;
 
-            if (symbol_to_use === 'line')
-                make_prop_line(rd_params);
-            else
-                make_prop_symbols(rd_params);
-
-            let colors_breaks = [];
-            for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i) {
-                colors_breaks.push([
-                        [rendering_params[color_field]['breaks'][i-1], ' - ', rendering_params[color_field]['breaks'][i]].join(''),
-                        rendering_params[color_field]['colors'][i-1]
-                    ]);
-            }
-
-            let options_disc = {schema: rendering_params[color_field].schema,
-                                colors: rendering_params[color_field].colors,
-                                no_data: rendering_params[color_field].no_data,
-                                type: rendering_params[color_field].type,
-                                breaks: rendering_params[color_field].breaks,
-                                extra_options: rendering_params[color_field].extra_options}
-
-            Object.assign(current_layers[new_layer_name],{
-                renderer: 'PropSymbolsChoro',
-                options_disc: options_disc,
-                rendered_field: field_size.node().value,
-                rendered_field2: field_color.node().value,
-                colors_breaks: colors_breaks,
-            });
-            zoom_without_redraw();
-            switch_accordion_section();
-            handle_legend(new_layer_name);
+        if (symbol_to_use === 'line') {
+          make_prop_line(rd_params);
+        } else {
+          make_prop_symbols(rd_params);
         }
+        let colors_breaks = [];
+        for(let i = rendering_params[color_field]['breaks'].length-1; i > 0; --i) {
+            colors_breaks.push([
+                    [rendering_params[color_field]['breaks'][i-1], ' - ', rendering_params[color_field]['breaks'][i]].join(''),
+                    rendering_params[color_field]['colors'][i-1]
+                ]);
+        }
+
+        let options_disc = {
+          schema: rendering_params[color_field].schema,
+          colors: rendering_params[color_field].colors,
+          no_data: rendering_params[color_field].no_data,
+          type: rendering_params[color_field].type,
+          breaks: rendering_params[color_field].breaks,
+          extra_options: rendering_params[color_field].extra_options
+        };
+
+        Object.assign(current_layers[new_layer_name],{
+          renderer: 'PropSymbolsChoro',
+          options_disc: options_disc,
+          rendered_field: field_size.node().value,
+          rendered_field2: field_color.node().value,
+          colors_breaks: colors_breaks,
+        });
+        zoom_without_redraw();
+        switch_accordion_section();
+        handle_legend(new_layer_name);
+      }
     });
     setSelected(field_size.node(), fields_stock[0]);
     setSelected(field_color.node(), fields_ratio[0]);
@@ -1248,7 +1244,7 @@ function render_stewart() {
     mask_layer: mask_name !== 'None' ? current_layers[mask_name].key_name : ''
   }));
 
-  xhrequest('POST', '/compute/stewart', formToSend, true)
+  xhrequest('POST', 'compute/stewart', formToSend, true)
       .then(res => {
           let data_split = res.split('|||'),
               raw_topojson = data_split[0],
@@ -1474,7 +1470,7 @@ var fields_Anamorphose = {
                     scale_values: d_val.map(ft => ft[3]),
                     field_name: field_name})
                 );
-            xhrequest('POST', '/compute/olson', formToSend, true)
+            xhrequest('POST', 'compute/olson', formToSend, true)
                 .then( result => {
                     let options = { result_layer_on_add: true, func_name: 'cartogram' };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
@@ -1515,7 +1511,7 @@ var fields_Anamorphose = {
               iterations: nb_iter
             }));
 
-            xhrequest('POST', '/compute/carto_doug', formToSend, true)
+            xhrequest('POST', 'compute/carto_doug', formToSend, true)
                 .then(data => {
                     let options = { result_layer_on_add: true, func_name: 'cartogram' };
                     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
@@ -2444,7 +2440,7 @@ var render_discont = function () {
 
     // Discontinuity are computed in another thread to avoid blocking the ui (and so error message on large layer)
     // (a waiting message is displayed during this time to avoid action from the user)
-    let discont_worker = new Worker('/static/js/webworker_discont.js');
+    let discont_worker = new Worker('static/js/webworker_discont.js');
     _app.webworker_to_cancel = discont_worker;
     discont_worker.postMessage([topo_to_use, layer, field, discontinuity_type, discretization_type, field_id]);
     discont_worker.onmessage = function(e) {
@@ -2995,7 +2991,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
     cellsize: resolution * 1000,
     grid_shape: cell_shape
   }));
-  xhrequest('POST', '/compute/gridded', formToSend, true)
+  xhrequest('POST', 'compute/gridded', formToSend, true)
       .then(data => {
           let options = { result_layer_on_add: true, func_name: 'grid' };
           if (new_user_layer_name.length > 0 &&  /^\w+$/.test(new_user_layer_name)) {
@@ -3232,7 +3228,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
     join_field: join_field_to_send
   }));
 
-  xhrequest('POST', '/compute/links', formToSend, true)
+  xhrequest('POST', 'compute/links', formToSend, true)
     .then(data => {
       // FIXME : should use the user selected new name if any
       let options = { result_layer_on_add: true, func_name: 'flow' };

@@ -126,7 +126,7 @@ const createBoxProj4 = function createBoxProj4() {
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
-      }).then(() => { null; }, () => { null; });
+      }).then(() => null, () => null);
       return;
     }
     const rv = change_projection_4(_p);
@@ -141,7 +141,7 @@ const createBoxProj4 = function createBoxProj4() {
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
-      }).then(() => { null; }, () => { null; });
+      }).then(() => null, () => null);
     }
   };
   container.querySelector('.btn_cancel').onclick = clean_up_box;
@@ -157,40 +157,40 @@ const displayTooltipProj4 = function displayTooltipProj4(ev) {
     return;
   }
   const title = target.tooltip;
-  let tooltipWrap = document.createElement("div");
+  const tooltipWrap = document.createElement('div');
   tooltipWrap.className = 'custom_tooltip';
   tooltipWrap.appendChild(document.createTextNode(title));
 
-  let firstChild = document.body.firstChild;
+  const firstChild = document.body.firstChild;
   firstChild.parentNode.insertBefore(tooltipWrap, firstChild);
 
-  let linkProps = this.getBoundingClientRect();
-  let tooltipProps = tooltipWrap.getBoundingClientRect();
-  let topPos = linkProps.bottom - tooltipProps.height / 2;
+  const linkProps = this.getBoundingClientRect();
+  const tooltipProps = tooltipWrap.getBoundingClientRect();
+  const topPos = linkProps.bottom - tooltipProps.height / 2;
   tooltipWrap.setAttribute('style', `top: ${topPos}px; left: ${linkProps.right - 15}px;`);
-}
+};
 
 const removeTooltipProj4 = function removeTooltipProj4(ev) {
   const target = ev.target;
   if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
     return;
   }
-  let a = document.querySelector('div.custom_tooltip');
+  const a = document.querySelector('div.custom_tooltip');
   if (a) a.remove();
-}
+};
 
 const makeTooltipProj4 = (proj_select, proj4string) => {
   proj_select.tooltip = proj4string;
   proj_select.addEventListener('mouseover', displayTooltipProj4);
   proj_select.addEventListener('mouseout', removeTooltipProj4);
-}
+};
 
 function addLastProjectionSelect(proj_name, proj4string) {
   const proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
   } else if (proj_select.options.length === 10) {
-    let prev_elem = proj_select.querySelector("[value='more']"),
+    const prev_elem = proj_select.querySelector("[value='more']"),
       new_option = document.createElement('option');
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
@@ -199,7 +199,7 @@ function addLastProjectionSelect(proj_name, proj4string) {
     new_option.innerHTML = i18next.t(`app_page.projection_name.${proj_name}`);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
-    if (proj4string){
+    if (proj4string) {
       makeTooltipProj4(proj_select, proj4string);
     }
   } else {
@@ -265,11 +265,11 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   }
   function onClickFilter() {
     let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
-    filter1_val = filter1_val == undefined ? undefined : filter1_val.value;
-    if (filter1_val == 'any') filter1_val = undefined;
+    filter1_val = filter1_val === undefined ? undefined : filter1_val.value;
+    if (filter1_val === 'any') filter1_val = undefined;
     let filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), f => f.checked)[0];
-    filter2_val = filter2_val == undefined ? undefined : filter2_val.value;
-    if (filter2_val == 'any') filter2_val = undefined;
+    filter2_val = filter2_val === undefined ? undefined : filter2_val.value;
+    if (filter2_val === 'any') filter2_val = undefined;
     updateSelect(filter1_val, filter2_val);
   }
   function updateProjOptions() {
@@ -305,7 +305,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     updateProjOptions();
   }
 
-  let prev_projection = current_proj_name,
+  const prev_projection = current_proj_name,
     prev_translate = [].concat(t),
     prev_scale = s,
     prev_rotate = proj.rotate ? proj.rotate() : undefined,
@@ -316,7 +316,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       'box_projection_customization',
       i18next.t('app_page.section5.title'),
       'dialog');
-  let container = document.getElementById('box_projection_customization'),
+  const container = document.getElementById('box_projection_customization'),
     dialog = container.querySelector('.modal-dialog');
 
   const content = d3.select(container)
@@ -372,10 +372,12 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       .html(i18next.t(`app_page.projection_box.${v}`));
   });
 
-  Array.prototype.forEach.call(document.querySelectorAll('.filter1,.filter2'), (el) => { el.onclick = onClickFilter; });
+  Array.prototype.forEach.call(
+    document.querySelectorAll('.filter1,.filter2'),
+    (el) => { el.onclick = onClickFilter; });
 
-  var p = column3.append('p').style('margin', 'auto');
-  var display_select_proj = p.append('select')
+  const p = column3.append('p').style('margin', 'auto');
+  let display_select_proj = p.append('select')
     .attr('id', 'select_proj')
     .attr('size', 18);
 
@@ -391,15 +393,15 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       reproj(value);
     });
 
-  let choice_options = content.append('button')
+  const choice_options = content.append('button')
     .attrs({ class: 'accordion_proj', id: 'btn_choice_proj' })
     .style('padding', '0 6px')
     .html(i18next.t('app_page.projection_box.projection_options'));
-  let accordion_choice_options = content.append('div')
+  const accordion_choice_options = content.append('div')
     .attrs({ class: 'panel', id: 'accordion_choice_projection' })
     .style('padding', '10px')
     .style('width', '98%');
-  let options_proj_content = accordion_choice_options.append('div')
+  const options_proj_content = accordion_choice_options.append('div')
     .attr('id', 'options_proj_content')
     .style('width', '60%')
     .style('transform', 'translateX(45%)');
@@ -517,7 +519,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     }
     if (prev_parallels) {
       handle_parallels_change(prev_parallels);
-    }	else if (prev_parallel) {
+    } else if (prev_parallel) {
       handle_parallel_change(prev_parallel);
     }
   };
@@ -532,21 +534,19 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 // Function to change (one of more of) the three rotations axis of a d3 projection
 // and redraw all the path (+ move symbols layers) in respect to that
 function handle_proj_center_button(param) {
-    // Fetch the current rotation params :
+  // Fetch the current rotation params :
   const current_rotation = proj.rotate();
-    // Reuse it for the missing value passed in arguments :
-  param = param.map((val, i) => val !== null ? val : current_rotation[i]);
-    // Do the rotation :
-  proj.rotate(param);
-    // Redraw the path and move the symbols :
+  // Reuse it for the missing value passed in arguments and do the rotation:
+  // proj.rotate(param.map((val, i) => val !== null ? val : current_rotation[i]));
+  proj.rotate(param.map((val, i) => val || current_rotation[i]));
+  // Redraw the path and move the symbols :
   map.selectAll('.layer').selectAll('path').attr('d', path);
   reproj_symbol_layer();
 }
 
 function handle_parallels_change(parallels) {
   const current_values = proj.parallels();
-  parallels = parallels.map((val, i) => val || current_values[i]);
-  proj.parallels(parallels);
+  proj.parallels(parallels.map((val, i) => val || current_values[i]));
   map.selectAll('.layer').selectAll('path').attr('d', path);
   reproj_symbol_layer();
 }

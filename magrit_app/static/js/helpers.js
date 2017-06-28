@@ -540,24 +540,24 @@ function make_box_type_fields(layerName) {
       .style('margin', '15px');
 
   box_select.selectAll('p')
-      .insert('span')
-      .html(d => d.name);
+    .insert('span')
+    .html(d => d.name);
 
   box_select.selectAll('p')
-      .insert('select')
-      .style('float', 'right')
-      .selectAll('option')
-      .data(refType)
-      .enter()
-      .insert('option')
-      .attr('value', d => d)
-      .text(d => i18next.t(`app_page.box_type_fields.${d}`))
-      .exit();
+    .insert('select')
+    .style('float', 'right')
+    .selectAll('option')
+    .data(refType)
+    .enter()
+    .insert('option')
+    .attr('value', d => d)
+    .text(d => i18next.t(`app_page.box_type_fields.${d}`))
+    .exit();
 
   box_select.selectAll('select')
-      .each(function (d) {
-        this.value = d.type;
-      });
+    .each(function (d) {
+      this.value = d.type;
+    });
 
   for (let i = 0; i < fields_type.length; i++) {
     if (fields_type[i].type === 'category' || fields_type[i].not_number) {
@@ -578,27 +578,29 @@ function getAvailablesFunctionnalities(layerName) {
     fields_ratio = getFieldsType('ratio', layerName),
     fields_categ = getFieldsType('category', layerName),
     section = document.getElementById('section2_pre');
-
-  if (current_layers[layerName].type == 'Line') {  // Layer type is Line
+  let func_stock,
+    func_ratio,
+    func_categ;
+  if (current_layers[layerName].type === 'Line') {  // Layer type is Line
     const elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
     }
-    var func_stock = section.querySelectorAll('#button_prop'),
-      func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
-      func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
-  } else if (current_layers[layerName].type == 'Point') {  // layer type is Point
+    func_stock = section.querySelectorAll('#button_prop');
+    func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
+    func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
+  } else if (current_layers[layerName].type === 'Point') {  // layer type is Point
     const elems = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
     }
-    var func_stock = section.querySelectorAll('#button_smooth, #button_prop'),
-      func_ratio = section.querySelectorAll('#button_choro, #button_choroprop'),
-      func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+    func_stock = section.querySelectorAll('#button_smooth, #button_prop');
+    func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
+    func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {  // Layer type is Polygon
-    var func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont'),
-      func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont'),
-      func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
+    func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont');
+    func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont');
+    func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   }
   if (fields_stock.length === 0) {
     Array.prototype.forEach.call(func_stock, d => d.style.filter = 'grayscale(100%)');
