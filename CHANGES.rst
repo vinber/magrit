@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.3.6 (2017-06-30)
+------------------
+
+- Fix selection on links map (was only working with specific field name).
+
+
 0.3.5 (2017-06-28)
 ------------------
 
