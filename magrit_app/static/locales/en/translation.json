@@ -668,6 +668,13 @@
                 "on_value": "on value ...",
                 "symbol_type": "Symbol type",
                 "field2": "Field 2 (symbol color)"
+              },
+            "twostocks": {
+              "fields": "Fields",
+              "symbol_choice": "Symbol type",
+              "waffle_size_circle": "Circle radius",
+              "waffle_size_square": "Square size",
+              "waffle_width_rows": "Width rows"
             }
         }
     },

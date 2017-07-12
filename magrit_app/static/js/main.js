@@ -375,7 +375,7 @@ function setUpInterface(reload_project)
     .html('');
 
   dv1.append('p')
-    .styles({'text-align': 'center','margin': '5px'})
+    .styles({ 'text-align': 'center', margin: '5px' })
     .insert('button')
     .attrs({'id': 'btn_type_fields', 'class': 'i18n',
             'data-i18n': '[html]app_page.box_type_fields.title',
@@ -1110,7 +1110,8 @@ function make_ico_choice(){
       'smooth.png',
       'discont.png',
       'typosymbol.png',
-      'flow.png'
+      'flow.png',
+      'two_stocks'
     ];
 
     let function_panel = section2_pre.append('div')

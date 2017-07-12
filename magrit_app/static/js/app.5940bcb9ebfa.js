@@ -299,7 +299,7 @@ function setUpInterface(reload_project) {
 
   dv1.append('p').attr('id', 'join_section').styles({ 'text-align': 'center', 'margin-top': '2px' }).html('');
 
-  dv1.append('p').styles({ 'text-align': 'center', 'margin': '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
+  dv1.append('p').styles({ 'text-align': 'center', margin: '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
     'data-i18n': '[html]app_page.box_type_fields.title',
     'disabled': true }).styles({ cursor: 'pointer',
     'border-radius': '4px',
@@ -909,7 +909,7 @@ function change_lang() {
 }
 
 function make_ico_choice() {
-  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png'];
+  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png', 'two_stocks'];
 
   var function_panel = section2_pre.append('div').attr('id', 'list_ico_func');
 
@@ -1096,7 +1096,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.3d4956bc5f7d.json'
+      loadPath: 'static/locales/{{lng}}/translation.5940bcb9ebfa.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4163,6 +4163,11 @@ var get_menu_option = function () {
       'name': 'typosymbol',
       'menu_factory': 'fillMenu_TypoSymbol',
       'fields_handler': 'fields_TypoSymbol'
+    },
+    'two_stocks': {
+      'name': 'two_stocks',
+      'menu_factory': 'fillMenu_TwoStocks',
+      'fields_handler': 'fields_TwoStocks'
     }
   };
   return function (func) {
@@ -4481,16 +4486,149 @@ function fetch_min_max_table_value(parent_id) {
   return { mins: mins.sort(comp_fun), maxs: maxs.sort(comp_fun), sizes: sizes.sort(comp_fun) };
 }
 
+function fillMenu_TwoStocks(layer) {
+  // square size / circle radius
+  // width row
+  // sybmol : square / circle
+
+  var dv2 = make_template_functionnality(section2);
+
+  var f1 = dv2.append('p').attr('class', 'params_section2');
+  f1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.fields' }).html(i18next.t('app_page.func_options.twostocks.fields'));
+  f1.insert('select').attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 3 });
+
+  // const f2 = dv2.append('p').attr('class', 'params_section2');
+  // f2.append('span')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.field2' })
+  //   .html(i18next.t('app_page.func_options.twostocks.field2'));
+  // f2.insert('select')
+  //   .attrs({ class: 'params', id: 'TwoStocks_field2' });
+
+  // const a = dv2.append('p').attr('class', 'params_section2');
+  // a.append('span')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.type' })
+  //   .html(i18next.t('app_page.func_options.twostocks.type'));
+  // const type_select = a.insert('select')
+  //   .attrs({ class: 'params', id: 'TwoStocks_type' });
+
+
+  // Options for waffles :
+  var b = dv2.append('p').attr('class', 'params_section2');
+  b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.symbol_choice' }).html(i18next.t('app_page.func_options.twostocks.symbol_choice'));
+  var symbol_select = b.insert('select').attrs({ class: 'params', id: 'TwoStocks_waffle_symbol' });
+
+  var c = dv2.append('p').attr('class', 'params_section2');
+  c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_size_circle', id: 'TwoStocks_waffle_size_txt' }).html(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+  c.insert('input').attrs({
+    id: 'TwoStocks_waffle_size',
+    type: 'number',
+    class: 'params',
+    min: 0.1,
+    max: 20,
+    step: 'any',
+    value: 3
+  }).style('width', '50px');
+  c.append('span').html(' (px)');
+
+  var d = dv2.append('p').attr('class', 'params_section2');
+  d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_width_rows' }).html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
+  d.insert('input').attrs({
+    id: 'TwoStocks_waffle_WidthRow',
+    class: 'params',
+    type: 'number',
+    min: 2,
+    max: 6,
+    value: 2,
+    step: 1
+  }).style('width', '50px');
+
+  make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
+  make_ok_button(dv2, 'twoStocks_yes');
+  dv2.selectAll('.params').attr('disabled', true);
+}
+
+var fields_TwoStocks = {
+  fill: function fill(layer) {
+    if (!layer) return;
+    section2.selectAll('.params').attr('disabled', null);
+    var fields_stock = getFieldsType('stock', layer);
+    var symbol_choice = section2.select('#TwoStocks_waffle_symbol');
+    var fields_list = section2.select('#TwoStocks_fields');
+    [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
+      symbol_choice.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
+    });
+    fields_stock.forEach(function (f) {
+      fields_list.append('option').text(f).attr('value', f);
+    });
+    fields_list.node().parentElement.style.marginBottom = fields_stock.length * 12 + 5 + 'px';
+    symbol_choice.on('change', function () {
+      if (this.value === 'circle') {
+        section2.select('#TwoStocks_waffle_size_txt').attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_circle').text(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+      } else {
+        section2.select('#TwoStocks_waffle_size_txt').attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_square').text(i18next.t('app_page.func_options.twostocks.waffle_size_square'));
+      }
+    });
+    ok_button.on('click', function () {
+      var rendering_params = {};
+      var new_layer_name = section2.select('#TwoStocks_output_name').node().value;
+      new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_Waffle');
+      rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(function (elem) {
+        return elem.value;
+      });
+      rendering_params.new_name = new_layer_name;
+      console.log(rendering_params);
+      render_twostocks_waffle(layer, rendering_params);
+    });
+  },
+  unfill: function unfill() {
+    unfillSelectInput(document.getElementById('TwoStocks_fields'));
+    section2.selectAll('.params').attr('disabled', true);
+  }
+};
+
+function render_twostocks_waffle(layer, rendering_params) {
+  var get_colors = function get_colors(nb) {
+    var res = [];
+    for (var i = 0; i < nb; i++) {
+      res.push(randomColor());
+    }
+    return res;
+  };
+  var sums = [];
+  var colors = [];
+  var fields = rendering_params.fields;
+  var nbVar = fields.length;
+  var ref_colors = get_colors(nbVar);
+  map.select('#' + _app.layer_to_id.get(layer)).selectAll('path').each(function (d, i) {
+    var sum = 0;
+    var c = [];
+    for (var j = 0; j < nbVar; j++) {
+      var field = fields[j];
+      var val = +d.properties[field];
+      sum += val;
+      color = ref_colors[j];
+      // The whole logic here to get the colors in order is really overkill
+      for (var ix = 0; ix < val; ix++) {
+        c.push(color);
+      }
+    }
+    sums.push(sum);
+    colors.push(c);
+  });
+
+  var overlay = svg.insert('g', '.graticule').attr('class', 'dots');
+}
+
 function fillMenu_PropSymbolChoro(layer) {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2');
   a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' }).html(i18next.t('app_page.func_options.choroprop.field1'));
-  var field1_selec = a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
+  a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
 
   var b = dv2.append('p').attr('class', 'params_section2');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' }).html(i18next.t('app_page.func_options.choroprop.fixed_size'));
-  var ref_size = b.insert('input').attrs({
+  b.insert('input').attrs({
     id: 'PropSymbolChoro_ref_size',
     type: 'number',
     class: 'params',
@@ -4502,17 +4640,17 @@ function fillMenu_PropSymbolChoro(layer) {
 
   var c = dv2.append('p').attr('class', 'params_section2');
   c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' }).html(i18next.t('app_page.func_options.choroprop.on_value'));
-  var ref_value = c.insert('input').styles({ width: '100px', 'margin-left': '10px' }).attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' }).attrs({ min: 0.1, step: 0.1 });
+  c.insert('input').styles({ width: '100px', 'margin-left': '10px' }).attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' }).attrs({ min: 0.1, step: 0.1 });
 
   // Other symbols could probably easily be proposed :
   var d = dv2.append('p').attr('class', 'params_section2');
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' }).html(i18next.t('app_page.func_options.choroprop.symbol_type'));
-  var symb_selec = d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
+  d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
   var e = dv2.append('p').attr('class', 'params_section2');
   e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' }).html(i18next.t('app_page.func_options.choroprop.field2'));
 
-  var field2_selec = e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
+  e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
 
   var discr_section = dv2.insert('p').style('margin', 'auto');
   discr_section.insert('span').attr('id', 'container_sparkline_propsymbolchoro').styles({ margin: '16px 50px 0px 4px', float: 'right' });
@@ -4771,12 +4909,16 @@ var fields_PropSymbolChoro = {
           opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
           conf_disc_box = void 0;
 
-      if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
-        colors: self.rendering_params[selected_field].colors,
-        no_data: self.rendering_params[selected_field].no_data,
-        type: self.rendering_params[selected_field].type,
-        breaks: self.rendering_params[selected_field].breaks,
-        extra_options: self.rendering_params[selected_field].extra_options });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
+      if (self.rendering_params[selected_field]) {
+        conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
+          colors: self.rendering_params[selected_field].colors,
+          no_data: self.rendering_params[selected_field].no_data,
+          type: self.rendering_params[selected_field].type,
+          breaks: self.rendering_params[selected_field].breaks,
+          extra_options: self.rendering_params[selected_field].extra_options });
+      } else {
+        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
+      }
 
       conf_disc_box.then(function (confirmed) {
         if (confirmed) {
@@ -5013,7 +5155,8 @@ var fields_Typo = {
 
     for (var i = nb_fields - 1; i > -1; --i) {
       field_selec.removeChild(field_selec.children[i]);
-    }section2.selectAll('.params').attr('disabled', true);
+    }
+    section2.selectAll('.params').attr('disabled', true);
   },
   rendering_params: {}
 };
@@ -5152,7 +5295,7 @@ var fields_Choropleth = {
       };
       choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      mg_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_quantiles.on('click', function () {

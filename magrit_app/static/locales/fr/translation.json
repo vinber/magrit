@@ -669,6 +669,13 @@
                 "on_value": "sur la valeur ... ",
                 "symbol_type": "Type de symbole ",
                 "field2": "Champ à utiliser<br>(couleur du symbole)"
+            },
+            "twostocks": {
+              "fields": "Champs",
+              "symbol_choice": "Type de symbole",
+              "waffle_size_circle": "Rayon du symbole",
+              "waffle_size_square": "Taille du symbole",
+              "waffle_width_rows": "Largeur (nombre de symboles)"
             }
         }
     },

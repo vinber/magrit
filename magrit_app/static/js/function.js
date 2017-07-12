@@ -56,6 +56,11 @@ const get_menu_option = (function () {
       'name': 'typosymbol',
       'menu_factory': 'fillMenu_TypoSymbol',
       'fields_handler': 'fields_TypoSymbol',
+    },
+    'two_stocks': {
+      'name': 'two_stocks',
+      'menu_factory': 'fillMenu_TwoStocks',
+      'fields_handler': 'fields_TwoStocks',
     }
   };
   return (func) => menu_option[func.toLowerCase()] || {};
@@ -391,6 +396,163 @@ function fetch_min_max_table_value(parent_id) {
   return { mins: mins.sort(comp_fun), maxs: maxs.sort(comp_fun), sizes: sizes.sort(comp_fun) };
 }
 
+function fillMenu_TwoStocks(layer) {
+// square size / circle radius
+// width row
+// sybmol : square / circle
+
+  const dv2 = make_template_functionnality(section2);
+
+  const f1 = dv2.append('p').attr('class', 'params_section2');
+  f1.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.fields' })
+    .html(i18next.t('app_page.func_options.twostocks.fields'));
+  f1.insert('select')
+    .attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 3 });
+
+  // const f2 = dv2.append('p').attr('class', 'params_section2');
+  // f2.append('span')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.field2' })
+  //   .html(i18next.t('app_page.func_options.twostocks.field2'));
+  // f2.insert('select')
+  //   .attrs({ class: 'params', id: 'TwoStocks_field2' });
+
+  // const a = dv2.append('p').attr('class', 'params_section2');
+  // a.append('span')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.type' })
+  //   .html(i18next.t('app_page.func_options.twostocks.type'));
+  // const type_select = a.insert('select')
+  //   .attrs({ class: 'params', id: 'TwoStocks_type' });
+
+
+  // Options for waffles :
+  const b = dv2.append('p')
+    .attr('class', 'params_section2');
+  b.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.symbol_choice' })
+    .html(i18next.t('app_page.func_options.twostocks.symbol_choice'));
+  const symbol_select = b.insert('select')
+    .attrs({ class: 'params', id: 'TwoStocks_waffle_symbol' });
+
+  const c = dv2.append('p')
+    .attr('class', 'params_section2');
+  c.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_size_circle', id: 'TwoStocks_waffle_size_txt' })
+    .html(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+  c.insert('input')
+    .attrs({
+      id: 'TwoStocks_waffle_size',
+      type: 'number',
+      class: 'params',
+      min: 0.1,
+      max: 20,
+      step: 'any',
+      value: 3
+    })
+    .style('width', '50px');
+  c.append('span').html(' (px)');
+
+  const d = dv2.append('p')
+    .attr('class', 'params_section2');
+  d.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_width_rows'})
+    .html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
+  d.insert('input')
+    .attrs({
+      id: 'TwoStocks_waffle_WidthRow',
+      class: 'params',
+      type: 'number',
+      min: 2,
+      max: 6,
+      value: 2,
+      step: 1
+    })
+    .style('width', '50px');
+
+  make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
+  make_ok_button(dv2, 'twoStocks_yes');
+  dv2.selectAll('.params').attr('disabled', true);
+}
+
+const fields_TwoStocks = {
+  fill(layer) {
+    if (!layer) return;
+    section2.selectAll('.params').attr('disabled', null);
+    const fields_stock = getFieldsType('stock', layer);
+    const symbol_choice = section2.select('#TwoStocks_waffle_symbol');
+    const fields_list = section2.select('#TwoStocks_fields');
+    [['app_page.func_options.common.symbol_circle', 'circle'],
+     ['app_page.func_options.common.symbol_square', 'rect']
+    ].forEach((symb) => {
+      symbol_choice.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
+    });
+    fields_stock.forEach(f => {
+      fields_list.append('option').text(f).attr('value', f);
+    });
+    fields_list.node().parentElement.style.marginBottom = `${fields_stock.length * 12 + 5}px`;
+    symbol_choice.on('change', function () {
+      if (this.value === 'circle') {
+        section2.select('#TwoStocks_waffle_size_txt')
+          .attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_circle')
+          .text(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+      } else {
+        section2.select('#TwoStocks_waffle_size_txt')
+          .attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_square')
+          .text(i18next.t('app_page.func_options.twostocks.waffle_size_square'));
+      }
+    });
+    ok_button.on('click', function () {
+      const rendering_params = {};
+      let new_layer_name = section2.select('#TwoStocks_output_name').node().value;
+      new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_Waffle');
+      rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(elem => elem.value)
+      rendering_params.new_name = new_layer_name;
+      console.log(rendering_params)
+      render_twostocks_waffle(layer, rendering_params);
+    });
+  },
+  unfill() {
+    unfillSelectInput(document.getElementById('TwoStocks_fields'));
+    section2.selectAll('.params').attr('disabled', true);
+  },
+};
+
+function render_twostocks_waffle(layer, rendering_params) {
+  const get_colors = (nb) => {
+    const res = [];
+    for (let i = 0; i < nb; i++) {
+      res.push(randomColor());
+    }
+    return res;
+  };
+  const sums = [];
+  const colors = [];
+  const fields = rendering_params.fields;
+  const nbVar = fields.length;
+  const ref_colors = get_colors(nbVar);
+  map.select(`#${_app.layer_to_id.get(layer)}`)
+    .selectAll('path')
+    .each((d, i) => {
+      let sum = 0;
+      let c = [];
+      for(let j = 0; j < nbVar; j++) {
+        const field = fields[j];
+        const val = +d.properties[field];
+        sum += val;
+        color = ref_colors[j];
+        // The whole logic here to get the colors in order is really overkill
+        for (let ix=0; ix < val; ix++) {
+          c.push(color);
+        }
+      }
+      sums.push(sum);
+      colors.push(c);
+    });
+
+  let overlay = svg.insert('g', '.graticule')
+    .attr('class', 'dots');
+}
+
 function fillMenu_PropSymbolChoro(layer) {
   const dv2 = make_template_functionnality(section2);
 
@@ -398,14 +560,14 @@ function fillMenu_PropSymbolChoro(layer) {
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' })
     .html(i18next.t('app_page.func_options.choroprop.field1'));
-  const field1_selec = a.insert('select')
+  a.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
 
   const b = dv2.append('p').attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' })
     .html(i18next.t('app_page.func_options.choroprop.fixed_size'));
-  const ref_size = b.insert('input')
+  b.insert('input')
     .attrs({
       id: 'PropSymbolChoro_ref_size',
       type: 'number',
@@ -421,7 +583,7 @@ function fillMenu_PropSymbolChoro(layer) {
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' })
     .html(i18next.t('app_page.func_options.choroprop.on_value'));
-  const ref_value = c.insert('input')
+  c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' })
     .attrs({ min: 0.1, step: 0.1 });
@@ -431,7 +593,7 @@ function fillMenu_PropSymbolChoro(layer) {
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' })
     .html(i18next.t('app_page.func_options.choroprop.symbol_type'));
-  const symb_selec = d.insert('select')
+  d.insert('select')
     .attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
   const e = dv2.append('p').attr('class', 'params_section2');
@@ -439,7 +601,7 @@ function fillMenu_PropSymbolChoro(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' })
     .html(i18next.t('app_page.func_options.choroprop.field2'));
 
-  const field2_selec = e.insert('select')
+  e.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
 
   let discr_section = dv2.insert('p').style('margin', 'auto');
@@ -646,7 +808,7 @@ const fields_PropSymbolChoro = {
           opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
           conf_disc_box;
 
-      if (self.rendering_params[selected_field])
+      if (self.rendering_params[selected_field]) {
         conf_disc_box = display_discretization(layer,
                                                selected_field,
                                                self.rendering_params[selected_field].nb_class,
@@ -656,8 +818,9 @@ const fields_PropSymbolChoro = {
                                                 type: self.rendering_params[selected_field].type,
                                                 breaks: self.rendering_params[selected_field].breaks,
                                                 extra_options: self.rendering_params[selected_field].extra_options});
-      else
+      } else {
         conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
+      }
 
       conf_disc_box.then((confirmed) => {
         if (confirmed) {
@@ -753,149 +916,148 @@ const fields_PropSymbolChoro = {
 };
 
 var fillMenu_Typo = function () {
-    var dv2 = make_template_functionnality(section2);
+  var dv2 = make_template_functionnality(section2);
 
-    let a = dv2.append('p').attr('class', 'params_section2');
-    a.append('span')
-      .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' })
-      .html(i18next.t('app_page.func_options.typo.field'))
-    a.insert('select')
-      .attrs({ id: 'Typo_field_1', class: 'params' });
+  let a = dv2.append('p').attr('class', 'params_section2');
+  a.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' })
+    .html(i18next.t('app_page.func_options.typo.field'))
+  a.insert('select')
+    .attrs({ id: 'Typo_field_1', class: 'params' });
 
-    let b = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
-    b.append('button')
-      .attrs({ id: 'Typo_class', class: 'button_disc params i18n',
-              'data-i18n': '[html]app_page.func_options.typo.color_choice' })
-      .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-      .html(i18next.t('app_page.func_options.typo.color_choice'));
+  let b = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
+  b.append('button')
+    .attrs({ id: 'Typo_class', class: 'button_disc params i18n',
+            'data-i18n': '[html]app_page.func_options.typo.color_choice' })
+    .styles({ 'font-size': '0.8em', 'text-align': 'center' })
+    .html(i18next.t('app_page.func_options.typo.color_choice'));
 
-    make_layer_name_button(dv2, 'Typo_output_name');
-    make_ok_button(dv2, 'Typo_yes');
-    dv2.selectAll('.params').attr('disabled', true);
+  make_layer_name_button(dv2, 'Typo_output_name');
+  make_ok_button(dv2, 'Typo_yes');
+  dv2.selectAll('.params').attr('disabled', true);
 }
 
 var fields_Typo = {
-    fill: function(layer) {
-        if (!layer) return;
-        let self = this,
-            g_lyr_name = '#' + layer,
-            fields_name = getFieldsType('category', layer),
-            field_selec = section2.select('#Typo_field_1'),
-            ok_button = section2.select('#Typo_yes'),
-            btn_typo_class = section2.select('#Typo_class'),
-            uo_layer_name = section2.select('#Typo_output_name');
+  fill: function(layer) {
+    if (!layer) return;
+    let self = this,
+      g_lyr_name = '#' + layer,
+      fields_name = getFieldsType('category', layer),
+      field_selec = section2.select('#Typo_field_1'),
+      ok_button = section2.select('#Typo_yes'),
+      btn_typo_class = section2.select('#Typo_class'),
+      uo_layer_name = section2.select('#Typo_output_name');
 
-        let prepare_colors = (field) => {
-            let [cats, col_map] = prepare_categories_array(layer, field, null);
-            let nb_class = col_map.size;
-            let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
-            self.rendering_params[field] = {
-                nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
-                renderer: 'Categorical', rendered_field: field, skip_alert: false
-            };
+    const prepare_colors = (field) => {
+      let [cats, col_map] = prepare_categories_array(layer, field, null);
+      let nb_class = col_map.size;
+      let colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+      self.rendering_params[field] = {
+          nb_class: nb_class, color_map: col_map, colorByFeature: colorByFeature,
+          renderer: 'Categorical', rendered_field: field, skip_alert: false
+      };
+    };
 
-        }
+    fields_name.forEach(f_name => {
+      field_selec.append('option').text(f_name).attr('value', f_name);
+    });
 
-        fields_name.forEach(f_name => {
-            field_selec.append('option').text(f_name).attr('value', f_name);
-        });
+    field_selec.on('change', function () {
+      let selected_field = this.value;
+      uo_layer_name.attr('value', ['Typo', selected_field, layer].join('_'));
+      prepare_colors(selected_field);
+    });
 
-        field_selec.on('change', function () {
-          let selected_field = this.value;
-          uo_layer_name.attr('value', ['Typo', selected_field, layer].join('_'));
-          prepare_colors(selected_field);
-        });
+    // Set some default colors in order to not force to open the box for selecting them :
+    {
+      let first_field = fields_name[0];
+      prepare_colors(first_field);
+      ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
+    }
 
-        // Set some default colors in order to not force to open the box for selecting them :
-        {
-            let first_field = fields_name[0];
-            prepare_colors(first_field);
-            ok_button.attr('disabled', self.rendering_params[first_field] ? null : true);
-        }
-
-        btn_typo_class.on('click', function () {
-            let selected_field = field_selec.node().value,
-                nb_features = current_layers[layer].n_features,
-                col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-                cats;
-            [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
-            if (cats.length > 15) {
-              swal({ title: '',
-                text: i18next.t('app_page.common.error_too_many_features_color'),
-                type: 'warning',
-                showCancelButton: true,
-                allowOutsideClick: false,
-                confirmButtonColor: '#DD6B55',
-                confirmButtonText: i18next.t('app_page.common.valid') + '!',
-                cancelButtonText: i18next.t('app_page.common.cancel')
-              }).then(() => {
-                display_categorical_box(user_data[layer], layer, selected_field, cats)
-                  .then(function(confirmed) {
-                    if (confirmed) {
-                      self.rendering_params[selected_field] = {
-                        nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                        renderer:'Categorical', rendered_field: selected_field, skip_alert: true
-                      };
-                    }
-                  });
-              }, dismiss => {
-                return;
-              });
-            } else {
-              display_categorical_box(user_data[layer], layer, selected_field, cats)
-                .then(function(confirmed) {
-                  if (confirmed) {
-                    self.rendering_params[selected_field] = {
-                      nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
-                      renderer:'Categorical', rendered_field: selected_field, skip_alert: true
-                    };
-                  }
-                });
-            }
-        });
-
-        ok_button.on('click', function () {
-          let selected_field = field_selec.node().value;
-          let render = () => {
-              if (self.rendering_params[selected_field]) {
-                  let layer = Object.getOwnPropertyNames(user_data)[0],
-                      output_name = uo_layer_name.node().value;
-                  self.rendering_params[selected_field].new_name = check_layer_name(output_name.length > 0 ? output_name : ['Typo', selected_field, layer].join('_'));
-                  render_categorical(layer, self.rendering_params[selected_field]);
-                  switch_accordion_section();
-                  handle_legend(self.rendering_params[selected_field].new_name)
+    btn_typo_class.on('click', function () {
+      let selected_field = field_selec.node().value,
+          nb_features = current_layers[layer].n_features,
+          col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
+          cats;
+      [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
+      if (cats.length > 15) {
+        swal({ title: '',
+          text: i18next.t('app_page.common.error_too_many_features_color'),
+          type: 'warning',
+          showCancelButton: true,
+          allowOutsideClick: false,
+          confirmButtonColor: '#DD6B55',
+          confirmButtonText: i18next.t('app_page.common.valid') + '!',
+          cancelButtonText: i18next.t('app_page.common.cancel')
+        }).then(() => {
+          display_categorical_box(user_data[layer], layer, selected_field, cats)
+            .then(function(confirmed) {
+              if (confirmed) {
+                self.rendering_params[selected_field] = {
+                  nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                  renderer:'Categorical', rendered_field: selected_field, skip_alert: true
+                };
               }
-          };
-          if (self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert) {
-              swal({ title: '',
-                text: i18next.t('app_page.common.error_too_many_features_color'),
-                type: 'warning',
-                showCancelButton: true,
-                allowOutsideClick: false,
-                confirmButtonColor: '#DD6B55',
-                confirmButtonText: i18next.t('app_page.common.valid') + '!',
-                cancelButtonText: i18next.t('app_page.common.cancel')
-              }).then(() => {
-                render();
-              }, dismiss => { return; });
-          } else {
-                render();
-          }
+            });
+        }, dismiss => {
+          return;
         });
-        uo_layer_name.attr('value', 'Typo_' + layer);
-        section2.selectAll('.params').attr('disabled', null);
-        setSelected(field_selec.node(), fields_name[0]);
-    },
-    unfill: function () {
-        let field_selec = document.getElementById('Typo_field_1'),
-            nb_fields = field_selec.childElementCount;
+      } else {
+        display_categorical_box(user_data[layer], layer, selected_field, cats)
+          .then(function(confirmed) {
+            if (confirmed) {
+              self.rendering_params[selected_field] = {
+                nb_class: confirmed[0], color_map :confirmed[1], colorByFeature: confirmed[2],
+                renderer:'Categorical', rendered_field: selected_field, skip_alert: true
+              };
+            }
+          });
+      }
+    });
 
-        for(let i = nb_fields - 1; i > -1 ; --i)
-            field_selec.removeChild(field_selec.children[i]);
+    ok_button.on('click', function () {
+      let selected_field = field_selec.node().value;
+      let render = () => {
+        if (self.rendering_params[selected_field]) {
+          let layer = Object.getOwnPropertyNames(user_data)[0],
+              output_name = uo_layer_name.node().value;
+          self.rendering_params[selected_field].new_name = check_layer_name(output_name.length > 0 ? output_name : ['Typo', selected_field, layer].join('_'));
+          render_categorical(layer, self.rendering_params[selected_field]);
+          switch_accordion_section();
+          handle_legend(self.rendering_params[selected_field].new_name)
+        }
+      };
+      if (self.rendering_params[selected_field].color_map.size > 15 && !self.rendering_params[selected_field].skip_alert) {
+        swal({ title: '',
+          text: i18next.t('app_page.common.error_too_many_features_color'),
+          type: 'warning',
+          showCancelButton: true,
+          allowOutsideClick: false,
+          confirmButtonColor: '#DD6B55',
+          confirmButtonText: i18next.t('app_page.common.valid') + '!',
+          cancelButtonText: i18next.t('app_page.common.cancel')
+        }).then(() => {
+          render();
+        }, dismiss => { return; });
+      } else {
+        render();
+      }
+    });
+    uo_layer_name.attr('value', 'Typo_' + layer);
+    section2.selectAll('.params').attr('disabled', null);
+    setSelected(field_selec.node(), fields_name[0]);
+  },
+  unfill: function () {
+    const field_selec = document.getElementById('Typo_field_1'),
+        nb_fields = field_selec.childElementCount;
 
-        section2.selectAll('.params').attr('disabled', true);
-    },
-    rendering_params: {}
+    for(let i = nb_fields - 1; i > -1 ; --i) {
+        field_selec.removeChild(field_selec.children[i]);
+    }
+    section2.selectAll('.params').attr('disabled', true);
+  },
+  rendering_params: {}
 };
 
 function fillMenu_Choropleth() {
@@ -1011,7 +1173,7 @@ var fields_Choropleth = {
             };
             choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', {count: nb_class}));
             ok_button.attr('disabled', null);
-            img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+       mg_valid_disc.attr('src', '/static/img/Light_green_check.png');
         });
 
         ico_quantiles.on('click', function () {
