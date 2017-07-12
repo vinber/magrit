@@ -103,7 +103,7 @@ function valid_join_on(layer_name, field1, field2) {
       val = join_values2.indexOf(Number(join_values1[i]));
       if (val !== -1) {
         field_join_map.push(val);
-        hist += 1;
+        hits += 1;
       } else {
         field_join_map.push(undefined);
       }
@@ -113,7 +113,7 @@ function valid_join_on(layer_name, field1, field2) {
       val = join_values2.indexOf(join_values1[i]);
       if (val !== -1) {
         field_join_map.push(val);
-        hist += 1;
+        hits += 1;
       } else {
         field_join_map.push(undefined);
       }
@@ -123,7 +123,7 @@ function valid_join_on(layer_name, field1, field2) {
       val = join_values2.indexOf(String(join_values1[i]));
       if (val !== -1) {
         field_join_map.push(val);
-        hist += 1;
+        hits += 1;
       } else {
         field_join_map.push(undefined);
       }

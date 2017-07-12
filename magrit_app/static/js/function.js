@@ -408,7 +408,7 @@ function fillMenu_TwoStocks(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.fields' })
     .html(i18next.t('app_page.func_options.twostocks.fields'));
   f1.insert('select')
-    .attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 3 });
+    .attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 2 });
 
   // const f2 = dv2.append('p').attr('class', 'params_section2');
   // f2.append('span')
@@ -444,9 +444,9 @@ function fillMenu_TwoStocks(layer) {
       id: 'TwoStocks_waffle_size',
       type: 'number',
       class: 'params',
-      min: 0.1,
+      min: 1,
       max: 20,
-      step: 'any',
+      step: 1,
       value: 3
     })
     .style('width', '50px');
@@ -463,11 +463,31 @@ function fillMenu_TwoStocks(layer) {
       class: 'params',
       type: 'number',
       min: 2,
-      max: 6,
+      max: 8,
       value: 2,
       step: 1
     })
     .style('width', '50px');
+
+  const e = dv2.append('p')
+    .attr('class', 'params_section2');
+  e.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio'})
+    .html(i18next.t('app_page.func_options.twostocks.waffle_ratio'));
+  e.insert('input')
+    .attrs({
+      id: 'TwoStocks_waffle_ratio',
+      class: 'params',
+      type: 'number',
+      min: 1,
+      max: 1000000,
+      value: 100,
+      step: 1
+    })
+    .style('width', '50px');
+  e.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio_units' })
+    .html(i18next.t('app_page.func_options.twostocks.waffle_ratio_units'));
 
   make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
   make_ok_button(dv2, 'twoStocks_yes');
@@ -481,8 +501,11 @@ const fields_TwoStocks = {
     const fields_stock = getFieldsType('stock', layer);
     const symbol_choice = section2.select('#TwoStocks_waffle_symbol');
     const fields_list = section2.select('#TwoStocks_fields');
-    [['app_page.func_options.common.symbol_circle', 'circle'],
-     ['app_page.func_options.common.symbol_square', 'rect']
+    const ok_button = section2.select('#twoStocks_yes');
+    const ratio_select = section2.select('#TwoStocks_waffle_ratio');
+    [
+      ['app_page.func_options.common.symbol_circle', 'circle'],
+      ['app_page.func_options.common.symbol_square', 'rect']
     ].forEach((symb) => {
       symbol_choice.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
     });
@@ -490,6 +513,7 @@ const fields_TwoStocks = {
       fields_list.append('option').text(f).attr('value', f);
     });
     fields_list.node().parentElement.style.marginBottom = `${fields_stock.length * 12 + 5}px`;
+    fields_list.attr('size', fields_stock.length);
     symbol_choice.on('change', function () {
       if (this.value === 'circle') {
         section2.select('#TwoStocks_waffle_size_txt')
@@ -501,18 +525,29 @@ const fields_TwoStocks = {
           .text(i18next.t('app_page.func_options.twostocks.waffle_size_square'));
       }
     });
+
     ok_button.on('click', function () {
       const rendering_params = {};
       let new_layer_name = section2.select('#TwoStocks_output_name').node().value;
       new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_Waffle');
+      rendering_params.ratio = +document.getElementById('TwoStocks_waffle_ratio').value;
       rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(elem => elem.value)
       rendering_params.new_name = new_layer_name;
-      console.log(rendering_params)
+      rendering_params.symbol_type = symbol_choice.node().value;
+      rendering_params.size = +document.getElementById('TwoStocks_waffle_size').value;
+      rendering_params.nCol = +document.getElementById('TwoStocks_waffle_WidthRow').value;
       render_twostocks_waffle(layer, rendering_params);
+      zoom_without_redraw();
+      switch_accordion_section();
+      // handle_legend(new_layer_name);
     });
   },
   unfill() {
+    unfillSelectInput(document.getElementById('TwoStocks_waffle_symbol'));
     unfillSelectInput(document.getElementById('TwoStocks_fields'));
+    unfillSelectInput(document.getElementById('TwoStocks_waffle_ratio'));
+    document.getElementById('TwoStocks_fields').size = 2;
+    document.getElementById('TwoStocks_fields').parentElement.style.marginBottom = `25px`;
     section2.selectAll('.params').attr('disabled', true);
   },
 };
@@ -525,32 +560,114 @@ function render_twostocks_waffle(layer, rendering_params) {
     }
     return res;
   };
-  const sums = [];
-  const colors = [];
-  const fields = rendering_params.fields;
+  const round = Math.round;
+  const floor = Math.floor;
+  const { ratio, symbol_type, nCol, fields, new_name: layer_to_add } = rendering_params;
   const nbVar = fields.length;
   const ref_colors = get_colors(nbVar);
-  map.select(`#${_app.layer_to_id.get(layer)}`)
-    .selectAll('path')
-    .each((d, i) => {
+
+  const layer_id = encodeId(layer_to_add);
+  _app.layer_to_id.set(layer_to_add, layer_id);
+  _app.id_to_layer.set(layer_id, layer_to_add);
+
+  if (!rendering_params.result_data){
+    result_data[layer_to_add] = [];
+    const ref_layer_selection = map.select(`#${_app.layer_to_id.get(layer)}`).selectAll('path');
+    const centroids = getCentroids(ref_layer_selection._groups[0]);
+
+    ref_layer_selection.each((d, i) => {
       let sum = 0;
       let c = [];
+      let color;
+      let r = { id: d.id, centroid: centroids[i] };
       for(let j = 0; j < nbVar; j++) {
         const field = fields[j];
-        const val = +d.properties[field];
+        r[field] = +user_data[layer][i][field];
+        const val = +user_data[layer][i][field] / ratio;
         sum += val;
         color = ref_colors[j];
-        // The whole logic here to get the colors in order is really overkill
         for (let ix=0; ix < val; ix++) {
           c.push(color);
         }
       }
-      sums.push(sum);
-      colors.push(c);
+      r.colors = c;
+      r.sum = sum;
+      result_data[layer_to_add].push(r);
     });
+  } else {
+    result_data[layer_to_add] = [].concat(result_data);
+  }
 
-  let overlay = svg.insert('g', '.graticule')
-    .attr('class', 'dots');
+  const nb_features = result_data[layer_to_add].length;
+  const new_layer = map.insert('g', '.legend')
+    .attr('id', layer_id)
+    .attr('class', 'layer');
+
+  if (symbol_type === 'circle') {
+    const r = rendering_params.size;
+    for (let j = 0; j < result_data[layer_to_add].length; j++) {
+      let centroid = result_data[layer_to_add][j].centroid;
+      let group = new_layer.append('g');
+      let sum = result_data[layer_to_add][j].sum;
+      let _colors = result_data[layer_to_add][j].colors;
+      for (let i = 0; i < sum; i++) {
+        let t_x = round((i % nCol) * 2 * r);
+        let t_y = floor(floor(i / nCol) * 2 * r);
+        group.append('circle')
+          .attrs({
+            transform: `translate(-${t_x}, -${t_y})`,
+            cx: centroid[0],
+            cy: centroid[1],
+            r: r,
+            id: ['waffle_', i, ' feature_', result_data[layer_to_add][j].id].join(''),
+            fill: _colors[i]
+          });
+      }
+      group.node().__data__ = result_data[layer_to_add][j];
+    }
+
+  } else if (symbol_type === 'rect') {
+    const width = rendering_params.size;
+    const offset = width / 5;
+    for (let j = 0; j < result_data[layer_to_add].length; j++) {
+      let centroid = result_data[layer_to_add][j].centroid;
+      let group = new_layer.append('g');
+      let sum = result_data[layer_to_add][j].sum;
+      let _colors = result_data[layer_to_add][j].colors;
+      for (let i = 0; i < sum; i++) {
+        let t_x = round((i % nCol) * width) + (offset * round(i % nCol));
+        let t_y = floor(floor(i / nCol) * width) + (offset * floor(i / nCol));
+        group.append('rect')
+          .attrs({
+            transform: `translate(-${t_x}, -${t_y})`,
+            x: centroid[0],
+            y: centroid[1],
+            width: width,
+            height: width,
+            id: ['waffle_', i, ' feature_', result_data[layer_to_add][j].id].join(''),
+            fill: _colors[i]
+          });
+      }
+      group.node().__data__ = result_data[layer_to_add][j];
+    }
+  }
+
+  current_layers[layer_to_add] = {
+    fill_color: ref_colors,
+    n_features: nb_features,
+    renderer: 'TwoStocksWaffle',
+    symbol: symbol_type,
+    rendered_field: fields,
+    size: rendering_params.size,
+    ratio: ratio,
+    nCol: nCol,
+    'stroke-width-const': 0,
+    is_result: true,
+    ref_layer_name: layer,
+    draggable: false
+  };
+  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'twostocks'], 'result');
+  return;
 }
 
 function fillMenu_PropSymbolChoro(layer) {
@@ -2655,7 +2772,7 @@ var render_discont = function () {
             ref_layer_name: layer,
             fill_color: { 'single': user_color },
             n_features: nb_ft
-            };
+        };
         create_li_layer_elem(new_layer_name, nb_ft, ['Line', 'discont'], 'result');
 
 

@@ -14,6 +14,9 @@ function handle_click_layer(layer_name) {
   } else if (current_layers[layer_name].renderer
       && current_layers[layer_name].renderer === 'TypoSymbols') {
     createStyleBoxTypoSymbols(layer_name);
+  } else if (current_layers[layer_name].renderer
+      && current_layers[layer_name].renderer === 'TwoStocksWaffle') {
+    createStyleBoxWaffle(layer_name);
   } else {
     createStyleBox(layer_name);
   }
@@ -1425,6 +1428,177 @@ function get_fields_name(layer_name) {
   } else {
     return Object.getOwnPropertyNames(elem.__data__.properties);
   }
+}
+
+function createStyleBoxWaffle(layer_name) {
+  check_remove_existing_box('.styleBox');
+  const round = Math.round;
+  const floor = Math.floor;
+  const layer_id = _app.layer_to_id.get(layer_name),
+    g_lyr_name = `#${layer_id}`,
+    ref_layer_name = current_layers[layer_name].ref_layer_name,
+    symbol = current_layers[layer_name].symbol,
+    fields = current_layers[layer_name].rendered_field,
+    selection = map.select(g_lyr_name);
+
+  let previous_params = {
+    fill_opacity: selection.style('fill-opacity'),
+    ref_colors: [].concat(current_layers[layer_name].fill_color),
+    size: current_layers[layer_name].size,
+    nCol: current_layers[layer_name].nCol,
+  };
+
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
+    .then((confirmed) => {
+      if (confirmed) {
+
+        // Change the layer name if requested :
+        if (new_layer_name !== layer_name) {
+          change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
+        }
+
+      } else {
+        current_layers[layer_name].fill_color = previous_params.ref_colors;
+        current_layers[layer_name].size = previous_params.size;
+        selection.style('fill-opacity', previous_params.fill_opacity);
+      }
+      zoom_without_redraw();
+    });
+
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container)
+    .select('.modal-content')
+    .style('width', '300px')
+    .select('.modal-body');
+
+  popup.append('p')
+    .styles({ 'text-align': 'center', color: 'grey' })
+    .html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field.join(' ,') }),
+           i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name} )].join(''));
+
+   let fill_opacity_section = popup.append('p')
+     .attr('class', 'line_elem')
+     .attr('id', 'fill_color_section');
+
+   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+   fill_opacity_section.insert('input')
+     .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: previous_params.fill_opacity })
+     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+     .on('change', function () {
+         selection.style('fill-opacity', +this.value);
+         fill_opacity_section.select('#fill_opacity_txt').html((+this.value * 100) + '%');
+     });
+
+   fill_opacity_section.append('span')
+     .attr('id', 'fill_opacity_txt')
+     .style('float', 'right')
+     .html((+previous_params.fill_opacity * 100) + '%');
+
+  let ref_colors_section = popup.append('div')
+    .attr('id', 'ref_colors_section')
+    .style('clear', 'both');
+  ref_colors_section.append('p')
+    .html(i18next.t('app_page.layer_style_popup.ref_colors'));
+  for (let i = 0; i < current_layers[layer_name].fill_color.length; i++) {
+    let p = ref_colors_section.append('p').style('margin', '15px 5px');
+    p.append('span').html(current_layers[layer_name].rendered_field[i]);
+    p.insert('input')
+      .attr('type', 'color')
+      .attr('id', i)
+      .attr('value', current_layers[layer_name].fill_color[i])
+      .style('float', 'right')
+      .on('change', function () {
+        let col = rgb2hex(this.value);
+        let to_replace = current_layers[layer_name].fill_color[i];
+        current_layers[layer_name].fill_color[i] = col;
+        selection.selectAll(symbol)
+          .each(function (d, i) {
+            if (rgb2hex(this.getAttribute('fill')) === to_replace) {
+              this.setAttribute('fill', col);
+            }
+          })
+       });
+   }
+
+
+  let size_section = popup.append('p')
+    .attr('class', 'line_elem')
+    .attr('id', 'size_section')
+    .style('clear', 'both');;
+
+  size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
+  size_section.append('span')
+    .attr('id', 'size_section_txt')
+    .style('float', 'right')
+    .html(previous_params.size + ' px');
+  size_section.insert('input')
+    .attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size })
+    .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .on('change', function () {
+      const val = +this.value;
+      const nCol = current_layers[layer_name].nCol;
+      current_layers[layer_name].size = val;
+      selection
+        .selectAll('g')
+        .selectAll(symbol)
+        .each(function (d, i){
+          if (symbol == 'circle') {
+            let t_x = round((i % nCol) * 2 * val);
+            let t_y = floor(floor(i / nCol) * 2 * val);
+            this.setAttribute('r', val);
+            this.setAttribute('transform', `translate(-${t_x}, -${t_y})`);
+          } else {
+            let offset = val / 5;
+            let t_x = round((i % nCol) * val) + (offset * round(i % nCol));
+            let t_y = floor(floor(i / nCol) * val) + (offset * floor(i / nCol));
+            this.setAttribute('width', val);
+            this.setAttribute('height', val);
+            this.setAttribute('transform', `translate(-${t_x}, -${t_y})`);
+          }
+        });
+      size_section.select('#size_section_txt').html(this.value + ' px');
+    });
+
+  let width_row_section = popup.append('p')
+    .attr('class', 'line_elem')
+    .attr('id', 'width_row_section');
+
+  width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
+  width_row_section.append('span')
+    .attr('id', 'width_row_text')
+    .style('float', 'right')
+    .html(previous_params.nCol);
+  width_row_section.insert('input')
+    .attrs({ type: 'range', min: 1, max: 10, step: 1, value: previous_params.nCol })
+    .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .on('change', function () {
+      const val = +this.value;
+      const size = current_layers[layer_name].size;
+      current_layers[layer_name].nCol = val;
+      selection
+        .selectAll('g')
+        .selectAll(symbol)
+        .each(function (d, i){
+          if (symbol === 'circle') {
+            let t_x = round((i % val) * 2 * size);
+            let t_y = floor(floor(i / val) * 2 * size);
+            this.setAttribute('transform', `translate(-${t_x}, -${t_y})`);
+          } else {
+            let offset = size / 5;
+            let t_x = round((i % val) * size) + (offset * round(i % val));
+            let t_y = floor(floor(i / val) * size) + (offset * floor(i / val));
+            this.setAttribute('transform', `translate(-${t_x}, -${t_y})`);
+          }
+        });
+      width_row_section.select('#width_row_text').html(this.value);
+    });
+
+
+  let new_layer_name = layer_name;
+  const new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function() {
+    new_layer_name = this.value;
+  });
 }
 
 function createStyleBox_ProbSymbol(layer_name) {
