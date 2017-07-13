@@ -284,7 +284,8 @@
             "flow": "Carte des liens",
             "discont": "Carte des discontinuités",
             "typo": "Carte qualitative",
-            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes",
+            "two_stocks": "Carte de stocks (2 ou plus)"
         },
         "projection_box":{
             "choice_projection": "Choix d'une projection",
@@ -559,7 +560,9 @@
             "generate_labels": "Génération de labels pour cette couche...",
             "field_label": "Sélection du champ à utiliser",
             "layer_shadow": "Ajouter une ombre à la couche",
-            "let_draggable": "Autoriser le déplacement des symboles"
+            "let_draggable": "Autoriser le déplacement des symboles",
+            "ref_colors": "Couleurs:",
+            "ref_size": "Taille du symbole"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",
@@ -669,6 +672,15 @@
                 "on_value": "sur la valeur ... ",
                 "symbol_type": "Type de symbole ",
                 "field2": "Champ à utiliser<br>(couleur du symbole)"
+            },
+            "twostocks": {
+              "fields": "Champs",
+              "symbol_choice": "Type de symbole",
+              "waffle_size_circle": "Rayon du symbole",
+              "waffle_size_square": "Taille du symbole",
+              "waffle_width_rows": "Largeur (nombre de symboles)",
+              "waffle_ratio": "Ratio",
+              "waffle_ratio_units": " unités par carreau"
             }
         }
     },

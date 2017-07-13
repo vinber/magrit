@@ -283,7 +283,8 @@
             "flow": "Link/Flow map",
             "discont": "Discontinuities map",
             "typo": "Categorical map",
-            "typosymbol": "Pictogram map"
+            "typosymbol": "Pictogram map",
+            "two_stocks": "Waffle/Treemap map"
         },
         "projection_box":{
             "choice_projection": "Choose a projection",
@@ -559,7 +560,9 @@
             "generate_labels": "Generate labels for this layer ...",
             "field_label": "Select a field",
             "layer_shadow": "Add a shadow",
-            "let_draggable": "Allow moving symbols"
+            "let_draggable": "Allow moving symbols",
+            "ref_colors": "Colors:",
+            "ref_size": "Symbol size"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",
@@ -668,6 +671,15 @@
                 "on_value": "on value ...",
                 "symbol_type": "Symbol type",
                 "field2": "Field 2 (symbol color)"
+              },
+            "twostocks": {
+              "fields": "Fields",
+              "symbol_choice": "Symbol type",
+              "waffle_size_circle": "Circle radius",
+              "waffle_size_square": "Square size",
+              "waffle_width_rows": "Width rows",
+              "waffle_ratio": "Ratio",
+              "waffle_ratio_units": " units per cell"
             }
         }
     },
