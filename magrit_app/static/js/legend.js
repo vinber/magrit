@@ -435,8 +435,8 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     .styles({ fill: color, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1, 'stroke-width': 0 })
     .attrs((d) => {
       last_pos = boxgap + last_pos + last_size;
-      last_size = d.size;
-      return { x: xrect, y: last_pos, width: 45, height: d.size };
+      last_size = d.size * svg_map.__zoom.k;
+      return { x: xrect, y: last_pos, width: 45, height: last_size };
     });
 
   last_pos = y_pos2;
@@ -447,8 +447,8 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
   legend_elems.append('text')
     .attrs((d) => {
       last_pos = boxgap + last_pos + last_size;
-      last_size = d.size;
-      tmp_pos = last_pos - (d.size / 4);
+      last_size = d.size * svg_map.__zoom.k;
+      tmp_pos = last_pos - (last_size / 4);
       return { x: x_text_pos, y: tmp_pos };
     })
     .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })

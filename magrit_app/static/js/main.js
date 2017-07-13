@@ -1863,8 +1863,6 @@ function zoom_without_redraw(){
 
 function redraw_legends_symbols(targeted_node){
   const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol');
-  if(legend_nodes.length < 1)
-    return;
 
   let hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
   let hidden = [];
@@ -1905,6 +1903,46 @@ function redraw_legends_symbols(targeted_node){
   if (hide && !(hidden.length == legend_nodes.length)) {
     alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
   }
+
+  if (!targeted_node) {
+    const legend_nodes_links_discont = document.querySelectorAll('#legend_root_lines_class');
+    for (let i = 0; i < legend_nodes_links_discont.length; ++i) {
+      let layer_id = legend_nodes_links_discont[i].classList[2].split('lgdf_')[1],
+          layer_name = _app.id_to_layer.get(layer_id),
+          rendered_field = current_layers[layer_name].rendered_field,
+          display_value = legend_nodes_links_discont[i].getAttribute('display'),
+          visible = legend_nodes_links_discont[i].style.visibility;
+
+      let transform_param = legend_nodes_links_discont[i].getAttribute('transform'),
+          rounding_precision = legend_nodes_links_discont[i].getAttribute('rounding_precision'),
+          lgd_title = legend_nodes_links_discont[i].querySelector('#legendtitle').innerHTML,
+          lgd_subtitle = legend_nodes_links_discont[i].querySelector('#legendsubtitle').innerHTML,
+          notes = legend_nodes_links_discont[i].querySelector('#legend_bottom_note').innerHTML;
+
+      let rect_fill_value = legend_nodes_links_discont[i].getAttribute('visible_rect') == 'true' ? {
+          color: legend_nodes_links_discont[i].querySelector('#under_rect').style.fill,
+          opacity: legend_nodes_links_discont[i].querySelector('#under_rect').style.fillOpacity
+      } : undefined;
+
+      legend_nodes_links_discont[i].remove();
+      createLegend_discont_links(layer_name, rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, notes);
+      let new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
+      new_lgd.style.visibility = visible;
+      if (transform_param) {
+        new_lgd.setAttribute('transform', transform_param);
+      }
+
+      if (display_value) {
+        new_lgd.setAttribute('display', display_value);
+      }
+      //   hidden.push(true);
+      // } else if (hide) {
+      //   new_lgd.setAttribute('display', 'none');
+      // }
+    }
+  }
+
+
 }
 
 function interpolateZoom(translate, scale) {
