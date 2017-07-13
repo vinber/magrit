@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.bc4fb093ea73.json'
+      loadPath: 'static/locales/{{lng}}/translation.1a4a19910d60.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4611,10 +4611,43 @@ var fields_TwoStocks = {
       rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(function (elem) {
         return elem.value;
       });
+      if (rendering_params.fields.length < 2) {
+        swal({
+          title: i18next.t('app_page.common.error') + '!',
+          text: '' + i18next.t('app_page.error_multiple_fields'),
+          customClass: 'swal2_custom',
+          type: 'error',
+          allowOutsideClick: false
+        });
+        return;
+      }
+      var t_max = 0;
+
+      var _loop = function _loop(i) {
+        var field = rendering_params.fields[i];
+        t_max += max_fast(user_data[layer].map(function (obj) {
+          return +obj[field];
+        })) / rendering_params.ratio;
+      };
+
+      for (var i = 0; i < rendering_params.fields; i++) {
+        _loop(i);
+      }
+      if (t_max > 100) {
+        swal({
+          title: i18next.t('app_page.common.error') + '!',
+          text: '' + i18next.t('app_page.error_too_many'),
+          customClass: 'swal2_custom',
+          type: 'error',
+          allowOutsideClick: false
+        });
+        return;
+      }
       rendering_params.new_name = new_layer_name;
       rendering_params.symbol_type = symbol_choice.node().value;
       rendering_params.size = +document.getElementById('TwoStocks_waffle_size').value;
       rendering_params.nCol = +document.getElementById('TwoStocks_waffle_WidthRow').value;
+
       render_twostocks_waffle(layer, rendering_params);
       zoom_without_redraw();
       switch_accordion_section();
@@ -4666,9 +4699,9 @@ function render_twostocks_waffle(layer, rendering_params) {
       var color = void 0;
       var r = { id: d.id, centroid: centroids[i] };
       for (var j = 0; j < nbVar; j++) {
-        var field = fields[j];
-        r[field] = +user_data[layer][i][field];
-        var val = +user_data[layer][i][field] / ratio;
+        var _field = fields[j];
+        r[_field] = +user_data[layer][i][_field];
+        var val = +user_data[layer][i][_field] / ratio;
         sum += val;
         color = ref_colors[j];
         for (var ix = 0; ix < val; ix++) {

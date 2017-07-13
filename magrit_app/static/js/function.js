@@ -531,11 +531,37 @@ const fields_TwoStocks = {
       let new_layer_name = section2.select('#TwoStocks_output_name').node().value;
       new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_Waffle');
       rendering_params.ratio = +document.getElementById('TwoStocks_waffle_ratio').value;
-      rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(elem => elem.value)
+      rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(elem => elem.value);
+      if (rendering_params.fields.length < 2) {
+        swal({
+          title: `${i18next.t('app_page.common.error')}!`,
+          text: `${i18next.t('app_page.error_multiple_fields')}`,
+          customClass: 'swal2_custom',
+          type: 'error',
+          allowOutsideClick: false
+        });
+        return;
+      }
+      let t_max = 0;
+      for (let i = 0; i < rendering_params.fields; i++){
+        const field = rendering_params.fields[i];
+        t_max += max_fast(user_data[layer].map(obj => +obj[field])) / rendering_params.ratio;
+      }
+      if (t_max > 100) {
+        swal({
+          title: `${i18next.t('app_page.common.error')}!`,
+          text: `${i18next.t('app_page.error_too_many')}`,
+          customClass: 'swal2_custom',
+          type: 'error',
+          allowOutsideClick: false
+        });
+        return;
+      }
       rendering_params.new_name = new_layer_name;
       rendering_params.symbol_type = symbol_choice.node().value;
       rendering_params.size = +document.getElementById('TwoStocks_waffle_size').value;
       rendering_params.nCol = +document.getElementById('TwoStocks_waffle_WidthRow').value;
+
       render_twostocks_waffle(layer, rendering_params);
       zoom_without_redraw();
       switch_accordion_section();
