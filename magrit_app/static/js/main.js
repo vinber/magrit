@@ -1111,7 +1111,7 @@ function make_ico_choice(){
       'discont.png',
       'typosymbol.png',
       'flow.png',
-      'two_stocks'
+      'two_stocks.png'
     ];
 
     let function_panel = section2_pre.append('div')
@@ -1121,67 +1121,67 @@ function make_ico_choice(){
         let ico_name = list_fun_ico[i],
             func_name = ico_name.split('.')[0],
             func_desc = get_menu_option(func_name).desc,
-            margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
+            margin_value = '5px 16px';
+            // margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
         function_panel
-            .insert('img')
-            .styles({margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none'})
-            .attrs({class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-                    src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name})
-            .on('click', function () {
-                let fill_menu = true;
-                // Do some clean-up related to the previously displayed options :
-                if(window.fields_handler){
-                    if(this.classList.contains('active')){
-                        switch_accordion_section('btn_s2b');
-                        return;
-                    } else {
-                        clean_menu_function();
-                    }
-                }
-
-                document.getElementById('accordion2b').style.display = '';
-
-                // Get the function to fill the menu with the appropriate options (and do it):
-                _app.current_functionnality = get_menu_option(func_name);
-                let make_menu = window[_app.current_functionnality.menu_factory];
-                window.fields_handler = window[_app.current_functionnality.fields_handler];
-                make_menu();
-
-                // Replace the title of the section:
-                let selec_title = document.getElementById('btn_s2b');
-                selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
-                                        i18next.t("app_page.common.representation") +
-                                        '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
-                                        _app.current_functionnality.name +
-                                        '">' +
-                                        i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
-                                        '</span>';
-                selec_title.style.display = '';
-
-                // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
-                if(this.style.filter == 'grayscale(100%)'){
-
-                } else {
-                    this.classList.add('active');
-                    // Highlight the icon of the selected functionnality :
-                    this.style.filter = 'invert(100%) saturate(200%)';
-
-                    // Fill the field of the functionnality with the field
-                    // of the targeted layer if already uploaded by the user :
-                    if(_app.targeted_layer_added){
-                        let target_layer = Object.getOwnPropertyNames(user_data)[0];
-                        fields_handler.fill(target_layer);
-                    }
-
-                    // Specific case for flow/link functionnality as we are also
-                    // filling the fields with data from the uploaded tabular file if any :
-                    if(func_name == 'flow' && joined_dataset){
-                        fields_handler.fill();
-                    }
-
-                }
+          .insert('img')
+          .styles({ margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none' })
+          .attrs({
+            class: 'i18n',
+            'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+            src: ['static/img/func_icons2/', ico_name].join(''),
+            id: 'button_' + func_name })
+          .on('click', function () {
+            let fill_menu = true;
+            // Do some clean-up related to the previously displayed options :
+            if(window.fields_handler){
+              if(this.classList.contains('active')){
                 switch_accordion_section('btn_s2b');
-            });
+                return;
+              } else {
+                clean_menu_function();
+              }
+            }
+
+            document.getElementById('accordion2b').style.display = '';
+            // Get the function to fill the menu with the appropriate options (and do it):
+            _app.current_functionnality = get_menu_option(func_name);
+            let make_menu = window[_app.current_functionnality.menu_factory];
+            window.fields_handler = window[_app.current_functionnality.fields_handler];
+            make_menu();
+
+            // Replace the title of the section:
+            let selec_title = document.getElementById('btn_s2b');
+            selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
+                                    i18next.t("app_page.common.representation") +
+                                    '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
+                                    _app.current_functionnality.name +
+                                    '">' +
+                                    i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
+                                    '</span>';
+            selec_title.style.display = '';
+
+            // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
+            if(this.style.filter !== 'grayscale(100%)'){
+              this.classList.add('active');
+              // Highlight the icon of the selected functionnality :
+              this.style.filter = 'invert(100%) saturate(200%)';
+
+              // Fill the field of the functionnality with the field
+              // of the targeted layer if already uploaded by the user :
+              if(_app.targeted_layer_added){
+                  let target_layer = Object.getOwnPropertyNames(user_data)[0];
+                  fields_handler.fill(target_layer);
+              }
+
+              // Specific case for flow/link functionnality as we are also
+              // filling the fields with data from the uploaded tabular file if any :
+              if(func_name == 'flow' && joined_dataset){
+                  fields_handler.fill();
+              }
+            }
+            switch_accordion_section('btn_s2b');
+        });
     }
 }
 
@@ -1257,7 +1257,8 @@ const button_result_type = new Map([
   ['label', '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'],
   ['choro', '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'],
   ['smooth', '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'],
-  ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']
+  ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>'],
+  ['waffle', '<img src="static/img/type_geom/layer_waffle.png" class="ico_type" width="17" height="17" alt="waffle"/>'],
 ]);
 
 const eye_open0 = '<img src="static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';

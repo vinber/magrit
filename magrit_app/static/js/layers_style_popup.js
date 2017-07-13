@@ -543,7 +543,8 @@ function createStyleBoxGraticule(layer_name) {
 function redraw_legend(type_legend, layer_name, field) {
   const [selector, func] = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
                          type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] :
-                         type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined;
+                         type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] :
+                         type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined;
   let lgd = document.querySelector(selector);
   if (lgd) {
     const transform_param = lgd.getAttribute('transform'),
@@ -563,6 +564,9 @@ function redraw_legend(type_legend, layer_name, field) {
 
       lgd.remove();
       func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+    } else if (type_legend === 'waffle') {
+      lgd.remove();
+      func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
     } else {
       lgd.remove();
       func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
@@ -1451,7 +1455,7 @@ function createStyleBoxWaffle(layer_name) {
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
     .then((confirmed) => {
       if (confirmed) {
-
+        redraw_legend('waffle', layer_name, fields)
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
           change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
@@ -1473,7 +1477,7 @@ function createStyleBoxWaffle(layer_name) {
 
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
-    .html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field.join(' ,') }),
+    .html([i18next.t('app_page.layer_style_popup.rendered_field', { field: fields.join(' ,') }),
            i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name} )].join(''));
 
    let fill_opacity_section = popup.append('p')
@@ -1527,10 +1531,6 @@ function createStyleBoxWaffle(layer_name) {
     .style('clear', 'both');;
 
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
-  size_section.append('span')
-    .attr('id', 'size_section_txt')
-    .style('float', 'right')
-    .html(previous_params.size + ' px');
   size_section.insert('input')
     .attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1558,16 +1558,16 @@ function createStyleBoxWaffle(layer_name) {
         });
       size_section.select('#size_section_txt').html(this.value + ' px');
     });
+  size_section.append('span')
+    .attr('id', 'size_section_txt')
+    .style('float', 'right')
+    .html(previous_params.size + ' px');
 
   let width_row_section = popup.append('p')
     .attr('class', 'line_elem')
     .attr('id', 'width_row_section');
 
   width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
-  width_row_section.append('span')
-    .attr('id', 'width_row_text')
-    .style('float', 'right')
-    .html(previous_params.nCol);
   width_row_section.insert('input')
     .attrs({ type: 'range', min: 1, max: 10, step: 1, value: previous_params.nCol })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1592,7 +1592,10 @@ function createStyleBoxWaffle(layer_name) {
         });
       width_row_section.select('#width_row_text').html(this.value);
     });
-
+  width_row_section.append('span')
+    .attr('id', 'width_row_text')
+    .style('float', 'right')
+    .html(previous_params.nCol);
 
   let new_layer_name = layer_name;
   const new_name_section = make_change_layer_name_section(popup, layer_name);

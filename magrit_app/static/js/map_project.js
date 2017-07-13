@@ -367,7 +367,19 @@ function get_map_template() {
         current_position.push([+s.getAttribute('x'), +s.getAttribute('y'), s.style.display, s.style.fontSize, s.style.fontFamily, s.style.fill, s.textContent]);
       }
       layer_style_i.data_labels = features;
-      layer_style_i.current_position = current_position
+      layer_style_i.current_position = current_position;
+    } else if (current_layer_prop.renderer === 'TwoStocksWaffle') {
+      const type_symbol = current_layer_prop.symbol;
+      selection = map.select(`#${layer_id}`).selectAll(type_symbol);
+      layer_style_i.symbol = type_symbol;
+      layer_style_i.rendered_field = current_layer_prop.rendered_field;
+      layer_style_i.renderer = current_layer_prop.renderer;
+      layer_style_i.size = current_layer_prop.size;
+      layer_style_i.fill_color = current_layer_prop.fill_color;
+      layer_style_i.ratio = current_layer_prop.ratio;
+      layer_style_i.nCol = current_layer_prop.nCol;
+      layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+      layer_style_i.result_data = JSON.stringify(result_data[layer_name]);
     } else {
       selection = map.select(`#${layer_id}`).selectAll('path');
     }
@@ -931,6 +943,19 @@ function apply_user_preferences(json_pref) {
         // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
         render_label(null, rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
+      } else if (_layer.renderer && _layer.renderer === 'TwoStocksWaffle') {
+        console.log(_layer);
+         render_twostocks_waffle(undefined, {
+           nCol: _layer.nCol,
+           ratio: _layer.ratio,
+           symbol_type: _layer.symbol,
+           new_name: layer_name,
+           size: _layer.size,
+           ref_colors: _layer.fill_color,
+           fields: _layer.rendered_field,
+           result_data: _layer.result_data,
+         });
+         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         const symbols_map = new Map(_layer.symbols_map);
         const new_layer_data = {

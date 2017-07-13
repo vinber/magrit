@@ -539,7 +539,7 @@ const fields_TwoStocks = {
       render_twostocks_waffle(layer, rendering_params);
       zoom_without_redraw();
       switch_accordion_section();
-      // handle_legend(new_layer_name);
+      handle_legend(new_layer_name);
     });
   },
   unfill() {
@@ -564,13 +564,14 @@ function render_twostocks_waffle(layer, rendering_params) {
   const floor = Math.floor;
   const { ratio, symbol_type, nCol, fields, new_name: layer_to_add } = rendering_params;
   const nbVar = fields.length;
-  const ref_colors = get_colors(nbVar);
+  let ref_colors;
 
   const layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
 
   if (!rendering_params.result_data){
+    ref_colors = get_colors(nbVar);
     result_data[layer_to_add] = [];
     const ref_layer_selection = map.select(`#${_app.layer_to_id.get(layer)}`).selectAll('path');
     const centroids = getCentroids(ref_layer_selection._groups[0]);
@@ -595,7 +596,8 @@ function render_twostocks_waffle(layer, rendering_params) {
       result_data[layer_to_add].push(r);
     });
   } else {
-    result_data[layer_to_add] = [].concat(result_data);
+    ref_colors = rendering_params.ref_colors;
+    result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
   }
 
   const nb_features = result_data[layer_to_add].length;
@@ -666,7 +668,7 @@ function render_twostocks_waffle(layer, rendering_params) {
     ref_layer_name: layer,
     draggable: false
   };
-  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'twostocks'], 'result');
+  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'waffle'], 'result');
   return;
 }
 

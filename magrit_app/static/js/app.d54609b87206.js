@@ -905,7 +905,7 @@ function change_lang() {
 }
 
 function make_ico_choice() {
-  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png', 'two_stocks'];
+  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png', 'two_stocks.png'];
 
   var function_panel = section2_pre.append('div').attr('id', 'list_ico_func');
 
@@ -913,9 +913,13 @@ function make_ico_choice() {
     var ico_name = list_fun_ico[i],
         func_name = ico_name.split('.')[0],
         func_desc = get_menu_option(func_name).desc,
-        margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
-    function_panel.insert('img').styles({ margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none' }).attrs({ class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-      src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on('click', function () {
+        margin_value = '5px 16px';
+    // margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
+    function_panel.insert('img').styles({ margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none' }).attrs({
+      class: 'i18n',
+      'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+      src: ['static/img/func_icons2/', ico_name].join(''),
+      id: 'button_' + func_name }).on('click', function () {
       var fill_menu = true;
       // Do some clean-up related to the previously displayed options :
       if (window.fields_handler) {
@@ -928,7 +932,6 @@ function make_ico_choice() {
       }
 
       document.getElementById('accordion2b').style.display = '';
-
       // Get the function to fill the menu with the appropriate options (and do it):
       _app.current_functionnality = get_menu_option(func_name);
       var make_menu = window[_app.current_functionnality.menu_factory];
@@ -941,7 +944,7 @@ function make_ico_choice() {
       selec_title.style.display = '';
 
       // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
-      if (this.style.filter == 'grayscale(100%)') {} else {
+      if (this.style.filter !== 'grayscale(100%)') {
         this.classList.add('active');
         // Highlight the icon of the selected functionnality :
         this.style.filter = 'invert(100%) saturate(200%)';
@@ -1022,7 +1025,7 @@ var button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_butt
     button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
     button_type = new Map([['Point', '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'], ['Line', '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'], ['Polygon', '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']]);
 
-var button_result_type = new Map([['flow', '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ['symbol', '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ['grid', '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ['propchoro', '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ['typo', '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ['discont', '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ['cartogram', '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ['label', '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ['choro', '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ['smooth', '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']]);
+var button_result_type = new Map([['flow', '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ['symbol', '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ['grid', '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ['propchoro', '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ['typo', '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ['discont', '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ['cartogram', '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ['label', '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ['choro', '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ['smooth', '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>'], ['waffle', '<img src="static/img/type_geom/layer_waffle.png" class="ico_type" width="17" height="17" alt="waffle"/>']]);
 
 var eye_open0 = '<img src="static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
@@ -1092,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.684f7b95ee91.json'
+      loadPath: 'static/locales/{{lng}}/translation.d54609b87206.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4578,7 +4581,7 @@ var fields_TwoStocks = {
       render_twostocks_waffle(layer, rendering_params);
       zoom_without_redraw();
       switch_accordion_section();
-      // handle_legend(new_layer_name);
+      handle_legend(new_layer_name);
     });
   },
   unfill: function unfill() {
@@ -4608,13 +4611,14 @@ function render_twostocks_waffle(layer, rendering_params) {
       layer_to_add = rendering_params.new_name;
 
   var nbVar = fields.length;
-  var ref_colors = get_colors(nbVar);
+  var ref_colors = void 0;
 
   var layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
 
   if (!rendering_params.result_data) {
+    ref_colors = get_colors(nbVar);
     result_data[layer_to_add] = [];
     var ref_layer_selection = map.select('#' + _app.layer_to_id.get(layer)).selectAll('path');
     var centroids = getCentroids(ref_layer_selection._groups[0]);
@@ -4639,7 +4643,8 @@ function render_twostocks_waffle(layer, rendering_params) {
       result_data[layer_to_add].push(r);
     });
   } else {
-    result_data[layer_to_add] = [].concat(result_data);
+    ref_colors = rendering_params.ref_colors;
+    result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
   }
 
   var nb_features = result_data[layer_to_add].length;
@@ -4705,7 +4710,7 @@ function render_twostocks_waffle(layer, rendering_params) {
     ref_layer_name: layer,
     draggable: false
   };
-  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'twostocks'], 'result');
+  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'waffle'], 'result');
   return;
 }
 
@@ -11612,7 +11617,7 @@ function createStyleBoxGraticule(layer_name) {
 }
 
 function redraw_legend(type_legend, layer_name, field) {
-  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined,
+  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined,
       _ref2 = _slicedToArray(_ref, 2),
       selector = _ref2[0],
       func = _ref2[1];
@@ -11636,6 +11641,9 @@ function redraw_legend(type_legend, layer_name, field) {
 
       lgd.remove();
       func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+    } else if (type_legend === 'waffle') {
+      lgd.remove();
+      func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
     } else {
       lgd.remove();
       func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
@@ -12398,7 +12406,7 @@ function createStyleBoxWaffle(layer_name) {
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (confirmed) {
-
+      redraw_legend('waffle', layer_name, fields);
       // Change the layer name if requested :
       if (new_layer_name !== layer_name) {
         change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
@@ -12414,7 +12422,7 @@ function createStyleBoxWaffle(layer_name) {
   var container = document.querySelector('.twbs > .styleBox');
   var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
 
-  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field.join(' ,') }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
+  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: fields.join(' ,') }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
 
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem').attr('id', 'fill_color_section');
 
@@ -12451,7 +12459,6 @@ function createStyleBoxWaffle(layer_name) {
   var size_section = popup.append('p').attr('class', 'line_elem').attr('id', 'size_section').style('clear', 'both');;
 
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
-  size_section.append('span').attr('id', 'size_section_txt').style('float', 'right').html(previous_params.size + ' px');
   size_section.insert('input').attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     var val = +this.value;
     var nCol = current_layers[layer_name].nCol;
@@ -12473,11 +12480,11 @@ function createStyleBoxWaffle(layer_name) {
     });
     size_section.select('#size_section_txt').html(this.value + ' px');
   });
+  size_section.append('span').attr('id', 'size_section_txt').style('float', 'right').html(previous_params.size + ' px');
 
   var width_row_section = popup.append('p').attr('class', 'line_elem').attr('id', 'width_row_section');
 
   width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
-  width_row_section.append('span').attr('id', 'width_row_text').style('float', 'right').html(previous_params.nCol);
   width_row_section.insert('input').attrs({ type: 'range', min: 1, max: 10, step: 1, value: previous_params.nCol }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     var val = +this.value;
     var size = current_layers[layer_name].size;
@@ -12496,6 +12503,7 @@ function createStyleBoxWaffle(layer_name) {
     });
     width_row_section.select('#width_row_text').html(this.value);
   });
+  width_row_section.append('span').attr('id', 'width_row_text').style('float', 'right').html(previous_params.nCol);
 
   var new_layer_name = layer_name;
   var new_name_section = make_change_layer_name_section(popup, layer_name);
@@ -14764,6 +14772,8 @@ function createLegend(layer, title) {
     el2 = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
   } else if (renderer.indexOf('PropSymbols') != -1) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf('TwoStocksWaffle') != -1) {
+    el = createLegend_waffle(layer, field, title);
   } else {
     swal('Oops..', i18next.t('No legend available for this representation') + '.<br>' + i18next.t('Want to make a <a href="/">suggestion</a> ?'), 'warning');
     return;
@@ -14957,6 +14967,66 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }
   });
 };
+
+function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, note_bottom) {
+  var space_elem = 18;
+  var boxheight = 18;
+  var boxwidth = 18;
+  var boxgap = 12;
+  var xpos = 30;
+  var ypos = 30;
+  var y_pos2 = ypos + space_elem;
+  var tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+  var nbVar = fields.length;
+  var ref_colors = current_layers[layer].fill_color;
+  var last_size = void 0;
+  var last_pos = void 0;
+
+  var legend_root = map.insert('g').attrs({
+    id: 'legend_root_waffle',
+    class: tmp_class_name,
+    transform: 'translate(0,0)',
+    layer_name: layer
+  }).styles({
+    cursor: 'grab',
+    font: '11 px "Enriqueta",arial,serif'
+  });
+
+  var rect_under_legend = legend_root.insert('rect');
+
+  legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).style('font', 'bold 12px "Enriqueta", arial, serif').text(title || '');
+
+  legend_root.insert('text').attrs({ 'id': 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).style('font', 'italic 12px "Enriqueta", arial, serif').text(subtitle);
+
+  var fields_colors = [];
+  for (var i = 0; i < nbVar; i++) {
+    fields_colors.push([fields[i], ref_colors[i]]);
+  }
+
+  var legend_elems = legend_root.selectAll('.legend').append('g').data(fields_colors).enter().insert('g').attr('class', function (d, i) {
+    return 'lg legend_' + i;
+  });
+
+  legend_elems.append('rect').attr('x', xpos + boxwidth).attr('y', function (d, i) {
+    last_pos = y_pos2 + i * boxgap + i * boxheight;
+    return last_pos;
+  }).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
+    return { fill: d[1], stroke: d[1] };
+  });
+
+  legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
+    return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
+  }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+    return d[0];
+  });
+
+  legend_root.call(drag_legend_func(legend_root));
+
+  legend_root.append('g').insert('text').attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos + 2 * space_elem }).text(note_bottom != null ? note_bottom : '');
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
+}
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
   var space_elem = 18,
@@ -15179,6 +15249,9 @@ function createLegend_symbol(layer, field, title, subtitle) {
   var t = current_layers[layer].size_legend_symbol;
   var ref_symbols_params = [{ size: propSize.scale(t[0].value) * z_scale, value: t[0].value }, { size: propSize.scale(t[1].value) * z_scale, value: t[1].value }, { size: propSize.scale(t[2].value) * z_scale, value: t[2].value }, { size: propSize.scale(t[3].value) * z_scale, value: t[3].value }];
   if (ref_symbols_params[3].value == 0) {
+    ref_symbols_params.pop();
+  }
+  if (ref_symbols_params[2].value == 0) {
     ref_symbols_params.pop();
   }
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
@@ -15610,7 +15683,7 @@ function display_box_value_symbol(layer_name) {
   });
   box_body.append('div').styles({ clear: 'both', 'text-align': 'center' }).append('p').styles({ 'text-align': 'center' }).insert('span').attrs({ class: 'button_st3' }).html(i18next.t('app_page.legend_symbol_values_box.reset')).on('click', function () {
     current_layers[layer_name].size_legend_symbol = undefined;
-    redraw_sample_legend();
+    redraw_sample_legend(original_values);
   });
   val1.node().value = values_to_use[0].value;
   val2.node().value = values_to_use[1].value;
@@ -15724,8 +15797,8 @@ function createlegendEditBox(legend_id, layer_name) {
   }
 
   if (legend_id == 'legend_root_symbol') {
-    var choice_break_value_section1 = box_body.insert('p');
-    choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
+    var choice_break_value_section1 = box_body.insert('p').styles({ 'text-align': 'center', 'margin-top': '25px !important' });
+    choice_break_value_section1.append('span').attr('class', 'button_disc').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
       container.modal.hide();
       display_box_value_symbol(layer_name).then(function (confirmed) {
         container.modal.show();
@@ -16335,6 +16408,18 @@ function get_map_template() {
       }
       layer_style_i.data_labels = _features2;
       layer_style_i.current_position = current_position;
+    } else if (current_layer_prop.renderer === 'TwoStocksWaffle') {
+      var _type_symbol2 = current_layer_prop.symbol;
+      selection = map.select('#' + layer_id).selectAll(_type_symbol2);
+      layer_style_i.symbol = _type_symbol2;
+      layer_style_i.rendered_field = current_layer_prop.rendered_field;
+      layer_style_i.renderer = current_layer_prop.renderer;
+      layer_style_i.size = current_layer_prop.size;
+      layer_style_i.fill_color = current_layer_prop.fill_color;
+      layer_style_i.ratio = current_layer_prop.ratio;
+      layer_style_i.nCol = current_layer_prop.nCol;
+      layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
+      layer_style_i.result_data = JSON.stringify(result_data[layer_name]);
     } else {
       selection = map.select('#' + layer_id).selectAll('path');
     }
@@ -16904,6 +16989,19 @@ function apply_user_preferences(json_pref) {
         };
         // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
         render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
+        layer_id = _app.layer_to_id.get(layer_name);
+      } else if (_layer.renderer && _layer.renderer === 'TwoStocksWaffle') {
+        console.log(_layer);
+        render_twostocks_waffle(undefined, {
+          nCol: _layer.nCol,
+          ratio: _layer.ratio,
+          symbol_type: _layer.symbol,
+          new_name: layer_name,
+          size: _layer.size,
+          ref_colors: _layer.fill_color,
+          fields: _layer.rendered_field,
+          result_data: _layer.result_data
+        });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         var symbols_map = new Map(_layer.symbols_map);
