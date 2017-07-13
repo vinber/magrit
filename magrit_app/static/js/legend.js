@@ -1267,8 +1267,8 @@ function createlegendEditBox(legend_id, layer_name) {
           }
         });
       });
-  } else if ((current_layers[layer_name].renderer != 'Categorical' && current_layers[layer_name].renderer != 'TypoSymbols')
-      && !(current_layers[layer_name].renderer == 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
+  } else if ((current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols')
+      && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)

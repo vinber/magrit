@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.d54609b87206.json'
+      loadPath: 'static/locales/{{lng}}/translation.1c499c90918f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -15267,7 +15267,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   var last_pos = y_pos2;
 
-  if (nested == 'false') {
+  if (nested === 'false') {
     if (symbol_type === 'circle') {
       legend_elems.append('circle').styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 }).attrs(function (d, i) {
         last_pos = i * boxgap + d.size + last_pos + last_size;
@@ -15312,7 +15312,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
     }
-  } else if (nested == 'true') {
+  } else if (nested === 'true') {
     if (symbol_type === 'circle') {
       legend_elems.append('circle').attrs(function (d) {
         return {
@@ -15807,7 +15807,7 @@ function createlegendEditBox(legend_id, layer_name) {
         }
       });
     });
-  } else if (current_layers[layer_name].renderer != 'Categorical' && current_layers[layer_name].renderer != 'TypoSymbols' && !(current_layers[layer_name].renderer == 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
+  } else if (current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols' && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
