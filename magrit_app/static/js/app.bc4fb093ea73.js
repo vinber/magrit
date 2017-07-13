@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.474b5ea2bfbc.json'
+      loadPath: 'static/locales/{{lng}}/translation.bc4fb093ea73.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -18375,7 +18375,7 @@ var boxExplore2 = {
       } else if (new_width > 560) {
         box.querySelector('.modal-dialog').style.width = new_width + 80 + 'px';
       }
-
+      box.style.left = new_width > window.innerWidth * 0.85 ? '5px' : +box.style.left.replace('px', '') / 2 + 'px';
       if (new_height > 350 || new_height > window.innerHeight * 0.80) {
         box.querySelector('.modal-body').style.height = new_height + 175 + 'px';
         box.querySelector('.modal-body').style.overflow = 'auto';
