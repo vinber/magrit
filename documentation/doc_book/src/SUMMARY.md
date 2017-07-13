@@ -17,6 +17,7 @@
 	- [Carte de discontinuités](./carto/discont_fr.md)
 	- [Carte de liens](./carto/links_fr.md)
 	- [Carte qualitative (pictogrammes)](./carto/typosymbol_fr.md)
+	- [Carte en gaufre](./carto/waffle_fr.md)
 - [Discrétisation des données](./discretisation_fr.md)
 - [Habillage de la carte](./layout_fr.md)
 - [Export des données](./export_fr.md)

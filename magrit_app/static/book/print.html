@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li><li><a href="./carto/waffle_fr.html"><strong>3.12.</strong> Carte en gaufre</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -586,6 +586,29 @@ Ainsi, les premières lignes d'une table décrivant des liens entre pays europé
 <p style="text-align: center;">
 <img src="img/typo_picto.png" alt="picto_map" style="width: 480px;"/>
 </p>
+<h1>Carte en gaufre (<em>waffle map</em>)</h1>
+<p>Cette méthode permet de représenter plusieurs stocks comparables pour chacune des entités.</p>
+<blockquote>
+<h3>Paramètres</h3>
+<ul>
+<li>Nom des champs à utiliser (variables de stocks dans la même unités)</li>
+<li>Forme du symbole (cercle ou carré)</li>
+<li>Nombre de symboles par ligne</li>
+<li>Ratio (valeur d'un symbole, dans l'unité des variables utilisées)</li>
+<li>Taille du symbole (rayon du cercle ou taille d'un coté du carré, en pixel)</li>
+</ul>
+</blockquote>
+<h4>Exemple :</h4>
+<p style="text-align: center;">
+<img src="img/waffle.png" alt="waffle_map" style="width: 480px;"/>
+</p>
+<ul>
+<li>Champs utilisé : <strong>HOMMES, FEMMES</strong></li>
+<li>Symbole : <strong>cercle</strong></li>
+<li>Nombre de symboles par ligne : <strong>5</strong></li>
+<li>Ratio : <strong>100</strong></li>
+<li>Taille du symbole : <strong>5px</strong></li>
+</ul>
 <h1>Discrétisation</h1>
 <p>Plusieurs méthodes sont proposées afin de transformer une série continue de valeurs en une série discrète, c'est à dire en un nombre fini de classes. Le nombre de classes ainsi que les valeurs limites de ces classes doivent être justifiées sémantiquement et/ou statistiquement.</p>
 <p>Les méthodes proposées par l'outil peuvent être utilisées telles quelles ou bien comme des guides de lecture et d'analyse préalables à la saisie manuelle des limites de classes souhaitées.</p>

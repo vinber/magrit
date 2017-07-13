@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html" class="active"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li><li><a href="./carto/waffle_fr.html"><strong>3.12.</strong> Carte en gaufre</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li><li><a href="./carto/waffle_fr.html" class="active"><strong>3.12.</strong> Carte en gaufre</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -67,39 +67,41 @@
                 </div>
 
                 <div id="content" class="content">
-                    <h1>Carte de stocks</h1>
-<p>Ces cartes permettent de représenter des <strong>données de stocks</strong> (ou quantitatives absolues) par des <strong>figurés proportionnels</strong>. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens.</p>
+                    <h1>Carte en gaufre (<em>waffle map</em>)</h1>
+<p>Cette méthode permet de représenter plusieurs stocks comparables pour chacune des entités.</p>
 <blockquote>
-<h4>Paramètres</h4>
+<h3>Paramètres</h3>
 <ul>
-<li>Le champ contenant les valeurs à utiliser.</li>
-<li>La taille (en pixels) à appliquer sur le valeur définie à la suite.</li>
-<li>Le type de symbole à utiliser (cercle ou carré).</li>
-<li>La couleur des symboles. Il est possible de choisir deux couleurs si un seuil est défini.</li>
+<li>Nom des champs à utiliser (variables de stocks dans la même unités)</li>
+<li>Forme du symbole (cercle ou carré)</li>
+<li>Nombre de symboles par ligne</li>
+<li>Ratio (valeur d'un symbole, dans l'unité des variables utilisées)</li>
+<li>Taille du symbole (rayon du cercle ou taille d'un coté du carré, en pixel)</li>
 </ul>
 </blockquote>
 <h4>Exemple :</h4>
 <p style="text-align: center;">
-<img src="img/propsymbol.png" alt="img_propsymbol_map" style="width: 480px;"/>
+<img src="img/waffle.png" alt="waffle_map" style="width: 480px;"/>
 </p>
 <ul>
-<li>Données : Pays du monde</li>
-<li>Champ utilisé : <strong>jamesbond</strong></li>
-<li>Symbole : <strong>cerle</strong></li>
-<li>Taille fixée à <strong>40px</strong> sur la valeur <strong>22</strong></li>
+<li>Champs utilisé : <strong>HOMMES, FEMMES</strong></li>
+<li>Symbole : <strong>cercle</strong></li>
+<li>Nombre de symboles par ligne : <strong>5</strong></li>
+<li>Ratio : <strong>100</strong></li>
+<li>Taille du symbole : <strong>5px</strong></li>
 </ul>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./carto_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./carto/typosymbol_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./carto/choro_fr.html" class="mobile-nav-chapters next">
+                    <a href="./discretisation_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -107,13 +109,13 @@
             </div>
 
             
-                <a href="./carto_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
+                <a href="./carto/typosymbol_fr.html" class="nav-chapters previous" title="You can navigate through the chapters using the arrow keys">
                     <i class="fa fa-angle-left"></i>
                 </a>
             
 
             
-                <a href="./carto/choro_fr.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                <a href="./discretisation_fr.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
                     <i class="fa fa-angle-right"></i>
                 </a>
             
