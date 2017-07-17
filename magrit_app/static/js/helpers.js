@@ -47,7 +47,10 @@ const drag_elem_geo2 = d3.drag()
     d3.event.sourceEvent.stopPropagation();
     d3.event.sourceEvent.preventDefault();
     handle_click_hand('lock');
+    const zoom = svg_map.__zoom;
     let centroid = path.centroid(this.__data__.geometry);
+    centroid[0] = centroid[0] * zoom.k + zoom.x ;
+    centroid[1] = centroid[1] * zoom.k + zoom.y ;
     map.append('rect')
       .attrs({ x: centroid[0] - 2, y: centroid[1] - 2, height: 4, width: 4, id: 'ref_symbol_location' })
       .style('fill', 'red');
