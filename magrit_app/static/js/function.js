@@ -590,6 +590,8 @@ function render_twostocks_waffle(layer, rendering_params) {
   const floor = Math.floor;
   const { ratio, symbol_type, nCol, fields, new_name: layer_to_add } = rendering_params;
   const nbVar = fields.length;
+  const colors = [];
+  const sums = [];
   let ref_colors;
 
   const layer_id = encodeId(layer_to_add);
@@ -603,27 +605,32 @@ function render_twostocks_waffle(layer, rendering_params) {
     const centroids = getCentroids(ref_layer_selection._groups[0]);
 
     ref_layer_selection.each((d, i) => {
-      let sum = 0;
-      let c = [];
-      let color;
       let r = { id: d.id, centroid: centroids[i] };
       for(let j = 0; j < nbVar; j++) {
         const field = fields[j];
         r[field] = +user_data[layer][i][field];
-        const val = +user_data[layer][i][field] / ratio;
-        sum += val;
-        color = ref_colors[j];
-        for (let ix=0; ix < val; ix++) {
-          c.push(color);
-        }
       }
-      r.colors = c;
-      r.sum = sum;
       result_data[layer_to_add].push(r);
     });
   } else {
     ref_colors = rendering_params.ref_colors;
     result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
+  }
+
+  for (let i = 0, _length = result_data[layer_to_add].length; i < _length; i++) {
+    let sum = 0;
+    let c = [];
+    let color;
+    for (let j = 0; j < nbVar; j++) {
+      const val = result_data[layer_to_add][i][fields[j]] / ratio;
+      sum += val;
+      color = ref_colors[j];
+      for (let ix = 0; ix < val; ix++) {
+        c.push(color);
+      }
+    }
+    colors.push(c);
+    sums.push(sum);
   }
 
   const nb_features = result_data[layer_to_add].length;
@@ -636,8 +643,8 @@ function render_twostocks_waffle(layer, rendering_params) {
     for (let j = 0; j < result_data[layer_to_add].length; j++) {
       let centroid = result_data[layer_to_add][j].centroid;
       let group = new_layer.append('g');
-      let sum = result_data[layer_to_add][j].sum;
-      let _colors = result_data[layer_to_add][j].colors;
+      let sum = sums[j];
+      let _colors = colors[j];
       for (let i = 0; i < sum; i++) {
         let t_x = round((i % nCol) * 2 * r);
         let t_y = floor(floor(i / nCol) * 2 * r);
@@ -660,8 +667,8 @@ function render_twostocks_waffle(layer, rendering_params) {
     for (let j = 0; j < result_data[layer_to_add].length; j++) {
       let centroid = result_data[layer_to_add][j].centroid;
       let group = new_layer.append('g');
-      let sum = result_data[layer_to_add][j].sum;
-      let _colors = result_data[layer_to_add][j].colors;
+      let sum = sums[j];
+      let _colors = colors[j];
       for (let i = 0; i < sum; i++) {
         let t_x = round((i % nCol) * width) + (offset * round(i % nCol));
         let t_y = floor(floor(i / nCol) * width) + (offset * floor(i / nCol));
