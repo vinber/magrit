@@ -47,7 +47,7 @@
         </script>
 
         <div id="sidebar" class="sidebar">
-            <ul class="chapter"><li><a href="./import_fr.html" class="active"><strong>1.</strong> Import des données</a></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li><li><a href="./carto/waffle_fr.html"><strong>3.12.</strong> Carte en gaufre</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
+            <ul class="chapter"><li><a href="./import_fr.html" class="active"><strong>1.</strong> Import des données</a></li><li><ul class="section"><li><a href="./import/import_layer_fr.html"><strong>1.1.</strong> Import du fond de carte</a></li><li><a href="./import/import_table_fr.html"><strong>1.2.</strong> Import d'un tableau de données</a></li><li><a href="./import/jointure_fr.html"><strong>1.3.</strong> Jointure des données</a></li><li><a href="./import/datatype_fr.html"><strong>1.4.</strong> Typage des données</a></li><li><a href="./import/adding_fields_fr.html"><strong>1.5.</strong> Enrichissement de la table de données</a></li></ul></li><li><a href="./projections_fr.html"><strong>2.</strong> Choix d'une projection</a></li><li><ul class="section"><li><a href="./projection_list_fr.html"><strong>2.1.</strong> Liste de projections nationales</a></li></ul></li><li><a href="./carto_fr.html"><strong>3.</strong> Choix de la représentation</a></li><li><ul class="section"><li><a href="./carto/propsmbol_fr.html"><strong>3.1.</strong> Carte de stocks</a></li><li><a href="./carto/choro_fr.html"><strong>3.2.</strong> Carte de ratios</a></li><li><a href="./carto/typo_fr.html"><strong>3.3.</strong> Carte qualitative</a></li><li><a href="./carto/propsmbolchoro_fr.html"><strong>3.4.</strong> Carte de stocks et ratios</a></li><li><a href="./carto/propsmboltypo_fr.html"><strong>3.5.</strong> Carte de stocks et qualitative</a></li><li><a href="./carto/grid_fr.html"><strong>3.6.</strong> Carroyage</a></li><li><a href="./carto/cartogram_fr.html"><strong>3.7.</strong> Cartogramme</a></li><li><a href="./carto/smooth_fr.html"><strong>3.8.</strong> Carte lissée</a></li><li><a href="./carto/discont_fr.html"><strong>3.9.</strong> Carte de discontinuités</a></li><li><a href="./carto/links_fr.html"><strong>3.10.</strong> Carte de liens</a></li><li><a href="./carto/typosymbol_fr.html"><strong>3.11.</strong> Carte qualitative (pictogrammes)</a></li><li><a href="./carto/waffle_fr.html"><strong>3.12.</strong> Carte en gaufre</a></li></ul></li><li><a href="./discretisation_fr.html"><strong>4.</strong> Discrétisation des données</a></li><li><a href="./layout_fr.html"><strong>5.</strong> Habillage de la carte</a></li><li><a href="./export_fr.html"><strong>6.</strong> Export des données</a></li><li><a href="./datasets_fr.html"><strong>7.</strong> Jeux de données</a></li><li><ul class="section"><li><a href="./dataset_source_fr.html"><strong>7.1.</strong> Source des jeux de données d'exemple</a></li></ul></li><li><a href="./privacy.html"><strong>8.</strong> Respect de la vie privée</a></li><li class="spacer"></li><li class="affix"><a href="misc/contributors.html">Contributeurs</a></li></ul>
         </div>
 
         <div id="page-wrapper" class="page-wrapper">
@@ -73,96 +73,6 @@ De larges possibilités sont offertes à l'utilisateur concernant l'ajout de ces
 <p style="text-align: center;">
 <img src="img/win_imp_fr.png" alt="Dialogue d'import"/>
 </p>
-<h2>Import du fond de carte</h2>
-<p>L'import du fond de carte principal peut se faire de différentes manières :</p>
-<ul>
-<li>Par un clic sur le bouton <em>Ajout d'un fond de carte</em>.</li>
-<li>Par un glisser-déposer dans la zone de la carte.</li>
-</ul>
-<p>Plusieurs formats sont supportés:</p>
-<ul>
-<li><code>Shapefile</code></li>
-<li><code>GeoJSON</code></li>
-<li><code>TopoJSON</code></li>
-<li><code>kml</code></li>
-<li><code>gml</code></li>
-<li><code>csv</code> (contenant des colonnes x/y)</li>
-</ul>
-<blockquote>
-<p><strong>Note:</strong>
-La plupart des formats permettent de spécifier un système de coordonnées de référence; cette indication est ici obligatoire pour ouvrir correctement le fichier (présence du fichier <code>.prj</code> pour le format ShapeFile par exemple)
-Si aucun système de coordonnées de référence n'est spécifié, l'application considère qu'il s'agit de coordonnées géographiques.
-Les spécifications des formats <a href="http://www.gdal.org/drv_kml.html">KML</a> et <a href="https://tools.ietf.org/html/rfc7946#section-4">GeoJSON</a> imposent l'utilisation de coordonées géographiques (<em>EPSG:4326 / urn:ogc:def:crs:OGC::CRS84</em> )</p>
-</blockquote>
-<h2>Import d'un tableau de données</h2>
-<p>L'ajout d'un tableau de données peut être effectué de plusieurs manières :</p>
-<ul>
-<li>Par un clic sur le bouton <em>Ajout d'un jeu de données</em></li>
-<li>Par un glisser-déposer du fichier dans le menu d'import des données</li>
-</ul>
-<p>Plusieurs format sont pris en charge pour l'import des données :</p>
-<ul>
-<li><code>csv</code> (champs séparés par une virgule ou par un point virgule)</li>
-<li><code>tsv</code> (champs séparés par une tabulation)</li>
-<li><code>xls</code>, <code>xlsx</code> et <code>ods</code> (à condition que la feuille à utiliser soit la première du document et contienne seulement la table de données).</li>
-</ul>
-<h2>Jointure des données</h2>
-<p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
-Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant les colonnes d'identifiants dans le jeu de données et dans le fond de carte.</p>
-<p style="text-align: center;">
-<img src="img/win_jnt_fr.png" alt="Dialogue de jointure"/>
-</p>
-<blockquote>
-<p><img src="img/joinfalse.png" alt="joinfalse" style="width: 35px;"/> Apparence de l'élément avant jointure<br />
-<img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
-</blockquote>
-<h2>Typage des données</h2>
-<p>A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.</p>
-<p>5 types de données sont possibles :</p>
-<ul>
-<li><em>Identifiant</em> (champs notamment utilisés pour joindre les données)</li>
-<li><em>Stock</em></li>
-<li><em>Ratio</em></li>
-<li><em>Catégorie</em></li>
-<li><em>Inconnu</em> (champs non cartographiables)</li>
-</ul>
-<h3>Stock</h3>
-<p>Les variables quantitatives de stock expriment des quantités concrètes et leur somme ont un sens (nombre de chômeurs, population totale, par exemple).
-La représentation de ce type de phénomènes doit respecter l’expression de ces quantités et les différences de proportionnalité entre les différents éléments qui en découlent.
-Exemples : Population totale en milliers d'habitants, Superficie en hectares.</p>
-<h3>Ratios</h3>
-<p>Les variables quantitatives de taux, ou ratios, expriment un rapport entre deux quantités dont la somme n’a pas de signification. Par extension, on peut y associer les indicateurs composites numériques associant plusieurs indicateurs (indices…).
-Exemples : PIB par habitant, Indicateur de développement humain.</p>
-<h3>Catégories</h3>
-<p>Les modalités des caractères qualitatifs ne sont pas mesurables, ce sont des noms, des sigles ou des codes. On ne peut sommer des modalités qualitatives, on ne peut en calculer la moyenne.
-Exemples : Noms des départements, Type d'occupation du sol.</p>
-<h3>Identifiant</h3>
-<p>Ce champ contient des valeurs permettant d'identifier de manière unique chacune des entités de la couche de données.<br />
-Ces sont ces champs qui sont utilisés pour effectuer une jointure de données.<br />
-Les valeurs de ces champs sont également transférées aux entitées correspondantes dans les représentations qui le permettent (symboles proportionnels, cartogrammes, cartes choroplèthes, cartes qualitatives par à-plat de couleurs ou par utilisation de pictogrammes).
-Exemple: Code INSEE de la commune, Code ISO2 d'un pays.</p>
-<p style="text-align: center;">
-<img src="img/win_typ_fr.png" alt="Dialogue de typage des données"/>
-</p>
-<h2>Affichage et enrichissement des tables de données</h2>
-<p>L'affichage des tableaux de données correspondant à chacune des couches ajoutées (ou obtenues en résultat d'un type de représentation) est possible via le gestionnaire de couche et le bouton représentant une table de données.</p>
-<p style="text-align: center;">
-<img src="img/win_tab_fr.png" alt="Voir la table"/>
-</p>
-<p>Il est également possible d'enrichir la table de données par l'ajout de nouveaux champs. Les valeurs d'un nouveau champ ne peuvent pas être saisies manuellement mais seulement créées à partir de valeurs existantes.
-La mise en situation suivante décrit la création successive de deux champs en utilisant des données de superficie et de population.</p>
-<blockquote>
-<p>Dans l'onglet &quot;Gestion des couches&quot; j'ouvre la table attributaire et je clique sur &quot;ajout d'un champ&quot;:
-<br> <p style="text-align:center;"><img src="img/new_field1.png" style="width:250px"/> <img src="img/new_field2.png" style="width:400px"/></p>
-La fenêtre qui s'ouvre permet de saisir le nom du nouveau champ puis d'indiquer le type d'opération à réaliser (sur champ de type numérique ou non numérique).
-<br> <p style="text-align:center;"><img src="img/new_field3.png" style="width: "/></p>
-Pour convertir des hectares en kilomètres carrés il nous faut diviser les valeurs de superficie par 100. Il existe une option &quot;valeur constante&quot; disponible au terme de la liste des noms de champs contenus dans la table :
-<br> <p style="text-align:center;"><img src="img/new_field4.png" style="width:200px"/> <img src="img/new_field5.png" style="width:200px"/></p>
-Une nouvelle colonne a bien été ajoutée à la table attributaire :
-<br> <p style="text-align:center;"><img src="img/new_field6.png" /></p>
-Nous pouvons ensuite calculer la densité de population en km² en créant un nouveau champ :
-<br> <p style="text-align:center;"><img src="img/new_field7.png" />  <img src="img/new_field8.png"/></p></p>
-</blockquote>
 
                 </div>
 
@@ -170,7 +80,7 @@ Nous pouvons ensuite calculer la densité de population en km² en créant un no
                 
 
                 
-                    <a href="./projections_fr.html" class="mobile-nav-chapters next">
+                    <a href="./import/import_layer_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -180,7 +90,7 @@ Nous pouvons ensuite calculer la densité de population en km² en créant un no
             
 
             
-                <a href="./projections_fr.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
+                <a href="./import/import_layer_fr.html" class="nav-chapters next" title="You can navigate through the chapters using the arrow keys">
                     <i class="fa fa-angle-right"></i>
                 </a>
             

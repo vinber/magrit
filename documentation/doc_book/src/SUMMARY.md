@@ -3,6 +3,11 @@
 # Magrit 0.0.0-unreleased
 
 - [Import des données](./import_fr.md)
+	- [Import du fond de carte](./import/import_layer_fr.md)
+	- [Import d'un tableau de données](./import/import_table_fr.md)
+	- [Jointure des données](./import/jointure_fr.md))
+	- [Typage des données](./import/datatype_fr.md)
+	- [Enrichissement de la table de données](./import/adding_fields_fr.md)
 - [Choix d'une projection](./projections_fr.md)
 	- [Liste de projections nationales](./projection_list_fr.md)
 - [Choix de la représentation](./carto_fr.md)
