@@ -6,7 +6,9 @@ Changes
 
 - Fix error on jointure.
 
-- Fix location of red square when moving proportionnal symbols
+- Fix location of red square when moving proportionnal symbols.
+
+- Fix legend size on links and discontinuities when zooming.
 
 
 0.3.6 (2017-06-30)

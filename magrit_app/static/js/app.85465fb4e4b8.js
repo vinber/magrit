@@ -297,7 +297,7 @@ function setUpInterface(reload_project) {
 
   dv1.append('p').attr('id', 'join_section').styles({ 'text-align': 'center', 'margin-top': '2px' }).html('');
 
-  dv1.append('p').styles({ 'text-align': 'center', margin: '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
+  dv1.append('p').styles({ 'text-align': 'center', 'margin': '5px' }).insert('button').attrs({ 'id': 'btn_type_fields', 'class': 'i18n',
     'data-i18n': '[html]app_page.box_type_fields.title',
     'disabled': true }).styles({ cursor: 'pointer',
     'border-radius': '4px',
@@ -905,7 +905,7 @@ function change_lang() {
 }
 
 function make_ico_choice() {
-  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png', 'two_stocks.png'];
+  var list_fun_ico = ['prop.png', 'choro.png', 'typo.png', 'choroprop.png', 'proptypo.png', 'grid.png', 'cartogram.png', 'smooth.png', 'discont.png', 'typosymbol.png', 'flow.png'];
 
   var function_panel = section2_pre.append('div').attr('id', 'list_ico_func');
 
@@ -913,13 +913,9 @@ function make_ico_choice() {
     var ico_name = list_fun_ico[i],
         func_name = ico_name.split('.')[0],
         func_desc = get_menu_option(func_name).desc,
-        margin_value = '5px 16px';
-    // margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
-    function_panel.insert('img').styles({ margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none' }).attrs({
-      class: 'i18n',
-      'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
-      src: ['static/img/func_icons2/', ico_name].join(''),
-      id: 'button_' + func_name }).on('click', function () {
+        margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
+    function_panel.insert('img').styles({ margin: margin_value, cursor: 'pointer', width: '50px', 'float': 'left', 'list-style': 'none' }).attrs({ class: 'i18n', 'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
+      src: ['static/img/func_icons2/', ico_name].join(''), id: 'button_' + func_name }).on('click', function () {
       var fill_menu = true;
       // Do some clean-up related to the previously displayed options :
       if (window.fields_handler) {
@@ -932,6 +928,7 @@ function make_ico_choice() {
       }
 
       document.getElementById('accordion2b').style.display = '';
+
       // Get the function to fill the menu with the appropriate options (and do it):
       _app.current_functionnality = get_menu_option(func_name);
       var make_menu = window[_app.current_functionnality.menu_factory];
@@ -944,7 +941,7 @@ function make_ico_choice() {
       selec_title.style.display = '';
 
       // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
-      if (this.style.filter !== 'grayscale(100%)') {
+      if (this.style.filter == 'grayscale(100%)') {} else {
         this.classList.add('active');
         // Highlight the icon of the selected functionnality :
         this.style.filter = 'invert(100%) saturate(200%)';
@@ -1025,7 +1022,7 @@ var button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_butt
     button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
     button_type = new Map([['Point', '<img src="static/img/type_geom/dot.png" class="ico_type" width="17" height="17" alt="Point"/>'], ['Line', '<img src="static/img/type_geom/line.png" class="ico_type" width="17" height="17" alt="Line"/>'], ['Polygon', '<img src="static/img/type_geom/poly.png" class="ico_type" width="17" height="17" alt="Polygon"/>']]);
 
-var button_result_type = new Map([['flow', '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ['symbol', '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ['grid', '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ['propchoro', '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ['typo', '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ['discont', '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ['cartogram', '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ['label', '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ['choro', '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ['smooth', '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>'], ['waffle', '<img src="static/img/type_geom/layer_waffle.png" class="ico_type" width="17" height="17" alt="waffle"/>']]);
+var button_result_type = new Map([['flow', '<img src="static/img/type_geom/layer_flow.png" class="ico_type" width="17" height="17" alt="flow"/>'], ['symbol', '<img src="static/img/type_geom/layer_symbol.png" class="ico_type" width="17" height="17" alt="symbol"/>'], ['grid', '<img src="static/img/type_geom/layer_grid.png" class="ico_type" width="17" height="17" alt="grid"/>'], ['propchoro', '<img src="static/img/type_geom/layer_propchoro.png" class="ico_type" width="17" height="17" alt="propchoro"/>'], ['typo', '<img src="static/img/type_geom/layer_typo.png" class="ico_type" width="17" height="17" alt="typo"/>'], ['discont', '<img src="static/img/type_geom/layer_disc.png" class="ico_type" width="17" height="17" alt="discont"/>'], ['cartogram', '<img src="static/img/type_geom/layer_cartogram.png" class="ico_type" width="17" height="17" alt="cartogram"/>'], ['label', '<img src="static/img/type_geom/layer_label.png" class="ico_type" width="17" height="17" alt="label"/>'], ['choro', '<img src="static/img/type_geom/layer_choro.png" class="ico_type" width="17" height="17" alt="choro"/>'], ['smooth', '<img src="static/img/type_geom/layer_smooth.png" class="ico_type" width="17" height="17" alt="smooth"/>'], ['prop', '<img src="static/img/type_geom/layer_prop.png" class="ico_type" width="17" height="17" alt="prop"/>']]);
 
 var eye_open0 = '<img src="static/img/b/eye_open.png" class="active_button" id="eye_open"  width="17" height="17" alt="Visible"/>';
 
@@ -1095,7 +1092,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.474b5ea2bfbc.json'
+      loadPath: 'static/locales/{{lng}}/translation.85465fb4e4b8.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4181,11 +4178,6 @@ var get_menu_option = function () {
       'name': 'typosymbol',
       'menu_factory': 'fillMenu_TypoSymbol',
       'fields_handler': 'fields_TypoSymbol'
-    },
-    'two_stocks': {
-      'name': 'two_stocks',
-      'menu_factory': 'fillMenu_TwoStocks',
-      'fields_handler': 'fields_TwoStocks'
     }
   };
   return function (func) {
@@ -4504,263 +4496,16 @@ function fetch_min_max_table_value(parent_id) {
   return { mins: mins.sort(comp_fun), maxs: maxs.sort(comp_fun), sizes: sizes.sort(comp_fun) };
 }
 
-function fillMenu_TwoStocks(layer) {
-  // square size / circle radius
-  // width row
-  // sybmol : square / circle
-
-  var dv2 = make_template_functionnality(section2);
-
-  var f1 = dv2.append('p').attr('class', 'params_section2');
-  f1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.fields' }).html(i18next.t('app_page.func_options.twostocks.fields'));
-  f1.insert('select').attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 2 });
-
-  // const f2 = dv2.append('p').attr('class', 'params_section2');
-  // f2.append('span')
-  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.field2' })
-  //   .html(i18next.t('app_page.func_options.twostocks.field2'));
-  // f2.insert('select')
-  //   .attrs({ class: 'params', id: 'TwoStocks_field2' });
-
-  // const a = dv2.append('p').attr('class', 'params_section2');
-  // a.append('span')
-  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.type' })
-  //   .html(i18next.t('app_page.func_options.twostocks.type'));
-  // const type_select = a.insert('select')
-  //   .attrs({ class: 'params', id: 'TwoStocks_type' });
-
-
-  // Options for waffles :
-  var b = dv2.append('p').attr('class', 'params_section2');
-  b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.symbol_choice' }).html(i18next.t('app_page.func_options.twostocks.symbol_choice'));
-  var symbol_select = b.insert('select').attrs({ class: 'params', id: 'TwoStocks_waffle_symbol' });
-
-  var c = dv2.append('p').attr('class', 'params_section2');
-  c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_size_circle', id: 'TwoStocks_waffle_size_txt' }).html(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
-  c.insert('input').attrs({
-    id: 'TwoStocks_waffle_size',
-    type: 'number',
-    class: 'params',
-    min: 1,
-    max: 20,
-    step: 1,
-    value: 3
-  }).style('width', '50px');
-  c.append('span').html(' (px)');
-
-  var d = dv2.append('p').attr('class', 'params_section2');
-  d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_width_rows' }).html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
-  d.insert('input').attrs({
-    id: 'TwoStocks_waffle_WidthRow',
-    class: 'params',
-    type: 'number',
-    min: 2,
-    max: 8,
-    value: 2,
-    step: 1
-  }).style('width', '50px');
-
-  var e = dv2.append('p').attr('class', 'params_section2');
-  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio' }).html(i18next.t('app_page.func_options.twostocks.waffle_ratio'));
-  e.insert('input').attrs({
-    id: 'TwoStocks_waffle_ratio',
-    class: 'params',
-    type: 'number',
-    min: 1,
-    max: 1000000,
-    value: 100,
-    step: 1
-  }).style('width', '50px');
-  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio_units' }).html(i18next.t('app_page.func_options.twostocks.waffle_ratio_units'));
-
-  make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
-  make_ok_button(dv2, 'twoStocks_yes');
-  dv2.selectAll('.params').attr('disabled', true);
-}
-
-var fields_TwoStocks = {
-  fill: function fill(layer) {
-    if (!layer) return;
-    section2.selectAll('.params').attr('disabled', null);
-    var fields_stock = getFieldsType('stock', layer);
-    var symbol_choice = section2.select('#TwoStocks_waffle_symbol');
-    var fields_list = section2.select('#TwoStocks_fields');
-    var ok_button = section2.select('#twoStocks_yes');
-    var ratio_select = section2.select('#TwoStocks_waffle_ratio');
-    [['app_page.func_options.common.symbol_circle', 'circle'], ['app_page.func_options.common.symbol_square', 'rect']].forEach(function (symb) {
-      symbol_choice.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': '[text]' + symb[0] });
-    });
-    fields_stock.forEach(function (f) {
-      fields_list.append('option').text(f).attr('value', f);
-    });
-    fields_list.node().parentElement.style.marginBottom = fields_stock.length * 12 + 5 + 'px';
-    fields_list.attr('size', fields_stock.length);
-    symbol_choice.on('change', function () {
-      if (this.value === 'circle') {
-        section2.select('#TwoStocks_waffle_size_txt').attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_circle').text(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
-      } else {
-        section2.select('#TwoStocks_waffle_size_txt').attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_square').text(i18next.t('app_page.func_options.twostocks.waffle_size_square'));
-      }
-    });
-
-    ok_button.on('click', function () {
-      var rendering_params = {};
-      var new_layer_name = section2.select('#TwoStocks_output_name').node().value;
-      new_layer_name = check_layer_name(new_layer_name.length > 0 ? new_layer_name : layer + '_Waffle');
-      rendering_params.ratio = +document.getElementById('TwoStocks_waffle_ratio').value;
-      rendering_params.fields = Array.prototype.slice.call(fields_list.node().selectedOptions).map(function (elem) {
-        return elem.value;
-      });
-      rendering_params.new_name = new_layer_name;
-      rendering_params.symbol_type = symbol_choice.node().value;
-      rendering_params.size = +document.getElementById('TwoStocks_waffle_size').value;
-      rendering_params.nCol = +document.getElementById('TwoStocks_waffle_WidthRow').value;
-      render_twostocks_waffle(layer, rendering_params);
-      zoom_without_redraw();
-      switch_accordion_section();
-      handle_legend(new_layer_name);
-    });
-  },
-  unfill: function unfill() {
-    unfillSelectInput(document.getElementById('TwoStocks_waffle_symbol'));
-    unfillSelectInput(document.getElementById('TwoStocks_fields'));
-    unfillSelectInput(document.getElementById('TwoStocks_waffle_ratio'));
-    document.getElementById('TwoStocks_fields').size = 2;
-    document.getElementById('TwoStocks_fields').parentElement.style.marginBottom = '25px';
-    section2.selectAll('.params').attr('disabled', true);
-  }
-};
-
-function render_twostocks_waffle(layer, rendering_params) {
-  var get_colors = function get_colors(nb) {
-    var res = [];
-    for (var i = 0; i < nb; i++) {
-      res.push(randomColor());
-    }
-    return res;
-  };
-  var round = Math.round;
-  var floor = Math.floor;
-  var ratio = rendering_params.ratio,
-      symbol_type = rendering_params.symbol_type,
-      nCol = rendering_params.nCol,
-      fields = rendering_params.fields,
-      layer_to_add = rendering_params.new_name;
-
-  var nbVar = fields.length;
-  var ref_colors = void 0;
-
-  var layer_id = encodeId(layer_to_add);
-  _app.layer_to_id.set(layer_to_add, layer_id);
-  _app.id_to_layer.set(layer_id, layer_to_add);
-
-  if (!rendering_params.result_data) {
-    ref_colors = get_colors(nbVar);
-    result_data[layer_to_add] = [];
-    var ref_layer_selection = map.select('#' + _app.layer_to_id.get(layer)).selectAll('path');
-    var centroids = getCentroids(ref_layer_selection._groups[0]);
-
-    ref_layer_selection.each(function (d, i) {
-      var sum = 0;
-      var c = [];
-      var color = void 0;
-      var r = { id: d.id, centroid: centroids[i] };
-      for (var j = 0; j < nbVar; j++) {
-        var field = fields[j];
-        r[field] = +user_data[layer][i][field];
-        var val = +user_data[layer][i][field] / ratio;
-        sum += val;
-        color = ref_colors[j];
-        for (var ix = 0; ix < val; ix++) {
-          c.push(color);
-        }
-      }
-      r.colors = c;
-      r.sum = sum;
-      result_data[layer_to_add].push(r);
-    });
-  } else {
-    ref_colors = rendering_params.ref_colors;
-    result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
-  }
-
-  var nb_features = result_data[layer_to_add].length;
-  var new_layer = map.insert('g', '.legend').attr('id', layer_id).attr('class', 'layer');
-
-  if (symbol_type === 'circle') {
-    var r = rendering_params.size;
-    for (var j = 0; j < result_data[layer_to_add].length; j++) {
-      var centroid = result_data[layer_to_add][j].centroid;
-      var group = new_layer.append('g');
-      var sum = result_data[layer_to_add][j].sum;
-      var _colors = result_data[layer_to_add][j].colors;
-      for (var i = 0; i < sum; i++) {
-        var t_x = round(i % nCol * 2 * r);
-        var t_y = floor(floor(i / nCol) * 2 * r);
-        group.append('circle').attrs({
-          transform: 'translate(-' + t_x + ', -' + t_y + ')',
-          cx: centroid[0],
-          cy: centroid[1],
-          r: r,
-          id: ['waffle_', i, ' feature_', result_data[layer_to_add][j].id].join(''),
-          fill: _colors[i]
-        });
-      }
-      group.node().__data__ = result_data[layer_to_add][j];
-    }
-  } else if (symbol_type === 'rect') {
-    var width = rendering_params.size;
-    var offset = width / 5;
-    for (var _j = 0; _j < result_data[layer_to_add].length; _j++) {
-      var _centroid = result_data[layer_to_add][_j].centroid;
-      var _group = new_layer.append('g');
-      var _sum = result_data[layer_to_add][_j].sum;
-      var _colors2 = result_data[layer_to_add][_j].colors;
-      for (var _i3 = 0; _i3 < _sum; _i3++) {
-        var _t_x = round(_i3 % nCol * width) + offset * round(_i3 % nCol);
-        var _t_y = floor(floor(_i3 / nCol) * width) + offset * floor(_i3 / nCol);
-        _group.append('rect').attrs({
-          transform: 'translate(-' + _t_x + ', -' + _t_y + ')',
-          x: _centroid[0],
-          y: _centroid[1],
-          width: width,
-          height: width,
-          id: ['waffle_', _i3, ' feature_', result_data[layer_to_add][_j].id].join(''),
-          fill: _colors2[_i3]
-        });
-      }
-      _group.node().__data__ = result_data[layer_to_add][_j];
-    }
-  }
-
-  current_layers[layer_to_add] = {
-    fill_color: ref_colors,
-    n_features: nb_features,
-    renderer: 'TwoStocksWaffle',
-    symbol: symbol_type,
-    rendered_field: fields,
-    size: rendering_params.size,
-    ratio: ratio,
-    nCol: nCol,
-    'stroke-width-const': 0,
-    is_result: true,
-    ref_layer_name: layer,
-    draggable: false
-  };
-  create_li_layer_elem(layer_to_add, nb_features, ['Point', 'waffle'], 'result');
-  return;
-}
-
 function fillMenu_PropSymbolChoro(layer) {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2');
   a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' }).html(i18next.t('app_page.func_options.choroprop.field1'));
-  a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
+  var field1_selec = a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
 
   var b = dv2.append('p').attr('class', 'params_section2');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' }).html(i18next.t('app_page.func_options.choroprop.fixed_size'));
-  b.insert('input').attrs({
+  var ref_size = b.insert('input').attrs({
     id: 'PropSymbolChoro_ref_size',
     type: 'number',
     class: 'params',
@@ -4772,17 +4517,17 @@ function fillMenu_PropSymbolChoro(layer) {
 
   var c = dv2.append('p').attr('class', 'params_section2');
   c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' }).html(i18next.t('app_page.func_options.choroprop.on_value'));
-  c.insert('input').styles({ width: '100px', 'margin-left': '10px' }).attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' }).attrs({ min: 0.1, step: 0.1 });
+  var ref_value = c.insert('input').styles({ width: '100px', 'margin-left': '10px' }).attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' }).attrs({ min: 0.1, step: 0.1 });
 
   // Other symbols could probably easily be proposed :
   var d = dv2.append('p').attr('class', 'params_section2');
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' }).html(i18next.t('app_page.func_options.choroprop.symbol_type'));
-  d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
+  var symb_selec = d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
   var e = dv2.append('p').attr('class', 'params_section2');
   e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' }).html(i18next.t('app_page.func_options.choroprop.field2'));
 
-  e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
+  var field2_selec = e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
 
   var discr_section = dv2.insert('p').style('margin', 'auto');
   discr_section.insert('span').attr('id', 'container_sparkline_propsymbolchoro').styles({ margin: '16px 50px 0px 4px', float: 'right' });
@@ -5041,16 +4786,12 @@ var fields_PropSymbolChoro = {
           opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length)),
           conf_disc_box = void 0;
 
-      if (self.rendering_params[selected_field]) {
-        conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
-          colors: self.rendering_params[selected_field].colors,
-          no_data: self.rendering_params[selected_field].no_data,
-          type: self.rendering_params[selected_field].type,
-          breaks: self.rendering_params[selected_field].breaks,
-          extra_options: self.rendering_params[selected_field].extra_options });
-      } else {
-        conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
-      }
+      if (self.rendering_params[selected_field]) conf_disc_box = display_discretization(layer, selected_field, self.rendering_params[selected_field].nb_class, { schema: self.rendering_params[selected_field].schema,
+        colors: self.rendering_params[selected_field].colors,
+        no_data: self.rendering_params[selected_field].no_data,
+        type: self.rendering_params[selected_field].type,
+        breaks: self.rendering_params[selected_field].breaks,
+        extra_options: self.rendering_params[selected_field].extra_options });else conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
 
       conf_disc_box.then(function (confirmed) {
         if (confirmed) {
@@ -5287,8 +5028,7 @@ var fields_Typo = {
 
     for (var i = nb_fields - 1; i > -1; --i) {
       field_selec.removeChild(field_selec.children[i]);
-    }
-    section2.selectAll('.params').attr('disabled', true);
+    }section2.selectAll('.params').attr('disabled', true);
   },
   rendering_params: {}
 };
@@ -5427,7 +5167,7 @@ var fields_Choropleth = {
       };
       choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
       ok_button.attr('disabled', null);
-      mg_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_quantiles.on('click', function () {
@@ -5880,10 +5620,10 @@ var fields_Anamorphose = {
         var ref = d_val[0][1] / d_val[0][2];
         d_val[0].push(1);
 
-        for (var _i4 = 0; _i4 < nb_ft; ++_i4) {
-          var _val = d_val[_i4][1] / d_val[_i4][2];
+        for (var _i3 = 0; _i3 < nb_ft; ++_i3) {
+          var _val = d_val[_i3][1] / d_val[_i3][2];
           var scale = sqrt(_val / ref);
-          d_val[_i4].push(scale);
+          d_val[_i3].push(scale);
         }
         d_val.sort(function (a, b) {
           return a[0] - b[0];
@@ -5921,8 +5661,8 @@ var fields_Anamorphose = {
         if (!current_layers[layer].original_fields.has(field_name)) {
           var table = user_data[layer],
               to_send = var_to_send[field_name];
-          for (var _i5 = 0, i_len = table.length; _i5 < i_len; ++_i5) {
-            to_send.push(+table[_i5][field_name]);
+          for (var _i4 = 0, i_len = table.length; _i4 < i_len; ++_i4) {
+            to_send.push(+table[_i4][field_name]);
           }
         }
         _formToSend.append('json', JSON.stringify({
@@ -6456,8 +6196,8 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
       cats.push({ name: k, display_name: k, nb_elem: v[0], color: randomColor() });
     });
     col_map = new Map();
-    for (var _i6 = 0; _i6 < cats.length; _i6++) {
-      col_map.set(cats[_i6].name, [cats[_i6].color, cats[_i6].name, cats[_i6].nb_elem]);
+    for (var _i5 = 0; _i5 < cats.length; _i5++) {
+      col_map.set(cats[_i5].name, [cats[_i5].color, cats[_i5].name, cats[_i5].nb_elem]);
     }
   } else {
     col_map.forEach(function (v, k) {
@@ -7516,8 +7256,8 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
       var val = +fij_values[i];
       links_byId.push([i, val, sizes[serie.getClass(val)]]);
     }
-    for (var _i7 = 0; _i7 < nb_class; ++_i7) {
-      current_layers[new_layer_name].breaks.push([[user_breaks[_i7], user_breaks[_i7 + 1]], sizes[_i7]]);
+    for (var _i6 = 0; _i6 < nb_class; ++_i6) {
+      current_layers[new_layer_name].breaks.push([[user_breaks[_i6], user_breaks[_i6 + 1]], sizes[_i6]]);
     }
     layer_to_render.style('fill-opacity', 0).style('stroke-opacity', 0.8).style('stroke-width', function (d, i) {
       return links_byId[i][2];
@@ -7775,7 +7515,10 @@ var drag_elem_geo2 = d3.drag().filter(function () {
   d3.event.sourceEvent.stopPropagation();
   d3.event.sourceEvent.preventDefault();
   handle_click_hand('lock');
+  var zoom = svg_map.__zoom;
   var centroid = path.centroid(this.__data__.geometry);
+  centroid[0] = centroid[0] * zoom.k + zoom.x;
+  centroid[1] = centroid[1] * zoom.k + zoom.y;
   map.append('rect').attrs({ x: centroid[0] - 2, y: centroid[1] - 2, height: 4, width: 4, id: 'ref_symbol_location' }).style('fill', 'red');
 }).on('end', function () {
   if (d3.event.subject && !d3.event.subject.map_locked) {
@@ -11213,8 +10956,6 @@ function handle_click_layer(layer_name) {
     createStyleBoxLabel(layer_name);
   } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'TypoSymbols') {
     createStyleBoxTypoSymbols(layer_name);
-  } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'TwoStocksWaffle') {
-    createStyleBoxWaffle(layer_name);
   } else {
     createStyleBox(layer_name);
   }
@@ -11654,7 +11395,7 @@ function createStyleBoxGraticule(layer_name) {
 }
 
 function redraw_legend(type_legend, layer_name, field) {
-  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined,
+  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : undefined,
       _ref2 = _slicedToArray(_ref, 2),
       selector = _ref2[0],
       func = _ref2[1];
@@ -11678,9 +11419,6 @@ function redraw_legend(type_legend, layer_name, field) {
 
       lgd.remove();
       func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
-    } else if (type_legend === 'waffle') {
-      lgd.remove();
-      func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
     } else {
       lgd.remove();
       func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
@@ -12421,132 +12159,6 @@ function get_fields_name(layer_name) {
   } else {
     return Object.getOwnPropertyNames(elem.__data__.properties);
   }
-}
-
-function createStyleBoxWaffle(layer_name) {
-  check_remove_existing_box('.styleBox');
-  var round = Math.round;
-  var floor = Math.floor;
-  var layer_id = _app.layer_to_id.get(layer_name),
-      g_lyr_name = '#' + layer_id,
-      ref_layer_name = current_layers[layer_name].ref_layer_name,
-      symbol = current_layers[layer_name].symbol,
-      fields = current_layers[layer_name].rendered_field,
-      selection = map.select(g_lyr_name);
-
-  var previous_params = {
-    fill_opacity: selection.style('fill-opacity'),
-    ref_colors: [].concat(current_layers[layer_name].fill_color),
-    size: current_layers[layer_name].size,
-    nCol: current_layers[layer_name].nCol
-  };
-
-  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
-    if (confirmed) {
-      redraw_legend('waffle', layer_name, fields);
-      // Change the layer name if requested :
-      if (new_layer_name !== layer_name) {
-        change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
-      }
-    } else {
-      current_layers[layer_name].fill_color = previous_params.ref_colors;
-      current_layers[layer_name].size = previous_params.size;
-      selection.style('fill-opacity', previous_params.fill_opacity);
-    }
-    zoom_without_redraw();
-  });
-
-  var container = document.querySelector('.twbs > .styleBox');
-  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
-
-  popup.append('p').styles({ 'text-align': 'center', color: 'grey' }).html([i18next.t('app_page.layer_style_popup.rendered_field', { field: fields.join(' ,') }), i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name })].join(''));
-
-  var fill_opacity_section = popup.append('p').attr('class', 'line_elem').attr('id', 'fill_color_section');
-
-  fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
-  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: previous_params.fill_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
-    selection.style('fill-opacity', +this.value);
-    fill_opacity_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
-  });
-
-  fill_opacity_section.append('span').attr('id', 'fill_opacity_txt').style('float', 'right').html(+previous_params.fill_opacity * 100 + '%');
-
-  var ref_colors_section = popup.append('div').attr('id', 'ref_colors_section').style('clear', 'both');
-  ref_colors_section.append('p').html(i18next.t('app_page.layer_style_popup.ref_colors'));
-
-  var _loop = function _loop(i) {
-    var p = ref_colors_section.append('p').style('margin', '15px 5px');
-    p.append('span').html(current_layers[layer_name].rendered_field[i]);
-    p.insert('input').attr('type', 'color').attr('id', i).attr('value', current_layers[layer_name].fill_color[i]).style('float', 'right').on('change', function () {
-      var col = rgb2hex(this.value);
-      var to_replace = current_layers[layer_name].fill_color[i];
-      current_layers[layer_name].fill_color[i] = col;
-      selection.selectAll(symbol).each(function (d, i) {
-        if (rgb2hex(this.getAttribute('fill')) === to_replace) {
-          this.setAttribute('fill', col);
-        }
-      });
-    });
-  };
-
-  for (var i = 0; i < current_layers[layer_name].fill_color.length; i++) {
-    _loop(i);
-  }
-
-  var size_section = popup.append('p').attr('class', 'line_elem').attr('id', 'size_section').style('clear', 'both');;
-
-  size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
-  size_section.insert('input').attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
-    var val = +this.value;
-    var nCol = current_layers[layer_name].nCol;
-    current_layers[layer_name].size = val;
-    selection.selectAll('g').selectAll(symbol).each(function (d, i) {
-      if (symbol == 'circle') {
-        var t_x = round(i % nCol * 2 * val);
-        var t_y = floor(floor(i / nCol) * 2 * val);
-        this.setAttribute('r', val);
-        this.setAttribute('transform', 'translate(-' + t_x + ', -' + t_y + ')');
-      } else {
-        var offset = val / 5;
-        var _t_x = round(i % nCol * val) + offset * round(i % nCol);
-        var _t_y = floor(floor(i / nCol) * val) + offset * floor(i / nCol);
-        this.setAttribute('width', val);
-        this.setAttribute('height', val);
-        this.setAttribute('transform', 'translate(-' + _t_x + ', -' + _t_y + ')');
-      }
-    });
-    size_section.select('#size_section_txt').html(this.value + ' px');
-  });
-  size_section.append('span').attr('id', 'size_section_txt').style('float', 'right').html(previous_params.size + ' px');
-
-  var width_row_section = popup.append('p').attr('class', 'line_elem').attr('id', 'width_row_section');
-
-  width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
-  width_row_section.insert('input').attrs({ type: 'range', min: 1, max: 10, step: 1, value: previous_params.nCol }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
-    var val = +this.value;
-    var size = current_layers[layer_name].size;
-    current_layers[layer_name].nCol = val;
-    selection.selectAll('g').selectAll(symbol).each(function (d, i) {
-      if (symbol === 'circle') {
-        var t_x = round(i % val * 2 * size);
-        var t_y = floor(floor(i / val) * 2 * size);
-        this.setAttribute('transform', 'translate(-' + t_x + ', -' + t_y + ')');
-      } else {
-        var offset = size / 5;
-        var _t_x2 = round(i % val * size) + offset * round(i % val);
-        var _t_y2 = floor(floor(i / val) * size) + offset * floor(i / val);
-        this.setAttribute('transform', 'translate(-' + _t_x2 + ', -' + _t_y2 + ')');
-      }
-    });
-    width_row_section.select('#width_row_text').html(this.value);
-  });
-  width_row_section.append('span').attr('id', 'width_row_text').style('float', 'right').html(previous_params.nCol);
-
-  var new_layer_name = layer_name;
-  var new_name_section = make_change_layer_name_section(popup, layer_name);
-  new_name_section.on('change', function () {
-    new_layer_name = this.value;
-  });
 }
 
 function createStyleBox_ProbSymbol(layer_name) {
@@ -14809,8 +14421,6 @@ function createLegend(layer, title) {
     el2 = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
   } else if (renderer.indexOf('PropSymbols') != -1) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
-  } else if (renderer.indexOf('TwoStocksWaffle') != -1) {
-    el = createLegend_waffle(layer, field, title);
   } else {
     swal('Oops..', i18next.t('No legend available for this representation') + '.<br>' + i18next.t('Want to make a <a href="/">suggestion</a> ?'), 'warning');
     return;
@@ -15004,66 +14614,6 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     }
   });
 };
-
-function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, note_bottom) {
-  var space_elem = 18;
-  var boxheight = 18;
-  var boxwidth = 18;
-  var boxgap = 12;
-  var xpos = 30;
-  var ypos = 30;
-  var y_pos2 = ypos + space_elem;
-  var tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
-  var nbVar = fields.length;
-  var ref_colors = current_layers[layer].fill_color;
-  var last_size = void 0;
-  var last_pos = void 0;
-
-  var legend_root = map.insert('g').attrs({
-    id: 'legend_root_waffle',
-    class: tmp_class_name,
-    transform: 'translate(0,0)',
-    layer_name: layer
-  }).styles({
-    cursor: 'grab',
-    font: '11 px "Enriqueta",arial,serif'
-  });
-
-  var rect_under_legend = legend_root.insert('rect');
-
-  legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).style('font', 'bold 12px "Enriqueta", arial, serif').text(title || '');
-
-  legend_root.insert('text').attrs({ 'id': 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).style('font', 'italic 12px "Enriqueta", arial, serif').text(subtitle);
-
-  var fields_colors = [];
-  for (var i = 0; i < nbVar; i++) {
-    fields_colors.push([fields[i], ref_colors[i]]);
-  }
-
-  var legend_elems = legend_root.selectAll('.legend').append('g').data(fields_colors).enter().insert('g').attr('class', function (d, i) {
-    return 'lg legend_' + i;
-  });
-
-  legend_elems.append('rect').attr('x', xpos + boxwidth).attr('y', function (d, i) {
-    last_pos = y_pos2 + i * boxgap + i * boxheight;
-    return last_pos;
-  }).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
-    return { fill: d[1], stroke: d[1] };
-  });
-
-  legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
-    return y_pos2 + i * boxheight + i * boxgap + boxheight * 2 / 3;
-  }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-    return d[0];
-  });
-
-  legend_root.call(drag_legend_func(legend_root));
-
-  legend_root.append('g').insert('text').attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos + 2 * space_elem }).text(note_bottom != null ? note_bottom : '');
-  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-  make_legend_context_menu(legend_root, layer);
-  return legend_root;
-}
 
 function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
   var space_elem = 18,
@@ -15288,9 +14838,6 @@ function createLegend_symbol(layer, field, title, subtitle) {
   if (ref_symbols_params[3].value == 0) {
     ref_symbols_params.pop();
   }
-  if (ref_symbols_params[2].value == 0) {
-    ref_symbols_params.pop();
-  }
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
   });
@@ -15304,7 +14851,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   var last_pos = y_pos2;
 
-  if (nested === 'false') {
+  if (nested == 'false') {
     if (symbol_type === 'circle') {
       legend_elems.append('circle').styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 }).attrs(function (d, i) {
         last_pos = i * boxgap + d.size + last_pos + last_size;
@@ -15349,7 +14896,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
     }
-  } else if (nested === 'true') {
+  } else if (nested == 'true') {
     if (symbol_type === 'circle') {
       legend_elems.append('circle').attrs(function (d) {
         return {
@@ -15720,7 +15267,7 @@ function display_box_value_symbol(layer_name) {
   });
   box_body.append('div').styles({ clear: 'both', 'text-align': 'center' }).append('p').styles({ 'text-align': 'center' }).insert('span').attrs({ class: 'button_st3' }).html(i18next.t('app_page.legend_symbol_values_box.reset')).on('click', function () {
     current_layers[layer_name].size_legend_symbol = undefined;
-    redraw_sample_legend(original_values);
+    redraw_sample_legend();
   });
   val1.node().value = values_to_use[0].value;
   val2.node().value = values_to_use[1].value;
@@ -15834,8 +15381,8 @@ function createlegendEditBox(legend_id, layer_name) {
   }
 
   if (legend_id == 'legend_root_symbol') {
-    var choice_break_value_section1 = box_body.insert('p').styles({ 'text-align': 'center', 'margin-top': '25px !important' });
-    choice_break_value_section1.append('span').attr('class', 'button_disc').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
+    var choice_break_value_section1 = box_body.insert('p');
+    choice_break_value_section1.append('span').styles({ cursor: 'pointer' }).html(i18next.t('app_page.legend_style_box.choice_break_symbol')).on('click', function () {
       container.modal.hide();
       display_box_value_symbol(layer_name).then(function (confirmed) {
         container.modal.show();
@@ -15844,7 +15391,7 @@ function createlegendEditBox(legend_id, layer_name) {
         }
       });
     });
-  } else if (current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols' && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
+  } else if (current_layers[layer_name].renderer != 'Categorical' && current_layers[layer_name].renderer != 'TypoSymbols' && !(current_layers[layer_name].renderer == 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
@@ -16445,18 +15992,6 @@ function get_map_template() {
       }
       layer_style_i.data_labels = _features2;
       layer_style_i.current_position = current_position;
-    } else if (current_layer_prop.renderer === 'TwoStocksWaffle') {
-      var _type_symbol2 = current_layer_prop.symbol;
-      selection = map.select('#' + layer_id).selectAll(_type_symbol2);
-      layer_style_i.symbol = _type_symbol2;
-      layer_style_i.rendered_field = current_layer_prop.rendered_field;
-      layer_style_i.renderer = current_layer_prop.renderer;
-      layer_style_i.size = current_layer_prop.size;
-      layer_style_i.fill_color = current_layer_prop.fill_color;
-      layer_style_i.ratio = current_layer_prop.ratio;
-      layer_style_i.nCol = current_layer_prop.nCol;
-      layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-      layer_style_i.result_data = JSON.stringify(result_data[layer_name]);
     } else {
       selection = map.select('#' + layer_id).selectAll('path');
     }
@@ -17026,19 +16561,6 @@ function apply_user_preferences(json_pref) {
         };
         // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
         render_label(null, _rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
-        layer_id = _app.layer_to_id.get(layer_name);
-      } else if (_layer.renderer && _layer.renderer === 'TwoStocksWaffle') {
-        console.log(_layer);
-        render_twostocks_waffle(undefined, {
-          nCol: _layer.nCol,
-          ratio: _layer.ratio,
-          symbol_type: _layer.symbol,
-          new_name: layer_name,
-          size: _layer.size,
-          ref_colors: _layer.fill_color,
-          fields: _layer.rendered_field,
-          result_data: _layer.result_data
-        });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         var symbols_map = new Map(_layer.symbols_map);
