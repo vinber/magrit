@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.3.7 (2017-07-17)
+------------------
+
+- Fix error on jointure.
+
+- Fix location of red square when moving proportionnal symbols
+
+
 0.3.6 (2017-06-30)
 ------------------
 
