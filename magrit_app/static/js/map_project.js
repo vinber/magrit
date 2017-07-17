@@ -944,7 +944,6 @@ function apply_user_preferences(json_pref) {
         render_label(null, rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer === 'TwoStocksWaffle') {
-        console.log(_layer);
          render_twostocks_waffle(undefined, {
            nCol: _layer.nCol,
            ratio: _layer.ratio,
@@ -956,6 +955,9 @@ function apply_user_preferences(json_pref) {
            result_data: _layer.result_data,
          });
          layer_id = _app.layer_to_id.get(layer_name);
+         map.select(`#${layer_id}`)
+          .selectAll(_layer.symbol)
+          .style('fill-opacity', _layer.fill_opacity);
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         const symbols_map = new Map(_layer.symbols_map);
         const new_layer_data = {

@@ -96,18 +96,18 @@ function add_field_table(table, layer_name, parent) {
         }
       }
       return Promise.resolve(true);
-    }
-    if (operation == 'truncate') {
+    } else if (operation == 'truncate') {
       opt_val = +opt_val;
       if (opt_val >= 0) {
         for (let i = 0; i < table.length; i++) { table[i][new_name_field] = table[i][fi1].substring(0, opt_val); }
       } else {
         for (let i = 0; i < table.length; i++) { table[i][new_name_field] = table[i][fi1].substr(opt_val); }
       }
+      return Promise.resolve(true);
     } else if (operation == 'concatenate') {
       for (let i = 0; i < table.length; i++) { table[i][new_name_field] = [table[i][fi1], table[i][fi2]].join(opt_val); }
+      return Promise.resolve(true);
     }
-    return Promise.resolve(true);
 
     return Promise.reject('Unknown error');
   }

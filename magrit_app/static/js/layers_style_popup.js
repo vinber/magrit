@@ -1446,7 +1446,7 @@ function createStyleBoxWaffle(layer_name) {
     selection = map.select(g_lyr_name);
 
   let previous_params = {
-    fill_opacity: selection.style('fill-opacity'),
+    fill_opacity: selection.selectAll(symbol).style('fill-opacity'),
     ref_colors: [].concat(current_layers[layer_name].fill_color),
     size: current_layers[layer_name].size,
     nCol: current_layers[layer_name].nCol,
@@ -1464,7 +1464,7 @@ function createStyleBoxWaffle(layer_name) {
       } else {
         current_layers[layer_name].fill_color = previous_params.ref_colors;
         current_layers[layer_name].size = previous_params.size;
-        selection.style('fill-opacity', previous_params.fill_opacity);
+        selection.selectAll(symbol).style('fill-opacity', previous_params.fill_opacity);
       }
       zoom_without_redraw();
     });
@@ -1489,7 +1489,7 @@ function createStyleBoxWaffle(layer_name) {
      .attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: previous_params.fill_opacity })
      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
      .on('change', function () {
-         selection.style('fill-opacity', +this.value);
+         selection.selectAll(symbol).style('fill-opacity', +this.value);
          fill_opacity_section.select('#fill_opacity_txt').html((+this.value * 100) + '%');
      });
 
@@ -1515,15 +1515,13 @@ function createStyleBoxWaffle(layer_name) {
         let col = rgb2hex(this.value);
         let to_replace = current_layers[layer_name].fill_color[i];
         current_layers[layer_name].fill_color[i] = col;
-        selection.selectAll(symbol)
-          .each(function (d, i) {
-            if (rgb2hex(this.getAttribute('fill')) === to_replace) {
-              this.setAttribute('fill', col);
-            }
-          })
-       });
+        selection.selectAll(symbol).each(function (d, i) {
+          if (rgb2hex(this.getAttribute('fill')) === to_replace) {
+            this.setAttribute('fill', col);
+          }
+        })
+     });
    }
-
 
   let size_section = popup.append('p')
     .attr('class', 'line_elem')

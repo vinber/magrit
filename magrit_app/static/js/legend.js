@@ -82,7 +82,7 @@ function createLegend(layer, title) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field)
                                : createLegend_symbol(layer, field, title, field);
   } else if (renderer.indexOf('TwoStocksWaffle') != -1) {
-    el = createLegend_waffle(layer, field, title)
+    el = createLegend_waffle(layer, field, title, '');
   } else {
     swal('Oops..',
          `${i18next.t('No legend available for this representation')}.<br>${
@@ -294,6 +294,8 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
   const tmp_class_name = ['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer)}`].join(' ');
   const nbVar = fields.length;
   const ref_colors = current_layers[layer].fill_color;
+  const symbol = current_layers[layer].symbol;
+  const size_symbol = current_layers[layer].size;
   let last_size;
   let last_pos;
 
@@ -306,7 +308,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
     })
     .styles({
       cursor: 'grab',
-      font: '11 px "Enriqueta",arial,serif',
+      font: '11px "Enriqueta", arial, serif'
     });
 
   const rect_under_legend = legend_root.insert('rect');
@@ -351,12 +353,37 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
     .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
     .text(d => d[0]);
 
-  legend_root.call(drag_legend_func(legend_root));
+  let legend_symbol_size = legend_root.append('g');
+  if (symbol === 'rect') {
+    legend_symbol_size
+      .insert('rect')
+      .attrs({ x: xpos + boxwidth, y: last_pos + 2 * space_elem, width: size_symbol, height: size_symbol })
+      .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
+    legend_symbol_size
+      .insert('text')
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 5 })
+      .text(` = ${current_layers[layer].ratio}`);
+    last_pos = last_pos + 3 * space_elem + size_symbol;
+  } else {
+    legend_symbol_size
+      .insert('circle')
+      .attrs({ cx: xpos + boxwidth + size_symbol, cy: last_pos + 2 * space_elem + size_symbol, r: size_symbol })
+      .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
+    legend_symbol_size
+      .insert('text')
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 5 })
+      .text(` = ${current_layers[layer].ratio}`);
+    last_pos = last_pos + 3 * space_elem + size_symbol * 2;
+  }
 
   legend_root.append('g')
     .insert('text')
-    .attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos + 2 * space_elem })
+    .attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos })
+    .style('font', '11px "Enriqueta", arial, serif')
     .text(note_bottom != null ? note_bottom : '');
+
+  legend_root.call(drag_legend_func(legend_root));
+
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
   make_legend_context_menu(legend_root, layer);
   return legend_root;
