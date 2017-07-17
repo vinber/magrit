@@ -659,6 +659,7 @@ function render_twostocks_waffle(layer, rendering_params) {
           });
       }
       group.node().__data__ = result_data[layer_to_add][j];
+      group.call(drag_waffle);
     }
 
   } else if (symbol_type === 'rect') {
@@ -684,6 +685,7 @@ function render_twostocks_waffle(layer, rendering_params) {
           });
       }
       group.node().__data__ = result_data[layer_to_add][j];
+      group.call(drag_waffle);
     }
   }
 

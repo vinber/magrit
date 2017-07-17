@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.8c4219a6d84d.json'
+      loadPath: 'static/locales/{{lng}}/translation.f0498e9c643e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4747,6 +4747,7 @@ function render_twostocks_waffle(layer, rendering_params) {
         });
       }
       group.node().__data__ = result_data[layer_to_add][_j];
+      group.call(drag_waffle);
     }
   } else if (symbol_type === 'rect') {
     var width = rendering_params.size;
@@ -4770,6 +4771,7 @@ function render_twostocks_waffle(layer, rendering_params) {
         });
       }
       _group.node().__data__ = result_data[layer_to_add][_j2];
+      _group.call(drag_waffle);
     }
   }
 
@@ -7831,6 +7833,30 @@ var drag_elem_geo2 = d3.drag().filter(function () {
   } else if (d3.event.subject.symbol === 'circle') {
     d3.select(this).attr('cx', d3.event.x).attr('cy', d3.event.y);
   }
+});
+
+var drag_waffle = d3.drag().subject(function () {
+  var t = d3.select(this);
+  var prev_translate = t.attr('transform');
+  prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
+    return +f;
+  }) : [0, 0];
+  return {
+    x: t.attr('x') + prev_translate[0],
+    y: t.attr('y') + prev_translate[1],
+    map_locked: !!map_div.select('#hand_button').classed('locked')
+  };
+}).on('start', function () {
+  d3.event.sourceEvent.stopPropagation();
+  d3.event.sourceEvent.preventDefault();
+  handle_click_hand('lock');
+}).on('end', function () {
+  if (d3.event.subject && !d3.event.subject.map_locked) {
+    handle_click_hand('unlock');
+  }
+  d3.select(this).style('cursor', 'grab');
+}).on('drag', function () {
+  d3.select(this).attr('transform', 'translate(' + [d3.event.x, d3.event.y] + ')').style('cursor', 'grabbing');
 });
 
 function setSelected(selectNode, value) {
@@ -15048,7 +15074,7 @@ var drag_legend_func = function drag_legend_func(legend_group) {
   });
 };
 
-function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, note_bottom) {
+function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ratio_txt, note_bottom) {
   var space_elem = 18;
   var boxheight = 18;
   var boxwidth = 18;
@@ -15105,11 +15131,11 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
   var legend_symbol_size = legend_root.append('g');
   if (symbol === 'rect') {
     legend_symbol_size.insert('rect').attrs({ x: xpos + boxwidth, y: last_pos + 2 * space_elem, width: size_symbol, height: size_symbol }).styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
-    legend_symbol_size.insert('text').attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 5 }).text(' = ' + current_layers[layer].ratio);
+    legend_symbol_size.insert('text').attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 5, id: 'ratio_txt' }).text(ratio_txt || ' = ' + current_layers[layer].ratio);
     last_pos = last_pos + 3 * space_elem + size_symbol;
   } else {
     legend_symbol_size.insert('circle').attrs({ cx: xpos + boxwidth + size_symbol, cy: last_pos + 2 * space_elem + size_symbol, r: size_symbol }).styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
-    legend_symbol_size.insert('text').attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 5 }).text(' = ' + current_layers[layer].ratio);
+    legend_symbol_size.insert('text').attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 5, id: 'ratio_txt' }).text(ratio_txt || ' = ' + current_layers[layer].ratio);
     last_pos = last_pos + 3 * space_elem + size_symbol * 2;
   }
 
@@ -15797,6 +15823,7 @@ function createlegendEditBox(legend_id, layer_name) {
     subtitle_content = legend_node.querySelector('#legendsubtitle');
     note_content = legend_node.querySelector('#legend_bottom_note');
     no_data_txt = legend_node.querySelector('#no_data_txt');
+    ratio_waffle_txt = legend_node.querySelector('#ratio_txt');
     legend_node_d3 = d3.select(legend_node);
     legend_boxes = legend_node_d3.selectAll(['#', legend_id, ' .lg'].join('')).select('text');
   }
@@ -15810,6 +15837,7 @@ function createlegendEditBox(legend_id, layer_name) {
   var legend_node_d3 = void 0,
       legend_boxes = void 0,
       no_data_txt = void 0,
+      ratio_waffle_txt = void 0,
       rect_fill_value = {},
       original_rect_fill_value = void 0;
 
@@ -15821,7 +15849,8 @@ function createlegendEditBox(legend_id, layer_name) {
     subtitle_content: subtitle_content.textContent,
     y_subtitle: subtitle_content.y.baseVal[0].value,
     note_content: note_content.textContent,
-    no_data_txt: no_data_txt != null ? no_data_txt.textContent : null
+    no_data_txt: no_data_txt != null ? no_data_txt.textContent : null,
+    ratio_waffle_txt: ratio_waffle_txt != null ? ratio_waffle_txt.textContent : null
   }; // , source_content: source_content.textContent ? source_content.textContent : ""
 
   if (legend_node.getAttribute('visible_rect') == 'true') {
@@ -15841,6 +15870,8 @@ function createlegendEditBox(legend_id, layer_name) {
       note_content.textContent = original_params.note_content;
       if (no_data_txt) {
         no_data_txt.textContent = original_params.no_data_txt;
+      } else if (ratio_waffle_txt) {
+        ratio_waffle_txt.textContent = original_params.ratio_waffle_txt;
       }
       rect_fill_value = original_rect_fill_value;
     }
@@ -15887,6 +15918,12 @@ function createlegendEditBox(legend_id, layer_name) {
     d.insert('span').html(i18next.t('app_page.legend_style_box.no_data'));
     d.insert('input').attr('value', no_data_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
       no_data_txt.textContent = this.value;
+    });
+  } else if (ratio_waffle_txt) {
+    var _d = box_body.insert('p');
+    _d.insert('span').html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
+    _d.insert('input').attr('value', ratio_waffle_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+      ratio_waffle_txt.textContent = this.value;
     });
   }
 

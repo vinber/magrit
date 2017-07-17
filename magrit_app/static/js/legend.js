@@ -283,7 +283,7 @@ const drag_legend_func = function (legend_group) {
     });
 };
 
-function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, note_bottom) {
+function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ratio_txt, note_bottom) {
   const space_elem = 18;
   const boxheight = 18;
   const boxwidth = 18;
@@ -361,8 +361,8 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
       .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
     legend_symbol_size
       .insert('text')
-      .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 5 })
-      .text(` = ${current_layers[layer].ratio}`);
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 5, id: 'ratio_txt' })
+      .text(ratio_txt || ` = ${current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol;
   } else {
     legend_symbol_size
@@ -371,8 +371,8 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, no
       .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
     legend_symbol_size
       .insert('text')
-      .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 5 })
-      .text(` = ${current_layers[layer].ratio}`);
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 5, id: 'ratio_txt' })
+      .text(ratio_txt || ` = ${current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol * 2;
   }
 
@@ -1162,6 +1162,7 @@ function createlegendEditBox(legend_id, layer_name) {
     subtitle_content = legend_node.querySelector('#legendsubtitle');
     note_content = legend_node.querySelector('#legend_bottom_note');
     no_data_txt = legend_node.querySelector('#no_data_txt');
+    ratio_waffle_txt = legend_node.querySelector('#ratio_txt');
     legend_node_d3 = d3.select(legend_node);
     legend_boxes = legend_node_d3.selectAll(['#', legend_id, ' .lg'].join('')).select('text');
   }
@@ -1175,6 +1176,7 @@ function createlegendEditBox(legend_id, layer_name) {
   let legend_node_d3,
     legend_boxes,
     no_data_txt,
+    ratio_waffle_txt,
     rect_fill_value = {},
     original_rect_fill_value;
 
@@ -1187,6 +1189,7 @@ function createlegendEditBox(legend_id, layer_name) {
     y_subtitle: subtitle_content.y.baseVal[0].value,
     note_content: note_content.textContent,
     no_data_txt: no_data_txt != null ? no_data_txt.textContent : null,
+    ratio_waffle_txt: ratio_waffle_txt != null ? ratio_waffle_txt.textContent : null,
   }; // , source_content: source_content.textContent ? source_content.textContent : ""
 
   if (legend_node.getAttribute('visible_rect') == 'true') {
@@ -1207,6 +1210,8 @@ function createlegendEditBox(legend_id, layer_name) {
         note_content.textContent = original_params.note_content;
         if (no_data_txt) {
           no_data_txt.textContent = original_params.no_data_txt;
+        } else if (ratio_waffle_txt) {
+          ratio_waffle_txt.textContent = original_params.ratio_waffle_txt;
         }
         rect_fill_value = original_rect_fill_value;
       }
@@ -1274,6 +1279,16 @@ function createlegendEditBox(legend_id, layer_name) {
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .on('keyup', function () {
         no_data_txt.textContent = this.value;
+      });
+  } else if (ratio_waffle_txt) {
+    const d = box_body.insert('p');
+    d.insert('span')
+      .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
+    d.insert('input')
+      .attr('value', ratio_waffle_txt.textContent)
+      .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+      .on('keyup', function () {
+        ratio_waffle_txt.textContent = this.value;
       });
   }
 

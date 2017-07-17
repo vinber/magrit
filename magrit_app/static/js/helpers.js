@@ -69,6 +69,34 @@ const drag_elem_geo2 = d3.drag()
     }
   });
 
+const drag_waffle = d3.drag()
+  .subject(function () {
+    const t = d3.select(this);
+    let prev_translate = t.attr('transform');
+    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+    return {
+      x: t.attr('x') + prev_translate[0],
+      y: t.attr('y') + prev_translate[1],
+      map_locked: !!map_div.select('#hand_button').classed('locked'),
+    };
+  })
+  .on('start', () => {
+    d3.event.sourceEvent.stopPropagation();
+    d3.event.sourceEvent.preventDefault();
+    handle_click_hand('lock');
+  })
+  .on('end', function () {
+    if (d3.event.subject && !d3.event.subject.map_locked) {
+      handle_click_hand('unlock');
+    }
+    d3.select(this).style('cursor', 'grab');
+  })
+  .on('drag', function () {
+    d3.select(this)
+      .attr('transform', `translate(${[d3.event.x, d3.event.y]})`)
+      .style('cursor', 'grabbing');
+  });
+
 function setSelected(selectNode, value) {
   selectNode.value = value;
   selectNode.dispatchEvent(new Event('change'));
