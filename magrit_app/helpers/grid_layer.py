@@ -32,6 +32,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
     gdf = gdf[gdf[field_name].notnull()]
+    gdf = gdf[gdf.geometry.notnull()]
     gdf.index = range(len(gdf))
 
     mask = GeoSeries(

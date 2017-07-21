@@ -28,7 +28,7 @@ cdef class BaseConvert:
             'Point': self.point, 'MultiPoint': self.multi_point,
             'LineString': self.line_string, 'MultiLineString': self.multi_line_string_poly,
             'Polygon': self.multi_line_string_poly, 'MultiPolygon': self.multi_poly,
-            "GeometryCollection": self.geometry_collection
+            "GeometryCollection": self.geometry_collection, None: lambda _: None
             }
 
     cdef list stitch_arcs(self, list arcs):
