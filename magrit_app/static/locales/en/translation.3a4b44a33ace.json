@@ -37,6 +37,8 @@
             "error_invalid_empty": "The layer to load seems to be empty.",
             "warning_multiple_layers": "Layers from TopoJSON have to be provided one by one. Only the first one will be added.",
             "warning_not_adapted_classification": "The choosen classification method doesn't seems to fit the serie distribution.",
+            "warning_empty_geom": "Look out, the layer contains one feature without geometry!",
+            "warning_empty_geom_plural": "Look out, the layer contains {{ count }} features without geometry!",
             "target_layer": "Target layer",
             "result_layer": "Result layer",
             "ext_dataset": "Ext. dataset",
@@ -677,7 +679,7 @@
               "symbol_choice": "Symbol type",
               "waffle_size_circle": "Circle radius",
               "waffle_size_square": "Square size",
-              "waffle_width_rows": "Width rows",
+              "waffle_width_rows": "Number of columns",
               "waffle_ratio": "Ratio",
               "waffle_ratio_units": " units per cell"
             }

@@ -2046,7 +2046,8 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         symbol_type = rendering_params.symbol,
         layer_to_add = rendering_params.new_name,
         zs = d3.zoomTransform(svg_map).k,
-        propSize = new PropSizer(ref_value, ref_size, symbol_type);
+        propSize = new PropSizer(ref_value, ref_size, symbol_type),
+        warn_empty_features = [];
 
     if (!geojson_pt_layer) {
         function make_geojson_pt_layer() {
@@ -2061,7 +2062,9 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
                     properties: {},
                     geometry: { type: 'Point' }
                   };
-            if (ft.geometry.type.indexOf('Multi') < 0) {
+            if (!ft.geometry) {
+              warn_empty_features.push([i, ft]);
+            } else if (ft.geometry.type.indexOf('Multi') < 0) {
               if (f_ix_len) {
                   for(let f_ix=0; f_ix < f_ix_len; f_ix++) {
                       new_obj.properties[fields_id[f_ix]] = ft.properties[fields_id[f_ix]];
@@ -2191,6 +2194,17 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
         current_layers[layer_to_add]['break_val'] = rendering_params.break_val;
     }
     create_li_layer_elem(layer_to_add, nb_features, ['Point', 'prop'], 'result');
+
+    if (warn_empty_features.length > 0) {
+      swal({ title: '',
+        text: i18next.t('app_page.common.warning_empty_geom', {count: warn_empty_features.length}),
+        type: 'warning',
+        showCancelButton: false,
+        allowOutsideClick: false,
+        confirmButtonColor: '#DD6B55',
+        confirmButtonText: i18next.t('app_page.common.valid') + '!'
+      });
+    }
     return;
 }
 
@@ -2955,7 +2969,7 @@ var fields_PropSymbol = {
             ref_value_field.attrs({ max: max_val_field, value: max_val_field });
             if (has_negative(field_values)) {
                 setSelected(nb_color.node(), 2);
-                break_val.attr('value', 0);
+                fill_color_opt.attr('value', 0);
             } else {
                 setSelected(nb_color.node(), 1);
             }

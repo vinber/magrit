@@ -37,6 +37,8 @@
             "error_invalid_empty": "La capa seleccionada no contiene datos.",
             "warning_multiple_layers": "Las capas de tipo TopoJSON deben ser añadidas una por una. Sólo se agregará la primera.",
             "warning_not_adapted_classification": "¡La discretización escogida no parece estar adaptada al modo de distribución!",
+            "warning_empty_geom": "Tenga en cuenta que la capa contiene una entidad sin geometría!",
+            "warning_empty_geom_plural": "Tenga en cuenta que la capa contiene {{ count }} entidades sin geometría!",
             "target_layer": "Capa objetivo",
             "result_layer": "Capa resultante",
             "ext_dataset": "Conjunto de datos externo",
@@ -285,7 +287,8 @@
             "flow": "Relaciones",
             "discont": "Discontinuidades",
             "typo": "Cualitativo",
-            "typosymbol": "Cualitativo con pictogramas"
+            "typosymbol": "Cualitativo con pictogramas",
+            "two_stocks": "Gofres"
         },
         "projection_box": {
             "any": "Sin filtro",
@@ -560,7 +563,9 @@
             "field_label": "Seleccionar campo",
             "graticule_clip": "Usar los límites de la capa de referencia para la cuadrícula",
             "layer_shadow": "Añadir una sombra",
-            "let_draggable": "Permitir símbolos mover"
+            "let_draggable": "Permitir símbolos mover",
+            "ref_colors": "Colores:",
+            "ref_size": "Tamaño del símbolo"
         },
         "lm_buttons":{
             "zoom+": "Acercar",
@@ -670,6 +675,15 @@
                 "on_value": "en el valor... ",
                 "symbol_type": "Tipo de símbolo ",
                 "field2": "Campo para los colores del símbolo"
+            },
+            "twostocks": {
+              "fields": "Campos",
+              "symbol_choice": "Tipo de símbolo",
+              "waffle_size_circle": "Radio del círculo",
+              "waffle_size_square": "Cuadrado de medidas",
+              "waffle_width_rows": "Número de columnas",
+              "waffle_ratio": "Proporción",
+              "waffle_ratio_units": " unidades por cuadrícula"
             }
         }
     },

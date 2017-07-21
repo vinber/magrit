@@ -37,6 +37,8 @@
             "error_invalid_empty": "La couche à charger ne contient pas de données.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
             "warning_not_adapted_classification": "La discrétisation choisie ne semble pas adaptée à la forme de la distribution!",
+            "warning_empty_geom": "Attention, la couche contient une entité sans géométrie !",
+            "warning_empty_geom_plural": "Attention, la couche contient {{ count }} entités sans géometrie !",
             "target_layer": "Couche cible",
             "result_layer": "Couche de résultat",
             "ext_dataset": "Jeu de données externe",
@@ -678,7 +680,7 @@
               "symbol_choice": "Type de symbole",
               "waffle_size_circle": "Rayon du symbole",
               "waffle_size_square": "Taille du symbole",
-              "waffle_width_rows": "Largeur (nombre de symboles)",
+              "waffle_width_rows": "Nombre de colonnes",
               "waffle_ratio": "Ratio",
               "waffle_ratio_units": " unités par carreau"
             }
