@@ -274,7 +274,8 @@
             "flow": "Display sized links between features.",
             "discont": "Display discontinuities between polygons features",
             "typo": "Display a map sorting a field by category",
-            "typosymbol": "Create a (qualitative) map using pictograms"
+            "typosymbol": "Create a (qualitative) map using pictograms",
+            "two_stocks": "Create a waffle map using 2 or more numerical data"
         },
         "func_title" : {
             "smooth": "Smoothed map (Stewart potentials)",

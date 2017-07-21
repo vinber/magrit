@@ -275,7 +275,8 @@
             "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
             "typo": "Réalisation d'une carte qualitative",
-            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes",
+            "two_stocks": "Réalisation d'une carte en gaufre"
         },
         "func_title" : {
             "smooth": "Carte lissée",

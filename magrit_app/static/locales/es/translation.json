@@ -276,7 +276,8 @@
             "flow": "Generar un mapa de relaciones",
             "discont": "Generar un mapa de discontinuidades",
             "typo": "Generar un mapa cualitativo",
-            "typosymbol": "Generar un mapa cualitativo con pictogramas"
+            "typosymbol": "Generar un mapa cualitativo con pictogramas",
+            "two_stocks": "Generar un mapa de gofres"
         },
         "func_title" : {
             "smooth": "Potenciales (modelo de Stewart)",
