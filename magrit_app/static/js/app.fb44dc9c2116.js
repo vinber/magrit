@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.fe487eb51779.json'
+      loadPath: 'static/locales/{{lng}}/translation.fb44dc9c2116.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4614,7 +4614,7 @@ var fields_TwoStocks = {
       if (rendering_params.fields.length < 2) {
         swal({
           title: i18next.t('app_page.common.error') + '!',
-          text: '' + i18next.t('app_page.error_multiple_fields'),
+          text: '' + i18next.t('app_page.common.error_multiple_fields'),
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false
@@ -4630,13 +4630,14 @@ var fields_TwoStocks = {
         })) / rendering_params.ratio;
       };
 
-      for (var i = 0; i < rendering_params.fields; i++) {
+      for (var i = 0; i < rendering_params.fields.length; i++) {
         _loop(i);
       }
-      if (t_max > 100) {
+      console.log(t_max);
+      if (t_max > 900) {
         swal({
           title: i18next.t('app_page.common.error') + '!',
-          text: '' + i18next.t('app_page.error_too_many'),
+          text: '' + i18next.t('app_page.common.error_waffle_too_many'),
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false

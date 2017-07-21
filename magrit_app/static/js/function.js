@@ -535,7 +535,7 @@ const fields_TwoStocks = {
       if (rendering_params.fields.length < 2) {
         swal({
           title: `${i18next.t('app_page.common.error')}!`,
-          text: `${i18next.t('app_page.error_multiple_fields')}`,
+          text: `${i18next.t('app_page.common.error_multiple_fields')}`,
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false
@@ -543,14 +543,15 @@ const fields_TwoStocks = {
         return;
       }
       let t_max = 0;
-      for (let i = 0; i < rendering_params.fields; i++){
+      for (let i = 0; i < rendering_params.fields.length; i++){
         const field = rendering_params.fields[i];
         t_max += max_fast(user_data[layer].map(obj => +obj[field])) / rendering_params.ratio;
       }
-      if (t_max > 100) {
+      console.log(t_max);
+      if (t_max > 900) {
         swal({
           title: `${i18next.t('app_page.common.error')}!`,
-          text: `${i18next.t('app_page.error_too_many')}`,
+          text: `${i18next.t('app_page.common.error_waffle_too_many')}`,
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false
