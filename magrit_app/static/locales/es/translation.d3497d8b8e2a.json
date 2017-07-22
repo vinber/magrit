@@ -276,7 +276,8 @@
             "flow": "Generar un mapa de relaciones",
             "discont": "Generar un mapa de discontinuidades",
             "typo": "Generar un mapa cualitativo",
-            "typosymbol": "Generar un mapa cualitativo con pictogramas"
+            "typosymbol": "Generar un mapa cualitativo con pictogramas",
+            "two_stocks": "Generar un mapa de gofres"
         },
         "func_title" : {
             "smooth": "Potenciales (modelo de Stewart)",
@@ -430,7 +431,8 @@
             "additionnal_notes": "Anotaciones adicionales<br>",
             "under_rectangle": "Enmarcar la leyenda",
             "info_tooltip_line_break": "Para hacer un salto de línea insertar el símbolo <i> \\n </i>",
-            "choice_break_symbol": "Personalizar el valor de los símbolos..."
+            "choice_break_symbol": "Personalizar el valor de los símbolos...",
+            "ratio_waffle_txt": "Texto correspondiente a la proporción"
         },
         "legend_symbol_values_box": {
             "reset": "Valores de reseteado",

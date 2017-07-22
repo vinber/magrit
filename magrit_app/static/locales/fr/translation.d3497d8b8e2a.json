@@ -275,7 +275,8 @@
             "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
             "typo": "Réalisation d'une carte qualitative",
-            "typosymbol": "Carte qualitative avec utilisation de pictogrammes"
+            "typosymbol": "Carte qualitative avec utilisation de pictogrammes",
+            "two_stocks": "Réalisation d'une carte en gaufre"
         },
         "func_title" : {
             "smooth": "Carte lissée",
@@ -429,7 +430,8 @@
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Afficher un rectangle sous la légende",
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>",
-            "choice_break_symbol": "Personnaliser les valeurs des symboles..."
+            "choice_break_symbol": "Personnaliser les valeurs des symboles...",
+            "ratio_waffle_txt": "Texte correspondant au ratio"
         },
         "legend_symbol_values_box": {
             "reset": "Remise à zéro des valeurs",

@@ -45,6 +45,10 @@ function get_map_template() {
       if (no_data) result.no_data_txt = no_data.innerHTML;
     } else if (type_lgd === 'legend_root_symbol') {
       result.nested_symbols = lgd_node.getAttribute('nested');
+    } else if (type_lgd === 'legend_root_waffle') {
+      const lyr_name = lgd_node.getAttribute('layer_name');
+      result.field = current_layers[lyr_name].rendered_field;
+      result.ratio_txt = lgd_node.querySelector('#ratio_txt').innerHTML;
     }
     return result;
   };
@@ -306,9 +310,9 @@ function get_map_template() {
       });
       layer_style_i.color_by_id = color_by_id;
       if (current_layer_prop.renderer !== 'Categorical') {
-          layer_style_i.options_disc = current_layer_prop.options_disc;
+        layer_style_i.options_disc = current_layer_prop.options_disc;
       } else {
-          layer_style_i.color_map = [...current_layer_prop.color_map];
+        layer_style_i.color_map = [...current_layer_prop.color_map];
       }
 
       if (current_layer_prop.renderer === 'Stewart') {
@@ -958,6 +962,9 @@ function apply_user_preferences(json_pref) {
          map.select(`#${layer_id}`)
           .selectAll(_layer.symbol)
           .style('fill-opacity', _layer.fill_opacity);
+        if (_layer.legend) {
+          rehandle_legend(layer_name, _layer.legend);
+        }
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         const symbols_map = new Map(_layer.symbols_map);
         const new_layer_data = {
@@ -1077,9 +1084,11 @@ function rehandle_legend(layer_name, properties) {
     } else if (prop.type === 'legend_root_symbol') {
       createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_class') {
-      createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
+      createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_symbol') {
-      createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note)
+      createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+    } else if (prop.type === 'legend_root_waffle') {
+      createLegend_waffle(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.ratio_txt, prop.bottom_note);
     }
     const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
     lgd.setAttribute('transform', prop.transform);

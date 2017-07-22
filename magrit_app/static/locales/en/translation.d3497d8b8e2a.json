@@ -274,7 +274,8 @@
             "flow": "Display sized links between features.",
             "discont": "Display discontinuities between polygons features",
             "typo": "Display a map sorting a field by category",
-            "typosymbol": "Create a (qualitative) map using pictograms"
+            "typosymbol": "Create a (qualitative) map using pictograms",
+            "two_stocks": "Create a waffle map using 2 or more numerical data"
         },
         "func_title" : {
             "smooth": "Smoothed map (Stewart potentials)",
@@ -429,7 +430,8 @@
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Display a box under the legend",
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>",
-            "choice_break_symbol": "Customize symbols values..."
+            "choice_break_symbol": "Customize symbols values...",
+            "ratio_waffle_txt": "Text corresponding to the ratio"
         },
         "legend_symbol_values_box": {
             "reset": "Reset to default values",

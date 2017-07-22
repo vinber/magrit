@@ -430,7 +430,8 @@
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Display a box under the legend",
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>",
-            "choice_break_symbol": "Customize symbols values..."
+            "choice_break_symbol": "Customize symbols values...",
+            "ratio_waffle_txt": "Text corresponding to the ratio"
         },
         "legend_symbol_values_box": {
             "reset": "Reset to default values",
