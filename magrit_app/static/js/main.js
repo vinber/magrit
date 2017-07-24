@@ -1509,7 +1509,7 @@ function reproj_symbol_layer(){
       map.select('#'+_app.layer_to_id.get(lyr_name))
         .selectAll('path')
         .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
-    } else if (current_layers[lyr_name].renderer = 'TwoStocksWaffle') {
+    } else if (current_layers[lyr_name].renderer === 'TwoStocksWaffle') {
       const selection = svg_map.querySelector(`#${_app.layer_to_id.get(lyr_name)}`).querySelectorAll('g');
       const nbFt = selection.length;
       if (current_layers[lyr_name].symbol === 'circle') {

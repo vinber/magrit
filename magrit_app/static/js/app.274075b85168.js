@@ -1095,7 +1095,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.174af1828550.json'
+      loadPath: 'static/locales/{{lng}}/translation.274075b85168.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1259,7 +1259,7 @@ function reproj_symbol_layer() {
       }
     } else if (current_layers[lyr_name].pointRadius != undefined) {
       map.select('#' + _app.layer_to_id.get(lyr_name)).selectAll('path').attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
-    } else if (current_layers[lyr_name].renderer = 'TwoStocksWaffle') {
+    } else if (current_layers[lyr_name].renderer === 'TwoStocksWaffle') {
       var selection = svg_map.querySelector('#' + _app.layer_to_id.get(lyr_name)).querySelectorAll('g');
       var nbFt = selection.length;
       if (current_layers[lyr_name].symbol === 'circle') {
