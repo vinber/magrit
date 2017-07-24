@@ -70,6 +70,9 @@ const drag_elem_geo2 = d3.drag()
   });
 
 const drag_waffle = d3.drag()
+  .filter(function () {
+    return current_layers[_app.id_to_layer.get(this.parentElement.id)].draggable;
+  })
   .subject(function () {
     const t = d3.select(this);
     let prev_translate = t.attr('transform');

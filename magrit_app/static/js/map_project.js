@@ -19,9 +19,16 @@ function get_map_template() {
         });
       }
     }
-
     return result;
-  }
+  };
+  const getWaffleCurrentPos = (selection) => {
+    const result = [];
+    const nbFt = selection.length;
+    for (let i = 0; i < nbFt; i++) {
+      result.push(selection[i].getAttribute('transform'));
+    }
+    return result;
+  };
   const get_legend_info = function get_legend_info(lgd_node) {
     const type_lgd = lgd_node.id;
     const rect_fill_value = (lgd_node.getAttribute('visible_rect') === 'true')
@@ -384,6 +391,7 @@ function get_map_template() {
       layer_style_i.nCol = current_layer_prop.nCol;
       layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
       layer_style_i.result_data = JSON.stringify(result_data[layer_name]);
+      layer_style_i.current_position = getWaffleCurrentPos(svg_map.querySelectorAll(`#${layer_id} > g`));
     } else {
       selection = map.select(`#${layer_id}`).selectAll('path');
     }
@@ -515,7 +523,12 @@ function apply_user_preferences(json_pref) {
         y: current_position[i].y,
       }));
     }
-  }
+  };
+  const restorePreviousPosWaffle = (layer_id, current_position, type_symbol) => {
+    map.select(`#${layer_id}`)
+      .selectAll('g')
+      .attr('transform', (d, i) => current_position[i]);
+  };
 
   const set_final_param = () => {
     setTimeout(() => {
@@ -948,22 +961,25 @@ function apply_user_preferences(json_pref) {
         render_label(null, rendering_params, { data: _layer.data_labels, current_position: _layer.current_position });
         layer_id = _app.layer_to_id.get(layer_name);
       } else if (_layer.renderer && _layer.renderer === 'TwoStocksWaffle') {
-         render_twostocks_waffle(undefined, {
-           nCol: _layer.nCol,
-           ratio: _layer.ratio,
-           symbol_type: _layer.symbol,
-           new_name: layer_name,
-           size: _layer.size,
-           ref_colors: _layer.fill_color,
-           fields: _layer.rendered_field,
-           result_data: _layer.result_data,
-         });
-         layer_id = _app.layer_to_id.get(layer_name);
-         map.select(`#${layer_id}`)
+        render_twostocks_waffle(undefined, {
+          nCol: _layer.nCol,
+          ratio: _layer.ratio,
+          symbol_type: _layer.symbol,
+          new_name: layer_name,
+          size: _layer.size,
+          ref_colors: _layer.fill_color,
+          fields: _layer.rendered_field,
+          result_data: _layer.result_data,
+        });
+        layer_id = _app.layer_to_id.get(layer_name);
+        map.select(`#${layer_id}`)
           .selectAll(_layer.symbol)
           .style('fill-opacity', _layer.fill_opacity);
         if (_layer.legend) {
           rehandle_legend(layer_name, _layer.legend);
+        }
+        if (_layer.current_position) {
+          at_end.push([restorePreviousPosWaffle, layer_id, _layer.current_position, _layer.symbol]);
         }
       } else if (_layer.renderer && _layer.renderer.startsWith('TypoSymbol')) {
         const symbols_map = new Map(_layer.symbols_map);

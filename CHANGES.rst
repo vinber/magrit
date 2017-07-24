@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.4.0 (2017-07-xx)
+------------------
+
+- Fix error occuring on some representations when using a target layer with empty geometries and warn the user if it's the case.
+
+- Introduce a new representation, waffle map, for mapping two (or more) comparable srocks together.
+
+
 0.3.7 (2017-07-17)
 ------------------
 

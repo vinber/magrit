@@ -1509,6 +1509,35 @@ function reproj_symbol_layer(){
       map.select('#'+_app.layer_to_id.get(lyr_name))
         .selectAll('path')
         .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
+    } else if (current_layers[lyr_name].renderer = 'TwoStocksWaffle') {
+      const selection = svg_map.querySelector(`#${_app.layer_to_id.get(lyr_name)}`).querySelectorAll('g');
+      const nbFt = selection.length;
+      if (current_layers[lyr_name].symbol === 'circle') {
+        for (let i = 0; i < nbFt; i++) {
+          const centroid = path.centroid({
+            type: 'Point',
+            coordinates: selection[i].__data__.properties.centroid,
+          });
+          const symbols = selection[i].querySelectorAll('circle');
+          for (let j = 0, nb_symbol = symbols.length; j < nb_symbol; j++) {
+            symbols[j].setAttribute('cx', centroid[0]);
+            symbols[j].setAttribute('cy', centroid[1]);
+          }
+        }
+      } else {
+        for (let i = 0; i < nbFt; i++) {
+          const centroid = path.centroid({
+            type: 'Point',
+            coordinates: selection[i].__data__.properties.centroid,
+          });
+          const symbols = selection[i].querySelectorAll('rect');
+          for (let j = 0, nb_symbol = symbols.length; j < nb_symbol; j++) {
+            symbols[j].setAttribute('x', centroid[0]);
+            symbols[j].setAttribute('y', centroid[1]);
+          }
+        }
+      }
+
     }
   }
 }

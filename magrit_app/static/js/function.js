@@ -674,7 +674,10 @@ function render_twostocks_waffle(layer, rendering_params) {
   if (symbol_type === 'circle') {
     const r = rendering_params.size;
     for (let j = 0; j < result_data[layer_to_add].length; j++) {
-      let centroid = result_data[layer_to_add][j].centroid;
+      let centroid = path.centroid({
+        type: 'Point',
+        coordinates: result_data[layer_to_add][j].centroid,
+      });
       let group = new_layer.append('g');
       let sum = sums[j];
       let _colors = colors[j];
@@ -691,7 +694,7 @@ function render_twostocks_waffle(layer, rendering_params) {
             fill: _colors[i]
           });
       }
-      group.node().__data__ = result_data[layer_to_add][j];
+      group.node().__data__ = { properties: result_data[layer_to_add][j] };
       group.call(drag_waffle);
     }
 
@@ -699,7 +702,10 @@ function render_twostocks_waffle(layer, rendering_params) {
     const width = rendering_params.size;
     const offset = width / 5;
     for (let j = 0; j < result_data[layer_to_add].length; j++) {
-      let centroid = result_data[layer_to_add][j].centroid;
+      let centroid = path.centroid({
+        type: 'Point',
+        coordinates: result_data[layer_to_add][j].centroid,
+      });
       let group = new_layer.append('g');
       let sum = sums[j];
       let _colors = colors[j];
@@ -717,7 +723,7 @@ function render_twostocks_waffle(layer, rendering_params) {
             fill: _colors[i]
           });
       }
-      group.node().__data__ = result_data[layer_to_add][j];
+      group.node().__data__ = { properties: result_data[layer_to_add][j] };
       group.call(drag_waffle);
     }
   }
@@ -1944,7 +1950,7 @@ function getCentroids(ref_layer_selection) {
     if (!geom){
       centroids.push(null);
     } else if (geom.type.indexOf('Multi') < 0) {
-      centroids.push(path.centroid(geom));
+      centroids.push(d3.geoCentroid(geom));
     } else {
       const areas = [];
       for (let j = 0; j < geom.coordinates.length; j++) {
@@ -1954,7 +1960,7 @@ function getCentroids(ref_layer_selection) {
         }));
       }
       // const ix_max = areas.indexOf(max_fast(areas));
-      centroids.push(path.centroid({
+      centroids.push(d3.geoCentroid({
         type: geom.type,
         coordinates: [geom.coordinates[areas.indexOf(max_fast(areas))]],
       }));

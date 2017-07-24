@@ -1595,6 +1595,24 @@ function createStyleBoxWaffle(layer_name) {
     .style('float', 'right')
     .html(previous_params.nCol);
 
+  const allow_move_section = popup.append('p');
+  let chkbx = allow_move_section.insert('input')
+    .style('margin', '0')
+    .attrs({
+      type: 'checkbox',
+      id: 'checkbox_move_symbol',
+      checked: current_layers[layer_name].draggable ? true : null });
+  allow_move_section.insert('label')
+    .attr('for', 'checkbox_move_symbol')
+    .html(i18next.t('app_page.layer_style_popup.let_draggable'));
+  chkbx.on('change', function () {
+    if (this.checked) {
+      current_layers[layer_name].draggable = true;
+    } else {
+      current_layers[layer_name].draggable = false;
+    }
+  });
+
   let new_layer_name = layer_name;
   const new_name_section = make_change_layer_name_section(popup, layer_name);
   new_name_section.on('change', function() {
