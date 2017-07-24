@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.4.0 (2017-07-xx)
+0.4.0 (2017-07-24)
 ------------------
 
 - Fix error occuring on some representations when using a target layer with empty geometries and warn the user if it's the case.
