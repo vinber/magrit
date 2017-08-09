@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.4.1 (2017-08_xx)
+------------------
+
+- Fix background color when exporting to svg
+
+
 0.4.0 (2017-07-24)
 ------------------
 
