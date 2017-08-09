@@ -427,9 +427,9 @@ class ReloadCompareProjectsTest(TestBase):
             input_name.send_keys('{}.png'.format(name))
             driver.find_element_by_id("export_button_section5b").click()
             time.sleep(2.5)
-            self.assertTrue(
-                is_same_image(
-                    '{}{}.png'.format(self.tmp_folder, name), b_image))
+            if not is_same_image(
+                    '{}{}.png'.format(self.tmp_folder, name), b_image):
+                self.fail("Image {} differs from original".format(name))
             os.remove('{}{}.png'.format(self.tmp_folder, name))
             driver.find_element_by_id('save_file_button').click()
             time.sleep(2.5)

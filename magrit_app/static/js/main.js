@@ -2586,7 +2586,7 @@ function check_output_name(name, extension) {
   const part = name.split('.');
   const regexpName = new RegExp(/^[a-z0-9_]+$/i);
   if (regexpName.test(part[0]) && part[0].length < 250) {
-    return `${part[0]}.${extension}}`;
+    return `${part[0]}.${extension}`;
   }
   return `export.${extension}`;
 }
