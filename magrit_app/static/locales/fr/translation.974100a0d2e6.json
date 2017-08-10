@@ -35,7 +35,7 @@
             "error_map_project": "Impossible de charger le fichier projet. Erreur : ",
             "error_invalid_map_project": "Fichier-projet corrompu/invalide.",
             "error_invalid_empty": "La couche à charger ne contient pas de données.",
-            "error_waffle_too_many": "Le nombre de symboles à déssiner est trop important. Veuillez sélectionner un ratio plus élevé.",
+            "error_waffle_too_many": "Le nombre de symboles à dessiner est trop important. Veuillez sélectionner un ratio plus élevé.",
             "error_multiple_fields": "Veuillez sélectionner au minimum 2 champs.",
             "warning_multiple_layers": "Les couches provenant de TopoJSON doivent être ajoutées une par une. Seule la 1ère va être ajoutée",
             "warning_not_adapted_classification": "La discrétisation choisie ne semble pas adaptée à la forme de la distribution!",

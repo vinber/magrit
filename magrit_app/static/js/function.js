@@ -112,9 +112,10 @@ function reset_user_values() {
 *
 */
 function unfillSelectInput(select_node) {
-  for (let i = select_node.childElementCount - 1; i > -1; i--) {
-    select_node.removeChild(select_node.children[i]);
-  }
+  select_node.innerHTML = ''; // eslint-disable-line no-param-reassign
+  // for (let i = select_node.childElementCount - 1; i > -1; i--) {
+  //   select_node.removeChild(select_node.children[i]);
+  // }
 }
 
 
@@ -1293,12 +1294,7 @@ const fields_Typo = {
     setSelected(field_selec.node(), fields_name[0]);
   },
   unfill: function () {
-    const field_selec = document.getElementById('Typo_field_1'),
-      nb_fields = field_selec.childElementCount;
-
-    for (let i = nb_fields - 1; i > -1; --i) {
-      field_selec.removeChild(field_selec.children[i]);
-    }
+    unfillSelectInput(document.getElementById('Typo_field_1'));
     section2.selectAll('.params').attr('disabled', true);
   },
   rendering_params: {},
@@ -1563,13 +1559,14 @@ const fields_Choropleth = {
   },
 
   unfill: function () {
-    const field_selec = document.getElementById('choro_field1'),
-      nb_fields = field_selec.childElementCount;
-
-    for (let i = nb_fields - 1; i > -1; --i) {
-        // delete this.rendering_params[field_selec.children[i]];
-      field_selec.removeChild(field_selec.children[i]);
-    }
+    // const field_selec = document.getElementById('choro_field1'),
+    //   nb_fields = field_selec.childElementCount;
+    //
+    // for (let i = nb_fields - 1; i > -1; --i) {
+    //     // delete this.rendering_params[field_selec.children[i]];
+    //   field_selec.removeChild(field_selec.children[i]);
+    // }
+    unfillSelectInput(document.getElementById('choro_field1'));
     d3.selectAll('.params').attr('disabled', true);
   },
   rendering_params: {},
@@ -2164,7 +2161,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 }
 
 
-function make_prop_symbols(rendering_params, geojson_pt_layer) {
+function make_prop_symbols(rendering_params, _pt_layer) {
   const layer = rendering_params.ref_layer_name,
     field = rendering_params.field,
     color_field = rendering_params.color_field,
@@ -2178,8 +2175,9 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
     zs = d3.zoomTransform(svg_map).k,
     propSize = new PropSizer(ref_value, ref_size, symbol_type),
     warn_empty_features = [];
+  let geojson_pt_layer;
 
-  if (!geojson_pt_layer) {
+  if (!_pt_layer) {
     const make_geojson_pt_layer = () => {
       const ref_layer_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path');
       const result = [];
@@ -2246,12 +2244,15 @@ function make_prop_symbols(rendering_params, geojson_pt_layer) {
       col1 = rendering_params.fill_color.two[0];
       col2 = rendering_params.fill_color.two[1];
       get_color = (val, ix) => (val > rendering_params.break_val ? col2 : col1);
-    } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
+    } else if (rendering_params.fill_color instanceof Array
+        && rendering_params.fill_color.length === nb_features) {
       get_color = (val, ix) => rendering_params.fill_color[ix];
     } else {
       get_color = () => rendering_params.fill_color;
     }
     geojson_pt_layer = make_geojson_pt_layer();
+  } else {
+    geojson_pt_layer = _pt_layer;
   }
 
   const layer_id = encodeId(layer_to_add);
@@ -2417,15 +2418,15 @@ function render_choro(layer, rendering_params) {
   zoom_without_redraw();
 }
 
-function render_mini_chart_serie(values, parent, cap, bins) {
-  bins = bins || values.length > 20 ? 16 : values.length > 15 ? 10 : 5;
+function render_mini_chart_serie(values, parent, max_h, nb_bins) {
+  const bins = nb_bins || (values.length > 20 ? 16 : undefined) || (values.length > 15 ? 10 : 5);
   const class_count = getBinsCount(values, bins),
     background = '#f1f1f1',
     color = '#6633ff',
     width = 3 * bins - 3,
     height = 25,
     canvas = document.createElement('canvas');
-  cap = cap || max_fast(class_count.counts);
+  const cap = max_h || max_fast(class_count.counts);
   canvas.width = width;
   canvas.height = height;
 
@@ -2739,7 +2740,7 @@ const fields_PropSymbolTypo = {
 };
 
 
-function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, ref_size, symb_selec) {
+function render_PropSymbolTypo(field1, color_field, n_layer_name, ref_value, ref_size, symb_selec) {
   if (!ref_value || !color_field || !fields_PropSymbolTypo.rendering_params[color_field]) {
     return;
   }
@@ -2748,8 +2749,8 @@ function render_PropSymbolTypo(field1, color_field, new_layer_name, ref_value, r
     rendering_params = fields_PropSymbolTypo.rendering_params[color_field],
     rd_params = {};
 
-  new_layer_name = check_layer_name(new_layer_name.length > 0
-    ? new_layer_name
+  const new_layer_name = check_layer_name(n_layer_name.length > 0
+    ? n_layer_name
     : ['PropSymbolsTypo', field1, color_field, layer].join('_'));
 
   rd_params.field = field1;
@@ -3341,7 +3342,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
     { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } },
+    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
 
   _app.layer_to_id.set(layer_to_add, layer_id);
@@ -3703,17 +3704,21 @@ const fields_FlowMap = {
   },
 
   unfill: function () {
-    const field_i = document.getElementById('FlowMap_field_i'),
-      field_j = document.getElementById('FlowMap_field_j'),
-      field_fij = document.getElementById('FlowMap_field_fij'),
-      join_field = document.getElementById('FlowMap_field_join');
-
-    for (let i = field_i.childElementCount - 1; i > -1; --i) {
-      field_i.removeChild(field_i.children[i]);
-      field_j.removeChild(field_j.children[i]);
-      field_fij.removeChild(field_fij.children[i]);
-    }
-    unfillSelectInput(join_field);
+    // const field_i = document.getElementById('FlowMap_field_i'),
+    //   field_j = document.getElementById('FlowMap_field_j'),
+    //   field_fij = document.getElementById('FlowMap_field_fij'),
+    //   join_field = document.getElementById('FlowMap_field_join');
+    //
+    // for (let i = field_i.childElementCount - 1; i > -1; --i) {
+    //   field_i.removeChild(field_i.children[i]);
+    //   field_j.removeChild(field_j.children[i]);
+    //   field_fij.removeChild(field_fij.children[i]);
+    // }
+    // unfillSelectInput(join_field);
+    unfillSelectInput(document.getElementById('FlowMap_field_i'));
+    unfillSelectInput(document.getElementById('FlowMap_field_j'));
+    unfillSelectInput(document.getElementById('FlowMap_field_fij'));
+    unfillSelectInput(document.getElementById('FlowMap_field_join'));
     document.getElementById('FlowMap_discTable').innerHTML = '';
     document.getElementById('FlowMap_output_name').value = '';
     section2.selectAll('.params').attr('disabled', true);
@@ -3758,7 +3763,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
         fij_field_name = field_fij,
         fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
         nb_ft = fij_values.length,
-        serie = new geostats(fij_values);
+        serie = new geostats(fij_values); // eslint-disable-line new-cap
 
       if (user_breaks[0] < serie.min()) user_breaks[0] = serie.min();
       if (user_breaks[nb_class] > serie.max()) user_breaks[nb_class] = serie.max();
@@ -3831,7 +3836,7 @@ const render_label = function render_label(layer, rendering_params, options) {
         for (let j = 0; j < ft.geometry.coordinates.length; j++) {
           areas.push(path.area({
             type: ft.geometry.type,
-            coordinates: [ft.geometry.coordinates[j]]
+            coordinates: [ft.geometry.coordinates[j]],
           }));
         }
         const ix_max = areas.indexOf(max_fast(areas));
@@ -3850,7 +3855,7 @@ const render_label = function render_label(layer, rendering_params, options) {
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
     { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } },
+    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
 
   const selection = map.insert('g', '.legend')

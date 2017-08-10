@@ -245,7 +245,7 @@ function get_map_template() {
       layer_style_i.fields_type = current_layer_prop.fields_type;
       layer_style_i.stroke_color = selection.style('stroke');
     } else if (layer_type === 'sphere' || layer_type === 'graticule' || layer_name === 'World') {
-      selection = map.select(`#${layer_id}`).selectAll('path'); //layer_name_
+      selection = map.select(`#${layer_id}`).selectAll('path');
       layer_style_i.fill_color = rgb2hex(selection.style('fill'));
       layer_style_i.stroke_color = rgb2hex(selection.style('stroke'));
       if (layer_type === 'graticule') {
@@ -277,7 +277,7 @@ function get_map_template() {
       layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
       layer_style_i.geo_pt = {
         type: 'FeatureCollection',
-        features: features
+        features: features,
       };
       if (current_layer_prop.renderer === 'PropSymbolsTypo') {
         layer_style_i.color_map = [...current_layer_prop.color_map];
@@ -1122,7 +1122,7 @@ function reorder_layers_elem_legends(desired_order) {
 
 function rehandle_legend(layer_name, properties) {
   for (let i = 0; i < properties.length; i++) {
-    let prop = properties[i];
+    const prop = properties[i];
     if (prop.type === 'legend_root') {
       createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
     } else if (prop.type === 'legend_root_symbol') {

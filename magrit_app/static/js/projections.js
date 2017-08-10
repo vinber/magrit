@@ -180,7 +180,7 @@ const removeTooltipProj4 = function removeTooltipProj4(ev) {
 };
 
 const makeTooltipProj4 = (proj_select, proj4string) => {
-  proj_select.tooltip = proj4string;
+  proj_select.tooltip = proj4string; // eslint-disable-line no-param-reassign
   proj_select.addEventListener('mouseover', displayTooltipProj4);
   proj_select.addEventListener('mouseout', removeTooltipProj4);
 };
@@ -221,11 +221,12 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       .attr('id', 'select_proj')
       .attr('size', 18);
     if (!filter_in && !filter_ex) {
-      for (const proj_name of available_projections.keys()) {
+      // for (const proj_name of available_projections.keys()) { .. }
+      Array.from(available_projections.keys()).forEach((proj_name) => {
         display_select_proj.append('option')
           .attrs({ class: 'i18n', value: proj_name, 'data-i18n': `app_page.projection_name.${proj_name}` })
           .text(i18next.t(`app_page.projection_name.${proj_name}`));
-      }
+      });
     } else if (!filter_ex) {
       available_projections.forEach((v, k) => {
         if (v.param_in === filter_in) {
@@ -374,7 +375,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   Array.prototype.forEach.call(
     document.querySelectorAll('.filter1,.filter2'),
-    (el) => { el.onclick = onClickFilter; });
+    (el) => { el.onclick = onClickFilter; }); // eslint-disable-line no-param-reassign
 
   const p = column3.append('p').style('margin', 'auto');
   let display_select_proj = p.append('select')
