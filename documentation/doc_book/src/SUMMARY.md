@@ -28,6 +28,7 @@
 - [Export des données](./export_fr.md)
 - [Jeux de données](./datasets_fr.md)
 	- [Source des jeux de données d'exemple](./dataset_source_fr.md)
+- [Questions fréquemment posées](./FAQ_fr.md)
 - [Respect de la vie privée](./privacy.md)
 
 -----------

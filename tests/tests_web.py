@@ -410,7 +410,7 @@ class ReloadCompareProjectsTest(TestBase):
         with self.subTest(i=i):
             driver = self.driver
             driver.get(self.base_url + "?reload={}".format(url))
-            time.sleep(0.2)
+            time.sleep(0.3)
             if i > 0:
                 driver.switch_to.alert.accept()
             if not self.wait_until_overlay_disapear(5):
@@ -1295,6 +1295,75 @@ class MainFunctionnalitiesTest(TestBase):
         self.assertEqual(len(legend_elems), 6)
         self._verif_export_result('my_result_2')
 
+    def test_waffle(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        # Open the box of sample layers:
+        self.clickWaitTransition("#sample_link")
+        # Select the "Martinique" layer:
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("martinique")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field:
+        self.validTypefield()
+
+        # Open the table for the Martinique layer:
+        self.open_menu_section(3)
+        driver.find_element_by_css_selector("li.martinique"
+            ).find_elements_by_css_selector("#browse_data_button")[0].click()
+        time.sleep(1)
+
+        # Create a new field from the total stock of dwellings (P13_LOG)
+        # and the stock of empty dwellings (P13_LOGVAC)
+        # to obtain the stock of non empty dwellings (P13_LOGNONVAC) :
+        self.clickWaitTransition("#add_field_button")
+        driver.find_element_by_css_selector("input[value=\"NewFieldName\"]").clear()
+        driver.find_element_by_css_selector(
+            "input[value=\"NewFieldName\"]").send_keys("P13_LOGNONVAC")
+        Select(driver.find_element_by_css_selector(
+            "#field_div1 > select")).select_by_visible_text("P13_LOG")
+        Select(driver.find_element_by_xpath(
+            "//div[@id='field_div1']/select[3]")).select_by_visible_text("P13_LOGVAC")
+        Select(driver.find_element_by_xpath(
+            "//div[@id='field_div1']/select[2]")).select_by_visible_text("-")
+        driver.find_element_by_css_selector(
+            ".addFieldBox").find_elements_by_css_selector(
+            ".btn_ok")[0].click()
+        time.sleep(0.4)
+        self.click_elem_retry(
+            driver.find_element_by_id(
+                "browse_data_box").find_elements_by_css_selector(
+                ".btn_ok")[0])
+        time.sleep(0.4)
+
+        #  Test the waffle functionnality :
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_two_stocks")
+
+        # Select the two appropriate fields :
+        s = Select(driver.find_element_by_id("TwoStocks_fields"))
+        s.select_by_visible_text('P13_LOGVAC')
+        s.select_by_visible_text('P13_LOGNONVAC')
+        driver.find_element_by_id("TwoStocks_waffle_WidthRow")
+
+        # Set the number of symbol by line:
+        elem = driver.find_element_by_id("TwoStocks_waffle_WidthRow")
+        elem.clear()
+        elem.send_keys('5')
+
+        # Create the new layer:
+        driver.find_element_by_id("twoStocks_yes").click()
+        time.sleep(0.2)
+
+        # Is the legend displayed ?
+        if not self.try_element_present(By.ID, "legend_root_waffle", 5):
+            self.fail("Legend not displayed on waffle map")
+
+#        # Can we hide and redisplay the legend ?
+#        self._verif_legend_hide_show_button('martinique_Waffle')
+
     def test_cartogram_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -1390,8 +1459,8 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_export_result('carto_doug')
 
-        Select(driver.find_element_by_css_selector(
-            "select.params")).select_by_visible_text("Dougenik & al. (1985)")
+#        Select(driver.find_element_by_css_selector(
+#            "select.params")).select_by_visible_text("Dougenik & al. (1985)")
 
         self.open_menu_section('2b')
         #  Test the olson cartogram functionnality...
