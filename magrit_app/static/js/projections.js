@@ -557,3 +557,32 @@ function handle_parallel_change(parallel) {
   map.selectAll('.layer').selectAll('path').attr('d', path);
   reproj_symbol_layer();
 }
+
+
+// const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
+//   // Create the custom d3 projection using proj 4 forward and inverse functions:
+//   const projRaw = function (lambda, phi) {
+//     return _proj.forward([lambda, phi].map(radiansToDegrees));
+//   };
+//   projRaw.invert = function (x, y) {
+//     return _proj.inverse([x, y]).map(degreesToRadians);
+//   };
+//   return d3.geoProjection(projRaw);
+// };
+// const pidegrad = 0.017453292519943295;
+// const piraddeg = 57.29577951308232;
+// const degreesToRadians = function degreesToRadians(degrees) { return degrees * pidegrad; };
+// const radiansToDegrees = function radiansToDegrees(radians) { return radians * piraddeg; };
+
+// Should avoid some function calls compared to the previous comment section :
+const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
+  // Create the custom d3 projection using proj 4 forward and inverse functions:
+  const projRaw = function (lambda, phi) {
+    return _proj.forward([lambda * 57.29577951308232, phi * 57.29577951308232]);
+  };
+  projRaw.invert = function (x, y) {
+    const p = _proj.inverse([x, y]);
+    return [p[0] * 0.017453292519943295, p[1] * 0.017453292519943295];
+  };
+  return d3.geoProjection(projRaw);
+};

@@ -1097,8 +1097,8 @@ function setUpInterface(reload_project) {
 }
 
 function encodeId(s) {
-  if (s === '') return '_';
-  return s.replace(/[^a-zA-Z0-9_-]/g, match => '_' + match[0].charCodeAt(0).toString(16) + '_');
+  if (s === '') return 'L_';
+  return s.replace(/[^a-zA-Z0-9_-]/g, match => 'L_' + match[0].charCodeAt(0).toString(16) + '_');
 }
 
 function bindTooltips(dataAttr = 'tooltip-title') {
@@ -1114,7 +1114,6 @@ function bindTooltips(dataAttr = 'tooltip-title') {
     });
   }
 }
-
 
 function make_eye_button(state) {
   if (state === 'open') {
@@ -2191,17 +2190,6 @@ function change_projection(new_proj_name) {
   // Set or remove the clip-path according to the projection:
   handleClipPath(new_proj_name, layer_name);
 }
-
-const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
-  // Create the custom d3 projection using proj 4 forward and inverse functions:
-  const projRaw = function (lambda, phi) {
-    return _proj.forward([lambda, phi].map(radiansToDegrees));
-  };
-  projRaw.invert = function (x, y) {
-    return _proj.inverse([x, y]).map(degreesToRadians);
-  };
-  return d3.geoProjection(projRaw);
-};
 
 function change_projection_4(_proj) {
   remove_layer_cleanup('Sphere');
