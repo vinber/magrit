@@ -76,7 +76,7 @@ function setUpInterface(reload_project) {
   //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
   //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
   //                '<div class="line"></div><div class="line"></div></div></div>';
-  bg.style.color = "black";
+  bg.style.color = 'black';
   bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:185px; margin-bottom: 20px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner windcatcher" id="windcatcher">\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-top: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
   var btn = document.createElement('button');
   btn.style.fontSize = '13px';
@@ -449,7 +449,7 @@ function setUpInterface(reload_project) {
   var ratio_select = b.append('select').attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
 
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
-  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');;
+  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
   ratio_select.on('change', function () {
     var map_xy = get_map_xy0();
@@ -779,7 +779,7 @@ function setUpInterface(reload_project) {
   selec_projection.on('change', function () {
     if (this.value === 'proj4string') {
       proj4_input.style('display', 'initial');
-      if (proj4_input.node().value === '' || proj4_input.node().value == undefined) {
+      if (proj4_input.node().value === '' || proj4_input.node().value === undefined) {
         ok_button.disabled = 'true';
       }
     } else {
@@ -816,14 +816,14 @@ function setUpInterface(reload_project) {
 
   var lm_buttons = [{ id: 'zoom_out', i18n: '[tooltip-title]app_page.lm_buttons.zoom-', tooltip_position: 'left', class: 'zoom_button i18n', html: '-' }, { id: 'zoom_in', i18n: '[tooltip-title]app_page.lm_buttons.zoom+', tooltip_position: 'left', class: 'zoom_button i18n', html: '+' }, { id: 'info_button', i18n: '[tooltip-title]app_page.lm_buttons.i', tooltip_position: 'left', class: 'info_button i18n', html: 'i' }, { id: 'brush_zoom_button', i18n: '[tooltip-title]app_page.lm_buttons.zoom_rect', tooltip_position: 'left', class: 'brush_zoom_button i18n', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' }, { id: 'hand_button', i18n: '[tooltip-title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button active i18n', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' }];
 
-  var selec = lm.selectAll('input').data(lm_buttons).enter().append('p').style('margin', 'auto').insert('button').attrs(function (d, i) {
+  var selec = lm.selectAll('input').data(lm_buttons).enter().append('p').style('margin', 'auto').insert('button').attrs(function (elem) {
     return {
-      'data-placement': d.tooltip_position,
-      class: d.class,
-      'data-i18n': d.i18n,
-      id: d.id };
-  }).html(function (d) {
-    return d.html;
+      'data-placement': elem.tooltip_position,
+      class: elem.class,
+      'data-i18n': elem.i18n,
+      id: elem.id };
+  }).html(function (elem) {
+    return elem.html;
   });
 
   // Trigger actions when buttons are clicked and set-up the initial view :
@@ -975,7 +975,7 @@ function make_ico_choice() {
 
       // Replace the title of the section:
       var selec_title = document.getElementById('btn_s2b');
-      selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
+      selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t('app_page.common.representation') + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t('app_page.func_title.' + _app.current_functionnality.name) + '</span>';
       selec_title.style.display = '';
 
       // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
@@ -1130,7 +1130,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7d41dba6626a.json'
+      loadPath: 'static/locales/{{lng}}/translation.194e148940e1.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1240,12 +1240,18 @@ function displayInfoOnMove() {
 }
 
 /**
-*  Function redrawing the prop symbol / img / labels when the projection changes
-*   (also taking care of redrawing point layer with appropriate 'pointRadius')
+* Function redrawing the prop symbol / img / labels / waffles when the projection
+* changes (also taking care of redrawing point layer with appropriate 'pointRadius')
+*
+* @return {void}
 *
 */
 function reproj_symbol_layer() {
-  for (var lyr_name in current_layers) {
+  var layers = Object.keys(current_layers);
+  var n_layers = layers.length;
+  for (var ix = 0; ix < n_layers; ix++) {
+    // for (let lyr_name in current_layers) {
+    var lyr_name = layers[ix];
     if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
       var symbol = current_layers[lyr_name].symbol;
 
@@ -1329,7 +1335,7 @@ function make_dialog_container(id_box, title, class_box) {
   var _class_box = class_box || 'dialog';
   var container = document.createElement('div');
   container.setAttribute('id', id_box);
-  container.setAttribute('class', 'twbs modal fade' + ' ' + _class_box);
+  container.setAttribute('class', 'twbs modal fade ' + class_box);
   container.setAttribute('tabindex', '-1');
   container.setAttribute('role', 'dialog');
   container.setAttribute('aria-labelledby', 'myModalLabel');
@@ -1580,8 +1586,8 @@ function handle_bg_color(color) {
 function handle_click_hand(behavior) {
   var hb = d3.select('.hand_button');
   // eslint-disable-next-line no-param-reassign
-  behavior = behavior && (typeof behavior === 'undefined' ? 'undefined' : _typeof(behavior)) !== 'object' ? behavior : !hb.classed('locked') ? 'lock' : 'unlock';
-  if (behavior === 'lock') {
+  var b = (behavior && (typeof behavior === 'undefined' ? 'undefined' : _typeof(behavior)) !== 'object' ? behavior : false) || !hb.classed('locked') ? 'lock' : 'unlock';
+  if (b === 'lock') {
     hb.classed('locked', true);
     hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
     map.select('.brush').remove();
@@ -1606,8 +1612,8 @@ function handle_click_hand(behavior) {
 
 function zoom_without_redraw() {
   var rot_val = canvas_rotation_value || '';
-  var transform = void 0,
-      t_val = void 0;
+  var transform = void 0;
+  var t_val = void 0;
   if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
     transform = d3.zoomTransform(svg_map);
     t_val = transform.toString() + rot_val;
@@ -11591,7 +11597,15 @@ var removeExistingJointure = function removeExistingJointure(layer_name) {
   }
 };
 'use strict';
-// TODO : refactor some functions in this file (they are really too messy)
+
+/**
+* Function to dispatch the click on the "open style box" icon
+* to the actual appropriate function according to the type of the layer.
+*
+* @param {String} layer_name - The name of the layer.
+* @return {void} - Nothing is returned but the "style box" should open.
+*
+*/
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
@@ -11675,31 +11689,12 @@ function make_categorical_color_menu(fields, layer, fill_prev) {
         txt = [cats.size, ' cat.'].join('');
     d3.select('#nb_cat_txt').html(txt);
     var color_cat_map = new Map();
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = cats[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var val = _step.value;
-
-        color_cat_map.set(val, Colors.names[Colors.random()]);
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
-    }
-
+    Array.from(cats.keys()).forEach(function (val) {
+      color_cat_map.set(val, Colors.names[Colors.random()]);
+    });
+    // for (let val of cats) {
+    //   color_cat_map.set(val, Colors.names[Colors.random()]);
+    // }
     current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
     fill_categorical(layer, field_name, symbol, color_cat_map);
   });
@@ -11710,6 +11705,14 @@ function make_categorical_color_menu(fields, layer, fill_prev) {
   fill_color_section.append('span').attr('id', 'nb_cat_txt').html('');
 }
 
+/**
+* Function to create the input section allowing to change the name of a layer.
+* (Used by all the createStyleBox_xxx functions)
+*
+* @param {Object} parent - A d3 selection corresponding to the parent box.
+* @param {String} layer_name - The current name of layer edited in the style box.
+* @return {Object} - The d3 selection corresponding to the input element created.
+*/
 function make_change_layer_name_section(parent, layer_name) {
   var section = parent.insert('p').attr('class', 'inp_bottom');
   section.append('span').html(i18next.t('app_page.layer_style_popup.layer_name'));
@@ -11734,11 +11737,11 @@ function createStyleBoxTypoSymbols(layer_name) {
   var restore_prev_settings = function restore_prev_settings() {
     var features = selection._groups[0];
     for (var i = 0; i < features.length; i++) {
-      features[i].setAttribute('width', prev_settings[i]['size']);
-      features[i].setAttribute('height', prev_settings[i]['size']);
-      features[i].setAttribute('x', prev_settings[i]['position'][0]);
-      features[i].setAttribute('y', prev_settings[i]['position'][1]);
-      features[i].style.display = prev_settings[i]['display'];
+      features[i].setAttribute('width', prev_settings[i].size);
+      features[i].setAttribute('height', prev_settings[i].size);
+      features[i].setAttribute('x', prev_settings[i].position[0]);
+      features[i].setAttribute('y', prev_settings[i].position[1]);
+      features[i].style.display = prev_settings[i].display;
     }
     current_layers[layer_name].default_size = prev_settings_defaults.size;
   };
@@ -11801,31 +11804,34 @@ function createStyleBoxTypoSymbols(layer_name) {
     });
   });
 }
-//    popup.append("p").style("text-align", "center")
-//            .insert("button")
-//            .attr("id","modif_symb")
-//            .attr("class", "button_st4")
-//            .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
-//            .on("click", function(){
-//                display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
-//                    if(confirmed){
-//                        rendering_params = {
-//                            nb_cat: confirmed[0],
-//                            symbols_map: confirmed[1],
-//                            field: rendered_field
-//                        };
-//                        map.select("#" + layer_name)
-//                            .selectAll("image")
-//                            .attr("x", d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-//                            .attr("y", d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
-//                            .attr("width", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-//                            .attr("height", d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
-//                            .attr("xlink:href", (d,i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
-//                    }
-//                });
-//            });
-//
-// }
+//  popup.append("p").style("text-align", "center")
+//    .insert("button")
+//    .attr("id","modif_symb")
+//    .attr("class", "button_st4")
+//    .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
+//    .on("click", function(){
+//      display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
+//        if(confirmed){
+//          rendering_params = {
+//              nb_cat: confirmed[0],
+//              symbols_map: confirmed[1],
+//              field: rendered_field
+//          };
+//          map.select("#" + layer_name)
+//            .selectAll("image")
+//            .attr("x",
+//               d => d.coords[0] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+//            .attr("y",
+//               d => d.coords[1] - rendering_params.symbols_map.get(d.Symbol_field)[1] / 2)
+//            .attr("width",
+//               d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+//            .attr("height",
+//               d => rendering_params.symbols_map.get(d.Symbol_field)[1] + "px")
+//            .attr("xlink:href",
+//               (d, i) => rendering_params.symbols_map.get(d.Symbol_field)[0]);
+//        }
+//      });
+//    });
 
 function createStyleBoxLabel(layer_name) {
   function get_prev_settings() {
@@ -11845,17 +11851,17 @@ function createStyleBoxLabel(layer_name) {
       size: current_layers[layer_name].default_size,
       font: current_layers[layer_name].default_font
     };
-  };
+  }
 
   function restore_prev_settings() {
     var features = selection._groups[0];
     for (var i = 0; i < features.length; i++) {
-      features[i].style.fill = prev_settings[i]['color'];
-      features[i].style.fontSize = prev_settings[i]['size'];
-      features[i].style.display = prev_settings[i]['display'];
-      features[i].setAttribute('x', prev_settings[i]['position'][0]);
-      features[i].setAttribute('y', prev_settings[i]['position'][1]);
-      features[i].style.fontFamily = prev_settings[i]['font'];
+      features[i].style.fill = prev_settings[i].color;
+      features[i].style.fontSize = prev_settings[i].size;
+      features[i].style.display = prev_settings[i].display;
+      features[i].setAttribute('x', prev_settings[i].position[0]);
+      features[i].setAttribute('y', prev_settings[i].position[1]);
+      features[i].style.fontFamily = prev_settings[i].font;
     }
 
     current_layers[layer_name].fill_color = prev_settings_defaults.color;
@@ -11867,10 +11873,9 @@ function createStyleBoxLabel(layer_name) {
 
   var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('text'),
       ref_layer_name = current_layers[layer_name].ref_layer_name;
-
-  var prev_settings = [],
-      prev_settings_defaults = {},
-      rendering_params = {};
+  var rendering_params = {};
+  var prev_settings_defaults = {};
+  var prev_settings = [];
 
   get_prev_settings();
 
@@ -11938,7 +11943,7 @@ function createStyleBoxLabel(layer_name) {
 
 function createStyleBoxGraticule(layer_name) {
   check_remove_existing_box('.styleBox');
-  var current_params = cloneObj(current_layers['Graticule']);
+  var current_params = cloneObj(current_layers.Graticule);
   var selection = map.select('#Graticule > path');
   var selection_strokeW = map.select('#Graticule');
 
@@ -11962,14 +11967,14 @@ function createStyleBoxGraticule(layer_name) {
   color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
   color_choice.append('input').style('float', 'right').attrs({ type: 'color', value: current_params.fill_color.single }).on('change', function () {
     selection.style('stroke', this.value);
-    current_layers['Graticule'].fill_color.single = this.value;
+    current_layers.Graticule.fill_color.single = this.value;
   });
 
   var opacity_choice = popup.append('p').attr('class', 'line_elem');
   opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
   opacity_choice.append('input').attrs({ type: 'range', value: current_params.opacity, min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-opacity', this.value);
-    current_layers['Graticule'].opacity = +this.value;
+    current_layers.Graticule.opacity = +this.value;
     popup.select('#graticule_opacity_txt').html(+this.value * 100 + '%');
   });
   opacity_choice.append('span').attr('id', 'graticule_opacity_txt').style('float', 'right').html(current_params.opacity * 100 + '%');
@@ -11978,7 +11983,7 @@ function createStyleBoxGraticule(layer_name) {
   stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
   stroke_width_choice.append('input').attrs({ type: 'number', value: current_params['stroke-width-const'] }).styles({ width: '60px', float: 'right' }).on('change', function () {
     selection_strokeW.style('stroke-width', this.value);
-    current_layers['Graticule']['stroke-width-const'] = +this.value;
+    current_layers.Graticule['stroke-width-const'] = +this.value;
   });
 
   var steps_choice = popup.append('p').attr('class', 'line_elem');
@@ -11987,9 +11992,9 @@ function createStyleBoxGraticule(layer_name) {
     var next_layer = selection_strokeW.node().nextSibling;
     var step_val = +this.value;
     var dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
-    current_layers['Graticule'].step = step_val;
+    current_layers.Graticule.step = step_val;
     map.select('#Graticule').remove();
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
     selection = map.select('#Graticule').selectAll('path');
     selection_strokeW = map.select('#Graticule');
@@ -12006,7 +12011,7 @@ function createStyleBoxGraticule(layer_name) {
   dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
   dasharray_choice.append('input').attrs({ type: 'range', value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-dasharray', this.value);
-    current_layers['Graticule'].dasharray = +this.value;
+    current_layers.Graticule.dasharray = +this.value;
     popup.select('#graticule_dasharray_txt').attr('value', this.value);
   });
   dasharray_choice.append('input').attrs({ type: 'number', value: current_params.dasharray, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
@@ -12016,7 +12021,7 @@ function createStyleBoxGraticule(layer_name) {
   });
 
   var clip_extent_section = popup.append('p').attr('class', 'line_elem');
-  clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params['extent'] ? true : null }).on('change', function () {
+  clip_extent_section.append('input').attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params.extent ? true : null }).on('change', function () {
     var next_layer = selection_strokeW.node().nextSibling,
         step_val = +document.getElementById('graticule_step_txt').value,
         dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
@@ -12031,11 +12036,11 @@ function createStyleBoxGraticule(layer_name) {
       if (extent_grat[2] > 180) extent_grat[2] = 180;
       if (extent_grat[3] > 90) extent_grat[3] = 90;
       graticule = graticule.extent(extent_grat);
-      current_layers['Graticule'].extent = extent_grat;
+      current_layers.Graticule.extent = extent_grat;
     } else {
-      current_layers['Graticule'].extent = undefined;
+      current_layers.Graticule.extent = undefined;
     }
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers['Graticule'].fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
     selection = map.select('#Graticule').selectAll('path');
     selection_strokeW = map.select('#Graticule');
@@ -12046,11 +12051,20 @@ function createStyleBoxGraticule(layer_name) {
   make_generate_labels_graticule_section(popup);
 }
 
+/**
+* Function triggered to redraw the legend after changing some properties on a layer.
+*
+* @param {String} type_legend - The type of the legend to redraw.
+* @param {String} layer_name - The name of the layer concerned.
+* @param {String} field - The name of the rendered field.
+* @return {void}
+*
+*/
 function redraw_legend(type_legend, layer_name, field) {
   var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined,
       _ref2 = _slicedToArray(_ref, 2),
       selector = _ref2[0],
-      func = _ref2[1];
+      legend_func = _ref2[1];
 
   var lgd = document.querySelector(selector);
   if (lgd) {
@@ -12070,13 +12084,13 @@ function redraw_legend(type_legend, layer_name, field) {
       no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
       lgd.remove();
-      func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
+      legend_func(layer_name, field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, no_data_txt, note);
     } else if (type_legend === 'waffle') {
       lgd.remove();
-      func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
+      legend_func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
     } else {
       lgd.remove();
-      func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
+      legend_func(layer_name, current_layers[layer_name].rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, note);
     }
     lgd = document.querySelector(selector);
     if (transform_param) {
@@ -12125,11 +12139,11 @@ function createStyleBox_Line(layer_name) {
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (confirmed) {
-      if (renderer != undefined && rendering_params != undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
+      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
         current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
         var colors_breaks = [];
-        for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-          colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+        for (var i = rendering_params.breaks.length - 1; i > 0; --i) {
+          colors_breaks.push([[rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.breaks[i - 1]]);
         }
         current_layers[layer_name].colors_breaks = colors_breaks;
         current_layers[layer_name].rendered_field = rendering_params.field;
@@ -12142,13 +12156,15 @@ function createStyleBox_Line(layer_name) {
           extra_options: rendering_params.extra_options
         };
         redraw_legend('default', layer_name, rendering_params.field);
-      } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params != undefined) {
+      } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params !== undefined) {
         current_layers[layer_name].color_map = rendering_params.color_map;
-        current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+        current_layers[layer_name].fill_color = {
+          class: [].concat(rendering_params.colorsByFeature)
+        };
         redraw_legend('default', layer_name, rendering_params.field);
       } else if (renderer === 'DiscLayer') {
         selection.each(function (d) {
-          d.properties.prop_val = this.style.strokeWidth;
+          d.properties.prop_val = this.style.strokeWidth; // eslint-disable-line no-param-reassign
         });
         // Also change the legend if there is one displayed :
         redraw_legend('line_class', layer_name);
@@ -12177,7 +12193,7 @@ function createStyleBox_Line(layer_name) {
       current_layers[layer_name]['stroke-width-const'] = stroke_width;
       var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
-      if (current_layers[layer_name].renderer === 'Links' && prev_min_display != undefined) {
+      if (current_layers[layer_name].renderer === 'Links' && prev_min_display !== undefined) {
         current_layers[layer_name].min_display = prev_min_display;
         current_layers[layer_name].breaks = prev_breaks;
         selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('display', function (d) {
@@ -12185,11 +12201,11 @@ function createStyleBox_Line(layer_name) {
         }).style('stroke-opacity', border_opacity).style('stroke-width', function (d, i) {
           return current_layers[layer_name].linksbyId[i][2];
         });
-      } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display != undefined) {
+      } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display !== undefined) {
         current_layers[layer_name].min_display = prev_min_display;
         current_layers[layer_name].size = prev_size;
         current_layers[layer_name].breaks = prev_breaks;
-        var lim = prev_min_display != 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
+        var lim = prev_min_display !== 0 ? prev_min_display * current_layers[layer_name].n_features : -1;
         selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('stroke-opacity', border_opacity).style('display', function (d, i) {
           return +i <= lim ? null : 'none';
         }).style('stroke-width', function (d) {
@@ -12266,7 +12282,7 @@ function createStyleBox_Line(layer_name) {
             colorsByFeature: confirmed[4],
             schema: confirmed[5],
             no_data: confirmed[6],
-            //  renderer:"Choropleth",
+            // renderer:"Choropleth",
             field: current_layers[layer_name].rendered_field,
             extra_options: confirmed[7]
           };
@@ -12449,11 +12465,11 @@ function createStyleBox(layer_name) {
       if (type === 'Point' && current_layers[layer_name].pointRadius) {
         current_layers[layer_name].pointRadius = +current_pt_size;
       }
-      if (renderer != undefined && rendering_params != undefined && renderer !== 'Stewart' && renderer !== 'Categorical') {
-        current_layers[layer_name].fill_color = { 'class': rendering_params.colorsByFeature };
+      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Stewart' && renderer !== 'Categorical') {
+        current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
         var colors_breaks = [];
-        for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-          colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+        for (var i = rendering_params.breaks.length - 1; i > 0; --i) {
+          colors_breaks.push([[rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.colors[i - 1]]);
         }
         current_layers[layer_name].colors_breaks = colors_breaks;
         current_layers[layer_name].rendered_field = rendering_params.field;
@@ -12470,9 +12486,11 @@ function createStyleBox(layer_name) {
         current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
           return obj[1];
         });
-      } else if (renderer === 'Categorical' && rendering_params != undefined) {
+      } else if (renderer === 'Categorical' && rendering_params !== undefined) {
         current_layers[layer_name].color_map = rendering_params.color_map;
-        current_layers[layer_name].fill_color = { 'class': [].concat(rendering_params.colorsByFeature) };
+        current_layers[layer_name].fill_color = {
+          class: [].concat(rendering_params.colorsByFeature)
+        };
       }
 
       if (rendering_params !== undefined && rendering_params.field !== undefined || renderer === 'Stewart') {
@@ -12551,7 +12569,7 @@ function createStyleBox(layer_name) {
     });
   }
 
-  if (current_layers[layer_name].colors_breaks == undefined && renderer !== 'Categorical') {
+  if (current_layers[layer_name].colors_breaks === undefined && renderer !== 'Categorical') {
     if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
       var fields = getFieldsType('category', null, fields_layer);
       var fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
@@ -12650,7 +12668,7 @@ function createStyleBox(layer_name) {
             field: field_to_discretize,
             extra_options: confirmed[7]
           };
-          var opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9;
+          // let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
           selection.transition().style('fill', function (d, i) {
             return rendering_params.colorsByFeature[i];
           });
@@ -12668,7 +12686,8 @@ function createStyleBox(layer_name) {
       if (reversed) new_coloramp.reverse();
       for (var i = 0; i < nb_ft; ++i) {
         rendering_params.breaks[i][1] = new_coloramp[i];
-      }selection.transition().style('fill', function (d, i) {
+      }
+      selection.transition().style('fill', function (d, i) {
         return new_coloramp[i];
       });
       current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
@@ -12693,7 +12712,7 @@ function createStyleBox(layer_name) {
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
     selection.style('fill-opacity', this.value);
-    fill_opacity_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
+    fill_opacity_section.select('#fill_opacity_txt').html(this.value * 100 + '%');
   });
   fill_opacity_section.append('span').style('float', 'right').attr('id', 'fill_opacity_txt').html(+opacity * 100 + '%');
 
@@ -12755,6 +12774,15 @@ function make_generate_labels_graticule_section(parent_node) {
   });
 }
 
+/**
+* Create the section allowing to generate labels on a parent style box.
+* (Used by all the createStyleBox_xxx functions)
+*
+* @param {Object} parent_node - The d3 selection corresponding the parent style box.
+* @param {String} layer_name - The name of the layer currently edited in the style box.
+* @return {void}
+*
+*/
 function make_generate_labels_section(parent_node, layer_name) {
   var _fields = get_fields_name(layer_name) || [];
   if (_fields && _fields.length > 0) {
@@ -12807,13 +12835,20 @@ function make_generate_labels_section(parent_node, layer_name) {
   }
 }
 
+/**
+* Return the name of the fields/columns
+* (ie. the members of the `properties` Object for each feature on a layer)
+*
+* @param {String} layer_name - The name of the layer.
+* @return {Array} - An array of Strings, one for each field name.
+*
+*/
 function get_fields_name(layer_name) {
   var elem = document.getElementById(_app.layer_to_id.get(layer_name)).childNodes[0];
   if (!elem.__data__ || !elem.__data__.properties) {
     return null;
-  } else {
-    return Object.getOwnPropertyNames(elem.__data__.properties);
   }
+  return Object.getOwnPropertyNames(elem.__data__.properties);
 }
 
 function createStyleBoxWaffle(layer_name) {
@@ -12871,10 +12906,11 @@ function createStyleBoxWaffle(layer_name) {
     var p = ref_colors_section.append('p').style('margin', '15px 5px');
     p.append('span').html(current_layers[layer_name].rendered_field[i]);
     p.insert('input').attr('type', 'color').attr('id', i).attr('value', current_layers[layer_name].fill_color[i]).style('float', 'right').on('change', function () {
+      // eslint-disable-line no-loop-func
       var col = rgb2hex(this.value);
       var to_replace = current_layers[layer_name].fill_color[i];
       current_layers[layer_name].fill_color[i] = col;
-      selection.selectAll(symbol).each(function (d, i) {
+      selection.selectAll(symbol).each(function () {
         if (rgb2hex(this.getAttribute('fill')) === to_replace) {
           this.setAttribute('fill', col);
         }
@@ -12886,7 +12922,7 @@ function createStyleBoxWaffle(layer_name) {
     _loop(i);
   }
 
-  var size_section = popup.append('p').attr('class', 'line_elem').attr('id', 'size_section').style('clear', 'both');;
+  var size_section = popup.append('p').attr('class', 'line_elem').attr('id', 'size_section').style('clear', 'both');
 
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
   size_section.insert('input').attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
@@ -12894,7 +12930,7 @@ function createStyleBoxWaffle(layer_name) {
     var nCol = current_layers[layer_name].nCol;
     current_layers[layer_name].size = val;
     selection.selectAll('g').selectAll(symbol).each(function (d, i) {
-      if (symbol == 'circle') {
+      if (symbol === 'circle') {
         var t_x = round(i % nCol * 2 * val);
         var t_y = floor(floor(i / nCol) * 2 * val);
         this.setAttribute('r', val);
@@ -12987,8 +13023,8 @@ function createStyleBox_ProbSymbol(layer_name) {
       }
     } else if (type_symbol === 'rect') {
       for (var _i = 0, _len = prop_values.length; _i < _len; _i++) {
-        var old_rect_size = +selec[_i].getAttribute('height'),
-            centr = [+selec[_i].getAttribute('x') + old_rect_size / 2 - prop_values[_i] / 2, +selec[_i].getAttribute('y') + old_rect_size / 2 - prop_values[_i] / 2];
+        var old_rect_size = +selec[_i].getAttribute('height');
+        var centr = [+selec[_i].getAttribute('x') + old_rect_size / 2 - prop_values[_i] / 2, +selec[_i].getAttribute('y') + old_rect_size / 2 - prop_values[_i] / 2];
         selec[_i].setAttribute('x', centr[0]);
         selec[_i].setAttribute('y', centr[1]);
         selec[_i].setAttribute('height', prop_values[_i]);
@@ -12999,7 +13035,7 @@ function createStyleBox_ProbSymbol(layer_name) {
 
   if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
-  } else if (current_layers[layer_name].break_val != undefined) {
+  } else if (current_layers[layer_name].break_val !== undefined) {
     prev_col_breaks = current_layers[layer_name].break_val;
   }
   if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
@@ -13014,22 +13050,24 @@ function createStyleBox_ProbSymbol(layer_name) {
       }
       if (type_symbol === 'circle') {
         selection.each(function (d, i) {
-          d.properties.prop_value = this.getAttribute('r');
-          d.properties.color = rgb2hex(this.style.fill);
+          d.properties.prop_value = this.getAttribute('r'); // eslint-disable-line no-param-reassign
+          d.properties.color = rgb2hex(this.style.fill); // eslint-disable-line no-param-reassign
         });
       } else {
         selection.each(function (d, i) {
-          d.properties.prop_value = this.getAttribute('height');
-          d.properties.color = rgb2hex(this.style.fill);
+          d.properties.prop_value = this.getAttribute('height'); // eslint-disable-line no-param-reassign
+          d.properties.color = rgb2hex(this.style.fill); // eslint-disable-line no-param-reassign
         });
       }
 
-      if ((type_method === 'PropSymbolsChoro' || type_method === 'PropSymbolsTypo') && rendering_params != undefined) {
+      if ((type_method === 'PropSymbolsChoro' || type_method === 'PropSymbolsTypo') && rendering_params !== undefined) {
         if (type_method === 'PropSymbolsChoro') {
-          current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+          current_layers[layer_name].fill_color = {
+            class: [].concat(rendering_params.colorsByFeature)
+          };
           current_layers[layer_name].colors_breaks = [];
-          for (var i = rendering_params['breaks'].length - 1; i > 0; --i) {
-            current_layers[layer_name].colors_breaks.push([[rendering_params['breaks'][i - 1], ' - ', rendering_params['breaks'][i]].join(''), rendering_params['colors'][i - 1]]);
+          for (var i = rendering_params.breaks.length - 1; i > 0; --i) {
+            current_layers[layer_name].colors_breaks.push([[rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.colors[i - 1]]);
           }
           current_layers[layer_name].options_disc = {
             schema: rendering_params.schema,
@@ -13040,7 +13078,9 @@ function createStyleBox_ProbSymbol(layer_name) {
             extra_options: rendering_params.extra_options
           };
         } else if (type_method === 'PropSymbolsTypo') {
-          current_layers[layer_name].fill_color = { class: [].concat(rendering_params.colorsByFeature) };
+          current_layers[layer_name].fill_color = {
+            class: [].concat(rendering_params.colorsByFeature)
+          };
           current_layers[layer_name].color_map = rendering_params.color_map;
         }
         current_layers[layer_name].rendered_field2 = rendering_params.field;
@@ -13082,7 +13122,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         fill_categorical(layer_name, fill_prev.categorical[0], type_symbol, fill_prev.categorical[1]);
       }
       current_layers[layer_name].fill_color = fill_prev;
-      if (current_layers[layer_name].size[1] != old_size[1]) {
+      if (current_layers[layer_name].size[1] !== old_size[1]) {
         var prop_values = prop_sizer3_e(d_values, old_size[0], old_size[1], type_symbol);
         redraw_prop_val(prop_values);
         current_layers[layer_name].size = [old_size[0], old_size[1]];
@@ -13129,7 +13169,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         }
       });
     });
-  } else if (current_layers[layer_name].break_val != undefined) {
+  } else if (current_layers[layer_name].break_val !== undefined) {
     var fill_color_section = popup.append('div').attr('id', 'fill_color_section');
     fill_color_section.append('p').style('text-align', 'center').html(i18next.t('app_page.layer_style_popup.color_break'));
     var p2 = fill_color_section.append('p').style('display', 'inline');
@@ -13173,8 +13213,12 @@ function createStyleBox_ProbSymbol(layer_name) {
         container.modal.show();
         if (confirmed) {
           rendering_params = {
-            nb_class: confirmed[0], color_map: confirmed[1], colorsByFeature: confirmed[2],
-            renderer: 'Categorical', rendered_field: _field_color, field: _field_color
+            nb_class: confirmed[0],
+            color_map: confirmed[1],
+            colorsByFeature: confirmed[2],
+            renderer: 'Categorical',
+            rendered_field: _field_color,
+            field: _field_color
           };
           selection.style('fill', function (d, i) {
             return rendering_params.colorsByFeature[i];
@@ -13287,10 +13331,16 @@ function createStyleBox_ProbSymbol(layer_name) {
       }
     });
   });
-
   make_generate_labels_section(popup, layer_name);
 }
 
+/**
+* Function triggered when the user want to edit a single label.
+*
+* @param {Node} label_node - The HTMLElement corresponding to this label.
+* @return {void}
+*
+*/
 function make_style_box_indiv_label(label_node) {
   var current_options = {
     size: label_node.style.fontSize,
@@ -13305,37 +13355,32 @@ function make_style_box_indiv_label(label_node) {
   check_remove_existing_box('.styleTextAnnotation');
   make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.func_options.label.title_box_indiv'), { widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (!confirmed) {
-      label_node.style.fontsize = current_options.size;
-      label_node.textContent = current_options.content;
-      label_node.style.fill = current_options.color;
-      label_node.style.fontFamily = current_options.font;
-    } else {
-      // Change the layer name if requested :
-      if (new_layer_name !== layer_name) {
-        change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
-      }
+      label_node.style.fontsize = current_options.size; // eslint-disable-line no-param-reassign
+      label_node.textContent = current_options.content; // eslint-disable-line no-param-reassign
+      label_node.style.fill = current_options.color; // eslint-disable-line no-param-reassign
+      label_node.style.fontFamily = current_options.font; // eslint-disable-line no-param-reassign
     }
   });
   var box_content = d3.select('.styleTextAnnotation').select('.modal-content').style('width', '300px').select('.modal-body').insert('div');
   var a = box_content.append('p').attr('class', 'line_elem');
   a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
   a.append('input').attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any', value: +label_node.style.fontSize.slice(0, -2) }).styles({ width: '70px', float: 'right' }).on('change', function () {
-    label_node.style.fontSize = this.value + 'px';
+    label_node.style.fontSize = this.value + 'px'; // eslint-disable-line no-param-reassign
   });
   var b = box_content.append('p').attr('class', 'line_elem');
   b.insert('span').html(i18next.t('app_page.func_options.label.content'));
   b.append('input').attrs({ value: label_node.textContent, id: 'label_content' }).styles({ width: '70px', float: 'right' }).on('keyup', function () {
-    label_node.textContent = this.value;
+    label_node.textContent = this.value; // eslint-disable-line no-param-reassign
   });
   var c = box_content.append('p').attr('class', 'line_elem');
   c.insert('span').html(i18next.t('app_page.func_options.common.color'));
   c.append('input').attrs({ type: 'color', value: rgb2hex(label_node.style.fill), id: 'label_color' }).styles({ width: '70px', float: 'right' }).on('change', function () {
-    label_node.style.fill = this.value;
+    label_node.style.fill = this.value; // eslint-disable-line no-param-reassign
   });
   var d = box_content.append('p').attr('class', 'line_elem');
   d.insert('span').html(i18next.t('app_page.func_options.label.font_type'));
   var selec_fonts = d.append('select').style('float', 'right').on('change', function () {
-    label_node.style.fontFamily = this.value;
+    label_node.style.fontFamily = this.value; // eslint-disable-line no-param-reassign
   });
 
   available_fonts.forEach(function (name) {
@@ -13344,6 +13389,14 @@ function make_style_box_indiv_label(label_node) {
   selec_fonts.node().value = label_node.style.fontFamily;
 }
 
+/**
+* Function creating a drop shadow on a layer.
+* Currently the properties (offset, gaussianBlur) of this shadow are hard-coded.
+*
+* @param {String} layerId - The id of the layer (ie. the "id" attribute, not the layer name)
+* @return {void}
+*
+*/
 var createDropShadow = function createDropShadow(layerId) {
   var filt_to_use = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
   filt_to_use.setAttribute('id', 'filt_' + layerId);
@@ -13371,34 +13424,37 @@ var createDropShadow = function createDropShadow(layerId) {
   svg_map.querySelector('#' + layerId).setAttribute('filter', 'url(#filt_' + layerId + ')');
 };
 
-// /**
-// * Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
-// * if one with the same param already exists, its id is returned,
-// * otherwise a new one is created, and its id is returned
-// */
+/**
+* Return the id of a gaussian blur filter with the desired size (stdDeviation attribute)
+* if one with the same param already exists, its id is returned,
+* otherwise a new one is created, and its id is returned
+*/
 // var getBlurFilter = (function(size){
-//     var count = 0;
-//     return function(size) {
-//         let blur_filts = defs.node().getElementsByClassName("blur");
-//         let blur_filt_to_use;
-//         for(let i=0; i < blur_filts.length; i++){
-//             if(blur_filts[i].querySelector("feGaussianBlur").getAttributeNS(null, "stdDeviation") == size){
-//                 blur_filt_to_use = blur_filts[i];
-//             }
-//         }
-//         if(!blur_filt_to_use){
-//             count = count + 1;
-//             blur_filt_to_use = document.createElementNS("http://www.w3.org/2000/svg", "filter");
-//             blur_filt_to_use.setAttribute("id","blurfilt" + count);
-//             blur_filt_to_use.setAttribute("class", "blur");
-//             var gaussianFilter = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
-//             gaussianFilter.setAttributeNS(null, "in", "SourceGraphic");
-//             gaussianFilter.setAttributeNS(null, "stdDeviation", size);
-//             blur_filt_to_use.appendChild(gaussianFilter);
-//             defs.node().appendChild(blur_filt_to_use);
-//         }
-//         return blur_filt_to_use.id;
-//     };
+//   var count = 0;
+//   return function(size) {
+//     let blur_filts = defs.node().getElementsByClassName("blur");
+//     let blur_filt_to_use;
+//     for(let i=0; i < blur_filts.length; i++){
+//       if(blur_filts[i].querySelector("feGaussianBlur")
+//                      .getAttributeNS(null, "stdDeviation") === size){
+//         blur_filt_to_use = blur_filts[i];
+//       }
+//     }
+//     if(!blur_filt_to_use){
+//       count = count + 1;
+//       blur_filt_to_use = document.createElementNS(
+//         "http://www.w3.org/2000/svg", "filter");
+//       blur_filt_to_use.setAttribute("id","blurfilt" + count);
+//       blur_filt_to_use.setAttribute("class", "blur");
+//       var gaussianFilter = document.createElementNS(
+//         "http://www.w3.org/2000/svg", "feGaussianBlur");
+//       gaussianFilter.setAttributeNS(null, "in", "SourceGraphic");
+//       gaussianFilter.setAttributeNS(null, "stdDeviation", size);
+//       blur_filt_to_use.appendChild(gaussianFilter);
+//       defs.node().appendChild(blur_filt_to_use);
+//     }
+//     return blur_filt_to_use.id;
+//   };
 // })();
 'use strict';
 
@@ -18321,8 +18377,13 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
   overlay_under_modal.display();
 };
 
-// Function to change (one of more of) the three rotations axis of a d3 projection
-// and redraw all the path (+ move symbols layers) in respect to that
+/**
+* Function to change (one of more of) the three rotations axis of a d3 projection
+* and redraw all the path (+ move symbols layers) in respect to that.
+*
+* @param {Array} param - The new [lambda, phi, gamma] properties to be used.
+* @return {void}
+*/
 function handle_proj_center_button(param) {
   // Fetch the current rotation params :
   var current_rotation = proj.rotate();
@@ -18366,7 +18427,15 @@ function handle_parallel_change(parallel) {
 // const degreesToRadians = function degreesToRadians(degrees) { return degrees * pidegrad; };
 // const radiansToDegrees = function radiansToDegrees(radians) { return radians * piraddeg; };
 
-// Should avoid some function calls compared to the previous comment section :
+/**
+* Return a d3.geoProjection from a proj4 projection.
+* (code below should avoid some function calls compared to the previous commented
+* section but achieve exactly the same job).
+*
+* @param {Object} _proj - The valid proj4 object returned by proj4.
+* @return {Object} - The projection as a d3.geoProjection.
+*
+*/
 var getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
   // Create the custom d3 projection using proj 4 forward and inverse functions:
   var projRaw = function projRaw(lambda, phi) {
