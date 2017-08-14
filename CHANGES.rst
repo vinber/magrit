@@ -1,10 +1,14 @@
 Changes
 =======
 
-0.4.1 (2017-08_xx)
+0.4.1 (2017-08-xx)
 ------------------
 
-- Fix background color when exporting to svg
+- Fix background color when exporting to svg.
+
+- Fix property box not opening on pictograms layer.
+
+- Don't apply clipping path to pictograms layers nor symbols layers.
 
 
 0.4.0 (2017-07-24)

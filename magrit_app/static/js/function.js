@@ -1,5 +1,3 @@
-'use strict';
-
 const get_menu_option = (function () {
   const menu_option = {
     smooth: {
@@ -69,6 +67,7 @@ const get_menu_option = (function () {
 /**
 * Remove the div on which we are displaying the options related to each
 * kind of rendering.
+* @return {void}
 *
 */
 function clean_menu_function() {
@@ -310,7 +309,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
   if (values && breaks === undefined) {
     const disc_result = discretize_to_size(
       values, discontinuity_type, nb_class, min_size, max_size);
-    breaks = disc_result[2];
+    breaks = disc_result[2]; // eslint-disable-line no-param-reassign
     if (!breaks) return false;
   }
 
@@ -679,7 +678,7 @@ function render_twostocks_waffle(layer, rendering_params) {
   const nb_features = result_data[layer_to_add].length;
   const new_layer = map.insert('g', '.legend')
     .attr('id', layer_id)
-    .attr('class', 'layer');
+    .attr('class', 'layer no_clip');
 
   if (symbol_type === 'circle') {
     const r = rendering_params.size;
@@ -2099,7 +2098,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       };
     };
 
-    const fields_id = getFieldsType('id', layer);
+    const fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     const f_ix_len = fields_id ? fields_id.length : 0;
     let get_color,
       col1,
@@ -2108,7 +2107,8 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       col1 = rendering_params.fill_color.two[0];
       col2 = rendering_params.fill_color.two[1];
       get_color = (val, ix) => (val > rendering_params.break_val ? col2 : col1);
-    } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
+    } else if (rendering_params.fill_color instanceof Array
+        && rendering_params.fill_color.length === nb_features) {
       get_color = (val, ix) => rendering_params.fill_color[ix];
     } else {
       get_color = () => rendering_params.fill_color;
@@ -2116,13 +2116,14 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 
     geojson_line_layer = make_geojson_line_layer();
   }
-
+  const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
+    || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
   const layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
   result_data[layer_to_add] = [];
   map.insert('g', '.legend')
-    .attrs({ id: layer_id, class: 'layer' })
+    .attrs({ id: layer_id, class: 'layer', 'clip-path': require_clip_path })
     .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
     .selectAll('path')
     .data(geojson_line_layer.features)
@@ -2150,7 +2151,9 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_line_layer.features.map(v => v.properties.color) };
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_line_layer.features.map(v => v.properties.color),
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -2234,7 +2237,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       };
     };
 
-    const fields_id = getFieldsType('id', layer);
+    const fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     const f_ix_len = fields_id ? fields_id.length : 0;
     let get_color,
       col1,
@@ -2261,7 +2264,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   result_data[layer_to_add] = [];
   if (symbol_type === 'circle') {
     map.insert('g', '.legend')
-      .attrs({ id: layer_id, class: 'layer' })
+      .attrs({ id: layer_id, class: 'layer no_clip' })
       .selectAll('circle')
       .data(geojson_pt_layer.features)
       .enter()
@@ -2281,7 +2284,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       .call(drag_elem_geo2);
   } else if (symbol_type === 'rect') {
     map.insert('g', '.legend')
-      .attrs({ id: layer_id, class: 'layer' })
+      .attrs({ id: layer_id, class: 'layer no_clip' })
       .selectAll('circle')
       .data(geojson_pt_layer.features)
       .enter()
@@ -2318,7 +2321,9 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_pt_layer.features.map(v => v.properties.color) };
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_pt_layer.features.map(v => v.properties.color),
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -2338,7 +2343,7 @@ function render_categorical(layer, rendering_params) {
     copy_layer(layer, rendering_params.new_name, 'typo', fields);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer = rendering_params.new_name; // eslint-disable-line no-param-reassign
   }
 
   const colorsByFeature = rendering_params.colorByFeature,
@@ -2377,7 +2382,7 @@ function render_choro(layer, rendering_params) {
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer = rendering_params.new_name; // eslint-disable-line no-param-reassign
   }
   const breaks = rendering_params.breaks;
   const options_disc = {
@@ -2648,7 +2653,8 @@ const fields_PropSymbolTypo = {
     btn_typo_class.on('click', () => {
       const selected_field = field2_selec.node().value,
         new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
-      let col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
+      let col_map = self.rendering_params[selected_field]
+        ? self.rendering_params[selected_field].color_map : undefined;
       let cats;
       [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
 
@@ -2918,8 +2924,13 @@ const render_discont = function () {
   _app.layer_to_id.set(new_layer_name, id_layer);
   _app.id_to_layer.set(id_layer, new_layer_name);
 
+
+  // This is the "id" field used to make a new id for the discontinuity line
+  // created in this function (by taking the id of the two nearby feature).
+  // We don't let the user choose it anymore but we might change that
+  // it just stay as 'undefined' for now:
+  const field_id = undefined;
   // field_id = field_id == "__default__" ? undefined : field_id;
-  let field_id = undefined;
 
   const result_value = new Map(),
     result_geom = {},
@@ -2949,13 +2960,13 @@ const render_discont = function () {
       swal('', i18next.t('app_page.common.error_discretization', { arg: w }), 'error');
       return;
     }
-
+    const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
+      || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
     breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
     result_data[new_layer_name] = [];
     const result_layer = map.insert('g', '.legend')
-      .attr('id', id_layer)
-      .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
-      .attr('class', 'layer');
+      .attrs({ id: id_layer, class: 'layer', 'clip-path': require_clip_path })
+      .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
     const data_result = result_data[new_layer_name];
     const result_lyr_node = result_layer.node();
 
@@ -2972,6 +2983,7 @@ const render_discont = function () {
       elem_data.properties = data_result[i];
       elem_data.properties.prop_val = p_size;
     }
+
     document.getElementById('overlay').style.display = 'none';
     current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
@@ -3264,7 +3276,8 @@ const fields_TypoSymbol = {
         cancelButtonText: i18next.t('app_page.common.cancel'),
       }).then(() => {
         const field = document.getElementById('field_Symbol').value;
-        const symbol_map = self.rendering_params[field] ? self.rendering_params[field].symbols_map : undefined;
+        const symbol_map = self.rendering_params[field]
+          ? self.rendering_params[field].symbols_map : undefined;
         display_box_symbol_typo(layer, field, symbol_map).then((confirmed) => {
           if (confirmed) {
             document.getElementById('yesTypoSymbols').disabled = null;
@@ -3349,7 +3362,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   _app.id_to_layer.set(layer_id, layer_to_add);
 
   map.insert('g', '.legend')
-    .attrs({ id: layer_id, class: 'layer' })
+    .attrs({ id: layer_id, class: 'layer no_clip' })
     .selectAll('image')
     .data(new_layer_data.features)
     .enter()

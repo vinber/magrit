@@ -163,7 +163,7 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   check_remove_existing_box('.styleBox');
 
-  const selection = map.select(`#${_app.layer_to_id.get(layer)}`).selectAll('image'),
+  const selection = map.select(`#${_app.layer_to_id.get(layer_name)}`).selectAll('image'),
     ref_layer_name = current_layers[layer_name].ref_layer_name,
     symbols_map = current_layers[layer_name].symbols_map,
     rendered_field = current_layers[layer_name].rendered_field;

@@ -1130,7 +1130,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.194e148940e1.json'
+      loadPath: 'static/locales/{{lng}}/translation.d54f35804936.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4273,6 +4273,7 @@ var get_menu_option = function () {
 /**
 * Remove the div on which we are displaying the options related to each
 * kind of rendering.
+* @return {void}
 *
 */
 function clean_menu_function() {
@@ -4485,7 +4486,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 
   if (values && breaks === undefined) {
     var disc_result = discretize_to_size(values, discontinuity_type, nb_class, min_size, max_size);
-    breaks = disc_result[2];
+    breaks = disc_result[2]; // eslint-disable-line no-param-reassign
     if (!breaks) return false;
   }
 
@@ -4847,7 +4848,7 @@ function render_twostocks_waffle(layer, rendering_params) {
   }
 
   var nb_features = result_data[layer_to_add].length;
-  var new_layer = map.insert('g', '.legend').attr('id', layer_id).attr('class', 'layer');
+  var new_layer = map.insert('g', '.legend').attr('id', layer_id).attr('class', 'layer no_clip');
 
   if (symbol_type === 'circle') {
     var r = rendering_params.size;
@@ -6281,7 +6282,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       };
     };
 
-    var fields_id = getFieldsType('id', layer);
+    var fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     var f_ix_len = fields_id ? fields_id.length : 0;
     var get_color = void 0,
         col1 = void 0,
@@ -6304,12 +6305,12 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 
     geojson_line_layer = make_geojson_line_layer();
   }
-
+  var require_clip_path = isInterrupted(current_proj_name.toLowerCase()) || current_proj_name.toLowerCase().indexOf('conicconformal') > -1 ? 'url(#clip)' : null;
   var layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
   result_data[layer_to_add] = [];
-  map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('path').data(geojson_line_layer.features).enter().append('path').attr('d', path).styles(function (d) {
+  map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer', 'clip-path': require_clip_path }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('path').data(geojson_line_layer.features).enter().append('path').attr('d', path).styles(function (d) {
     result_data[layer_to_add].push(d.properties);
     return {
       fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] };
@@ -6330,9 +6331,11 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_line_layer.features.map(function (v) {
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_line_layer.features.map(function (v) {
         return v.properties.color;
-      }) };
+      })
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -6419,7 +6422,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       };
     };
 
-    var fields_id = getFieldsType('id', layer);
+    var fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     var f_ix_len = fields_id ? fields_id.length : 0;
     var get_color = void 0,
         col1 = void 0,
@@ -6450,7 +6453,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   _app.id_to_layer.set(layer_id, layer_to_add);
   result_data[layer_to_add] = [];
   if (symbol_type === 'circle') {
-    map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer' }).selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
+    map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' }).selectAll('circle').data(geojson_pt_layer.features).enter().append('circle').attrs(function (d, i) {
       result_data[layer_to_add].push(d.properties);
       return {
         id: ['PropSymbol_', i, ' feature_', d.id].join(''),
@@ -6462,7 +6465,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       return d.properties.color;
     }).style('stroke', 'black').style('stroke-width', 1 / zs).call(drag_elem_geo2);
   } else if (symbol_type === 'rect') {
-    map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer' }).selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
+    map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' }).selectAll('circle').data(geojson_pt_layer.features).enter().append('rect').attrs(function (d, i) {
       var size = d.properties[t_field_name];
       result_data[layer_to_add].push(d.properties);
       return {
@@ -6492,9 +6495,11 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_pt_layer.features.map(function (v) {
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_pt_layer.features.map(function (v) {
         return v.properties.color;
-      }) };
+      })
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -6514,7 +6519,7 @@ function render_categorical(layer, rendering_params) {
     copy_layer(layer, rendering_params.new_name, 'typo', fields);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer = rendering_params.new_name; // eslint-disable-line no-param-reassign
   }
 
   var colorsByFeature = rendering_params.colorByFeature,
@@ -6551,7 +6556,7 @@ function render_choro(layer, rendering_params) {
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer = rendering_params.new_name; // eslint-disable-line no-param-reassign
   }
   var breaks = rendering_params.breaks;
   var options_disc = {
@@ -7040,8 +7045,12 @@ var render_discont = function render_discont() {
   _app.layer_to_id.set(new_layer_name, id_layer);
   _app.id_to_layer.set(id_layer, new_layer_name);
 
-  // field_id = field_id == "__default__" ? undefined : field_id;
+  // This is the "id" field used to make a new id for the discontinuity line
+  // created in this function (by taking the id of the two nearby feature).
+  // We don't let the user choose it anymore but we might change that
+  // it just stay as 'undefined' for now:
   var field_id = undefined;
+  // field_id = field_id == "__default__" ? undefined : field_id;
 
   var result_value = new Map(),
       result_geom = {},
@@ -7079,14 +7088,14 @@ var render_discont = function render_discont() {
       swal('', i18next.t('app_page.common.error_discretization', { arg: w }), 'error');
       return;
     }
-
+    var require_clip_path = isInterrupted(current_proj_name.toLowerCase()) || current_proj_name.toLowerCase().indexOf('conicconformal') > -1 ? 'url(#clip)' : null;
     breaks = breaks.map(function (ft) {
       return [ft[0], ft[1]];
     }).filter(function (d) {
       return d[1] !== undefined;
     });
     result_data[new_layer_name] = [];
-    var result_layer = map.insert('g', '.legend').attr('id', id_layer).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).attr('class', 'layer');
+    var result_layer = map.insert('g', '.legend').attrs({ id: id_layer, class: 'layer', 'clip-path': require_clip_path }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
     var data_result = result_data[new_layer_name];
     var result_lyr_node = result_layer.node();
 
@@ -7100,6 +7109,7 @@ var render_discont = function render_discont() {
       elem_data.properties = data_result[i];
       elem_data.properties.prop_val = p_size;
     }
+
     document.getElementById('overlay').style.display = 'none';
     current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
@@ -7429,7 +7439,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
 
-  map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d) {
+  map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' }).selectAll('image').data(new_layer_data.features).enter().insert('image').attrs(function (d) {
     var symb = rendering_params.symbols_map.get(d.properties.symbol_field),
         coords = path.centroid(d.geometry);
     return {
@@ -11748,7 +11758,7 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   check_remove_existing_box('.styleBox');
 
-  var selection = map.select('#' + _app.layer_to_id.get(layer)).selectAll('image'),
+  var selection = map.select('#' + _app.layer_to_id.get(layer_name)).selectAll('image'),
       ref_layer_name = current_layers[layer_name].ref_layer_name,
       symbols_map = current_layers[layer_name].symbols_map,
       rendered_field = current_layers[layer_name].rendered_field;
@@ -19248,6 +19258,14 @@ var TextImportWizard = function () {
 }();
 'use strict';
 
+/**
+* Function triggered when the user click on the "zoom by tracing a rectangle"
+* button.
+* If the feature is already active, it disable it. Otherwise it enable it.
+*
+* @return {void}
+*
+*/
 var handleZoomRect = function handleZoomRect() {
   var b = map.select('.brush');
   if (b.node()) {
@@ -19257,6 +19275,13 @@ var handleZoomRect = function handleZoomRect() {
   }
 };
 
+/**
+* Function handling the click on the map and the brush effect when
+* the "zoom by tracing a rectangle" is enabled.
+* It may fail on some projections when the user click outside of the sphere.
+*
+* @return {void}
+*/
 var makeZoomRect = function makeZoomRect() {
   if (!proj.invert) return;
   function idled() {
@@ -19265,7 +19290,10 @@ var makeZoomRect = function makeZoomRect() {
   function brushended() {
     var s = d3.event.selection;
     if (!s) {
-      if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+      if (!idleTimeout) {
+        idleTimeout = setTimeout(idled, idleDelay);
+        return idleTimeout;
+      }
     } else {
       var x_min = s[0][0],
           x_max = s[1][0];
@@ -19290,8 +19318,8 @@ var makeZoomRect = function makeZoomRect() {
     }
   }
 
-  var brush = d3.brush().on('end', brushended),
-      idleTimeout,
+  var brush = d3.brush().on('end', brushended);
+  var idleTimeout = void 0,
       idleDelay = 350;
   map.append('g').attr('class', 'brush').call(brush);
 };
