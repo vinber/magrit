@@ -10,6 +10,8 @@ Changes
 
 - Don't apply clipping path to pictograms layers nor symbols layers.
 
+- Change the overlay displayed when a layer is loading.
+
 
 0.4.0 (2017-07-24)
 ------------------

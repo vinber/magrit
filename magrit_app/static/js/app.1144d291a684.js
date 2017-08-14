@@ -70,14 +70,12 @@ function setUpInterface(reload_project) {
   var bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  bg.style.textAlign = 'center';
   // bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
   //                '<span style="color: white; z-index: 2;">...<br></span>' +
   //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
   //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
   //                '<div class="line"></div><div class="line"></div></div></div>';
-  bg.style.color = 'black';
-  bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:185px; margin-bottom: 20px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner windcatcher" id="windcatcher">\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n  <div class="blade"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-top: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
+  bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
   var btn = document.createElement('button');
   btn.style.fontSize = '13px';
   btn.style.background = '#4b9cdb';
@@ -1130,7 +1128,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.3f4135aeb2dc.json'
+      loadPath: 'static/locales/{{lng}}/translation.1144d291a684.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -12752,7 +12750,7 @@ function createStyleBoxStewart(layer_name) {
     current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
   };
   var fill_prev = cloneObj(current_layers[layer_name].fill_color);
-  var rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };;
+  var rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
   var prev_col_breaks = void 0;
   if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);

@@ -70,28 +70,23 @@ function setUpInterface(reload_project) {
   const bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  bg.style.textAlign = 'center';
   // bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
   //                '<span style="color: white; z-index: 2;">...<br></span>' +
   //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
   //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
   //                '<div class="line"></div><div class="line"></div></div></div>';
-  bg.style.color = 'black';
   bg.innerHTML = `
 <img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
-<span class="i18n" style="z-index: 2; margin-top:185px; margin-bottom: 20px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
+<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
 <span style="z-index: 2;">...<br></span>
-<div class="spinner windcatcher" id="windcatcher">
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
-  <div class="blade"></div>
+<div class="spinner">
+  <div class="rect1"></div>
+  <div class="rect2"></div>
+  <div class="rect3"></div>
+  <div class="rect4"></div>
+  <div class="rect5"></div>
 </div>
-<span class="i18n" style="z-index: 2;display: inline-block; margin-top: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
+<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
   const btn = document.createElement('button');
   btn.style.fontSize = '13px';
   btn.style.background = '#4b9cdb';
