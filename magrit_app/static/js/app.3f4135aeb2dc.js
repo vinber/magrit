@@ -1130,7 +1130,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.d54f35804936.json'
+      loadPath: 'static/locales/{{lng}}/translation.3f4135aeb2dc.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11632,6 +11632,8 @@ function handle_click_layer(layer_name) {
     createStyleBoxTypoSymbols(layer_name);
   } else if (current_layers[layer_name].renderer && current_layers[layer_name].renderer === 'TwoStocksWaffle') {
     createStyleBoxWaffle(layer_name);
+  } else if (current_layers[layer_name].renderer === 'Stewart') {
+    createStyleBoxStewart(layer_name);
   } else {
     createStyleBox(layer_name);
   }
@@ -12475,7 +12477,7 @@ function createStyleBox(layer_name) {
       if (type === 'Point' && current_layers[layer_name].pointRadius) {
         current_layers[layer_name].pointRadius = +current_pt_size;
       }
-      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Stewart' && renderer !== 'Categorical') {
+      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Categorical') {
         current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
         var colors_breaks = [];
         for (var i = rendering_params.breaks.length - 1; i > 0; --i) {
@@ -12491,11 +12493,6 @@ function createStyleBox(layer_name) {
           breaks: rendering_params.breaks,
           extra_options: rendering_params.extra_options
         };
-      } else if (renderer === 'Stewart') {
-        current_layers[layer_name].colors_breaks = rendering_params.breaks;
-        current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
-          return obj[1];
-        });
       } else if (renderer === 'Categorical' && rendering_params !== undefined) {
         current_layers[layer_name].color_map = rendering_params.color_map;
         current_layers[layer_name].fill_color = {
@@ -12503,7 +12500,7 @@ function createStyleBox(layer_name) {
         };
       }
 
-      if (rendering_params !== undefined && rendering_params.field !== undefined || renderer === 'Stewart') {
+      if (rendering_params !== undefined && rendering_params.field !== undefined) {
         redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
       }
       // Change the layer name if requested :
@@ -12521,10 +12518,7 @@ function createStyleBox(layer_name) {
       if (type === 'Point' && current_layers[layer_name].pointRadius) {
         selection.attr('d', path.pointRadius(+current_layers[layer_name].pointRadius));
       } else {
-        if (current_layers[layer_name].renderer === 'Stewart') {
-          recolor_stewart(prev_palette.name, prev_palette.reversed);
-          redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
-        } else if (fill_meth === 'single') {
+        if (fill_meth === 'single') {
           selection.style('fill', fill_prev.single).style('stroke', stroke_prev);
         } else if (fill_meth === 'class') {
           selection.style('fill-opacity', opacity).style('fill', function (d, i) {
@@ -12685,39 +12679,143 @@ function createStyleBox(layer_name) {
         }
       });
     });
-  } else if (renderer === 'Stewart') {
-    var field_to_colorize = 'min',
-        nb_ft = current_layers[layer_name].n_features;
-    var prev_palette = cloneObj(current_layers[layer_name].color_palette);
-    rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
-
-    var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
-      var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-      if (reversed) new_coloramp.reverse();
-      for (var i = 0; i < nb_ft; ++i) {
-        rendering_params.breaks[i][1] = new_coloramp[i];
-      }
-      selection.transition().style('fill', function (d, i) {
-        return new_coloramp[i];
-      });
-      current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
-    };
-
-    var color_palette_section = popup.insert('p').attr('class', 'line_elem');
-    color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
-    var seq_color_select = color_palette_section.insert('select').attr('id', 'coloramp_params').style('float', 'right').on('change', function () {
-      recolor_stewart(this.value, false);
-    });
-
-    ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
-      seq_color_select.append('option').text(name).attr('value', name);
-    });
-    seq_color_select.node().value = prev_palette.name;
-    popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', margin: '0 !important' }).insert('button').attrs({ class: 'button_st3', id: 'reverse_colramp' }).html(i18next.t('app_page.layer_style_popup.reverse_palette')).on('click', function () {
-      var pal_name = document.getElementById('coloramp_params').value;
-      recolor_stewart(pal_name, true);
-    });
   }
+
+  var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
+  fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+    selection.style('fill-opacity', this.value);
+    fill_opacity_section.select('#fill_opacity_txt').html(this.value * 100 + '%');
+  });
+  fill_opacity_section.append('span').style('float', 'right').attr('id', 'fill_opacity_txt').html(+opacity * 100 + '%');
+
+  var c_section = popup.append('p').attr('class', 'line_elem');
+  c_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_color'));
+  c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+    selection.style('stroke', this.value);
+  });
+
+  var opacity_section = popup.append('p').attr('class', 'line_elem');
+  opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
+  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+    opacity_section.select('#opacity_val_txt').html(' ' + this.value);
+    selection.style('stroke-opacity', this.value);
+  });
+
+  opacity_section.append('span').attr('id', 'opacity_val_txt').styles({ display: 'inline', float: 'right' }).html(' ' + border_opacity);
+
+  var width_section = popup.append('p');
+  width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
+  width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+    var val = +this.value;
+    var zoom_scale = +d3.zoomTransform(map.node()).k;
+    map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
+    current_layers[layer_name]['stroke-width-const'] = val;
+  });
+
+  var shadow_section = popup.append('p');
+  var chkbx = shadow_section.insert('input').style('margin', '0').attrs({
+    type: 'checkbox',
+    id: 'checkbox_shadow_layer',
+    checked: map.select(g_lyr_name).attr('filter') ? true : null });
+  shadow_section.insert('label').attr('for', 'checkbox_shadow_layer').html(i18next.t('app_page.layer_style_popup.layer_shadow'));
+  chkbx.on('change', function () {
+    if (this.checked) {
+      createDropShadow(_app.layer_to_id.get(layer_name));
+    } else {
+      var filter_id = map.select(g_lyr_name).attr('filter');
+      svg_map.querySelector(filter_id.substring(4).replace(')', '')).remove();
+      map.select(g_lyr_name).attr('filter', null);
+    }
+  });
+  make_generate_labels_section(popup, layer_name);
+}
+
+function createStyleBoxStewart(layer_name) {
+  check_remove_existing_box('.styleBox');
+  var g_lyr_name = '#' + _app.layer_to_id.get(layer_name),
+      selection = map.select(g_lyr_name).selectAll('path'),
+      opacity = selection.style('fill-opacity');
+
+  var nb_ft = current_layers[layer_name].n_features;
+  var prev_palette = cloneObj(current_layers[layer_name].color_palette);
+
+  var recolor_stewart = function recolor_stewart(coloramp_name, reversed) {
+    var new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
+    if (reversed) new_coloramp.reverse();
+    for (var i = 0; i < nb_ft; ++i) {
+      rendering_params.breaks[i][1] = new_coloramp[i];
+    }
+    selection.transition().style('fill', function (d, i) {
+      return new_coloramp[i];
+    });
+    current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+  };
+  var fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  var rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };;
+  var prev_col_breaks = void 0;
+  if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  }
+  var border_opacity = selection.style('stroke-opacity'),
+      stroke_width = +current_layers[layer_name]['stroke-width-const'];
+  var stroke_prev = selection.style('stroke');
+
+  if (stroke_prev.startsWith('rgb')) {
+    stroke_prev = rgb2hex(stroke_prev);
+  }
+
+  make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
+    if (confirmed) {
+      current_layers[layer_name].colors_breaks = rendering_params.breaks;
+      current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
+        return obj[1];
+      });
+      redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+      // Change the layer name if requested :
+      if (new_layer_name !== layer_name) {
+        change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
+      }
+      zoom_without_redraw();
+    } else {
+      // Reset to original values the rendering parameters if "no" is clicked
+      selection.style('fill-opacity', opacity).style('stroke-opacity', border_opacity);
+      var zoom_scale = +d3.zoomTransform(map.node()).k;
+      map.select(g_lyr_name).style('stroke-width', stroke_width / zoom_scale + 'px');
+      current_layers[layer_name]['stroke-width-const'] = stroke_width;
+      var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+      recolor_stewart(prev_palette.name, prev_palette.reversed);
+      redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+      current_layers[layer_name].colors_breaks = prev_col_breaks;
+      current_layers[layer_name].fill_color = fill_prev;
+      zoom_without_redraw();
+    }
+  });
+
+  var container = document.querySelector('.twbs > .styleBox');
+  var popup = d3.select(container).select('.modal-content').style('width', '300px').select('.modal-body');
+
+  var new_layer_name = layer_name;
+  var new_name_section = make_change_layer_name_section(popup, layer_name);
+  new_name_section.on('change', function () {
+    new_layer_name = this.value;
+  });
+
+  var color_palette_section = popup.insert('p').attr('class', 'line_elem');
+  color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
+  var seq_color_select = color_palette_section.insert('select').attr('id', 'coloramp_params').style('float', 'right').on('change', function () {
+    recolor_stewart(this.value, false);
+  });
+
+  ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
+    seq_color_select.append('option').text(name).attr('value', name);
+  });
+  seq_color_select.node().value = prev_palette.name;
+  popup.insert('p').attr('class', 'line_elem').styles({ 'text-align': 'center', margin: '0 !important' }).insert('button').attrs({ class: 'button_st3', id: 'reverse_colramp' }).html(i18next.t('app_page.layer_style_popup.reverse_palette')).on('click', function () {
+    var pal_name = document.getElementById('coloramp_params').value;
+    recolor_stewart(pal_name, true);
+  });
+
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
