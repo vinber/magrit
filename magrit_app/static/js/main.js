@@ -70,12 +70,23 @@ function setUpInterface(reload_project) {
   const bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  bg.style.textAlign = 'center';
-  bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
-                 '<span style="color: white; z-index: 2;">...<br></span>' +
-                 '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
-                 '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
-                 '<div class="line"></div><div class="line"></div></div></div>';
+  // bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
+  //                '<span style="color: white; z-index: 2;">...<br></span>' +
+  //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
+  //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
+  //                '<div class="line"></div><div class="line"></div></div></div>';
+  bg.innerHTML = `
+<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
+<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
+<span style="z-index: 2;">...<br></span>
+<div class="spinner">
+  <div class="rect1"></div>
+  <div class="rect2"></div>
+  <div class="rect3"></div>
+  <div class="rect4"></div>
+  <div class="rect5"></div>
+</div>
+<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
   const btn = document.createElement('button');
   btn.style.fontSize = '13px';
   btn.style.background = '#4b9cdb';
@@ -973,7 +984,7 @@ function setUpInterface(reload_project) {
   selec_projection.on('change', function () {
     if (this.value === 'proj4string') {
       proj4_input.style('display', 'initial');
-      if (proj4_input.node().value === '' || proj4_input.node().value == undefined) {
+      if (proj4_input.node().value === '' || proj4_input.node().value === undefined) {
         ok_button.disabled = 'true';
       }
     } else {
@@ -1028,12 +1039,12 @@ function setUpInterface(reload_project) {
     .append('p')
     .style('margin', 'auto')
     .insert('button')
-    .attrs((d, i) => ({
-      'data-placement': d.tooltip_position,
-      class: d.class,
-      'data-i18n': d.i18n,
-      id: d.id }))
-    .html(d => d.html);
+    .attrs(elem => ({
+      'data-placement': elem.tooltip_position,
+      class: elem.class,
+      'data-i18n': elem.i18n,
+      id: elem.id }))
+    .html(elem => elem.html);
 
   // Trigger actions when buttons are clicked and set-up the initial view :
   d3.selectAll('.zoom_button').on('click', zoomClick);
@@ -1505,8 +1516,10 @@ function displayInfoOnMove() {
 }
 
 /**
-*  Function redrawing the prop symbol / img / labels when the projection changes
-*   (also taking care of redrawing point layer with appropriate 'pointRadius')
+* Function redrawing the prop symbol / img / labels / waffles when the projection
+* changes (also taking care of redrawing point layer with appropriate 'pointRadius')
+*
+* @return {void}
 *
 */
 function reproj_symbol_layer() {
@@ -1801,12 +1814,12 @@ function remove_layer_cleanup(name) {
   document.querySelector(`#sortable .${layer_id}`).remove();
 
   // Remove the layer from the "geo export" menu :
-  const a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
+  const a = document.getElementById('layer_to_export').querySelector(`option[value="${name}"]`);
   if (a) a.remove();
 
   // Remove the layer from the "mask" section if the "smoothed map" menu is open :
   if (_app.current_functionnality && _app.current_functionnality.name === 'smooth') {
-    const aa = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+    const aa = document.getElementById('stewart_mask').querySelector(`option[value="${name}"]`);
     if (aa) aa.remove();
     // Array.prototype.forEach.call(
     //   document.getElementById('stewart_mask').options, el => {
@@ -1872,8 +1885,8 @@ function handle_bg_color(color) {
 function handle_click_hand(behavior) {
   const hb = d3.select('.hand_button');
   // eslint-disable-next-line no-param-reassign
-  behavior = behavior && typeof behavior !== 'object' ? behavior : !hb.classed('locked') ? 'lock' : 'unlock';
-  if (behavior === 'lock') {
+  const b = (behavior && typeof behavior !== 'object' ? behavior : false) || !hb.classed('locked') ? 'lock' : 'unlock';
+  if (b === 'lock') {
     hb.classed('locked', true);
     hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
     map.select('.brush').remove();
@@ -1895,8 +1908,8 @@ function handle_click_hand(behavior) {
 
 function zoom_without_redraw() {
   const rot_val = canvas_rotation_value || '';
-  let transform,
-    t_val;
+  let transform;
+  let t_val;
   if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
     transform = d3.zoomTransform(svg_map);
     t_val = transform.toString() + rot_val;
@@ -1906,8 +1919,8 @@ function zoom_without_redraw() {
       .style('stroke-width', function () {
         const lyr_name = _app.id_to_layer.get(this.id);
         return current_layers[lyr_name].fixed_stroke
-                ? this.style.strokeWidth
-                : `${current_layers[lyr_name]['stroke-width-const'] / transform.k}px`;
+          ? this.style.strokeWidth
+          : `${current_layers[lyr_name]['stroke-width-const'] / transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -1922,8 +1935,8 @@ function zoom_without_redraw() {
       .style('stroke-width', function () {
         const lyr_name = _app.id_to_layer.get(this.id);
         return current_layers[lyr_name].fixed_stroke
-                ? this.style.strokeWidth
-                : `${current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k}px`;
+          ? this.style.strokeWidth
+          : `${current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -1975,9 +1988,14 @@ function redraw_legends_symbols(targeted_node) {
     } : undefined;
 
     legend_nodes[i].remove();
-    createLegend_symbol(
-      layer_name, rendered_field, lgd_title, lgd_subtitle,
-      nested, rect_fill_value, rounding_precision, notes);
+    createLegend_symbol(layer_name,
+                        rendered_field,
+                        lgd_title,
+                        lgd_subtitle,
+                        nested,
+                        rect_fill_value,
+                        rounding_precision,
+                        notes);
     const new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
     new_lgd.style.visibility = visible;
     if (transform_param) new_lgd.setAttribute('transform', transform_param);
@@ -2014,9 +2032,13 @@ function redraw_legends_symbols(targeted_node) {
       } : undefined;
 
       legend_nodes_links_discont[i].remove();
-      createLegend_discont_links(
-        layer_name, rendered_field, lgd_title, lgd_subtitle,
-        rect_fill_value, rounding_precision, notes);
+      createLegend_discont_links(layer_name,
+                                 rendered_field,
+                                 lgd_title,
+                                 lgd_subtitle,
+                                 rect_fill_value,
+                                 rounding_precision,
+                                 notes);
       const new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
       new_lgd.style.visibility = visible;
       if (transform_param) {

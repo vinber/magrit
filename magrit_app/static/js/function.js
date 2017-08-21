@@ -1,5 +1,3 @@
-'use strict';
-
 const get_menu_option = (function () {
   const menu_option = {
     smooth: {
@@ -69,6 +67,7 @@ const get_menu_option = (function () {
 /**
 * Remove the div on which we are displaying the options related to each
 * kind of rendering.
+* @return {void}
 *
 */
 function clean_menu_function() {
@@ -310,7 +309,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
   if (values && breaks === undefined) {
     const disc_result = discretize_to_size(
       values, discontinuity_type, nb_class, min_size, max_size);
-    breaks = disc_result[2];
+    breaks = disc_result[2]; // eslint-disable-line no-param-reassign
     if (!breaks) return false;
   }
 
@@ -679,7 +678,7 @@ function render_twostocks_waffle(layer, rendering_params) {
   const nb_features = result_data[layer_to_add].length;
   const new_layer = map.insert('g', '.legend')
     .attr('id', layer_id)
-    .attr('class', 'layer');
+    .attr('class', 'layer no_clip');
 
   if (symbol_type === 'circle') {
     const r = rendering_params.size;
@@ -2113,7 +2112,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       };
     };
 
-    const fields_id = getFieldsType('id', layer);
+    const fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     const f_ix_len = fields_id ? fields_id.length : 0;
     let get_color,
       col1,
@@ -2131,13 +2130,14 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 
     geojson_line_layer = make_geojson_line_layer();
   }
-
+  const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
+    || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
   const layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
   result_data[layer_to_add] = [];
   map.insert('g', '.legend')
-    .attrs({ id: layer_id, class: 'layer' })
+    .attrs({ id: layer_id, class: 'layer', 'clip-path': require_clip_path })
     .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
     .selectAll('path')
     .data(geojson_line_layer.features)
@@ -2251,7 +2251,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       };
     };
 
-    const fields_id = getFieldsType('id', layer);
+    const fields_id = getFieldsType('id', layer).concat(getFieldsType('category', layer));
     const f_ix_len = fields_id ? fields_id.length : 0;
     let get_color,
       col1,
@@ -2278,7 +2278,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   result_data[layer_to_add] = [];
   if (symbol_type === 'circle') {
     map.insert('g', '.legend')
-      .attrs({ id: layer_id, class: 'layer' })
+      .attrs({ id: layer_id, class: 'layer no_clip' })
       .selectAll('circle')
       .data(geojson_pt_layer.features)
       .enter()
@@ -2298,7 +2298,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       .call(drag_elem_geo2);
   } else if (symbol_type === 'rect') {
     map.insert('g', '.legend')
-      .attrs({ id: layer_id, class: 'layer' })
+      .attrs({ id: layer_id, class: 'layer no_clip' })
       .selectAll('circle')
       .data(geojson_pt_layer.features)
       .enter()
@@ -2944,8 +2944,13 @@ const render_discont = function () {
   _app.layer_to_id.set(new_layer_name, id_layer);
   _app.id_to_layer.set(id_layer, new_layer_name);
 
-  // field_id = field_id == "__default__" ? undefined : field_id;
+
+  // This is the "id" field used to make a new id for the discontinuity line
+  // created in this function (by taking the id of the two nearby feature).
+  // We don't let the user choose it anymore but we might change that
+  // it just stay as 'undefined' for now:
   const field_id = undefined;
+  // field_id = field_id == "__default__" ? undefined : field_id;
 
   const result_value = new Map(),
     result_geom = {},
@@ -2976,13 +2981,13 @@ const render_discont = function () {
       swal('', i18next.t('app_page.common.error_discretization', { arg: w }), 'error');
       return;
     }
-
+    const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
+      || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
     breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
     result_data[new_layer_name] = [];
     const result_layer = map.insert('g', '.legend')
-      .attr('id', id_layer)
-      .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
-      .attr('class', 'layer');
+      .attrs({ id: id_layer, class: 'layer', 'clip-path': require_clip_path })
+      .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
     const data_result = result_data[new_layer_name];
     const result_lyr_node = result_layer.node();
 
@@ -2999,6 +3004,7 @@ const render_discont = function () {
       elem_data.properties = data_result[i];
       elem_data.properties.prop_val = p_size;
     }
+
     document.getElementById('overlay').style.display = 'none';
     current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
@@ -3378,7 +3384,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   _app.id_to_layer.set(layer_id, layer_to_add);
 
   map.insert('g', '.legend')
-    .attrs({ id: layer_id, class: 'layer' })
+    .attrs({ id: layer_id, class: 'layer no_clip' })
     .selectAll('image')
     .data(new_layer_data.features)
     .enter()

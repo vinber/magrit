@@ -532,8 +532,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 };
 
 
-// Function to change (one of more of) the three rotations axis of a d3 projection
-// and redraw all the path (+ move symbols layers) in respect to that
+/**
+* Function to change (one of more of) the three rotations axis of a d3 projection
+* and redraw all the path (+ move symbols layers) in respect to that.
+*
+* @param {Array} param - The new [lambda, phi, gamma] properties to be used.
+* @return {void}
+*/
 function handle_proj_center_button(param) {
   // Fetch the current rotation params :
   const current_rotation = proj.rotate();
@@ -574,7 +579,15 @@ function handle_parallel_change(parallel) {
 // const degreesToRadians = function degreesToRadians(degrees) { return degrees * pidegrad; };
 // const radiansToDegrees = function radiansToDegrees(radians) { return radians * piraddeg; };
 
-// Should avoid some function calls compared to the previous comment section :
+/**
+* Return a d3.geoProjection from a proj4 projection.
+* (code below should avoid some function calls compared to the previous commented
+* section but achieve exactly the same job).
+*
+* @param {Object} _proj - The valid proj4 object returned by proj4.
+* @return {Object} - The projection as a d3.geoProjection.
+*
+*/
 const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
   // Create the custom d3 projection using proj 4 forward and inverse functions:
   const projRaw = function (lambda, phi) {
