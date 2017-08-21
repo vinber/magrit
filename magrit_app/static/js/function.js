@@ -812,7 +812,8 @@ function fillMenu_PropSymbolChoro(layer) {
   make_discretization_icons(discr_section);
   // let f = dv2.insert('p').attr('class', 'params_section2');
   // f.append("button")
-  //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+  //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n',
+  //             'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
   //     .styles({"font-size": "0.8em", "text-align": "center"})
   //     .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
@@ -888,7 +889,8 @@ const fields_PropSymbolChoro = {
         rendered_field: field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
@@ -962,7 +964,8 @@ const fields_PropSymbolChoro = {
         rendered_field: selected_field,
         schema: ['BuGn'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.jenks')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -985,7 +988,8 @@ const fields_PropSymbolChoro = {
         rendered_field: selected_field,
         schema: ['BuGn'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1008,7 +1012,8 @@ const fields_PropSymbolChoro = {
         rendered_field: selected_field,
         schema: ['BuGn'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.equal_interval')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1030,7 +1035,8 @@ const fields_PropSymbolChoro = {
         rendered_field: selected_field,
         schema: ['BuGn'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.Q6')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1216,9 +1222,10 @@ const fields_Typo = {
     btn_typo_class.on('click', () => {
       const selected_field = field_selec.node().value,
         nb_features = current_layers[layer].n_features;
-      let col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-        cats;
-      [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
+      const col_map = self.rendering_params[selected_field]
+        ? self.rendering_params[selected_field].color_map
+        : undefined;
+      const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
       if (cats.length > 15) {
         swal({ title: '',
           text: i18next.t('app_page.common.error_too_many_features_color'),
@@ -1363,7 +1370,8 @@ const fields_Choropleth = {
         rendered_field: field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
@@ -1394,8 +1402,9 @@ const fields_Choropleth = {
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+        const keyi18n = `app_page.common. ${self.rendering_params[field_name].type}`;
         choro_mini_choice_disc.html(
-            i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ', ' + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
+            `${i18next.t(keyi18n)}, ${i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class })}`);
         uncolor_icons();
         color_disc_icons(self.rendering_params[field_name].type);
       } else {
@@ -1421,7 +1430,8 @@ const fields_Choropleth = {
         rendered_field: selected_field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.jenks') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.jenks')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1444,7 +1454,8 @@ const fields_Choropleth = {
         rendered_field: selected_field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.quantiles') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1467,7 +1478,8 @@ const fields_Choropleth = {
         rendered_field: selected_field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.equal_interval') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.equal_interval')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1489,7 +1501,8 @@ const fields_Choropleth = {
         rendered_field: selected_field,
         schema: ['Reds'],
       };
-      choro_mini_choice_disc.html(i18next.t('app_page.common.Q6') + ', ' + i18next.t('app_page.common.class', { count: nb_class }));
+      choro_mini_choice_disc.html(
+        `${i18next.t('app_page.common.Q6')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1523,8 +1536,9 @@ const fields_Choropleth = {
         if (confirmed) {
           // ok_button.attr("disabled", null);
           img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+          const keyi18n = `app_page.common.${confirmed[1]}`;
           choro_mini_choice_disc.html(
-              i18next.t(`app_page.common.${confirmed[1]}`) + ', ' + i18next.t('app_page.common.class', { count: confirmed[0] }));
+              `${i18next.t(keyi18n)}, ${i18next.t('app_page.common.class', { count: confirmed[0] })}`);
           uncolor_icons();
           color_disc_icons(confirmed[1]);
           self.rendering_params[selected_field] = {
@@ -2108,7 +2122,8 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       col1 = rendering_params.fill_color.two[0];
       col2 = rendering_params.fill_color.two[1];
       get_color = (val, ix) => (val > rendering_params.break_val ? col2 : col1);
-    } else if (rendering_params.fill_color instanceof Array && rendering_params.fill_color.length === nb_features) {
+    } else if (rendering_params.fill_color instanceof Array
+                && rendering_params.fill_color.length === nb_features) {
       get_color = (val, ix) => rendering_params.fill_color[ix];
     } else {
       get_color = () => rendering_params.fill_color;
@@ -2150,7 +2165,9 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_line_layer.features.map(v => v.properties.color) };
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_line_layer.features.map(v => v.properties.color),
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -2318,7 +2335,9 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_pt_layer.features.map(v => v.properties.color) };
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_pt_layer.features.map(v => v.properties.color),
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -2333,22 +2352,25 @@ function make_prop_symbols(rendering_params, _pt_layer) {
 }
 
 function render_categorical(layer, rendering_params) {
+  let layer_name;
   if (rendering_params.new_name) {
     const fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
     copy_layer(layer, rendering_params.new_name, 'typo', fields);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer_name = rendering_params.new_name;
+  } else {
+    layer_name = layer;
   }
 
   const colorsByFeature = rendering_params.colorByFeature,
     color_map = rendering_params.color_map,
     field = rendering_params.rendered_field;
-  const layer_to_render = map.select(`#${_app.layer_to_id.get(layer)}`);
+  const layer_to_render = map.select(`#${_app.layer_to_id.get(layer_name)}`);
   layer_to_render
     .style('opacity', 1)
     .style('stroke-width', `${0.75 / d3.zoomTransform(svg_map).k}px`);
-  if (current_layers[layer].type === 'Line') {
+  if (current_layers[layer_name].type === 'Line') {
     layer_to_render.selectAll('path')
         .styles({ fill: 'transparent', 'stroke-opacity': 1 })
         .style('stroke', (_, i) => colorsByFeature[i]);
@@ -2357,12 +2379,12 @@ function render_categorical(layer, rendering_params) {
         .style('fill', (_, i) => colorsByFeature[i])
         .styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, stroke: '#000' });
   }
-  current_layers[layer].renderer = rendering_params.renderer;
-  current_layers[layer].rendered_field = field;
-  current_layers[layer].fill_color = { class: rendering_params.colorByFeature };
-  current_layers[layer]['stroke-width-const'] = 0.75;
-  current_layers[layer].is_result = true;
-  current_layers[layer].color_map = color_map;
+  current_layers[layer_name].renderer = rendering_params.renderer;
+  current_layers[layer_name].rendered_field = field;
+  current_layers[layer_name].fill_color = { class: rendering_params.colorByFeature };
+  current_layers[layer_name]['stroke-width-const'] = 0.75;
+  current_layers[layer_name].is_result = true;
+  current_layers[layer_name].color_map = color_map;
   zoom_without_redraw();
 }
 
@@ -2370,6 +2392,7 @@ function render_categorical(layer, rendering_params) {
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params) {
+  let layer_name;
   if (rendering_params.new_name) {
     const fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
     copy_layer(layer, rendering_params.new_name, 'choro', fields);
@@ -2377,7 +2400,9 @@ function render_choro(layer, rendering_params) {
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer_name = rendering_params.new_name;
+  } else {
+    layer_name = layer;
   }
   const breaks = rendering_params.breaks;
   const options_disc = {
@@ -2388,11 +2413,11 @@ function render_choro(layer, rendering_params) {
     breaks: breaks,
     extra_options: rendering_params.extra_options,
   };
-  const layer_to_render = map.select(`#${_app.layer_to_id.get(layer)}`);
+  const layer_to_render = map.select(`#${_app.layer_to_id.get(layer_name)}`);
   layer_to_render
     .style('opacity', 1)
     .style('stroke-width', `${0.75 / d3.zoomTransform(svg_map).k}px`);
-  if (current_layers[layer].type === 'Line') {
+  if (current_layers[layer_name].type === 'Line') {
     layer_to_render
       .selectAll('path')
       .styles({ fill: 'transparent', 'stroke-opacity': 1 })
@@ -2403,18 +2428,18 @@ function render_choro(layer, rendering_params) {
       .styles({ 'fill-opacity': 1, 'stroke-opacity': 1, stroke: '#000' })
       .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
   }
-  current_layers[layer].renderer = rendering_params.renderer;
-  current_layers[layer].rendered_field = rendering_params.rendered_field;
-  current_layers[layer].fill_color = { class: rendering_params.colorsByFeature };
-  current_layers[layer]['stroke-width-const'] = 0.75;
-  current_layers[layer].is_result = true;
-  current_layers[layer].options_disc = options_disc;
+  current_layers[layer_name].renderer = rendering_params.renderer;
+  current_layers[layer_name].rendered_field = rendering_params.rendered_field;
+  current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+  current_layers[layer_name]['stroke-width-const'] = 0.75;
+  current_layers[layer_name].is_result = true;
+  current_layers[layer_name].options_disc = options_disc;
   const colors_breaks = [];
   for (let i = breaks.length - 1; i > 0; --i) {
     colors_breaks.push([
       [breaks[i - 1], ' - ', breaks[i]].join(''), rendering_params.colors[i - 1]]);
   }
-  current_layers[layer].colors_breaks = colors_breaks;
+  current_layers[layer_name].colors_breaks = colors_breaks;
   zoom_without_redraw();
 }
 
@@ -2551,12 +2576,11 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
       _col_map.set(cats[i].name, [cats[i].color, cats[i].name, cats[i].nb_elem]);
     }
     return [cats, _col_map];
-  } else {
-    col_map.forEach((v, k) => {
-      cats.push({ name: k, display_name: v[1], nb_elem: v[2], color: v[0] });
-    });
-    return [cats, col_map];
   }
+  col_map.forEach((v, k) => {
+    cats.push({ name: k, display_name: v[1], nb_elem: v[2], color: v[0] });
+  });
+  return [cats, col_map];
 }
 
 const fields_PropSymbolTypo = {
@@ -2648,9 +2672,10 @@ const fields_PropSymbolTypo = {
     btn_typo_class.on('click', () => {
       const selected_field = field2_selec.node().value,
         new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
-      let col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
-      let cats;
-      [cats, col_map] = prepare_categories_array(layer, selected_field, col_map);
+      const col_map = self.rendering_params[selected_field]
+        ? self.rendering_params[selected_field].color_map
+        : undefined;
+      const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
 
       if (cats.length > 15) {
         swal({ title: '',
@@ -2879,7 +2904,8 @@ const fields_Discont = {
     // if (fields_id.length == 0) {
     //     field_id.append("option")
     //        .text(i18next.t("app_page.common.default"))
-    //        .attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+    //        .attrs({"value": "__default__", "class": "i18n",
+    //                "data-i18n": "[text]app_page.common.default"});
     // } else {
     //   fields_id.forEach(function(field) {
     //       field_id.append("option").text(field).attr("value", field);
@@ -2919,7 +2945,7 @@ const render_discont = function () {
   _app.id_to_layer.set(id_layer, new_layer_name);
 
   // field_id = field_id == "__default__" ? undefined : field_id;
-  let field_id = undefined;
+  const field_id = undefined;
 
   const result_value = new Map(),
     result_geom = {},
@@ -2942,7 +2968,8 @@ const render_discont = function () {
       step = (max_size - min_size) / (nb_class - 1),
       class_size = Array(nb_class).fill(0).map((d, i) => min_size + (i * step));
 
-    let [, , breaks, serie] = discretize_to_size(arr_tmp, discretization_type, nb_class, min_size, max_size);
+    let [, , breaks, serie] = discretize_to_size(
+      arr_tmp, discretization_type, nb_class, min_size, max_size);
     if (!serie || !breaks) {
       const opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
       const w = nb_class > opt_nb_class ? i18next.t('app_page.common.smaller') : i18next.t('app_page.common.larger');
@@ -3264,7 +3291,9 @@ const fields_TypoSymbol = {
         cancelButtonText: i18next.t('app_page.common.cancel'),
       }).then(() => {
         const field = document.getElementById('field_Symbol').value;
-        const symbol_map = self.rendering_params[field] ? self.rendering_params[field].symbols_map : undefined;
+        const symbol_map = self.rendering_params[field]
+          ? self.rendering_params[field].symbols_map
+          : undefined;
         display_box_symbol_typo(layer, field, symbol_map).then((confirmed) => {
           if (confirmed) {
             document.getElementById('yesTypoSymbols').disabled = null;

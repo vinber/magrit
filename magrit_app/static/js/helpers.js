@@ -520,7 +520,8 @@ function make_box_type_fields(layerName) {
     };
     container.querySelector('#xclose').onclick = _onclose;
   } else { // There is already types selected and no new fields (so this is a modification) :
-      // Use the previous values if the user close the window without confirmation (cancel or X button)
+    // Use the previous values if the user close
+    // the window without confirmation (cancel or X button)
     const _onclose = () => {
       current_layers[layerName].fields_type = fields_type;
       deferred.resolve(false);

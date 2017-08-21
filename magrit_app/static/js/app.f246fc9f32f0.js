@@ -445,7 +445,7 @@ function setUpInterface(reload_project) {
   var ratio_select = b.append('select').attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
 
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
-  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');;
+  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
   ratio_select.on('change', function () {
     var map_xy = get_map_xy0();
@@ -973,7 +973,7 @@ function make_ico_choice() {
 
       // Replace the title of the section:
       var selec_title = document.getElementById('btn_s2b');
-      selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t("app_page.common.representation") + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t("app_page.func_title." + _app.current_functionnality.name) + '</span>';
+      selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' + i18next.t('app_page.common.representation') + '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' + _app.current_functionnality.name + '">' + i18next.t('app_page.func_title.' + _app.current_functionnality.name) + '</span>';
       selec_title.style.display = '';
 
       // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
@@ -1128,7 +1128,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.9545d4afc179.json'
+      loadPath: 'static/locales/{{lng}}/translation.f246fc9f32f0.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1249,7 +1249,12 @@ function displayInfoOnMove() {
 *
 */
 function reproj_symbol_layer() {
-  for (var lyr_name in current_layers) {
+  /* eslint-disable no-loop-func */
+  var layers = Object.keys(current_layers);
+  var n_layers = layers.length;
+  var lyr_name = void 0;
+  for (var ix = 0; ix < n_layers; ix++) {
+    lyr_name = layers[ix];
     if (current_layers[lyr_name].renderer && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1 || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1 || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
       var symbol = current_layers[lyr_name].symbol;
 
@@ -1325,6 +1330,7 @@ function reproj_symbol_layer() {
       }
     }
   }
+  /* eslint-enable no-loop-func */
 }
 
 function make_dialog_container(id_box, title, class_box) {
@@ -1333,7 +1339,7 @@ function make_dialog_container(id_box, title, class_box) {
   var _class_box = class_box || 'dialog';
   var container = document.createElement('div');
   container.setAttribute('id', id_box);
-  container.setAttribute('class', 'twbs modal fade' + ' ' + _class_box);
+  container.setAttribute('class', 'twbs modal fade ' + _class_box);
   container.setAttribute('tabindex', '-1');
   container.setAttribute('role', 'dialog');
   container.setAttribute('aria-labelledby', 'myModalLabel');
@@ -2637,7 +2643,9 @@ var Colors = {
 var ColorsSelected = {
   // These colors came from "Pastel1" and "Pastel2" coloramps from ColorBrewer
   colorCodes: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc', '#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
-  seen: new Set(), // In order to avoid randomly returning the same color as the last one, at least for the first layers
+  // In order to avoid randomly returning the same color
+  // as the last one, at least for the first layers
+  seen: new Set(),
   random: function random() {
     var to_rgb = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
@@ -2666,14 +2674,14 @@ var ColorsSelected = {
 //   itself adapted from http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 var randomColor = function () {
   var golden_ratio_conjugate = 0.618033988749895;
-  var h = Math.random();
+  var _h = Math.random();
 
   var hslToRgb = function hslToRgb(h, s, l) {
     var r = void 0,
         g = void 0,
         b = void 0;
 
-    if (s == 0) {
+    if (s === 0) {
       r = g = b = l; // achromatic
     } else {
       var hue2rgb = function hue2rgb(p, q, t) {
@@ -2696,9 +2704,9 @@ var randomColor = function () {
   };
 
   return function () {
-    h += golden_ratio_conjugate;
-    h %= 1;
-    return hslToRgb(h, 0.5, 0.60);
+    _h += golden_ratio_conjugate;
+    _h %= 1;
+    return hslToRgb(_h, 0.5, 0.60);
   };
 }();
 'use strict';
@@ -4968,7 +4976,8 @@ function fillMenu_PropSymbolChoro(layer) {
   make_discretization_icons(discr_section);
   // let f = dv2.insert('p').attr('class', 'params_section2');
   // f.append("button")
-  //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n', 'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
+  //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n',
+  //             'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
   //     .styles({"font-size": "0.8em", "text-align": "center"})
   //     .html(i18next.t("app_page.func_options.common.discretization_choice"));
 
@@ -5414,15 +5423,12 @@ var fields_Typo = {
     btn_typo_class.on('click', function () {
       var selected_field = field_selec.node().value,
           nb_features = current_layers[layer].n_features;
-      var col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined,
-          cats = void 0;
+      var col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
 
-      var _prepare_categories_a3 = prepare_categories_array(layer, selected_field, col_map);
-
-      var _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2);
-
-      cats = _prepare_categories_a4[0];
-      col_map = _prepare_categories_a4[1];
+      var _prepare_categories_a3 = prepare_categories_array(layer, selected_field, col_map),
+          _prepare_categories_a4 = _slicedToArray(_prepare_categories_a3, 2),
+          cats = _prepare_categories_a4[0],
+          c_map = _prepare_categories_a4[1];
 
       if (cats.length > 15) {
         swal({ title: '',
@@ -5612,7 +5618,8 @@ var fields_Choropleth = {
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-        choro_mini_choice_disc.html(i18next.t('app_page.common.' + self.rendering_params[field_name].type) + ', ' + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
+        var keyi18n = 'app_page.common. ' + self.rendering_params[field_name].type;
+        choro_mini_choice_disc.html(i18next.t(keyi18n) + ', ' + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
         uncolor_icons();
         color_disc_icons(self.rendering_params[field_name].type);
       } else {
@@ -5774,7 +5781,8 @@ var fields_Choropleth = {
         if (confirmed) {
           // ok_button.attr("disabled", null);
           img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-          choro_mini_choice_disc.html(i18next.t('app_page.common.' + confirmed[1]) + ', ' + i18next.t('app_page.common.class', { count: confirmed[0] }));
+          var keyi18n = 'app_page.common.' + confirmed[1];
+          choro_mini_choice_disc.html(i18next.t(keyi18n) + ', ' + i18next.t('app_page.common.class', { count: confirmed[0] }));
           uncolor_icons();
           color_disc_icons(confirmed[1]);
           self.rendering_params[selected_field] = {
@@ -6350,9 +6358,11 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_line_layer.features.map(function (v) {
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_line_layer.features.map(function (v) {
         return v.properties.color;
-      }) };
+      })
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -6514,9 +6524,11 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   if (rendering_params.fill_color.two !== undefined) {
     current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = { class: geojson_pt_layer.features.map(function (v) {
+    current_layers[layer_to_add].fill_color = {
+      class: geojson_pt_layer.features.map(function (v) {
         return v.properties.color;
-      }) };
+      })
+    };
   } else {
     current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
@@ -6531,20 +6543,23 @@ function make_prop_symbols(rendering_params, _pt_layer) {
 }
 
 function render_categorical(layer, rendering_params) {
+  var layer_name = void 0;
   if (rendering_params.new_name) {
     var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
     copy_layer(layer, rendering_params.new_name, 'typo', fields);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer_name = rendering_params.new_name;
+  } else {
+    layer_name = layer;
   }
 
   var colorsByFeature = rendering_params.colorByFeature,
       color_map = rendering_params.color_map,
       field = rendering_params.rendered_field;
-  var layer_to_render = map.select('#' + _app.layer_to_id.get(layer));
+  var layer_to_render = map.select('#' + _app.layer_to_id.get(layer_name));
   layer_to_render.style('opacity', 1).style('stroke-width', 0.75 / d3.zoomTransform(svg_map).k + 'px');
-  if (current_layers[layer].type === 'Line') {
+  if (current_layers[layer_name].type === 'Line') {
     layer_to_render.selectAll('path').styles({ fill: 'transparent', 'stroke-opacity': 1 }).style('stroke', function (_, i) {
       return colorsByFeature[i];
     });
@@ -6553,12 +6568,12 @@ function render_categorical(layer, rendering_params) {
       return colorsByFeature[i];
     }).styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, stroke: '#000' });
   }
-  current_layers[layer].renderer = rendering_params.renderer;
-  current_layers[layer].rendered_field = field;
-  current_layers[layer].fill_color = { class: rendering_params.colorByFeature };
-  current_layers[layer]['stroke-width-const'] = 0.75;
-  current_layers[layer].is_result = true;
-  current_layers[layer].color_map = color_map;
+  current_layers[layer_name].renderer = rendering_params.renderer;
+  current_layers[layer_name].rendered_field = field;
+  current_layers[layer_name].fill_color = { class: rendering_params.colorByFeature };
+  current_layers[layer_name]['stroke-width-const'] = 0.75;
+  current_layers[layer_name].is_result = true;
+  current_layers[layer_name].color_map = color_map;
   zoom_without_redraw();
 }
 
@@ -6566,6 +6581,7 @@ function render_categorical(layer, rendering_params) {
 // (layer should be the name of group of path, ie. not a PropSymbol layer)
 // Currently used fo "choropleth", "MTA - relative deviations", "gridded map" functionnality
 function render_choro(layer, rendering_params) {
+  var layer_name = void 0;
   if (rendering_params.new_name) {
     var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
     copy_layer(layer, rendering_params.new_name, 'choro', fields);
@@ -6573,7 +6589,9 @@ function render_choro(layer, rendering_params) {
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
-    layer = rendering_params.new_name;
+    layer_name = rendering_params.new_name;
+  } else {
+    layer_name = layer;
   }
   var breaks = rendering_params.breaks;
   var options_disc = {
@@ -6584,9 +6602,9 @@ function render_choro(layer, rendering_params) {
     breaks: breaks,
     extra_options: rendering_params.extra_options
   };
-  var layer_to_render = map.select('#' + _app.layer_to_id.get(layer));
+  var layer_to_render = map.select('#' + _app.layer_to_id.get(layer_name));
   layer_to_render.style('opacity', 1).style('stroke-width', 0.75 / d3.zoomTransform(svg_map).k + 'px');
-  if (current_layers[layer].type === 'Line') {
+  if (current_layers[layer_name].type === 'Line') {
     layer_to_render.selectAll('path').styles({ fill: 'transparent', 'stroke-opacity': 1 }).style('stroke', function (d, i) {
       return rendering_params.colorsByFeature[i];
     });
@@ -6595,17 +6613,17 @@ function render_choro(layer, rendering_params) {
       return rendering_params.colorsByFeature[i];
     });
   }
-  current_layers[layer].renderer = rendering_params.renderer;
-  current_layers[layer].rendered_field = rendering_params.rendered_field;
-  current_layers[layer].fill_color = { class: rendering_params.colorsByFeature };
-  current_layers[layer]['stroke-width-const'] = 0.75;
-  current_layers[layer].is_result = true;
-  current_layers[layer].options_disc = options_disc;
+  current_layers[layer_name].renderer = rendering_params.renderer;
+  current_layers[layer_name].rendered_field = rendering_params.rendered_field;
+  current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+  current_layers[layer_name]['stroke-width-const'] = 0.75;
+  current_layers[layer_name].is_result = true;
+  current_layers[layer_name].options_disc = options_disc;
   var colors_breaks = [];
   for (var i = breaks.length - 1; i > 0; --i) {
     colors_breaks.push([[breaks[i - 1], ' - ', breaks[i]].join(''), rendering_params.colors[i - 1]]);
   }
-  current_layers[layer].colors_breaks = colors_breaks;
+  current_layers[layer_name].colors_breaks = colors_breaks;
   zoom_without_redraw();
 }
 
@@ -6721,12 +6739,11 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
       _col_map.set(cats[_i6].name, [cats[_i6].color, cats[_i6].name, cats[_i6].nb_elem]);
     }
     return [cats, _col_map];
-  } else {
-    col_map.forEach(function (v, k) {
-      cats.push({ name: k, display_name: v[1], nb_elem: v[2], color: v[0] });
-    });
-    return [cats, col_map];
   }
+  col_map.forEach(function (v, k) {
+    cats.push({ name: k, display_name: v[1], nb_elem: v[2], color: v[0] });
+  });
+  return [cats, col_map];
 }
 
 var fields_PropSymbolTypo = {
@@ -6818,15 +6835,11 @@ var fields_PropSymbolTypo = {
       var selected_field = field2_selec.node().value,
           new_layer_name = check_layer_name(['Typo', field1_selec.node().value, selected_field, layer].join('_'));
       var col_map = self.rendering_params[selected_field] ? self.rendering_params[selected_field].color_map : undefined;
-      var cats = void 0;
 
-      var _prepare_categories_a7 = prepare_categories_array(layer, selected_field, col_map);
-
-      var _prepare_categories_a8 = _slicedToArray(_prepare_categories_a7, 2);
-
-      cats = _prepare_categories_a8[0];
-      col_map = _prepare_categories_a8[1];
-
+      var _prepare_categories_a7 = prepare_categories_array(layer, selected_field, col_map),
+          _prepare_categories_a8 = _slicedToArray(_prepare_categories_a7, 2),
+          cats = _prepare_categories_a8[0],
+          c_map = _prepare_categories_a8[1];
 
       if (cats.length > 15) {
         swal({ title: '',
@@ -7022,7 +7035,8 @@ var fields_Discont = {
     // if (fields_id.length == 0) {
     //     field_id.append("option")
     //        .text(i18next.t("app_page.common.default"))
-    //        .attrs({"value": "__default__", "class": "i18n", "data-i18n": "[text]app_page.common.default"});
+    //        .attrs({"value": "__default__", "class": "i18n",
+    //                "data-i18n": "[text]app_page.common.default"});
     // } else {
     //   fields_id.forEach(function(field) {
     //       field_id.append("option").text(field).attr("value", field);
@@ -8555,7 +8569,8 @@ function make_box_type_fields(layerName) {
     container.querySelector('#xclose').onclick = _onclose2;
   } else {
     // There is already types selected and no new fields (so this is a modification) :
-    // Use the previous values if the user close the window without confirmation (cancel or X button)
+    // Use the previous values if the user close
+    // the window without confirmation (cancel or X button)
     var _onclose3 = function _onclose3() {
       current_layers[layerName].fields_type = fields_type;
       deferred.resolve(false);
@@ -13605,7 +13620,7 @@ var UserArrow = function () {
         orient: 'auto',
         markerWidth: 4,
         markerHeight: 4 }).style('stroke-width', 1).append('path').attr('d', 'M0,-5L10,0L0,5').attr('class', 'arrowHead');
-      if (this.parent.childNodes[0].tagName != 'defs') {
+      if (this.parent.childNodes[0].tagName !== 'defs') {
         this.parent.insertBefore(defs.node(), this.parent.childNodes[0]);
       }
     }
@@ -13629,7 +13644,8 @@ var UserArrow = function () {
 
       this.arrow = this.svg_elem.append('g').style('cursor', 'all-scroll').attrs({ class: 'arrow legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString() });
 
-      this.arrow.insert('line').attrs({ 'marker-end': 'url(#arrow_head)',
+      this.arrow.insert('line').attrs({
+        'marker-end': 'url(#arrow_head)',
         x1: this.pt1[0],
         y1: this.pt1[1],
         x2: this.pt2[0],
@@ -13813,9 +13829,9 @@ var UserArrow = function () {
       });
       s2.insert('input').attrs({ id: 'arrow_angle', type: 'range', value: angle, min: 0, max: 360, step: 1 }).styles({ width: '80px', 'vertical-align': 'middle', float: 'right' }).on('change', function () {
         var distance = sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
-        var angle = -+this.value;
+        var _angle = -+this.value;
 
-        var _self$calcDestFromOAD = self.calcDestFromOAD(self.pt1, angle, distance),
+        var _self$calcDestFromOAD = self.calcDestFromOAD(self.pt1, _angle, distance),
             _self$calcDestFromOAD2 = _slicedToArray(_self$calcDestFromOAD, 2),
             nx = _self$calcDestFromOAD2[0],
             ny = _self$calcDestFromOAD2[1];
@@ -14006,7 +14022,10 @@ var Textbox = function () {
 
       this.width = bbox.width;
       this.height = bbox.height;
-      this.group.select('rect').attrs({ x: bbox.left - x0 - 10, y: bbox.top - y0 - 10, height: this.height + 20, width: this.width + 20 });
+      this.group.select('rect').attrs({ x: bbox.left - x0 - 10,
+        y: bbox.top - y0 - 10,
+        height: this.height + 20,
+        width: this.width + 20 });
     }
   }, {
     key: 'editStyle',
@@ -14120,9 +14139,9 @@ var Textbox = function () {
       });
 
       var options_format = box_content.append('p').style('text-align', 'center');
-      var btn_bold = options_format.insert('span').attr('class', current_options.font_weight == 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">');
-      var btn_italic = options_format.insert('span').attr('class', current_options.font_style == 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">');
-      var btn_underline = options_format.insert('span').attr('class', current_options.text_decoration == 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
+      var btn_bold = options_format.insert('span').attr('class', current_options.font_weight === 'bold' ? 'active button_disc' : 'button_disc').html('<img title="Bold" src="data:image/gif;base64,R0lGODlhFgAWAID/AMDAwAAAACH5BAEAAAAALAAAAAAWABYAQAInhI+pa+H9mJy0LhdgtrxzDG5WGFVk6aXqyk6Y9kXvKKNuLbb6zgMFADs=">');
+      var btn_italic = options_format.insert('span').attr('class', current_options.font_style === 'italic' ? 'active button_disc' : 'button_disc').html('<img title="Italic" src="data:image/gif;base64,R0lGODlhFgAWAKEDAAAAAF9vj5WIbf///yH5BAEAAAMALAAAAAAWABYAAAIjnI+py+0Po5x0gXvruEKHrF2BB1YiCWgbMFIYpsbyTNd2UwAAOw==">');
+      var btn_underline = options_format.insert('span').attr('class', current_options.text_decoration === 'underline' ? 'active button_disc' : 'button_disc').html('<img title="Underline" src="data:image/gif;base64,R0lGODlhFgAWAKECAAAAAF9vj////////yH5BAEAAAIALAAAAAAWABYAAAIrlI+py+0Po5zUgAsEzvEeL4Ea15EiJJ5PSqJmuwKBEKgxVuXWtun+DwxCCgA7">');
 
       var content_modif_zone = box_content.append('p');
       content_modif_zone.append('span').html(i18next.t('app_page.text_box_edit_box.content'));
@@ -14385,8 +14404,8 @@ var scaleBar = {
     }
   },
   editStyle: function editStyle() {
-    var new_val = void 0,
-        self = this,
+    var new_val = void 0;
+    var self = this,
         redraw_now = function redraw_now() {
       if (new_val) {
         self.resize(new_val);
@@ -14440,8 +14459,8 @@ var scaleBar = {
 
     var e = box_body.append('p').attr('class', 'line_elem2');
     e.append('span').html(i18next.t('app_page.scale_bar_edit_box.start_end_bar'));
-    e.append('input').style('float', 'right').attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on('change', function (a) {
-      self.start_end_bar = self.start_end_bar != true;
+    e.append('input').style('float', 'right').attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' }).on('change', function (_) {
+      self.start_end_bar = self.start_end_bar !== true;
       self.handle_start_end_bar();
     });
     document.getElementById('checkbox_start_end_bar').checked = self.start_end_bar;
@@ -16575,6 +16594,8 @@ var get_max_nb_left_sep = function get_max_nb_left_sep(layer_name) {
 };
 'use strict';
 
+/* eslint-disable no-loop-func */
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function get_map_template() {
@@ -16778,7 +16799,7 @@ function get_map_template() {
         layer_id = layers._groups[0][_i2].id,
         layer_name = _app.id_to_layer.get(layer_id),
         current_layer_prop = current_layers[layer_name],
-        layer_type = current_layer_prop.sphere ? 'sphere' : current_layer_prop.graticule ? 'graticule' : 'layer',
+        layer_type = (current_layer_prop.sphere ? 'sphere' : false) || (current_layer_prop.graticule ? 'graticule' : 'layer'),
         nb_ft = current_layer_prop.n_features;
     var selection = void 0;
 
@@ -16991,7 +17012,9 @@ function get_map_template() {
     layer_style_i.fill_opacity = selection.style('fill-opacity');
   }
 
-  // return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
+  // return Promise.all(
+  // layers_style.map(obj => (obj.topo_geom && !obj.targeted)
+  //      ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
   return Promise.all(layers_style.map(function (obj) {
     return obj.topo_geom ? serialize_layer_to_topojson(obj.layer_name) : null;
   })).then(function (result) {
@@ -17563,7 +17586,8 @@ function apply_user_preferences(json_pref) {
           ref_font_size: _layer.default_size,
           font: _layer.default_font
         };
-        // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
+        // TODO : apply the same thing as with PropSymbol
+        // for setting label at their original positions :
         render_label(null, _rendering_params, {
           data: _layer.data_labels,
           current_position: _layer.current_position
@@ -17669,6 +17693,7 @@ function apply_user_preferences(json_pref) {
     _loop(_i11);
   }
 }
+/* eslint-enable no-loop-func */
 
 function reorder_layers(desired_order) {
   var layers = svg_map.querySelectorAll('.layer'),

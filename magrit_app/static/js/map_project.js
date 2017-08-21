@@ -1,5 +1,6 @@
 'use strict';
 
+/* eslint-disable no-loop-func */
 function get_map_template() {
   const getPropSymbolCurrentPos = (selection, type_symbol) => {
     const result = [];
@@ -199,7 +200,8 @@ function get_map_template() {
       layer_id = layers._groups[0][i].id,
       layer_name = _app.id_to_layer.get(layer_id),
       current_layer_prop = current_layers[layer_name],
-      layer_type = current_layer_prop.sphere ? 'sphere' : current_layer_prop.graticule ? 'graticule' : 'layer',
+      layer_type = (current_layer_prop.sphere
+        ? 'sphere' : false) || (current_layer_prop.graticule ? 'graticule' : 'layer'),
       nb_ft = current_layer_prop.n_features;
     let selection;
 
@@ -415,21 +417,24 @@ function get_map_template() {
     layer_style_i.fill_opacity = selection.style('fill-opacity');
   }
 
-  // return Promise.all(layers_style.map(obj => (obj.topo_geom && !obj.targeted) ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
-  return Promise.all(layers_style.map(obj => (obj.topo_geom ? serialize_layer_to_topojson(obj.layer_name) : null)))
-    .then((result) => {
-      for (let i = 0; i < layers_style.length; i++) {
-        if (result[i]) {
-          layers_style[i].topo_geom = result[i];
+  // return Promise.all(
+  // layers_style.map(obj => (obj.topo_geom && !obj.targeted)
+  //      ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
+  return Promise.all(
+    layers_style.map(obj => (obj.topo_geom ? serialize_layer_to_topojson(obj.layer_name) : null)))
+      .then((result) => {
+        for (let i = 0; i < layers_style.length; i++) {
+          if (result[i]) {
+            layers_style[i].topo_geom = result[i];
+          }
         }
-      }
       // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-      return JSON.stringify({
-        map_config: map_config,
-        layers: layers_style,
-        info: { version: _app.version },
+        return JSON.stringify({
+          map_config: map_config,
+          layers: layers_style,
+          info: { version: _app.version },
+        });
       });
-    });
 }
 
 // Function triggered when the user request a download of its map preferences
@@ -979,7 +984,8 @@ function apply_user_preferences(json_pref) {
           ref_font_size: _layer.default_size,
           font: _layer.default_font,
         };
-        // TODO : apply the same thing as with PropSymbol for setting label at their original positions :
+        // TODO : apply the same thing as with PropSymbol
+        // for setting label at their original positions :
         render_label(null, rendering_params, {
           data: _layer.data_labels,
           current_position: _layer.current_position,
@@ -1017,7 +1023,7 @@ function apply_user_preferences(json_pref) {
         const context_menu = new ContextMenu();
         const getItems = self_parent => [
           { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
-          { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } },
+          { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
         ];
         layer_id = encodeId(layer_name);
         _app.layer_to_id.set(layer_name, layer_id);
@@ -1080,6 +1086,7 @@ function apply_user_preferences(json_pref) {
     }
   }
 }
+/* eslint-enable no-loop-func */
 
 function reorder_layers(desired_order) {
   const layers = svg_map.querySelectorAll('.layer'),
@@ -1124,15 +1131,48 @@ function rehandle_legend(layer_name, properties) {
   for (let i = 0; i < properties.length; i++) {
     const prop = properties[i];
     if (prop.type === 'legend_root') {
-      createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
+      createLegend_choro(layer_name,
+                         prop.field,
+                         prop.title,
+                         prop.subtitle,
+                         prop.boxgap,
+                         prop.rect_fill_value,
+                         prop.rounding_precision,
+                         prop.no_data_txt,
+                         prop.bottom_note);
     } else if (prop.type === 'legend_root_symbol') {
-      createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+      createLegend_symbol(layer_name,
+                          prop.field,
+                          prop.title,
+                          prop.subtitle,
+                          prop.nested_symbols,
+                          prop.rect_fill_value,
+                          prop.rounding_precision,
+                          prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_class') {
-      createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+      createLegend_discont_links(layer_name,
+                                 prop.field,
+                                 prop.title,
+                                 prop.subtitle,
+                                 prop.rect_fill_value,
+                                 prop.rounding_precision,
+                                 prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_symbol') {
-      createLegend_line_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+      createLegend_line_symbol(layer_name,
+                               prop.field,
+                               prop.title,
+                               prop.subtitle,
+                               prop.rect_fill_value,
+                               prop.rounding_precision,
+                               prop.bottom_note);
     } else if (prop.type === 'legend_root_waffle') {
-      createLegend_waffle(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.ratio_txt, prop.bottom_note);
+      createLegend_waffle(layer_name,
+                          prop.field,
+                          prop.title,
+                          prop.subtitle,
+                          prop.rect_fill_value,
+                          prop.ratio_txt,
+                          prop.bottom_note);
     }
     const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
     lgd.setAttribute('transform', prop.transform);

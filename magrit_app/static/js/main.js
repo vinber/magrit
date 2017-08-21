@@ -551,7 +551,7 @@ function setUpInterface(reload_project) {
     .attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
 
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
-  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');;
+  ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
   ratio_select.on('change', function () {
     const map_xy = get_map_xy0();
@@ -988,7 +988,7 @@ function setUpInterface(reload_project) {
       const type_exp = document.getElementById('select_export_type').value,
         exp_name = document.getElementById('export_filename').value;
       if (type_exp === 'svg') {
-          export_compo_svg(exp_name);
+        export_compo_svg(exp_name);
       } else if (type_exp === 'geo') {
         const layer_name = document.getElementById('layer_to_export').value,
           type = document.getElementById('datatype_to_use').value,
@@ -1086,7 +1086,7 @@ function setUpInterface(reload_project) {
         _app.first_layer = true;
       }, (dismiss) => {
         apply_user_preferences(last_project);
-      })
+      });
     } else {
         // Indicate that that no layer have been added for now :*
       _app.first_layer = true;
@@ -1205,11 +1205,11 @@ function make_ico_choice() {
         // Replace the title of the section:
         const selec_title = document.getElementById('btn_s2b');
         selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
-                                i18next.t("app_page.common.representation") +
+                                i18next.t('app_page.common.representation') +
                                 '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
                                 _app.current_functionnality.name +
                                 '">' +
-                                i18next.t("app_page.func_title."+ _app.current_functionnality.name) +
+                                i18next.t('app_page.func_title.' + _app.current_functionnality.name) +
                                 '</span>';
         selec_title.style.display = '';
 
@@ -1258,12 +1258,12 @@ A bunch of global variable, storing oftently reused informations :
 let user_data = {};
 let result_data = {};
 let joined_dataset = [];
-let field_join_map  = [];
+let field_join_map = [];
 let current_layers = {};
 let dataset_name;
 let canvas_rotation_value;
 let map_div = d3.select('#map');
-let pos_lgds_elem = new Map();
+const pos_lgds_elem = new Map();
 
 // The 'map' (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 const map = map_div.styles({ width: `${w}px`, height: `${h}px` })
@@ -1510,7 +1510,12 @@ function displayInfoOnMove() {
 *
 */
 function reproj_symbol_layer() {
-  for (let lyr_name in current_layers) {
+  /* eslint-disable no-loop-func */
+  const layers = Object.keys(current_layers);
+  const n_layers = layers.length;
+  let lyr_name;
+  for (let ix = 0; ix < n_layers; ix++) {
+    lyr_name = layers[ix];
     if (current_layers[lyr_name].renderer
         && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
             || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1
@@ -1535,7 +1540,7 @@ function reproj_symbol_layer() {
       } else if (symbol === 'circle') { // Reproject Prop Symbol :
         map.select(`#${_app.layer_to_id.get(lyr_name)}`)
           .selectAll(symbol)
-          .style('display', d => isNaN(+path.centroid(d)[0]) ? 'none' : undefined)
+          .style('display', d => (isNaN(+path.centroid(d)[0]) ? 'none' : undefined))
           .attrs((d) => {
             const centroid = path.centroid(d);
             return {
@@ -1593,6 +1598,7 @@ function reproj_symbol_layer() {
       }
     }
   }
+  /* eslint-enable no-loop-func */
 }
 
 function make_dialog_container(id_box, title, class_box) {
@@ -1601,7 +1607,7 @@ function make_dialog_container(id_box, title, class_box) {
   const _class_box = class_box || 'dialog';
   const container = document.createElement('div');
   container.setAttribute('id', id_box);
-  container.setAttribute('class', 'twbs modal fade' + ' ' + _class_box);
+  container.setAttribute('class', `twbs modal fade ${_class_box}`);
   container.setAttribute('tabindex', '-1');
   container.setAttribute('role', 'dialog');
   container.setAttribute('aria-labelledby', 'myModalLabel');
@@ -1659,8 +1665,8 @@ const make_confirm_dialog2 = (function (class_box, title, options) {
     let container = document.createElement('div');
     const new_id = get_available_id();
 
-    container.setAttribute('id', 'myModal_' + new_id);
-    container.setAttribute('class', 'twbs modal fade ' + class_box);
+    container.setAttribute('id', `myModal_${new_id}`);
+    container.setAttribute('class', `twbs modal fade ${class_box}`);
     container.setAttribute('tabindex', '-1');
     container.setAttribute('role', 'dialog');
     container.setAttribute('aria-labelledby', 'myModalLabel');
@@ -1669,7 +1675,7 @@ const make_confirm_dialog2 = (function (class_box, title, options) {
                         : '<div class="modal-dialog"><div class="modal-content"></div></div>';
     document.getElementById('twbs').appendChild(container);
 
-    container = document.getElementById('myModal_' + new_id);
+    container = document.getElementById(`myModal_${new_id}`);
     const deferred = Promise.pending();
     const text_ok = options.text_ok || i18next.t('app_page.common.confirm');
     const text_cancel = options.text_cancel || i18next.t('app_page.common.cancel');
@@ -1725,7 +1731,7 @@ function remove_layer(name) {
     showCancelButton: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.delete') + '!',
+    confirmButtonText: `${i18next.t('app_page.common.delete')}!`,
     cancelButtonText: i18next.t('app_page.common.cancel'),
   }).then(() => { remove_layer_cleanup(name); },
           () => null);
@@ -1741,7 +1747,7 @@ function remove_ext_dataset() {
     showCancelButton: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.delete') + '!',
+    confirmButtonText: `${i18next.t('app_page.common.delete')}!`,
     cancelButtonText: i18next.t('app_page.common.cancel'),
   }).then(() => {
     remove_ext_dataset_cleanup();
@@ -1785,14 +1791,14 @@ function remove_layer_cleanup(name) {
     }
   }
   // Is the layer using a filter ? If yes, remove it:
-  const filter_id = map.select('#' + layer_id).attr('filter');
+  const filter_id = map.select(`#${layer_id}`).attr('filter');
   if (filter_id) {
     svg_map.querySelector(filter_id.substr(4).replace(')', '')).remove();
   }
 
   // Remove the layer from the map and from the layer manager :
-  map.select('#' + layer_id).remove();
-  document.querySelector('#sortable .' + layer_id).remove()
+  map.select(`#${layer_id}`).remove();
+  document.querySelector(`#sortable .${layer_id}`).remove();
 
   // Remove the layer from the "geo export" menu :
   const a = document.getElementById('layer_to_export').querySelector('option[value="' + name + '"]');
@@ -1889,7 +1895,8 @@ function handle_click_hand(behavior) {
 
 function zoom_without_redraw() {
   const rot_val = canvas_rotation_value || '';
-  let transform, t_val;
+  let transform,
+    t_val;
   if (!d3.event || !d3.event.transform || !d3.event.sourceEvent) {
     transform = d3.zoomTransform(svg_map);
     t_val = transform.toString() + rot_val;
@@ -1900,7 +1907,7 @@ function zoom_without_redraw() {
         const lyr_name = _app.id_to_layer.get(this.id);
         return current_layers[lyr_name].fixed_stroke
                 ? this.style.strokeWidth
-                : current_layers[lyr_name]['stroke-width-const'] / transform.k + 'px';
+                : `${current_layers[lyr_name]['stroke-width-const'] / transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -1916,7 +1923,7 @@ function zoom_without_redraw() {
         const lyr_name = _app.id_to_layer.get(this.id);
         return current_layers[lyr_name].fixed_stroke
                 ? this.style.strokeWidth
-                : current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k +  'px';
+                : `${current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -1968,7 +1975,9 @@ function redraw_legends_symbols(targeted_node) {
     } : undefined;
 
     legend_nodes[i].remove();
-    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
+    createLegend_symbol(
+      layer_name, rendered_field, lgd_title, lgd_subtitle,
+      nested, rect_fill_value, rounding_precision, notes);
     const new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
     new_lgd.style.visibility = visible;
     if (transform_param) new_lgd.setAttribute('transform', transform_param);
@@ -2005,7 +2014,9 @@ function redraw_legends_symbols(targeted_node) {
       } : undefined;
 
       legend_nodes_links_discont[i].remove();
-      createLegend_discont_links(layer_name, rendered_field, lgd_title, lgd_subtitle, rect_fill_value, rounding_precision, notes);
+      createLegend_discont_links(
+        layer_name, rendered_field, lgd_title, lgd_subtitle,
+        rect_fill_value, rounding_precision, notes);
       const new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
       new_lgd.style.visibility = visible;
       if (transform_param) {
