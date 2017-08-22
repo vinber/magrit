@@ -1296,6 +1296,7 @@ const _app = {
   id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   version: document.querySelector('#header').getAttribute('v'),
   existing_lang: ['en', 'es', 'fr'],
+  custom_palettes: new Map(),
 };
 
 // A bunch of references to the buttons used in the layer manager

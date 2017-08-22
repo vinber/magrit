@@ -238,3 +238,7 @@ const randomColor = (function () {
     return hslToRgb(_h, 0.5, 0.60);
   };
 }());
+
+const addNewCustomPalette = function addNewCustomPalette(palette_name, colors) {
+  _app.custom_palettes.set(palette_name, colors);
+}
