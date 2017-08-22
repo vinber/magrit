@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.4.2 (2017-08-xx)
+------------------
+
+- Fix error with legend customization box after changing the layer name.
+
+- Re-allow to display the table of the joined dataset and improve the table layout.
+
+
 0.4.1 (2017-08-14)
 ------------------
 
@@ -18,7 +26,7 @@ Changes
 
 - Fix error occuring on some representations when using a target layer with empty geometries and warn the user if it's the case.
 
-- Introduce a new representation, waffle map, for mapping two (or more) comparable srocks together.
+- Introduce a new representation, waffle map, for mapping two (or more) comparable stocks together.
 
 
 0.3.7 (2017-07-17)

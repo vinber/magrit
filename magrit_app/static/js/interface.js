@@ -732,7 +732,8 @@ function update_menu_dataset() {
     .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
-      '</i></span>'].join(''));
+      '</i></span>'].join(''))
+    .on('click', null);
   parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
   document.getElementById('remove_dataset').onclick = () => {
@@ -747,6 +748,9 @@ function update_menu_dataset() {
   if (_app.targeted_layer_added) {
     valid_join_check_display(false);
   }
+  document.getElementById('data_ext').onclick = () => {
+    boxExplore2.create(dataset_name);
+  };
 }
 
 
@@ -848,13 +852,12 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 
   _input_geom.classList.remove('i18n');
   _input_geom.removeAttribute('data-i18n');
-  _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
+  // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
   d3.select(_input_geom)
     .attrs({ src: _button, width: '26', height: '26' })
     .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
     .on('click', null);
   _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">`;
-
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };
@@ -898,6 +901,11 @@ function ask_existing_feature(feature_name) {
     cancelButtonText: i18next.t('app_page.common.no'),
   });
 }
+
+const display_table_target_layer = () => {
+  const layer_name = Object.keys(user_data)[0];
+  boxExplore2.create(layer_name);
+};
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options = {}) {
@@ -957,7 +965,8 @@ function add_layer_topojson(text, options = {}) {
 
   if (_app.first_layer) {
     // remove_layer_cleanup('World');
-    const q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
+    const world_id = _app.layer_to_id.get('World');
+    const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
     if (q) q.click();
     delete _app.first_layer;
     if (parsedJSON.proj) {
@@ -1090,6 +1099,9 @@ function add_layer_topojson(text, options = {}) {
   if (!skip_rescale) {
     zoom_without_redraw();
   }
+
+  d3.select('#input_geom')
+    .on('click', display_table_target_layer);
 
   if (!skip_alert) {
     if (fields_type) {
@@ -1628,8 +1640,9 @@ function add_simplified_land_layer(options = {}) {
   const drop_shadow = options.drop_shadow || false;
 
   // d3.json('static/data_sample/World.topojson', (error, json) => {
-  _app.layer_to_id.set('World', 'World');
-  _app.id_to_layer.set('World', 'World');
+  let world_id = encodeId('World');
+  _app.layer_to_id.set('World', world_id);
+  _app.id_to_layer.set(world_id, 'World');
   current_layers.World = {
     type: 'Polygon',
     n_features: 125,
@@ -1637,7 +1650,7 @@ function add_simplified_land_layer(options = {}) {
     fill_color: { single: fill },
   };
   map.insert('g', '.legend')
-    .attrs({ id: 'World', class: 'layer', 'clip-path': 'url(#clip)' })
+    .attrs({ id: world_id, class: 'layer', 'clip-path': 'url(#clip)' })
     .style('stroke-width', stroke_width)
     .selectAll('.subunit')
     .data(topojson.feature(world_topology, world_topology.objects.World).features)

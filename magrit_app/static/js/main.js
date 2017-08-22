@@ -1109,7 +1109,7 @@ function setUpInterface(reload_project) {
 
 function encodeId(s) {
   if (s === '') return 'L_';
-  return s.replace(/[^a-zA-Z0-9_-]/g, match => 'L_' + match[0].charCodeAt(0).toString(16) + '_');
+  return 'L_' + s.replace(/[^a-zA-Z0-9_-]/g, match => '_' + match[0].charCodeAt(0).toString(16) + '_');
 }
 
 function bindTooltips(dataAttr = 'tooltip-title') {
@@ -1292,8 +1292,8 @@ const _app = {
   to_cancel: undefined,
   targeted_layer_added: false,
   current_functionnality: undefined,
-  layer_to_id: new Map([['World', 'World'], ['Graticule', 'Graticule']]),
-  id_to_layer: new Map([['World', 'World'], ['Graticule', 'Graticule']]),
+  layer_to_id: new Map([['World', encodeId('World')], ['Graticule', encodeId('Graticule')]]),
+  id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   version: document.querySelector('#header').getAttribute('v'),
   existing_lang: ['en', 'es', 'fr'],
 };

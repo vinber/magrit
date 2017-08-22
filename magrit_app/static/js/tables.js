@@ -359,7 +359,7 @@ const boxExplore2 = {
     }
 
     // TODO : allow to add_field on all the layer instead of just targeted / result layers :
-    if (this.tables.get(table_name)) {
+    if (this.tables.get(table_name) && (table_name !== dataset_name || field_join_map.length === 0)) {
       this.top_buttons
         .insert('button')
         .attrs({ id: 'add_field_button', class: 'button_st3' })
@@ -374,14 +374,26 @@ const boxExplore2 = {
       this.nb_features, ' ', i18next.t('app_page.common.feature', { count: this.nb_features }), ' - ',
       this.columns_names.length, ' ', i18next.t('app_page.common.field', { count: this.columns_names.length }),
     ].join('');
-    this.box_table.append('p').attr('id', 'table_intro').html(txt_intro);
+    this.box_table.append('p')
+      .attr('id', 'table_intro')
+      .style('margin', '10px 0 !important')
+      .html(txt_intro);
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
-
+    const list_per_page_select = [5, 10, 15, 20, 25];
+    if (this.nb_features > 25) {
+      list_per_page_select.push(this.nb_features);
+    }
     const myTable = document.getElementById('myTable');
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
-      fixedHeight: true,
+      perPageSelect: list_per_page_select,
+      labels: {
+        placeholder: i18next.t('app_page.table.search'), // The search input placeholder
+        perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
+        noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
+        info: i18next.t('app_page.table.info'),  // "Showing {start} to {end} of {rows} entries"
+      },
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
@@ -399,15 +411,17 @@ const boxExplore2 = {
         box.querySelector('.modal-dialog').style.width = `${new_width + 80}px`;
       }
       box.style.left = new_width > window.innerWidth * 0.85 ? '5px' : `${+box.style.left.replace('px', '') / 2}px`;
+      // if (new_height > 350 || new_height > window.innerHeight * 0.80) {
+
+      const modal_body = box.querySelector('.modal-body');
+      modal_body.style.padding = '12.5px 15px 15px 15px';
       if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-        box.querySelector('.modal-body').style.height = `${new_height + 175}px`;
-        box.querySelector('.modal-body').style.overflow = 'auto';
+        modal_body.style.height = `${Math.min(new_height + 115, window.innerHeight - 125)}px`;
       }
-      setSelected(document.querySelector('.dataTable-selector'), '10');
-      // let datatable_info = box.querySelector(".dataTable-bottom");
-      // box.querySelector(".modal-footer")
-      //    .insertBefore(datatable_info, box.querySelector(".btn_ok"));
-    }, 225);
+      modal_body.style.overflow = 'auto';
+      // }
+    }, 250);
+    setSelected(document.querySelector('.dataTable-selector'), '10');
   },
 
   get_available_tables() {

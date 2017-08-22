@@ -149,7 +149,7 @@ function down_legend(legend_node) {
 function make_legend_context_menu(legend_node, layer) {
   const context_menu = new ContextMenu();
   const getItems = () => [
-    { name: i18next.t('app_page.common.edit_style'), action: () => { createlegendEditBox(legend_node.attr('id'), layer); } },
+    { name: i18next.t('app_page.common.edit_style'), action: () => { createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name')); } },
     { name: i18next.t('app_page.common.up_element'), action: () => { up_legend(legend_node.node()); } },
     { name: i18next.t('app_page.common.down_element'), action: () => { down_legend(legend_node.node()); } },
     { name: i18next.t('app_page.common.hide'),
@@ -161,7 +161,7 @@ function make_legend_context_menu(legend_node, layer) {
   legend_node.on('dblclick', () => {
     d3.event.stopPropagation();
     d3.event.preventDefault();
-    createlegendEditBox(legend_node.attr('id'), layer);
+    createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name'));
   });
 
   legend_node.on('contextmenu', () => {

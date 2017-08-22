@@ -885,8 +885,8 @@ function setUpInterface(reload_project) {
 
 function encodeId(s) {
   if (s === '') return 'L_';
-  return s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
-    return 'L_' + match[0].charCodeAt(0).toString(16) + '_';
+  return 'L_' + s.replace(/[^a-zA-Z0-9_-]/g, function (match) {
+    return '_' + match[0].charCodeAt(0).toString(16) + '_';
   });
 }
 
@@ -1048,8 +1048,8 @@ var _app = {
   to_cancel: undefined,
   targeted_layer_added: false,
   current_functionnality: undefined,
-  layer_to_id: new Map([['World', 'World'], ['Graticule', 'Graticule']]),
-  id_to_layer: new Map([['World', 'World'], ['Graticule', 'Graticule']]),
+  layer_to_id: new Map([['World', encodeId('World')], ['Graticule', encodeId('Graticule')]]),
+  id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   version: document.querySelector('#header').getAttribute('v'),
   existing_lang: ['en', 'es', 'fr']
 };
@@ -1132,7 +1132,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f344f8be7713.json'
+      loadPath: 'static/locales/{{lng}}/translation.7643e082493b.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -10226,7 +10226,7 @@ function update_menu_dataset() {
 
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
-  d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>'].join(''));
+  d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>'].join('')).on('click', null);
   parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
 
   document.getElementById('remove_dataset').onclick = function () {
@@ -10241,6 +10241,9 @@ function update_menu_dataset() {
   if (_app.targeted_layer_added) {
     valid_join_check_display(false);
   }
+  document.getElementById('data_ext').onclick = function () {
+    boxExplore2.create(dataset_name);
+  };
 }
 
 /**
@@ -10341,10 +10344,9 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 
   _input_geom.classList.remove('i18n');
   _input_geom.removeAttribute('data-i18n');
-  _input_geom.innerHTML = '<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>';
+  // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
   d3.select(_input_geom).attrs({ src: _button, width: '26', height: '26' }).html('<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>').on('click', null);
   _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">';
-
   var remove_target = document.getElementById('remove_target');
   remove_target.onclick = function () {
     remove_layer(Object.getOwnPropertyNames(user_data)[0]);
@@ -10394,6 +10396,11 @@ function ask_existing_feature(feature_name) {
     cancelButtonText: i18next.t('app_page.common.no')
   });
 }
+
+var display_table_target_layer = function display_table_target_layer() {
+  var layer_name = Object.keys(user_data)[0];
+  boxExplore2.create(layer_name);
+};
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text) {
@@ -10453,7 +10460,8 @@ function add_layer_topojson(text) {
 
   if (_app.first_layer) {
     // remove_layer_cleanup('World');
-    var q = document.querySelector('.sortable.World > .layer_buttons > #eye_open');
+    var world_id = _app.layer_to_id.get('World');
+    var q = document.querySelector('.sortable.' + world_id + ' > .layer_buttons > #eye_open');
     if (q) q.click();
     delete _app.first_layer;
     if (parsedJSON.proj) {
@@ -10576,6 +10584,8 @@ function add_layer_topojson(text) {
   if (!skip_rescale) {
     zoom_without_redraw();
   }
+
+  d3.select('#input_geom').on('click', display_table_target_layer);
 
   if (!skip_alert) {
     if (fields_type) {
@@ -11069,15 +11079,16 @@ function add_simplified_land_layer() {
   var drop_shadow = options.drop_shadow || false;
 
   // d3.json('static/data_sample/World.topojson', (error, json) => {
-  _app.layer_to_id.set('World', 'World');
-  _app.id_to_layer.set('World', 'World');
+  var world_id = encodeId('World');
+  _app.layer_to_id.set('World', world_id);
+  _app.id_to_layer.set(world_id, 'World');
   current_layers.World = {
     type: 'Polygon',
     n_features: 125,
     'stroke-width-const': +stroke_width.slice(0, -2),
     fill_color: { single: fill }
   };
-  map.insert('g', '.legend').attrs({ id: 'World', class: 'layer', 'clip-path': 'url(#clip)' }).style('stroke-width', stroke_width).selectAll('.subunit').data(topojson.feature(world_topology, world_topology.objects.World).features).enter().append('path').attr('d', path).styles({
+  map.insert('g', '.legend').attrs({ id: world_id, class: 'layer', 'clip-path': 'url(#clip)' }).style('stroke-width', stroke_width).selectAll('.subunit').data(topojson.feature(world_topology, world_topology.objects.World).features).enter().append('path').attr('d', path).styles({
     stroke: stroke,
     fill: fill,
     'stroke-opacity': stroke_opacity,
@@ -15533,7 +15544,7 @@ function make_legend_context_menu(legend_node, layer) {
   var context_menu = new ContextMenu();
   var getItems = function getItems() {
     return [{ name: i18next.t('app_page.common.edit_style'), action: function action() {
-        createlegendEditBox(legend_node.attr('id'), layer);
+        createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name'));
       } }, { name: i18next.t('app_page.common.up_element'), action: function action() {
         up_legend(legend_node.node());
       } }, { name: i18next.t('app_page.common.down_element'), action: function action() {
@@ -15546,7 +15557,7 @@ function make_legend_context_menu(legend_node, layer) {
   legend_node.on('dblclick', function () {
     d3.event.stopPropagation();
     d3.event.preventDefault();
-    createlegendEditBox(legend_node.attr('id'), layer);
+    createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name'));
   });
 
   legend_node.on('contextmenu', function () {
@@ -19105,21 +19116,29 @@ var boxExplore2 = {
     }
 
     // TODO : allow to add_field on all the layer instead of just targeted / result layers :
-    if (this.tables.get(table_name)) {
+    if (this.tables.get(table_name) && (table_name !== dataset_name || field_join_map.length === 0)) {
       this.top_buttons.insert('button').attrs({ id: 'add_field_button', class: 'button_st3' }).html(i18next.t('app_page.explore_box.button_add_field')).on('click', function () {
         _this.modal_box.hide();
         add_field_table(the_table, table_name, _this);
       });
     }
     var txt_intro = ['<b>', table_name, '</b><br>', this.nb_features, ' ', i18next.t('app_page.common.feature', { count: this.nb_features }), ' - ', this.columns_names.length, ' ', i18next.t('app_page.common.field', { count: this.columns_names.length })].join('');
-    this.box_table.append('p').attr('id', 'table_intro').html(txt_intro);
+    this.box_table.append('p').attr('id', 'table_intro').style('margin', '10px 0 !important').html(txt_intro);
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
-
+    var list_per_page_select = [5, 10, 15, 20, 25];
+    if (this.nb_features > 25) {
+      list_per_page_select.push(this.nb_features);
+    }
     var myTable = document.getElementById('myTable');
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
-      fixedHeight: true
+      perPageSelect: list_per_page_select,
+      labels: {
+        placeholder: i18next.t('app_page.table.search'), // The search input placeholder
+        perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
+        noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
@@ -19137,15 +19156,17 @@ var boxExplore2 = {
         box.querySelector('.modal-dialog').style.width = new_width + 80 + 'px';
       }
       box.style.left = new_width > window.innerWidth * 0.85 ? '5px' : +box.style.left.replace('px', '') / 2 + 'px';
+      // if (new_height > 350 || new_height > window.innerHeight * 0.80) {
+
+      var modal_body = box.querySelector('.modal-body');
+      modal_body.style.padding = '12.5px 15px 15px 15px';
       if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-        box.querySelector('.modal-body').style.height = new_height + 175 + 'px';
-        box.querySelector('.modal-body').style.overflow = 'auto';
+        modal_body.style.height = Math.min(new_height + 115, window.innerHeight - 125) + 'px';
       }
-      setSelected(document.querySelector('.dataTable-selector'), '10');
-      // let datatable_info = box.querySelector(".dataTable-bottom");
-      // box.querySelector(".modal-footer")
-      //    .insertBefore(datatable_info, box.querySelector(".btn_ok"));
-    }, 225);
+      modal_body.style.overflow = 'auto';
+      // }
+    }, 250);
+    setSelected(document.querySelector('.dataTable-selector'), '10');
   },
   get_available_tables: function get_available_tables() {
     var target_layer = Object.getOwnPropertyNames(user_data),

@@ -98,6 +98,12 @@
             "class": "{{count}} class",
             "download_link": "Download link"
         },
+        "table": {
+            "search": "Search...",
+            "entries_page": "{select} entries per page",
+            "no_rows": "No entries found",
+            "info": "Showing {start} to {end} of {rows} entries"
+        },
         "notification":{
             "success_sphere_added": "Success: sphere added!",
             "success_graticule_added": "Success: graticule added!",
