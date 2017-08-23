@@ -1401,7 +1401,7 @@ const fields_Choropleth = {
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-        const keyi18n = `app_page.common. ${self.rendering_params[field_name].type}`;
+        const keyi18n = `app_page.common.${self.rendering_params[field_name].type}`;
         choro_mini_choice_disc.html(
             `${i18next.t(keyi18n)}, ${i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class })}`);
         uncolor_icons();
@@ -3331,7 +3331,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   const ref_layer_id = _app.layer_to_id.get(layer_name);
   const field = rendering_params.field;
   const layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ['Symbols', field, layer_name].join('_'));
-  const ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName('path');
+  const ref_selection = document.getElementById(ref_layer_id).getElementsByTagName('path');
   const nb_ft = ref_selection.length;
 
   function make_geojson_pt_layer() {

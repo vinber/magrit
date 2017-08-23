@@ -1132,7 +1132,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7643e082493b.json'
+      loadPath: 'static/locales/{{lng}}/translation.fa46cb865296.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -5625,7 +5625,7 @@ var fields_Choropleth = {
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
-        var keyi18n = 'app_page.common. ' + self.rendering_params[field_name].type;
+        var keyi18n = 'app_page.common.' + self.rendering_params[field_name].type;
         choro_mini_choice_disc.html(i18next.t(keyi18n) + ', ' + i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class }));
         uncolor_icons();
         color_disc_icons(self.rendering_params[field_name].type);
@@ -7424,7 +7424,7 @@ function render_TypoSymbols(rendering_params, new_name) {
   var ref_layer_id = _app.layer_to_id.get(layer_name);
   var field = rendering_params.field;
   var layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ['Symbols', field, layer_name].join('_'));
-  var ref_selection = document.getElementById(_app.layer_to_id.get(ref_layer_id)).getElementsByTagName('path');
+  var ref_selection = document.getElementById(ref_layer_id).getElementsByTagName('path');
   var nb_ft = ref_selection.length;
 
   function make_geojson_pt_layer() {
@@ -10764,14 +10764,14 @@ function add_layout_feature(selected_feature) {
   } else if (selected_feature === 'sphere') {
     // if(current_layers.Sphere) return;
     var layer_to_add = check_layer_name(options.layer_name || 'Sphere');
-    var _layer_id = encodeId(layer_to_add);
+    var layer_id = encodeId(layer_to_add);
     var fill = options.fill || '#add8e6';
     var fill_opacity = options.fill_opacity || 0.2;
     var stroke_width = options.stroke_width || '0.5px';
     var stroke_opacity = options.stroke_opacity || 1;
     var stroke = options.stroke || '#ffffff';
-    _app.layer_to_id.set(layer_to_add, _layer_id);
-    _app.id_to_layer.set(_layer_id, layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     current_layers[layer_to_add] = {
       sphere: true,
       type: 'Polygon',
@@ -10779,14 +10779,14 @@ function add_layout_feature(selected_feature) {
       'stroke-width-const': +stroke_width.slice(0, -2),
       fill_color: { single: fill }
     };
-    map.append('g').attrs({ id: _layer_id, class: 'layer' }).styles({ 'stroke-width': stroke_width }).append('path').datum({ type: 'Sphere' }).styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke }).attrs({ d: path });
+    map.append('g').attrs({ id: layer_id, class: 'layer' }).styles({ 'stroke-width': stroke_width }).append('path').datum({ type: 'Sphere' }).styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke }).attrs({ d: path });
     if (isInterrupted(current_proj_name)) {
-      map.select('g#' + _layer_id).attr('clip-path', 'url(#clip)');
+      map.select('g#' + layer_id).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
     alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
     zoom_without_redraw();
-    setSphereBottom(_layer_id);
+    setSphereBottom(layer_id);
   } else if (selected_feature === 'graticule') {
     if (current_layers.Graticule !== undefined) return;
     var _stroke = options.stroke || '#808080';
@@ -10801,7 +10801,11 @@ function add_layout_feature(selected_feature) {
       graticule = graticule.extent(extent);
       current_layers.Graticule.extent = extent;
     }
-    map.insert('g', '.legend').attrs({ id: 'Graticule', class: 'layer' }).styles({ 'stroke-width': _stroke_width }).append('path').datum(graticule).attrs({ d: path, class: 'graticule' }).styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: _stroke });
+    var _layer_to_add = 'Graticule';
+    var _layer_id = encodeId(_layer_to_add);
+    _app.layer_to_id.set(_layer_to_add, _layer_id);
+    _app.id_to_layer.set(_layer_id, _layer_to_add);
+    map.insert('g', '.legend').attrs({ id: _layer_id, class: 'layer' }).styles({ 'stroke-width': _stroke_width }).append('path').datum(graticule).attrs({ d: path, class: 'graticule' }).styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: _stroke });
     current_layers.Graticule = {
       graticule: true,
       type: 'Line',
@@ -10813,7 +10817,7 @@ function add_layout_feature(selected_feature) {
       dasharray: stroke_dasharray
     };
     if (isInterrupted(current_proj_name)) {
-      map.select('g#' + layer_id).attr('clip-path', 'url(#clip)');
+      map.select('g#' + _layer_id).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');
     alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
@@ -10834,7 +10838,7 @@ function add_layout_feature(selected_feature) {
     if (!northArrow.displayed) {
       handleClickAddOther('north_arrow');
     } else {
-      ask_existing_feature('north_arrow').then(function (_) {
+      ask_existing_feature('north_arrow').then(function () {
         northArrow.remove();
         handleClickAddOther('north_arrow');
       }, function (dismiss) {

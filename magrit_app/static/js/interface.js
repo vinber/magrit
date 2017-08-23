@@ -1325,8 +1325,12 @@ function add_layout_feature(selected_feature, options = {}) {
       graticule = graticule.extent(extent);
       current_layers.Graticule.extent = extent;
     }
+    const layer_to_add = 'Graticule';
+    const layer_id = encodeId(layer_to_add);
+    _app.layer_to_id.set(layer_to_add, layer_id);
+    _app.id_to_layer.set(layer_id, layer_to_add);
     map.insert('g', '.legend')
-      .attrs({ id: 'Graticule', class: 'layer' })
+      .attrs({ id: layer_id, class: 'layer' })
       .styles({ 'stroke-width': stroke_width })
       .append('path')
       .datum(graticule)
@@ -1357,14 +1361,14 @@ function add_layout_feature(selected_feature, options = {}) {
         .then(() => {
           scaleBar.remove();
           handleClickAddOther('scalebar');
-        }, (dismiss) => null);
+        }, dismiss => null);
     }
   } else if (selected_feature === 'north_arrow') {
     if (!(northArrow.displayed)) {
       handleClickAddOther('north_arrow');
     } else {
       ask_existing_feature('north_arrow')
-        .then( _ => {
+        .then(() => {
           northArrow.remove();
           handleClickAddOther('north_arrow');
         }, dismiss => null);
