@@ -85,6 +85,7 @@ function get_map_template() {
   map_config.n_layers = layers._groups[0].length;
   map_config.background_color = map.style('background-color');
   map_config.canvas_rotation = typeof canvas_rotation_value === 'string' ? canvas_rotation_value.match(/\d+/) : undefined;
+  map_config.custom_palettes = Array.from(_app.custom_palettes.entries());
 
   if (map_title) {
     map_config.title = {
@@ -715,6 +716,9 @@ function apply_user_preferences(json_pref) {
   canvas_mod_size([w, h]);
   document.getElementById('input-width').value = w;
   document.getElementById('input-height').value = h;
+
+  // Recrate the Map for the palettes defined by the user:
+  _app.custom_palettes = new Map(map_config.custom_palettes);
 
   // Set the variables/fields related to the projection
   // (names were slightly changed in a last version, thus the replacing of whitespace)

@@ -1047,7 +1047,8 @@ var _app = {
   layer_to_id: new Map([['World', encodeId('World')], ['Graticule', encodeId('Graticule')]]),
   id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   version: document.querySelector('#header').getAttribute('v'),
-  existing_lang: ['en', 'es', 'fr']
+  existing_lang: ['en', 'es', 'fr'],
+  custom_palettes: new Map()
 };
 
 // A bunch of references to the buttons used in the layer manager
@@ -1128,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.904948941523.json'
+      loadPath: 'static/locales/{{lng}}/translation.0845edbb9e79.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2707,6 +2708,10 @@ var randomColor = function () {
     return hslToRgb(_h, 0.5, 0.60);
   };
 }();
+
+var addNewCustomPalette = function addNewCustomPalette(palette_name, colors) {
+  _app.custom_palettes.set(palette_name, colors);
+};
 'use strict';
 
 function ContextMenu() {
@@ -2917,6 +2922,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     col_div.selectAll('.central_class').remove();
     col_div.selectAll('.central_color').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
+
     var sequential_color_select = col_div.insert('p').attr('class', 'color_txt').style('margin-left', '10px').html(i18next.t('disc_box.color_palette')).insert('select').attr('class', 'color_params').styles({
       width: '116px',
       'background-image': 'url(/static/img/palettes/Blues.png)' }).on('change', function () {
@@ -2927,6 +2933,16 @@ var display_discretization = function display_discretization(layer_name, field_n
     ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (name) {
       sequential_color_select.append('option').text(name).attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' });
     });
+
+    if (_app.custom_palettes) {
+      var additional_colors = Array.from(_app.custom_palettes.entries()).filter(function (el) {
+        return el[1].length === nb_class;
+      });
+
+      for (var ixp = 0; ixp < additional_colors.length; ixp++) {
+        sequential_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length });
+      }
+    }
 
     var button_reverse = d3.select('.color_txt').insert('p').style('text-align', 'center').insert('button').styles({ 'margin-top': '10px' }).attrs({ class: 'button_st3', id: 'reverse_pal_btn' }).html(i18next.t('disc_box.reverse_palette')).on('click', function () {
       to_reverse = true;
@@ -3046,6 +3062,12 @@ var display_discretization = function display_discretization(layer_name, field_n
     txt_nb_class.node().value = value;
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
+    var color_select = document.querySelectorAll('.color_params > option');
+    for (var ixc = 0; ixc < color_select.length; ixc++) {
+      if (color_select[ixc].value.startsWith('user_')) {
+        color_select[ixc].disabled = nb_class === +color_select[ixc].getAttribute('nb_colors') ? false : true;
+      }
+    }
   };
 
   var update_axis = function update_axis(group) {
@@ -3171,8 +3193,12 @@ var display_discretization = function display_discretization(layer_name, field_n
             to_reverse = false;
           } else {
             var selected_palette = document.querySelector('.color_params').value;
-            color_array = getColorBrewerArray(nb_class, selected_palette);
-            color_array = color_array.slice(0, nb_class);
+            if (selected_palette.startsWith('user_')) {
+              color_array = _app.custom_palettes.get(selected_palette.slice(5));
+            } else {
+              color_array = getColorBrewerArray(nb_class, selected_palette);
+              color_array = color_array.slice(0, nb_class);
+            }
           }
         } else if (col_scheme === 'diverging') {
           var left_palette = document.querySelector('.color_params_left').value,
@@ -3381,8 +3407,9 @@ var display_discretization = function display_discretization(layer_name, field_n
       update_nb_class(nb_class);
       return;
     }
-    nb_class = +this.value;
-    txt_nb_class.node().value = nb_class;
+    // nb_class = +this.value;
+    // txt_nb_class.node().value = nb_class;
+    update_nb_class(+this.value);
     var ret_val = redisplay.compute();
     if (!ret_val) {
       this.value = old_nb_class;
@@ -3462,7 +3489,8 @@ var display_discretization = function display_discretization(layer_name, field_n
 
   var b_accordion_colors = newBox.append('button').attrs({ class: 'accordion_disc active', id: 'btn_acc_disc_color' }).style('padding', '0 6px').html(i18next.t('disc_box.title_color_scheme'));
   var accordion_colors = newBox.append('div').attrs({ class: 'panel show', id: 'accordion_colors' }).style('width', '98%');
-  var color_scheme = d3.select('#accordion_colors').append('div').attr('id', 'color_div').style('text-align', 'center');
+  var color_scheme = accordion_colors // d3.select('#accordion_colors')
+  .append('div').attr('id', 'color_div').style('text-align', 'center');
 
   [[i18next.t('disc_box.sequential'), 'sequential'], [i18next.t('disc_box.diverging'), 'diverging']].forEach(function (el) {
     color_scheme.insert('label').style('margin', '20px').html(el[0]).insert('input').attrs({ type: 'radio', name: 'color_scheme', value: el[1], id: 'button_' + el[1] }).on('change', function () {
@@ -3476,6 +3504,12 @@ var display_discretization = function display_discretization(layer_name, field_n
   });
   var to_reverse = false;
   document.getElementById('button_sequential').checked = true;
+  accordion_colors.append('button').attr('class', 'button_st4').html('custom_palette').on('click', function () {
+    make_box_custom_palette(nb_class).then(function (colors) {
+      d3.select('.color_params').append('option').text('Palette1').attrs({ value: 'user_Palette1', title: 'Palette1', nb_colors: colors.length });
+      addNewCustomPalette('Palette1', colors);
+    });
+  });
 
   var b_accordion_breaks = newBox.append('button').attrs({ class: 'accordion_disc', id: 'btn_acc_disc_break' }).style('padding', '0 6px').html(i18next.t('disc_box.title_break_values'));
   var accordion_breaks = newBox.append('div').attrs({ class: 'panel', id: 'accordion_breaks_vals' }).style('width', '98%');
@@ -3807,6 +3841,57 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
     }
   };
 };
+
+function make_box_custom_palette(nb_class, existing_colors) {
+  var is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  var ref_colors = void 0;
+  if (existing_colors && existing_colors.length === nb_class) {
+    ref_colors = existing_colors.slice();
+  } else {
+    ref_colors = [];
+    for (var i = 0; i < nb_class; i++) {
+      ref_colors.push('#fefefe');
+    }
+  }
+
+  return swal({
+    title: i18next.t('app_page.palette_box.title'),
+    html: '<div id="palette_box_content" style="display: inline-flex;"></div>',
+    showCancelButton: true,
+    showConfirmButton: true,
+    cancelButtonText: i18next.t('app_page.common.close'),
+    animation: 'slide-from-top',
+    onOpen: function onOpen() {
+      document.querySelector('.swal2-modal').style.width = nb_class * 85 + 'px';
+      var colors = d3.select('#palette_box_content');
+      var g = colors.selectAll('p').data(ref_colors).enter().append('p');
+
+      g.append('input').attr('id', function (d, i) {
+        return i;
+      }).attr('type', 'color').property('value', function (d) {
+        return d;
+      }).style('width', '60px').on('change', function (d, i) {
+        ref_colors[i] = this.value;
+        this.nextSibling.value = this.value;
+      });
+
+      g.append('input').attr('id', function (d, i) {
+        return i;
+      }).property('value', function (d) {
+        return d;
+      }).style('width', '60px').on('keyup', function (d, i) {
+        if (is_hex_color.test(this.value)) {
+          ref_colors[i] = this.value;
+          this.previousSibling.value = this.value;
+        }
+      });
+    }
+  }).then(function (v) {
+    return ref_colors;
+  }, function (dismissValue) {
+    return null;
+  });
+}
 'use strict';
 
 var display_discretization_links_discont = function display_discretization_links_discont(layer_name, field_name, nb_class, type) {
@@ -16766,6 +16851,7 @@ function get_map_template() {
   map_config.n_layers = layers._groups[0].length;
   map_config.background_color = map.style('background-color');
   map_config.canvas_rotation = typeof canvas_rotation_value === 'string' ? canvas_rotation_value.match(/\d+/) : undefined;
+  map_config.custom_palettes = Array.from(_app.custom_palettes.entries());
 
   if (map_title) {
     map_config.title = {
@@ -17402,6 +17488,9 @@ function apply_user_preferences(json_pref) {
   canvas_mod_size([w, h]);
   document.getElementById('input-width').value = w;
   document.getElementById('input-height').value = h;
+
+  // Recrate the Map for the palettes defined by the user:
+  _app.custom_palettes = new Map(map_config.custom_palettes);
 
   // Set the variables/fields related to the projection
   // (names were slightly changed in a last version, thus the replacing of whitespace)

@@ -70,6 +70,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     col_div.selectAll('.central_class').remove();
     col_div.selectAll('.central_color').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
+
     const sequential_color_select = col_div.insert('p')
       .attr('class', 'color_txt')
       .style('margin-left', '10px')
@@ -93,6 +94,17 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           .attrs({ value: name, title: name })
           .styles({ 'background-image': `url(/static/img/palettes/${name}.png)` });
       });
+
+    if (_app.custom_palettes) {
+      const additional_colors = Array.from(
+        _app.custom_palettes.entries()).filter(el => el[1].length === nb_class);
+
+      for (let ixp = 0; ixp < additional_colors.length; ixp++) {
+        sequential_color_select.append('option')
+          .text(additional_colors[ixp][0])
+          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length });
+      }
+    }
 
     const button_reverse = d3.select('.color_txt').insert('p').style('text-align', 'center')
       .insert('button')
@@ -266,6 +278,12 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     txt_nb_class.node().value = value;
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
+    const color_select = document.querySelectorAll('.color_params > option');
+    for (let ixc = 0; ixc < color_select.length; ixc++) {
+      if (color_select[ixc].value.startsWith('user_')) {
+        color_select[ixc].disabled = (nb_class === +color_select[ixc].getAttribute('nb_colors')) ? false : true;
+      }
+    }
   };
 
   const update_axis = (group) => {
@@ -437,8 +455,12 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
             to_reverse = false;
           } else {
             const selected_palette = document.querySelector('.color_params').value;
-            color_array = getColorBrewerArray(nb_class, selected_palette);
-            color_array = color_array.slice(0, nb_class);
+            if (selected_palette.startsWith('user_')) {
+              color_array = _app.custom_palettes.get(selected_palette.slice(5));
+            } else {
+              color_array = getColorBrewerArray(nb_class, selected_palette);
+              color_array = color_array.slice(0, nb_class);
+            }
           }
         } else if (col_scheme === 'diverging') {
           const left_palette = document.querySelector('.color_params_left').value,
@@ -695,8 +717,9 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         update_nb_class(nb_class);
         return;
       }
-      nb_class = +this.value;
-      txt_nb_class.node().value = nb_class;
+      // nb_class = +this.value;
+      // txt_nb_class.node().value = nb_class;
+      update_nb_class(+this.value);
       const ret_val = redisplay.compute();
       if (!ret_val) {
         this.value = old_nb_class;
@@ -797,7 +820,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   const accordion_colors = newBox.append('div')
     .attrs({ class: 'panel show', id: 'accordion_colors' })
     .style('width', '98%');
-  const color_scheme = d3.select('#accordion_colors')
+  const color_scheme = accordion_colors // d3.select('#accordion_colors')
     .append('div')
     .attr('id', 'color_div')
     .style('text-align', 'center');
@@ -819,6 +842,19 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   });
   let to_reverse = false;
   document.getElementById('button_sequential').checked = true;
+  accordion_colors.append('button')
+    .attr('class', 'button_st4')
+    .html('custom_palette')
+    .on('click', () => {
+      make_box_custom_palette(nb_class)
+        .then((colors) => {
+          d3.select('.color_params')
+            .append('option')
+            .text('Palette1')
+            .attrs({ value: `user_Palette1`, title: 'Palette1', nb_colors: colors.length });
+          addNewCustomPalette('Palette1', colors);
+        });
+    });
 
   const b_accordion_breaks = newBox.append('button')
     .attrs({ class: 'accordion_disc', id: 'btn_acc_disc_break' })
@@ -1261,3 +1297,57 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
     }
   };
 };
+
+function make_box_custom_palette(nb_class, existing_colors) {
+  const is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  let ref_colors;
+  if (existing_colors && existing_colors.length === nb_class) {
+    ref_colors = existing_colors.slice();
+  } else {
+    ref_colors = [];
+    for (let i = 0; i < nb_class; i++) {
+      ref_colors.push('#fefefe');
+    }
+  }
+
+  return swal({
+    title: i18next.t('app_page.palette_box.title'),
+    html: '<div id="palette_box_content" style="display: inline-flex;"></div>',
+    showCancelButton: true,
+    showConfirmButton: true,
+    cancelButtonText: i18next.t('app_page.common.close'),
+    animation: 'slide-from-top',
+    onOpen: () => {
+      document.querySelector('.swal2-modal').style.width = `${nb_class * 85}px`;
+      const colors = d3.select('#palette_box_content');
+      const g = colors.selectAll('p')
+        .data(ref_colors)
+        .enter()
+        .append('p');
+
+      g.append('input')
+        .attr('id', (d, i) => i)
+        .attr('type', 'color')
+        .property('value', d => d)
+        .style('width', '60px')
+        .on('change', function (d, i) {
+          ref_colors[i] = this.value;
+          this.nextSibling.value = this.value;
+        });
+
+      g.append('input')
+        .attr('id', (d, i) => i)
+        .property('value', d => d)
+        .style('width', '60px')
+        .on('keyup', function (d, i) {
+          if (is_hex_color.test(this.value)) {
+            ref_colors[i] = this.value;
+            this.previousSibling.value = this.value;
+          }
+        });
+    },
+  }).then(
+    v => ref_colors,
+    dismissValue => null,
+  );
+}
