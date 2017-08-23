@@ -14,7 +14,7 @@ class UserArrow {
     this.id = id;
     this.stroke_width = 4;
     this.color = 'rgb(0, 0, 0)';
-
+    this.hide_head = undefined;
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
       this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k],
@@ -50,7 +50,7 @@ class UserArrow {
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
-        let _t = this.querySelector('line'),
+        const _t = this.querySelector('line'),
           arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
           subject = d3.event.subject,
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
@@ -97,10 +97,9 @@ class UserArrow {
         _t.y2.baseVal.value = self.pt2[1];
       });
 
-    let defs = parent.querySelector('defs'),
-      markers = defs ? defs.querySelector('marker') : null;
+    const markers_exists = (defs ? defs.node().querySelector('marker') : null);
 
-    if (!markers) {
+    if (!markers_exists) {
       this.add_defs_marker();
     }
     this.draw();
@@ -139,7 +138,7 @@ class UserArrow {
 
     this.arrow.insert('line')
       .attrs({
-        'marker-end': 'url(#arrow_head)',
+        'marker-end': this.hide_head ? null : 'url(#arrow_head)',
         x1: this.pt1[0],
         y1: this.pt1[1],
         x2: this.pt2[0],
@@ -352,6 +351,23 @@ class UserArrow {
         line.x2.baseVal.value = nx;
         line.y2.baseVal.value = ny;
         document.getElementById('arrow_angle_text').value = +this.value;
+      });
+    const s3 = box_content.append('p').attr('class', 'line_elem2');
+    s3.append('label')
+      .attrs({ for: 'checkbox_head_arrow' })
+      .html(i18next.t('app_page.arrow_edit_box.arrowHead'));
+    s3.append('input')
+      .attrs({ type: 'checkbox', id: 'checkbox_head_arrow' })
+      .styles({ 'margin-left': '45px', 'vertical-align': 'middle' })
+      .property('checked', self.hide_head === true)
+      .on('change', function () {
+        if (this.checked) {
+          self.hide_head = true;
+          self.arrow.select('line').attr('marker-end', null);
+        } else {
+          self.hide_head = false;
+          self.arrow.select('line').attr('marker-end', 'url(#arrow_head)');
+        }
       });
   }
 }

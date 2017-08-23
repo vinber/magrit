@@ -735,7 +735,7 @@ function update_menu_dataset() {
       '</i></span>'].join(''))
     .on('click', null);
   parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 7px 0 0;opacity:1">`;
+<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();
@@ -860,7 +860,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
     .on('click', null);
   _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 7px 0 0;opacity:1">`;
+<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };

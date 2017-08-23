@@ -2206,7 +2206,7 @@ function change_projection(new_proj_name) {
   } else if (!layer_name) {
     const layers_active = Array.prototype.filter.call(
       svg_map.querySelectorAll('.layer'), f => f.style.visibility !== 'hidden');
-    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+    layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
   }
   if (layer_name) {
     scale_to_lyr(layer_name);
@@ -2246,7 +2246,8 @@ function change_projection_4(_proj) {
   if (!layer_name) {
     const layers_active = Array.prototype.filter.call(
       svg_map.querySelectorAll('.layer'), f => f.style.visibility !== 'hidden');
-    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+    layer_name = layers_active.length > 0
+      ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
   }
   if (!layer_name || layer_name === 'World' || layer_name === 'Sphere' || layer_name === 'Graticule') {
     scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);

@@ -396,6 +396,13 @@
             "unknown": "Desconocido",
             "id": "Identificación"
         },
+        "palette_box": {
+            "button": "Paleta personalizada?",
+            "title": "Paleta personalizada",
+            "error_name_existing": "El nombre del palet ya está en uso",
+            "error_name_invalid": "Nombre de paleta no válido",
+            "new_name": "Nombre de paleta :"
+        },
         "explore_box": {
             "title": "Tabla de atributos",
             "button_add_field": "Añadir un campo...",
@@ -483,7 +490,8 @@
             "arrowWeight": "Tamaño de la flecha",
             "arrowColor": "Color de la flecha",
             "arrowAngle": "Ángulo de la flecha",
-            "move_points": "Mover puntos de inicio y llegada de la flecha"
+            "move_points": "Mover puntos de inicio y llegada de la flecha",
+            "arrowHead": "Ocultar la cabeza de la flecha"
         },
         "ellipse_edit_box": {
             "title": "Opciones de la elipse",

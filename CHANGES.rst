@@ -1,12 +1,20 @@
 Changes
 =======
 
-0.4.2 (2017-08-xx)
+0.5.0 (2017-08-xx)
 ------------------
+
+- Allow to create, use (and re-use) custom palette for choropleth maps.
+
+- Allow to hide/display the head of arrows.
+
+- Notable change: some old project-files may no longer be loaded correctly (the impact is really quite limited, but precisely, the overlay order of layout features could be incorrect when opening these old project-files).
 
 - Fix error with legend customization box after changing the layer name.
 
 - Re-allow to display the table of the joined dataset and improve the table layout.
+
+- Improve handling of fields containing mixed numerical and not numerical values for some representations.
 
 
 0.4.1 (2017-08-14)

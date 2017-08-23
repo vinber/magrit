@@ -96,13 +96,13 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       });
 
     if (_app.custom_palettes) {
-      const additional_colors = Array.from(
-        _app.custom_palettes.entries()).filter(el => el[1].length === nb_class);
+      const additional_colors = Array.from(_app.custom_palettes.entries());
 
       for (let ixp = 0; ixp < additional_colors.length; ixp++) {
         sequential_color_select.append('option')
           .text(additional_colors[ixp][0])
-          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length });
+          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+          .property('disabled', additional_colors[ixp][1].length !== nb_class);
       }
     }
 
@@ -173,6 +173,23 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         .styles({ 'background-image': `url(/static/img/palettes/${name}.png)` })
         .text(name);
     });
+
+    if (_app.custom_palettes) {
+      const additional_colors = Array.from(
+        _app.custom_palettes.entries());
+      for (let ixp = 0; ixp < additional_colors.length; ixp++) {
+        console.log(additional_colors[ixp]);
+        left_color_select.append('option')
+          .text(additional_colors[ixp][0])
+          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+          .property('disabled', additional_colors[ixp][1].length !== nb_class);
+        right_color_select.append('option')
+          .text(additional_colors[ixp][0])
+          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+          .property('disabled', additional_colors[ixp][1].length !== nb_class);
+      }
+    }
+
     document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
     const central_color = col_div.insert('p').attr('class', 'central_color');
@@ -282,6 +299,15 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     for (let ixc = 0; ixc < color_select.length; ixc++) {
       if (color_select[ixc].value.startsWith('user_')) {
         color_select[ixc].disabled = (nb_class === +color_select[ixc].getAttribute('nb_colors')) ? false : true;
+      }
+    }
+    const color_select_left = document.querySelectorAll('.color_params_left > option');
+    const color_select_right = document.querySelectorAll('.color_params_right > option');
+    for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+      if (color_select_left[ixc].value.startsWith('user_')) {
+        const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+        color_select_left[ixc].disabled = is_disabled;
+        color_select_right[ixc].disabled = is_disabled;
       }
     }
   };
@@ -473,12 +499,21 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           const class_right = nb_class - ctl_class_value + 1,
             class_left = ctl_class_value - 1,
             max_col_nb = Math.max(class_right, class_left);
-          let right_pal = getColorBrewerArray(max_col_nb, right_palette),
+
+          let right_pal,
+            left_pal;
+          if (right_palette.startsWith('user_')) {
+            right_pal = _app.custom_palettes.get(right_palette.slice(5));
+          } else {
+            right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          }
+          if (left_palette.startsWith('user_')) {
+            left_pal = _app.custom_palettes.get(left_palette.slice(5));
+          } else {
             left_pal = getColorBrewerArray(max_col_nb, left_palette);
-
-          left_pal = left_pal.slice(0, class_left).reverse();
+          }
           right_pal = right_pal.slice(0, class_right);
-
+          left_pal = left_pal.slice(0, class_left).reverse();
           color_array = [].concat(left_pal, ctl_class_color, right_pal);
         }
       } else {
@@ -842,17 +877,36 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   });
   let to_reverse = false;
   document.getElementById('button_sequential').checked = true;
-  accordion_colors.append('button')
-    .attr('class', 'button_st4')
-    .html('custom_palette')
+  accordion_colors
+    .append('span')
+    .styles({
+      margin: '5px',
+      float: 'right',
+      cursor: 'pointer',
+    })
+    .html(i18next.t('app_page.palette_box.button'))
     .on('click', () => {
       make_box_custom_palette(nb_class)
-        .then((colors) => {
-          d3.select('.color_params')
-            .append('option')
-            .text('Palette1')
-            .attrs({ value: `user_Palette1`, title: 'Palette1', nb_colors: colors.length });
-          addNewCustomPalette('Palette1', colors);
+        .then((result) => {
+          if (result) {
+            const [colors, palette_name] = result;
+            if (document.querySelector('.color_params')) {
+              d3.select('.color_params')
+                .append('option')
+                .text(palette_name)
+                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+            } else {
+              d3.select('.color_params_right')
+                .append('option')
+                .text(palette_name)
+                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+              d3.select('.color_params_left')
+                .append('option')
+                .text(palette_name)
+                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+            }
+            addNewCustomPalette(palette_name, colors);
+          }
         });
     });
 
@@ -1300,19 +1354,42 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
 
 function make_box_custom_palette(nb_class, existing_colors) {
   const is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  const is_ok_name = new RegExp(/^[a-zA-Z0-9_]*$/);
+  const existing_palette = Array.from(_app.custom_palettes.keys());
+  let pal_name;
   let ref_colors;
   if (existing_colors && existing_colors.length === nb_class) {
     ref_colors = existing_colors.slice();
   } else {
     ref_colors = [];
     for (let i = 0; i < nb_class; i++) {
-      ref_colors.push('#fefefe');
+      ref_colors.push(randomColor());
     }
   }
 
+  const verif_palette_name = (name) => {
+    if (name !== '' && is_ok_name.test(name)) {
+      if (existing_palette.indexOf(name) > -1) {
+        d3.select('#palette_box_error_zone')
+          .html(i18next.t('app_page.palette_box.error_name_existing'));
+        document.querySelector('.swal2-confirm').disabled = true;
+        return null;
+      }
+      d3.select('#palette_box_error_zone')
+        .html('');
+      document.querySelector('.swal2-confirm').disabled = false;
+      return name;
+    } else {
+      d3.select('#palette_box_error_zone')
+        .html(i18next.t('app_page.palette_box.error_name_invalid'));
+      document.querySelector('.swal2-confirm').disabled = true;
+      return null;
+    }
+  };
+
   return swal({
     title: i18next.t('app_page.palette_box.title'),
-    html: '<div id="palette_box_content" style="display: inline-flex;"></div>',
+    html: '<div id="palette_box_content" style="display: inline-flex;"></div><div id="palette_box_name"></div>',
     showCancelButton: true,
     showConfirmButton: true,
     cancelButtonText: i18next.t('app_page.common.close'),
@@ -1345,9 +1422,23 @@ function make_box_custom_palette(nb_class, existing_colors) {
             this.previousSibling.value = this.value;
           }
         });
+      const bottom = d3.select('#palette_box_name');
+      bottom.append('p')
+        .attr('id', 'palette_box_error_zone')
+        .style('background', '#e3e3e3');
+      bottom
+        .append('span')
+        .html(i18next.t('app_page.palette_box.new_name'));
+      bottom
+        .append('input')
+        .style('width', '70px')
+        .on('keyup', function () {
+          if (verif_palette_name(this.value) !== null) pal_name = this.value;
+        });
+      document.querySelector('.swal2-confirm').disabled = true;
     },
   }).then(
-    v => ref_colors,
+    v => [ref_colors, pal_name],
     dismissValue => null,
   );
 }

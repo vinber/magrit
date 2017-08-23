@@ -401,6 +401,13 @@
             "unknown": "Unknown",
             "id": "Id"
         },
+        "palette_box": {
+            "button": "Custom palette?",
+            "title": "Custom palette",
+            "error_name_existing": "Palette name already in use",
+            "error_name_invalid": "Invalid palette name",
+            "new_name": "Palette name:"
+        },
         "explore_box": {
             "title": "Explore dataset",
             "button_add_field": "Add a new field...",
@@ -488,7 +495,8 @@
             "arrowWeight": "Arrow weight",
             "arrowColor": "Arrow color",
             "arrowAngle": "Slope",
-            "move_points": "Move arrow start or end point"
+            "move_points": "Move arrow start or end point",
+            "arrowHead": "Hide arrow head"
         },
         "ellipse_edit_box": {
             "title": "Ellipse options",

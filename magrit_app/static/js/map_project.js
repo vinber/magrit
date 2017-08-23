@@ -166,6 +166,7 @@ function get_map_template() {
           pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
           pt2: [line.x2.baseVal.value, line.y2.baseVal.value],
           id: ft.id,
+          marker_head: line.getAttribute('marker-end'),
         });
       } else if (ft.classList.contains('txt_annot')) {
         if (!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
@@ -575,10 +576,20 @@ function apply_user_preferences(json_pref) {
           desired_order.reverse();
           reorder_layers(desired_order);
         }
-      } else if (map_config.global_order && map_config.global_order.length > 1) {
+      } else if (p_version.minor <= 4) {
+        reorder_layers_elem_legends(map_config.global_order);
+        if (layers.length > 1) {
+          const desired_order = layers.map(i => i.layer_name);
+          reorder_elem_list_layer(desired_order);
+          desired_order.reverse();
+          reorder_layers(desired_order);
+        }
+      } else if (map_config.global_order && map_config.global_order.length > 1 && (p_version.minor > 4 || (p_version.minor === 4 && p_version.patch > 1))) { // Current method to reorder layers
         const order = layers.map(i => i.layer_name);
         reorder_elem_list_layer(order);
         reorder_layers_elem_legends(map_config.global_order);
+      } else {  // reorder layer
+
       }
       if (map_config.canvas_rotation) {
         document.getElementById('form_rotate').value = map_config.canvas_rotation;
@@ -643,7 +654,9 @@ function apply_user_preferences(json_pref) {
       if (map_config.layout_features.arrow) {
         for (let i = 0; i < map_config.layout_features.arrow.length; i++) {
           const ft = map_config.layout_features.arrow[i];
-          new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true); // eslint-disable-line no-new
+          const _arrow = new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+          _arrow.hide_head = map_config.layout_features.arrow[i].marker_head === null;
+          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[i].marker_head);
         }
       }
       if (map_config.layout_features.user_ellipse) {

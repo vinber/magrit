@@ -1129,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.0845edbb9e79.json'
+      loadPath: 'static/locales/{{lng}}/translation.a343feae5e81.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1868,7 +1868,7 @@ function change_projection(new_proj_name) {
     var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
       return f.style.visibility !== 'hidden';
     });
-    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+    layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
   }
   if (layer_name) {
     scale_to_lyr(layer_name);
@@ -1909,7 +1909,7 @@ function change_projection_4(_proj) {
     var layers_active = Array.prototype.filter.call(svg_map.querySelectorAll('.layer'), function (f) {
       return f.style.visibility !== 'hidden';
     });
-    layer_name = layers_active.length > 0 ? layers_active[layers_active.length - 1].id : undefined;
+    layer_name = layers_active.length > 0 ? _app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
   }
   if (!layer_name || layer_name === 'World' || layer_name === 'Sphere' || layer_name === 'Graticule') {
     scale_to_bbox([-10.6700, 34.5000, 31.5500, 71.0500]);
@@ -2935,12 +2935,10 @@ var display_discretization = function display_discretization(layer_name, field_n
     });
 
     if (_app.custom_palettes) {
-      var additional_colors = Array.from(_app.custom_palettes.entries()).filter(function (el) {
-        return el[1].length === nb_class;
-      });
+      var additional_colors = Array.from(_app.custom_palettes.entries());
 
       for (var ixp = 0; ixp < additional_colors.length; ixp++) {
-        sequential_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length });
+        sequential_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length }).property('disabled', additional_colors[ixp][1].length !== nb_class);
       }
     }
 
@@ -2980,6 +2978,16 @@ var display_discretization = function display_discretization(layer_name, field_n
       left_color_select.append('option').attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' }).text(name);
       right_color_select.append('option').attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' }).text(name);
     });
+
+    if (_app.custom_palettes) {
+      var additional_colors = Array.from(_app.custom_palettes.entries());
+      for (var ixp = 0; ixp < additional_colors.length; ixp++) {
+        console.log(additional_colors[ixp]);
+        left_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length }).property('disabled', additional_colors[ixp][1].length === nb_class);
+        right_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length }).property('disabled', additional_colors[ixp][1].length === nb_class);
+      }
+    }
+
     document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
     var central_color = col_div.insert('p').attr('class', 'central_color');
@@ -3066,6 +3074,15 @@ var display_discretization = function display_discretization(layer_name, field_n
     for (var ixc = 0; ixc < color_select.length; ixc++) {
       if (color_select[ixc].value.startsWith('user_')) {
         color_select[ixc].disabled = nb_class === +color_select[ixc].getAttribute('nb_colors') ? false : true;
+      }
+    }
+    var color_select_left = document.querySelectorAll('.color_params_left > option');
+    var color_select_right = document.querySelectorAll('.color_params_right > option');
+    for (var _ixc = 0; _ixc < color_select_left.length; _ixc++) {
+      if (color_select_left[_ixc].value.startsWith('user_')) {
+        var is_disabled = nb_class === +color_select_left[_ixc].getAttribute('nb_colors') ? false : true;
+        color_select_left[_ixc].disabled = is_disabled;
+        color_select_right[_ixc].disabled = is_disabled;
       }
     }
   };
@@ -3209,12 +3226,21 @@ var display_discretization = function display_discretization(layer_name, field_n
           var class_right = nb_class - ctl_class_value + 1,
               class_left = ctl_class_value - 1,
               max_col_nb = Math.max(class_right, class_left);
-          var right_pal = getColorBrewerArray(max_col_nb, right_palette),
-              left_pal = getColorBrewerArray(max_col_nb, left_palette);
 
-          left_pal = left_pal.slice(0, class_left).reverse();
+          var right_pal = void 0,
+              left_pal = void 0;
+          if (right_palette.startsWith('user_')) {
+            right_pal = _app.custom_palettes.get(right_palette.slice(5));
+          } else {
+            right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          }
+          if (left_palette.startsWith('user_')) {
+            left_pal = _app.custom_palettes.get(left_palette.slice(5));
+          } else {
+            left_pal = getColorBrewerArray(max_col_nb, left_palette);
+          }
           right_pal = right_pal.slice(0, class_right);
-
+          left_pal = left_pal.slice(0, class_left).reverse();
           color_array = [].concat(left_pal, ctl_class_color, right_pal);
         }
       } else {
@@ -3504,10 +3530,25 @@ var display_discretization = function display_discretization(layer_name, field_n
   });
   var to_reverse = false;
   document.getElementById('button_sequential').checked = true;
-  accordion_colors.append('button').attr('class', 'button_st4').html('custom_palette').on('click', function () {
-    make_box_custom_palette(nb_class).then(function (colors) {
-      d3.select('.color_params').append('option').text('Palette1').attrs({ value: 'user_Palette1', title: 'Palette1', nb_colors: colors.length });
-      addNewCustomPalette('Palette1', colors);
+  accordion_colors.append('span').styles({
+    margin: '5px',
+    float: 'right',
+    cursor: 'pointer'
+  }).html(i18next.t('app_page.palette_box.button')).on('click', function () {
+    make_box_custom_palette(nb_class).then(function (result) {
+      if (result) {
+        var _result = _slicedToArray(result, 2),
+            colors = _result[0],
+            palette_name = _result[1];
+
+        if (document.querySelector('.color_params')) {
+          d3.select('.color_params').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
+        } else {
+          d3.select('.color_params_right').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
+          d3.select('.color_params_left').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
+        }
+        addNewCustomPalette(palette_name, colors);
+      }
     });
   });
 
@@ -3844,19 +3885,39 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
 
 function make_box_custom_palette(nb_class, existing_colors) {
   var is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
+  var is_ok_name = new RegExp(/^[a-zA-Z0-9_]*$/);
+  var existing_palette = Array.from(_app.custom_palettes.keys());
+  var pal_name = void 0;
   var ref_colors = void 0;
   if (existing_colors && existing_colors.length === nb_class) {
     ref_colors = existing_colors.slice();
   } else {
     ref_colors = [];
     for (var i = 0; i < nb_class; i++) {
-      ref_colors.push('#fefefe');
+      ref_colors.push(randomColor());
     }
   }
 
+  var verif_palette_name = function verif_palette_name(name) {
+    if (name !== '' && is_ok_name.test(name)) {
+      if (existing_palette.indexOf(name) > -1) {
+        d3.select('#palette_box_error_zone').html(i18next.t('app_page.palette_box.error_name_existing'));
+        document.querySelector('.swal2-confirm').disabled = true;
+        return null;
+      }
+      d3.select('#palette_box_error_zone').html('');
+      document.querySelector('.swal2-confirm').disabled = false;
+      return name;
+    } else {
+      d3.select('#palette_box_error_zone').html(i18next.t('app_page.palette_box.error_name_invalid'));
+      document.querySelector('.swal2-confirm').disabled = true;
+      return null;
+    }
+  };
+
   return swal({
     title: i18next.t('app_page.palette_box.title'),
-    html: '<div id="palette_box_content" style="display: inline-flex;"></div>',
+    html: '<div id="palette_box_content" style="display: inline-flex;"></div><div id="palette_box_name"></div>',
     showCancelButton: true,
     showConfirmButton: true,
     cancelButtonText: i18next.t('app_page.common.close'),
@@ -3885,9 +3946,16 @@ function make_box_custom_palette(nb_class, existing_colors) {
           this.previousSibling.value = this.value;
         }
       });
+      var bottom = d3.select('#palette_box_name');
+      bottom.append('p').attr('id', 'palette_box_error_zone').style('background', '#e3e3e3');
+      bottom.append('span').html(i18next.t('app_page.palette_box.new_name'));
+      bottom.append('input').style('width', '70px').on('keyup', function () {
+        if (verif_palette_name(this.value) !== null) pal_name = this.value;
+      });
+      document.querySelector('.swal2-confirm').disabled = true;
     }
   }).then(function (v) {
-    return ref_colors;
+    return [ref_colors, pal_name];
   }, function (dismissValue) {
     return null;
   });
@@ -10265,7 +10333,7 @@ function update_menu_dataset() {
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
   d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>'].join('')).on('click', null);
-  parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 7px 0 0;opacity:1">';
+  parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
 
   document.getElementById('remove_dataset').onclick = function () {
     remove_ext_dataset();
@@ -10384,7 +10452,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   _input_geom.removeAttribute('data-i18n');
   // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
   d3.select(_input_geom).attrs({ src: _button, width: '26', height: '26' }).html('<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>').on('click', null);
-  _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 7px 0 0;opacity:1">';
+  _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
   var remove_target = document.getElementById('remove_target');
   remove_target.onclick = function () {
     remove_layer(Object.getOwnPropertyNames(user_data)[0]);
@@ -13701,7 +13769,7 @@ var UserArrow = function () {
     this.id = id;
     this.stroke_width = 4;
     this.color = 'rgb(0, 0, 0)';
-
+    this.hide_head = undefined;
     if (!untransformed) {
       var zoom_param = svg_map.__zoom;
       this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k], this.pt2 = [(destination_pt[0] - zoom_param.x) / zoom_param.k, (destination_pt[1] - zoom_param.y) / zoom_param.k];
@@ -13778,10 +13846,9 @@ var UserArrow = function () {
       _t.y2.baseVal.value = self.pt2[1];
     });
 
-    var defs = parent.querySelector('defs'),
-        markers = defs ? defs.querySelector('marker') : null;
+    var markers_exists = defs ? defs.node().querySelector('marker') : null;
 
-    if (!markers) {
+    if (!markers_exists) {
       this.add_defs_marker();
     }
     this.draw();
@@ -13822,7 +13889,7 @@ var UserArrow = function () {
       this.arrow = this.svg_elem.append('g').style('cursor', 'all-scroll').attrs({ class: 'arrow legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString() });
 
       this.arrow.insert('line').attrs({
-        'marker-end': 'url(#arrow_head)',
+        'marker-end': this.hide_head ? null : 'url(#arrow_head)',
         x1: this.pt1[0],
         y1: this.pt1[1],
         x2: this.pt2[0],
@@ -14016,6 +14083,17 @@ var UserArrow = function () {
         line.x2.baseVal.value = nx;
         line.y2.baseVal.value = ny;
         document.getElementById('arrow_angle_text').value = +this.value;
+      });
+      var s3 = box_content.append('p').attr('class', 'line_elem2');
+      s3.append('label').attrs({ for: 'checkbox_head_arrow' }).html(i18next.t('app_page.arrow_edit_box.arrowHead'));
+      s3.append('input').attrs({ type: 'checkbox', id: 'checkbox_head_arrow' }).styles({ 'margin-left': '45px', 'vertical-align': 'middle' }).property('checked', self.hide_head === true).on('change', function () {
+        if (this.checked) {
+          self.hide_head = true;
+          self.arrow.select('line').attr('marker-end', null);
+        } else {
+          self.hide_head = false;
+          self.arrow.select('line').attr('marker-end', 'url(#arrow_head)');
+        }
       });
     }
   }]);
@@ -16933,7 +17011,8 @@ function get_map_template() {
           stroke: line.style.stroke,
           pt1: [line.x1.baseVal.value, line.y1.baseVal.value],
           pt2: [line.x2.baseVal.value, line.y2.baseVal.value],
-          id: ft.id
+          id: ft.id,
+          marker_head: line.getAttribute('marker-end')
         });
       } else if (ft.classList.contains('txt_annot')) {
         if (!map_config.layout_features.text_annot) map_config.layout_features.text_annot = [];
@@ -17353,12 +17432,25 @@ function apply_user_preferences(json_pref) {
           desired_order.reverse();
           reorder_layers(desired_order);
         }
-      } else if (map_config.global_order && map_config.global_order.length > 1) {
+      } else if (p_version.minor <= 4) {
+        reorder_layers_elem_legends(map_config.global_order);
+        if (layers.length > 1) {
+          var _desired_order = layers.map(function (i) {
+            return i.layer_name;
+          });
+          reorder_elem_list_layer(_desired_order);
+          _desired_order.reverse();
+          reorder_layers(_desired_order);
+        }
+      } else if (map_config.global_order && map_config.global_order.length > 1 && (p_version.minor > 4 || p_version.minor === 4 && p_version.patch > 1)) {
+        // Current method to reorder layers
         var order = layers.map(function (i) {
           return i.layer_name;
         });
         reorder_elem_list_layer(order);
         reorder_layers_elem_legends(map_config.global_order);
+      } else {// reorder layer
+
       }
       if (map_config.canvas_rotation) {
         document.getElementById('form_rotate').value = map_config.canvas_rotation;
@@ -17423,7 +17515,9 @@ function apply_user_preferences(json_pref) {
       if (map_config.layout_features.arrow) {
         for (var _i6 = 0; _i6 < map_config.layout_features.arrow.length; _i6++) {
           var ft = map_config.layout_features.arrow[_i6];
-          new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true); // eslint-disable-line no-new
+          var _arrow = new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+          _arrow.hide_head = map_config.layout_features.arrow[_i6].marker_head === null;
+          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[_i6].marker_head);
         }
       }
       if (map_config.layout_features.user_ellipse) {
