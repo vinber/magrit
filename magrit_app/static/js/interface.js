@@ -734,7 +734,8 @@ function update_menu_dataset() {
       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
       '</i></span>'].join(''))
     .on('click', null);
-  parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">';
+  parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
+<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 7px 0 0;opacity:1">`;
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();
@@ -748,7 +749,7 @@ function update_menu_dataset() {
   if (_app.targeted_layer_added) {
     valid_join_check_display(false);
   }
-  document.getElementById('data_ext').onclick = () => {
+  document.getElementById('table_dataset_s1').onclick = () => {
     boxExplore2.create(dataset_name);
   };
 }
@@ -857,11 +858,15 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
     .attrs({ src: _button, width: '26', height: '26' })
     .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
     .on('click', null);
-  _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">`;
+  _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}
+<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
+<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 7px 0 0;opacity:1">`;
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };
   remove_target.onmouseout = function () { this.style.opacity = 0.5; };
+  const table_target = document.getElementById('table_layer_s1');
+  table_target.onclick = display_table_target_layer;
 }
 
 function get_display_name_on_layer_list(layer_name_to_add) {
@@ -1099,9 +1104,6 @@ function add_layer_topojson(text, options = {}) {
   if (!skip_rescale) {
     zoom_without_redraw();
   }
-
-  d3.select('#input_geom')
-    .on('click', display_table_target_layer);
 
   if (!skip_alert) {
     if (fields_type) {

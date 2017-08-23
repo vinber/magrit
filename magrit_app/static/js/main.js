@@ -1782,6 +1782,7 @@ function remove_ext_dataset_cleanup() {
   data_ext_txt.classList.add('i18n');
   data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
   document.getElementById('remove_dataset').remove();
+  document.getElementById('table_dataset_s1').remove();
   document.getElementById('join_section').innerHTML = '';
 }
 
@@ -1829,6 +1830,7 @@ function remove_layer_cleanup(name) {
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
   if (current_layers[name].targeted) {
     // Updating the top of the menu (section 1) :
+    document.getElementById('table_layer_s1').remove();
     document.getElementById('remove_target').remove();
     d3.select('#img_in_geom')
       .attrs({ id: 'img_in_geom',

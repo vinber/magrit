@@ -358,8 +358,8 @@ const boxExplore2 = {
       document.querySelector('.dataTable-wrapper').remove();
     }
 
-    // TODO : allow to add_field on all the layer instead of just targeted / result layers :
-    if (this.tables.get(table_name) && (table_name !== dataset_name || field_join_map.length === 0)) {
+    if (this.tables.get(table_name) && (table_name !== dataset_name
+          || (table_name === dataset_name && field_join_map.length === 0))) {
       this.top_buttons
         .insert('button')
         .attrs({ id: 'add_field_button', class: 'button_st3' })
