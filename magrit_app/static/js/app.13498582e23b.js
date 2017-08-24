@@ -1129,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.a343feae5e81.json'
+      loadPath: 'static/locales/{{lng}}/translation.13498582e23b.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2922,7 +2922,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     col_div.selectAll('.central_class').remove();
     col_div.selectAll('.central_color').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
-
+    document.getElementById('button_palette_box').style.display = '';
     var sequential_color_select = col_div.insert('p').attr('class', 'color_txt').style('margin-left', '10px').html(i18next.t('disc_box.color_palette')).insert('select').attr('class', 'color_params').styles({
       width: '116px',
       'background-image': 'url(/static/img/palettes/Blues.png)' }).on('change', function () {
@@ -2954,6 +2954,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     col_div.selectAll('.color_txt').remove();
     col_div.selectAll('.color_txt2').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
+    document.getElementById('button_palette_box').style.display = 'none';
     col_div.insert('p').attr('class', 'central_class').html(i18next.t('disc_box.break_on')).insert('input').style('width', '50px').attrs({
       type: 'number',
       class: 'central_class',
@@ -2979,14 +2980,20 @@ var display_discretization = function display_discretization(layer_name, field_n
       right_color_select.append('option').attrs({ value: name, title: name }).styles({ 'background-image': 'url(/static/img/palettes/' + name + '.png)' }).text(name);
     });
 
-    if (_app.custom_palettes) {
-      var additional_colors = Array.from(_app.custom_palettes.entries());
-      for (var ixp = 0; ixp < additional_colors.length; ixp++) {
-        console.log(additional_colors[ixp]);
-        left_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length }).property('disabled', additional_colors[ixp][1].length === nb_class);
-        right_color_select.append('option').text(additional_colors[ixp][0]).attrs({ value: 'user_' + additional_colors[ixp][0], title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length }).property('disabled', additional_colors[ixp][1].length === nb_class);
-      }
-    }
+    // if (_app.custom_palettes) {
+    //   const additional_colors = Array.from(
+    //     _app.custom_palettes.entries());
+    //   for (let ixp = 0; ixp < additional_colors.length; ixp++) {
+    //     left_color_select.append('option')
+    //       .text(additional_colors[ixp][0])
+    //       .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+    //       .property('disabled', additional_colors[ixp][1].length !== nb_class);
+    //     right_color_select.append('option')
+    //       .text(additional_colors[ixp][0])
+    //       .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+    //       .property('disabled', additional_colors[ixp][1].length !== nb_class);
+    //   }
+    // }
 
     document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
@@ -3070,21 +3077,26 @@ var display_discretization = function display_discretization(layer_name, field_n
     txt_nb_class.node().value = value;
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
-    var color_select = document.querySelectorAll('.color_params > option');
-    for (var ixc = 0; ixc < color_select.length; ixc++) {
-      if (color_select[ixc].value.startsWith('user_')) {
-        color_select[ixc].disabled = nb_class === +color_select[ixc].getAttribute('nb_colors') ? false : true;
+    var color_select = document.querySelector('.color_params');
+    var selected_index = color_select.selectedIndex;
+    var select_options = color_select.querySelectorAll('option');
+    for (var ixc = 0; ixc < select_options.length; ixc++) {
+      if (select_options[ixc].value.startsWith('user_')) {
+        select_options[ixc].disabled = nb_class !== +select_options[ixc].getAttribute('nb_colors');
       }
     }
-    var color_select_left = document.querySelectorAll('.color_params_left > option');
-    var color_select_right = document.querySelectorAll('.color_params_right > option');
-    for (var _ixc = 0; _ixc < color_select_left.length; _ixc++) {
-      if (color_select_left[_ixc].value.startsWith('user_')) {
-        var is_disabled = nb_class === +color_select_left[_ixc].getAttribute('nb_colors') ? false : true;
-        color_select_left[_ixc].disabled = is_disabled;
-        color_select_right[_ixc].disabled = is_disabled;
-      }
+    if (select_options[selected_index].value.startsWith('user_') && select_options[selected_index].getAttribute('nb_colors') !== nb_class) {
+      setSelected(color_select, 'Blues');
     }
+    // const color_select_left = document.querySelectorAll('.color_params_left > option');
+    // const color_select_right = document.querySelectorAll('.color_params_right > option');
+    // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+    //   if (color_select_left[ixc].value.startsWith('user_')) {
+    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+    //     color_select_left[ixc].disabled = is_disabled;
+    //     color_select_right[ixc].disabled = is_disabled;
+    //   }
+    // }
   };
 
   var update_axis = function update_axis(group) {
@@ -3227,18 +3239,23 @@ var display_discretization = function display_discretization(layer_name, field_n
               class_left = ctl_class_value - 1,
               max_col_nb = Math.max(class_right, class_left);
 
-          var right_pal = void 0,
-              left_pal = void 0;
-          if (right_palette.startsWith('user_')) {
-            right_pal = _app.custom_palettes.get(right_palette.slice(5));
-          } else {
-            right_pal = getColorBrewerArray(max_col_nb, right_palette);
-          }
-          if (left_palette.startsWith('user_')) {
-            left_pal = _app.custom_palettes.get(left_palette.slice(5));
-          } else {
-            left_pal = getColorBrewerArray(max_col_nb, left_palette);
-          }
+          var right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          var left_pal = getColorBrewerArray(max_col_nb, left_palette);
+
+          // Below is for the case if we have displayed the custom palette also
+          // for a diverging scheme:
+          // let right_pal,
+          //   left_pal;
+          // if (right_palette.startsWith('user_')) {
+          //   right_pal = _app.custom_palettes.get(right_palette.slice(5));
+          // } else {
+          //   right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          // }
+          // if (left_palette.startsWith('user_')) {
+          //   left_pal = _app.custom_palettes.get(left_palette.slice(5));
+          // } else {
+          //   left_pal = getColorBrewerArray(max_col_nb, left_palette);
+          // }
           right_pal = right_pal.slice(0, class_right);
           left_pal = left_pal.slice(0, class_left).reverse();
           color_array = [].concat(left_pal, ctl_class_color, right_pal);
@@ -3530,7 +3547,7 @@ var display_discretization = function display_discretization(layer_name, field_n
   });
   var to_reverse = false;
   document.getElementById('button_sequential').checked = true;
-  accordion_colors.append('span').styles({
+  accordion_colors.append('span').attr('id', 'button_palette_box').styles({
     margin: '5px',
     float: 'right',
     cursor: 'pointer'
@@ -3541,13 +3558,22 @@ var display_discretization = function display_discretization(layer_name, field_n
             colors = _result[0],
             palette_name = _result[1];
 
-        if (document.querySelector('.color_params')) {
-          d3.select('.color_params').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
-        } else {
-          d3.select('.color_params_right').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
-          d3.select('.color_params_left').append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
-        }
+        var select_palette = document.querySelector('.color_params');
         addNewCustomPalette(palette_name, colors);
+        if (select_palette) {
+          d3.select(select_palette).append('option').text(palette_name).attrs({ value: 'user_' + palette_name, title: palette_name, nb_colors: colors.length });
+          setSelected(select_palette, 'user_' + palette_name);
+        }
+        // else {
+        //   d3.select('.color_params_right')
+        //     .append('option')
+        //     .text(palette_name)
+        //     .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+        //   d3.select('.color_params_left')
+        //     .append('option')
+        //     .text(palette_name)
+        //     .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+        // }
       }
     });
   });
@@ -10886,7 +10912,7 @@ function add_layout_feature(selected_feature) {
       fill_color: { single: fill }
     };
     map.append('g').attrs({ id: layer_id, class: 'layer' }).styles({ 'stroke-width': stroke_width }).append('path').datum({ type: 'Sphere' }).styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke }).attrs({ d: path });
-    if (isInterrupted(current_proj_name)) {
+    if (isInterrupted(current_proj_name.toLowerCase())) {
       map.select('g#' + layer_id).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
@@ -10922,7 +10948,7 @@ function add_layout_feature(selected_feature) {
       step: step,
       dasharray: stroke_dasharray
     };
-    if (isInterrupted(current_proj_name)) {
+    if (isInterrupted(current_proj_name.toLowerCase())) {
       map.select('g#' + _layer_id).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');
@@ -11188,7 +11214,6 @@ function add_simplified_land_layer() {
   var visible = !(options.visible === false);
   var drop_shadow = options.drop_shadow || false;
 
-  // d3.json('static/data_sample/World.topojson', (error, json) => {
   var world_id = encodeId('World');
   _app.layer_to_id.set('World', world_id);
   _app.id_to_layer.set(world_id, 'World');
@@ -11216,7 +11241,6 @@ function add_simplified_land_layer() {
     handle_active_layer('World');
   }
   zoom_without_redraw();
-  // });
 }
 
 function add_sample_geojson(name, options) {
@@ -11241,6 +11265,12 @@ function send_remove_server(layer_name) {
   });
 }
 
+/**
+* Return the x and y position where the svg element is located
+* in the browser window.
+*
+* @return {Object} - An object with x and y properties.
+*/
 function get_map_xy0() {
   var bbox = svg_map.getBoundingClientRect();
   return { x: bbox.left, y: bbox.top };
@@ -12636,7 +12666,8 @@ function createStyleBox(layer_name) {
   var stroke_prev = selection.style('stroke');
   var prev_min_display = void 0,
       prev_size = void 0,
-      prev_breaks = void 0;
+      prev_breaks = void 0,
+      current_pt_size = void 0;
 
   if (stroke_prev.startsWith('rgb')) {
     stroke_prev = rgb2hex(stroke_prev);
@@ -12728,15 +12759,15 @@ function createStyleBox(layer_name) {
   }
 
   if (type === 'Point') {
-    var _current_pt_size = current_layers[layer_name].pointRadius;
+    current_pt_size = current_layers[layer_name].pointRadius;
     var pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
-    pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: _current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
-      _current_pt_size = +this.value;
-      document.getElementById('point_radius_size_txt').value = _current_pt_size;
-      selection.attr('d', path.pointRadius(_current_pt_size));
+    pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+      current_pt_size = +this.value;
+      document.getElementById('point_radius_size_txt').value = current_pt_size;
+      selection.attr('d', path.pointRadius(current_pt_size));
     });
-    pt_size.append('input').attrs({ type: 'number', value: +_current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
       var pt_size_range = document.getElementById('point_radius_size');
       var old_value = pt_size_range.value;
       if (this.value === '' || isNaN(+this.value)) {
@@ -17442,15 +17473,13 @@ function apply_user_preferences(json_pref) {
           _desired_order.reverse();
           reorder_layers(_desired_order);
         }
+        // Current method to reorder layers:
       } else if (map_config.global_order && map_config.global_order.length > 1 && (p_version.minor > 4 || p_version.minor === 4 && p_version.patch > 1)) {
-        // Current method to reorder layers
         var order = layers.map(function (i) {
           return i.layer_name;
         });
         reorder_elem_list_layer(order);
         reorder_layers_elem_legends(map_config.global_order);
-      } else {// reorder layer
-
       }
       if (map_config.canvas_rotation) {
         document.getElementById('form_rotate').value = map_config.canvas_rotation;
@@ -19063,7 +19092,7 @@ function add_field_table(table, layer_name, parent) {
     operator: undefined,
     type_operation: undefined,
     opt_val: undefined,
-    new_name: 'NewFieldName'
+    new_name: i18next.t('app_page.explore_box.add_field_box.new_name_placeholder')
   };
 
   make_confirm_dialog2('addFieldBox', i18next.t('app_page.explore_box.button_add_field'), { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined }).then(function (valid) {
@@ -19103,7 +19132,7 @@ function add_field_table(table, layer_name, parent) {
       div1 = box_content.append('div').attr('id', 'field_div1'),
       div2 = box_content.append('div').attr('id', 'field_div2');
 
-  var new_name = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_name')).insert('input').attr('value', 'NewFieldName').on('keyup', check_name);
+  var new_name = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_name')).insert('input').attr('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder')).on('keyup', check_name);
 
   var type_content = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_content')).insert('select').attr('id', 'type_content_select').on('change', function () {
     chooses_handler.type_operation = this.value;

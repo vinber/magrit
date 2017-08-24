@@ -584,12 +584,12 @@ function apply_user_preferences(json_pref) {
           desired_order.reverse();
           reorder_layers(desired_order);
         }
-      } else if (map_config.global_order && map_config.global_order.length > 1 && (p_version.minor > 4 || (p_version.minor === 4 && p_version.patch > 1))) { // Current method to reorder layers
+       // Current method to reorder layers:
+      } else if (map_config.global_order && map_config.global_order.length > 1
+          && (p_version.minor > 4 || (p_version.minor === 4 && p_version.patch > 1))) {
         const order = layers.map(i => i.layer_name);
         reorder_elem_list_layer(order);
         reorder_layers_elem_legends(map_config.global_order);
-      } else {  // reorder layer
-
       }
       if (map_config.canvas_rotation) {
         document.getElementById('form_rotate').value = map_config.canvas_rotation;

@@ -412,6 +412,7 @@
             "title": "Table de données",
             "button_add_field": "Ajout d'un champ...",
             "add_field_box": {
+                "new_name_placeholder": "NouveauChamp",
                 "new_name": "Nom du nouveau champ<br>",
                 "new_content": "Contenu du nouveau champ<br>",
                 "between_numerical": "Calcul d'une valeur entre champs numériques",

@@ -202,7 +202,7 @@ function add_field_table(table, layer_name, parent) {
     operator: undefined,
     type_operation: undefined,
     opt_val: undefined,
-    new_name: 'NewFieldName',
+    new_name: i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'),
   };
 
   make_confirm_dialog2('addFieldBox', i18next.t('app_page.explore_box.button_add_field'),
@@ -243,7 +243,7 @@ function add_field_table(table, layer_name, parent) {
 
   const new_name = div1.append('p')
     .html(i18next.t('app_page.explore_box.add_field_box.new_name'))
-    .insert('input').attr('value', 'NewFieldName')
+    .insert('input').attr('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'))
     .on('keyup', check_name);
 
   const type_content = div1.append('p')

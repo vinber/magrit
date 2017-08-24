@@ -412,6 +412,7 @@
             "title": "Explore dataset",
             "button_add_field": "Add a new field...",
             "add_field_box": {
+                "new_name_placeholder": "NewField",
                 "new_name": "New field name<br>",
                 "new_content": "New field content<br>",
                 "between_numerical": "Computation based on two existing numerical fields",

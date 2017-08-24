@@ -1304,7 +1304,7 @@ function add_layout_feature(selected_feature, options = {}) {
       .datum({ type: 'Sphere' })
       .styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke })
       .attrs({ d: path });
-    if (isInterrupted(current_proj_name)) {
+    if (isInterrupted(current_proj_name.toLowerCase())) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
@@ -1348,7 +1348,7 @@ function add_layout_feature(selected_feature, options = {}) {
       step: step,
       dasharray: stroke_dasharray,
     };
-    if (isInterrupted(current_proj_name)) {
+    if (isInterrupted(current_proj_name.toLowerCase())) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');
@@ -1375,7 +1375,6 @@ function add_layout_feature(selected_feature, options = {}) {
           handleClickAddOther('north_arrow');
         }, dismiss => null);
     }
-
   } else if (selected_feature === 'arrow') {
     handleClickAddArrow();
   } else if (selected_feature === 'ellipse') {
@@ -1475,7 +1474,7 @@ function add_layout_layers() {
     [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
     [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
     [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
-    [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']
+    [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
   ];
   const selec = { layout: null };
 
@@ -1587,7 +1586,11 @@ function add_sample_layer() {
       .insert('select')
       .on('change', function () {
         const id_elem = this.value;
-        selec_url = [_app.list_extrabasemaps[id_elem][0], _app.list_extrabasemaps[id_elem][1], id_elem];
+        selec_url = [
+          _app.list_extrabasemaps[id_elem][0],
+          _app.list_extrabasemaps[id_elem][1],
+          id_elem
+        ];
       });
     for (let i = 0, len_i = _app.list_extrabasemaps.length; i < len_i; i++) {
       select_extrabasemap.append('option').attr('value', i).html(_app.list_extrabasemaps[i][0]);
@@ -1645,8 +1648,7 @@ function add_simplified_land_layer(options = {}) {
   const visible = !(options.visible === false);
   const drop_shadow = options.drop_shadow || false;
 
-  // d3.json('static/data_sample/World.topojson', (error, json) => {
-  let world_id = encodeId('World');
+  const world_id = encodeId('World');
   _app.layer_to_id.set('World', world_id);
   _app.id_to_layer.set(world_id, 'World');
   current_layers.World = {
@@ -1681,7 +1683,6 @@ function add_simplified_land_layer(options = {}) {
     handle_active_layer('World');
   }
   zoom_without_redraw();
-  // });
 }
 
 function add_sample_geojson(name, options) {
@@ -1708,6 +1709,12 @@ function send_remove_server(layer_name) {
     });
 }
 
+/**
+* Return the x and y position where the svg element is located
+* in the browser window.
+*
+* @return {Object} - An object with x and y properties.
+*/
 function get_map_xy0() {
   const bbox = svg_map.getBoundingClientRect();
   return { x: bbox.left, y: bbox.top };
@@ -1780,7 +1787,7 @@ function handleClickAddRectangle() {
       document.body.style.cursor = '';
       new UserRectangle(`user_rectangle_${rectangle_id}`, start_point, svg_map);
     });
-  }
+}
 
 function handleClickAddOther(type) {
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);

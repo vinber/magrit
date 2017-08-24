@@ -407,6 +407,7 @@
             "title": "Tabla de atributos",
             "button_add_field": "Añadir un campo...",
             "add_field_box": {
+                "new_name_placeholder": "NuevoCampo",
                 "new_name": "Nombre del campo<br>",
                 "new_content": "Contenido del campo<br>",
                 "between_numerical": "Calcular un valor entre campos numéricos",

@@ -1037,7 +1037,8 @@ function createStyleBox(layer_name) {
   let stroke_prev = selection.style('stroke');
   let prev_min_display,
     prev_size,
-    prev_breaks;
+    prev_breaks,
+    current_pt_size;
 
   if (stroke_prev.startsWith('rgb')) {
     stroke_prev = rgb2hex(stroke_prev);
@@ -1138,7 +1139,7 @@ function createStyleBox(layer_name) {
   }
 
   if (type === 'Point') {
-    let current_pt_size = current_layers[layer_name].pointRadius;
+    current_pt_size = current_layers[layer_name].pointRadius;
     const pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
     pt_size.append('input')

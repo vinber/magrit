@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.5.0 (2017-08-xx)
+0.5.0 (2017-08-24)
 ------------------
 
 - Allow to create, use (and re-use) custom palette for choropleth maps.

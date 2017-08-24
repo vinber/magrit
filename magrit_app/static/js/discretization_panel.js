@@ -70,7 +70,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     col_div.selectAll('.central_class').remove();
     col_div.selectAll('.central_color').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
-
+    document.getElementById('button_palette_box').style.display = '';
     const sequential_color_select = col_div.insert('p')
       .attr('class', 'color_txt')
       .style('margin-left', '10px')
@@ -123,6 +123,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     col_div.selectAll('.color_txt').remove();
     col_div.selectAll('.color_txt2').remove();
     col_div.selectAll('#reverse_pal_btn').remove();
+    document.getElementById('button_palette_box').style.display = 'none';
     col_div.insert('p')
       .attr('class', 'central_class')
       .html(i18next.t('disc_box.break_on'))
@@ -174,21 +175,20 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         .text(name);
     });
 
-    if (_app.custom_palettes) {
-      const additional_colors = Array.from(
-        _app.custom_palettes.entries());
-      for (let ixp = 0; ixp < additional_colors.length; ixp++) {
-        console.log(additional_colors[ixp]);
-        left_color_select.append('option')
-          .text(additional_colors[ixp][0])
-          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
-          .property('disabled', additional_colors[ixp][1].length !== nb_class);
-        right_color_select.append('option')
-          .text(additional_colors[ixp][0])
-          .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
-          .property('disabled', additional_colors[ixp][1].length !== nb_class);
-      }
-    }
+    // if (_app.custom_palettes) {
+    //   const additional_colors = Array.from(
+    //     _app.custom_palettes.entries());
+    //   for (let ixp = 0; ixp < additional_colors.length; ixp++) {
+    //     left_color_select.append('option')
+    //       .text(additional_colors[ixp][0])
+    //       .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+    //       .property('disabled', additional_colors[ixp][1].length !== nb_class);
+    //     right_color_select.append('option')
+    //       .text(additional_colors[ixp][0])
+    //       .attrs({ value: `user_${additional_colors[ixp][0]}`, title: additional_colors[ixp][0], nb_colors: additional_colors[ixp][1].length })
+    //       .property('disabled', additional_colors[ixp][1].length !== nb_class);
+    //   }
+    // }
 
     document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
@@ -295,21 +295,26 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     txt_nb_class.node().value = value;
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
-    const color_select = document.querySelectorAll('.color_params > option');
-    for (let ixc = 0; ixc < color_select.length; ixc++) {
-      if (color_select[ixc].value.startsWith('user_')) {
-        color_select[ixc].disabled = (nb_class === +color_select[ixc].getAttribute('nb_colors')) ? false : true;
+    const color_select = document.querySelector('.color_params');
+    const selected_index = color_select.selectedIndex;
+    const select_options = color_select.querySelectorAll('option');
+    for (let ixc = 0; ixc < select_options.length; ixc++) {
+      if (select_options[ixc].value.startsWith('user_')) {
+        select_options[ixc].disabled = (nb_class !== +select_options[ixc].getAttribute('nb_colors'));
       }
     }
-    const color_select_left = document.querySelectorAll('.color_params_left > option');
-    const color_select_right = document.querySelectorAll('.color_params_right > option');
-    for (let ixc = 0; ixc < color_select_left.length; ixc++) {
-      if (color_select_left[ixc].value.startsWith('user_')) {
-        const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
-        color_select_left[ixc].disabled = is_disabled;
-        color_select_right[ixc].disabled = is_disabled;
-      }
+    if (select_options[selected_index].value.startsWith('user_') && select_options[selected_index].getAttribute('nb_colors') !== nb_class) {
+      setSelected(color_select, 'Blues');
     }
+    // const color_select_left = document.querySelectorAll('.color_params_left > option');
+    // const color_select_right = document.querySelectorAll('.color_params_right > option');
+    // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+    //   if (color_select_left[ixc].value.startsWith('user_')) {
+    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+    //     color_select_left[ixc].disabled = is_disabled;
+    //     color_select_right[ixc].disabled = is_disabled;
+    //   }
+    // }
   };
 
   const update_axis = (group) => {
@@ -500,18 +505,23 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
             class_left = ctl_class_value - 1,
             max_col_nb = Math.max(class_right, class_left);
 
-          let right_pal,
-            left_pal;
-          if (right_palette.startsWith('user_')) {
-            right_pal = _app.custom_palettes.get(right_palette.slice(5));
-          } else {
-            right_pal = getColorBrewerArray(max_col_nb, right_palette);
-          }
-          if (left_palette.startsWith('user_')) {
-            left_pal = _app.custom_palettes.get(left_palette.slice(5));
-          } else {
-            left_pal = getColorBrewerArray(max_col_nb, left_palette);
-          }
+          let right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          let left_pal = getColorBrewerArray(max_col_nb, left_palette);
+
+          // Below is for the case if we have displayed the custom palette also
+          // for a diverging scheme:
+          // let right_pal,
+          //   left_pal;
+          // if (right_palette.startsWith('user_')) {
+          //   right_pal = _app.custom_palettes.get(right_palette.slice(5));
+          // } else {
+          //   right_pal = getColorBrewerArray(max_col_nb, right_palette);
+          // }
+          // if (left_palette.startsWith('user_')) {
+          //   left_pal = _app.custom_palettes.get(left_palette.slice(5));
+          // } else {
+          //   left_pal = getColorBrewerArray(max_col_nb, left_palette);
+          // }
           right_pal = right_pal.slice(0, class_right);
           left_pal = left_pal.slice(0, class_left).reverse();
           color_array = [].concat(left_pal, ctl_class_color, right_pal);
@@ -879,6 +889,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   document.getElementById('button_sequential').checked = true;
   accordion_colors
     .append('span')
+    .attr('id', 'button_palette_box')
     .styles({
       margin: '5px',
       float: 'right',
@@ -890,22 +901,25 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         .then((result) => {
           if (result) {
             const [colors, palette_name] = result;
-            if (document.querySelector('.color_params')) {
-              d3.select('.color_params')
-                .append('option')
-                .text(palette_name)
-                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
-            } else {
-              d3.select('.color_params_right')
-                .append('option')
-                .text(palette_name)
-                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
-              d3.select('.color_params_left')
-                .append('option')
-                .text(palette_name)
-                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
-            }
+            const select_palette = document.querySelector('.color_params');
             addNewCustomPalette(palette_name, colors);
+            if (select_palette) {
+              d3.select(select_palette)
+                .append('option')
+                .text(palette_name)
+                .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+              setSelected(select_palette, `user_${palette_name}`);
+            }
+            // else {
+            //   d3.select('.color_params_right')
+            //     .append('option')
+            //     .text(palette_name)
+            //     .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+            //   d3.select('.color_params_left')
+            //     .append('option')
+            //     .text(palette_name)
+            //     .attrs({ value: `user_${palette_name}`, title: palette_name, nb_colors: colors.length });
+            // }
           }
         });
     });
