@@ -2221,10 +2221,13 @@ function change_projection(new_proj_name) {
   }
 
   // Remove the tooltip used for projections using proj4 :
+  const a = document.querySelector('div.custom_tooltip');
+  if (a) a.remove();
   const selectProj = document.querySelector('#form_projection2');
   selectProj.removeAttribute('tooltip');
   selectProj.removeEventListener('mouseover', displayTooltipProj4);
   selectProj.removeEventListener('mouseout', removeTooltipProj4);
+
   // Set or remove the clip-path according to the projection:
   handleClipPath(new_proj_name, layer_name);
 }

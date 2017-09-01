@@ -1129,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.e348aa8fa74e.json'
+      loadPath: 'static/locales/{{lng}}/translation.794ede8e4fe4.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1881,10 +1881,13 @@ function change_projection(new_proj_name) {
   }
 
   // Remove the tooltip used for projections using proj4 :
+  var a = document.querySelector('div.custom_tooltip');
+  if (a) a.remove();
   var selectProj = document.querySelector('#form_projection2');
   selectProj.removeAttribute('tooltip');
   selectProj.removeEventListener('mouseover', displayTooltipProj4);
   selectProj.removeEventListener('mouseout', removeTooltipProj4);
+
   // Set or remove the clip-path according to the projection:
   handleClipPath(new_proj_name, layer_name);
 }
@@ -15520,7 +15523,7 @@ var get_coords_snap_lines = function get_coords_snap_lines(uid) {
       y = _get_map_xy2.y;
 
   pos_lgds_elem.forEach(function (v, k) {
-    if (k !== uid) {
+    if (k != uid) {
       snap_lines.y.push([v.bottom - y, v.top - y]);
       snap_lines.y.push([v.top - y, v.bottom - y]);
       snap_lines.x.push([v.left - x, v.right - x]);

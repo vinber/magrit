@@ -6,6 +6,8 @@ Changes
 
 - Improve how rectangles are drawn and edited.
 
+- Fix the tooltip displaying proj.4 string.
+
 
 0.5.0 (2017-08-24)
 ------------------
