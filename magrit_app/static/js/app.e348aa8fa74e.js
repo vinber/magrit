@@ -1129,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.13498582e23b.json'
+      loadPath: 'static/locales/{{lng}}/translation.e348aa8fa74e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11320,25 +11320,23 @@ var getIdLayoutFeature = function getIdLayoutFeature(type) {
 };
 
 function handleClickAddRectangle() {
+  function rectbrushended() {
+    msg.dismiss();
+    var k = svg_map.__zoom.k;
+    var wi = (d3.event.selection[1][0] - d3.event.selection[0][0]) / k;
+    var he = (d3.event.selection[1][1] - d3.event.selection[0][1]) / k;
+    new UserRectangle('user_rectangle_' + rectangle_id, d3.event.selection[0], svg_map, false, wi, he);
+    map.select('.brush_rect_draw').remove();
+    document.body.style.cursor = '';
+  }
   var rectangle_id = getIdLayoutFeature('rectangle');
   if (rectangle_id === null) {
     return;
   }
-  var start_point = void 0,
-      tmp_start_point = void 0;
   var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
-  map.style('cursor', 'crosshair').on('click', function () {
-    msg.dismiss();
-    start_point = [d3.event.layerX, d3.event.layerY];
-    tmp_start_point = map.append('rect').attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style('fill', 'red');
-    setTimeout(function () {
-      tmp_start_point.remove();
-    }, 1000);
-    map.style('cursor', '').on('click', null);
-    document.body.style.cursor = '';
-    new UserRectangle('user_rectangle_' + rectangle_id, start_point, svg_map);
-  });
+  var _brush = d3.brush().on('end', rectbrushended);
+  map.append('g').attr('class', 'brush_rect_draw').call(_brush);
 }
 
 function handleClickAddOther(type) {
@@ -14967,6 +14965,8 @@ var UserRectangle = function () {
   function UserRectangle(id, origin_pt) {
     var parent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
     var untransformed = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+    var width = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 30;
+    var height = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 40;
 
     _classCallCheck(this, UserRectangle);
 
@@ -14977,8 +14977,8 @@ var UserRectangle = function () {
     this.stroke_color = 'rgb(0, 0, 0)';
     this.fill_color = 'rgb(255, 255, 255)';
     this.fill_opacity = 0;
-    this.height = 40;
-    this.width = 30;
+    this.height = height;
+    this.width = width;
     var self = this;
     if (!untransformed) {
       var zoom_param = svg_map.__zoom;
@@ -15114,6 +15114,8 @@ var UserRectangle = function () {
           zoom_param = svg_map.__zoom,
           map_locked = !!map_div.select('#hand_button').classed('locked'),
           center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
+          topleft = self.pt1.slice(),
+          bottomright = [self.pt1[0] + rectangle_elem.width.baseVal.value, self.pt1[1] + rectangle_elem.height.baseVal.value],
           msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
       var cleanup_edit_state = function cleanup_edit_state() {
@@ -15150,23 +15152,38 @@ var UserRectangle = function () {
         cleanup_edit_state();
       });
 
-      var tmp_start_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt1').attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4).attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
-        var dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+      var tmp_top_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_top').attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4).attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+        var dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
         d3.select(this).attr('y', d3.event.y - 4);
-        self.height = rectangle_elem.height.baseVal.value = dist * 2;
-        self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
+        var a = self.pt1[1];
+        self.pt1[1] = rectangle_elem.y.baseVal.value = topleft[1] - dist;
+        rectangle_elem.height.baseVal.value = self.height = Math.round(self.height - (self.pt1[1] - a));
       }));
 
-      var tmp_end_point = edit_layer.append('rect').attrs({ class: 'ctrl_pt',
+      var tmp_left_point = edit_layer.append('rect').attrs({
+        class: 'ctrl_pt',
         height: 8,
         width: 8,
-        id: 'pt2',
+        id: 'pt_left',
         x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
         y: center_pt[1] * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on('drag', function () {
-        var dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        var dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         d3.select(this).attr('x', d3.event.x - 4);
-        self.width = rectangle_elem.width.baseVal.value = dist * 2;
-        self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
+        var a = self.pt1[0];
+        self.pt1[0] = rectangle_elem.x.baseVal.value = topleft[0] - dist;
+        rectangle_elem.width.baseVal.value = self.width = Math.round(self.width + (a - self.pt1[0]));
+      }));
+
+      var tmp_bottom_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_bottom').attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4).attr('y', bottomright[1] * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+        var dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+        d3.select(this).attr('y', d3.event.y - 4);
+        self.height = rectangle_elem.height.baseVal.value = Math.abs(dist);
+      }));
+
+      var tmp_right_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_right').attr('x', bottomright[0] * zoom_param.k + zoom_param.x - 4).attr('y', center_pt[1] * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+        var dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        d3.select(this).attr('x', d3.event.x - 4);
+        self.width = rectangle_elem.width.baseVal.value = Math.abs(dist);
       }));
 
       self.rectangle.on('dblclick', function () {
@@ -15503,7 +15520,7 @@ var get_coords_snap_lines = function get_coords_snap_lines(uid) {
       y = _get_map_xy2.y;
 
   pos_lgds_elem.forEach(function (v, k) {
-    if (k != uid) {
+    if (k !== uid) {
       snap_lines.y.push([v.bottom - y, v.top - y]);
       snap_lines.y.push([v.top - y, v.bottom - y]);
       snap_lines.x.push([v.left - x, v.right - x]);

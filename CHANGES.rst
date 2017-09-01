@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.5.1 (2017-09-xx)
+------------------
+
+- Improve how rectangles are drawn and edited.
+
+
 0.5.0 (2017-08-24)
 ------------------
 

@@ -1765,28 +1765,25 @@ const getIdLayoutFeature = (type) => {
 
 
 function handleClickAddRectangle() {
+  function rectbrushended() {
+    msg.dismiss();
+    const k = svg_map.__zoom.k;
+    const wi = (d3.event.selection[1][0] - d3.event.selection[0][0]) / k;
+    const he = (d3.event.selection[1][1] - d3.event.selection[0][1]) / k;
+    new UserRectangle(`user_rectangle_${rectangle_id}`, d3.event.selection[0], svg_map, false, wi, he);
+    map.select('.brush_rect_draw').remove();
+    document.body.style.cursor = '';
+  }
   const rectangle_id = getIdLayoutFeature('rectangle');
   if (rectangle_id === null) {
     return;
   }
-  let start_point,
-    tmp_start_point;
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
-  map.style('cursor', 'crosshair')
-    .on('click', () => {
-      msg.dismiss();
-      start_point = [d3.event.layerX, d3.event.layerY];
-      tmp_start_point = map.append('rect')
-        .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
-        .style('fill', 'red');
-      setTimeout(() => {
-        tmp_start_point.remove();
-      }, 1000);
-      map.style('cursor', '').on('click', null);
-      document.body.style.cursor = '';
-      new UserRectangle(`user_rectangle_${rectangle_id}`, start_point, svg_map);
-    });
+  const _brush = d3.brush().on('end', rectbrushended);
+  map.append('g')
+    .attr('class', 'brush_rect_draw')
+    .call(_brush);
 }
 
 function handleClickAddOther(type) {

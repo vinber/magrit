@@ -1301,7 +1301,7 @@ const northArrow = {
 };
 
 class UserRectangle {
-  constructor(id, origin_pt, parent = undefined, untransformed = false) {
+  constructor(id, origin_pt, parent = undefined, untransformed = false, width = 30, height = 40) {
     this.parent = parent || svg_map;
     this.svg_elem = d3.select(this.parent);
     this.id = id;
@@ -1309,8 +1309,8 @@ class UserRectangle {
     this.stroke_color = 'rgb(0, 0, 0)';
     this.fill_color = 'rgb(255, 255, 255)';
     this.fill_opacity = 0;
-    this.height = 40;
-    this.width = 30;
+    this.height = height;
+    this.width = width;
     const self = this;
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
@@ -1435,11 +1435,13 @@ class UserRectangle {
     this.rectangle.remove();
   }
   handle_ctrl_pt() {
-    let self = this,
+    const self = this,
       rectangle_elem = self.rectangle.node().querySelector('rect'),
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
       center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
+      topleft = self.pt1.slice(),
+      bottomright = [self.pt1[0] + rectangle_elem.width.baseVal.value, self.pt1[1] + rectangle_elem.height.baseVal.value],
       msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
     const cleanup_edit_state = () => {
@@ -1479,30 +1481,60 @@ class UserRectangle {
         cleanup_edit_state();
       });
 
-    const tmp_start_point = edit_layer.append('rect')
-      .attr('class', 'ctrl_pt').attr('id', 'pt1')
+    const tmp_top_point = edit_layer.append('rect')
+      .attr('class', 'ctrl_pt').attr('id', 'pt_top')
       .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
       .attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4)
-      .attr('height', 8).attr('width', 8)
+      .attr('height', 8)
+      .attr('width', 8)
       .call(d3.drag().on('drag', function () {
-        const dist = center_pt[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+        const dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
         d3.select(this).attr('y', d3.event.y - 4);
-        self.height = rectangle_elem.height.baseVal.value = dist * 2;
-        self.pt1[1] = rectangle_elem.y.baseVal.value = center_pt[1] - dist;
+        const a = self.pt1[1];
+        self.pt1[1] = rectangle_elem.y.baseVal.value = topleft[1] - dist;
+        rectangle_elem.height.baseVal.value = self.height = Math.round(self.height - (self.pt1[1] - a));
       }));
 
-    const tmp_end_point = edit_layer.append('rect')
-      .attrs({ class: 'ctrl_pt',
+    const tmp_left_point = edit_layer.append('rect')
+      .attrs({
+        class: 'ctrl_pt',
         height: 8,
         width: 8,
-        id: 'pt2',
+        id: 'pt_left',
         x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
         y: center_pt[1] * zoom_param.k + zoom_param.y - 4 })
       .call(d3.drag().on('drag', function () {
-        const dist = center_pt[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        const dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         d3.select(this).attr('x', d3.event.x - 4);
-        self.width = rectangle_elem.width.baseVal.value = dist * 2;
-        self.pt1[0] = rectangle_elem.x.baseVal.value = center_pt[0] - dist;
+        const a = self.pt1[0];
+        self.pt1[0] = rectangle_elem.x.baseVal.value = topleft[0] - dist;
+        rectangle_elem.width.baseVal.value = self.width = Math.round(self.width + (a - self.pt1[0]));
+      }));
+
+    const tmp_bottom_point = edit_layer.append('rect')
+      .attr('class', 'ctrl_pt')
+      .attr('id', 'pt_bottom')
+      .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
+      .attr('y', bottomright[1] * zoom_param.k + zoom_param.y - 4)
+      .attr('height', 8)
+      .attr('width', 8)
+      .call(d3.drag().on('drag', function () {
+        const dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+        d3.select(this).attr('y', d3.event.y - 4);
+        self.height = rectangle_elem.height.baseVal.value = Math.abs(dist);
+      }));
+
+    const tmp_right_point = edit_layer.append('rect')
+      .attr('class', 'ctrl_pt')
+      .attr('id', 'pt_right')
+      .attr('x', bottomright[0] * zoom_param.k + zoom_param.x - 4)
+      .attr('y', center_pt[1] * zoom_param.k + zoom_param.y - 4)
+      .attr('height', 8)
+      .attr('width', 8)
+      .call(d3.drag().on('drag', function () {
+        const dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        d3.select(this).attr('x', d3.event.x - 4);
+        self.width = rectangle_elem.width.baseVal.value = Math.abs(dist);
       }));
 
     self.rectangle.on('dblclick', () => {
@@ -1513,7 +1545,7 @@ class UserRectangle {
   }
 
   editStyle() {
-    let self = this,
+    const self = this,
       rectangle_elem = self.rectangle.node().querySelector('rect'),
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
@@ -1522,13 +1554,13 @@ class UserRectangle {
     make_confirm_dialog2('styleBoxRectangle', i18next.t('app_page.rectangle_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
-              // Store shorcut of useful values :
+          // Store shorcut of useful values :
           self.stroke_width = rectangle_elem.style.strokeWidth;
           self.stroke_color = rectangle_elem.style.stroke;
           self.fill_color = rectangle_elem.style.fill;
           self.fill_opacity = +rectangle_elem.style.fillOpacity;
         } else {
-              // Rollback on initials parameters :
+          // Rollback on initials parameters :
           self.pt1 = current_options.pt1.slice();
           rectangle_elem.style.strokeWidth = self.stroke_width;
           rectangle_elem.style.stroke = self.stroke_color;
@@ -1629,7 +1661,7 @@ class UserEllipse {
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
-        let _t = this.querySelector('ellipse'),
+        const _t = this.querySelector('ellipse'),
           subject = d3.event.subject,
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
           ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
@@ -1693,21 +1725,21 @@ class UserEllipse {
   }
 
   calcAngle() {
-    let ellipse_elem = this.ellipse.node().querySelector('ellipse'),
+    const ellipse_elem = this.ellipse.node().querySelector('ellipse'),
       dx = ellipse_elem.rx.baseVal.value - this.pt1[0],
       dy = ellipse_elem.ry.baseVal.value - this.pt1[1];
     return atan2(dy, dx) * (180 / PI);
   }
 
   calcDestFromOAD(origin, angle, distance) {
-    let theta = angle / (180 / PI),
+    const theta = angle / (180 / PI),
       dx = distance * cos(theta),
       dy = distance * sin(theta);
     return [origin[0] + dx, origin[1] + dy];
   }
 
   editStyle() {
-    let self = this,
+    const self = this,
       ellipse_elem = self.ellipse.node().querySelector('ellipse'),
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
@@ -1793,7 +1825,7 @@ class UserEllipse {
   }
 
   handle_ctrl_pt() {
-    let self = this,
+    const self = this,
       ellipse_elem = self.ellipse.node().querySelector('ellipse'),
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
@@ -1839,7 +1871,8 @@ class UserEllipse {
       .attr('class', 'ctrl_pt')
       .attr('x', (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4)
       .attr('y', self.pt1[1] * zoom_param.k + zoom_param.y - 4)
-      .attr('height', 8).attr('width', 8)
+      .attr('height', 8)
+      .attr('width', 8)
       .call(d3.drag().on('drag', function () {
         const t = d3.select(this);
         t.attr('x', d3.event.x - 4);
