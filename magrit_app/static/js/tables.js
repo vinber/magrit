@@ -341,6 +341,19 @@ function make_table(layer_name) {
 }
 
 const boxExplore2 = {
+  clean() {
+    this.box_table.remove();
+    this.datatable.destroy();
+    this.datatable = null;
+    this.box_table = null;
+    this.nb_features = null;
+    this.columns_names = null;
+    this.columns_headers = null;
+    this.top_buttons = null;
+    this.tables = null;
+    this.modal_box = null;
+  },
+
   display_table(table_name) {
     document.querySelector('body').style.cursor = '';
     let the_table = this.tables.get(table_name);
@@ -459,6 +472,7 @@ const boxExplore2 = {
       container.remove();
       overlay_under_modal.hide();
       document.removeEventListener('keydown', fn_cb);
+      this.clean();
     };
     container.querySelector('.btn_cancel').onclick = _onclose;
     container.querySelector('#xclose').onclick = _onclose;
