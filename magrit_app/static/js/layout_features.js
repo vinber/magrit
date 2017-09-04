@@ -1440,9 +1440,10 @@ class UserRectangle {
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
       center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
-      topleft = self.pt1.slice(),
       bottomright = [self.pt1[0] + rectangle_elem.width.baseVal.value, self.pt1[1] + rectangle_elem.height.baseVal.value],
       msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+
+    let topleft = self.pt1.slice();
 
     const cleanup_edit_state = () => {
       edit_layer.remove();
@@ -1492,7 +1493,9 @@ class UserRectangle {
         d3.select(this).attr('y', d3.event.y - 4);
         const a = self.pt1[1];
         self.pt1[1] = rectangle_elem.y.baseVal.value = topleft[1] - dist;
-        rectangle_elem.height.baseVal.value = self.height = Math.round(self.height - (self.pt1[1] - a));
+        topleft = self.pt1.slice();
+        rectangle_elem.height.baseVal.value = self.height = Math.abs(self.height - (self.pt1[1] - a));
+        map.selectAll('#pt_left,#pt_right').attr('y', topleft[1] + self.height / 2);
       }));
 
     const tmp_left_point = edit_layer.append('rect')
@@ -1508,7 +1511,9 @@ class UserRectangle {
         d3.select(this).attr('x', d3.event.x - 4);
         const a = self.pt1[0];
         self.pt1[0] = rectangle_elem.x.baseVal.value = topleft[0] - dist;
-        rectangle_elem.width.baseVal.value = self.width = Math.round(self.width + (a - self.pt1[0]));
+        topleft = self.pt1.slice();
+        rectangle_elem.width.baseVal.value = self.width = Math.abs(self.width + (a - self.pt1[0]));
+        map.selectAll('#pt_top,#pt_bottom').attr('x', topleft[0] + self.width / 2);
       }));
 
     const tmp_bottom_point = edit_layer.append('rect')
@@ -1522,6 +1527,7 @@ class UserRectangle {
         const dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
         d3.select(this).attr('y', d3.event.y - 4);
         self.height = rectangle_elem.height.baseVal.value = Math.abs(dist);
+        map.selectAll('#pt_left,#pt_right').attr('y', topleft[1] + self.height / 2);
       }));
 
     const tmp_right_point = edit_layer.append('rect')
@@ -1535,6 +1541,7 @@ class UserRectangle {
         const dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         d3.select(this).attr('x', d3.event.x - 4);
         self.width = rectangle_elem.width.baseVal.value = Math.abs(dist);
+        map.selectAll('#pt_top,#pt_bottom').attr('x', topleft[0] + self.width / 2);
       }));
 
     self.rectangle.on('dblclick', () => {
@@ -1690,7 +1697,7 @@ class UserEllipse {
       .attrs({
         rx: 30,
         ry: 40,
-  			cx: this.pt1[0],
+        cx: this.pt1[0],
         cy: this.pt1[1],
       })
       .styles({
@@ -1731,7 +1738,7 @@ class UserEllipse {
     return atan2(dy, dx) * (180 / PI);
   }
 
-  calcDestFromOAD(origin, angle, distance) {
+  static calcDestFromOAD(origin, angle, distance) {
     const theta = angle / (180 / PI),
       dx = distance * cos(theta),
       dy = distance * sin(theta);
