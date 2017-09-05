@@ -39,3 +39,6 @@ Différentes librairies et applications sont utilisées :
 | [ujson](https://github.com/esnme/ultrajson)           |         | BSD-like       |
 | [uvloop](https://github.com/MagicStack/uvloop)        |         | MIT/Apache-2.0 |
 | [xlrd](https://github.com/python-excel/xlrd)          |         | BSD-like       |
+
+Cette application contient des schémas de couleurs deveoppés par Cynthia Brewer.
+Cette application contient des composants *(xlrd)* developpés par [David Giffin](david@giffin.org).

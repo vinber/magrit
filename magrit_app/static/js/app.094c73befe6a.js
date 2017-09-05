@@ -1129,7 +1129,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.8d4ac984ae55.json'
+      loadPath: 'static/locales/{{lng}}/translation.094c73befe6a.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -15156,14 +15156,28 @@ var UserRectangle = function () {
         cleanup_edit_state();
       });
 
-      var tmp_top_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_top').attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4).attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+      var tmp_top_point = edit_layer.append('rect').attrs({
+        class: 'ctrl_pt',
+        id: 'pt_top',
+        x: center_pt[0] * zoom_param.k + zoom_param.x - 4,
+        y: (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4,
+        height: 8,
+        width: 8
+      })
+      // .attr('class', 'ctrl_pt')
+      // .attr('id', 'pt_top')
+      // .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
+      // .attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4)
+      // .attr('height', 8)
+      // .attr('width', 8)
+      .call(d3.drag().on('drag', function () {
         var dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
         d3.select(this).attr('y', d3.event.y - 4);
         var a = self.pt1[1];
         self.pt1[1] = rectangle_elem.y.baseVal.value = topleft[1] - dist;
         topleft = self.pt1.slice();
         rectangle_elem.height.baseVal.value = self.height = Math.abs(self.height - (self.pt1[1] - a));
-        map.selectAll('#pt_left,#pt_right').attr('y', topleft[1] + self.height / 2);
+        map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
       var tmp_left_point = edit_layer.append('rect').attrs({
@@ -15172,28 +15186,57 @@ var UserRectangle = function () {
         width: 8,
         id: 'pt_left',
         x: (center_pt[0] - rectangle_elem.width.baseVal.value / 2) * zoom_param.k + zoom_param.x - 4,
-        y: center_pt[1] * zoom_param.k + zoom_param.y - 4 }).call(d3.drag().on('drag', function () {
+        y: center_pt[1] * zoom_param.k + zoom_param.y - 4
+      }).call(d3.drag().on('drag', function () {
         var dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         d3.select(this).attr('x', d3.event.x - 4);
         var a = self.pt1[0];
         self.pt1[0] = rectangle_elem.x.baseVal.value = topleft[0] - dist;
         topleft = self.pt1.slice();
         rectangle_elem.width.baseVal.value = self.width = Math.abs(self.width + (a - self.pt1[0]));
-        map.selectAll('#pt_top,#pt_bottom').attr('x', topleft[0] + self.width / 2);
+        map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
-      var tmp_bottom_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_bottom').attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4).attr('y', bottomright[1] * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+      var tmp_bottom_point = edit_layer.append('rect').attrs({
+        class: 'ctrl_pt',
+        id: 'pt_bottom',
+        x: center_pt[0] * zoom_param.k + zoom_param.x - 4,
+        y: bottomright[1] * zoom_param.k + zoom_param.y - 4,
+        height: 8,
+        width: 8
+      })
+      // .attr('class', 'ctrl_pt')
+      // .attr('id', 'pt_bottom')
+      // .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
+      // .attr('y', bottomright[1] * zoom_param.k + zoom_param.y - 4)
+      // .attr('height', 8)
+      // .attr('width', 8)
+      .call(d3.drag().on('drag', function () {
         var dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
         d3.select(this).attr('y', d3.event.y - 4);
         self.height = rectangle_elem.height.baseVal.value = Math.abs(dist);
-        map.selectAll('#pt_left,#pt_right').attr('y', topleft[1] + self.height / 2);
+        map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
-      var tmp_right_point = edit_layer.append('rect').attr('class', 'ctrl_pt').attr('id', 'pt_right').attr('x', bottomright[0] * zoom_param.k + zoom_param.x - 4).attr('y', center_pt[1] * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+      var tmp_right_point = edit_layer.append('rect').attrs({
+        class: 'ctrl_pt',
+        id: 'pt_right',
+        x: bottomright[0] * zoom_param.k + zoom_param.x - 4,
+        y: center_pt[1] * zoom_param.k + zoom_param.y - 4,
+        height: 8,
+        width: 8
+      })
+      // .attr('class', 'ctrl_pt')
+      // .attr('id', 'pt_right')
+      // .attr('x', bottomright[0] * zoom_param.k + zoom_param.x - 4)
+      // .attr('y', center_pt[1] * zoom_param.k + zoom_param.y - 4)
+      // .attr('height', 8)
+      // .attr('width', 8)
+      .call(d3.drag().on('drag', function () {
         var dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         d3.select(this).attr('x', d3.event.x - 4);
         self.width = rectangle_elem.width.baseVal.value = Math.abs(dist);
-        map.selectAll('#pt_top,#pt_bottom').attr('x', topleft[0] + self.width / 2);
+        map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
       self.rectangle.on('dblclick', function () {

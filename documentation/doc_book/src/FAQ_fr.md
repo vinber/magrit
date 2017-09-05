@@ -10,3 +10,6 @@
 
 
 ### Pourquoi une limite de taille est-elle fixée lors de l'import d'un fond de carte ?
+
+La taille maximale des fichiers pouvant être importés dans Magrit est limitée à 20Mio. Plusieurs raisons ont motivé ce choix et visent essentiellement à éviter des ralentissements indésirables dans le navigateur de l'utilisateur.
+ D'une part le temps d'envoi d'un fichier volumineux peut être non-néligeable en fonction de la qualité de la connexion (un fichier de 20Moi prend en moyenne xx secondes avec une connexion xyz). D'autre part Magrit utilise la technologie SVG pour effectuer le rendu des cartes dans le navigateur. Cette technologie est performante mais se prête difficilement à l'affichage des couches contenant énormément d'entitées. 
