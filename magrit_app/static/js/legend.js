@@ -42,6 +42,13 @@ function handle_legend(layer) {
   }
 }
 
+function up_legends() {
+  const legend_features = svg_map.querySelectorAll('.legend');
+  for (let i = 0; i < legend_features.length; i++) {
+    svg_map.appendChild(legend_features[i], null);
+  }
+}
+
 /**
 * Function called on the first click on the legend button of each layer
 * - delegate legend creation according to the type of function

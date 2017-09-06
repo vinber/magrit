@@ -1421,6 +1421,7 @@ function parseQuery(search) {
         throw err;
       } else {
         window.localize = locI18next.init(i18next);
+        getEpsgProjection();
         setUpInterface(params.reload);
         localize('.i18n');
         bindTooltips();
@@ -1428,12 +1429,14 @@ function parseQuery(search) {
     });
 })();
 
-function up_legends() {
-  const legend_features = svg_map.querySelectorAll('.legend');
-  for (let i = 0; i < legend_features.length; i++) {
-    svg_map.appendChild(legend_features[i], null);
-  }
+
+function getEpsgProjection() {
+  xhrequest('GET', 'static/json/epsg.json', undefined, false)
+    .then((data) => {
+      _app.epsg_projections = JSON.parse(data);
+    });
 }
+
 
 // To bind the set of small buttons
 // (trash icon, paint icon, active/deactive visibility, info tooltip, etc..)

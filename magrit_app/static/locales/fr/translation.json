@@ -97,7 +97,8 @@
             "resume_last": "Continuer le dernier projet...",
             "class": "{{count}} classe",
             "class_plural": "{{count}} classes",
-            "download_link": "Lien de téléchargement"
+            "download_link": "Lien de téléchargement",
+            "missing_epsg": "Pas de correspondance trouvée pour ce code EPSG"
         },
         "table": {
             "search": "Recherche...",

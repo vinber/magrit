@@ -97,7 +97,8 @@
             "resume_last": "Continuar con el último proyecto...",
             "class": "{{count}} clase",
             "class_plural": "{{count}} clases",
-            "download_link": "Enlace para descargar"
+            "download_link": "Enlace para descargar",
+            "missing_epsg": "No hay coincidencias"
         },
         "notification":{
           "instruction_click_map": "Seleccionar una parte del mapa para agregar el objeto",

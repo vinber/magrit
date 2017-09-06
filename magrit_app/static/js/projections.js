@@ -110,11 +110,27 @@ const createBoxProj4 = function createBoxProj4() {
   const _onclose_valid = () => {
     let proj_str = document.getElementById('input_proj_string').value.trim();
     let _p;
+    let error_msg;
+    let custom_name;
+    // Trim the input string from eventual superflous quotes:
     if (proj_str.startsWith('"') || proj_str.startsWith("'")) {
       proj_str = proj_str.substr(1);
     }
     if (proj_str.endsWith('"') || proj_str.endsWith("'")) {
       proj_str = proj_str.slice(0, -1);
+    }
+    // If the string is something like EPSG:xxxx, transform it to an actual proj4 string
+    // using a list of EPSG code contained in Magrit:
+    if (proj_str.toUpperCase().startsWith('EPSG:')) {
+      const code = +proj_str.toUpperCase().split('EPSG:')[1];
+      const rv = _app.epsg_projections[code];
+      if (!rv) {
+        error_msg = i18next.t('app_page.common.missing_epsg');
+        proj_str = undefined;
+      } else {
+        custom_name = rv.name;
+        proj_str = rv.proj4;
+      }
     }
     clean_up_box();
     try {
@@ -122,7 +138,7 @@ const createBoxProj4 = function createBoxProj4() {
     } catch (e) {
       swal({
         title: 'Oops...',
-        text: i18next.t('app_page.proj4_box.error', { detail: e }),
+        text: i18next.t('app_page.proj4_box.error', { detail: error_msg || e }),
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -132,7 +148,7 @@ const createBoxProj4 = function createBoxProj4() {
     const rv = change_projection_4(_p);
     if (rv) {
       _app.last_projection = proj_str;
-      addLastProjectionSelect('def_proj4', _app.last_projection);
+      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
       current_proj_name = 'def_proj4';
     } else {
       swal({
@@ -185,7 +201,7 @@ const makeTooltipProj4 = (proj_select, proj4string) => {
   proj_select.addEventListener('mouseout', removeTooltipProj4);
 };
 
-function addLastProjectionSelect(proj_name, proj4string) {
+function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   const proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
@@ -195,8 +211,8 @@ function addLastProjectionSelect(proj_name, proj4string) {
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
     new_option.name = proj_name;
-    new_option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
-    new_option.innerHTML = i18next.t(`app_page.projection_name.${proj_name}`);
+    new_option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
+    if (!custom_name) new_option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
     if (proj4string) {
@@ -205,8 +221,8 @@ function addLastProjectionSelect(proj_name, proj4string) {
   } else {
     const option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
-    option.innerHTML = i18next.t(`app_page.projection_name.${proj_name}`);
-    option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
+    option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
+    if (!custom_name) option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     proj_select.value = 'last_projection';
     if (proj4string) {
       makeTooltipProj4(proj_select, proj4string);
@@ -513,7 +529,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       addLastProjectionSelect(current_proj_name);
     } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
-      addLastProjectionSelect(current_proj_name, _app.last_projection);
+      let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
+      custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
+      addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
     }
     if (prev_rotate) {
       handle_proj_center_button(prev_rotate);

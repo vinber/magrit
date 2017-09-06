@@ -1123,13 +1123,14 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.5d41ffb34512.json'
+      loadPath: 'static/locales/{{lng}}/translation.814356bec1ec.json'
     }
   }, function (err, tr) {
     if (err) {
       throw err;
     } else {
       window.localize = locI18next.init(i18next);
+      getEpsgProjection();
       setUpInterface(params.reload);
       localize('.i18n');
       bindTooltips();
@@ -1137,11 +1138,10 @@ function parseQuery(search) {
   });
 })();
 
-function up_legends() {
-  var legend_features = svg_map.querySelectorAll('.legend');
-  for (var i = 0; i < legend_features.length; i++) {
-    svg_map.appendChild(legend_features[i], null);
-  }
+function getEpsgProjection() {
+  xhrequest('GET', 'static/json/epsg.json', undefined, false).then(function (data) {
+    _app.epsg_projections = JSON.parse(data);
+  });
 }
 
 // To bind the set of small buttons
@@ -11352,44 +11352,25 @@ function handleClickAddOther(type) {
 }
 
 function handleClickAddEllipse() {
-  function rectbrushended() {
-    msg.dismiss();
-    var k = svg_map.__zoom.k;
-    var wi = (d3.event.selection[1][0] - d3.event.selection[0][0]) / k;
-    var he = (d3.event.selection[1][1] - d3.event.selection[0][1]) / k;
-    new UserRectangle('user_rectangle_' + rectangle_id, d3.event.selection[0], svg_map, false, wi, he);
-    map.select('.brush_rect_draw').remove();
-    document.body.style.cursor = '';
-  }
-  var rectangle_id = getIdLayoutFeature('rectangle');
-  if (rectangle_id === null) {
+  var ellipse_id = getIdLayoutFeature('ellipse');
+  if (ellipse_id === null) {
     return;
   }
-  var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
-  var _brush = d3.brush().on('end', rectbrushended);
-  map.append('g').attr('class', 'brush_rect_draw').call(_brush);
-
-  // const ellipse_id = getIdLayoutFeature('ellipse');
-  // if (ellipse_id === null) {
-  //   return;
-  // }
-  // document.body.style.cursor = 'not-allowed';
-  // let start_point,
-  //   tmp_start_point;
-  // const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-  // map.style('cursor', 'crosshair')
-  //   .on('click', () => {
-  //     msg.dismiss();
-  //     start_point = [d3.event.layerX, d3.event.layerY];
-  //     tmp_start_point = map.append('rect')
-  //       .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
-  //       .style('fill', 'red');
-  //     setTimeout(() => { tmp_start_point.remove(); }, 1000);
-  //     map.style('cursor', '').on('click', null);
-  //     document.body.style.cursor = '';
-  //     new UserEllipse(`user_ellipse_${ellipse_id}`, start_point, svg_map);
-  //   });
+  var start_point = void 0,
+      tmp_start_point = void 0;
+  var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  map.style('cursor', 'crosshair').on('click', function () {
+    msg.dismiss();
+    start_point = [d3.event.layerX, d3.event.layerY];
+    tmp_start_point = map.append('rect').attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style('fill', 'red');
+    setTimeout(function () {
+      tmp_start_point.remove();
+    }, 1000);
+    map.style('cursor', '').on('click', null);
+    document.body.style.cursor = '';
+    new UserEllipse('user_ellipse_' + ellipse_id, start_point, svg_map);
+  });
 }
 
 function handleClickTextBox(text_box_id) {
@@ -15650,6 +15631,13 @@ function handle_legend(layer) {
   }
 }
 
+function up_legends() {
+  var legend_features = svg_map.querySelectorAll('.legend');
+  for (var i = 0; i < legend_features.length; i++) {
+    svg_map.appendChild(legend_features[i], null);
+  }
+}
+
 /**
 * Function called on the first click on the legend button of each layer
 * - delegate legend creation according to the type of function
@@ -18465,11 +18453,27 @@ var createBoxProj4 = function createBoxProj4() {
   var _onclose_valid = function _onclose_valid() {
     var proj_str = document.getElementById('input_proj_string').value.trim();
     var _p = void 0;
+    var error_msg = void 0;
+    var custom_name = void 0;
+    // Trim the input string from eventual superflous quotes:
     if (proj_str.startsWith('"') || proj_str.startsWith("'")) {
       proj_str = proj_str.substr(1);
     }
     if (proj_str.endsWith('"') || proj_str.endsWith("'")) {
       proj_str = proj_str.slice(0, -1);
+    }
+    // If the string is something like EPSG:xxxx, transform it to an actual proj4 string
+    // using a list of EPSG code contained in Magrit:
+    if (proj_str.toUpperCase().startsWith('EPSG:')) {
+      var code = +proj_str.toUpperCase().split('EPSG:')[1];
+      var _rv = _app.epsg_projections[code];
+      if (!_rv) {
+        error_msg = i18next.t('app_page.common.missing_epsg');
+        proj_str = undefined;
+      } else {
+        custom_name = _rv.name;
+        proj_str = _rv.proj4;
+      }
     }
     clean_up_box();
     try {
@@ -18477,7 +18481,7 @@ var createBoxProj4 = function createBoxProj4() {
     } catch (e) {
       swal({
         title: 'Oops...',
-        text: i18next.t('app_page.proj4_box.error', { detail: e }),
+        text: i18next.t('app_page.proj4_box.error', { detail: error_msg || e }),
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false
@@ -18491,7 +18495,7 @@ var createBoxProj4 = function createBoxProj4() {
     var rv = change_projection_4(_p);
     if (rv) {
       _app.last_projection = proj_str;
-      addLastProjectionSelect('def_proj4', _app.last_projection);
+      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
       current_proj_name = 'def_proj4';
     } else {
       swal({
@@ -18548,7 +18552,7 @@ var makeTooltipProj4 = function makeTooltipProj4(proj_select, proj4string) {
   proj_select.addEventListener('mouseout', removeTooltipProj4);
 };
 
-function addLastProjectionSelect(proj_name, proj4string) {
+function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   var proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
@@ -18558,8 +18562,8 @@ function addLastProjectionSelect(proj_name, proj4string) {
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
     new_option.name = proj_name;
-    new_option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
-    new_option.innerHTML = i18next.t('app_page.projection_name.' + proj_name);
+    new_option.innerHTML = custom_name || i18next.t('app_page.projection_name.' + proj_name);
+    if (!custom_name) new_option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
     if (proj4string) {
@@ -18568,8 +18572,8 @@ function addLastProjectionSelect(proj_name, proj4string) {
   } else {
     var option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
-    option.innerHTML = i18next.t('app_page.projection_name.' + proj_name);
-    option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
+    option.innerHTML = custom_name || i18next.t('app_page.projection_name.' + proj_name);
+    if (!custom_name) option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
     proj_select.value = 'last_projection';
     if (proj4string) {
       makeTooltipProj4(proj_select, proj4string);
@@ -18795,7 +18799,13 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
       addLastProjectionSelect(current_proj_name);
     } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
-      addLastProjectionSelect(current_proj_name, _app.last_projection);
+      var custom_name = Object.keys(_app.epsg_projections).map(function (d) {
+        return [d, _app.epsg_projections[d]];
+      }).filter(function (ft) {
+        return ft[1].proj4 === _app.last_projection;
+      });
+      custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
+      addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
     }
     if (prev_rotate) {
       handle_proj_center_button(prev_rotate);

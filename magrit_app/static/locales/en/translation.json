@@ -96,7 +96,8 @@
             "new_project": "New project",
             "resume_last": "Resume last project",
             "class": "{{count}} class",
-            "download_link": "Download link"
+            "download_link": "Download link",
+            "missing_epsg": "No match found for this EPSG code"
         },
         "table": {
             "search": "Search...",
