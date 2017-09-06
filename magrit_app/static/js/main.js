@@ -70,11 +70,6 @@ function setUpInterface(reload_project) {
   const bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  // bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
-  //                '<span style="color: white; z-index: 2;">...<br></span>' +
-  //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
-  //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
-  //                '<div class="line"></div><div class="line"></div></div></div>';
   bg.innerHTML = `
 <img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
 <span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
@@ -135,7 +130,7 @@ function setUpInterface(reload_project) {
   inner_p.style.textAlign = 'center';
   inner_p.style.color = 'white';
   inner_p.style.padding = '0.5em';
-  inner_p.innerHTML = 'Drop your file(s) in the window ...';
+  inner_p.innerHTML = 'Drop your file(s) in the window ...'; //FIXME
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
   document.body.appendChild(bg_drop);
@@ -498,16 +493,14 @@ function setUpInterface(reload_project) {
     .on('click', handle_title_properties);
 
   const f = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  f.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.background_color');
   f.append('input')
     .styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' })
     .attrs({ type: 'color', id: 'bg_color', value: '#ffffff', class: 'list_elem_section4 m_elem_right' })
     .on('change', function () { handle_bg_color(this.value); });
+  f.append('p').attr('class', 'list_elem_section4 i18n')
+    .attr('data-i18n', '[html]app_page.section4.background_color');
 
   const a1 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a1.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_width');
   a1.append('input')
     .attrs({ id: 'input-width', type: 'number', value: w, class: 'list_elem_section4 m_elem_right' })
     .on('change', function () {
@@ -528,11 +521,10 @@ function setUpInterface(reload_project) {
       }
       document.getElementById('input-height').value = h;
     });
-
+  a1.append('p').attr('class', 'list_elem_section4 i18n')
+    .attr('data-i18n', '[html]app_page.section4.map_width');
 
   const a2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a2.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_height');
   a2.append('input')
     .attrs({ id: 'input-height', type: 'number', value: h, class: 'm_elem_right list_elem_section4' })
     .on('change', function () {
@@ -553,14 +545,15 @@ function setUpInterface(reload_project) {
       }
       document.getElementById('input-width').value = w;
     });
+  a2.append('p').attr('class', 'list_elem_section4 i18n')
+    .attr('data-i18n', '[html]app_page.section4.map_height');
 
   const b = dv4.append('li').styles({ margin: '1px', padding: '4px 0' });
+  const ratio_select = b.append('select')
+    .attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
   b.append('p').attr('class', 'list_elem_section4 i18n')
     .style('padding', '4px')
     .attr('data-i18n', '[html]app_page.section4.map_ratio');
-  const ratio_select = b.append('select')
-    .attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
-
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
@@ -599,8 +592,6 @@ function setUpInterface(reload_project) {
   const zoom_prop = svg_map.__zoom;
 
   const d2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  d2.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.resize_fit');
   d2.append('button')
     .styles({ margin: 0, padding: 0 })
     .attrs({
@@ -615,6 +606,8 @@ function setUpInterface(reload_project) {
       canvas_mod_size([w, h]);
       document.getElementById('map_ratio_select').value = 'ratio_user';
     });
+  d2.append('p').attr('class', 'list_elem_section4 i18n')
+    .attr('data-i18n', '[html]app_page.section4.resize_fit');
 
   const c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   c.append('p').attr('class', 'list_elem_section4 i18n')
@@ -729,8 +722,6 @@ function setUpInterface(reload_project) {
     });
 
   const g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  g2.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.autoalign_features');
   g2.append('input')
     .styles({ margin: 0, padding: 0 })
     .attrs({ id: 'autoalign_features',
@@ -739,6 +730,8 @@ function setUpInterface(reload_project) {
     .on('change', function () {
       _app.autoalign_features = this.checked;
     });
+  g2.append('p').attr('class', 'list_elem_section4 i18n')
+    .attr('data-i18n', '[html]app_page.section4.autoalign_features');
 
   const _i = dv4.append('li').styles({ 'text-align': 'center' });
   _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features' });

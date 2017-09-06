@@ -70,11 +70,6 @@ function setUpInterface(reload_project) {
   var bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  // bg.innerHTML = '<span class="i18n" style="color: white; z-index: 2;margin-top:185px;display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>' +
-  //                '<span style="color: white; z-index: 2;">...<br></span>' +
-  //                '<span class="i18n" style="color: white; z-index: 2;display: inline-block;" data-i18n="[html]app_page.common.long_computation"></span><br>' +
-  //                '<div class="load-wrapp" style="left: calc(50% - 60px);position: absolute;top: 50px;"><div class="load-1"><div class="line"></div>' +
-  //                '<div class="line"></div><div class="line"></div></div></div>';
   bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
   var btn = document.createElement('button');
   btn.style.fontSize = '13px';
@@ -124,7 +119,7 @@ function setUpInterface(reload_project) {
   inner_p.style.textAlign = 'center';
   inner_p.style.color = 'white';
   inner_p.style.padding = '0.5em';
-  inner_p.innerHTML = 'Drop your file(s) in the window ...';
+  inner_p.innerHTML = 'Drop your file(s) in the window ...'; //FIXME
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
   document.body.appendChild(bg_drop);
@@ -395,13 +390,12 @@ function setUpInterface(reload_project) {
   e.append('span').styles({ display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub' }).html(sys_run_button.replace('submit', 'Title properties')).on('click', handle_title_properties);
 
   var f = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  f.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.background_color');
   f.append('input').styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' }).attrs({ type: 'color', id: 'bg_color', value: '#ffffff', class: 'list_elem_section4 m_elem_right' }).on('change', function () {
     handle_bg_color(this.value);
   });
+  f.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.background_color');
 
   var a1 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a1.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_width');
   a1.append('input').attrs({ id: 'input-width', type: 'number', value: w, class: 'list_elem_section4 m_elem_right' }).on('change', function () {
     var new_width = +this.value;
     if (new_width === 0 || isNaN(new_width)) {
@@ -420,9 +414,9 @@ function setUpInterface(reload_project) {
     }
     document.getElementById('input-height').value = h;
   });
+  a1.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_width');
 
   var a2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_height');
   a2.append('input').attrs({ id: 'input-height', type: 'number', value: h, class: 'm_elem_right list_elem_section4' }).on('change', function () {
     var new_height = +this.value;
     if (new_height === 0 || isNaN(new_height)) {
@@ -441,11 +435,11 @@ function setUpInterface(reload_project) {
     }
     document.getElementById('input-width').value = w;
   });
+  a2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_height');
 
   var b = dv4.append('li').styles({ margin: '1px', padding: '4px 0' });
-  b.append('p').attr('class', 'list_elem_section4 i18n').style('padding', '4px').attr('data-i18n', '[html]app_page.section4.map_ratio');
   var ratio_select = b.append('select').attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
-
+  b.append('p').attr('class', 'list_elem_section4 i18n').style('padding', '4px').attr('data-i18n', '[html]app_page.section4.map_ratio');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_portait').attr('value', 'portrait');
@@ -484,7 +478,6 @@ function setUpInterface(reload_project) {
   var zoom_prop = svg_map.__zoom;
 
   var d2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  d2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.resize_fit');
   d2.append('button').styles({ margin: 0, padding: 0 }).attrs({
     id: 'resize_fit',
     class: 'm_elem_right list_elem_section4 button_st4 i18n',
@@ -496,6 +489,7 @@ function setUpInterface(reload_project) {
     canvas_mod_size([w, h]);
     document.getElementById('map_ratio_select').value = 'ratio_user';
   });
+  d2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.resize_fit');
 
   var c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   c.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_center_menu').style('cursor', 'pointer');
@@ -586,12 +580,12 @@ function setUpInterface(reload_project) {
   });
 
   var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
   g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: 'autoalign_features',
     type: 'checkbox',
     class: 'm_elem_right list_elem_section4 i18n' }).on('change', function () {
     _app.autoalign_features = this.checked;
   });
+  g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
 
   var _i = dv4.append('li').styles({ 'text-align': 'center' });
   _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features' });
@@ -1129,7 +1123,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.094c73befe6a.json'
+      loadPath: 'static/locales/{{lng}}/translation.5d41ffb34512.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11358,25 +11352,44 @@ function handleClickAddOther(type) {
 }
 
 function handleClickAddEllipse() {
-  var ellipse_id = getIdLayoutFeature('ellipse');
-  if (ellipse_id === null) {
+  function rectbrushended() {
+    msg.dismiss();
+    var k = svg_map.__zoom.k;
+    var wi = (d3.event.selection[1][0] - d3.event.selection[0][0]) / k;
+    var he = (d3.event.selection[1][1] - d3.event.selection[0][1]) / k;
+    new UserRectangle('user_rectangle_' + rectangle_id, d3.event.selection[0], svg_map, false, wi, he);
+    map.select('.brush_rect_draw').remove();
+    document.body.style.cursor = '';
+  }
+  var rectangle_id = getIdLayoutFeature('rectangle');
+  if (rectangle_id === null) {
     return;
   }
-  document.body.style.cursor = 'not-allowed';
-  var start_point = void 0,
-      tmp_start_point = void 0;
   var msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
-  map.style('cursor', 'crosshair').on('click', function () {
-    msg.dismiss();
-    start_point = [d3.event.layerX, d3.event.layerY];
-    tmp_start_point = map.append('rect').attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 }).style('fill', 'red');
-    setTimeout(function () {
-      tmp_start_point.remove();
-    }, 1000);
-    map.style('cursor', '').on('click', null);
-    document.body.style.cursor = '';
-    new UserEllipse('user_ellipse_' + ellipse_id, start_point, svg_map);
-  });
+  document.body.style.cursor = 'not-allowed';
+  var _brush = d3.brush().on('end', rectbrushended);
+  map.append('g').attr('class', 'brush_rect_draw').call(_brush);
+
+  // const ellipse_id = getIdLayoutFeature('ellipse');
+  // if (ellipse_id === null) {
+  //   return;
+  // }
+  // document.body.style.cursor = 'not-allowed';
+  // let start_point,
+  //   tmp_start_point;
+  // const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  // map.style('cursor', 'crosshair')
+  //   .on('click', () => {
+  //     msg.dismiss();
+  //     start_point = [d3.event.layerX, d3.event.layerY];
+  //     tmp_start_point = map.append('rect')
+  //       .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
+  //       .style('fill', 'red');
+  //     setTimeout(() => { tmp_start_point.remove(); }, 1000);
+  //     map.style('cursor', '').on('click', null);
+  //     document.body.style.cursor = '';
+  //     new UserEllipse(`user_ellipse_${ellipse_id}`, start_point, svg_map);
+  //   });
 }
 
 function handleClickTextBox(text_box_id) {
