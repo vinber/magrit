@@ -57,7 +57,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
   if (tot_size > MAX_INPUT_SIZE) {
     // elem.style.border = '3px dashed red';
     elem.style.border = '';
-    return swal({ title: i18next.t('app_page.common.error') + '!',
+    return swal({ title: `${i18next.t('app_page.common.error')}!`,
       text: i18next.t('app_page.common.too_large_input'),
       type: 'error',
       customClass: 'swal2_custom',
@@ -76,7 +76,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.error_only_one'),
         customClass: 'swal2_custom',
         type: 'error',
@@ -90,7 +90,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       // elem.style.border = '3px dashed red';
       elem.style.border = '';
       return swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.alert_upload1'),
         customClass: 'swal2_custom',
         type: 'error',
@@ -105,32 +105,32 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.error_only_one'),
         customClass: 'swal2_custom',
         type: 'error',
         allowEscapeKey: false,
-        allowOutsideClick: false
+        allowOutsideClick: false,
       });
     // Send the file to the server for conversion :
     } else {
       if (files[0].name.toLowerCase().indexOf('json') < 0) {
         handle_single_file(files[0], target_layer_on_add);
       } else {
-        let rd = new FileReader();
+        const rd = new FileReader();
         rd.onloadend = () => {
           let tmp;
           try {
-              tmp = JSON.parse(rd.result);
+            tmp = JSON.parse(rd.result);
           } catch (e) {
             console.log(e);
             return swal({
-              title: i18next.t('app_page.common.error') + '!',
+              title: `${i18next.t('app_page.common.error')}!`,
               text: i18next.t('app_page.common.alert_upload_invalid'),
               type: 'error',
               customClass: 'swal2_custom',
               allowOutsideClick: false,
-              allowEscapeKey: false
+              allowEscapeKey: false,
             });
           }
           if (tmp.type && tmp.type === 'FeatureCollection') {
@@ -141,7 +141,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             apply_user_preferences(rd.result);
           } else {
             return swal({
-              title: i18next.t('app_page.common.error') + '!',
+              title: `${i18next.t('app_page.common.error')}!`,
               text: i18next.t('app_page.common.alert_upload_invalid'),
               type: 'error',
               customClass: 'swal2_custom',
@@ -160,7 +160,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       handle_dataset(files[0], target_layer_on_add);
     } else {
       swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.error_only_layout'),
         type: 'error',
         customClass: 'swal2_custom',
@@ -174,7 +174,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       convert_dataset(files[0]);
     } else {
       swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.error_only_layout'),
         type: 'error',
         customClass: 'swal2_custom',
@@ -193,7 +193,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
             ? shp_part = true : null);
     if (shp_part) {
       return swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.alert_upload_shp'),
         type: 'error',
         customClass: 'swal2_custom',
@@ -203,7 +203,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       .then(valid => null, dismiss => null);
     } else {
       return swal({
-        title: i18next.t('app_page.common.error') + '!',
+        title: `${i18next.t('app_page.common.error')}!`,
         text: i18next.t('app_page.common.alert_upload_invalid'),
         type: 'error',
         customClass: 'swal2_custom',
@@ -270,7 +270,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
       if (file_list[i].size > MAX_INPUT_SIZE) {
         overlay_drop.style.display = 'none';
         return swal({
-          title: i18next.t('app_page.common.error') + '!',
+          title: `${i18next.t('app_page.common.error')}!`,
           text: i18next.t('app_page.common.too_large_input'),
           type: 'error',
           allowEscapeKey: false,
@@ -299,7 +299,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
         inputPlaceholder: i18next.t('app_page.common.layer_type_selection'),
         inputOptions: opts,
         inputValidator: (value) => {
-          return new Promise(function(resolve, reject) {
+          return new Promise(function (resolve, reject) {
             if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
               reject(i18next.t('app_page.common.no_value'));
             } else {
@@ -539,6 +539,15 @@ function convert_dataset(file) {
   }
 }
 
+/**
+* Handle shapefile opened/dropped on the window by the user.
+*
+* @param {Array} files - An array of files, containing the mandatory files
+*                       for correctly reading shapefiles
+*                       (.shp, .shx, .dbf, .prj and optionnaly .cpg).
+* @param {Bool} target_layer_on_add - Whether we are trying to add the target layer or not.
+* @return {void}
+*/
 function handle_shapefile(files, target_layer_on_add) {
   const ajaxData = new FormData();
   ajaxData.append('action', 'submit_form');
@@ -574,6 +583,17 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
     });
 }
 
+/**
+* Function used to reload a TopoJSON layer from a project file.
+* The layer is send to the server (for eventual later usage) but
+* we are not waiting for its response to actually add the layer to the map.
+*
+* @param {String} text - The TopoJSON layer stringified in JSON.
+* @param {Object} param_add_func - The options Object to be passed to the
+*                               'add_layer_topojson' function.
+* @return {String} - The actual name of the layer, once added to the map.
+*
+*/
 function handle_reload_TopoJSON(text, param_add_func) {
   const ajaxData = new FormData();
   const f = new Blob([text], { type: 'application/json' });
@@ -635,7 +655,7 @@ function handle_dataset(f, target_layer_on_add) {
           if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
             if (target_layer_on_add && _app.targeted_layer_added) {
               swal({
-                title: i18next.t('app_page.common.error') + '!',
+                title: `${i18next.t('app_page.common.error')}!`,
                 text: i18next.t('app_page.common.error_only_one'),
                 customClass: 'swal2_custom',
                 type: 'error',
@@ -813,6 +833,15 @@ function add_dataset(readed_dataset) {
   }
 }
 
+/**
+* Send a csv file containing x/x columns to the server to convert it
+* to a TopoJSON layer.
+*
+*
+* @param {String} file - The csv file to be converted.
+* @param {String} name - The original name of the csv file.
+* @return {void}
+*/
 function add_csv_geom(file, name) {
   const ajaxData = new FormData();
   ajaxData.append('filename', name);
@@ -1105,10 +1134,17 @@ function add_layer_topojson(text, options = {}) {
     zoom_without_redraw();
   }
 
+  // An alert is triggered when the layer is successfully added, except if
+  // 'skip_alert' is false.
+  // That "success" alert guide the user through other message; one for typing it's
+  // data fields, on other (optionnal) for making the jointure between it's layer
+  // and it's tabular dataset and another one (optional too)
+  // to allow him to use the projection originally provided with the layer.
   if (!skip_alert) {
     if (fields_type) {
       current_layers[lyr_name_to_add].fields_type = fields_type;
     }
+    // No projection was provided was the layer :
     if (_proj === undefined) {
       swal({
         title: '',
@@ -1158,12 +1194,23 @@ function add_layer_topojson(text, options = {}) {
     }
   }
 
+  // The 'default_projection' property is used for providing a custom projection
+  // with our sample layer (it use a separate path compared to the previous
+  // block of code, in order to not let the choice to the user)
   if (options.default_projection) {
     if (options.default_projection[0] === 'proj4') {
-      change_projection_4(proj4(options.default_projection[1]));
+      let proj_str = options.default_projection[1];
+      let custom_name;
+      if (proj_str.startsWith('EPSG:')) {
+        const code = +proj_str.split('EPSG:')[1];
+        const rv = _app.epsg_projections[code];
+        proj_str = rv.proj4;
+        custom_name = rv.name;
+      }
+      change_projection_4(proj4(proj_str));
       current_proj_name = 'def_proj4';
-      _app.last_projection = options.default_projection[1];
-      addLastProjectionSelect('def_proj4', _app.last_projection);
+      _app.last_projection = proj_str;
+      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
     } else if (options.default_projection[0] === 'd3') {
       current_proj_name = options.default_projection[1];
       change_projection(options.default_projection[1]);
@@ -1213,7 +1260,9 @@ function get_bbox_layer_path(name) {
 function scale_to_lyr(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
   if (!bbox_layer_path) return;
-  s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+  s = 0.95 / Math.max(
+    (bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w,
+    (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
   t = [0, 0];
   proj.scale(s).translate(t);
   map.selectAll('.layer').selectAll('path').attr('d', path);
@@ -1229,8 +1278,13 @@ function scale_to_lyr(name) {
 */
 function center_map(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
-  const zoom_scale = .95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-  const zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
+  const zoom_scale = .95 / Math.max(
+    (bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w,
+    (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+  const zoom_translate = [
+    (w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2,
+    (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2
+  ];
   const _zoom = svg_map.__zoom;
   _zoom.k = zoom_scale;
   _zoom.x = zoom_translate[0];
@@ -1275,7 +1329,7 @@ function add_layout_feature(selected_feature, options = {}) {
       }
     }
     if (!(new_id)) {
-      swal(i18next.t('app_page.common.error') + '!', i18next.t('app_page.common.error_max_text_annot'), 'error');
+      swal(`${i18next.t('app_page.common.error')}!`, i18next.t('app_page.common.error_max_text_annot'), 'error');
       return;
     }
     handleClickTextBox(new_id);
@@ -1384,7 +1438,7 @@ function add_layout_feature(selected_feature, options = {}) {
   } else if (selected_feature === 'symbol') {
     handleClickAddPicto();
   } else {
-    swal(i18next.t('app_page.common.error') + '!', i18next.t('app_page.common.error'), 'error');
+    swal(`${i18next.t('app_page.common.error')}!`, i18next.t('app_page.common.error'), 'error');
   }
 }
 
@@ -1531,10 +1585,10 @@ function add_sample_layer() {
     ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
   ]);
   const suggested_projection = new Map([
-    ['GrandParisMunicipalities', ['proj4', '+proj=lcc +lat_1=48.25 +lat_2=49.75 +lat_0=49 +lon_0=3 +x_0=1700000 +y_0=8200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']],
-    ['martinique', ['proj4', '+proj=utm +zone=20 +ellps=intl +towgs84=186,482,151,0,0,0,0 +units=m +no_defs']],
-    ['nuts2-2013-data', ['proj4', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']],
-    ['brazil', ['proj4', '+proj=longlat +ellps=aust_SA +towgs84=-67.35,3.88,-38.22,0,0,0,0 +no_defs']],
+    ['GrandParisMunicipalities', ['proj4', 'epsg:2154']],
+    ['martinique', ['proj4', 'EPSG:2973']],
+    ['nuts2-2013-data', ['proj4', 'EPSG:3035']],
+    ['brazil', ['proj4', 'EPSG:5527']],
     ['world_countries_data', ['d3', 'NaturalEarth2']],
   ]);
   const target_layers = [
@@ -1589,7 +1643,7 @@ function add_sample_layer() {
         selec_url = [
           _app.list_extrabasemaps[id_elem][0],
           _app.list_extrabasemaps[id_elem][1],
-          id_elem
+          id_elem,
         ];
       });
     for (let i = 0, len_i = _app.list_extrabasemaps.length; i < len_i; i++) {

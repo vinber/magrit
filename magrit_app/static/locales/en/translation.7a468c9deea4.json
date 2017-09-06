@@ -97,7 +97,8 @@
             "resume_last": "Resume last project",
             "class": "{{count}} class",
             "download_link": "Download link",
-            "missing_epsg": "No match found for this EPSG code"
+            "missing_epsg": "No match found for this EPSG code",
+            "drop_msg": "Drop your file(s) in the window ..."
         },
         "table": {
             "search": "Search...",

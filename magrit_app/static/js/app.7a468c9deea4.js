@@ -108,6 +108,7 @@ function setUpInterface(reload_project) {
   inner_div.style.borderRadius = '1%';
   inner_div.className = 'overlay_drop';
   var inner_p = document.createElement('p');
+  inner_p.className = 'i18n';
   inner_p.style.position = 'fixed';
   inner_p.style.top = '50%';
   inner_p.style.left = '50%';
@@ -119,7 +120,8 @@ function setUpInterface(reload_project) {
   inner_p.style.textAlign = 'center';
   inner_p.style.color = 'white';
   inner_p.style.padding = '0.5em';
-  inner_p.innerHTML = 'Drop your file(s) in the window ...'; //FIXME
+  inner_p.setAttribute('data-i18n', '[html]app_page.common.drop_msg');
+  inner_p.innerHTML = i18next.t('app_page.common.drop_msg');
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
   document.body.appendChild(bg_drop);
@@ -953,9 +955,8 @@ function make_ico_choice() {
         if (this.classList.contains('active')) {
           switch_accordion_section('btn_s2b');
           return;
-        } else {
-          clean_menu_function();
         }
+        clean_menu_function();
       }
 
       document.getElementById('accordion2b').style.display = '';
@@ -1026,7 +1027,8 @@ var canvas_rotation_value = void 0;
 var map_div = d3.select('#map');
 var pos_lgds_elem = new Map();
 
-// The 'map' (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
+// The 'map':
+// (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 var map = map_div.styles({ width: w + 'px', height: h + 'px' }).append('svg').attrs({ id: 'svg_map', width: w, height: h }).style('background-color', 'rgba(255, 255, 255, 0)').style('position', 'absolute').on('contextmenu', function (event) {
   d3.event.preventDefault();
 }).call(zoom);
@@ -1123,7 +1125,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.814356bec1ec.json'
+      loadPath: 'static/locales/{{lng}}/translation.7a468c9deea4.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -10167,6 +10169,15 @@ function convert_dataset(file) {
   }
 }
 
+/**
+* Handle shapefile opened/dropped on the window by the user.
+*
+* @param {Array} files - An array of files, containing the mandatory files
+*                       for correctly reading shapefiles
+*                       (.shp, .shx, .dbf, .prj and optionnaly .cpg).
+* @param {Bool} target_layer_on_add - Whether we are trying to add the target layer or not.
+* @return {void}
+*/
 function handle_shapefile(files, target_layer_on_add) {
   var ajaxData = new FormData();
   ajaxData.append('action', 'submit_form');
@@ -10199,6 +10210,17 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
   });
 }
 
+/**
+* Function used to reload a TopoJSON layer from a project file.
+* The layer is send to the server (for eventual later usage) but
+* we are not waiting for its response to actually add the layer to the map.
+*
+* @param {String} text - The TopoJSON layer stringified in JSON.
+* @param {Object} param_add_func - The options Object to be passed to the
+*                               'add_layer_topojson' function.
+* @return {String} - The actual name of the layer, once added to the map.
+*
+*/
 function handle_reload_TopoJSON(text, param_add_func) {
   var ajaxData = new FormData();
   var f = new Blob([text], { type: 'application/json' });
@@ -10435,6 +10457,15 @@ function add_dataset(readed_dataset) {
   }
 }
 
+/**
+* Send a csv file containing x/x columns to the server to convert it
+* to a TopoJSON layer.
+*
+*
+* @param {String} file - The csv file to be converted.
+* @param {String} name - The original name of the csv file.
+* @return {void}
+*/
 function add_csv_geom(file, name) {
   var ajaxData = new FormData();
   ajaxData.append('filename', name);
@@ -10716,10 +10747,17 @@ function add_layer_topojson(text) {
     zoom_without_redraw();
   }
 
+  // An alert is triggered when the layer is successfully added, except if
+  // 'skip_alert' is false.
+  // That "success" alert guide the user through other message; one for typing it's
+  // data fields, on other (optionnal) for making the jointure between it's layer
+  // and it's tabular dataset and another one (optional too)
+  // to allow him to use the projection originally provided with the layer.
   if (!skip_alert) {
     if (fields_type) {
       current_layers[lyr_name_to_add].fields_type = fields_type;
     }
+    // No projection was provided was the layer :
     if (_proj === undefined) {
       swal({
         title: '',
@@ -10769,12 +10807,23 @@ function add_layer_topojson(text) {
     }
   }
 
+  // The 'default_projection' property is used for providing a custom projection
+  // with our sample layer (it use a separate path compared to the previous
+  // block of code, in order to not let the choice to the user)
   if (options.default_projection) {
     if (options.default_projection[0] === 'proj4') {
-      change_projection_4(proj4(options.default_projection[1]));
+      var proj_str = options.default_projection[1];
+      var custom_name = void 0;
+      if (proj_str.startsWith('EPSG:')) {
+        var code = +proj_str.split('EPSG:')[1];
+        var rv = _app.epsg_projections[code];
+        proj_str = rv.proj4;
+        custom_name = rv.name;
+      }
+      change_projection_4(proj4(proj_str));
       current_proj_name = 'def_proj4';
-      _app.last_projection = options.default_projection[1];
-      addLastProjectionSelect('def_proj4', _app.last_projection);
+      _app.last_projection = proj_str;
+      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
     } else if (options.default_projection[0] === 'd3') {
       current_proj_name = options.default_projection[1];
       change_projection(options.default_projection[1]);
@@ -11116,7 +11165,7 @@ function add_sample_layer() {
     prepare_extra_dataset_availables();
   }
   var fields_type_sample = new Map([['GrandParisMunicipalities', [{ "name": "DEP", "type": "category", "has_duplicate": true }, { "name": "IDCOM", "type": "id" }, { "name": "EPT", "type": "category", "has_duplicate": true }, { "name": "INC", "type": "stock" }, { "name": "LIBCOM", "type": "id" }, { "name": "LIBEPT", "type": "category", "has_duplicate": true }, { "name": "TH", "type": "stock" }, { "name": "UID", "type": "id" }, { "name": "IncPerTH", "type": "ratio" }]], ['martinique', [{ "name": "INSEE_COM", "type": "id" }, { "name": "NOM_COM", "type": "id", "not_number": true }, { "name": "STATUT", "type": "category", "has_duplicate": true }, { "name": "SUPERFICIE", "type": "stock" }, { "name": "P13_POP", "type": "stock" }, { "name": "P13_LOG", "type": "stock" }, { "name": "P13_LOGVAC", "type": "stock" }, { "name": "Part_Logements_Vacants", "type": "ratio" }]], ['nuts2-2013-data', [{ "name": "id", "type": "id", "not_number": true }, { "name": "name", "type": "id", "not_number": true }, { "name": "POP", "type": "stock" }, { "name": "GDP", "type": "stock" }, { "name": "UNEMP", "type": "ratio" }, { "name": "COUNTRY", "type": "category", "has_duplicate": true }]], ['brazil', [{ "name": "ADMIN_NAME", "type": "id", "not_number": true }, { "name": "Abbreviation", "type": "id", "not_number": true }, { "name": "Capital", "type": "id", "not_number": true }, { "name": "GDP_per_capita_2012", "type": "stock" }, { "name": "Life_expectancy_2014", "type": "ratio" }, { "name": "Pop2014", "type": "stock" }, { "name": "REGIONS", "type": "category", "has_duplicate": true }, { "name": "STATE2010", "type": "id" }, { "name": "popdensity2014", "type": "ratio" }]], ['world_countries_data', [{ "name": "ISO2", "type": "id", "not_number": true }, { "name": "ISO3", "type": "id", "not_number": true }, { "name": "ISONUM", "type": "id" }, { "name": "NAMEen", "type": "id", "not_number": true }, { "name": "NAMEfr", "type": "id", "not_number": true }, { "name": "UNRegion", "type": "category", "has_duplicate": true }, { "name": "GrowthRate", "type": "ratio" }, { "name": "PopDensity", "type": "ratio" }, { "name": "PopTotal", "type": "stock" }, { "name": "JamesBond", "type": "stock" }]]]);
-  var suggested_projection = new Map([['GrandParisMunicipalities', ['proj4', '+proj=lcc +lat_1=48.25 +lat_2=49.75 +lat_0=49 +lon_0=3 +x_0=1700000 +y_0=8200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']], ['martinique', ['proj4', '+proj=utm +zone=20 +ellps=intl +towgs84=186,482,151,0,0,0,0 +units=m +no_defs']], ['nuts2-2013-data', ['proj4', '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs']], ['brazil', ['proj4', '+proj=longlat +ellps=aust_SA +towgs84=-67.35,3.88,-38.22,0,0,0,0 +no_defs']], ['world_countries_data', ['d3', 'NaturalEarth2']]]);
+  var suggested_projection = new Map([['GrandParisMunicipalities', ['proj4', 'epsg:2154']], ['martinique', ['proj4', 'EPSG:2973']], ['nuts2-2013-data', ['proj4', 'EPSG:3035']], ['brazil', ['proj4', 'EPSG:5527']], ['world_countries_data', ['d3', 'NaturalEarth2']]]);
   var target_layers = [[i18next.t('app_page.sample_layer_box.target_layer'), ''], [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'], [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'], [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'], [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'], [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data']];
   var dialog_res = [];
   var selec = void 0,

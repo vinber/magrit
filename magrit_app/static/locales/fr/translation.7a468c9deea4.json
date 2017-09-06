@@ -98,7 +98,8 @@
             "class": "{{count}} classe",
             "class_plural": "{{count}} classes",
             "download_link": "Lien de téléchargement",
-            "missing_epsg": "Pas de correspondance trouvée pour ce code EPSG"
+            "missing_epsg": "Pas de correspondance trouvée pour ce code EPSG",
+            "drop_msg": "Déposez vos fichiers dans la fenêtre..."
         },
         "table": {
             "search": "Recherche...",

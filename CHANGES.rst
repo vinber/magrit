@@ -8,6 +8,8 @@ Changes
 
 - Fix the tooltip displaying proj.4 string.
 
+- Allow to select projection from EPSG code and display it's name in the menu.
+
 
 0.5.0 (2017-08-24)
 ------------------

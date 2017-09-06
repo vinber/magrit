@@ -119,6 +119,7 @@ function setUpInterface(reload_project) {
   inner_div.style.borderRadius = '1%';
   inner_div.className = 'overlay_drop';
   const inner_p = document.createElement('p');
+  inner_p.className = 'i18n';
   inner_p.style.position = 'fixed';
   inner_p.style.top = '50%';
   inner_p.style.left = '50%';
@@ -130,7 +131,8 @@ function setUpInterface(reload_project) {
   inner_p.style.textAlign = 'center';
   inner_p.style.color = 'white';
   inner_p.style.padding = '0.5em';
-  inner_p.innerHTML = 'Drop your file(s) in the window ...'; //FIXME
+  inner_p.setAttribute('data-i18n', '[html]app_page.common.drop_msg');
+  inner_p.innerHTML = i18next.t('app_page.common.drop_msg');
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
   document.body.appendChild(bg_drop);
@@ -1102,12 +1104,12 @@ function setUpInterface(reload_project) {
 
 function encodeId(s) {
   if (s === '') return 'L_';
-  return 'L_' + s.replace(/[^a-zA-Z0-9_-]/g, match => '_' + match[0].charCodeAt(0).toString(16) + '_');
+  return `L_${s.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`;
 }
 
 function bindTooltips(dataAttr = 'tooltip-title') {
     // bind the mains tooltips
-  const tooltips_elem = document.querySelectorAll('[' + dataAttr + ']');
+  const tooltips_elem = document.querySelectorAll(`[${dataAttr}]`);
   for (let i = tooltips_elem.length - 1; i > -1; i--) {
     new Tooltip(tooltips_elem[i], {
       dataAttr: dataAttr,
@@ -1194,9 +1196,8 @@ function make_ico_choice() {
           if (this.classList.contains('active')) {
             switch_accordion_section('btn_s2b');
             return;
-          } else {
-            clean_menu_function();
           }
+          clean_menu_function();
         }
 
         document.getElementById('accordion2b').style.display = '';
@@ -1269,7 +1270,8 @@ let canvas_rotation_value;
 let map_div = d3.select('#map');
 const pos_lgds_elem = new Map();
 
-// The 'map' (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
+// The 'map':
+// (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
 const map = map_div.styles({ width: `${w}px`, height: `${h}px` })
   .append('svg')
   .attrs({ id: 'svg_map', width: w, height: h })
@@ -2717,7 +2719,7 @@ function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
     } catch (err) {
       document.getElementById('overlay').style.display = 'none';
       targetCanvas.remove();
-      display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
+      display_error_during_computation(`${i18next.t('app_page.common.error_too_high_resolution')} ${String(err)}`);
       return;
     }
   }
