@@ -1585,7 +1585,7 @@ function add_sample_layer() {
     ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
   ]);
   const suggested_projection = new Map([
-    ['GrandParisMunicipalities', ['proj4', 'epsg:2154']],
+    ['GrandParisMunicipalities', ['proj4', 'EPSG:2154']],
     ['martinique', ['proj4', 'EPSG:2973']],
     ['nuts2-2013-data', ['proj4', 'EPSG:3035']],
     ['brazil', ['proj4', 'EPSG:5527']],

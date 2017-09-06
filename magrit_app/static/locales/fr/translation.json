@@ -531,7 +531,9 @@
         },
         "categorical_box": {
             "title": "Choix des couleurs - {{ layer }} - {{ nb_features }} entités",
-            "new_random_colors": "Nouvelles couleurs aléatoires"
+            "new_random_colors": "Nouvelles couleurs aléatoires",
+            "copy_style": "Utiliser le style d'une couche existante ?",
+            "title_copy_style_box": "Nom de la couche"
         },
         "layer_style_popup": {
             "layer_name": "Nom de la couche",

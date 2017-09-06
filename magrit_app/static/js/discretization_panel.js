@@ -894,6 +894,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       margin: '5px',
       float: 'right',
       cursor: 'pointer',
+      'font-style': 'italic',
     })
     .html(i18next.t('app_page.palette_box.button'))
     .on('click', () => {
@@ -1070,6 +1071,8 @@ function fetch_categorical_colors() {
 function display_categorical_box(data_layer, layer_name, field, cats) {
   const nb_features = current_layers[layer_name].n_features;
   const nb_class = cats.length;
+  const existing_typo_layer = Object.keys(current_layers)
+    .filter(lyr => current_layers[lyr].renderer === 'Categorical' || current_layers[lyr].renderer === 'PropSymbolsTypo');
   const modal_box = make_dialog_container(
     'categorical_box',
     i18next.t('app_page.categorical_box.title', { layer: layer_name, nb_features: nb_features }),
@@ -1135,6 +1138,44 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
         lines[i].querySelector('.color_square').style.backgroundColor = randomColor();
       }
     });
+
+  // Allow the user to reuse the colors from an existing 'Categorical'
+  // (or 'PropSymbolsTypo') layer if any:
+  if (existing_typo_layer.length > 0) {
+    newbox.insert('p')
+      .attr('class', 'button_copy_style')
+      .styles({
+        margin: '5px',
+        cursor: 'pointer',
+        'font-style': 'italic',
+      })
+      .html(i18next.t('app_page.categorical_box.copy_style'))
+      .on('click', () => {
+        make_box_copy_style_categorical(existing_typo_layer)
+          .then((result) => {
+            if (result) { // Apply the selected style:
+              const ref_map = current_layers[result].color_map;
+              const selection = newbox.select('#sortable_typo_name').selectAll('li');
+              // Change the displayed name of the elements:
+              selection.selectAll('input').each(function (d) {
+                const r = ref_map.get(d.name);
+                if (r) {
+                  d.display_name = r[1];
+                  this.value = r[1];
+                }
+              });
+              // Change the selected colors:
+              selection.selectAll('p').each(function (d) {
+                const r = ref_map.get(d.name);
+                if (r) {
+                  d.color = r[0];
+                  this.style.backgroundColor = r[0];
+                }
+              });
+            }
+          });
+      });
+  }
 
   new Sortable(document.getElementById('sortable_typo_name'));
 
@@ -1453,6 +1494,41 @@ function make_box_custom_palette(nb_class, existing_colors) {
     },
   }).then(
     v => [ref_colors, pal_name],
+    dismissValue => null,
+  );
+}
+
+/**
+* Create the box allowing to choose the name of the categorical
+* layer whose palette will be used.
+*
+* @param {Array} existing_typo_layer - An array containing the name of any existing
+*                                     'Categorial' or 'PropSymbolsTypo' layer.
+* @return {Promise} - A promise containing the state of the swal2 alert created.
+*/
+function make_box_copy_style_categorical(existing_typo_layer) {
+  let selected_layer = existing_typo_layer[0];
+  return swal({
+    title: i18next.t('app_page.categorical_box.title_copy_style_box'),
+    html: '<div id="copy_style_box_content" style="margin: 35px;"></div>',
+    showCancelButton: true,
+    showConfirmButton: true,
+    cancelButtonText: i18next.t('app_page.common.close'),
+    animation: 'slide-from-top',
+    onOpen: () => {
+      document.querySelector('.swal2-modal').style.width = '400px';
+      const content = d3.select('#copy_style_box_content');
+      const select_layer = content.append('select');
+      // select_layer.append('option').attr('value', '').html('');
+      existing_typo_layer.forEach((layer_name) => {
+        select_layer.append('option').attr('value', layer_name).html(layer_name);
+      });
+      select_layer.on('change', function () {
+        selected_layer = this.value;
+      });
+    },
+  }).then(
+    v => selected_layer,
     dismissValue => null,
   );
 }

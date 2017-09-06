@@ -10,6 +10,8 @@ Changes
 
 - Allow to select projection from EPSG code and display it's name in the menu.
 
+- Allow to reuse the colors and labels from an existing categorical layer.
+
 
 0.5.0 (2017-08-24)
 ------------------

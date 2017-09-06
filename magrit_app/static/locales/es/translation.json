@@ -526,7 +526,9 @@
         },
         "categorical_box": {
             "title": "Seleccionar los colores - {{ layer }} - {{ nb_features }} entidades",
-            "new_random_colors": "Colores aleatorios"
+            "new_random_colors": "Colores aleatorios",
+            "copy_style": "¿Utilizar el estilo de una capa existente?",
+            "title_copy_style_box": "Nombre de la capa"
         },
         "layer_style_popup": {
             "layer_name": "Nombre de la capa",

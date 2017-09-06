@@ -531,7 +531,9 @@
         },
         "categorical_box": {
             "title": "Color a categorical field - {{ layer }} - {{ nb_features }} features",
-            "new_random_colors": "New randoms colors"
+            "new_random_colors": "New randoms colors",
+            "copy_style": "Use the style of an existing layer?",
+            "title_copy_style_box": "Layer name"
         },
         "layer_style_popup": {
             "layer_name": "Layer name",
