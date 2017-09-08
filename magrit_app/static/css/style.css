@@ -396,7 +396,7 @@ p.params_section2 > span {
 }
 
 #table_intro{
-    margin: auto;
+    margin: 0 !important;
     text-align: center;
 }
 

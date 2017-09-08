@@ -23,10 +23,10 @@ function get_fun_operator(operator) {
 *
 * @param {Array} table - A reference to the "table" to work on
 * @param {String} layer - The name of the layer
-* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
+* @param {Bool} reOpenTableBox - Reopen the box table ?
 *
 */
-function add_field_table(table, layer_name, parent) {
+function add_field_table(table, layer_name, reOpenTableBox) {
   function check_name() {
     if (regexp_name.test(this.value) || this.value === '') {
       chooses_handler.new_name = this.value;
@@ -168,7 +168,7 @@ function add_field_table(table, layer_name, parent) {
       }
       val_opt.style('display', null);
       txt_op.html(i18next.t('app_page.explore_box.add_field_box.join_char'));
-      chooses_handler.operator = string_operation[0];
+      chooses_handler.operator = string_operation[0][1];
     }
     chooses_handler.field1 = field1.node().value;
     chooses_handler.field2 = field2.node().value;
@@ -208,7 +208,7 @@ function add_field_table(table, layer_name, parent) {
   make_confirm_dialog2('addFieldBox', i18next.t('app_page.explore_box.button_add_field'),
                   { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined })
     .then((valid) => {
-      reOpenParent('#browse_data_box');
+      // reOpenParent('#browse_data_box');
       if (valid) {
         document.querySelector('body').style.cursor = 'wait';
         compute_and_add(chooses_handler).then(
@@ -221,9 +221,10 @@ function add_field_table(table, layer_name, parent) {
                 fields_handler.fill(layer_name);
               }
             }
-            if (parent) {
-              parent.modal_box.show();
-              parent.display_table(layer_name);
+            if (reOpenTableBox) {
+              boxExplore2.create(layer_name);
+              // parent.modal_box.show();
+              // parent.display_table(layer_name);
             }
           }, (error) => {
           if (error !== 'Invalid name') { display_error_during_computation(); }
@@ -343,13 +344,15 @@ function make_table(layer_name) {
 const boxExplore2 = {
   clean() {
     this.box_table.remove();
+    this.footer.remove();
     this.datatable.destroy();
     this.datatable = null;
+    this.footer = null;
     this.box_table = null;
     this.nb_features = null;
     this.columns_names = null;
     this.columns_headers = null;
-    this.top_buttons = null;
+    // this.top_buttons = null;
     this.tables = null;
     this.modal_box = null;
   },
@@ -365,20 +368,22 @@ const boxExplore2 = {
     for (let i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
       this.columns_headers.push({ data: col[i], title: col[i] });
     }
-    if (this.top_buttons.select('#add_field_button').node()) {
-      this.top_buttons.select('#add_field_button').remove();
-      document.getElementById('table_intro').remove();
-      document.querySelector('.dataTable-wrapper').remove();
-    }
+    // if (this.top_buttons.select('#add_field_button').node()) {
+    //   this.top_buttons.select('#add_field_button').remove();
+    //   document.getElementById('table_intro').remove();
+    //   document.querySelector('.dataTable-wrapper').remove();
+    // }
 
     if (this.tables.get(table_name) && (table_name !== dataset_name
           || (table_name === dataset_name && field_join_map.length === 0))) {
-      this.top_buttons
+      this.footer
         .insert('button')
-        .attrs({ id: 'add_field_button', class: 'button_st3' })
+        .attrs({ id: 'add_field_button', class: 'button_st4' })
+        .styles({ position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em' })
         .html(i18next.t('app_page.explore_box.button_add_field'))
         .on('click', () => {
           this.modal_box.hide();
+          document.getElementById('browse_data_box').querySelector('#xclose').click();
           add_field_table(the_table, table_name, this);
         });
     }
@@ -389,7 +394,6 @@ const boxExplore2 = {
     ].join('');
     this.box_table.append('p')
       .attr('id', 'table_intro')
-      .style('margin', '10px 0 !important')
       .html(txt_intro);
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
     const list_per_page_select = [5, 10, 15, 20, 25];
@@ -400,6 +404,7 @@ const boxExplore2 = {
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
+      perPage: list_per_page_select[list_per_page_select.length - 1],
       perPageSelect: list_per_page_select,
       labels: {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
@@ -410,31 +415,29 @@ const boxExplore2 = {
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+    const box = document.getElementById('browse_data_box');
+    const modal_body = box.querySelector('.modal-body');
+    modal_body.style.padding = '12.5px 15px 15px 15px';
+    modal_body.style.height = `${window.innerHeight - 150}px`;
+    modal_body.style.overflow = 'auto';
+    box.style.height = null;
+
     setTimeout(() => {
-      const box = document.getElementById('browse_data_box');
       // box.querySelector(".dataTable-pagination").style.width = "80%";
       const bbox = box.querySelector('#myTable').getBoundingClientRect(),
-        new_width = bbox.width,
         new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
-
+      let new_width = bbox.width;
       if (new_width > window.innerWidth * 0.85) {
+        new_width = window.innerWidth * 0.9;
         box.querySelector('.modal-content').style.overflow = 'auto';
-        box.querySelector('.modal-dialog').style.width = `${window.innerWidth * 0.9}px`;
-      } else if (new_width > 560) {
-        box.querySelector('.modal-dialog').style.width = `${new_width + 80}px`;
+        box.querySelector('.modal-dialog').style.width = `${new_width}px`;
+      } else { // if (new_width > 560) {
+        new_width += 80;
+        box.querySelector('.modal-dialog').style.width = `${new_width}px`;
       }
-      box.style.left = new_width > window.innerWidth * 0.85 ? '5px' : `${+box.style.left.replace('px', '') / 2}px`;
-      // if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-
-      const modal_body = box.querySelector('.modal-body');
-      modal_body.style.padding = '12.5px 15px 15px 15px';
-      if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-        modal_body.style.height = `${Math.min(new_height + 115, window.innerHeight - 125)}px`;
-      }
-      modal_body.style.overflow = 'auto';
-      // }
-    }, 250);
-    setSelected(document.querySelector('.dataTable-selector'), '10');
+      box.style.left = `${(window.innerWidth - new_width) / 2}px`;
+    }, 200);
+    // setSelected(document.querySelector('.dataTable-selector'), list_per_page_select[list_per_page_select.length - 1]);
   },
 
   get_available_tables() {
@@ -464,8 +467,9 @@ const boxExplore2 = {
     this.modal_box = make_dialog_container('browse_data_box', i18next.t('app_page.explore_box.title'), 'discretiz_charts_dialog');
     const container = document.getElementById('browse_data_box');
     this.box_table = d3.select(container).select('.modal-body');
-    this.top_buttons = this.box_table.append('p')
-      .styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
+    this.footer = d3.select(container).select('.modal-footer');
+    // this.top_buttons = this.box_table.append('p')
+    //   .styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
 
     const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
     let _onclose = () => {

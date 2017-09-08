@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.5.1 (2017-09-xx)
+0.5.1 (2017-09-08)
 ------------------
 
 - Improve how rectangles are drawn and edited.
@@ -11,6 +11,8 @@ Changes
 - Allow to select projection from EPSG code and display it's name in the menu.
 
 - Allow to reuse the colors and labels from an existing categorical layer.
+
+- Change the layout of the box displaying the table.
 
 
 0.5.0 (2017-08-24)

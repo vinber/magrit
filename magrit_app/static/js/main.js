@@ -160,15 +160,21 @@ function setUpInterface(reload_project) {
         return;
       } else if (val === 'last_projection') {
         val = tmp.name;
+        if (tmp.projValue) {
+          _app.last_projection = tmp.projValue;
+        }
       } else if (val === 'ConicConformalFrance') {
         val = 'def_proj4';
-        _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+        _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
+      } else if (val === 'AzimuthalEqualAreaEurope') {
+        val = 'def_proj4';
+        _app.last_projection = '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
       }
 
       if (val === 'def_proj4') {
         current_proj_name = val;
         change_projection_4(proj4(_app.last_projection));
-        makeTooltipProj4(document.getElementById('form_projection2'), _app.last_projection);
+        makeTooltipProj4(this, _app.last_projection);
       } else {
         current_proj_name = val;
         change_projection(current_proj_name);

@@ -143,15 +143,21 @@ function setUpInterface(reload_project) {
       return;
     } else if (val === 'last_projection') {
       val = tmp.name;
+      if (tmp.projValue) {
+        _app.last_projection = tmp.projValue;
+      }
     } else if (val === 'ConicConformalFrance') {
       val = 'def_proj4';
-      _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs';
+      _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
+    } else if (val === 'AzimuthalEqualAreaEurope') {
+      val = 'def_proj4';
+      _app.last_projection = '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
     }
 
     if (val === 'def_proj4') {
       current_proj_name = val;
       change_projection_4(proj4(_app.last_projection));
-      makeTooltipProj4(document.getElementById('form_projection2'), _app.last_projection);
+      makeTooltipProj4(this, _app.last_projection);
     } else {
       current_proj_name = val;
       change_projection(current_proj_name);
@@ -1129,7 +1135,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.98459d844402.json'
+      loadPath: 'static/locales/{{lng}}/translation.f844169ffade.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -3722,6 +3728,7 @@ function fetch_categorical_colors() {
 }
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
+  var is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
   var nb_features = current_layers[layer_name].n_features;
   var nb_class = cats.length;
   var existing_typo_layer = Object.keys(current_layers).filter(function (lyr) {
@@ -3758,20 +3765,31 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
     input_col.className = 'color_input';
     input_col.onchange = function (change) {
       self.style.backgroundColor = hexToRgb(change.target.value, 'string');
+      self.nextSibling.value = change.target.value;
     };
     input_col.dispatchEvent(new MouseEvent('click'));
+  });
+
+  newbox.selectAll('.typo_class').append('input').attr('class', 'color_hex').styles({ height: '22px', 'vertical-align': 'middle' }).property('value', function (d) {
+    return d.color;
+  }).style('width', '60px').on('keyup', function () {
+    if (is_hex_color.test(this.value)) {
+      this.previousSibling.style.backgroundColor = this.value;
+    }
   });
 
   newbox.selectAll('.typo_class').insert('span').attrs(function (d) {
     return { class: 'typo_count_ft', 'data-count': d.nb_elem };
   }).html(function (d) {
-    return i18next.t('app_page.symbol_typo_box.count_feature', { nb_features: +d.nb_elem });
+    return i18next.t('app_page.symbol_typo_box.count_feature', { count: +d.nb_elem });
   });
 
   newbox.insert('p').insert('button').attr('class', 'button_st3').html(i18next.t('app_page.categorical_box.new_random_colors')).on('click', function () {
     var lines = document.getElementsByClassName('typo_class');
     for (var i = 0; i < lines.length; ++i) {
-      lines[i].querySelector('.color_square').style.backgroundColor = randomColor();
+      var random_color = randomColor();
+      lines[i].querySelector('.color_square').style.backgroundColor = random_color;
+      lines[i].querySelector('.color_hex').value = random_color;
     }
   });
 
@@ -3790,7 +3808,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
             var ref_map = current_layers[result].color_map;
             var selection = newbox.select('#sortable_typo_name').selectAll('li');
             // Change the displayed name of the elements:
-            selection.selectAll('input').each(function (d) {
+            selection.selectAll('input.typo_name').each(function (d) {
               var r = ref_map.get(d.name);
               if (r) {
                 d.display_name = r[1];
@@ -3803,6 +3821,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
               if (r) {
                 d.color = r[0];
                 this.style.backgroundColor = r[0];
+                this.nextSibling.value = r[0];
               }
             });
           })();
@@ -17901,8 +17920,16 @@ function apply_user_preferences(json_pref) {
   if (map_config.custom_projection) {
     proj = getD3ProjFromProj4(proj4(map_config.custom_projection));
     _app.last_projection = map_config.custom_projection;
+    var custom_name = Object.keys(_app.epsg_projections).map(function (d) {
+      return [d, _app.epsg_projections[d]];
+    }).filter(function (ft) {
+      return ft[1].proj4 === _app.last_projection;
+    });
+    custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
+    addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
   } else {
     proj = d3[available_projections.get(current_proj_name).name]();
+    addLastProjectionSelect(current_proj_name);
   }
   if (map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
   if (map_config.projection_parallel) proj = proj.parallel(map_config.projection_parallel);
@@ -17913,9 +17940,8 @@ function apply_user_preferences(json_pref) {
   defs = map.append('defs');
   path = d3.geoPath().projection(proj).pointRadius(4);
   map.selectAll('.layer').selectAll('path').attr('d', path);
-  addLastProjectionSelect(current_proj_name);
+
   // Set the background color of the map :
-  console.log(map_config.background_color);
   map.style('background-color', map_config.background_color);
   document.querySelector('input#bg_color').value = rgb2hex(map_config.background_color);
 
@@ -18654,7 +18680,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('span').style('float', 'left').html(i18next.t('app_page.proj4_box.enter_string'));
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
-    placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs'
+    placeholder: 'EPSG:3035'
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -18735,7 +18761,8 @@ var createBoxProj4 = function createBoxProj4() {
 
 var displayTooltipProj4 = function displayTooltipProj4(ev) {
   var target = ev.target;
-  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+  if (!(target && target.tagName === 'SELECT')) {
+    // && target.value === 'last_projection')) {
     return;
   }
   var title = target.tooltip;
@@ -18754,7 +18781,8 @@ var displayTooltipProj4 = function displayTooltipProj4(ev) {
 
 var removeTooltipProj4 = function removeTooltipProj4(ev) {
   var target = ev.target;
-  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+  if (!(target && target.tagName === 'SELECT')) {
+    // && target.value === 'last_projection')) {
     return;
   }
   var a = document.querySelector('div.custom_tooltip');
@@ -18771,28 +18799,31 @@ function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   var proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
+  } else if (custom_name === 'RGF93 / Lambert-93') {
+    proj_select.value = 'ConicConformalFrance';
+  } else if (custom_name === 'ETRS89 / LAEA Europe') {
+    proj_select.value = 'AzimuthalEqualAreaEurope';
   } else if (proj_select.options.length === 10) {
     var prev_elem = proj_select.querySelector("[value='more']"),
         new_option = document.createElement('option');
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
     new_option.name = proj_name;
+    new_option.projValue = proj4string;
     new_option.innerHTML = custom_name || i18next.t('app_page.projection_name.' + proj_name);
     if (!custom_name) new_option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
-    if (proj4string) {
-      makeTooltipProj4(proj_select, proj4string);
-    }
   } else {
     var option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
+    option.projValue = proj4string;
     option.innerHTML = custom_name || i18next.t('app_page.projection_name.' + proj_name);
-    if (!custom_name) option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);
+    if (!custom_name) option.setAttribute('data-i18n', '[text]app_page.projection_name.' + proj_name);else option.removeAttribute('data-i18n');
     proj_select.value = 'last_projection';
-    if (proj4string) {
-      makeTooltipProj4(proj_select, proj4string);
-    }
+  }
+  if (proj4string) {
+    makeTooltipProj4(proj_select, proj4string);
   }
 }
 
@@ -19225,10 +19256,10 @@ function get_fun_operator(operator) {
 *
 * @param {Array} table - A reference to the "table" to work on
 * @param {String} layer - The name of the layer
-* @param {Object} parent - A reference to the parent box in order to redisplay the table according to the changes
+* @param {Bool} reOpenTableBox - Reopen the box table ?
 *
 */
-function add_field_table(table, layer_name, parent) {
+function add_field_table(table, layer_name, reOpenTableBox) {
   function check_name() {
     if (regexp_name.test(this.value) || this.value === '') {
       chooses_handler.new_name = this.value;
@@ -19369,7 +19400,7 @@ function add_field_table(table, layer_name, parent) {
       }
       val_opt.style('display', null);
       txt_op.html(i18next.t('app_page.explore_box.add_field_box.join_char'));
-      chooses_handler.operator = string_operation[0];
+      chooses_handler.operator = string_operation[0][1];
     }
     chooses_handler.field1 = field1.node().value;
     chooses_handler.field2 = field2.node().value;
@@ -19404,7 +19435,7 @@ function add_field_table(table, layer_name, parent) {
   };
 
   make_confirm_dialog2('addFieldBox', i18next.t('app_page.explore_box.button_add_field'), { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined }).then(function (valid) {
-    reOpenParent('#browse_data_box');
+    // reOpenParent('#browse_data_box');
     if (valid) {
       document.querySelector('body').style.cursor = 'wait';
       compute_and_add(chooses_handler).then(function (resolved) {
@@ -19415,9 +19446,10 @@ function add_field_table(table, layer_name, parent) {
             fields_handler.fill(layer_name);
           }
         }
-        if (parent) {
-          parent.modal_box.show();
-          parent.display_table(layer_name);
+        if (reOpenTableBox) {
+          boxExplore2.create(layer_name);
+          // parent.modal_box.show();
+          // parent.display_table(layer_name);
         }
       }, function (error) {
         if (error !== 'Invalid name') {
@@ -19533,13 +19565,15 @@ function make_table(layer_name) {
 var boxExplore2 = {
   clean: function clean() {
     this.box_table.remove();
+    this.footer.remove();
     this.datatable.destroy();
     this.datatable = null;
+    this.footer = null;
     this.box_table = null;
     this.nb_features = null;
     this.columns_names = null;
     this.columns_headers = null;
-    this.top_buttons = null;
+    // this.top_buttons = null;
     this.tables = null;
     this.modal_box = null;
   },
@@ -19556,20 +19590,21 @@ var boxExplore2 = {
     for (var i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
       this.columns_headers.push({ data: col[i], title: col[i] });
     }
-    if (this.top_buttons.select('#add_field_button').node()) {
-      this.top_buttons.select('#add_field_button').remove();
-      document.getElementById('table_intro').remove();
-      document.querySelector('.dataTable-wrapper').remove();
-    }
+    // if (this.top_buttons.select('#add_field_button').node()) {
+    //   this.top_buttons.select('#add_field_button').remove();
+    //   document.getElementById('table_intro').remove();
+    //   document.querySelector('.dataTable-wrapper').remove();
+    // }
 
     if (this.tables.get(table_name) && (table_name !== dataset_name || table_name === dataset_name && field_join_map.length === 0)) {
-      this.top_buttons.insert('button').attrs({ id: 'add_field_button', class: 'button_st3' }).html(i18next.t('app_page.explore_box.button_add_field')).on('click', function () {
+      this.footer.insert('button').attrs({ id: 'add_field_button', class: 'button_st4' }).styles({ position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em' }).html(i18next.t('app_page.explore_box.button_add_field')).on('click', function () {
         _this.modal_box.hide();
+        document.getElementById('browse_data_box').querySelector('#xclose').click();
         add_field_table(the_table, table_name, _this);
       });
     }
     var txt_intro = ['<b>', table_name, '</b><br>', this.nb_features, ' ', i18next.t('app_page.common.feature', { count: this.nb_features }), ' - ', this.columns_names.length, ' ', i18next.t('app_page.common.field', { count: this.columns_names.length })].join('');
-    this.box_table.append('p').attr('id', 'table_intro').style('margin', '10px 0 !important').html(txt_intro);
+    this.box_table.append('p').attr('id', 'table_intro').html(txt_intro);
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
     var list_per_page_select = [5, 10, 15, 20, 25];
     if (this.nb_features > 25) {
@@ -19579,6 +19614,7 @@ var boxExplore2 = {
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
+      perPage: list_per_page_select[list_per_page_select.length - 1],
       perPageSelect: list_per_page_select,
       labels: {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
@@ -19588,31 +19624,30 @@ var boxExplore2 = {
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
+    var box = document.getElementById('browse_data_box');
+    var modal_body = box.querySelector('.modal-body');
+    modal_body.style.padding = '12.5px 15px 15px 15px';
+    modal_body.style.height = window.innerHeight - 150 + 'px';
+    modal_body.style.overflow = 'auto';
+    box.style.height = null;
+
     setTimeout(function () {
-      var box = document.getElementById('browse_data_box');
       // box.querySelector(".dataTable-pagination").style.width = "80%";
       var bbox = box.querySelector('#myTable').getBoundingClientRect(),
-          new_width = bbox.width,
           new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
-
+      var new_width = bbox.width;
       if (new_width > window.innerWidth * 0.85) {
+        new_width = window.innerWidth * 0.9;
         box.querySelector('.modal-content').style.overflow = 'auto';
-        box.querySelector('.modal-dialog').style.width = window.innerWidth * 0.9 + 'px';
-      } else if (new_width > 560) {
-        box.querySelector('.modal-dialog').style.width = new_width + 80 + 'px';
+        box.querySelector('.modal-dialog').style.width = new_width + 'px';
+      } else {
+        // if (new_width > 560) {
+        new_width += 80;
+        box.querySelector('.modal-dialog').style.width = new_width + 'px';
       }
-      box.style.left = new_width > window.innerWidth * 0.85 ? '5px' : +box.style.left.replace('px', '') / 2 + 'px';
-      // if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-
-      var modal_body = box.querySelector('.modal-body');
-      modal_body.style.padding = '12.5px 15px 15px 15px';
-      if (new_height > 350 || new_height > window.innerHeight * 0.80) {
-        modal_body.style.height = Math.min(new_height + 115, window.innerHeight - 125) + 'px';
-      }
-      modal_body.style.overflow = 'auto';
-      // }
-    }, 250);
-    setSelected(document.querySelector('.dataTable-selector'), '10');
+      box.style.left = (window.innerWidth - new_width) / 2 + 'px';
+    }, 200);
+    // setSelected(document.querySelector('.dataTable-selector'), list_per_page_select[list_per_page_select.length - 1]);
   },
   get_available_tables: function get_available_tables() {
     var target_layer = Object.getOwnPropertyNames(user_data),
@@ -19642,7 +19677,9 @@ var boxExplore2 = {
     this.modal_box = make_dialog_container('browse_data_box', i18next.t('app_page.explore_box.title'), 'discretiz_charts_dialog');
     var container = document.getElementById('browse_data_box');
     this.box_table = d3.select(container).select('.modal-body');
-    this.top_buttons = this.box_table.append('p').styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
+    this.footer = d3.select(container).select('.modal-footer');
+    // this.top_buttons = this.box_table.append('p')
+    //   .styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
 
     var fn_cb = function fn_cb(evt) {
       helper_esc_key_twbs_cb(evt, _onclose);

@@ -1069,6 +1069,7 @@ function fetch_categorical_colors() {
 }
 
 function display_categorical_box(data_layer, layer_name, field, cats) {
+  const is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
   const nb_features = current_layers[layer_name].n_features;
   const nb_class = cats.length;
   const existing_typo_layer = Object.keys(current_layers)
@@ -1102,7 +1103,8 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
     .attrs(d => ({ class: 'typo_name', value: d.display_name, id: d.name }));
 
   newbox.selectAll('.typo_class')
-    .insert('p').attr('class', 'color_square')
+    .insert('p')
+    .attr('class', 'color_square')
     .style('background-color', d => d.color)
     .styles({ width: '22px',
       height: '22px',
@@ -1119,14 +1121,27 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
       input_col.className = 'color_input';
       input_col.onchange = function (change) {
         self.style.backgroundColor = hexToRgb(change.target.value, 'string');
+        self.nextSibling.value = change.target.value;
       };
       input_col.dispatchEvent(new MouseEvent('click'));
     });
 
+    newbox.selectAll('.typo_class')
+      .append('input')
+      .attr('class', 'color_hex')
+      .styles({ height: '22px', 'vertical-align': 'middle' })
+      .property('value', d => d.color)
+      .style('width', '60px')
+      .on('keyup', function () {
+        if (is_hex_color.test(this.value)) {
+          this.previousSibling.style.backgroundColor = this.value;
+        }
+      });
+
   newbox.selectAll('.typo_class')
     .insert('span')
     .attrs(d => ({ class: 'typo_count_ft', 'data-count': d.nb_elem }))
-    .html(d => i18next.t('app_page.symbol_typo_box.count_feature', { nb_features: +d.nb_elem }));
+    .html(d => i18next.t('app_page.symbol_typo_box.count_feature', { count: +d.nb_elem }));
 
   newbox.insert('p')
     .insert('button')
@@ -1135,7 +1150,9 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
     .on('click', () => {
       const lines = document.getElementsByClassName('typo_class');
       for (let i = 0; i < lines.length; ++i) {
-        lines[i].querySelector('.color_square').style.backgroundColor = randomColor();
+        const random_color = randomColor();
+        lines[i].querySelector('.color_square').style.backgroundColor = random_color;
+        lines[i].querySelector('.color_hex').value = random_color;
       }
     });
 
@@ -1157,7 +1174,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
               const ref_map = current_layers[result].color_map;
               const selection = newbox.select('#sortable_typo_name').selectAll('li');
               // Change the displayed name of the elements:
-              selection.selectAll('input').each(function (d) {
+              selection.selectAll('input.typo_name').each(function (d) {
                 const r = ref_map.get(d.name);
                 if (r) {
                   d.display_name = r[1];
@@ -1170,6 +1187,7 @@ function display_categorical_box(data_layer, layer_name, field, cats) {
                 if (r) {
                   d.color = r[0];
                   this.style.backgroundColor = r[0];
+                  this.nextSibling.value = r[0];
                 }
               });
             }

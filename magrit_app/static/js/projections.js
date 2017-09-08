@@ -98,7 +98,8 @@ const createBoxProj4 = function createBoxProj4() {
     .styles({ width: '90%' })
     .attrs({
       id: 'input_proj_string',
-      placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
+      placeholder: 'EPSG:3035',
+      // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
     });
 
   const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, clean_up_box); };
@@ -169,7 +170,7 @@ const createBoxProj4 = function createBoxProj4() {
 
 const displayTooltipProj4 = function displayTooltipProj4(ev) {
   const target = ev.target;
-  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+  if (!(target && target.tagName === 'SELECT')) { // && target.value === 'last_projection')) {
     return;
   }
   const title = target.tooltip;
@@ -188,7 +189,7 @@ const displayTooltipProj4 = function displayTooltipProj4(ev) {
 
 const removeTooltipProj4 = function removeTooltipProj4(ev) {
   const target = ev.target;
-  if (!(target && target.tagName === 'SELECT' && target.value === 'last_projection')) {
+  if (!(target && target.tagName === 'SELECT')) { // && target.value === 'last_projection')) {
     return;
   }
   const a = document.querySelector('div.custom_tooltip');
@@ -205,28 +206,32 @@ function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   const proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
+  } else if (custom_name === 'RGF93 / Lambert-93') {
+    proj_select.value = 'ConicConformalFrance';
+  } else if (custom_name === 'ETRS89 / LAEA Europe') {
+    proj_select.value = 'AzimuthalEqualAreaEurope';
   } else if (proj_select.options.length === 10) {
     const prev_elem = proj_select.querySelector("[value='more']"),
       new_option = document.createElement('option');
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
     new_option.name = proj_name;
+    new_option.projValue = proj4string;
     new_option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
     if (!custom_name) new_option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
-    if (proj4string) {
-      makeTooltipProj4(proj_select, proj4string);
-    }
   } else {
     const option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
+    option.projValue = proj4string;
     option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
     if (!custom_name) option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
+    else option.removeAttribute('data-i18n');
     proj_select.value = 'last_projection';
-    if (proj4string) {
-      makeTooltipProj4(proj_select, proj4string);
-    }
+  }
+  if (proj4string) {
+    makeTooltipProj4(proj_select, proj4string);
   }
 }
 

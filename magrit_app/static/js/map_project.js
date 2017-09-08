@@ -739,8 +739,12 @@ function apply_user_preferences(json_pref) {
   if (map_config.custom_projection) {
     proj = getD3ProjFromProj4(proj4(map_config.custom_projection));
     _app.last_projection = map_config.custom_projection;
+    let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
+    custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
+    addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
   } else {
     proj = d3[available_projections.get(current_proj_name).name]();
+    addLastProjectionSelect(current_proj_name);
   }
   if (map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
   if (map_config.projection_parallel) proj = proj.parallel(map_config.projection_parallel);
@@ -751,9 +755,8 @@ function apply_user_preferences(json_pref) {
   defs = map.append('defs');
   path = d3.geoPath().projection(proj).pointRadius(4);
   map.selectAll('.layer').selectAll('path').attr('d', path);
-  addLastProjectionSelect(current_proj_name);
+
   // Set the background color of the map :
-  console.log(map_config.background_color);
   map.style('background-color', map_config.background_color);
   document.querySelector('input#bg_color').value = rgb2hex(map_config.background_color);
 

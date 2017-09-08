@@ -192,7 +192,7 @@
             "Armadillo": "Armadillo",
             "AzimuthalEquidistant": "Azimutale équidistante",
             "AzimuthalEqualArea": "Azimutale équivalente de Lambert",
-            "AzimuthalEqualAreaEurope": "Lambert azimutale équivalente (Europe)",
+            "AzimuthalEqualAreaEurope": "ETRS89 / LAEA Europe",
             "Baker": "Dinomique de Baker",
             "Berhmann": "Berhmann",
             "Boggs": "Boggs",
@@ -201,7 +201,7 @@
             "Bromley": "Bromley",
             "Collignon": "Collignon",
             "ConicConformal": "Conique conforme",
-            "ConicConformalFrance": "Conique conforme (Lambert 93 - France)",
+            "ConicConformalFrance": "RGF93 / Lambert-93",
             "ConicEqualArea": "Conique équivalente",
             "ConicEquidistant": "Conique équidistante",
             "CrasterParabolic": "Parabolique de Craster",
@@ -248,7 +248,7 @@
             "Winkel1": "Winkel I",
             "WinkelTriple": "Winkel-Tripel",
             "more": "Plus d'options ...",
-            "proj4": "Saisie d'un code WKT/Proj.4 ...",
+            "proj4": "Saisie d'un code WKT/Proj.4/EPSG ...",
             "def_proj4": "Projection définie par l'utilisateur {{value}}"
         },
         "stat_summary": {
@@ -525,8 +525,8 @@
         "symbol_typo_box": {
             "title": "Choix des symboles - {{ layer }} - {{ nb_features }} entités",
             "field_categ": "<strong>Champ</strong> : {{ field }}<br>{{ nb_class }} catégories<br>{{ nb_features}} entités",
-            "count_feature": " <i> ({{ nb_features }} entité)</i>",
-            "count_feature_plural": " <i> ({{ nb_features }} entités)</i>",
+            "count_feature": " <i> ({{ count }} entité)</i>",
+            "count_feature_plural": " <i> ({{ count }} entités)</i>",
             "title_click": "Cliquer pour choisir un symbole!"
         },
         "categorical_box": {

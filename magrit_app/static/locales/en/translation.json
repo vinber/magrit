@@ -190,7 +190,7 @@
             "Albers": "Albers",
             "Armadillo": "Armadillo",
             "AzimuthalEqualArea": "Azimuthal Equal-Area",
-            "AzimuthalEqualAreaEurope": "Lambert Azimuthal Equal-Area (Europe)",
+            "AzimuthalEqualAreaEurope": "ETRS89 / LAEA Europe",
             "AzimuthalEquidistant": "Azimuthal Equidistant",
             "Baker": "Baker Dinomic",
             "Berhmann": "Berhmann",
@@ -200,7 +200,7 @@
             "Bromley": "Bromley",
             "Collignon": "Collignon",
             "ConicConformal": "Conformal conical",
-            "ConicConformalFrance": "Conformal conical (Lambert 93 - France)",
+            "ConicConformalFrance": "RGF93 / Lambert-93",
             "ConicEqualArea": "Conic Equal-Area",
             "ConicEquidistant": "Conic Equidistant",
             "CrasterParabolic": "Craster Parabolic",
@@ -247,7 +247,7 @@
             "Winkel1": "Winkel I",
             "WinkelTriple": "Winkel-Tripel",
             "more": "More options...",
-            "proj4": "Projection from WKT/proj4 definition...",
+            "proj4": "Projection from WKT/proj4/EPSG definition...",
             "def_proj4": "User defined projection {{value}}"
         },
         "stat_summary": {
@@ -525,8 +525,8 @@
         "symbol_typo_box": {
             "title": "Choose symbols for fields categories - {{ layer }} - {{ nb_features }} features",
             "field_categ": "<strong>Field</strong> : {{ field }}<br>{{ nb_class }} categories<br>{{ nb_features}} features",
-            "count_feature": " <i> ({{ nb_features }} feature)</i>",
-            "count_feature_plural": " <i> ({{ nb_features }} features)</i>",
+            "count_feature": " <i> ({{ count }} feature)</i>",
+            "count_feature_plural": " <i> ({{ count }} features)</i>",
             "title_click": "Click me to choose a symbol!"
         },
         "categorical_box": {
