@@ -415,8 +415,8 @@ function createStyleBoxLabel(layer_name) {
 function createStyleBoxGraticule(layer_name) {
   check_remove_existing_box('.styleBox');
   const current_params = cloneObj(current_layers.Graticule);
-  let selection = map.select('#Graticule > path');
-  let selection_strokeW = map.select('#Graticule');
+  let selection = map.select('#L_Graticule > path');
+  let selection_strokeW = map.select('#L_Graticule');
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
     .then((confirmed) => {
@@ -482,16 +482,16 @@ function createStyleBoxGraticule(layer_name) {
       const step_val = +this.value;
       const dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
       current_layers.Graticule.step = step_val;
-      map.select('#Graticule').remove();
+      map.select('#L_Graticule').remove();
       map.append('g')
-        .attrs({ id: 'Graticule', class: 'layer' })
+        .attrs({ id: 'L_Graticule', class: 'layer' })
         .append('path')
         .datum(d3.geoGraticule().step([step_val, step_val]))
         .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
         .styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
       zoom_without_redraw();
-      selection = map.select('#Graticule').selectAll('path');
-      selection_strokeW = map.select('#Graticule');
+      selection = map.select('#L_Graticule').selectAll('path');
+      selection_strokeW = map.select('#L_Graticule');
       svg_map.insertBefore(selection_strokeW.node(), next_layer);
       popup.select('#graticule_step_txt').attr('value', step_val);
     });
@@ -531,7 +531,7 @@ function createStyleBoxGraticule(layer_name) {
         step_val = +document.getElementById('graticule_step_txt').value,
         dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
       let graticule = d3.geoGraticule().step([step_val, step_val]);
-      map.select('#Graticule').remove();
+      map.select('#L_Graticule').remove();
       if (this.checked) {
         const bbox_layer = _target_layer_file.bbox;
         const extent_grat = [
@@ -549,14 +549,14 @@ function createStyleBoxGraticule(layer_name) {
         current_layers.Graticule.extent = undefined;
       }
       map.append('g')
-        .attrs({ id: 'Graticule', class: 'layer' })
+        .attrs({ id: 'L_Graticule', class: 'layer' })
         .append('path')
         .datum(graticule)
         .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
         .styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
       zoom_without_redraw();
-      selection = map.select('#Graticule').selectAll('path');
-      selection_strokeW = map.select('#Graticule');
+      selection = map.select('#L_Graticule').selectAll('path');
+      selection_strokeW = map.select('#L_Graticule');
       svg_map.insertBefore(selection_strokeW.node(), next_layer);
     });
   clip_extent_section.append('label')

@@ -1135,7 +1135,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f844169ffade.json'
+      loadPath: 'static/locales/{{lng}}/translation.5c4f7a9a6db2.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -12351,8 +12351,8 @@ function createStyleBoxLabel(layer_name) {
 function createStyleBoxGraticule(layer_name) {
   check_remove_existing_box('.styleBox');
   var current_params = cloneObj(current_layers.Graticule);
-  var selection = map.select('#Graticule > path');
-  var selection_strokeW = map.select('#Graticule');
+  var selection = map.select('#L_Graticule > path');
+  var selection_strokeW = map.select('#L_Graticule');
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (confirmed) {
@@ -12400,11 +12400,11 @@ function createStyleBoxGraticule(layer_name) {
     var step_val = +this.value;
     var dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
     current_layers.Graticule.step = step_val;
-    map.select('#Graticule').remove();
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.select('#L_Graticule').remove();
+    map.append('g').attrs({ id: 'L_Graticule', class: 'layer' }).append('path').datum(d3.geoGraticule().step([step_val, step_val])).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
-    selection = map.select('#Graticule').selectAll('path');
-    selection_strokeW = map.select('#Graticule');
+    selection = map.select('#L_Graticule').selectAll('path');
+    selection_strokeW = map.select('#L_Graticule');
     svg_map.insertBefore(selection_strokeW.node(), next_layer);
     popup.select('#graticule_step_txt').attr('value', step_val);
   });
@@ -12433,7 +12433,7 @@ function createStyleBoxGraticule(layer_name) {
         step_val = +document.getElementById('graticule_step_txt').value,
         dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
     var graticule = d3.geoGraticule().step([step_val, step_val]);
-    map.select('#Graticule').remove();
+    map.select('#L_Graticule').remove();
     if (this.checked) {
       var bbox_layer = _target_layer_file.bbox;
       var extent_grat = [[Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10], [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10]];
@@ -12447,10 +12447,10 @@ function createStyleBoxGraticule(layer_name) {
     } else {
       current_layers.Graticule.extent = undefined;
     }
-    map.append('g').attrs({ id: 'Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
+    map.append('g').attrs({ id: 'L_Graticule', class: 'layer' }).append('path').datum(graticule).attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' }).styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
     zoom_without_redraw();
-    selection = map.select('#Graticule').selectAll('path');
-    selection_strokeW = map.select('#Graticule');
+    selection = map.select('#L_Graticule').selectAll('path');
+    selection_strokeW = map.select('#L_Graticule');
     svg_map.insertBefore(selection_strokeW.node(), next_layer);
   });
   clip_extent_section.append('label').attrs({ for: 'clip_graticule' }).html(i18next.t('app_page.layer_style_popup.graticule_clip'));
