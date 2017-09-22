@@ -1346,8 +1346,8 @@ const discretiz_geostats_switch = new Map([
 
 // Reference to the available fonts that the user could select :
 const available_fonts = [
-  ['Arial', 'Arial,Helvetica,sans-serif'],
-  ['Arial Black', 'Arial Black,Gadget,sans-serif'],
+  ['Arial', 'Arial,sans-serif'],
+  ['Arial Black', 'Arial Black,sans-serif'],
   ['Arimo', 'Arimo,sans-serif'],
   ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
   ['Bitter', 'Bitter,sans-serif'],
@@ -2337,7 +2337,7 @@ function handle_title(txt) {
       .style('cursor', 'pointer')
       .insert('text')
       .attrs({ x: w / 2, y: h / 12, 'alignment-baseline': 'middle', 'text-anchor': 'middle' })
-      .styles({ 'font-family': 'Arial, Helvetica, sans-serif', 'font-size': '20px', position: 'absolute', color: 'black' })
+      .styles({ 'font-family': 'Arial,sans-serif', 'font-size': '20px', position: 'absolute', color: 'black' })
       .text(txt)
       .on('contextmenu dblclick', () => {
         d3.event.preventDefault();

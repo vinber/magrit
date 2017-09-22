@@ -324,7 +324,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
     .attrs(
       subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 } )
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-weight': 'bold',
     })
@@ -333,7 +333,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   legend_root.insert('text')
     .attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 })
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-style': 'italic',
     })
@@ -395,7 +395,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
     .insert('text')
     .attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos })
     .styles({
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .text(note_bottom != null ? note_bottom : '');
@@ -424,14 +424,14 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
   const legend_root = map.insert('g')
     .attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision, layer_field: field, layer_name: layer })
-    .styles({ cursor: 'grab', 'font-size': '11x', 'font-family': 'arial, sans-serif' });
+    .styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'arial, sans-serif'});
 
   const rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle')
     .text(title || '')
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-weight': 'bold',
     })
@@ -440,7 +440,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
   legend_root.insert('text').attr('id', 'legendsubtitle')
     .text(subtitle)
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-style': 'italic',
     })
@@ -524,7 +524,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     .insert('text').attr('id', 'legend_bottom_note')
     .attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem })
     .styles({
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .text(note_bottom != null ? note_bottom : '');
@@ -597,7 +597,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
   const legend_root = parent.insert('g')
     .styles({
       cursor: 'grab',
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .attrs({ id: 'legend_root_symbol',
@@ -613,7 +613,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
   legend_root.insert('text').attr('id', 'legendtitle')
     .text(title)
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-weight': 'bold',
     })
@@ -621,7 +621,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
   legend_root.insert('text').attr('id', 'legendsubtitle')
     .text(subtitle)
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-style': 'italic',
     })
@@ -803,7 +803,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
     .insert('text').attr('id', 'legend_bottom_note')
     .attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem })
     .styles({
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .text(note_bottom != null ? note_bottom : '');
@@ -856,7 +856,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
         layer_name: layer })
       .styles({
         cursor: 'grab',
-        'font-size': '11x',
+        'font-size': '11px',
         'font-family': 'arial, sans-serif'
       });
 
@@ -865,7 +865,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
   legend_root.insert('text').attr('id', 'legendtitle')
     .text(title || 'Title')
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-weight': 'bold',
     })
@@ -874,7 +874,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
   legend_root.insert('text').attr('id', 'legendsubtitle')
     .text(subtitle)
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-style': 'italic',
     })
@@ -915,7 +915,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
     .insert('text').attr('id', 'legend_bottom_note')
     .attrs({ x: xpos + space_elem, y: last_pos + space_elem })
     .styles({
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .text(note_bottom != null ? note_bottom : '');
@@ -995,7 +995,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
   }
 
   const legend_root = map.insert('g')
-    .styles({ cursor: 'grab', 'font-size': '11x', 'font-family': 'arial, sans-serif' })
+    .styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'arial, sans-serif' })
     .attrs({ id: 'legend_root',
       class: tmp_class_name,
       layer_field: field,
@@ -1010,7 +1010,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
   legend_root.insert('text').attr('id', 'legendtitle')
     .text(title || '')
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-weight': 'bold',
     })
@@ -1019,7 +1019,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
   legend_root.insert('text').attr('id', 'legendsubtitle')
     .text(subtitle)
     .styles({
-      'font-size': '12x',
+      'font-size': '12px',
       'font-family': 'arial, sans-serif',
       'font-style': 'italic',
     })
@@ -1107,7 +1107,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
     .insert('text')
     .attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: last_pos + 2 * boxheight })
     .styles({
-      'font-size': '11x',
+      'font-size': '11px',
       'font-family': 'arial, sans-serif',
     })
     .text(note_bottom != null ? note_bottom : '');

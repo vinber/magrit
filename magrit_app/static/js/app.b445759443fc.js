@@ -1075,7 +1075,7 @@ var discretiz_geostats_switch = new Map([['jenks', 'getJenks'], ['equal_interval
 ['quantiles', 'getQuantile'], ['arithmetic_progression', 'getArithmeticProgression'], ['Q6', 'getBreaksQ6'], ['geometric_progression', 'getGeometricProgression']]);
 
 // Reference to the available fonts that the user could select :
-var available_fonts = [['Arial', 'Arial,Helvetica,sans-serif'], ['Arial Black', 'Arial Black,Gadget,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
+var available_fonts = [['Arial', 'Arial,sans-serif'], ['Arial Black', 'Arial Black,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Roboto', 'Roboto,sans-serif'], ['Lobster', 'Lobster,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'], ['Verdana', 'Verdana,Geneva,sans-serif']];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
 // with the style-fonts.css file as we are using their order to lookup for their definition
@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.8e4c76acf99e.json'
+      loadPath: 'static/locales/{{lng}}/translation.b445759443fc.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1989,7 +1989,7 @@ function handle_title(txt) {
   if (title.node()) {
     title.text(txt);
   } else {
-    map.append('g').attrs({ class: 'legend title', id: 'map_title' }).style('cursor', 'pointer').insert('text').attrs({ x: w / 2, y: h / 12, 'alignment-baseline': 'middle', 'text-anchor': 'middle' }).styles({ 'font-family': 'Arial, Helvetica, sans-serif', 'font-size': '20px', position: 'absolute', color: 'black' }).text(txt).on('contextmenu dblclick', function () {
+    map.append('g').attrs({ class: 'legend title', id: 'map_title' }).style('cursor', 'pointer').insert('text').attrs({ x: w / 2, y: h / 12, 'alignment-baseline': 'middle', 'text-anchor': 'middle' }).styles({ 'font-family': 'Arial,sans-serif', 'font-size': '20px', position: 'absolute', color: 'black' }).text(txt).on('contextmenu dblclick', function () {
       d3.event.preventDefault();
       d3.event.stopPropagation();
       handle_title_properties();
@@ -14384,7 +14384,7 @@ var Textbox = function () {
     var under_rect = group_elem.append('rect').styles({ fill: 'green', 'fill-opacity': 0 });
     var text_elem = group_elem.append('text').attrs({ x: this.x, y: this.y, id: ['in_', id_text_annot].join('') }).styles({
       'font-size': this.fontSize + 'px',
-      'font-family': 'Arial,Helvetica,sans-serif',
+      'font-family': 'Arial,sans-serif',
       'text-anchor': 'start'
     });
     text_elem.append('tspan').attr('x', this.x).text(i18next.t('app_page.text_box_edit_box.constructor_default'));
@@ -14718,8 +14718,11 @@ var scaleBar = {
     var scale_context_menu = new ContextMenu();
     this.under_rect = scale_gp.insert('rect').attrs({ x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: 'under_rect' }).styles({ fill: 'green', 'fill-opacity': 0 });
     scale_gp.insert('rect').attr('id', 'rect_scale').attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style('fill', 'black');
-    scale_gp.insert('text').attr('id', 'text_limit_sup_scale').attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({ font: '11px \'Enriqueta\', arial, serif',
-      'text-anchor': 'middle' }).text(this.dist_txt + ' km');
+    scale_gp.insert('text').attr('id', 'text_limit_sup_scale').attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({
+      'font-family': 'Arial,sans-serif',
+      'font-size': '11px',
+      'text-anchor': 'middle'
+    }).text(this.dist_txt + ' km');
 
     scale_gp.call(drag_legend_func(scale_gp));
     scale_gp.on('mouseover', function () {
@@ -16043,13 +16046,13 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   var rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-weight': 'bold'
   }).text(title || '');
 
   legend_root.insert('text').attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-style': 'italic'
   }).text(subtitle);
@@ -16088,7 +16091,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   }
 
   legend_root.append('g').insert('text').attrs({ id: 'legend_bottom_note', x: xpos + space_elem, y: last_pos }).styles({
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).text(note_bottom != null ? note_bottom : '');
 
@@ -16116,18 +16119,18 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     rounding_precision = get_lgd_display_precision(b_val);
   }
 
-  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', 'font-size': '11x', 'font-family': 'arial, sans-serif' });
+  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'arial, sans-serif' });
 
   var rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle').text(title || '').styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-weight': 'bold'
   }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-style': 'italic'
   }).attrs({ x: xpos + space_elem, y: ypos + 15 });
@@ -16194,7 +16197,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
   legend_root.call(drag_legend_func(legend_root));
 
   legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).styles({
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).text(note_bottom != null ? note_bottom : '');
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
@@ -16272,7 +16275,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   var legend_root = parent.insert('g').styles({
     cursor: 'grab',
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).attrs({ id: 'legend_root_symbol',
     class: tmp_class_name,
@@ -16285,12 +16288,12 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   var rect_under_legend = legend_root.insert('rect');
   legend_root.insert('text').attr('id', 'legendtitle').text(title).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-weight': 'bold'
   }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
   legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-style': 'italic'
   }).attrs({ x: xpos + space_elem, y: ypos + 15 });
@@ -16432,7 +16435,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
   }
 
   legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).styles({
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).text(note_bottom != null ? note_bottom : '');
 
@@ -16481,20 +16484,20 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
     layer_field: field,
     layer_name: layer }).styles({
     cursor: 'grab',
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   });
 
   var rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle').text(title || 'Title').styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-weight': 'bold'
   }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-style': 'italic'
   }).attrs({ x: xpos + space_elem, y: ypos + 15 });
@@ -16524,7 +16527,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
   });
 
   legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + space_elem }).styles({
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).text(note_bottom != null ? note_bottom : '');
 
@@ -16610,7 +16613,7 @@ function createLegend_choro(layer, field, title, subtitle) {
     }
   }
 
-  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11x', 'font-family': 'arial, sans-serif' }).attrs({ id: 'legend_root',
+  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'arial, sans-serif' }).attrs({ id: 'legend_root',
     class: tmp_class_name,
     layer_field: field,
     transform: 'translate(0,0)',
@@ -16622,13 +16625,13 @@ function createLegend_choro(layer, field, title, subtitle) {
   var rect_under_legend = legend_root.insert('rect');
 
   legend_root.insert('text').attr('id', 'legendtitle').text(title || '').styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-weight': 'bold'
   }).attrs(subtitle != '' ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
 
   legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
-    'font-size': '12x',
+    'font-size': '12px',
     'font-family': 'arial, sans-serif',
     'font-style': 'italic'
   }).attrs({ x: xpos + boxheight, y: ypos + 15 });
@@ -16688,7 +16691,7 @@ function createLegend_choro(layer, field, title, subtitle) {
   }
 
   legend_root.append('g').insert('text').attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: last_pos + 2 * boxheight }).styles({
-    'font-size': '11x',
+    'font-size': '11px',
     'font-family': 'arial, sans-serif'
   }).text(note_bottom != null ? note_bottom : '');
   legend_root.call(drag_legend_func(legend_root));

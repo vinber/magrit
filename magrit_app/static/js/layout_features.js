@@ -478,7 +478,7 @@ class Textbox {
       .attrs({ x: this.x, y: this.y, id: ['in_', id_text_annot].join('') })
       .styles({
         'font-size': `${this.fontSize}px`,
-        'font-family': 'Arial,Helvetica,sans-serif',
+        'font-family': 'Arial,sans-serif',
         'text-anchor': 'start',
       });
     text_elem.append('tspan')
@@ -867,8 +867,11 @@ const scaleBar = {
       .style('fill', 'black');
     scale_gp.insert('text').attr('id', 'text_limit_sup_scale')
       .attrs({ x: x_pos + bar_size, y: y_pos - 5 })
-      .styles({ font: '11px \'Enriqueta\', arial, serif',
-        'text-anchor': 'middle' })
+      .styles({
+        'font-family': 'Arial,sans-serif',
+        'font-size': '11px',
+        'text-anchor': 'middle'
+      })
       .text(`${this.dist_txt} km`);
 
     scale_gp.call(drag_legend_func(scale_gp));
