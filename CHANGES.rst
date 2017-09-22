@@ -4,7 +4,7 @@ Changes
 0.5.3 (2017-09-22)
 ------------------
 
-- Change the default font used in text/tspan SVG elements (in favor of Arial). Should fix the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator CS 2014 on MacOSX).
+- Change the default font used in text/tspan SVG elements (in favor of Arial). Should fix the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
 
 
 0.5.2 (2017-09-13)
