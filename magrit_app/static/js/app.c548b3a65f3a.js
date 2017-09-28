@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.334e94bd743f.json'
+      loadPath: 'static/locales/{{lng}}/translation.c548b3a65f3a.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1844,6 +1844,14 @@ function change_projection(new_proj_name) {
   // Disable the zoom by rectangle selection if the user is using it :
   map.select('.brush').remove();
 
+  // Reactivate the graticule and the sphere options:
+  d3.select('img#btn_graticule').style('opacity', '1').on('click', function () {
+    return add_layout_feature('graticule');
+  });
+  d3.select('img#btn_sphere').style('opacity', '1').on('click', function () {
+    return add_layout_feature('sphere');
+  });
+
   // Only keep the first argument of the rotation parameter :
   var prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
   var def_proj = available_projections.get(new_proj_name);
@@ -1896,6 +1904,19 @@ function change_projection(new_proj_name) {
 
 function change_projection_4(_proj) {
   remove_layer_cleanup('Sphere');
+
+  // Disable the "sphere" and the "graticule" layers only if the projection is a conic one:
+  if (_app.last_projection.indexOf('=lcc') > -1 || _app.last_projection.indexOf('Lambert_Conformal_Conic') > -1) {
+    d3.select('img#btn_graticule').style('opacity', '0.3').on('click', null);
+    d3.select('img#btn_sphere').style('opacity', '0.3').on('click', null);
+  } else {
+    d3.select('img#btn_graticule').style('opacity', '1').on('click', function () {
+      return add_layout_feature('graticule');
+    });
+    d3.select('img#btn_sphere').style('opacity', '1').on('click', function () {
+      return add_layout_feature('sphere');
+    });
+  }
   // Disable the zoom by rectangle selection if the user is using it :
   map.select('.brush').remove();
 
@@ -10714,11 +10735,11 @@ function add_layer_topojson(text) {
   }
 
   if (_app.first_layer) {
-    // remove_layer_cleanup('World');
-    var world_id = _app.layer_to_id.get('World');
-    var q = document.querySelector('.sortable.' + world_id + ' > .layer_buttons > #eye_open');
-    if (q) q.click();
-    delete _app.first_layer;
+    remove_layer_cleanup('World');
+    // const world_id = _app.layer_to_id.get('World');
+    // const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
+    // if (q) q.click();
+    // delete _app.first_layer;
     if (parsedJSON.proj) {
       try {
         _proj = proj4(parsedJSON.proj);

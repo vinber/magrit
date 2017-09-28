@@ -998,11 +998,11 @@ function add_layer_topojson(text, options = {}) {
   }
 
   if (_app.first_layer) {
-    // remove_layer_cleanup('World');
-    const world_id = _app.layer_to_id.get('World');
-    const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
-    if (q) q.click();
-    delete _app.first_layer;
+    remove_layer_cleanup('World');
+    // const world_id = _app.layer_to_id.get('World');
+    // const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
+    // if (q) q.click();
+    // delete _app.first_layer;
     if (parsedJSON.proj) {
       try {
         _proj = proj4(parsedJSON.proj);
