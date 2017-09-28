@@ -1364,7 +1364,7 @@ const available_fonts = [
   ['Scope One', 'Scope One'],
   ['Tahoma', 'Tahoma,Geneva,sans-serif'],
   ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
-  ['Verdana', 'Verdana,Geneva,sans-serif'],
+  ['Verdana', 'verdana'],
 ];
 
 // This variable have to be (well, we could easily do this in an other way!) up to date
@@ -2337,7 +2337,7 @@ function handle_title(txt) {
       .style('cursor', 'pointer')
       .insert('text')
       .attrs({ x: w / 2, y: h / 12, 'alignment-baseline': 'middle', 'text-anchor': 'middle' })
-      .styles({ 'font-family': 'Arial,sans-serif', 'font-size': '20px', position: 'absolute', color: 'black' })
+      .styles({ 'font-family': 'verdana', 'font-size': '20px', position: 'absolute', color: 'black' })
       .text(txt)
       .on('contextmenu dblclick', () => {
         d3.event.preventDefault();
