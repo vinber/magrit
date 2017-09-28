@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.5.4 (2017-xx-xx)
+------------------
+
+- Change again the default font used in text/tspan SVG elements (in favor of 'verdana'). Should fix (for real this time?) the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
+
+- Deactivate the "sphere" and the "graticule" layers when using a "conic conformal" projection (the generated path is pretty huge as it seems to tend towards the infinite).
+
+
 0.5.3 (2017-09-22)
 ------------------
 
