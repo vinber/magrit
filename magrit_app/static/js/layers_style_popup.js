@@ -525,7 +525,8 @@ function createStyleBoxGraticule(layer_name) {
 
   const clip_extent_section = popup.append('p').attr('class', 'line_elem');
   clip_extent_section.append('input')
-    .attrs({ type: 'checkbox', id: 'clip_graticule', checked: current_params.extent ? true : null })
+    .attrs({ type: 'checkbox', id: 'clip_graticule' })
+    .property('checked', current_params.extent ? true : null)
     .on('change', function () {
       const next_layer = selection_strokeW.node().nextSibling,
         step_val = +document.getElementById('graticule_step_txt').value,
@@ -1348,10 +1349,10 @@ function createStyleBox(layer_name) {
   const shadow_section = popup.append('p');
   const chkbx = shadow_section.insert('input')
     .style('margin', '0')
+    .property('checked', map.select(g_lyr_name).attr('filter') ? true : null)
     .attrs({
       type: 'checkbox',
-      id: 'checkbox_shadow_layer',
-      checked: map.select(g_lyr_name).attr('filter') ? true : null });
+      id: 'checkbox_shadow_layer' });
   shadow_section.insert('label')
     .attr('for', 'checkbox_shadow_layer')
     .html(i18next.t('app_page.layer_style_popup.layer_shadow'));
@@ -1526,10 +1527,10 @@ function createStyleBoxStewart(layer_name) {
   const shadow_section = popup.append('p');
   const chkbx = shadow_section.insert('input')
     .style('margin', '0')
+    .property('checked', map.select(g_lyr_name).attr('filter') ? true : null)
     .attrs({
       type: 'checkbox',
-      id: 'checkbox_shadow_layer',
-      checked: map.select(g_lyr_name).attr('filter') ? true : null });
+      id: 'checkbox_shadow_layer' });
   shadow_section.insert('label')
     .attr('for', 'checkbox_shadow_layer')
     .html(i18next.t('app_page.layer_style_popup.layer_shadow'));
@@ -1814,10 +1815,10 @@ function createStyleBoxWaffle(layer_name) {
   const allow_move_section = popup.append('p');
   const chkbx = allow_move_section.insert('input')
     .style('margin', '0')
+    .property('checked', current_layers[layer_name].draggable ? true : null)
     .attrs({
       type: 'checkbox',
-      id: 'checkbox_move_symbol',
-      checked: current_layers[layer_name].draggable ? true : null });
+      id: 'checkbox_move_symbol' });
   allow_move_section.insert('label')
     .attr('for', 'checkbox_move_symbol')
     .html(i18next.t('app_page.layer_style_popup.let_draggable'));
@@ -2215,10 +2216,10 @@ function createStyleBox_ProbSymbol(layer_name) {
   const allow_move_section = popup.append('p');
   const chkbx = allow_move_section.insert('input')
     .style('margin', '0')
+    .property('checked', current_layers[layer_name].draggable ? true : null)
     .attrs({
       type: 'checkbox',
-      id: 'checkbox_move_symbol',
-      checked: current_layers[layer_name].draggable ? true : null });
+      id: 'checkbox_move_symbol' });
   allow_move_section.insert('label')
     .attr('for', 'checkbox_move_symbol')
     .html(i18next.t('app_page.layer_style_popup.let_draggable'));

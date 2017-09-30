@@ -102,9 +102,11 @@
             "drop_msg": "Suelta los archivos en la ventana ..."
         },
         "notification":{
-          "instruction_click_map": "Seleccionar una parte del mapa para agregar el objeto",
-          "instruction_click_map_arrow1": "Seleccionar en el mapa el punto de partida de la flecha",
-          "instruction_click_map_arrow2": "Seleccionar en el mapa el punto de llegada de la flecha",
+          "brush_map_cancelled": "No se detectó rectángulo. Se canceló la operación.",
+          "instruction_brush_map": "Dibujar un rectángulo en el mapa reteniendo el cursor apoyado. Pulse 'Esc' para cancelar.",
+          "instruction_click_map": "Seleccionar una parte del mapa para agregar el objeto. Pulse 'Esc' para cancelar.",
+          "instruction_click_map_arrow1": "Seleccionar en el mapa el punto de partida de la flecha. Pulse 'Esc' para cancelar.",
+          "instruction_click_map_arrow2": "Seleccionar en el mapa el punto de llegada de la flecha. Pulse 'Esc' para cancelar.",
           "instruction_modify_feature": "Utilizar los nodos rojos para editar el objecto.<br>Salir de la edición con un doble clic.",
           "success_graticule_added": "¡La cuadrícula fue correctamente agregada!",
           "success_sphere_added": "¡La esfera fue correctamente agregada!",

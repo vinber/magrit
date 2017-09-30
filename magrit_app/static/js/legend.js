@@ -594,6 +594,12 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
       || current_layers[layer].fill_color.random !== undefined)
     ? '#FFF' : current_layers[layer].fill_color.single;
 
+  const stroke_color = (current_layers[layer].renderer === 'PropSymbolsChoro'
+    || current_layers[layer].renderer === 'PropSymbolsTypo'
+    || current_layers[layer].fill_color.two !== undefined
+    || current_layers[layer].fill_color.random !== undefined)
+  ? 'rgb(0, 0, 0)' : map.select(`#${_app.layer_to_id.get(layer)}`).select(symbol_type).style('stroke');
+
   const legend_root = parent.insert('g')
     .styles({
       cursor: 'grab',
@@ -606,7 +612,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
       layer_name: layer,
       nested,
       rounding_precision,
-      layer_field: field
+      layer_field: field,
     });
 
   const rect_under_legend = legend_root.insert('rect');
@@ -686,7 +692,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
     if (symbol_type === 'circle') {
       legend_elems
         .append('circle')
-        .styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 })
+        .styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 })
         .attrs((d, i) => {
           last_pos = (i * boxgap) + d.size + last_pos + last_size;
           last_size = d.size;
@@ -712,7 +718,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
     } else if (symbol_type === 'rect') {
       legend_elems
         .append('rect')
-        .styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 })
+        .styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 })
         .attrs((d, i) => {
           last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
           last_size = d.size;
@@ -745,7 +751,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
           cy: ypos + 45 + max_size + (max_size / 2) - d.size,
           r: d.size,
         }))
-        .styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 });
+        .styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
       last_pos = y_pos2; last_size = 0;
       legend_elems.append('text')
         .attr('x', xpos + space_elem + boxgap + max_size * 1.5 + 5)
@@ -761,7 +767,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', re
           y: ypos + 45 + max_size - d.size,
           width: d.size,
           height: d.size }))
-        .styles({ fill: color_symb_lgd, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1 });
+        .styles({ fill: color_symb_lgd, stroke:  stroke_color, 'fill-opacity': 1 });
       last_pos = y_pos2; last_size = 0;
       legend_elems.append('text')
         .attr('x', xpos + space_elem + max_size * 1.25)
@@ -1137,10 +1143,14 @@ function display_box_value_symbol(layer_name) {
     return (values) => {
       if (values) {
         current_layers[layer_name].size_legend_symbol = values.sort((a, b) => b.value - a.value);
-        val1.node().value = values[0].value;
-        val2.node().value = values[1].value;
-        val3.node().value = values[2].value;
-        val4.node().value = values[3].value;
+        // val1.node().value = values[0].value;
+        // val2.node().value = values[1].value;
+        // val3.node().value = values[2].value;
+        // val4.node().value = values[3].value;
+        val1.property('value', values[0].value);
+        val2.property('value', values[1].value);
+        val3.property('value', values[2].value);
+        val4.property('value', values[3].value);
       }
       sample_svg.selectAll('g').remove();
       createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
@@ -1177,6 +1187,7 @@ function display_box_value_symbol(layer_name) {
   let original_values = [].concat(values_to_use);
   let val1 = a.insert('input')
     .style('width', '80px')
+    .property('value', values_to_use[0].value)
     .attrs({ class: 'without_spinner', type: 'number', max: val_max })
     .on('change', function () {
       const val = +this.value;
@@ -1187,6 +1198,7 @@ function display_box_value_symbol(layer_name) {
     });
   let val2 = b.insert('input')
     .style('width', '80px')
+    .property('value', values_to_use[1].value)
     .attrs({ class: 'without_spinner', type: 'number', max: values_to_use[0].value, min: values_to_use[2] })
     .on('change', function () {
       const val = +this.value;
@@ -1198,6 +1210,7 @@ function display_box_value_symbol(layer_name) {
     });
   let val3 = c.insert('input')
     .style('width', '80px')
+    .property('value', values_to_use[2].value)
     .attrs({ class: 'without_spinner', type: 'number', max: values_to_use[1].value, min: values_to_use[3].value })
     .on('change', function () {
       const val = +this.value;
@@ -1209,6 +1222,7 @@ function display_box_value_symbol(layer_name) {
     });
   let val4 = d.insert('input')
     .style('width', '80px')
+    .property('value', values_to_use[3].value)
     .attrs({ class: 'without_spinner', type: 'number', min: 0, max: values_to_use[2].value })
     .on('change', function () {
       const val = +this.value;
@@ -1228,10 +1242,10 @@ function display_box_value_symbol(layer_name) {
       current_layers[layer_name].size_legend_symbol = undefined;
       redraw_sample_legend(original_values);
     });
-  val1.node().value = values_to_use[0].value;
-  val2.node().value = values_to_use[1].value;
-  val3.node().value = values_to_use[2].value;
-  val4.node().value = values_to_use[3].value;
+  // val1.node().value = values_to_use[0].value;
+  // val2.node().value = values_to_use[1].value;
+  // val3.node().value = values_to_use[2].value;
+  // val4.node().value = values_to_use[3].value;
   redraw_sample_legend();
   return prom;
 }
@@ -1472,6 +1486,7 @@ function createlegendEditBox(legend_id, layer_name) {
     gap_section.append('input')
       .style('margin-left', '0px')
       .attrs({ type: 'checkbox', id: 'style_lgd' })
+      .property('checked', current_state)
       .on('change', () => {
         const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
@@ -1493,14 +1508,14 @@ function createlegendEditBox(legend_id, layer_name) {
     gap_section.append('label')
         .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' })
         .html(i18next.t('app_page.legend_style_box.gap_boxes'));
-
-    document.getElementById('style_lgd').checked = current_state;
+    // document.getElementById('style_lgd').checked = current_state;
   } else if (legend_id === 'legend_root_symbol') {
     const current_state = legend_node.getAttribute('nested') === 'true';
     const gap_section = box_body.insert('p');
     gap_section.append('input')
       .style('margin-left', '0px')
       .attrs({ id: 'style_lgd', type: 'checkbox' })
+      .property('checked', current_state)
       .on('change', () => {
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
         const rendered_field = current_layers[layer_name].rendered_field;
@@ -1521,7 +1536,7 @@ function createlegendEditBox(legend_id, layer_name) {
     gap_section.append('label')
       .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' })
       .html(i18next.t('app_page.legend_style_box.nested_symbols'));
-    document.getElementById('style_lgd').checked = current_state;
+    // document.getElementById('style_lgd').checked = current_state;
   }
 // Todo : Reactivate this functionnality :
 //    box_body.insert("p").html("Display features count ")

@@ -108,13 +108,15 @@
             "info": "Affichage des entitées {start} à {end} sur {rows}"
         },
         "notification":{
+            "brush_map_cancelled": "Pas de rectangle détecté. L'opération a été annulée.",
             "success_sphere_added": "La sphère a bien été ajoutée!",
             "success_graticule_added": "Le graticule a bien été ajouté!",
             "warning_deactivation_scalebar": "Désactivation de l'échelle",
             "warning_deactivation_prop_symbol_legend": "Désactivation de la légende des symboles proportionnels",
-            "instruction_click_map": "Cliquer sur la carte pour ajouter l'élément",
-            "instruction_click_map_arrow1": "Cliquer sur la carte localiser le point de départ de la fleche",
-            "instruction_click_map_arrow2": "Cliquer sur la carte localiser le point d'arrivée de la fleche",
+            "instruction_brush_map": "Tracer un rectangle sur la carte en conservant le curseur appuyé. Appuyer sur 'Échap' pour annuler.",
+            "instruction_click_map": "Cliquer sur la carte pour ajouter l'élément. Appuyer sur 'Échap' pour annuler.",
+            "instruction_click_map_arrow1": "Cliquer sur la carte localiser le point de départ de la fleche. Appuyer sur 'Échap' pour annuler.",
+            "instruction_click_map_arrow2": "Cliquer sur la carte localiser le point d'arrivée de la fleche. Appuyer sur 'Échap' pour annuler.",
             "instruction_modify_feature": "Utiliser les poignées rouges pour modifier l'élément.<br>Double-cliquer pour quitter l'édition de l'élément."
         },
         "section1": {

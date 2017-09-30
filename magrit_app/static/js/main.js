@@ -1352,8 +1352,6 @@ const available_fonts = [
   ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
   ['Bitter', 'Bitter,sans-serif'],
   ['Dosis', 'Dosis,sans-serif'],
-  ['Roboto', 'Roboto,sans-serif'],
-  ['Lobster', 'Lobster,sans-serif'],
   ['Impact', 'Impact,Charcoal,sans-serif'],
   ['Inconsolata', 'Inconsolata,sans-serif'],
   ['Georgia', 'Georgia,serif'],
@@ -2244,7 +2242,8 @@ function change_projection_4(_proj) {
   remove_layer_cleanup('Sphere');
 
   // Disable the "sphere" and the "graticule" layers only if the projection is a conic one:
-  if (_app.last_projection.indexOf('=lcc') > -1 || _app.last_projection.indexOf('Lambert_Conformal_Conic') > -1) {
+  if (_app.last_projection && (
+      _app.last_projection.indexOf('=lcc') > -1 || _app.last_projection.indexOf('Lambert_Conformal_Conic') > -1)) {
     d3.select('img#btn_graticule').style('opacity', '0.3').on('click', null);
     d3.select('img#btn_sphere').style('opacity', '0.3').on('click', null);
   } else {
