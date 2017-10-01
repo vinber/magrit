@@ -75,7 +75,7 @@ function get_map_template() {
   map_config.projection_scale = proj.scale();
   map_config.projection_translate = proj.translate();
   map_config.projection_center = proj.center();
-  map_config.projection_rotation = proj.rotate();
+  map_config.projection_rotation = proj.rotate !== undefined ? proj.rotate() : undefined;
   map_config.projection_parallels = proj.parallels !== undefined ? proj.parallels() : undefined;
   map_config.projection_parallel = proj.parallel !== undefined ? proj.parallel() : undefined;
   map_config.zoom_translate = [zoom_transform.x, zoom_transform.y];
@@ -563,7 +563,8 @@ function apply_user_preferences(json_pref) {
       zoom_without_redraw();
       s = map_config.projection_scale;
       t = map_config.projection_translate;
-      proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+      proj.scale(s).translate(t);
+      if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
       path = d3.geoPath().projection(proj).pointRadius(4);
       map.selectAll('.layer').selectAll('path').attr('d', path);
       handleClipPath(current_proj_name);
@@ -751,7 +752,8 @@ function apply_user_preferences(json_pref) {
   if (map_config.projection_clipAngle) proj = proj.clipAngle(map_config.projection_clipAngle);
   s = map_config.projection_scale;
   t = map_config.projection_translate;
-  proj.scale(s).translate(t).rotate(map_config.projection_rotation);
+  proj.scale(s).translate(t);
+  if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
   defs = map.append('defs');
   path = d3.geoPath().projection(proj).pointRadius(4);
   map.selectAll('.layer').selectAll('path').attr('d', path);

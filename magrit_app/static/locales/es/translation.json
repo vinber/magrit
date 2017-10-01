@@ -222,6 +222,7 @@
             "Albers": "Albers",
             "AzimuthalEqualAreaEurope": "ETRS89 / LAEA Europe",
             "Berhmann": "Berhmann",
+            "Bertin": "Bertin 1953",
             "ConicConformalFrance": "RGF93 / Lambert-93",
             "ConicEquidistant": "Cónica equidistante",
             "CylindricalEqualArea": "Cilíndrica equivalente",

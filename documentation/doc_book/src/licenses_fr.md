@@ -40,5 +40,6 @@ Différentes librairies et applications sont utilisées :
 | [uvloop](https://github.com/MagicStack/uvloop)        |         | MIT/Apache-2.0 |
 | [xlrd](https://github.com/python-excel/xlrd)          |         | BSD-like       |
 
-Cette application contient des schémas de couleurs deveoppés par Cynthia Brewer.
-Cette application contient des composants *(xlrd)* developpés par [David Giffin](david@giffin.org).
+Cette application contient des [schémas de couleurs developpés par Cynthia Brewer](http://colorbrewer2.org).  
+Cette application contient des composants *(xlrd)* developpés par [David Giffin](david@giffin.org).  
+Cette application contient la projection *Bertin 1953*, contribuée à [d3-geo-projection](https://github.com/d3/d3-geo-projection) par [Philippe Rivière](https://visionscarto.net/).  

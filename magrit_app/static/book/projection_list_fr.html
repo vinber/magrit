@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Liste de projections nationales - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,13 +81,15 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h4>Liste indicative de projections adaptées à un pays donné :</h4>
-<table><thead><tr><td> Emprise                         </td><td> Nom de la projection               </td><td> proj4                                                                                                                                                                                                                          </td><td> url                   </td></tr></thead>
+                    <a class="header" href="./projection_list_fr.html#liste-indicative-de-projections-adaptées-à-un-pays-donné-" id="liste-indicative-de-projections-adaptées-à-un-pays-donné-"><h4>Liste indicative de projections adaptées à un pays donné :</h4></a>
+<table><thead><tr><th> Emprise                         </th><th> Nom de la projection               </th><th> proj4                                                                                                                                                                                                                          </th><th> url                   </th></tr></thead><tbody>
 <tr><td> Albanie                         </td><td> Gauss-Kruger zone 4                </td><td> +proj=tmerc +lat_0=0 +lon_0=21 +k=1 +x_0=4500000 +y_0=0 +ellps=krass +towgs84=-44.183,-0.58,-38.489,-2.3867,-2.7072,3.5196,-8.2703 +units=m +no_defs                                                                           </td><td> <a href="https://epsg.io/2462">https://epsg.io/2462</a>  </td></tr>
 <tr><td> Samoa américaines               </td><td> American Samoa Lambert             </td><td> +proj=lcc +lat_1=-14.26666666666667 +lat_0=-14.26666666666667 +lon_0=-170 +k_0=1 +x_0=152400.3048006096 +y_0=95169.31165862332 +ellps=clrk66 +towgs84=-115,118,426,0,0,0,0 +units=us-ft +no_defs                               </td><td> <a href="https://epsg.io/3102">https://epsg.io/3102</a>  </td></tr>
 <tr><td> Samoa américaines               </td><td> UTM zone 2S                        </td><td> +proj=utm +zone=2 +south +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs                                                                                                                                                 </td><td> <a href="https://epsg.io/2195">https://epsg.io/2195</a>  </td></tr>
@@ -178,19 +199,19 @@
 <tr><td> Etats-Unis                      </td><td> US National Atlas Equal Area       </td><td> +proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs                                                                                                                                         </td><td> <a href="https://epsg.io/2163">https://epsg.io/2163</a>  </td></tr>
 <tr><td> Iles Vierges des États-Unis     </td><td> Puerto Rico and Virgin Is Lambert  </td><td> +proj=lcc +lat_1=18.43333333333333 +lat_2=18.03333333333333 +lat_0=17.83333333333333 +lon_0=-66.43333333333334 +x_0=200000 +y_0=200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs                                   </td><td> <a href="https://epsg.io/4437">https://epsg.io/4437</a>  </td></tr>
 <tr><td> Venezuela                       </td><td> ICN Regional                       </td><td> +proj=lcc +lat_1=9 +lat_2=3 +lat_0=6 +lon_0=-66 +x_0=1000000 +y_0=1000000 +ellps=intl +towgs84=-288,175,-376,0,0,0,0 +units=m +no_defs                                                                                         </td><td> <a href="https://epsg.io/2317">https://epsg.io/2317</a>  </td></tr>
-</table>
+</tbody></table>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./projections_fr.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./projections_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./carto_fr.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="./carto_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -220,6 +241,12 @@
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>

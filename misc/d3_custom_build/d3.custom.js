@@ -1101,12 +1101,12 @@ function nap() {
 function sleep(time) {
   if (frame) return; // Soonest alarm already set, or will be.
   if (timeout) timeout = clearTimeout(timeout);
-  var delay = time - clockNow;
+  var delay = time - clockNow; // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time < Infinity) timeout = setTimeout(wake, delay);
+    if (time < Infinity) timeout = setTimeout(wake, time - clock.now() - clockSkew);
     if (interval) interval = clearInterval(interval);
   } else {
-    if (!interval) clockLast = clockNow, interval = setInterval(poke, pokeDelay);
+    if (!interval) clockLast = clock.now(), interval = setInterval(poke, pokeDelay);
     frame = 1, setFrame(wake);
   }
 }
@@ -4032,6 +4032,12 @@ type("application/xml", function(xhr) {
   return xml;
 });
 
+var EOL = {};
+var EOF = {};
+var QUOTE = 34;
+var NEWLINE = 10;
+var RETURN = 13;
+
 function objectConverter(columns) {
   return new Function("d", "return {" + columns.map(function(name, i) {
     return JSON.stringify(name) + ": d[" + i + "]";
@@ -4063,7 +4069,7 @@ function inferColumns(rows) {
 
 var dsv = function(delimiter) {
   var reFormat = new RegExp("[\"" + delimiter + "\n\r]"),
-      delimiterCode = delimiter.charCodeAt(0);
+      DELIMITER = delimiter.charCodeAt(0);
 
   function parse(text, f) {
     var convert, columns, rows = parseRows(text, function(row, i) {
@@ -4075,62 +4081,49 @@ var dsv = function(delimiter) {
   }
 
   function parseRows(text, f) {
-    var EOL = {}, // sentinel value for end-of-line
-        EOF = {}, // sentinel value for end-of-file
-        rows = [], // output rows
+    var rows = [], // output rows
         N = text.length,
         I = 0, // current character index
-        n = 0, // the current line number
-        t, // the current token
-        eol; // is the current token followed by EOL?
+        n = 0, // current line number
+        t, // current token
+        eof = N <= 0, // current token followed by EOF?
+        eol = false; // current token followed by EOL?
+
+    // Strip the trailing newline.
+    if (text.charCodeAt(N - 1) === NEWLINE) --N;
+    if (text.charCodeAt(N - 1) === RETURN) --N;
 
     function token() {
-      if (I >= N) return EOF; // special case: end of file
-      if (eol) return eol = false, EOL; // special case: end of line
+      if (eof) return EOF;
+      if (eol) return eol = false, EOL;
 
-      // special case: quotes
-      var j = I, c;
-      if (text.charCodeAt(j) === 34) {
-        var i = j;
-        while (i++ < N) {
-          if (text.charCodeAt(i) === 34) {
-            if (text.charCodeAt(i + 1) !== 34) break;
-            ++i;
-          }
-        }
-        I = i + 2;
-        c = text.charCodeAt(i + 1);
-        if (c === 13) {
-          eol = true;
-          if (text.charCodeAt(i + 2) === 10) ++I;
-        } else if (c === 10) {
-          eol = true;
-        }
-        return text.slice(j + 1, i).replace(/""/g, "\"");
+      // Unescape quotes.
+      var i, j = I, c;
+      if (text.charCodeAt(j) === QUOTE) {
+        while (I++ < N && text.charCodeAt(I) !== QUOTE || text.charCodeAt(++I) === QUOTE);
+        if ((i = I) >= N) eof = true;
+        else if ((c = text.charCodeAt(I++)) === NEWLINE) eol = true;
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
+        return text.slice(j + 1, i - 1).replace(/""/g, "\"");
       }
 
-      // common case: find next delimiter or newline
+      // Find next delimiter or newline.
       while (I < N) {
-        var k = 1;
-        c = text.charCodeAt(I++);
-        if (c === 10) eol = true; // \n
-        else if (c === 13) { eol = true; if (text.charCodeAt(I) === 10) ++I, ++k; } // \r|\r\n
-        else if (c !== delimiterCode) continue;
-        return text.slice(j, I - k);
+        if ((c = text.charCodeAt(i = I++)) === NEWLINE) eol = true;
+        else if (c === RETURN) { eol = true; if (text.charCodeAt(I) === NEWLINE) ++I; }
+        else if (c !== DELIMITER) continue;
+        return text.slice(j, i);
       }
 
-      // special case: last token before EOF
-      return text.slice(j);
+      // Return last token before EOF.
+      return eof = true, text.slice(j, N);
     }
 
     while ((t = token()) !== EOF) {
-      var a = [];
-      while (t !== EOL && t !== EOF) {
-        a.push(t);
-        t = token();
-      }
-      if (f && (a = f(a, n++)) == null) continue;
-      rows.push(a);
+      var row = [];
+      while (t !== EOL && t !== EOF) row.push(t), t = token();
+      if (f && (row = f(row, n++)) == null) continue;
+      rows.push(row);
     }
 
     return rows;
@@ -4155,7 +4148,7 @@ var dsv = function(delimiter) {
 
   function formatValue(text) {
     return text == null ? ""
-        : reFormat.test(text += "") ? "\"" + text.replace(/\"/g, "\"\"") + "\""
+        : reFormat.test(text += "") ? "\"" + text.replace(/"/g, "\"\"") + "\""
         : text;
   }
 
@@ -5636,14 +5629,15 @@ var e5 = Math.sqrt(10);
 var e2 = Math.sqrt(2);
 
 var ticks = function(start, stop, count) {
-  var reverse = stop < start,
+  var reverse,
       i = -1,
       n,
       ticks,
       step;
 
-  if (reverse) n = start, start = stop, stop = n;
-
+  stop = +stop, start = +start, count = +count;
+  if (start === stop && count > 0) return [start];
+  if (reverse = stop < start) n = start, start = stop, stop = n;
   if ((step = tickIncrement(start, stop, count)) === 0 || !isFinite(step)) return [];
 
   if (step > 0) {
@@ -7044,7 +7038,13 @@ function newInterval(floori, offseti, count, field) {
     return newInterval(function(date) {
       if (date >= date) while (floori(date), !test(date)) date.setTime(date - 1);
     }, function(date, step) {
-      if (date >= date) while (--step >= 0) while (offseti(date, 1), !test(date)) {} // eslint-disable-line no-empty
+      if (date >= date) {
+        if (step < 0) while (++step <= 0) {
+          while (offseti(date, -1), !test(date)) {} // eslint-disable-line no-empty
+        } else while (--step >= 0) {
+          while (offseti(date, +1), !test(date)) {} // eslint-disable-line no-empty
+        }
+      }
     });
   };
 
@@ -9692,12 +9692,12 @@ function nap$1() {
 function sleep$1(time) {
   if (frame$1) return; // Soonest alarm already set, or will be.
   if (timeout$2) timeout$2 = clearTimeout(timeout$2);
-  var delay = time - clockNow$1;
+  var delay = time - clockNow$1; // Strictly less than if we recomputed clockNow.
   if (delay > 24) {
-    if (time < Infinity) timeout$2 = setTimeout(wake$1, delay);
+    if (time < Infinity) timeout$2 = setTimeout(wake$1, time - clock$1.now() - clockSkew$1);
     if (interval$2) interval$2 = clearInterval(interval$2);
   } else {
-    if (!interval$2) clockLast$1 = clockNow$1, interval$2 = setInterval(poke$1, pokeDelay$1);
+    if (!interval$2) clockLast$1 = clock$1.now(), interval$2 = setInterval(poke$1, pokeDelay$1);
     frame$1 = 1, setFrame$1(wake$1);
   }
 }
@@ -9865,17 +9865,17 @@ var manyBody = function() {
   }
 
   function accumulate(quad) {
-    var strength = 0, q, c, x$$1, y$$1, i;
+    var strength = 0, q, c, weight = 0, x$$1, y$$1, i;
 
     // For internal nodes, accumulate forces from child quadrants.
     if (quad.length) {
       for (x$$1 = y$$1 = i = 0; i < 4; ++i) {
-        if ((q = quad[i]) && (c = q.value)) {
-          strength += c, x$$1 += c * q.x, y$$1 += c * q.y;
+        if ((q = quad[i]) && (c = Math.abs(q.value))) {
+          strength += q.value, weight += c, x$$1 += c * q.x, y$$1 += c * q.y;
         }
       }
-      quad.x = x$$1 / strength;
-      quad.y = y$$1 / strength;
+      quad.x = x$$1 / weight;
+      quad.y = y$$1 / weight;
     }
 
     // For leaf nodes, accumulate forces from coincident quadrants.
@@ -10187,6 +10187,10 @@ function defaultSubject(d) {
   return d == null ? {x: exports.event.x, y: exports.event.y} : d;
 }
 
+function touchable() {
+  return "ontouchstart" in this;
+}
+
 var drag = function() {
   var filter = defaultFilter,
       container = defaultContainer,
@@ -10203,9 +10207,11 @@ var drag = function() {
   function drag(selection$$1) {
     selection$$1
         .on("mousedown.drag", mousedowned)
+      .filter(touchable)
         .on("touchstart.drag", touchstarted)
         .on("touchmove.drag", touchmoved)
         .on("touchend.drag touchcancel.drag", touchended)
+        .style("touch-action", "none")
         .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
   }
 
@@ -10505,6 +10511,10 @@ function defaultWheelDelta() {
   return -exports.event.deltaY * (exports.event.deltaMode ? 120 : 1) / 500;
 }
 
+function touchable$1() {
+  return "ontouchstart" in this;
+}
+
 var zoom = function() {
   var filter = defaultFilter$1,
       extent = defaultExtent,
@@ -10527,14 +10537,16 @@ var zoom = function() {
 
   function zoom(selection$$1) {
     selection$$1
+        .property("__zoom", defaultTransform)
         .on("wheel.zoom", wheeled)
         .on("mousedown.zoom", mousedowned)
         .on("dblclick.zoom", dblclicked)
+      .filter(touchable$1)
         .on("touchstart.zoom", touchstarted)
         .on("touchmove.zoom", touchmoved)
         .on("touchend.zoom touchcancel.zoom", touchended)
-        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)")
-        .property("__zoom", defaultTransform);
+        .style("touch-action", "none")
+        .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
   }
 
   zoom.transform = function(collection, transform) {
@@ -10577,6 +10589,18 @@ var zoom = function() {
         typeof x === "function" ? x.apply(this, arguments) : x,
         typeof y === "function" ? y.apply(this, arguments) : y
       ), extent.apply(this, arguments));
+    });
+  };
+
+  zoom.translateTo = function(selection$$1, x, y) {
+    zoom.transform(selection$$1, function() {
+      var e = extent.apply(this, arguments),
+          t = this.__zoom,
+          p = centroid(e);
+      return constrain(identity$6.translate(p[0], p[1]).scale(t.k).translate(
+        typeof x === "function" ? -x.apply(this, arguments) : -x,
+        typeof y === "function" ? -y.apply(this, arguments) : -y
+      ), e);
     });
   };
 
@@ -10867,7 +10891,7 @@ var zoom = function() {
   zoom.clickDistance = function(_) {
     return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
   };
-    
+
   return zoom;
 };
 
@@ -15311,6 +15335,32 @@ var identity$8 = function() {
   };
 };
 
+function naturalEarth1Raw(lambda, phi) {
+  var phi2 = phi * phi, phi4 = phi2 * phi2;
+  return [
+    lambda * (0.8707 - 0.131979 * phi2 + phi4 * (-0.013791 + phi4 * (0.003971 * phi2 - 0.001529 * phi4))),
+    phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4)))
+  ];
+}
+
+naturalEarth1Raw.invert = function(x, y) {
+  var phi = y, i = 25, delta;
+  do {
+    var phi2 = phi * phi, phi4 = phi2 * phi2;
+    phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
+        (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
+  } while (abs$1(delta) > epsilon$4 && --i > 0);
+  return [
+    x / (0.8707 + (phi2 = phi * phi) * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2)))),
+    phi
+  ];
+};
+
+var naturalEarth1 = function() {
+  return projection(naturalEarth1Raw)
+      .scale(175.295);
+};
+
 function orthographicRaw(x, y) {
   return [cos$1(y) * sin$1(x), sin$1(y)];
 }
@@ -15667,6 +15717,93 @@ function berghausRaw(lobes) {
 
   return forward;
 }
+
+function hammerRaw(A, B) {
+  if (arguments.length < 2) B = A;
+  if (B === 1) return azimuthalEqualAreaRaw;
+  if (B === Infinity) return hammerQuarticAuthalicRaw;
+
+  function forward(lambda, phi) {
+    var coordinates = azimuthalEqualAreaRaw(lambda / B, phi);
+    coordinates[0] *= A;
+    return coordinates;
+  }
+
+  forward.invert = function(x, y) {
+    var coordinates = azimuthalEqualAreaRaw.invert(x / A, y);
+    coordinates[0] *= B;
+    return coordinates;
+  };
+
+  return forward;
+}
+
+function hammerQuarticAuthalicRaw(lambda, phi) {
+  return [
+    lambda * cos$2(phi) / cos$2(phi /= 2),
+    2 * sin$2(phi)
+  ];
+}
+
+hammerQuarticAuthalicRaw.invert = function(x, y) {
+  var phi = 2 * asin$2(y / 2);
+  return [
+    x * cos$2(phi / 2) / cos$2(phi),
+    phi
+  ];
+};
+
+var hammer = function() {
+  var B = 2,
+      m = projectionMutator(hammerRaw),
+      p = m(B);
+
+  p.coefficient = function(_) {
+    if (!arguments.length) return B;
+    return m(B = +_);
+  };
+
+  return p
+    .scale(169.529);
+};
+
+function bertin1953Raw() {
+  var hammer = hammerRaw(1.68, 2),
+      fu = 1.4, k = 12;
+
+  return function(lambda, phi) {
+
+    if (lambda + phi < -fu) {
+      var u = (lambda - phi + 1.6) * (lambda + phi + fu) / 8;
+      lambda += u;
+      phi -= 0.8 * u * sin$2(phi + pi$4 / 2);
+    }
+
+    var r = hammer(lambda, phi);
+
+    var d = (1 - cos$2(lambda * phi)) / k;
+
+    if (r[1] < 0) {
+      r[0] *= 1 + d;
+    }
+    if (r[1] > 0) {
+      r[1] *= 1 + d / 1.5 * r[0] * r[0];
+    }
+
+    return r;
+  };
+}
+
+var bertin = function() {
+  var p = projection(bertin1953Raw());
+
+  p.rotate([-16.5, -42]);
+  delete p.rotate;
+
+  return p
+    .scale(176.57)
+    .center([7.93, 0.09]);
+};
 
 function mollweideBromleyTheta(cp, phi) {
   var cpsinPhi = cp * sin$2(phi), i = 30, delta;
@@ -16723,55 +16860,6 @@ guyouRaw.invert = function(x, y) {
   ];
 };
 
-function hammerRaw(A, B) {
-  if (arguments.length < 2) B = A;
-  if (B === 1) return azimuthalEqualAreaRaw;
-  if (B === Infinity) return hammerQuarticAuthalicRaw;
-
-  function forward(lambda, phi) {
-    var coordinates = azimuthalEqualAreaRaw(lambda / B, phi);
-    coordinates[0] *= A;
-    return coordinates;
-  }
-
-  forward.invert = function(x, y) {
-    var coordinates = azimuthalEqualAreaRaw.invert(x / A, y);
-    coordinates[0] *= B;
-    return coordinates;
-  };
-
-  return forward;
-}
-
-function hammerQuarticAuthalicRaw(lambda, phi) {
-  return [
-    lambda * cos$2(phi) / cos$2(phi /= 2),
-    2 * sin$2(phi)
-  ];
-}
-
-hammerQuarticAuthalicRaw.invert = function(x, y) {
-  var phi = 2 * asin$2(y / 2);
-  return [
-    x * cos$2(phi / 2) / cos$2(phi),
-    phi
-  ];
-};
-
-var hammer = function() {
-  var B = 2,
-      m = projectionMutator(hammerRaw),
-      p = m(B);
-
-  p.coefficient = function(_) {
-    if (!arguments.length) return B;
-    return m(B = +_);
-  };
-
-  return p
-    .scale(169.529);
-};
-
 function hammerRetroazimuthalRaw(phi0) {
   var sinPhi0 = sin$2(phi0),
       cosPhi0 = cos$2(phi0),
@@ -17062,29 +17150,7 @@ function interpolateSphere(lobes) {
 }
 
 var interrupt$1 = function(project, lobes) {
-  var sphere = interpolateSphere(lobes);
-
-  lobes = lobes.map(function(lobe) {
-    return lobe.map(function(l) {
-      return [
-        [l[0][0] * radians$1, l[0][1] * radians$1],
-        [l[1][0] * radians$1, l[1][1] * radians$1],
-        [l[2][0] * radians$1, l[2][1] * radians$1]
-      ];
-    });
-  });
-
-  var bounds = lobes.map(function(lobe) {
-    return lobe.map(function(l) {
-      var x0 = project(l[0][0], l[0][1])[0],
-          x1 = project(l[2][0], l[2][1])[0],
-          y0 = project(l[1][0], l[0][1])[1],
-          y1 = project(l[1][0], l[1][1])[1],
-          t;
-      if (y0 > y1) t = y0, y0 = y1, y1 = t;
-      return [[x0, y0], [x1, y1]];
-    });
-  });
+  var sphere, bounds;
 
   function forward(lambda, phi) {
     var sign$$1 = phi < 0 ? -1 : +1, lobe = lobes[+(phi < 0)];
@@ -17118,6 +17184,46 @@ var interrupt$1 = function(project, lobes) {
     rotateStream.sphere = function() { geoStream(sphere, sphereStream); };
     return rotateStream;
   };
+  
+  p.lobes = function(_) {
+    if (!arguments.length) return lobes.map(function(lobe) {
+      return lobe.map(function(l) {
+        return [
+          [l[0][0] * degrees$2, l[0][1] * degrees$2],
+          [l[1][0] * degrees$2, l[1][1] * degrees$2],
+          [l[2][0] * degrees$2, l[2][1] * degrees$2]
+        ];
+      });
+    });
+
+    sphere = interpolateSphere(_);
+
+    lobes = _.map(function(lobe) {
+      return lobe.map(function(l) {
+        return [
+          [l[0][0] * radians$1, l[0][1] * radians$1],
+          [l[1][0] * radians$1, l[1][1] * radians$1],
+          [l[2][0] * radians$1, l[2][1] * radians$1]
+        ];
+      });
+    });
+
+    bounds = lobes.map(function(lobe) {
+      return lobe.map(function(l) {
+        var x0 = project(l[0][0], l[0][1])[0],
+            x1 = project(l[2][0], l[2][1])[0],
+            y0 = project(l[1][0], l[0][1])[1],
+            y1 = project(l[1][0], l[1][1])[1],
+            t;
+        if (y0 > y1) t = y0, y0 = y1, y1 = t;
+        return [[x0, y0], [x1, y1]];
+      });
+    });
+
+    return p;
+  };
+
+  if (lobes != null) p.lobes(lobes);
 
   return p;
 };
@@ -17357,32 +17463,6 @@ function modifiedStereographic(coefficients, rotate) {
 
   return p;
 }
-
-function naturalEarthRaw(lambda, phi) {
-  var phi2 = phi * phi, phi4 = phi2 * phi2;
-  return [
-    lambda * (0.8707 - 0.131979 * phi2 + phi4 * (-0.013791 + phi4 * (0.003971 * phi2 - 0.001529 * phi4))),
-    phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4)))
-  ];
-}
-
-naturalEarthRaw.invert = function(x, y) {
-  var phi = y, i = 25, delta;
-  do {
-    var phi2 = phi * phi, phi4 = phi2 * phi2;
-    phi -= delta = (phi * (1.007226 + phi2 * (0.015085 + phi4 * (-0.044475 + 0.028874 * phi2 - 0.005916 * phi4))) - y) /
-        (1.007226 + phi2 * (0.015085 * 3 + phi4 * (-0.044475 * 7 + 0.028874 * 9 * phi2 - 0.005916 * 11 * phi4)));
-  } while (abs$2(delta) > epsilon$5 && --i > 0);
-  return [
-    x / (0.8707 + (phi2 = phi * phi) * (-0.131979 + phi2 * (-0.013791 + phi2 * phi2 * phi2 * (0.003971 - 0.001529 * phi2)))),
-    phi
-  ];
-};
-
-var naturalEarth = function() {
-  return projection(naturalEarthRaw)
-      .scale(175.295);
-};
 
 function naturalEarth2Raw(lambda, phi) {
   var phi2 = phi * phi, phi4 = phi2 * phi2, phi6 = phi2 * phi4;
@@ -18529,6 +18609,7 @@ exports.geoInterpolate = interpolate$2;
 exports.geoLength = length$2;
 exports.geoMercator = mercator;
 exports.geoMercatorRaw = mercatorRaw;
+exports.geoNaturalEarth1 = naturalEarth1;
 exports.geoOrthographic = geoOrthographic;
 exports.geoOrthographicRaw = orthographicRaw;
 exports.geoPath = index$1;
@@ -18543,6 +18624,7 @@ exports.geoTransverseMercator = transverseMercator;
 exports.geoTransverseMercatorRaw = transverseMercatorRaw;
 exports.geoArmadillo = armadillo;
 exports.geoBaker = baker;
+exports.geoBertin1953 = bertin;
 exports.geoBoggs = boggs;
 exports.geoInterruptedBoggs = boggs$1;
 exports.geoBonne = bonne;
@@ -18570,7 +18652,6 @@ exports.geoHealpix = healpix;
 exports.geoHomolosine = homolosine;
 exports.geoInterruptedHomolosine = homolosine$1;
 exports.geoLoximuthal = loximuthal;
-exports.geoNaturalEarth = naturalEarth;
 exports.geoNaturalEarth2 = naturalEarth2;
 exports.geoMiller = miller;
 exports.geoModifiedStereographicMiller = modifiedStereographicMiller;
@@ -18579,6 +18660,7 @@ exports.geoPatterson = patterson;
 exports.geoPeirceQuincuncial = peirce;
 exports.geoPolyconic = polyconic;
 exports.geoRobinson = robinson;
+exports.geoRobinsonRaw = robinsonRaw;
 exports.geoInterruptedSinuMollweide = sinuMollweide$1;
 exports.geoSinuMollweide = sinuMollweide;
 exports.geoSinusoidal = sinusoidal;
