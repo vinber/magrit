@@ -1175,9 +1175,9 @@ function add_layer_topojson(text, options = {}) {
         allowOutsideClick: true,
         type: 'success',
       }).then(() => {
-        change_projection_4(_proj);
-        current_proj_name = 'def_proj4';
         _app.last_projection = parsedJSON.proj;
+        current_proj_name = 'def_proj4';
+        change_projection_4(_proj);
         addLastProjectionSelect('def_proj4', _app.last_projection);
         if (target_layer_on_add && joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
@@ -1207,9 +1207,9 @@ function add_layer_topojson(text, options = {}) {
         proj_str = rv.proj4;
         custom_name = rv.name;
       }
-      change_projection_4(proj4(proj_str));
       current_proj_name = 'def_proj4';
       _app.last_projection = proj_str;
+      change_projection_4(proj4(proj_str));
       addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
     } else if (options.default_projection[0] === 'd3') {
       current_proj_name = options.default_projection[1];
@@ -1278,12 +1278,12 @@ function scale_to_lyr(name) {
 */
 function center_map(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
-  const zoom_scale = .95 / Math.max(
+  const zoom_scale = 0.95 / Math.max(
     (bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w,
     (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
   const zoom_translate = [
     (w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2,
-    (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2
+    (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2,
   ];
   const _zoom = svg_map.__zoom;
   _zoom.k = zoom_scale;
@@ -1819,20 +1819,41 @@ const getIdLayoutFeature = (type) => {
 
 
 function handleClickAddRectangle() {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    map.select('.brush_rect_draw').remove();
+    document.body.style.cursor = '';
+    document.removeEventListener('keydown', esc_cancel);
+  };
   function rectbrushended() {
+    if (!d3.event.selection) {
+      map.select('.brush_rect_draw').remove();
+      document.body.style.cursor = '';
+      msg.dismiss();
+      document.removeEventListener('keydown', esc_cancel);
+      alertify.notify(i18next.t('app_page.notification.brush_map_cancelled'), 'warning', 5);
+      return;
+    }
     msg.dismiss();
     const k = svg_map.__zoom.k;
     const wi = (d3.event.selection[1][0] - d3.event.selection[0][0]) / k;
     const he = (d3.event.selection[1][1] - d3.event.selection[0][1]) / k;
     new UserRectangle(`user_rectangle_${rectangle_id}`, d3.event.selection[0], svg_map, false, wi, he);
     map.select('.brush_rect_draw').remove();
+    document.removeEventListener('keydown', esc_cancel);
     document.body.style.cursor = '';
   }
   const rectangle_id = getIdLayoutFeature('rectangle');
   if (rectangle_id === null) {
     return;
   }
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  const msg = alertify.notify(i18next.t('app_page.notification.instruction_brush_map'), 'warning', 0);
+  document.addEventListener('keydown', esc_cancel);
   document.body.style.cursor = 'not-allowed';
   const _brush = d3.brush().on('end', rectbrushended);
   map.append('g')
@@ -1841,11 +1862,24 @@ function handleClickAddRectangle() {
 }
 
 function handleClickAddOther(type) {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    document.body.style.cursor = '';
+    map.style('cursor', '').on('click', null);
+    document.removeEventListener('keydown', esc_cancel);
+  };
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  document.addEventListener('keydown', esc_cancel);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
     .on('click', () => {
       msg.dismiss();
+      document.removeEventListener('keydown', esc_cancel);
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
       if (type === 'north_arrow') {
@@ -1857,6 +1891,17 @@ function handleClickAddOther(type) {
 }
 
 function handleClickAddEllipse() {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    document.body.style.cursor = '';
+    map.style('cursor', '').on('click', null);
+    document.removeEventListener('keydown', esc_cancel);
+  };
   const ellipse_id = getIdLayoutFeature('ellipse');
   if (ellipse_id === null) {
     return;
@@ -1865,9 +1910,11 @@ function handleClickAddEllipse() {
   let start_point,
     tmp_start_point;
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  document.addEventListener('keydown', esc_cancel);
   map.style('cursor', 'crosshair')
     .on('click', () => {
       msg.dismiss();
+      document.removeEventListener('keydown', esc_cancel);
       start_point = [d3.event.layerX, d3.event.layerY];
       tmp_start_point = map.append('rect')
         .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
@@ -1880,24 +1927,49 @@ function handleClickAddEllipse() {
 }
 
 function handleClickTextBox(text_box_id) {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    document.body.style.cursor = '';
+    map.style('cursor', '').on('click', null);
+    document.removeEventListener('keydown', esc_cancel);
+  };
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
     .on('click', () => {
       msg.dismiss();
+      document.removeEventListener('keydown', esc_cancel);
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
       const text_box = new Textbox(svg_map, text_box_id, [d3.event.layerX, d3.event.layerY]);
       setTimeout(() => { text_box.editStyle(); }, 350);
     });
+  document.addEventListener('keydown', esc_cancel);
 }
 
 function handleClickAddPicto() {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    document.body.style.cursor = '';
+    map.style('cursor', '').on('click', null);
+    document.removeEventListener('keydown', esc_cancel);
+  };
   const symbol_id = getIdLayoutFeature('single_symbol');
   if (symbol_id === null) {
     return;
   }
   const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  document.addEventListener('keydown', esc_cancel);
   let map_point,
     click_pt,
     prep_symbols,
@@ -1914,6 +1986,7 @@ function handleClickAddPicto() {
   map.style('cursor', 'crosshair')
     .on('click', () => {
       msg.dismiss();
+      document.removeEventListener('keydown', esc_cancel);
       click_pt = [d3.event.layerX, d3.event.layerY];
       map_point = map.append('rect')
         .attrs({ x: click_pt[0] - 2, y: click_pt[1] - 2, height: 4, width: 4 })
@@ -1973,6 +2046,20 @@ function handleClickAddPicto() {
 // }
 
 function handleClickAddArrow() {
+  const esc_cancel = function esc_cancel(evt) {
+    evt = evt || window.event;
+    if (('key' in evt && (
+        evt.key !== 'Escape' && evt.key !== 'Esc')) || evt.keyCode !== 27) {
+      return;
+    }
+    msg.dismiss();
+    document.body.style.cursor = '';
+    map.style('cursor', '').on('click', null);
+    if (tmp_start_point && tmp_start_point.remove) {
+      tmp_start_point.remove();
+    }
+    document.removeEventListener('keydown', esc_cancel);
+  };
   const arrow_id = getIdLayoutFeature('arrow');
   if (arrow_id === null) {
     return;
@@ -1983,6 +2070,7 @@ function handleClickAddArrow() {
     tmp_end_point;
   document.body.style.cursor = 'not-allowed';
   let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
+  document.addEventListener('keydown', esc_cancel);
   map.style('cursor', 'crosshair')
     .on('click', () => {
       if (!start_point) {
@@ -2000,6 +2088,7 @@ function handleClickAddArrow() {
       }
       if (start_point && end_point) {
         msg.dismiss();
+        document.removeEventListener('keydown', esc_cancel);
         setTimeout(() => {
           tmp_start_point.remove();
           tmp_end_point.remove();
@@ -2015,7 +2104,7 @@ function prepare_available_symbols() {
   return xhrequest('GET', 'static/json/list_symbols.json', null)
     .then((result) => {
       const list_res = JSON.parse(result);
-      return Promise.all(list_res.map(name => getImgDataUrl(`static/img/svg_symbols/${name}`)))
+      return Promise.all(list_res.map(name => getImgDataUrl(`stiatelab/magritatic/img/svg_symbols/${name}`)))
         .then((symbols) => {
           for (let i = 0; i < list_res.length; i++) {
             default_symbols.push([list_res[i], symbols[i]]);

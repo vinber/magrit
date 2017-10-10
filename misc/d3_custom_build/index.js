@@ -174,6 +174,7 @@ export {
   geoLength,
   geoMercator,
   geoMercatorRaw,
+  geoNaturalEarth1,
   geoOrthographic,
   geoOrthographicRaw,
   geoPath,
@@ -191,6 +192,7 @@ export {
 export {
   geoArmadillo,
   geoBaker,
+  geoBertin1953,
   geoBoggs,
   geoInterruptedBoggs,
   geoBonne,
@@ -218,7 +220,6 @@ export {
   geoHomolosine,
   geoInterruptedHomolosine,
   geoLoximuthal,
-  geoNaturalEarth,
   geoNaturalEarth2,
   geoMiller,
   geoModifiedStereographicMiller,
@@ -227,6 +228,7 @@ export {
   geoPeirceQuincuncial,
   geoPolyconic,
   geoRobinson,
+  geoRobinsonRaw,
   geoInterruptedSinuMollweide,
   geoSinuMollweide,
   geoSinusoidal,
@@ -237,4 +239,3 @@ export {
   geoVanDerGrinten4,
   geoWinkel3
 } from "d3-geo-projection";
-

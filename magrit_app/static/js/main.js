@@ -1352,8 +1352,6 @@ const available_fonts = [
   ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
   ['Bitter', 'Bitter,sans-serif'],
   ['Dosis', 'Dosis,sans-serif'],
-  ['Roboto', 'Roboto,sans-serif'],
-  ['Lobster', 'Lobster,sans-serif'],
   ['Impact', 'Impact,Charcoal,sans-serif'],
   ['Inconsolata', 'Inconsolata,sans-serif'],
   ['Georgia', 'Georgia,serif'],
@@ -2204,8 +2202,16 @@ function change_projection(new_proj_name) {
 
   path = d3.geoPath().projection(proj).pointRadius(4);
 
-  // Enable or disable the 'brush zoom' button allowing to zoom according to a rectangle selection:
-  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? '' : 'none';
+  // According to the availability of the invert method (as they both need it):
+  //  - Enable or disable the 'brush zoom' button allowing to zoom according to a rectangle selection:
+  //  - Enable or disable the "scale bar" feature
+  if (proj.invert !== undefined) {
+    document.getElementById('brush_zoom_button').style.display = '';
+    d3.select('img#btn_scale').style('opacity', '1').on('click', () => add_layout_feature('scale'));
+  } else {
+    document.getElementById('brush_zoom_button').style.display = 'none';
+    d3.select('img#btn_scale').style('opacity', '0.3').on('click', null);
+  }
 
   // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
   let layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -2244,7 +2250,8 @@ function change_projection_4(_proj) {
   remove_layer_cleanup('Sphere');
 
   // Disable the "sphere" and the "graticule" layers only if the projection is a conic one:
-  if (_app.last_projection.indexOf('=lcc') > -1 || _app.last_projection.indexOf('Lambert_Conformal_Conic') > -1) {
+  if (_app.last_projection && (
+      _app.last_projection.indexOf('=lcc') > -1 || _app.last_projection.indexOf('Lambert_Conformal_Conic') > -1)) {
     d3.select('img#btn_graticule').style('opacity', '0.3').on('click', null);
     d3.select('img#btn_sphere').style('opacity', '0.3').on('click', null);
   } else {
@@ -2260,8 +2267,16 @@ function change_projection_4(_proj) {
   proj = getD3ProjFromProj4(_proj);
   path = d3.geoPath().projection(proj).pointRadius(4);
 
-  // Enable or disable the "brush zoom" button allowing to zoom according to a rectangle selection:
-  document.getElementById('brush_zoom_button').style.display = proj.invert !== undefined ? '' : 'none';
+  // According to the availability of the invert method (as they both need it):
+  //  - Enable or disable the 'brush zoom' button allowing to zoom according to a rectangle selection:
+  //  - Enable or disable the "scale bar" feature
+  if (proj.invert !== undefined) {
+    document.getElementById('brush_zoom_button').style.display = '';
+    d3.select('img#btn_scale').style('opacity', '1').on('click', () => add_layout_feature('scale'));
+  } else {
+    document.getElementById('brush_zoom_button').style.display = 'none';
+    d3.select('img#btn_scale').style('opacity', '0.3').on('click', null);
+  }
 
   // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
   let layer_name = Object.getOwnPropertyNames(user_data)[0];

@@ -107,13 +107,15 @@
             "info": "Showing {start} to {end} of {rows} entries"
         },
         "notification":{
+            "brush_map_cancelled": "No rectangle detected. The operation has been canceled.",
             "success_sphere_added": "Success: sphere added!",
             "success_graticule_added": "Success: graticule added!",
             "warning_deactivation_scalebar": "Scale bar disabled",
             "warning_deactivation_prop_symbol_legend": "Proportionnal symbols legend disabled",
-            "instruction_click_map": "Click on the map to add the element",
-            "instruction_click_map_arrow1": "Click on the map to locate the arrow start point",
-            "instruction_click_map_arrow2": "Click on the map to locate the arrow end point",
+            "instruction_brush_map": "Draw a rectangle on the map while keeping the cursor pressed. Press 'Esc' to cancel.",
+            "instruction_click_map": "Click on the map to add the element. Press 'Esc' to cancel.",
+            "instruction_click_map_arrow1": "Click on the map to locate the arrow start point. Press 'Esc' to cancel.",
+            "instruction_click_map_arrow2": "Click on the map to locate the arrow end point. Press 'Esc' to cancel.",
             "instruction_modify_feature": "Use the red dots to modify the feature. <br>Double-click to exit edit mode."
         },
         "section1": {
@@ -194,6 +196,7 @@
             "AzimuthalEquidistant": "Azimuthal Equidistant",
             "Baker": "Baker Dinomic",
             "Berhmann": "Berhmann",
+            "Bertin": "Bertin 1953",
             "Boggs": "Boggs",
             "InterruptedBoggs": "Interrupted Boggs",
             "Bonne": "Bonne",

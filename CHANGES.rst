@@ -1,12 +1,19 @@
 Changes
 =======
 
-0.5.4 (2017-xx-xx)
+
+0.5.4 (2017-10-01)
 ------------------
 
-- Change again the default font used in text/tspan SVG elements (in favor of 'verdana'). Should fix (for real this time?) the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
+- Change the default font used in text/tspan SVG elements (in favor of verdana). Should fix (for real this time?) the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
 
-- Deactivate the "sphere" and the "graticule" layers when using a "conic conformal" projection (the generated path is pretty huge as it seems to tend towards the infinite).
+- Disable the ability to use sphere and graticule with lambert conic conformal projection (the generated path, which is currently not clipped when using Proj4 projections, could be very heavy due to the conical nature of the projection).
+
+- Allow to cancel the ongoing addition of a layout item by pressing Esc (and so inform the user about that in the notification).
+
+- Improve the legend for proportionnal symbols (only for "single color" ones) by also using the stroke color of the result layer in the legend.
+
+- Add "Bertin 1953" projection to the list of available projections.
 
 
 0.5.3 (2017-09-22)

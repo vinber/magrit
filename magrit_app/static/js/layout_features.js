@@ -260,7 +260,7 @@ class UserArrow {
     return atan2(dy, dx) * (180 / PI);
   }
 
-  calcDestFromOAD(origin, angle, distance) {
+  static calcDestFromOAD(origin, angle, distance) {
     const theta = angle / (180 / PI),
       dx = distance * cos(theta),
       dy = distance * sin(theta);
@@ -849,8 +849,8 @@ const scaleBar = {
     this.precision = 0;
     this.start_end_bar = false;
     this.fixed_size = false;
-    let rv = this.getDist();
-    if(rv) return;
+    const rv = this.getDist();
+    if (rv) return;
 
     const getItems = () => [
       { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
@@ -871,7 +871,7 @@ const scaleBar = {
       .styles({
         'font-family': 'verdana',
         'font-size': '11px',
-        'text-anchor': 'middle'
+        'text-anchor': 'middle',
       })
       .text(`${this.dist_txt} km`);
 
@@ -923,8 +923,10 @@ const scaleBar = {
       this.bar_size = 50;
     }
 
-    const pt1 = proj.invert([(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]),
-      pt2 = proj.invert([(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
+    const pt1 = proj.invert(
+      [(x_pos - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
+    const pt2 = proj.invert(
+      [(x_pos + this.bar_size - z_trans[0]) / z_scale, (y_pos - z_trans[1]) / z_scale]);
     if (!pt1 || !pt2) {
       this.remove();
       return true;
@@ -1111,11 +1113,11 @@ const northArrow = {
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
-        let t1 = this.querySelector('image'),
+        const t1 = this.querySelector('image'),
           t2 = this.querySelector('rect'),
-          tx = +d3.event.x,
-          ty = +d3.event.y,
           dim = t2.width.baseVal.value / 2;
+        let tx = +d3.event.x,
+          ty = +d3.event.y;
         if (tx < 0 - dim || tx > w + dim || ty < 0 - dim || ty > h + dim) {
           return;
         }
@@ -1263,9 +1265,14 @@ const northArrow = {
         const new_size = +this.value;
         self.arrow_img.attr('width', new_size);
         self.arrow_img.attr('height', new_size);
-        let bbox = self.arrow_img.node().getBoundingClientRect(),
+        const bbox = self.arrow_img.node().getBoundingClientRect(),
           xy0_map = get_map_xy0();
-        self.under_rect.attrs({ x: bbox.left - 7.5 - xy0_map.x, y: bbox.top - 7.5 - xy0_map.y, height: bbox.height + 15, width: bbox.width + 15 });
+        self.under_rect.attrs({
+          x: bbox.left - 7.5 - xy0_map.x,
+          y: bbox.top - 7.5 - xy0_map.y,
+          height: bbox.height + 15,
+          width: bbox.width + 15
+        });
         self.x_center = x_pos + new_size / 2;
         self.y_center = y_pos + new_size / 2;
         document.getElementById('txt_size_n_arrow').value = new_size;
@@ -1318,7 +1325,10 @@ class UserRectangle {
     const self = this;
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
-      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+      this.pt1 = [
+        (origin_pt[0] - zoom_param.x) / zoom_param.k,
+        (origin_pt[1] - zoom_param.y) / zoom_param.k
+      ];
     } else {
       this.pt1 = origin_pt;
     }
@@ -1343,7 +1353,7 @@ class UserRectangle {
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
-        let _t = this.querySelector('rect'),
+        const _t = this.querySelector('rect'),
           subject = d3.event.subject,
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
           ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
@@ -1442,10 +1452,16 @@ class UserRectangle {
     const self = this,
       rectangle_elem = self.rectangle.node().querySelector('rect'),
       zoom_param = svg_map.__zoom,
-      map_locked = !!map_div.select('#hand_button').classed('locked'),
-      center_pt = [self.pt1[0] + rectangle_elem.width.baseVal.value / 2, self.pt1[1] + rectangle_elem.height.baseVal.value / 2],
-      bottomright = [self.pt1[0] + rectangle_elem.width.baseVal.value, self.pt1[1] + rectangle_elem.height.baseVal.value],
-      msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+      map_locked = !!map_div.select('#hand_button').classed('locked');
+    const center_pt = [
+      self.pt1[0] + rectangle_elem.width.baseVal.value / 2,
+      self.pt1[1] + rectangle_elem.height.baseVal.value / 2,
+    ];
+    const bottomright = [
+      self.pt1[0] + rectangle_elem.width.baseVal.value,
+      self.pt1[1] + rectangle_elem.height.baseVal.value,
+    ];
+    const msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
     let topleft = self.pt1.slice();
 
@@ -1495,17 +1511,14 @@ class UserRectangle {
         height: 8,
         width: 8,
       })
-      // .attr('class', 'ctrl_pt')
-      // .attr('id', 'pt_top')
-      // .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
-      // .attr('y', (center_pt[1] - rectangle_elem.height.baseVal.value / 2) * zoom_param.k + zoom_param.y - 4)
-      // .attr('height', 8)
-      // .attr('width', 8)
       .call(d3.drag().on('drag', function () {
-        const dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+        const dist = (d3.event.y - zoom_param.y) / zoom_param.k;
+        if ((self.height - (dist - self.pt1[1])) < 2) {
+          return;
+        }
         d3.select(this).attr('y', d3.event.y - 4);
         const a = self.pt1[1];
-        self.pt1[1] = rectangle_elem.y.baseVal.value = topleft[1] - dist;
+        self.pt1[1] = rectangle_elem.y.baseVal.value = dist;
         topleft = self.pt1.slice();
         rectangle_elem.height.baseVal.value = self.height = Math.abs(self.height - (self.pt1[1] - a));
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
@@ -1521,10 +1534,13 @@ class UserRectangle {
         y: center_pt[1] * zoom_param.k + zoom_param.y - 4
       })
       .call(d3.drag().on('drag', function () {
-        const dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        const dist = /*topleft[0] -*/ (d3.event.x - zoom_param.x) / zoom_param.k;
+        if ((self.width + (self.pt1[0] -dist)) < 2) {
+          return;
+        }
         d3.select(this).attr('x', d3.event.x - 4);
         const a = self.pt1[0];
-        self.pt1[0] = rectangle_elem.x.baseVal.value = topleft[0] - dist;
+        self.pt1[0] = rectangle_elem.x.baseVal.value = dist; // topleft[0] - dist;
         topleft = self.pt1.slice();
         rectangle_elem.width.baseVal.value = self.width = Math.abs(self.width + (a - self.pt1[0]));
         map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
@@ -1539,16 +1555,13 @@ class UserRectangle {
         height: 8,
         width: 8,
       })
-      // .attr('class', 'ctrl_pt')
-      // .attr('id', 'pt_bottom')
-      // .attr('x', center_pt[0] * zoom_param.k + zoom_param.x - 4)
-      // .attr('y', bottomright[1] * zoom_param.k + zoom_param.y - 4)
-      // .attr('height', 8)
-      // .attr('width', 8)
       .call(d3.drag().on('drag', function () {
-        const dist = topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k;
+        const dist = -(topleft[1] - (d3.event.y - zoom_param.y) / zoom_param.k);
+        if (dist < 2) {
+          return;
+        }
         d3.select(this).attr('y', d3.event.y - 4);
-        self.height = rectangle_elem.height.baseVal.value = Math.abs(dist);
+        self.height = rectangle_elem.height.baseVal.value = dist;
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
@@ -1561,16 +1574,13 @@ class UserRectangle {
         height: 8,
         width: 8,
       })
-      // .attr('class', 'ctrl_pt')
-      // .attr('id', 'pt_right')
-      // .attr('x', bottomright[0] * zoom_param.k + zoom_param.x - 4)
-      // .attr('y', center_pt[1] * zoom_param.k + zoom_param.y - 4)
-      // .attr('height', 8)
-      // .attr('width', 8)
       .call(d3.drag().on('drag', function () {
-        const dist = topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
+        const dist = -(topleft[0] - (d3.event.x - zoom_param.x) / zoom_param.k);
+        if (dist < 2) {
+          return;
+        }
         d3.select(this).attr('x', d3.event.x - 4);
-        self.width = rectangle_elem.width.baseVal.value = Math.abs(dist);
+        self.width = rectangle_elem.width.baseVal.value = dist;
         map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
@@ -1673,7 +1683,10 @@ class UserEllipse {
 
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
-      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+      this.pt1 = [
+        (origin_pt[0] - zoom_param.x) / zoom_param.k,
+        (origin_pt[1] - zoom_param.y) / zoom_param.k,
+      ];
     } else {
       this.pt1 = origin_pt;
     }
@@ -1712,13 +1725,13 @@ class UserEllipse {
   }
 
   draw() {
-    let context_menu = new ContextMenu(),
-      getItems = () => [
-        { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-        { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-        { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-        { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
-      ];
+    const context_menu = new ContextMenu();
+    const getItems = () => [
+      { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+    ];
 
     this.ellipse = this.svg_elem.append('g')
       .attrs({ class: 'user_ellipse legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString() });

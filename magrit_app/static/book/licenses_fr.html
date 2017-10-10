@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Licences - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,16 +81,18 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h1>Licences et logiciels tiers</h1>
+                    <a class="header" href="./licenses_fr.html#licences-et-logiciels-tiers" id="licences-et-logiciels-tiers"><h1>Licences et logiciels tiers</h1></a>
 <p>L'application Magrit (documentation incluse) est régit par la licence CECILL-2.1 dont les termes sont disponibles en ligne (en anglais et en français).<br />
 Il s'agit d'une licence garantissant le respect des principes du logiciel libre: libre accès au code source, libre utilisation, libre modification, libre redistribution.</p>
 <p>Différentes librairies et applications sont utilisées :</p>
-<table><thead><tr><td> Name                                                  </td><td> Version </td><td> License        </td></tr></thead>
+<table><thead><tr><th> Name                                                  </th><th> Version </th><th> License        </th></tr></thead><tbody>
 <tr><td> <a href="http://aiohttp.readthedocs.io">aiohttp</a>              </td><td> 2.2     </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="http://cython.org">Cython</a>                           </td><td>         </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="https://github.com/simogeo/geostats">geostats</a>       </td><td>         </td><td> MIT            </td></tr>
@@ -104,19 +125,22 @@ Il s'agit d'une licence garantissant le respect des principes du logiciel libre:
 <tr><td> <a href="https://github.com/esnme/ultrajson">ujson</a>           </td><td>         </td><td> BSD-like       </td></tr>
 <tr><td> <a href="https://github.com/MagicStack/uvloop">uvloop</a>        </td><td>         </td><td> MIT/Apache-2.0 </td></tr>
 <tr><td> <a href="https://github.com/python-excel/xlrd">xlrd</a>          </td><td>         </td><td> BSD-like       </td></tr>
-</table>
+</tbody></table>
+<p>Cette application contient des <a href="http://colorbrewer2.org">schémas de couleurs developpés par Cynthia Brewer</a>.<br />
+Cette application contient des composants <em>(xlrd)</em> developpés par <a href="david@giffin.org">David Giffin</a>.<br />
+Cette application contient la projection <em>Bertin 1953</em>, contribuée à <a href="https://github.com/d3/d3-geo-projection">d3-geo-projection</a> par <a href="https://visionscarto.net/">Philippe Rivière</a>.</p>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./privacy.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./privacy.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="misc/contributors.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="misc/contributors.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -146,6 +170,12 @@ Il s'agit d'une licence garantissant le respect des principes du logiciel libre:
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>
