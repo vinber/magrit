@@ -2104,7 +2104,7 @@ function prepare_available_symbols() {
   return xhrequest('GET', 'static/json/list_symbols.json', null)
     .then((result) => {
       const list_res = JSON.parse(result);
-      return Promise.all(list_res.map(name => getImgDataUrl(`stiatelab/magritatic/img/svg_symbols/${name}`)))
+      return Promise.all(list_res.map(name => getImgDataUrl(`static/img/svg_symbols/${name}`)))
         .then((symbols) => {
           for (let i = 0; i < list_res.length; i++) {
             default_symbols.push([list_res[i], symbols[i]]);

@@ -1,6 +1,11 @@
 Changes
 =======
 
+0.5.5 (2017-10-12)
+------------------
+
+- Fix bug with pictogram displaying in the appropriate box. 
+
 
 0.5.4 (2017-10-01)
 ------------------
