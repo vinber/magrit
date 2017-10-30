@@ -1,0 +1,20 @@
+button.accordion, button.accordion_disc, button.accordion_proj {
+  background-color: #0e0a0a;
+  color: #ffa500;
+}
+
+button.accordion::after, button.accordion_disc::after, button.accordion_projc::after {
+  color: #ffa500;
+}
+
+#current_app_lang {
+  color: #ffa500 !important;
+}
+
+#form_projection2 {
+  color: #ffa500 !important;
+}
+
+body {
+  background: #483101;
+}

@@ -564,7 +564,7 @@ function apply_user_preferences(json_pref) {
       s = map_config.projection_scale;
       t = map_config.projection_translate;
       proj.scale(s).translate(t);
-      if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
+      if (map_config.projection_rotation) proj = proj.rotate(map_config.projection_rotation);
       path = d3.geoPath().projection(proj).pointRadius(4);
       map.selectAll('.layer').selectAll('path').attr('d', path);
       handleClipPath(current_proj_name);
@@ -699,6 +699,7 @@ function apply_user_preferences(json_pref) {
             });
           new_txt_box.fontSize = +ft.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.fontFamily = ft.style.split('font-family: ')[1].split(';')[0];
+          console.log(ft.style.split('font-family: ')[1].split(';')[0]);
           new_txt_box.update_text(ft.content);
         }
       }
@@ -753,7 +754,7 @@ function apply_user_preferences(json_pref) {
   s = map_config.projection_scale;
   t = map_config.projection_translate;
   proj.scale(s).translate(t);
-  if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
+  if (map_config.projection_rotation) proj = proj.rotate(map_config.projection_rotation);
   defs = map.append('defs');
   path = d3.geoPath().projection(proj).pointRadius(4);
   map.selectAll('.layer').selectAll('path').attr('d', path);

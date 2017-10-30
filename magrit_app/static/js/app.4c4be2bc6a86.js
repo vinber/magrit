@@ -70,7 +70,7 @@ function setUpInterface(reload_project) {
   var bg = document.createElement('div');
   bg.id = 'overlay';
   bg.style.display = 'none';
-  bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
+  bg.innerHTML = '\n<img src="static/img/logo_magrit_orange.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
   var btn = document.createElement('button');
   btn.style.fontSize = '13px';
   btn.style.background = '#4b9cdb';
@@ -170,24 +170,24 @@ function setUpInterface(reload_project) {
 
   var const_options = d3.select('.header_options_right').append('div').attr('id', 'const_options').style('display', 'inline');
 
-  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/File_font_awesome_blank.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/header/File_font_awesome_orange.png" width="25" height="auto" alt="Load project file"/>').on('click', function () {
     window.localStorage.removeItem('magrit_project');
     window.removeEventListener('beforeunload', beforeUnloadWindow);
     location.reload();
   });
 
-  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Folder_open_alt_font_awesome.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/header/Folder_open_alt_font_awesome_orange.png" width="25" height="auto" alt="Load project file"/>').on('click', load_map_template);
 
-  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', margin: 'auto' }).html('<img src="static/img/Breezeicons-actions-22-document-save-blank.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', margin: 'auto' }).html('<img src="static/img/header/Breezeicons-actions-22-document-save-orange.png" width="25" height="auto" alt="Save project to disk"/>').on('click', save_map_template);
 
-  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
+  const_options.append('button').attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' }).html('<img src="static/img/header/Documents_icon_-_noun_project_5020_orange.png" width="20" height="auto" alt="Documentation"/>').on('click', function () {
     window.open('static/book/index.html', 'DocWindow', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
   });
 
   const_options.append('button').attrs({ id: 'help_btn',
     class: 'const_buttons i18n',
     'data-i18n': '[tooltip-title]app_page.help_box.tooltip_btn',
-    'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent' }).html('<img src="static/img/High-contrast-help-browser_blank.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on('click', function () {
+    'data-placement': 'bottom' }).styles({ cursor: 'pointer', background: 'transparent' }).html('<img src="static/img/header/High-contrast-help-browser_orange.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>').on('click', function () {
     if (document.getElementById('menu_lang')) document.getElementById('menu_lang').remove();
     var click_func = function click_func(window_name, target_url) {
       window.open(target_url, window_name, 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.3e43df99730a.json'
+      loadPath: 'static/locales/{{lng}}/translation.4c4be2bc6a86.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -17852,7 +17852,7 @@ function apply_user_preferences(json_pref) {
       s = map_config.projection_scale;
       t = map_config.projection_translate;
       proj.scale(s).translate(t);
-      if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
+      if (map_config.projection_rotation) proj = proj.rotate(map_config.projection_rotation);
       path = d3.geoPath().projection(proj).pointRadius(4);
       map.selectAll('.layer').selectAll('path').attr('d', path);
       handleClipPath(current_proj_name);
@@ -17990,6 +17990,7 @@ function apply_user_preferences(json_pref) {
           });
           new_txt_box.fontSize = +_ft4.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.fontFamily = _ft4.style.split('font-family: ')[1].split(';')[0];
+          console.log(_ft4.style.split('font-family: ')[1].split(';')[0]);
           new_txt_box.update_text(_ft4.content);
         }
       }
@@ -18043,7 +18044,7 @@ function apply_user_preferences(json_pref) {
   s = map_config.projection_scale;
   t = map_config.projection_translate;
   proj.scale(s).translate(t);
-  if (map_config.projection_rotate) proj = proj.rotate(map_config.projection_rotate);
+  if (map_config.projection_rotation) proj = proj.rotate(map_config.projection_rotation);
   defs = map.append('defs');
   path = d3.geoPath().projection(proj).pointRadius(4);
   map.selectAll('.layer').selectAll('path').attr('d', path);
