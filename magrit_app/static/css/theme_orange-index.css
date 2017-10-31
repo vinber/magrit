@@ -1,0 +1,12 @@
+.enter_button {
+  color: darkorange;
+}
+
+#btn-group-lang > button {
+  color: darkorange;
+  background: transparent none repeat scroll 0% 0% border-box;
+}
+
+#btn-group-lang > ul > li {
+  color: darkorange;
+}

@@ -14,7 +14,3 @@ button.accordion::after, button.accordion_disc::after, button.accordion_projc::a
 #form_projection2 {
   color: #ffa500 !important;
 }
-
-body {
-  background: #483101;
-}

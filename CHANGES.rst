@@ -1,10 +1,16 @@
 Changes
 =======
 
+0.5.6 (2017-10-31)
+------------------
+
+- Fix bug with projection rotation properties not applied when reloading a project file.
+
+
 0.5.5 (2017-10-12)
 ------------------
 
-- Fix bug with pictogram displaying in the appropriate box. 
+- Fix bug with pictogram displaying in the appropriate box.
 
 
 0.5.4 (2017-10-01)

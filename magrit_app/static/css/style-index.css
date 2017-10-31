@@ -83,3 +83,16 @@ img.hover_scale:hover {
     -webkit-transform: scale(1);
     -webkit-transition: all .2s;
 }
+
+.enter_button {
+  color: greenyellow;
+}
+
+#btn-group-lang > button {
+  color: greenyellow;
+  background: transparent none repeat scroll 0% 0% border-box;
+}
+
+#btn-group-lang > ul > li {
+  color: greenyellow;
+}

@@ -699,7 +699,6 @@ function apply_user_preferences(json_pref) {
             });
           new_txt_box.fontSize = +ft.style.split('font-size: ')[1].split('px')[0];
           new_txt_box.fontFamily = ft.style.split('font-family: ')[1].split(';')[0];
-          console.log(ft.style.split('font-family: ')[1].split(';')[0]);
           new_txt_box.update_text(ft.content);
         }
       }
