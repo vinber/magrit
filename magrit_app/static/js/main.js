@@ -71,7 +71,7 @@ function setUpInterface(reload_project) {
   bg.id = 'overlay';
   bg.style.display = 'none';
   bg.innerHTML = `
-<img src="static/img/logo_magrit_orange.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
+<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
 <span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
 <span style="z-index: 2;">...<br></span>
 <div class="spinner">
@@ -197,7 +197,7 @@ function setUpInterface(reload_project) {
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
-    .html('<img src="static/img/header/File_font_awesome_orange.png" width="25" height="auto" alt="Load project file"/>')
+    .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', () => {
       window.localStorage.removeItem('magrit_project');
       window.removeEventListener('beforeunload', beforeUnloadWindow);
@@ -207,19 +207,19 @@ function setUpInterface(reload_project) {
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
-    .html('<img src="static/img/header/Folder_open_alt_font_awesome_orange.png" width="25" height="auto" alt="Load project file"/>')
+    .html('<img src="static/img/header/Folder_open_alt_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', load_map_template);
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', margin: 'auto' })
-    .html('<img src="static/img/header/Breezeicons-actions-22-document-save-orange.png" width="25" height="auto" alt="Save project to disk"/>')
+    .html('<img src="static/img/header/Breezeicons-actions-22-document-save-white.png" width="25" height="auto" alt="Save project to disk"/>')
     .on('click', save_map_template);
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
-    .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_orange.png" width="20" height="auto" alt="Documentation"/>')
+    .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
     .on('click', () => {
       window.open('static/book/index.html', 'DocWindow', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
     });
@@ -230,7 +230,7 @@ function setUpInterface(reload_project) {
       'data-i18n': '[tooltip-title]app_page.help_box.tooltip_btn',
       'data-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent' })
-    .html('<img src="static/img/header/High-contrast-help-browser_orange.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
+    .html('<img src="static/img/header/High-contrast-help-browser_white.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
     .on('click', () => {
       if (document.getElementById('menu_lang')) document.getElementById('menu_lang').remove();
       const click_func = (window_name, target_url) => {
