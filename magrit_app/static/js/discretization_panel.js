@@ -296,6 +296,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
     const color_select = document.querySelector('.color_params');
+    if (!color_select) return; // Only do stuff with the custom palettes if we are using a "sequential" scheme:
     const selected_index = color_select.selectedIndex;
     const select_options = color_select.querySelectorAll('option');
     for (let ixc = 0; ixc < select_options.length; ixc++) {
@@ -306,15 +307,15 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     if (select_options[selected_index].value.startsWith('user_') && select_options[selected_index].getAttribute('nb_colors') !== nb_class) {
       setSelected(color_select, 'Blues');
     }
-    // const color_select_left = document.querySelectorAll('.color_params_left > option');
-    // const color_select_right = document.querySelectorAll('.color_params_right > option');
-    // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
-    //   if (color_select_left[ixc].value.startsWith('user_')) {
-    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
-    //     color_select_left[ixc].disabled = is_disabled;
-    //     color_select_right[ixc].disabled = is_disabled;
-    //   }
-    // }
+    const color_select_left = document.querySelectorAll('.color_params_left > option');
+    const color_select_right = document.querySelectorAll('.color_params_right > option');
+    for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+      if (color_select_left[ixc].value.startsWith('user_')) {
+        const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+        color_select_left[ixc].disabled = is_disabled;
+        color_select_right[ixc].disabled = is_disabled;
+      }
+    }
   };
 
   const update_axis = (group) => {

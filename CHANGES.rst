@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.5.7 (2017-11-xx)
+------------------
+
+- Fix minors typo in french translation.
+
+- Fix bug preventing to modify the number of class when using a diverging classification scheme.
+
+
 0.5.6 (2017-10-31)
 ------------------
 
