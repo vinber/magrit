@@ -277,11 +277,11 @@
         },
         "func_description" : {
             "smooth": "Réalisation d'une carte lissée avec l'utilisation d'un modèle gravitaire",
-            "prop": "Réalisation d'un carte de stocks",
+            "prop": "Réalisation d'une carte de stocks",
             "choroprop": "Réalisation d'une carte de stocks et ratios",
             "proptypo": "Réalisation d'une carte de stocks et qualitative",
             "choro": "Réalisation d'une carte de ratios",
-            "cartogram": "Réalisation d'un carte en anamorphose (cartogramme)",
+            "cartogram": "Réalisation d'une carte en anamorphose (cartogramme)",
             "grid": "Réalisation d'une grille de densité",
             "flow": "Réalisation d'une carte des liens",
             "discont": "Réalisation d'une carte de discontinuités",
