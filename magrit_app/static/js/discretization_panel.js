@@ -307,15 +307,15 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     if (select_options[selected_index].value.startsWith('user_') && select_options[selected_index].getAttribute('nb_colors') !== nb_class) {
       setSelected(color_select, 'Blues');
     }
-    const color_select_left = document.querySelectorAll('.color_params_left > option');
-    const color_select_right = document.querySelectorAll('.color_params_right > option');
-    for (let ixc = 0; ixc < color_select_left.length; ixc++) {
-      if (color_select_left[ixc].value.startsWith('user_')) {
-        const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
-        color_select_left[ixc].disabled = is_disabled;
-        color_select_right[ixc].disabled = is_disabled;
-      }
-    }
+    // const color_select_left = document.querySelectorAll('.color_params_left > option');
+    // const color_select_right = document.querySelectorAll('.color_params_right > option');
+    // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+    //   if (color_select_left[ixc].value.startsWith('user_')) {
+    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+    //     color_select_left[ixc].disabled = is_disabled;
+    //     color_select_right[ixc].disabled = is_disabled;
+    //   }
+    // }
   };
 
   const update_axis = (group) => {

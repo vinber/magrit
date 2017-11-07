@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.0b4e209c620d.json'
+      loadPath: 'static/locales/{{lng}}/translation.204573938d46.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -3135,15 +3135,15 @@ var display_discretization = function display_discretization(layer_name, field_n
     if (select_options[selected_index].value.startsWith('user_') && select_options[selected_index].getAttribute('nb_colors') !== nb_class) {
       setSelected(color_select, 'Blues');
     }
-    var color_select_left = document.querySelectorAll('.color_params_left > option');
-    var color_select_right = document.querySelectorAll('.color_params_right > option');
-    for (var _ixc = 0; _ixc < color_select_left.length; _ixc++) {
-      if (color_select_left[_ixc].value.startsWith('user_')) {
-        var is_disabled = nb_class === +color_select_left[_ixc].getAttribute('nb_colors') ? false : true;
-        color_select_left[_ixc].disabled = is_disabled;
-        color_select_right[_ixc].disabled = is_disabled;
-      }
-    }
+    // const color_select_left = document.querySelectorAll('.color_params_left > option');
+    // const color_select_right = document.querySelectorAll('.color_params_right > option');
+    // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
+    //   if (color_select_left[ixc].value.startsWith('user_')) {
+    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+    //     color_select_left[ixc].disabled = is_disabled;
+    //     color_select_right[ixc].disabled = is_disabled;
+    //   }
+    // }
   };
 
   var update_axis = function update_axis(group) {
