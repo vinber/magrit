@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.5.7 (2017-11-xx)
+0.5.7 (2017-11-08)
 ------------------
 
 - Fix minors typo in french translation.
