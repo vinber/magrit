@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Questions fréquemment posées - Les docs de Magrit</title>
+        <title>Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,7 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -20,20 +19,9 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- Custom theme -->
-        
-
-        
-
-        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
-        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
-        <script>
-            if (typeof Clipboard == 'undefined') {
-                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
-            }
-        </script>
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -42,25 +30,18 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
-
-        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
-        <script src="store.js"></script>
-
-        <!-- Custom JS script -->
-        
-
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = store.get('mdbook-theme');
-            if (theme === null || theme === undefined) { theme = 'light'; }
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = store.get('mdbook-sidebar');
+            var sidebar = localStorage.getItem('sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -71,7 +52,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page" tabindex="-1">
+            <div class="page">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -81,26 +62,35 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html">
-                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
-                        </a>
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <a class="header" href="./FAQ_fr.html#faq" id="faq"><h1>FAQ</h1></a>
+                    <h1>FAQ</h1>
+<h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3>
+<h3>Pourquoi un nombre trop important de couleurs dans une palette peut nuire à la lisibilité de la carte ?</h3>
+<p>L'oeil humain ne distingue correctement qu'un nombre de couleurs limité. L'utilisation d'un nombre de couleurs élevé lors de la conception d'une palette pour une carte choroplèthe empêche de percevoir avec précision les limites entre les classes et rend ainsi difficile de trouver la classe d'appartenance d'une entité.</p>
+<h3>Pourquoi certains fond de cartes posent un problème lors de certains traitement ? Qu'est-ce que la &quot;topologie&quot; d'un fond de carte ?</h3>
+<h3>Pourquoi une limite de taille est-elle fixée lors de l'import d'un fond de carte ?</h3>
+<p>La taille maximale des fichiers pouvant être importés dans Magrit est limitée à 20Mo. Plusieurs raisons ont motivé ce choix et visent essentiellement à éviter des ralentissements indésirables dans le navigateur de l'utilisateur.
+D'une part le temps d'envoi d'un fichier volumineux peut être non-néligeable en fonction de la qualité de la connexion (un fichier de 20Mo prend en moyenne xx secondes avec une connexion xyz). D'autre part Magrit utilise la technologie SVG pour effectuer le rendu des cartes dans le navigateur. Cette technologie est performante mais se prête difficilement à l'affichage des couches contenant un nombre très élevé d'entitées.
+Ce type de limite permet également de s'interroger sur l'intéret d'une carte thématique contenant un nombre d'entités très élevé ou contenant des géométrie très détaillées. En effet, en fonction du type de données ou de l'échelle de travail, il peut être utile de faire appel au préalable à certaines techniques de préparation des données (aggrégation dans le cas d'un semi de points très important par exemple) ou de préparation du fond de carte (généralisation des géométries utilisées par exemple).</p>
+<h3>Pourquoi le rendu de certains exports SVG n'est pas le même dans Inkscape/Adobe Illustrator que lors de l'affichage de la carte dans Magrit ?</h3>
+<p>// TODO: Parler des fonts/ Dire d'ouvrir le fichier svg dans un navigateur pour vérifier le résultat/ Evoquer exports svg spéciaux AI ?</p>
+<h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a rel="prev" href="./dataset_source_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./dataset_source_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="./privacy.html" class="mobile-nav-chapters next">
+                    <a href="./privacy.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -130,12 +120,6 @@
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
-        
-
-        
-
-        
-
         
 
         <script src="highlight.js"></script>

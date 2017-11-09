@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Respect de la vie privée - Les docs de Magrit</title>
+        <title>Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,7 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -20,20 +19,9 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- Custom theme -->
-        
-
-        
-
-        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
-        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
-        <script>
-            if (typeof Clipboard == 'undefined') {
-                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
-            }
-        </script>
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -42,25 +30,18 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
-
-        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
-        <script src="store.js"></script>
-
-        <!-- Custom JS script -->
-        
-
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = store.get('mdbook-theme');
-            if (theme === null || theme === undefined) { theme = 'light'; }
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = store.get('mdbook-sidebar');
+            var sidebar = localStorage.getItem('sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -71,7 +52,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page" tabindex="-1">
+            <div class="page">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -81,44 +62,42 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html">
-                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
-                        </a>
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <a class="header" href="./privacy.html#utilisation-des-cookies-et-respect-de-la-vie-privée" id="utilisation-des-cookies-et-respect-de-la-vie-privée"><h3>Utilisation des cookies et respect de la vie privée</h3></a>
+                    <h3>Utilisation des cookies et respect de la vie privée</h3>
 <p>Plusieurs <em>cookies</em> et fonctionnalitées de <em>stockages temporaires</em>, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.</p>
-<a class="header" href="./privacy.html#quelques-détails-permettant-de-comprendre-le-chemin-des-données-" id="quelques-détails-permettant-de-comprendre-le-chemin-des-données-"><h4>Quelques détails permettant de comprendre le chemin des données :</h4></a>
+<h4>Quelques détails permettant de comprendre le chemin des données :</h4>
 <p>Lors de l'import d'une couche utilisateur, celle-ci est transformée et stockée temporairement (le temps d'une session utilisateur) en mémoire temporaire (via <a href="https://fr.wikipedia.org/wiki/Redis">redis</a>). C'est cette couche transformée qui est affichée dans le navigateur web.</p>
 <p>Lors du calcul d'une représentation générant une nouvelle géométrie (carte lissée, carroyage, discontinuité, cartogramme et liens), le résultat est également stocké en mémoire temporaire (redis) le temps de votre session.</p>
 <p>Ce stockage permet d'une part de lancer les calculs dès le choix des paramètres effectué par l'utilisateur (sans avoir à envoyer les géométries à nouveau) et d'autres part de proposer des exports dans des formats &quot;géographiques&quot; variés lorsque l'utilisateur le souhaite.
 Ces couches sont supprimées lors de la fermeture de la session par l'utilisateur.</p>
-<a class="header" href="./privacy.html#détails-des-cookies-utilisés-" id="détails-des-cookies-utilisés-"><h4>Détails des cookies utilisés :</h4></a>
+<h4>Détails des cookies utilisés :</h4>
 <p>La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un <strong>cookie</strong>, dont la durée d'expiration est celle d'une <strong>session</strong>, contenant une clée échangée avec le serveur.</p>
 <p>Deux autres cookies sont utilisés et ne sont pas échangés avec le serveur :</p>
 <ul>
 <li>un cookie est utilisé pour se souvenir de la dernière langue utilisée par l'utilisateur (il est paramétré avec une durée d'expiration longue).</li>
 <li>un cookie est utilisé pour se souvenir de l'acceptation de l'usage des cookies par l'utilisateur (il est paramétré avec une durée d'expiration longue).</li>
 </ul>
-<a class="header" href="./privacy.html#autre-fonctionnalité-de-stockage-" id="autre-fonctionnalité-de-stockage-"><h4>Autre fonctionnalité de stockage :</h4></a>
+<h4>Autre fonctionnalité de stockage :</h4>
 <p>La fonctionnalité proposant de reprendre le projet en cours se base sur la capacité de &quot;stockage local&quot; (<em><a href="https://developer.mozilla.org/fr/docs/Web/API/Window/localStorage">localStorage</a></em>) des navigateurs web. Le projet en cours est donc intégralement stocké dans le navigateur de l'utilisateur et le serveur n'en a pas connaissance
 (de même qu'il n'a pas connaissance des fichiers-projets exportés par l'utilisateur).</p>
-<a class="header" href="./privacy.html#garanties-supplémentaires" id="garanties-supplémentaires"><h5>Garanties supplémentaires</h5></a>
+<h5>Garanties supplémentaires</h5>
 <p>Il facilement possible de déployer une instance locale (sur votre réseau d'entreprise ou votre ordinateur personnel) afin de ne pas faire transiter les données vers notre instance. Des informations sont disponibles sur la <a href="http://github.com/riatelab/magrit">page Github du projet</a> et peuvent être complétées en contactant l'équipe via la page contact.</p>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a rel="prev" href="./FAQ_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./FAQ_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="./licenses_fr.html" class="mobile-nav-chapters next">
+                    <a href="./licenses_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -148,12 +127,6 @@ Ces couches sont supprimées lors de la fermeture de la session par l'utilisateu
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
-        
-
-        
-
-        
-
         
 
         <script src="highlight.js"></script>

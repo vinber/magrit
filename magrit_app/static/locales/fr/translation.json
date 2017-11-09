@@ -361,6 +361,8 @@
             "target_layer": "<i>Couche cible</i>",
             "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",
+            "voronoi_communes_2016_2-2": "Communes de France Métrop. (<i>Polygones de voronoi</i> - basé sur GEOFLA® 2016 v2.2)",
+            "departements_2016_2-2": "Départements de France Métrop. (GEOFLA® 2016 v2.2 - <i>Polygones</i>)",
             "nuts2_data": "Nuts 2 (2013) avec données <i>(Polygones)</i>",
             "brazil": "États fédéraux du Brésil <i>(Polygones)</i>",
             "world_countries": "Pays du monde <i>(Polygones)</i>",

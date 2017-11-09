@@ -356,6 +356,8 @@
             "target_layer": "<i>Capa objetivo</i>",
             "grandparismunicipalities": "Comunas de la zona metropolitana de París <i>(Polígonos)</i>",
             "martinique": "Comunas de Martinica (región francesa de ultramar) <i>(Polígonos)</i>",
+            "voronoi_communes_2016_2-2": "Comunas de Francia metropolitana (<i>Polígonos tipo voronoi</i> - basado en GEOFLA® 2016 v2.2)",
+            "departements_2016_2-2": "Departamentos de Francia metropolitana (GEOFLA® 2016 v2.2 - <i>Polígonos</i>)",
             "nuts2_data": "Nuts 2 (2013) con datos <i>(Polígonos)</i>",
             "brazil": "Estados de Brasil",
             "world_countries": "Países del mundo <i>(Polígonos)</i>",

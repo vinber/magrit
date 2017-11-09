@@ -18,25 +18,6 @@ Variables :
 (4) : Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013  
 
 
-### Pays du monde :   
-Fond de carte : UMS RIATE, 2017  
-Variables :  
-- ISO2 : Code ISO 3166-1 alpha-2
-- ISO3 : Code ISO 3166-1 alpha-3
-- ISONUM : Code ISO 3166-1 numeric
-- NAMEen : Nom du pays en anglais
-- NAMEfr : Nom du pays en français
-- UNRegion : Régions macrogéographiques (1)
-- GrowthRate : Taux de croissance annuel moyen de la population en % (2)
-- PopDensity : Densité de population en habitants par kilomètres carrés (2)
-- PopTotal : Population totale (2)
-- JamesBond : Nombre de fois ou James Bond s'est rendu dans le Pays (3)
-
-(1) : United Nations Statistics Division, <a href="http://unstats.un.org/unsd/methods/m49/m49regnf.htm">http://unstats.un.org/unsd/methods/m49/m49regnf.htm</a>  
-(2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)  
-(3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015  
-
-
 ### États fédéraux brésiliens :
 Fond de carte :  
 Variables :  
@@ -69,11 +50,38 @@ Variables :
 - NbLogementsVacants : Nombre de logements vacants (2)
 - PartLogementVacants : Taux d'occupations des logements (2)
 
-(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a>  
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes Martinique</a>  
 (2) : INSEE 2013
 
+
+### Communes de France métropolitaine (fond *voronoi*) :
+
+Localisation des centroides ayant permis la construction des polygones de voronoi : Institut national de l’information géographique et forestière (1)
+Trait de cote ayant servi au découpage des polygones : Institut national de l’information géographique et forestière (1)
+
+Variables :  
+- INSEE_COM : Code INSEE de la commune (1)
+
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Communes France Métropolitaine</a>  
+
+
+### Départements de France métropolitaine :
+
+Fond de carte : Institut national de l’information géographique et forestière (1)
+
+Variables :  
+- CODE_DEPT : Code géographique du département (1)
+- NOM_DEPT : Nom du département (1)
+- CODE_CHF : Code géographique de la préfécture du département (1)
+- NOM_CHF : Nom de la préfecture du département (1)
+- CODE_REG : Code géographique de la région à laquelle appartient le département (1)
+- NOM_REG : Nom de la région à laquelle appartient le département (1)
+
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Départements France Métropolitaine</a>  
+
+
 ### Régions européennes Nuts 2 :
-Fond de Carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017  
+Fond de carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017  
 Variable :  
 - ID : Code NUTS2
 - NAME : Nom
@@ -85,3 +93,22 @@ Variable :
 (1) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:34:48 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096</a>  
 (2) : Eurostat, Dernière mise à jour: 18.01.2017, Date d'extraction: 23 janv. 2017 16:38:34 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004</a>  
 (3) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:56:02 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010</a>  
+
+
+### Pays du monde :   
+Fond de carte : UMS RIATE, 2017  
+Variables :  
+- ISO2 : Code ISO 3166-1 alpha-2
+- ISO3 : Code ISO 3166-1 alpha-3
+- ISONUM : Code ISO 3166-1 numeric
+- NAMEen : Nom du pays en anglais
+- NAMEfr : Nom du pays en français
+- UNRegion : Régions macrogéographiques (1)
+- GrowthRate : Taux de croissance annuel moyen de la population en % (2)
+- PopDensity : Densité de population en habitants par kilomètres carrés (2)
+- PopTotal : Population totale (2)
+- JamesBond : Nombre de fois ou James Bond s'est rendu dans le Pays (3)
+
+(1) : United Nations Statistics Division, <a href="http://unstats.un.org/unsd/methods/m49/m49regnf.htm">http://unstats.un.org/unsd/methods/m49/m49regnf.htm</a>  
+(2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)  
+(3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015  

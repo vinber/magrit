@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Jeux de données - Les docs de Magrit</title>
+        <title>Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,8 +10,7 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
-        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -20,20 +19,9 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- Custom theme -->
-        
-
-        
-
-        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
-        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
-        <script>
-            if (typeof Clipboard == 'undefined') {
-                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
-            }
-        </script>
+        <!-- MathJax -->
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -42,25 +30,18 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
-
-        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
-        <script src="store.js"></script>
-
-        <!-- Custom JS script -->
-        
-
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = store.get('mdbook-theme');
-            if (theme === null || theme === undefined) { theme = 'light'; }
+            var theme = localStorage.getItem('theme');
+            if (theme == null) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = store.get('mdbook-sidebar');
+            var sidebar = localStorage.getItem('sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -71,7 +52,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page" tabindex="-1">
+            <div class="page">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -81,14 +62,12 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <a href="print.html">
-                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
-                        </a>
+                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <a class="header" href="./datasets_fr.html#jeux-de-données" id="jeux-de-données"><h1>Jeux de données</h1></a>
+                    <h1>Jeux de données</h1>
 <p>Plusieurs jeux de données d'exemples sont mis en avant dans Magrit. Les données qu'ils contiennent ont été choisies afin de pouvoir mettre en œuvre les différentes représentations proposées par l'outil mais ils n'ont pas vocation à couvrir les différents besoins en fond de cartes des utilisateurs.</p>
 <p>En parallèle, l'équipe met à disposition des fonds de cartes pour plusieurs dizaines de pays du monde (emprise nationale et découpage correspondant au premier niveau inter-étatique). Ces fonds sont libres d'utilisation (le détails des licences applicables peut-être consulté sur la <a href="https://github.com/riatelab/basemaps">page github du projet riatelab/basemaps</a>).</p>
 <p>En fonction de l'échelle de travail, différent fournisseurs de données permettent le téléchargement de fonds libres d'utilisation permettant par exemple la jointure d'un jeu de données dans Magrit. On peut citer par exemple:</p>
@@ -103,13 +82,13 @@
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a rel="prev" href="./export_fr.html" class="mobile-nav-chapters previous">
+                    <a href="./export_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a rel="next" href="./dataset_source_fr.html" class="mobile-nav-chapters next">
+                    <a href="./dataset_source_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -139,12 +118,6 @@
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
-        
-
-        
-
-        
-
         
 
         <script src="highlight.js"></script>

@@ -10,6 +10,8 @@
  "twincities": "/static/data_sample/twincities.csv",
  "paris_quartiers": "/static/data_sample/quartier_paris.geojson",
  "tissot": "/static/data_sample/tissot.geojson",
+ "voronoi_communes_2016_2-2": "/static/data_sample/voronoi_communes_2016_2-2_id.geojson",
+ "departements_2016_2-2": "/static/data_sample/departements_2016_2-2.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
  "world_country": "/static/data_sample/World.geojson",
  "world_cities": "/static/data_sample/world_cities_extract5000.geojson"

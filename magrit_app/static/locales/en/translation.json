@@ -360,6 +360,8 @@
             "target_layer": "<i>Target layer</i>",
             "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
             "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
+            "voronoi_communes_2016_2-2": "Municipalities of metropolitan France (<i>Voronoi polygons</i> - based on GEOFLA® 2016 v2.2)",
+            "departements_2016_2-2": "Departments of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
             "nuts2_data": "Nuts 2 (2013) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states <i>(Polygons)</i>",
             "world_countries": "World countries <i>(Polygons)</i>",
