@@ -1,7 +1,7 @@
 # Projections
 
 De nombreuses projections cartographiques particulièrement adaptée à des échelles régionales ou globales sont disponibles dans l'application.   
-La séléction d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.
+La sélection d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.
 
 <p style="text-align: center;">
 <img src="img/win_prc2_fr.png" alt="Changer la projection"/>
@@ -18,7 +18,7 @@ Plusieurs attributs permettent de distinguer ces projections :
 
 <p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/></p>
 
-Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.  
+Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut ne pas s'avérer pertinente.  
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé "graticule" et est disponible dans la section "ajout d'éléments d'habillage"). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
 Il est également possible (et conseillé lors de l'utilisation des projections dites "interrompues") d'ajouter une couche d'informations représentant les limites du globe selon le découpage appliqué par la projection.
 
@@ -40,8 +40,8 @@ Projection quinconciale de Peirce</br></br>
 Projection de Eisenlohr</br></p>
 
 
-L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format *Proj.4*[1](#) correspondante. La saisie du contenu du fichier *.prj* (notation au format *ESRI WKT*) est aussi possible.
-L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
+L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format *Proj.4*[1](#) correspondante. La saisie du contenu du fichier *.prj* (au format *ESRI WKT*) est aussi possible.
+L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement désactivé lors du basculement vers une projection de ce type.
 Cette fonctionnalité, qui supporte également les transformations géodésiques, permet d'utiliser la projection et le système de coordonnées les plus adaptés à la zone à cartographier selon les besoins de l'usager.
 Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format *Proj.4 string*)
 

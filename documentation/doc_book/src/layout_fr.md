@@ -12,7 +12,7 @@ Magrit propose une série d'éléments nécessaires à l'habillage de la carte :
 ### Différentes couches géographiques permettant de contextualiser les données représentées :
 
 - Tracé des pays du monde
-- Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)
+- Tracé des limites administratives à différents échelons infra-nationaux (Europe, USA, Brésil)
 - ...
 
 <p style="text-align: center;">

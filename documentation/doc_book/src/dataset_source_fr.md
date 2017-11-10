@@ -22,7 +22,7 @@ Variables :
 Fond de carte :  
 Variables :  
 - ADMIN_NAME : Nom de l’État
-- Abbreviation : Abbréviation du nom
+- Abbreviation : Abréviation du nom
 - Capital : Nom de la capitale administrative de l’État
 - GDP_per_capita_2012 : Produit intérieur brut (PIB) par habitant
 - Life_expectancy_2014 : Espérance de vie à la naissance

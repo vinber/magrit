@@ -17,7 +17,7 @@ Cette méthode, parfois également décrite par le terme de "discrétisation en 
 
 
 - **Q6**  
-Cette méthode originale, notamment démocratisée par l'outil <a href="http://philcarto.free.fr/">PhilCarto</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.
+Cette méthode originale, notamment démocratisée par l'outil <a href="http://philcarto.free.fr/">PhilCarto</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrêmes.
 
 
 - **Seuils naturels (algorithme de <a href="https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization">Jenks</a>)**  

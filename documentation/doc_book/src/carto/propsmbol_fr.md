@@ -1,6 +1,6 @@
 # Carte de stocks
 
-Ces cartes permettent de représenter des **données de stocks** (ou quantitatives absolues) par des **figurés proportionnels**. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens. 
+Ces cartes permettent de représenter des **données de stocks** (ou quantitatives absolues) par des **figurés proportionnels**. Les données de stocks expriment des quantités concrètes : la somme des modalités des éléments a un sens.
 
 
 
@@ -20,5 +20,5 @@ Ces cartes permettent de représenter des **données de stocks** (ou quantitativ
 
 - Données : Pays du monde
 - Champ utilisé : **jamesbond**
-- Symbole : **cerle**
+- Symbole : **cercle**
 - Taille fixée à **40px** sur la valeur **22**

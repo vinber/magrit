@@ -46,7 +46,7 @@ Les formats proposés à l'export sont les mêmes que ceux acceptés lors de l'i
 - ```GML```
 
 Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet [Proj.4].  
-Les couches qui peuvent être exportées par cette fonctionalité sont celles importées pour la réalisation de la carte ainsi que celle créées par certains modes de représentations (carroyages, cartogrammes, discontinuités, liens et cartes lissées).
+Les couches qui peuvent être exportées par cette fonctionnalité sont celles importées pour la réalisation de la carte ainsi que celle créées par certains modes de représentations (carroyages, cartogrammes, discontinuités, liens et cartes lissées).
 
 ## Sauvegarde du projet en cours
 <p style="text-align: center;">

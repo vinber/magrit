@@ -1,11 +1,11 @@
 # Licences et logiciels tiers
 
 L'application Magrit (documentation incluse) est régit par la licence CECILL-2.1 dont les termes sont disponibles en ligne (en anglais et en français).  
-Il s'agit d'une licence garantissant le respect des principes du logiciel libre: libre accès au code source, libre utilisation, libre modification, libre redistribution.
+Il s'agit d'une licence garantissant le respect des principes du logiciel libre : libre accès au code source, libre utilisation, libre modification, libre redistribution.
 
-Différentes librairies et applications sont utilisées :
+Différentes bibliothèques et applications sont utilisées :
 
-| Name                                                  | Version | License        |
+| Nom                                                   | Version | Licence        |
 |-------------------------------------------------------|---------|----------------|
 | [aiohttp](http://aiohttp.readthedocs.io)              | 2.2     | Apache-2.0     |
 | [Cython](http://cython.org)                           |         | Apache-2.0     |
@@ -39,6 +39,15 @@ Différentes librairies et applications sont utilisées :
 | [ujson](https://github.com/esnme/ultrajson)           |         | BSD-like       |
 | [uvloop](https://github.com/MagicStack/uvloop)        |         | MIT/Apache-2.0 |
 | [xlrd](https://github.com/python-excel/xlrd)          |         | BSD-like       |
+
+Certaines des bibliothèques utilisées ont été developpées pour l'occasion :
+
+| Nom                                                   | Version | Licence        |
+|-------------------------------------------------------|---------|----------------|
+| [jenkspy](https://github.com/mthh/jenkspy)            | 0.1.4   | MIT            |
+| [loc-i18next](https://github.com/mthh/loc-i18next)    | 0.1.3   | MIT            |
+| [smoomapy](https://github.com/mthh/smoomapy)          | 0.1.9   | MIT            |
+
 
 Cette application contient des [schémas de couleurs developpés par Cynthia Brewer](http://colorbrewer2.org).  
 Cette application contient des composants *(xlrd)* developpés par [David Giffin](david@giffin.org).  

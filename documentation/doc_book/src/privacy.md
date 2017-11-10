@@ -1,6 +1,6 @@
 ### Utilisation des cookies et respect de la vie privée
 
-Plusieurs *cookies* et fonctionnalitées de *stockages temporaires*, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.
+Plusieurs *cookies* et fonctionnalités de *stockages temporaires*, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.
 
 #### Quelques détails permettant de comprendre le chemin des données :
 Lors de l'import d'une couche utilisateur, celle-ci est transformée et stockée temporairement (le temps d'une session utilisateur) en mémoire temporaire (via [redis](https://fr.wikipedia.org/wiki/Redis)). C'est cette couche transformée qui est affichée dans le navigateur web.
@@ -11,7 +11,7 @@ Ce stockage permet d'une part de lancer les calculs dès le choix des paramètre
 Ces couches sont supprimées lors de la fermeture de la session par l'utilisateur.
 
 #### Détails des cookies utilisés :
-La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un **cookie**, dont la durée d'expiration est celle d'une **session**, contenant une clée échangée avec le serveur.
+La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un **cookie**, dont la durée d'expiration est celle d'une **session**, contenant une clé échangée avec le serveur.
 
 Deux autres cookies sont utilisés et ne sont pas échangés avec le serveur :
 - un cookie est utilisé pour se souvenir de la dernière langue utilisée par l'utilisateur (il est paramétré avec une durée d'expiration longue).
