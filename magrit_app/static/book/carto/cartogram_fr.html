@@ -70,7 +70,11 @@
                     <h1>Cartogramme</h1>
 <p>Les anamorphoses sont utilisées en cartographie statistique pour montrer l'importance d'un phénomène donné : ce type de carte est couramment appelé un cartogramme.<br />
 Elles permettent de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br />
-Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et Olson (<strong>refs</strong>).</p>
+Deux méthodes de création de cartogrammes sont disponibles dans Magrit :</p>
+<ul>
+<li>la première, basée sur l'algorithme de Dougenik et al. (1) permet la création de cartogrammes &quot;contigu&quot; (la topologie du fond de carte est préservée tant que possible)</li>
+<li>la seconde, basée sur l'algorithme de Olson (2) permet la création de cartogrammes &quot;non-contigu&quot; (la méthode ne cherche pas à préserver la topologie du fond de carte)</li>
+</ul>
 <blockquote>
 <h3>Paramètres (méthode Dougenik)</h3>
 <ul>
@@ -88,6 +92,8 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
+<p>(1) - Dougenik, James A.; Chrisman, Nicholas R.; Niemeyer, Duane R. (1985), &quot;An Algorithm to Construct Continuous Area Cartograms&quot;, The Professional Geographer, n°37.
+(2) - Olson, Judy M. (1976). Noncontiguous Area Cartograms. Professional Geographer, n°28.</p>
 
                 </div>
 

@@ -69,7 +69,7 @@
                 <div id="content" class="content">
                     <h1>Projections</h1>
 <p>De nombreuses projections cartographiques particulièrement adaptée à des échelles régionales ou globales sont disponibles dans l'application.<br />
-La séléction d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.</p>
+La sélection d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.</p>
 <p style="text-align: center;">
 <img src="img/win_prc2_fr.png" alt="Changer la projection"/>
 </p>
@@ -85,7 +85,7 @@ La séléction d'une de ces projections s'effectue dans la partie supérieure de
 <li>la représentation du globe sous une forme interrompue (<em>projection HEALPix</em> et <em>projection de Goode</em> par exemple)</li>
 </ul>
 <p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/></p>
-<p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.<br />
+<p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut ne pas s'avérer pertinente.<br />
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé &quot;graticule&quot; et est disponible dans la section &quot;ajout d'éléments d'habillage&quot;). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
 Il est également possible (et conseillé lors de l'utilisation des projections dites &quot;interrompues&quot;) d'ajouter une couche d'informations représentant les limites du globe selon le découpage appliqué par la projection.</p>
 <blockquote>
@@ -107,8 +107,8 @@ Projection homolosine de Goode (interrompue)</br></br>
 Projection quinconciale de Peirce</br></br>
 <img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
 Projection de Eisenlohr</br></p>
-<p>L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format <em>Proj.4</em><a href="#">1</a> correspondante. La saisie du contenu du fichier <em>.prj</em> (notation au format <em>ESRI WKT</em>) est aussi possible.
-L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
+<p>L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format <em>Proj.4</em><a href="#">1</a> correspondante. La saisie du contenu du fichier <em>.prj</em> (au format <em>ESRI WKT</em>) est aussi possible.
+L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement désactivé lors du basculement vers une projection de ce type.
 Cette fonctionnalité, qui supporte également les transformations géodésiques, permet d'utiliser la projection et le système de coordonnées les plus adaptés à la zone à cartographier selon les besoins de l'usager.
 Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format <em>Proj.4 string</em>)</p>
 <pre><code>+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000

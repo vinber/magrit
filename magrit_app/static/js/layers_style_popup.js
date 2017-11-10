@@ -702,7 +702,7 @@ function createStyleBox_Line(layer_name) {
           });
           // Also change the legend if there is one displayed :
           redraw_legend('line_class', layer_name);
-        } else if (renderer === 'Links') {
+        } else if (renderer === 'LinksGraduated') {
           selection.each(function (d, i) {
             current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
           });
@@ -728,7 +728,7 @@ function createStyleBox_Line(layer_name) {
         current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
-        if (current_layers[layer_name].renderer === 'Links' && prev_min_display !== undefined) {
+        if (current_layers[layer_name].renderer === 'LinksGraduated' && prev_min_display !== undefined) {
           current_layers[layer_name].min_display = prev_min_display;
           current_layers[layer_name].breaks = prev_breaks;
           selection.style('fill-opacity', 0)
@@ -755,7 +755,7 @@ function createStyleBox_Line(layer_name) {
           } else if (fill_meth === 'random') {
             selection.style('stroke-opacity', border_opacity)
              .style('stroke', () => Colors.names[Colors.random()]);
-          } else if (fill_meth === 'class' && renderer === 'Links') {
+          } else if (fill_meth === 'class' && renderer === 'LinksGraduated') {
             selection.style('stroke-opacity', (d, i) => current_layers[layer_name].linksbyId[i][0])
              .style('stroke', stroke_prev);
           }
@@ -857,7 +857,7 @@ function createStyleBox_Line(layer_name) {
       });
   }
 
-  if (renderer === 'Links') {
+  if (renderer === 'LinksGraduated') {
     prev_min_display = current_layers[layer_name].min_display || 0;
     prev_breaks = current_layers[layer_name].breaks.slice();
     const fij_field = current_layers[layer_name].rendered_field;
@@ -969,7 +969,7 @@ function createStyleBox_Line(layer_name) {
      .style('display', 'inline').style('float', 'right')
      .html(` ${border_opacity}`);
 
-  if (!renderer || (!renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'Links')) {
+  if (!renderer || (!renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'LinksGraduated')) {
     const width_section = popup.append('p');
     width_section.append('span')
       .html(i18next.t('app_page.layer_style_popup.width'));

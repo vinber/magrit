@@ -107,7 +107,7 @@ Les spécifications des formats <a href="http://www.gdal.org/drv_kml.html">KML</
 <li><code>xls</code>, <code>xlsx</code> et <code>ods</code> (à condition que la feuille à utiliser soit la première du document et contienne seulement la table de données).</li>
 </ul>
 <h2>Jointure des données</h2>
-<p>Lorsqu'un fond de carte et un jeu de données externes on été ajoutées, il devient possible de les joindre.
+<p>Lorsqu'un fond de carte et un jeu de données externes ont été ajoutés, il devient possible de les joindre.
 Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant les colonnes d'identifiants dans le jeu de données et dans le fond de carte.</p>
 <p style="text-align: center;">
 <img src="img/win_jnt_fr.png" alt="Dialogue de jointure"/>
@@ -117,7 +117,7 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
 <h2>Typage des données</h2>
-<p>A chaque type de données est associé un certain nombre de modes représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.</p>
+<p>À chaque type de données est associé un certain nombre de modes de représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.</p>
 <p>5 types de données sont possibles :</p>
 <ul>
 <li><em>Identifiant</em> (champs notamment utilisés pour joindre les données)</li>
@@ -139,7 +139,7 @@ Exemples : Noms des départements, Type d'occupation du sol.</p>
 <h3>Identifiant</h3>
 <p>Ce champ contient des valeurs permettant d'identifier de manière unique chacune des entités de la couche de données.<br />
 Ces sont ces champs qui sont utilisés pour effectuer une jointure de données.<br />
-Les valeurs de ces champs sont également transférées aux entitées correspondantes dans les représentations qui le permettent (symboles proportionnels, cartogrammes, cartes choroplèthes, cartes qualitatives par à-plat de couleurs ou par utilisation de pictogrammes).
+Les valeurs de ces champs sont également transférées aux entités correspondantes dans les représentations qui le permettent (symboles proportionnels, cartogrammes, cartes choroplèthes, cartes qualitatives par à-plat de couleurs ou par utilisation de pictogrammes).
 Exemple: Code INSEE de la commune, Code ISO2 d'un pays.</p>
 <p style="text-align: center;">
 <img src="img/win_typ_fr.png" alt="Dialogue de typage des données"/>
@@ -165,7 +165,7 @@ Nous pouvons ensuite calculer la densité de population en km² en créant un no
 </blockquote>
 <h1>Projections</h1>
 <p>De nombreuses projections cartographiques particulièrement adaptée à des échelles régionales ou globales sont disponibles dans l'application.<br />
-La séléction d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.</p>
+La sélection d'une de ces projections s'effectue dans la partie supérieure de la fenêtre.</p>
 <p style="text-align: center;">
 <img src="img/win_prc2_fr.png" alt="Changer la projection"/>
 </p>
@@ -181,7 +181,7 @@ La séléction d'une de ces projections s'effectue dans la partie supérieure de
 <li>la représentation du globe sous une forme interrompue (<em>projection HEALPix</em> et <em>projection de Goode</em> par exemple)</li>
 </ul>
 <p style="text-align: center;"><img src="img/anim_projection_transp.gif" alt="animation_projection" style="width: 260px;"/></p>
-<p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut s'avérer peu ou pas pertinente.<br />
+<p>Selon l'échelle d'affichage de la carte et la déformation appliquée par la projection, la présence d'un figuré indiquant le nord peut ne pas s'avérer pertinente.<br />
 Il est toutefois possible d'ajouter une couche représentant le tracé des lignes de latitude et de longitude (cette couche d'informations est ici appelé &quot;graticule&quot; et est disponible dans la section &quot;ajout d'éléments d'habillage&quot;). Cette couche d'information permet une bonne visualisation des déformations apportées par les différentes projections.
 Il est également possible (et conseillé lors de l'utilisation des projections dites &quot;interrompues&quot;) d'ajouter une couche d'informations représentant les limites du globe selon le découpage appliqué par la projection.</p>
 <blockquote>
@@ -203,8 +203,8 @@ Projection homolosine de Goode (interrompue)</br></br>
 Projection quinconciale de Peirce</br></br>
 <img src="img/proj_eisenlohr.png" alt="proj_eisenlohr" style="width: 400px;"/></br>
 Projection de Eisenlohr</br></p>
-<p>L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format <em>Proj.4</em><a href="#">1</a> correspondante. La saisie du contenu du fichier <em>.prj</em> (notation au format <em>ESRI WKT</em>) est aussi possible.
-L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement desactivé lors du basculement vers une projection de ce type.
+<p>L'application propose également d'utiliser une projection et un système de coordonnées personnalisées et pouvant être obtenus en saisissant la chaîne de caractère  au format <em>Proj.4</em><a href="#">1</a> correspondante. La saisie du contenu du fichier <em>.prj</em> (au format <em>ESRI WKT</em>) est aussi possible.
+L'utilisation d'une projection personnalisée de ce type n'est pas compatible avec l'ajout du fond de l'emprise du globe. Celui-ci est ainsi automatiquement désactivé lors du basculement vers une projection de ce type.
 Cette fonctionnalité, qui supporte également les transformations géodésiques, permet d'utiliser la projection et le système de coordonnées les plus adaptés à la zone à cartographier selon les besoins de l'usager.
 Ainsi, après avoir ajouté une couche géographique de la France, il est possible d'obtenir la projection RGF93 / Lambert-93 en saisissant la chaîne de caractère (format <em>Proj.4 string</em>)</p>
 <pre><code>+proj=lcc +lat_1=44 +lat_2=49 +lat_0=46.5 +lon_0=3 +x_0=700000
@@ -381,7 +381,7 @@ PARAMETER[&quot;Standard_Parallel_1&quot;,44.0],PARAMETER[&quot;Standard_Paralle
 <ul>
 <li>Données : Pays du monde</li>
 <li>Champ utilisé : <strong>jamesbond</strong></li>
-<li>Symbole : <strong>cerle</strong></li>
+<li>Symbole : <strong>cercle</strong></li>
 <li>Taille fixée à <strong>40px</strong> sur la valeur <strong>22</strong></li>
 </ul>
 <h1>Carte de ratios</h1>
@@ -466,7 +466,7 @@ La donnée de ratio est représentée à l’intérieur du figuré représentant
 <h1>Carroyage</h1>
 <p>La méthode du carroyage est une méthode permettant d'essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
 Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en unités régulières.
-Les carreaux ainsi créés sont affectés de la valeur de la variable observée pour les entitées intersectées, au prorata des surfaces concernées.</p>
+Les carreaux ainsi créés sont affectés de la valeur de la variable observée pour les entités intersectées, au prorata des surfaces concernées.</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -488,7 +488,11 @@ Les carreaux ainsi créés sont affectés de la valeur de la variable observée 
 <h1>Cartogramme</h1>
 <p>Les anamorphoses sont utilisées en cartographie statistique pour montrer l'importance d'un phénomène donné : ce type de carte est couramment appelé un cartogramme.<br />
 Elles permettent de déformer les unités territoriales (polygones) sur la base d'un attribut rapporté à la superficie des entités (densité).<br />
-Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et Olson (<strong>refs</strong>).</p>
+Deux méthodes de création de cartogrammes sont disponibles dans Magrit :</p>
+<ul>
+<li>la première, basée sur l'algorithme de Dougenik et al. (1) permet la création de cartogrammes &quot;contigu&quot; (la topologie du fond de carte est préservée tant que possible)</li>
+<li>la seconde, basée sur l'algorithme de Olson (2) permet la création de cartogrammes &quot;non-contigu&quot; (la méthode ne cherche pas à préserver la topologie du fond de carte)</li>
+</ul>
 <blockquote>
 <h3>Paramètres (méthode Dougenik)</h3>
 <ul>
@@ -506,8 +510,10 @@ Magrit propose deux méthodes de création de cartogrammes : Dougenik et al et O
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
+<p>(1) - Dougenik, James A.; Chrisman, Nicholas R.; Niemeyer, Duane R. (1985), &quot;An Algorithm to Construct Continuous Area Cartograms&quot;, The Professional Geographer, n°37.
+(2) - Olson, Judy M. (1976). Noncontiguous Area Cartograms. Professional Geographer, n°28.</p>
 <h1>Carte lissée</h1>
-<p>Méthode d'analyse spatiale et de réprésentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point. En fonction des paramètres utilisés, cette méthode permet <em>&quot;de voir aussi bien les spécificités locales d'un phénomène que ses tendances générales&quot;</em> (Lambert &amp; Zanin, 2016).</p>
+<p>Méthode d'analyse spatiale et de représentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecter en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point. En fonction des paramètres utilisés, cette méthode permet <em>&quot;de voir aussi bien les spécificités locales d'un phénomène que ses tendances générales&quot;</em> (Lambert &amp; Zanin, 2016).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
@@ -623,7 +629,7 @@ Cette méthode, parfois également décrite par le terme de &quot;discrétisatio
 </ul>
 <ul>
 <li><strong>Q6</strong><br />
-Cette méthode originale, notamment démocratisée par l'outil <a href="http://philcarto.free.fr/">PhilCarto</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrèmes.</li>
+Cette méthode originale, notamment démocratisée par l'outil <a href="http://philcarto.free.fr/">PhilCarto</a>, permet d'effectuer une discrétisation selon la méthode des quartiles tout en isolant les valeurs extrêmes.</li>
 </ul>
 <ul>
 <li><strong>Seuils naturels (algorithme de <a href="https://en.wikipedia.org/wiki/Jenks_natural_breaks_optimization">Jenks</a>)</strong><br />
@@ -655,7 +661,7 @@ La représentation sous forme de boite à moustache permet de visualiser plusieu
 <h3>Différentes couches géographiques permettant de contextualiser les données représentées :</h3>
 <ul>
 <li>Tracé des pays du monde</li>
-<li>Tracé des limites administratives à différents échellons infra-nationaux (Europe, USA, Brésil)</li>
+<li>Tracé des limites administratives à différents échelons infra-nationaux (Europe, USA, Brésil)</li>
 <li>...</li>
 </ul>
 <p style="text-align: center;">
@@ -732,7 +738,7 @@ La résolution de ce type de fichier est fixe et il est proposé de choisir la r
 <li><code>GML</code></li>
 </ul>
 <p>Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet <a href="https://github.com/OSGeo/proj.4/wiki">Proj.4</a>.<br />
-Les couches qui peuvent être exportées par cette fonctionalité sont celles importées pour la réalisation de la carte ainsi que celle créées par certains modes de représentations (carroyages, cartogrammes, discontinuités, liens et cartes lissées).</p>
+Les couches qui peuvent être exportées par cette fonctionnalité sont celles importées pour la réalisation de la carte ainsi que celle créées par certains modes de représentations (carroyages, cartogrammes, discontinuités, liens et cartes lissées).</p>
 <h2>Sauvegarde du projet en cours</h2>
 <p style="text-align: center;">
 <img src="img/win_prj_fr.png" alt="Dialogue d'export"/>
@@ -772,7 +778,7 @@ Variables :</p>
 Variables :</p>
 <ul>
 <li>ADMIN_NAME : Nom de l’État</li>
-<li>Abbreviation : Abbréviation du nom</li>
+<li>Abbreviation : Abréviation du nom</li>
 <li>Capital : Nom de la capitale administrative de l’État</li>
 <li>GDP_per_capita_2012 : Produit intérieur brut (PIB) par habitant</li>
 <li>Life_expectancy_2014 : Espérance de vie à la naissance</li>
@@ -864,14 +870,14 @@ Ce type de limite permet également de s'interroger sur l'intéret d'une carte t
 <p>// TODO: Parler des fonts/ Dire d'ouvrir le fichier svg dans un navigateur pour vérifier le résultat/ Evoquer exports svg spéciaux AI ?</p>
 <h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3>
 <h3>Utilisation des cookies et respect de la vie privée</h3>
-<p>Plusieurs <em>cookies</em> et fonctionnalitées de <em>stockages temporaires</em>, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.</p>
+<p>Plusieurs <em>cookies</em> et fonctionnalités de <em>stockages temporaires</em>, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.</p>
 <h4>Quelques détails permettant de comprendre le chemin des données :</h4>
 <p>Lors de l'import d'une couche utilisateur, celle-ci est transformée et stockée temporairement (le temps d'une session utilisateur) en mémoire temporaire (via <a href="https://fr.wikipedia.org/wiki/Redis">redis</a>). C'est cette couche transformée qui est affichée dans le navigateur web.</p>
 <p>Lors du calcul d'une représentation générant une nouvelle géométrie (carte lissée, carroyage, discontinuité, cartogramme et liens), le résultat est également stocké en mémoire temporaire (redis) le temps de votre session.</p>
 <p>Ce stockage permet d'une part de lancer les calculs dès le choix des paramètres effectué par l'utilisateur (sans avoir à envoyer les géométries à nouveau) et d'autres part de proposer des exports dans des formats &quot;géographiques&quot; variés lorsque l'utilisateur le souhaite.
 Ces couches sont supprimées lors de la fermeture de la session par l'utilisateur.</p>
 <h4>Détails des cookies utilisés :</h4>
-<p>La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un <strong>cookie</strong>, dont la durée d'expiration est celle d'une <strong>session</strong>, contenant une clée échangée avec le serveur.</p>
+<p>La mémorisation de ces couches le temps d'une session est rendue possible par l'utilisation d'un <strong>cookie</strong>, dont la durée d'expiration est celle d'une <strong>session</strong>, contenant une clé échangée avec le serveur.</p>
 <p>Deux autres cookies sont utilisés et ne sont pas échangés avec le serveur :</p>
 <ul>
 <li>un cookie est utilisé pour se souvenir de la dernière langue utilisée par l'utilisateur (il est paramétré avec une durée d'expiration longue).</li>
@@ -884,9 +890,9 @@ Ces couches sont supprimées lors de la fermeture de la session par l'utilisateu
 <p>Il facilement possible de déployer une instance locale (sur votre réseau d'entreprise ou votre ordinateur personnel) afin de ne pas faire transiter les données vers notre instance. Des informations sont disponibles sur la <a href="http://github.com/riatelab/magrit">page Github du projet</a> et peuvent être complétées en contactant l'équipe via la page contact.</p>
 <h1>Licences et logiciels tiers</h1>
 <p>L'application Magrit (documentation incluse) est régit par la licence CECILL-2.1 dont les termes sont disponibles en ligne (en anglais et en français).<br />
-Il s'agit d'une licence garantissant le respect des principes du logiciel libre: libre accès au code source, libre utilisation, libre modification, libre redistribution.</p>
-<p>Différentes librairies et applications sont utilisées :</p>
-<table><thead><tr><td> Name                                                  </td><td> Version </td><td> License        </td></tr></thead>
+Il s'agit d'une licence garantissant le respect des principes du logiciel libre : libre accès au code source, libre utilisation, libre modification, libre redistribution.</p>
+<p>Différentes bibliothèques et applications sont utilisées :</p>
+<table><thead><tr><td> Nom                                                   </td><td> Version </td><td> Licence        </td></tr></thead>
 <tr><td> <a href="http://aiohttp.readthedocs.io">aiohttp</a>              </td><td> 2.2     </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="http://cython.org">Cython</a>                           </td><td>         </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="https://github.com/simogeo/geostats">geostats</a>       </td><td>         </td><td> MIT            </td></tr>
@@ -919,6 +925,12 @@ Il s'agit d'une licence garantissant le respect des principes du logiciel libre:
 <tr><td> <a href="https://github.com/esnme/ultrajson">ujson</a>           </td><td>         </td><td> BSD-like       </td></tr>
 <tr><td> <a href="https://github.com/MagicStack/uvloop">uvloop</a>        </td><td>         </td><td> MIT/Apache-2.0 </td></tr>
 <tr><td> <a href="https://github.com/python-excel/xlrd">xlrd</a>          </td><td>         </td><td> BSD-like       </td></tr>
+</table>
+<p>Certaines des bibliothèques utilisées ont été developpées pour l'occasion :</p>
+<table><thead><tr><td> Nom                                                   </td><td> Version </td><td> Licence        </td></tr></thead>
+<tr><td> <a href="https://github.com/mthh/jenkspy">jenkspy</a>            </td><td> 0.1.4   </td><td> MIT            </td></tr>
+<tr><td> <a href="https://github.com/mthh/loc-i18next">loc-i18next</a>    </td><td> 0.1.3   </td><td> MIT            </td></tr>
+<tr><td> <a href="https://github.com/mthh/smoomapy">smoomapy</a>          </td><td> 0.1.9   </td><td> MIT            </td></tr>
 </table>
 <p>Cette application contient des <a href="http://colorbrewer2.org">schémas de couleurs developpés par Cynthia Brewer</a>.<br />
 Cette application contient des composants <em>(xlrd)</em> developpés par <a href="david@giffin.org">David Giffin</a>.<br />

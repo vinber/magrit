@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.5048919c75ac.json'
+      loadPath: 'static/locales/{{lng}}/translation.7c4d45a19229.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -6151,17 +6151,17 @@ var fields_Stewart = {
       setSelected(mask_selec.node(), default_selected_mask);
     }
     if (layer) {
-      var fields = getFieldsType('stock', layer),
+      var _fields = getFieldsType('stock', layer),
           field_selec = section2.select('#stewart_field'),
           field_selec2 = section2.select('#stewart_field2');
 
-      if (fields.length === 0) {
+      if (_fields.length === 0) {
         display_error_num_field();
         return;
       }
 
       field_selec2.append('option').text(' ').attr('value', 'None');
-      fields.forEach(function (field) {
+      _fields.forEach(function (field) {
         field_selec.append('option').text(field).attr('value', field);
         field_selec2.append('option').text(field).attr('value', field);
       });
@@ -6170,7 +6170,7 @@ var fields_Stewart = {
       field_selec.on('change', function () {
         document.getElementById('stewart_output_name').value = ['Smoothed', this.value, layer].join('_');
       });
-      document.getElementById('stewart_output_name').value = ['Smoothed', fields[0], layer].join('_');
+      document.getElementById('stewart_output_name').value = ['Smoothed', _fields[0], layer].join('_');
       section2.select('#stewart_yes').on('click', render_stewart);
     }
     section2.selectAll('.params').attr('disabled', null);
@@ -6834,8 +6834,8 @@ function make_prop_symbols(rendering_params, _pt_layer) {
 function render_categorical(layer, rendering_params) {
   var layer_name = void 0;
   if (rendering_params.new_name) {
-    var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
-    copy_layer(layer, rendering_params.new_name, 'typo', fields);
+    var _fields2 = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
+    copy_layer(layer, rendering_params.new_name, 'typo', _fields2);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
     layer_name = rendering_params.new_name;
@@ -6872,8 +6872,8 @@ function render_categorical(layer, rendering_params) {
 function render_choro(layer, rendering_params) {
   var layer_name = void 0;
   if (rendering_params.new_name) {
-    var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
-    copy_layer(layer, rendering_params.new_name, 'choro', fields);
+    var _fields3 = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
+    copy_layer(layer, rendering_params.new_name, 'choro', _fields3);
     // Assign the same key to the cloned layer so it could be used transparently on server side
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
@@ -7982,8 +7982,8 @@ var fields_FlowMap = {
         uo_layer_name = section2.select('#FlowMap_output_name');
 
     if (joined_dataset.length > 0 && document.getElementById('FlowMap_field_i').options.length === 0) {
-      var fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
-      fields.forEach(function (field) {
+      var _fields4 = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      _fields4.forEach(function (field) {
         field_i.append('option').text(field).attr('value', field);
         field_j.append('option').text(field).attr('value', field);
         field_fij.append('option').text(field).attr('value', field);
@@ -7994,11 +7994,17 @@ var fields_FlowMap = {
       ref_fields.forEach(function (field) {
         join_field.append('option').text(field).attr('value', field);
       });
+      uo_layer_name.attr('value', ref_fields.length >= 1 ? ['Links', ref_fields[0]].join('_') : 'LinksLayer');
+    } else {
+      uo_layer_name.attr('value', 'LinksLayer');
     }
-    if (layer || joined_dataset.length > 0) {
-      section2.selectAll('.params').attr('disabled', null);
-      uo_layer_name.attr('value', ['Links', layer].join('_'));
-    }
+    join_field.on('change', function () {
+      uo_layer_name.attr('value', ['Links', this.value].join('_'));
+    });
+    // if (layer || joined_dataset.length > 0) {
+    //   section2.selectAll('.params').attr('disabled', null);
+    //   uo_layer_name.attr('value', ['Links', layer].join('_'));
+    // }
     var values_fij = void 0;
 
     field_fij.on('change', function () {
@@ -8038,6 +8044,13 @@ var fields_FlowMap = {
     ok_button.on('click', function () {
       render_FlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, disc_type.node().value, uo_layer_name.node().value);
     });
+
+    if (fields.length >= 3) {
+      field_j.node().value = fields[1];
+      field_fij.node().value = fields[2];
+      field_j.node().dispatchEvent(new Event('change'));
+      field_fij.node().dispatchEvent(new Event('change'));
+    }
   },
 
   unfill: function unfill() {
@@ -8111,7 +8124,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
     serie.setClassManually(user_breaks);
 
     current_layers[new_layer_name].fixed_stroke = true;
-    current_layers[new_layer_name].renderer = 'Links';
+    current_layers[new_layer_name].renderer = 'LinksGraduated';
     current_layers[new_layer_name].breaks = [];
     current_layers[new_layer_name].linksbyId = [];
     current_layers[new_layer_name].size = [min_size, max_size];
@@ -12648,7 +12661,7 @@ function createStyleBox_Line(layer_name) {
         });
         // Also change the legend if there is one displayed :
         redraw_legend('line_class', layer_name);
-      } else if (renderer === 'Links') {
+      } else if (renderer === 'LinksGraduated') {
         selection.each(function (d, i) {
           current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
         });
@@ -12673,7 +12686,7 @@ function createStyleBox_Line(layer_name) {
       current_layers[layer_name]['stroke-width-const'] = stroke_width;
       var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
-      if (current_layers[layer_name].renderer === 'Links' && prev_min_display !== undefined) {
+      if (current_layers[layer_name].renderer === 'LinksGraduated' && prev_min_display !== undefined) {
         current_layers[layer_name].min_display = prev_min_display;
         current_layers[layer_name].breaks = prev_breaks;
         selection.style('fill-opacity', 0).style('stroke', fill_prev.single).style('display', function (d) {
@@ -12698,7 +12711,7 @@ function createStyleBox_Line(layer_name) {
           selection.style('stroke-opacity', border_opacity).style('stroke', function () {
             return Colors.names[Colors.random()];
           });
-        } else if (fill_meth === 'class' && renderer === 'Links') {
+        } else if (fill_meth === 'class' && renderer === 'LinksGraduated') {
           selection.style('stroke-opacity', function (d, i) {
             return current_layers[layer_name].linksbyId[i][0];
           }).style('stroke', stroke_prev);
@@ -12782,7 +12795,7 @@ function createStyleBox_Line(layer_name) {
     });
   }
 
-  if (renderer === 'Links') {
+  if (renderer === 'LinksGraduated') {
     prev_min_display = current_layers[layer_name].min_display || 0;
     prev_breaks = current_layers[layer_name].breaks.slice();
     var fij_field = current_layers[layer_name].rendered_field;
@@ -12870,7 +12883,7 @@ function createStyleBox_Line(layer_name) {
 
   opacity_section.append('span').attr('id', 'opacity_val_txt').style('display', 'inline').style('float', 'right').html(' ' + border_opacity);
 
-  if (!renderer || !renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'Links') {
+  if (!renderer || !renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'LinksGraduated') {
     var width_section = popup.append('p');
     width_section.append('span').html(i18next.t('app_page.layer_style_popup.width'));
     width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
@@ -15923,7 +15936,7 @@ function createLegend(layer, title) {
     el = createLegend_choro(layer, field, title, field, 0);
   } else if (renderer.indexOf('Categorical') > -1) {
     el = createLegend_choro(layer, field, title, field, 4);
-  } else if (renderer.indexOf('Links') !== -1 || renderer.indexOf('DiscLayer') !== -1) {
+  } else if (renderer.indexOf('LinksGraduated') !== -1 || renderer.indexOf('DiscLayer') !== -1) {
     el = createLegend_discont_links(layer, field, title, field);
   } else if (renderer.indexOf('PropSymbolsChoro') !== -1) {
     el = createLegend_choro(layer, field2, title, field2, 0);
@@ -15933,6 +15946,8 @@ function createLegend(layer, title) {
     el2 = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
   } else if (renderer.indexOf('PropSymbols') !== -1) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field) : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf('LinksProp') !== -1) {
+    el = createLegend_line_symbol(layer, field, title, field);
   } else if (renderer.indexOf('TwoStocksWaffle') !== -1) {
     el = createLegend_waffle(layer, field, title, '');
   } else {
@@ -17058,7 +17073,8 @@ function createlegendEditBox(legend_id, layer_name) {
     // the string representation of only two values but it will most likely do the job in many cases)
     var max_nb_decimals = 0;
     var max_nb_left = 0;
-    if (legend_id.indexOf('2') === -1 && legend_id.indexOf('links') === -1) {
+    if (legend_id.indexOf('2') === -1) {
+      //&& legend_id.indexOf('links') === -1) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
     } else {

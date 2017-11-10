@@ -3687,11 +3687,17 @@ const fields_FlowMap = {
       ref_fields.forEach((field) => {
         join_field.append('option').text(field).attr('value', field);
       });
+      uo_layer_name.attr('value', ref_fields.length >= 1 ? ['Links', ref_fields[0]].join('_') : 'LinksLayer');
+    } else {
+      uo_layer_name.attr('value', 'LinksLayer');
     }
-    if (layer || joined_dataset.length > 0) {
-      section2.selectAll('.params').attr('disabled', null);
-      uo_layer_name.attr('value', ['Links', layer].join('_'));
-    }
+    join_field.on('change', function () {
+      uo_layer_name.attr('value', ['Links', this.value].join('_'));
+    });
+    // if (layer || joined_dataset.length > 0) {
+    //   section2.selectAll('.params').attr('disabled', null);
+    //   uo_layer_name.attr('value', ['Links', layer].join('_'));
+    // }
     let values_fij;
 
     field_fij.on('change', function () {
@@ -3736,6 +3742,13 @@ const fields_FlowMap = {
         uo_layer_name.node().value,
       );
     });
+
+    if (fields.length >= 3) {
+      field_j.node().value = fields[1];
+      field_fij.node().value = fields[2];
+      field_j.node().dispatchEvent(new Event('change'));
+      field_fij.node().dispatchEvent(new Event('change'));
+    }
   },
 
   unfill: function () {
@@ -3806,7 +3819,7 @@ function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type,
       serie.setClassManually(user_breaks);
 
       current_layers[new_layer_name].fixed_stroke = true;
-      current_layers[new_layer_name].renderer = 'Links';
+      current_layers[new_layer_name].renderer = 'LinksGraduated';
       current_layers[new_layer_name].breaks = [];
       current_layers[new_layer_name].linksbyId = [];
       current_layers[new_layer_name].size = [min_size, max_size];

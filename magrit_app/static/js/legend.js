@@ -72,7 +72,7 @@ function createLegend(layer, title) {
     el = createLegend_choro(layer, field, title, field, 0);
   } else if (renderer.indexOf('Categorical') > -1) {
     el = createLegend_choro(layer, field, title, field, 4);
-  } else if (renderer.indexOf('Links') !== -1
+  } else if (renderer.indexOf('LinksGraduated') !== -1
           || renderer.indexOf('DiscLayer') !== -1) {
     el = createLegend_discont_links(layer, field, title, field);
   } else if (renderer.indexOf('PropSymbolsChoro') !== -1) {
@@ -86,6 +86,8 @@ function createLegend(layer, title) {
   } else if (renderer.indexOf('PropSymbols') !== -1) {
     el = type_layer === 'Line' ? createLegend_line_symbol(layer, field, title, field)
                                : createLegend_symbol(layer, field, title, field);
+  } else if (renderer.indexOf('LinksProp') !== -1) {
+    el = createLegend_line_symbol(layer, field, title, field);
   } else if (renderer.indexOf('TwoStocksWaffle') !== -1) {
     el = createLegend_waffle(layer, field, title, '');
   } else {
@@ -1414,7 +1416,7 @@ function createlegendEditBox(legend_id, layer_name) {
     // the string representation of only two values but it will most likely do the job in many cases)
     let max_nb_decimals = 0;
     let max_nb_left = 0;
-    if (legend_id.indexOf('2') === -1 && legend_id.indexOf('links') === -1) {
+    if (legend_id.indexOf('2') === -1) { //&& legend_id.indexOf('links') === -1) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
     } else {
