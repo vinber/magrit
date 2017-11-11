@@ -391,8 +391,8 @@
             "no_match": "No se encontraron coincidencias entre los campos <i>{{field1}}</i> y <i>{{field2}}</i>",
             "partial_join": "Unión parcial: {{ratio}} de las geometrías tienen coincidencia. ¿Aceptar?",
             "change_field": "Cambiar los campos de unión",
-            "before_join_ask": "Una capa geográfica y un conjunto de datos fueron añadidos. ¿Desea unirlos?"
-
+            "before_join_ask": "Una capa geográfica y un conjunto de datos fueron añadidos. ¿Desea unirlos?",
+            "delete_not_join": "¿Eliminar entidades de la capa geográfica que no coinciden en el conjunto de datos ?"
         },
         "box_type_fields": {
             "title": "Tipificación de datos",

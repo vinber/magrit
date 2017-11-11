@@ -340,7 +340,7 @@ function get_map_template() {
         layer_style_i.scale_max = current_layer_prop.scale_max;
         layer_style_i.scale_byFeature = current_layer_prop.scale_byFeature;
       }
-    } else if (current_layer_prop.renderer === 'Links' || current_layer_prop.renderer === 'DiscLayer') {
+    } else if (current_layer_prop.renderer === 'LinksGraduated' || current_layer_prop.renderer === 'DiscLayer') {
       selection = map.select(`#${layer_id}`).selectAll('path');
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -352,7 +352,7 @@ function get_map_template() {
       layer_style_i.min_display = current_layer_prop.min_display;
       layer_style_i.breaks = current_layer_prop.breaks;
       // layer_style_i.topo_geom = String(current_layer_prop.key_name);
-      if (current_layer_prop.renderer === 'Links') {
+      if (current_layer_prop.renderer === 'LinksGraduated') {
         layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
       }
     } else if (current_layer_prop.renderer === 'TypoSymbols') {
@@ -718,7 +718,7 @@ function apply_user_preferences(json_pref) {
   let at_end = [];
   let done = 0;
   const func_name_corresp = new Map([
-    ['Links', 'flow'], ['Carto_doug', 'cartogram'],
+    ['LinksGraduated', 'flow'], ['Carto_doug', 'cartogram'],
     ['OlsonCarto', 'cartogram'], ['Stewart', 'smooth'],
     ['Gridded', 'grid'], ['DiscLayer', 'discont'],
     ['Choropleth', 'choro'], ['Categorical', 'typo'],
@@ -832,7 +832,7 @@ function apply_user_preferences(json_pref) {
         if (['Choropleth', 'Stewart', 'Gridded'].indexOf(_layer.renderer) > -1) {
           layer_selec.selectAll('path')
             .style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', (d, j) => _layer.color_by_id[j]);
-        } else if (_layer.renderer === 'Links') {
+        } else if (_layer.renderer === 'LinksGraduated') {
           current_layer_prop.linksbyId = _layer.linksbyId;
           current_layer_prop.min_display = _layer.min_display;
           current_layer_prop.breaks = _layer.breaks;

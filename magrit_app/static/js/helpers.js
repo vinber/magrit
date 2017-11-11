@@ -136,6 +136,26 @@ function path_to_geojson(layerName) {
   });
 }
 
+function path_to_geojson2(layerName) {
+  const id_layer = ['#', _app.layer_to_id.get(layerName)].join('');
+  const result_geojson = [];
+  d3.select(id_layer)
+    .selectAll('path')
+    .each((d, i) => {
+      result_geojson.push({
+        type: 'Feature',
+        id: i,
+        properties: d.properties,
+        geometry: d.geometry,
+      });
+    });
+  return JSON.stringify({
+    type: 'FeatureCollection',
+    crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+    features: result_geojson,
+  });
+}
+
 function display_error_during_computation(msg) {
   const message = message ? `<br><i>${i18next.t('app_page.common.details')}:</i> ${msg}` : '';
   swal({

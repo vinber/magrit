@@ -141,7 +141,7 @@ function valid_join_on(layer_name, field1, field2) {
   const prop = [hits, '/', join_values1.length].join('');
   let f_name = '';
 
-  if (hits === join_values1.length) {
+  if (hits >= join_values1.length) {
     swal({ title: '',
       text: i18next.t('app_page.common.success'),
       type: 'success',
@@ -184,8 +184,46 @@ function valid_join_on(layer_name, field1, field2) {
           }
         }
       }
-      valid_join_check_display(true, prop);
-      return Promise.resolve(true);
+      return swal({
+        title: `${i18next.t('app_page.common.confirm')}!`,
+        text: i18next.t('app_page.join_box.delete_not_join'),
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        type: 'question',
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: i18next.t('app_page.common.yes'),
+        cancelButtonText: i18next.t('app_page.common.no'),
+      }).then(() => {
+        const k = Object.keys(_target_layer_file.objects);
+        _target_layer_file.objects[k[0]].geometries
+        const temp1 = [];
+        const temp2 = [];
+        for(let i = 0; i < user_data[layer_name].length; i++){
+          if (field_join_map[i]) {
+            temp1.push(user_data[layer_name][i]);
+            temp2.push(_target_layer_file.objects[k[0]].geometries[i]);
+          }
+        }
+        user_data[layer_name] = temp1;
+        _target_layer_file.objects[k[0]].geometries = temp2;
+        updateLayer(layer_name);
+        valid_join_check_display(true, [user_data[layer_name].length, user_data[layer_name].length].join('/'));
+        const formToSend = new FormData();
+        const json_layer = path_to_geojson2(layer_name);
+        formToSend.append('geojson', json_layer);
+        formToSend.append('layer_name', layer_name);
+        xhrequest('POST', '/layers/add', formToSend, false).then((e) => {
+          current_layers[layer_name].key_name = JSON.parse(e).key;
+        }).catch((err) => {
+          display_error_during_computation();
+          console.log(err);
+        });
+        return Promise.resolve(true);
+      }, (dismiss) => {
+        valid_join_check_display(true, prop);
+        return Promise.resolve(true);
+      });
     }, (dismiss) => {
       field_join_map = [];
       return Promise.resolve(false);
@@ -198,9 +236,10 @@ function valid_join_on(layer_name, field1, field2) {
   return Promise.resolve(false);
 }
 
-// Function creating the join box , filled by to "select" input linked one to
-// the geometry layer and the other to the external dataset, in order to choose
-// the common field to do the join.
+// Function creating the join box, filled by two "select" input, one containing
+// the field names of the geometry layer, the other one containing those from
+// the external dataset, in order to let the user choose the common field to do
+// the join.
 const createJoinBox = function createJoinBox(layer) {
   const geom_layer_fields = [...current_layers[layer].original_fields.keys()];
   const ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]);

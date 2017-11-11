@@ -1,6 +1,16 @@
 Changes
 =======
 
+0.6.0 (2017-11-xx)
+------------------
+
+- New: ask the user if he wants to remove the un-joined features from his basemap (after a partial join).
+
+- New: allow to make proportionnal links (ie. without data classification, only graduated links were available until now).
+
+
+
+
 0.5.7 (2017-11-08)
 ------------------
 

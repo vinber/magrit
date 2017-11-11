@@ -876,8 +876,15 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
   const _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
   const _input_geom = document.getElementById('input_geom');
-  let _button = button_type.get(type);
+  const parent = _input_geom.parentElement;
 
+  // Removes previous icon if any (user when uploading geometries after a partial join):
+  Array.prototype.forEach.call(
+    parent.querySelectorAll('#remove_target,#table_layer_s1'),
+    (el) => { el.remove(); });
+
+  // Prepare an icon according to the type of geometry:
+  let _button = button_type.get(type);
   _button = _button.substring(10, _button.indexOf('class') - 2);
 
   _input_geom.classList.remove('i18n');
@@ -887,7 +894,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
     .attrs({ src: _button, width: '26', height: '26' })
     .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
     .on('click', null);
-  _input_geom.parentElement.innerHTML = `${_input_geom.parentElement.innerHTML}
+  parent.innerHTML = `${parent.innerHTML}
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
 <img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
   const remove_target = document.getElementById('remove_target');
@@ -940,6 +947,20 @@ const display_table_target_layer = () => {
   const layer_name = Object.keys(user_data)[0];
   boxExplore2.create(layer_name);
 };
+
+function updateLayer(layer_name) {
+  const fields = Object.keys(user_data[layer_name][0]);
+  current_layers[layer_name].n_features = user_data[layer_name].length;
+  current_layers[layer_name].original_fields = new Set(fields);
+  const lyr_id = _app.layer_to_id.get(layer_name);
+  const k = Object.keys(_target_layer_file.objects)[0];
+  const selection = map.select(`#${lyr_id}`)
+    .selectAll('path')
+    .data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features);
+  selection.exit().remove();
+  zoom_without_redraw();
+  update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
+}
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text, options = {}) {

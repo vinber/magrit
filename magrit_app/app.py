@@ -50,33 +50,33 @@ from aioredis import create_pool, create_reconnecting_redis
 from aiohttp import web, ClientSession
 from aiohttp_session import get_session, session_middleware, redis_storage
 from multidict import MultiDict
-try:
-    from helpers.watch_change import JsFileWatcher
-    from helpers.misc import (
-        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from helpers.cy_misc import get_name, join_field_topojson
-    from helpers.topo_to_geo import convert_from_topo
-    from helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
-        check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, TopologicalError, ogr_to_geojson)
-    from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from helpers.grid_layer import get_grid_layer
-    from helpers.error_middleware404 import error_middleware
 
-except:
-    from .helpers.watch_change import JsFileWatcher
-    from .helpers.misc import (
-        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
-    from .helpers.cy_misc import get_name, join_field_topojson
-    from .helpers.topo_to_geo import convert_from_topo
-    from .helpers.geo import (
-        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
-        check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, TopologicalError, ogr_to_geojson)
-    from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
-    from .helpers.grid_layer import get_grid_layer
-    from .helpers.error_middleware404 import error_middleware
+from helpers.watch_change import JsFileWatcher
+from helpers.misc import (
+    run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+from helpers.cy_misc import get_name, join_field_topojson
+from helpers.topo_to_geo import convert_from_topo
+from helpers.geo import (
+    reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
+    check_projection, olson_transform, get_proj4_string,
+    make_geojson_links, TopologicalError, ogr_to_geojson)
+from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+from helpers.grid_layer import get_grid_layer
+from helpers.error_middleware404 import error_middleware
+
+#except:
+#    from .helpers.watch_change import JsFileWatcher
+#    from .helpers.misc import (
+#        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+#    from .helpers.cy_misc import get_name, join_field_topojson
+#    from .helpers.topo_to_geo import convert_from_topo
+#    from .helpers.geo import (
+#        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
+#        check_projection, olson_transform, get_proj4_string,
+#        make_geojson_links, TopologicalError, ogr_to_geojson)
+#    from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+#    from .helpers.grid_layer import get_grid_layer
+#    from .helpers.error_middleware404 import error_middleware
 
 pp = '(aiohttp_app) '
 

@@ -396,8 +396,8 @@
             "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
             "partial_join": "Jointure partielle: {{ratio}} geometries ont trouvé une correspondance. Valider ?",
             "change_field": "Changer les champs joints",
-            "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?"
-
+            "before_join_ask": "Un fond de carte et un jeu de données ont été fournis. Les joindre maintenant ?",
+            "delete_not_join": "Supprimer les entités du fond de carte n'ayant pas de correspondance dans le jeu de données externe ?"
         },
         "box_type_fields": {
             "title": "Typage des données",

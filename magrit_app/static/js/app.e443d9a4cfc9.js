@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7c4d45a19229.json'
+      loadPath: 'static/locales/{{lng}}/translation.e443d9a4cfc9.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8474,6 +8474,24 @@ function path_to_geojson(layerName) {
   });
 }
 
+function path_to_geojson2(layerName) {
+  var id_layer = ['#', _app.layer_to_id.get(layerName)].join('');
+  var result_geojson = [];
+  d3.select(id_layer).selectAll('path').each(function (d, i) {
+    result_geojson.push({
+      type: 'Feature',
+      id: i,
+      properties: d.properties,
+      geometry: d.geometry
+    });
+  });
+  return JSON.stringify({
+    type: 'FeatureCollection',
+    crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+    features: result_geojson
+  });
+}
+
 function display_error_during_computation(msg) {
   var message = message ? '<br><i>' + i18next.t('app_page.common.details') + ':</i> ' + msg : '';
   swal({
@@ -10646,15 +10664,22 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   var nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
   var _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
   var _input_geom = document.getElementById('input_geom');
-  var _button = button_type.get(type);
+  var parent = _input_geom.parentElement;
 
+  // Removes previous icon if any (user when uploading geometries after a partial join):
+  Array.prototype.forEach.call(parent.querySelectorAll('#remove_target,#table_layer_s1'), function (el) {
+    el.remove();
+  });
+
+  // Prepare an icon according to the type of geometry:
+  var _button = button_type.get(type);
   _button = _button.substring(10, _button.indexOf('class') - 2);
 
   _input_geom.classList.remove('i18n');
   _input_geom.removeAttribute('data-i18n');
   // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
   d3.select(_input_geom).attrs({ src: _button, width: '26', height: '26' }).html('<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>').on('click', null);
-  _input_geom.parentElement.innerHTML = _input_geom.parentElement.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
+  parent.innerHTML = parent.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
   var remove_target = document.getElementById('remove_target');
   remove_target.onclick = function () {
     remove_layer(Object.getOwnPropertyNames(user_data)[0]);
@@ -10711,6 +10736,18 @@ var display_table_target_layer = function display_table_target_layer() {
   var layer_name = Object.keys(user_data)[0];
   boxExplore2.create(layer_name);
 };
+
+function updateLayer(layer_name) {
+  var fields = Object.keys(user_data[layer_name][0]);
+  current_layers[layer_name].n_features = user_data[layer_name].length;
+  current_layers[layer_name].original_fields = new Set(fields);
+  var lyr_id = _app.layer_to_id.get(layer_name);
+  var k = Object.keys(_target_layer_file.objects)[0];
+  var selection = map.select('#' + lyr_id).selectAll('path').data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features);
+  selection.exit().remove();
+  zoom_without_redraw();
+  update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
+}
 
 // Add the TopoJSON to the 'svg' element :
 function add_layer_topojson(text) {
@@ -11978,7 +12015,7 @@ function valid_join_on(layer_name, field1, field2) {
   var prop = [hits, '/', join_values1.length].join('');
   var f_name = '';
 
-  if (hits === join_values1.length) {
+  if (hits >= join_values1.length) {
     swal({ title: '',
       text: i18next.t('app_page.common.success'),
       type: 'success',
@@ -12020,8 +12057,46 @@ function valid_join_on(layer_name, field1, field2) {
           }
         }
       }
-      valid_join_check_display(true, prop);
-      return Promise.resolve(true);
+      return swal({
+        title: i18next.t('app_page.common.confirm') + '!',
+        text: i18next.t('app_page.join_box.delete_not_join'),
+        allowOutsideClick: false,
+        allowEscapeKey: true,
+        type: 'question',
+        showConfirmButton: true,
+        showCancelButton: true,
+        confirmButtonText: i18next.t('app_page.common.yes'),
+        cancelButtonText: i18next.t('app_page.common.no')
+      }).then(function () {
+        var k = Object.keys(_target_layer_file.objects);
+        _target_layer_file.objects[k[0]].geometries;
+        var temp1 = [];
+        var temp2 = [];
+        for (var _i8 = 0; _i8 < user_data[layer_name].length; _i8++) {
+          if (field_join_map[_i8]) {
+            temp1.push(user_data[layer_name][_i8]);
+            temp2.push(_target_layer_file.objects[k[0]].geometries[_i8]);
+          }
+        }
+        user_data[layer_name] = temp1;
+        _target_layer_file.objects[k[0]].geometries = temp2;
+        updateLayer(layer_name);
+        valid_join_check_display(true, [user_data[layer_name].length, user_data[layer_name].length].join('/'));
+        var formToSend = new FormData();
+        var json_layer = path_to_geojson2(layer_name);
+        formToSend.append('geojson', json_layer);
+        formToSend.append('layer_name', layer_name);
+        xhrequest('POST', '/layers/add', formToSend, false).then(function (e) {
+          current_layers[layer_name].key_name = JSON.parse(e).key;
+        }).catch(function (err) {
+          display_error_during_computation();
+          console.log(err);
+        });
+        return Promise.resolve(true);
+      }, function (dismiss) {
+        valid_join_check_display(true, prop);
+        return Promise.resolve(true);
+      });
     }, function (dismiss) {
       field_join_map = [];
       return Promise.resolve(false);
@@ -12047,9 +12122,9 @@ var createJoinBox = function createJoinBox(layer) {
   }
   button1.push('</select>');
 
-  for (var _i8 = 0, _len8 = ext_dataset_fields.length; _i8 < _len8; _i8++) {
-    if (ext_dataset_fields[_i8].length > 0) {
-      button2.push(['<option value="', ext_dataset_fields[_i8], '">', ext_dataset_fields[_i8], '</option>'].join(''));
+  for (var _i9 = 0, _len8 = ext_dataset_fields.length; _i9 < _len8; _i9++) {
+    if (ext_dataset_fields[_i9].length > 0) {
+      button2.push(['<option value="', ext_dataset_fields[_i9], '">', ext_dataset_fields[_i9], '</option>'].join(''));
     }
   }
   button2.push('</select>');
@@ -14090,6 +14165,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15275,6 +15351,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -17644,7 +17721,7 @@ function get_map_template() {
           layer_style_i.scale_byFeature = current_layer_prop.scale_byFeature;
         }
       })();
-    } else if (current_layer_prop.renderer === 'Links' || current_layer_prop.renderer === 'DiscLayer') {
+    } else if (current_layer_prop.renderer === 'LinksGraduated' || current_layer_prop.renderer === 'DiscLayer') {
       selection = map.select('#' + layer_id).selectAll('path');
       layer_style_i.renderer = current_layer_prop.renderer;
       layer_style_i.fill_color = current_layer_prop.fill_color;
@@ -17656,7 +17733,7 @@ function get_map_template() {
       layer_style_i.min_display = current_layer_prop.min_display;
       layer_style_i.breaks = current_layer_prop.breaks;
       // layer_style_i.topo_geom = String(current_layer_prop.key_name);
-      if (current_layer_prop.renderer === 'Links') {
+      if (current_layer_prop.renderer === 'LinksGraduated') {
         layer_style_i.linksbyId = current_layer_prop.linksbyId.slice(0, nb_ft);
       }
     } else if (current_layer_prop.renderer === 'TypoSymbols') {
@@ -18025,7 +18102,7 @@ function apply_user_preferences(json_pref) {
   }
   var at_end = [];
   var done = 0;
-  var func_name_corresp = new Map([['Links', 'flow'], ['Carto_doug', 'cartogram'], ['OlsonCarto', 'cartogram'], ['Stewart', 'smooth'], ['Gridded', 'grid'], ['DiscLayer', 'discont'], ['Choropleth', 'choro'], ['Categorical', 'typo']]);
+  var func_name_corresp = new Map([['LinksGraduated', 'flow'], ['Carto_doug', 'cartogram'], ['OlsonCarto', 'cartogram'], ['Stewart', 'smooth'], ['Gridded', 'grid'], ['DiscLayer', 'discont'], ['Choropleth', 'choro'], ['Categorical', 'typo']]);
 
   // Set the dimension of the map (width and height) :
   w = +map_config.div_width;
@@ -18140,7 +18217,7 @@ function apply_user_preferences(json_pref) {
           layer_selec.selectAll('path').style(current_layer_prop.type === 'Line' ? 'stroke' : 'fill', function (d, j) {
             return _layer.color_by_id[j];
           });
-        } else if (_layer.renderer === 'Links') {
+        } else if (_layer.renderer === 'LinksGraduated') {
           current_layer_prop.linksbyId = _layer.linksbyId;
           current_layer_prop.min_display = _layer.min_display;
           current_layer_prop.breaks = _layer.breaks;
@@ -18633,7 +18710,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -18799,6 +18877,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -19738,7 +19817,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
