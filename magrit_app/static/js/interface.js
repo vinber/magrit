@@ -37,7 +37,7 @@ function click_button_add_layer() {
   input.setAttribute('name', 'file[]');
   input.setAttribute('enctype', 'multipart/form-data');
   input.onchange = (event) => {
-    const files = event.target.files;
+    const files = prepareFileExt(event.target.files);
     handle_upload_files(files, target_layer_on_add, self);
     input.remove();
   };
@@ -66,13 +66,8 @@ function handle_upload_files(files, target_layer_on_add, elem) {
   }
   if (!(files.length === 1)) {
     const files_to_send = [];
-    Array.prototype.forEach.call(files, (f) =>
-        f.name.indexOf('.shp') > -1
-            || f.name.indexOf('.dbf') > -1
-            || f.name.indexOf('.shx') > -1
-            || f.name.indexOf('.prj') > -1
-            || f.name.indexOf('.cpg') > -1
-            ? files_to_send.push(f) : null)
+    Array.prototype.forEach.call(files, f =>
+        (f._ext === 'shp' || f._ext === 'dbf' || f._ext === 'shx' || f._ext === 'prj' || f._ext === 'cpg' ? files_to_send.push(f) : null));
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
@@ -98,10 +93,10 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false,
       });
     }
-  } else if (files[0].name.toLowerCase().indexOf('json') > -1 ||
-          files[0].name.toLowerCase().indexOf('zip') > -1 ||
-          files[0].name.toLowerCase().indexOf('gml') > -1 ||
-          files[0].name.toLowerCase().indexOf('kml') > -1) {
+  } else if (files[0]._ext === 'json' || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
+          // files[0].name.indexOf('zip') > -1 ||
+          // files[0].name.indexOf('gml') > -1 ||
+          // files[0].name.indexOf('kml') > -1) {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
@@ -114,7 +109,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       });
     // Send the file to the server for conversion :
     } else {
-      if (files[0].name.toLowerCase().indexOf('json') < 0) {
+      if (files[0]._ext !== 'json') {
         handle_single_file(files[0], target_layer_on_add);
       } else {
         const rd = new FileReader();
@@ -153,8 +148,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         rd.readAsText(files[0]);
       }
     }
-  } else if (files[0].name.toLowerCase().indexOf('.csv') > -1
-              || files[0].name.toLowerCase().indexOf('.tsv') > -1) {
+  } else if (files[0]._ext === 'csv' || files[0]._ext === 'tsv') {
     elem.style.border = '';
     if (target_layer_on_add) {
       handle_dataset(files[0], target_layer_on_add);
@@ -168,7 +162,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false,
       });
     }
-  } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
+  } else if (files[0]._ext.indexOf('.xls') > -1 || files[0]._ext.indexOf('.ods') > -1) {
     elem.style.border = '';
     if (target_layer_on_add) {
       convert_dataset(files[0]);
@@ -185,12 +179,9 @@ function handle_upload_files(files, target_layer_on_add, elem) {
   } else {
     elem.style.border = '';
     let shp_part;
-    Array.prototype.forEach.call(files, f =>
-        f.name.indexOf('.shp') > -1
-            || f.name.indexOf('.dbf') > -1
-            || f.name.indexOf('.shx') > -1
-            || f.name.indexOf('.prj') > -1
-            ? shp_part = true : null);
+    Array.prototype.forEach.call(files, (f) => {
+      f._ext === 'shp' || f._ext === 'dbf' || f._ext === 'shx' || f._ext === 'prj' || f._ext === 'cpg' ? shp_part = true : null;
+    });
     if (shp_part) {
       return swal({
         title: `${i18next.t('app_page.common.error')}!`,
@@ -216,19 +207,19 @@ function handle_upload_files(files, target_layer_on_add, elem) {
 
 function handleOneByOneShp(files, target_layer_on_add) {
   function populate_shp_slot(slots, file) {
-    if (file.name.indexOf('.shp') > -1) {
+    if (file.name.toLowerCase().indexOf('.shp') > -1) {
       slots.set('.shp', file);
       document.getElementById('f_shp').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.shx') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.shx') > -1) {
       slots.set('.shx', file);
       document.getElementById('f_shx').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.prj') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.prj') > -1) {
       slots.set('.prj', file);
       document.getElementById('f_prj').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.dbf') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.dbf') > -1) {
       slots.set('.dbf', file);
       document.getElementById('f_dbf').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.cpg') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.cpg') > -1) {
       slots.set('.cpg', file);
       document.getElementById('f_cpg').className = 'mini_button_ok';
     } else {
@@ -324,7 +315,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
   document.getElementById('dv_drop_shp').addEventListener('drop', function (event) {
     event.preventDefault();
     event.stopPropagation();
-    const next_files = event.dataTransfer.files;
+    const next_files = prepareFileExt(event.dataTransfer.files);
     for (let f_ix = 0; f_ix < next_files.length; f_ix++) {
       // let file = next_files[f_ix];
       populate_shp_slot(shp_slots, next_files[f_ix]);
@@ -396,12 +387,9 @@ function prepare_drop_section() {
           }
           const overlay_drop = document.getElementById('overlay_drop');
           overlay_drop.style.display = '';
-          const files = e.dataTransfer.files;
+          const files = prepareFileExt(e.dataTransfer.files);
           if (files.length === 1
-              && (files[0].name.indexOf('.shp') > -1
-                 || files[0].name.indexOf('.shx') > -1
-                 || files[0].name.indexOf('.dbf') > -1
-                 || files[0].name.indexOf('.prj') > -1)) {
+              && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
             Array.prototype.forEach.call(document.querySelectorAll('#map,.overlay_drop'), (_elem) => {
               _elem.removeEventListener('drop', _drop_func);
             });
@@ -478,13 +466,10 @@ function prepare_drop_section() {
           elem.style.border = '';
           return;
         }
-        const files = e.dataTransfer.files,
+        const files = prepareFileExt(e.dataTransfer.files);
           target_layer_on_add = (elem.id === 'section1');
         if (files.length === 1
-              && (files[0].name.indexOf('.shp') > -1
-                 || files[0].name.indexOf('.shx') > -1
-                 || files[0].name.indexOf('.dbf') > -1
-                 || files[0].name.indexOf('.prj') > -1)) {
+              && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
           handleOneByOneShp(files, target_layer_on_add);
         } else {
           handle_upload_files(files, target_layer_on_add, elem);
@@ -1547,6 +1532,7 @@ function add_layout_layers() {
     [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
     [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
     [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
+    [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
     [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
     [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
     [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],

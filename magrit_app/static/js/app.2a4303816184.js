@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.e443d9a4cfc9.json'
+      loadPath: 'static/locales/{{lng}}/translation.2a4303816184.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8350,6 +8350,8 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
 };
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var drag_elem_geo = d3.drag().subject(function () {
@@ -9153,6 +9155,22 @@ function change_layer_name(old_name, new_name) {
   _app.id_to_layer.delete(old_id);
   binds_layers_buttons(new_name);
 }
+
+function prepareFileExt(files_to_send) {
+  Array.prototype.forEach.call(files_to_send, function (f) {
+    f._ext = null;
+    if (f.name.indexOf('.') > -1) {
+      var _f$name$split = f.name.split('.'),
+          _f$name$split2 = _slicedToArray(_f$name$split, 2),
+          name = _f$name$split2[0],
+          ext = _f$name$split2[1];
+
+      f._name = [name, ext.toLowerCase()].join('.');
+      f._ext = ext.toLowerCase();
+    }
+  });
+  return files_to_send;
+}
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -9853,7 +9871,7 @@ function click_button_add_layer() {
   input.setAttribute('name', 'file[]');
   input.setAttribute('enctype', 'multipart/form-data');
   input.onchange = function (event) {
-    var files = event.target.files;
+    var files = prepareFileExt(event.target.files);
     handle_upload_files(files, target_layer_on_add, self);
     input.remove();
   };
@@ -9887,7 +9905,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
   if (!(files.length === 1)) {
     var files_to_send = [];
     Array.prototype.forEach.call(files, function (f) {
-      return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 || f.name.indexOf('.cpg') > -1 ? files_to_send.push(f) : null;
+      return f._ext === 'shp' || f._ext === 'dbf' || f._ext === 'shx' || f._ext === 'prj' || f._ext === 'cpg' ? files_to_send.push(f) : null;
     });
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
@@ -9914,7 +9932,10 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false
       });
     }
-  } else if (files[0].name.toLowerCase().indexOf('json') > -1 || files[0].name.toLowerCase().indexOf('zip') > -1 || files[0].name.toLowerCase().indexOf('gml') > -1 || files[0].name.toLowerCase().indexOf('kml') > -1) {
+  } else if (files[0]._ext === 'json' || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
+    // files[0].name.indexOf('zip') > -1 ||
+    // files[0].name.indexOf('gml') > -1 ||
+    // files[0].name.indexOf('kml') > -1) {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
@@ -9927,7 +9948,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       });
       // Send the file to the server for conversion :
     } else {
-      if (files[0].name.toLowerCase().indexOf('json') < 0) {
+      if (files[0]._ext !== 'json') {
         handle_single_file(files[0], target_layer_on_add);
       } else {
         var rd = new FileReader();
@@ -9966,7 +9987,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         rd.readAsText(files[0]);
       }
     }
-  } else if (files[0].name.toLowerCase().indexOf('.csv') > -1 || files[0].name.toLowerCase().indexOf('.tsv') > -1) {
+  } else if (files[0]._ext === 'csv' || files[0]._ext === 'tsv') {
     elem.style.border = '';
     if (target_layer_on_add) {
       handle_dataset(files[0], target_layer_on_add);
@@ -9980,7 +10001,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false
       });
     }
-  } else if (files[0].name.toLowerCase().indexOf('.xls') > -1 || files[0].name.toLowerCase().indexOf('.ods') > -1) {
+  } else if (files[0]._ext.indexOf('.xls') > -1 || files[0]._ext.indexOf('.ods') > -1) {
     elem.style.border = '';
     if (target_layer_on_add) {
       convert_dataset(files[0]);
@@ -9998,7 +10019,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
     elem.style.border = '';
     var shp_part = void 0;
     Array.prototype.forEach.call(files, function (f) {
-      return f.name.indexOf('.shp') > -1 || f.name.indexOf('.dbf') > -1 || f.name.indexOf('.shx') > -1 || f.name.indexOf('.prj') > -1 ? shp_part = true : null;
+      f._ext === 'shp' || f._ext === 'dbf' || f._ext === 'shx' || f._ext === 'prj' || f._ext === 'cpg' ? shp_part = true : null;
     });
     if (shp_part) {
       return swal({
@@ -10028,19 +10049,19 @@ function handle_upload_files(files, target_layer_on_add, elem) {
 
 function handleOneByOneShp(files, target_layer_on_add) {
   function populate_shp_slot(slots, file) {
-    if (file.name.indexOf('.shp') > -1) {
+    if (file.name.toLowerCase().indexOf('.shp') > -1) {
       slots.set('.shp', file);
       document.getElementById('f_shp').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.shx') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.shx') > -1) {
       slots.set('.shx', file);
       document.getElementById('f_shx').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.prj') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.prj') > -1) {
       slots.set('.prj', file);
       document.getElementById('f_prj').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.dbf') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.dbf') > -1) {
       slots.set('.dbf', file);
       document.getElementById('f_dbf').className = 'mini_button_ok';
-    } else if (file.name.indexOf('.cpg') > -1) {
+    } else if (file.name.toLowerCase().indexOf('.cpg') > -1) {
       slots.set('.cpg', file);
       document.getElementById('f_cpg').className = 'mini_button_ok';
     } else {
@@ -10130,7 +10151,7 @@ function handleOneByOneShp(files, target_layer_on_add) {
   document.getElementById('dv_drop_shp').addEventListener('drop', function (event) {
     event.preventDefault();
     event.stopPropagation();
-    var next_files = event.dataTransfer.files;
+    var next_files = prepareFileExt(event.dataTransfer.files);
     for (var f_ix = 0; f_ix < next_files.length; f_ix++) {
       // let file = next_files[f_ix];
       populate_shp_slot(shp_slots, next_files[f_ix]);
@@ -10200,8 +10221,8 @@ function prepare_drop_section() {
       }
       var overlay_drop = document.getElementById('overlay_drop');
       overlay_drop.style.display = '';
-      var files = e.dataTransfer.files;
-      if (files.length === 1 && (files[0].name.indexOf('.shp') > -1 || files[0].name.indexOf('.shx') > -1 || files[0].name.indexOf('.dbf') > -1 || files[0].name.indexOf('.prj') > -1)) {
+      var files = prepareFileExt(e.dataTransfer.files);
+      if (files.length === 1 && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
         Array.prototype.forEach.call(document.querySelectorAll('#map,.overlay_drop'), function (_elem) {
           _elem.removeEventListener('drop', _drop_func);
         });
@@ -10275,9 +10296,9 @@ function prepare_drop_section() {
         elem.style.border = '';
         return;
       }
-      var files = e.dataTransfer.files,
-          target_layer_on_add = elem.id === 'section1';
-      if (files.length === 1 && (files[0].name.indexOf('.shp') > -1 || files[0].name.indexOf('.shx') > -1 || files[0].name.indexOf('.dbf') > -1 || files[0].name.indexOf('.prj') > -1)) {
+      var files = prepareFileExt(e.dataTransfer.files);
+      target_layer_on_add = elem.id === 'section1';
+      if (files.length === 1 && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
         handleOneByOneShp(files, target_layer_on_add);
       } else {
         handle_upload_files(files, target_layer_on_add, elem);
@@ -11306,7 +11327,7 @@ function add_single_symbol(symbol_dataurl, x, y) {
 
 function add_layout_layers() {
   check_remove_existing_box('.sampleLayoutDialogBox');
-  var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
+  var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
   var selec = { layout: null };
 
   make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title')).then(function (confirmed) {
@@ -12107,9 +12128,10 @@ function valid_join_on(layer_name, field1, field2) {
   return Promise.resolve(false);
 }
 
-// Function creating the join box , filled by to "select" input linked one to
-// the geometry layer and the other to the external dataset, in order to choose
-// the common field to do the join.
+// Function creating the join box, filled by two "select" input, one containing
+// the field names of the geometry layer, the other one containing those from
+// the external dataset, in order to let the user choose the common field to do
+// the join.
 var createJoinBox = function createJoinBox(layer) {
   var geom_layer_fields = [].concat(_toConsumableArray(current_layers[layer].original_fields.keys()));
   var ext_dataset_fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
@@ -14165,7 +14187,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15351,7 +15372,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -18710,8 +18730,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -18877,7 +18896,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -19817,8 +19835,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

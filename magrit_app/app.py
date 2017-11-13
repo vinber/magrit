@@ -246,7 +246,8 @@ async def convert(request):
         list_files = []
         for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
-            file_name = ''.join(['/tmp/', user_id, '_', field[1]])
+            name, ext = field[1].split('.')
+            file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
             list_files.append(file_name)
             savefile(file_name, field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]

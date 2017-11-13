@@ -801,3 +801,15 @@ function change_layer_name(old_name, new_name) {
   _app.id_to_layer.delete(old_id);
   binds_layers_buttons(new_name);
 }
+
+function prepareFileExt(files_to_send) {
+  Array.prototype.forEach.call(files_to_send, (f) => {
+    f._ext = null;
+    if (f.name.indexOf('.') > -1) {
+      const [name, ext] = f.name.split('.');
+      f._name = [name, ext.toLowerCase()].join('.');
+      f._ext = ext.toLowerCase();
+    }
+  });
+  return files_to_send;
+}
