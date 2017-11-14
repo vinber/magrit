@@ -93,10 +93,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false,
       });
     }
-  } else if (files[0]._ext === 'json' || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
-          // files[0].name.indexOf('zip') > -1 ||
-          // files[0].name.indexOf('gml') > -1 ||
-          // files[0].name.indexOf('kml') > -1) {
+  } else if (files[0]._ext.indexOf('json') > -1 || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({

@@ -628,18 +628,30 @@ function make_box_type_fields(layerName) {
 }
 
 function getAvailablesFunctionnalities(layerName) {
+  const section = document.getElementById('section2_pre');
+  if (!layerName) {
+    const elems = section.querySelectorAll(
+      '#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow, #button_prop, #button_choro, #button_choroprop, #button_typo, #button_proptypo, #button_two_stocks');
+    for (let i = 0, len_i = elems.length; i < len_i; i++) {
+      elems[i].style.filter = 'grayscale(100%)';
+    }
+    return;
+  }
+
   const fields_stock = getFieldsType('stock', layerName),
     fields_ratio = getFieldsType('ratio', layerName),
     fields_categ = getFieldsType('category', layerName),
-    section = document.getElementById('section2_pre');
+    fields_id = getFieldsType('id', layerName);
   let func_stock,
     func_ratio,
-    func_categ;
+    func_categ,
+    func_id;
   if (current_layers[layerName].type === 'Line') {  // Layer type is Line
     const elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
     }
+    func_id = [];
     func_stock = section.querySelectorAll('#button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
@@ -648,10 +660,12 @@ function getAvailablesFunctionnalities(layerName) {
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
     }
+    func_id = section.querySelectorAll('#button_flow');
     func_stock = section.querySelectorAll('#button_smooth, #button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {  // Layer type is Polygon
+    func_id = section.querySelectorAll('#button_flow');
     func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
@@ -671,6 +685,11 @@ function getAvailablesFunctionnalities(layerName) {
   } else {
     Array.prototype.forEach.call(func_categ, d => d.style.filter = 'invert(0%) saturate(100%)');
   }
+  if (fields_id.length === 0) {
+    Array.prototype.forEach.call(func_id, d => d.style.filter = 'grayscale(100%)');
+  } else {
+    Array.prototype.forEach.call(func_id, d => d.style.filter = 'invert(0%) saturate(100%)');
+  }
   if (fields_stock.length === 0 || fields_ratio.length === 0) {
     document.getElementById('button_choroprop').style.filter = 'grayscale(100%)';
   } else {
@@ -679,7 +698,13 @@ function getAvailablesFunctionnalities(layerName) {
   if (fields_stock.length === 0 || fields_categ.length === 0) {
     document.getElementById('button_proptypo').style.filter = 'grayscale(100%)';
   } else {
-    document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
+    document.getElementById('button_proptypo').style.filter = 'invert(0%) saturate(100%)';
+  }
+  // Special case for the "waffle" kind of map (it needs 2 or more stock variables)
+  if (fields_stock.length < 2) {
+    document.getElementById('button_two_stocks').style.filter = 'grayscale(100%)';
+  } else {
+    document.getElementById('button_two_stocks').style.filter = 'invert(0%) saturate(100%)';
   }
 }
 

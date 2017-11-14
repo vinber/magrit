@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.2a4303816184.json'
+      loadPath: 'static/locales/{{lng}}/translation.214d8aaf07ba.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1566,6 +1566,9 @@ function remove_layer_cleanup(name) {
 
     // Disabled the button allowing the user to choose type for its layer :
     document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
+
+    // Set all the representation modes to "unavailable":
+    getAvailablesFunctionnalities();
 
     reset_user_values();
 
@@ -6151,17 +6154,17 @@ var fields_Stewart = {
       setSelected(mask_selec.node(), default_selected_mask);
     }
     if (layer) {
-      var _fields = getFieldsType('stock', layer),
+      var fields = getFieldsType('stock', layer),
           field_selec = section2.select('#stewart_field'),
           field_selec2 = section2.select('#stewart_field2');
 
-      if (_fields.length === 0) {
+      if (fields.length === 0) {
         display_error_num_field();
         return;
       }
 
       field_selec2.append('option').text(' ').attr('value', 'None');
-      _fields.forEach(function (field) {
+      fields.forEach(function (field) {
         field_selec.append('option').text(field).attr('value', field);
         field_selec2.append('option').text(field).attr('value', field);
       });
@@ -6170,7 +6173,7 @@ var fields_Stewart = {
       field_selec.on('change', function () {
         document.getElementById('stewart_output_name').value = ['Smoothed', this.value, layer].join('_');
       });
-      document.getElementById('stewart_output_name').value = ['Smoothed', _fields[0], layer].join('_');
+      document.getElementById('stewart_output_name').value = ['Smoothed', fields[0], layer].join('_');
       section2.select('#stewart_yes').on('click', render_stewart);
     }
     section2.selectAll('.params').attr('disabled', null);
@@ -6637,7 +6640,8 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   current_layers[layer_to_add] = {
     n_features: nb_features,
     renderer: rendering_params.renderer || 'PropSymbols',
-    symbol: symbol_type,
+    // symbol: symbol_type,
+    symbol: 'path',
     rendered_field: field,
     size: [ref_value, ref_size],
     // "stroke-width-const": 1,
@@ -6834,8 +6838,8 @@ function make_prop_symbols(rendering_params, _pt_layer) {
 function render_categorical(layer, rendering_params) {
   var layer_name = void 0;
   if (rendering_params.new_name) {
-    var _fields2 = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
-    copy_layer(layer, rendering_params.new_name, 'typo', _fields2);
+    var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
+    copy_layer(layer, rendering_params.new_name, 'typo', fields);
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
     current_layers[rendering_params.new_name].type = current_layers[layer].type;
     layer_name = rendering_params.new_name;
@@ -6872,8 +6876,8 @@ function render_categorical(layer, rendering_params) {
 function render_choro(layer, rendering_params) {
   var layer_name = void 0;
   if (rendering_params.new_name) {
-    var _fields3 = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
-    copy_layer(layer, rendering_params.new_name, 'choro', _fields3);
+    var fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
+    copy_layer(layer, rendering_params.new_name, 'choro', fields);
     // Assign the same key to the cloned layer so it could be used transparently on server side
     // after deletion of the reference layer if needed :
     current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
@@ -7982,8 +7986,8 @@ var fields_FlowMap = {
         uo_layer_name = section2.select('#FlowMap_output_name');
 
     if (joined_dataset.length > 0 && document.getElementById('FlowMap_field_i').options.length === 0) {
-      var _fields4 = Object.getOwnPropertyNames(joined_dataset[0][0]);
-      _fields4.forEach(function (field) {
+      var fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      fields.forEach(function (field) {
         field_i.append('option').text(field).attr('value', field);
         field_j.append('option').text(field).attr('value', field);
         field_fij.append('option').text(field).attr('value', field);
@@ -8045,11 +8049,15 @@ var fields_FlowMap = {
       render_FlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, disc_type.node().value, uo_layer_name.node().value);
     });
 
-    if (fields.length >= 3) {
-      field_j.node().value = fields[1];
-      field_fij.node().value = fields[2];
-      field_j.node().dispatchEvent(new Event('change'));
-      field_fij.node().dispatchEvent(new Event('change'));
+    if (layer && joined_dataset.length > 0) {
+      section2.selectAll('.params').attr('disabled', null);
+      var _fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      if (_fields.length >= 3) {
+        field_j.node().value = _fields[1];
+        field_fij.node().value = _fields[2];
+        field_j.node().dispatchEvent(new Event('change'));
+        field_fij.node().dispatchEvent(new Event('change'));
+      }
     }
   },
 
@@ -8209,7 +8217,7 @@ var render_label = function render_label(layer, rendering_params, options) {
         self_parent.style.display = 'none';
       } }];
   };
-
+  console.log(new_layer_data);
   var selection = map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' }).selectAll('text').data(new_layer_data).enter().insert('text');
   if (pt_position) {
     selection.attrs(function (d, i) {
@@ -8965,33 +8973,46 @@ function make_box_type_fields(layerName) {
 }
 
 function getAvailablesFunctionnalities(layerName) {
-  var fields_stock = getFieldsType('stock', layerName),
-      fields_ratio = getFieldsType('ratio', layerName),
-      fields_categ = getFieldsType('category', layerName),
-      section = document.getElementById('section2_pre');
-  var func_stock = void 0,
-      func_ratio = void 0,
-      func_categ = void 0;
-  if (current_layers[layerName].type === 'Line') {
-    // Layer type is Line
-    var elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
+  var section = document.getElementById('section2_pre');
+  if (!layerName) {
+    var elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow, #button_prop, #button_choro, #button_choroprop, #button_typo, #button_proptypo, #button_two_stocks');
     for (var i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
     }
+    return;
+  }
+
+  var fields_stock = getFieldsType('stock', layerName),
+      fields_ratio = getFieldsType('ratio', layerName),
+      fields_categ = getFieldsType('category', layerName),
+      fields_id = getFieldsType('id', layerName);
+  var func_stock = void 0,
+      func_ratio = void 0,
+      func_categ = void 0,
+      func_id = void 0;
+  if (current_layers[layerName].type === 'Line') {
+    // Layer type is Line
+    var _elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
+    for (var _i2 = 0, _len_i = _elems.length; _i2 < _len_i; _i2++) {
+      _elems[_i2].style.filter = 'grayscale(100%)';
+    }
+    func_id = [];
     func_stock = section.querySelectorAll('#button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
   } else if (current_layers[layerName].type === 'Point') {
     // layer type is Point
-    var _elems = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
-    for (var _i2 = 0, _len_i = _elems.length; _i2 < _len_i; _i2++) {
-      _elems[_i2].style.filter = 'grayscale(100%)';
+    var _elems2 = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
+    for (var _i3 = 0, _len_i2 = _elems2.length; _i3 < _len_i2; _i3++) {
+      _elems2[_i3].style.filter = 'grayscale(100%)';
     }
+    func_id = section.querySelectorAll('#button_flow');
     func_stock = section.querySelectorAll('#button_smooth, #button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {
     // Layer type is Polygon
+    func_id = section.querySelectorAll('#button_flow');
     func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
@@ -9023,6 +9044,15 @@ function getAvailablesFunctionnalities(layerName) {
       return d.style.filter = 'invert(0%) saturate(100%)';
     });
   }
+  if (fields_id.length === 0) {
+    Array.prototype.forEach.call(func_id, function (d) {
+      return d.style.filter = 'grayscale(100%)';
+    });
+  } else {
+    Array.prototype.forEach.call(func_id, function (d) {
+      return d.style.filter = 'invert(0%) saturate(100%)';
+    });
+  }
   if (fields_stock.length === 0 || fields_ratio.length === 0) {
     document.getElementById('button_choroprop').style.filter = 'grayscale(100%)';
   } else {
@@ -9031,7 +9061,13 @@ function getAvailablesFunctionnalities(layerName) {
   if (fields_stock.length === 0 || fields_categ.length === 0) {
     document.getElementById('button_proptypo').style.filter = 'grayscale(100%)';
   } else {
-    document.getElementById('button_proptypo').style.fiter = 'invert(0%) saturate(100%)';
+    document.getElementById('button_proptypo').style.filter = 'invert(0%) saturate(100%)';
+  }
+  // Special case for the "waffle" kind of map (it needs 2 or more stock variables)
+  if (fields_stock.length < 2) {
+    document.getElementById('button_two_stocks').style.filter = 'grayscale(100%)';
+  } else {
+    document.getElementById('button_two_stocks').style.filter = 'invert(0%) saturate(100%)';
   }
 }
 
@@ -9137,16 +9173,16 @@ function change_layer_name(old_name, new_name) {
     }
   }
   var other_layers = Object.getOwnPropertyNames(current_layers);
-  for (var _i3 = 0; _i3 < other_layers.length; _i3++) {
-    if (current_layers[other_layers[_i3]].ref_layer_name === old_name) {
-      current_layers[other_layers[_i3]].ref_layer_name = new_name;
+  for (var _i4 = 0; _i4 < other_layers.length; _i4++) {
+    if (current_layers[other_layers[_i4]].ref_layer_name === old_name) {
+      current_layers[other_layers[_i4]].ref_layer_name = new_name;
     }
   }
   var select_export_lyr = document.getElementById('section5').querySelectorAll('#layer_to_export > option');
-  for (var _i4 = 0; _i4 < select_export_lyr.length; _i4++) {
-    if (select_export_lyr[_i4].value === old_name) {
-      select_export_lyr[_i4].value = new_name;
-      select_export_lyr[_i4].innerHTML = new_name;
+  for (var _i5 = 0; _i5 < select_export_lyr.length; _i5++) {
+    if (select_export_lyr[_i5].value === old_name) {
+      select_export_lyr[_i5].value = new_name;
+      select_export_lyr[_i5].innerHTML = new_name;
     }
   }
   _app.layer_to_id.set(new_name, new_id);
@@ -9932,10 +9968,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false
       });
     }
-  } else if (files[0]._ext === 'json' || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
-    // files[0].name.indexOf('zip') > -1 ||
-    // files[0].name.indexOf('gml') > -1 ||
-    // files[0].name.indexOf('kml') > -1) {
+  } else if (files[0]._ext.indexOf('json') > -1 || files[0]._ext === 'zip' || files[0]._ext === 'gml' || files[0]._ext === 'kml') {
     elem.style.border = '';
     if (target_layer_on_add && _app.targeted_layer_added) {
       swal({
@@ -12766,7 +12799,7 @@ function createStyleBox_Line(layer_name) {
         redraw_legend('line_class', layer_name);
       }
 
-      if (renderer.startsWith('PropSymbols')) {
+      if (renderer && renderer.startsWith('PropSymbols')) {
         redraw_legend('line_symbol', layer_name);
       }
 
@@ -12861,7 +12894,8 @@ function createStyleBox_Line(layer_name) {
   } else if (renderer === 'Choropleth' || renderer === 'PropSymbolsChoro') {
     popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
-      display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length, current_layers[layer_name].options_disc).then(function (confirmed) {
+      var _opts = rendering_params ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options } : current_layers[layer_name].options_disc;
+      display_discretization(layer_name, current_layers[layer_name].rendered_field, _opts.breaks.length - 1, _opts).then(function (confirmed) {
         container.modal.show();
         if (confirmed) {
           rendering_params = {
@@ -13206,9 +13240,8 @@ function createStyleBox(layer_name) {
   } else if (renderer === 'Choropleth') {
     popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
-      display_discretization(layer_name, current_layers[layer_name].rendered_field, current_layers[layer_name].colors_breaks.length,
-      //  "quantiles",
-      current_layers[layer_name].options_disc).then(function (confirmed) {
+      var _opts = rendering_params ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options } : current_layers[layer_name].options_disc;
+      display_discretization(layer_name, current_layers[layer_name].rendered_field, _opts.breaks.length - 1, _opts).then(function (confirmed) {
         container.modal.show();
         if (confirmed) {
           rendering_params = {
@@ -13234,9 +13267,8 @@ function createStyleBox(layer_name) {
     var field_to_discretize = current_layers[layer_name].rendered_field;
     popup.append('p').style('margin', 'auto').style('text-align', 'center').append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
-      display_discretization(layer_name, field_to_discretize, current_layers[layer_name].colors_breaks.length,
-      //  "quantiles",
-      current_layers[layer_name].options_disc).then(function (confirmed) {
+      var _opts = rendering_params ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options } : current_layers[layer_name].options_disc;
+      display_discretization(layer_name, field_to_discretize, _opts.breaks.length - 1, _opts).then(function (confirmed) {
         container.modal.show();
         if (confirmed) {
           rendering_params = {
@@ -13452,7 +13484,7 @@ function make_generate_labels_graticule_section(parent_node) {
   }).on('click', function () {
     render_label_graticule('Graticule', {
       color: '#000',
-      font: 'Arial,Helvetica,sans-serif',
+      font: 'verdana',
       ref_font_size: 12,
       uo_layer_name: ['Labels', 'Graticule'].join('_')
     });
@@ -13503,7 +13535,7 @@ function make_generate_labels_section(parent_node, layer_name) {
               render_label(layer_name, {
                 label_field: value,
                 color: '#000',
-                font: 'Arial,Helvetica,sans-serif',
+                font: 'verdana',
                 ref_font_size: 12,
                 uo_layer_name: ['Labels', value, layer_name].join('_')
               });
@@ -13830,9 +13862,8 @@ function createStyleBox_ProbSymbol(layer_name) {
     var field_color = current_layers[layer_name].rendered_field2;
     popup.append('p').styles({ margin: 'auto', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color })).append('button').attr('class', 'button_disc').html(i18next.t('app_page.layer_style_popup.choose_discretization')).on('click', function () {
       container.modal.hide();
-      display_discretization(layer_name, field_color, current_layers[layer_name].colors_breaks.length,
-      //  "quantiles",
-      current_layers[layer_name].options_disc).then(function (confirmed) {
+      var _opts = rendering_params ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options } : current_layers[layer_name].options_disc;
+      display_discretization(layer_name, field_color, _opts.breaks.length - 1, _opts).then(function (confirmed) {
         container.modal.show();
         if (confirmed) {
           rendering_params = {

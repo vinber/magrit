@@ -710,7 +710,7 @@ function createStyleBox_Line(layer_name) {
           redraw_legend('line_class', layer_name);
         }
 
-        if (renderer.startsWith('PropSymbols')) {
+        if (renderer && renderer.startsWith('PropSymbols')) {
           redraw_legend('line_symbol', layer_name);
         }
 
@@ -819,10 +819,13 @@ function createStyleBox_Line(layer_name) {
       .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
+        const _opts = rendering_params
+          ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
+          : current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                current_layers[layer_name].rendered_field,
-                               current_layers[layer_name].colors_breaks.length,
-                               current_layers[layer_name].options_disc)
+                               _opts.breaks.length - 1,
+                               _opts)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {
@@ -1229,11 +1232,13 @@ function createStyleBox(layer_name) {
       .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
+        const _opts = rendering_params
+          ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
+          : current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                current_layers[layer_name].rendered_field,
-                               current_layers[layer_name].colors_breaks.length,
-                              //  "quantiles",
-                               current_layers[layer_name].options_disc)
+                               _opts.breaks.length - 1,
+                               _opts)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {
@@ -1263,11 +1268,13 @@ function createStyleBox(layer_name) {
       .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
+        const _opts = rendering_params
+          ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
+          : current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                field_to_discretize,
-                               current_layers[layer_name].colors_breaks.length,
-                              //  "quantiles",
-                               current_layers[layer_name].options_disc)
+                               _opts.breaks.length - 1,
+                               _opts)
             .then((confirmed) => {
               container.modal.show();
               if (confirmed) {
@@ -1562,7 +1569,7 @@ function make_generate_labels_graticule_section(parent_node) {
     .on('click', () => {
       render_label_graticule('Graticule', {
         color: '#000',
-        font: 'Arial,Helvetica,sans-serif',
+        font: 'verdana',
         ref_font_size: 12,
         uo_layer_name: ['Labels', 'Graticule'].join('_'),
       });
@@ -1618,7 +1625,7 @@ function make_generate_labels_section(parent_node, layer_name) {
               render_label(layer_name, {
                 label_field: value,
                 color: '#000',
-                font: 'Arial,Helvetica,sans-serif',
+                font: 'verdana',
                 ref_font_size: 12,
                 uo_layer_name: ['Labels', value, layer_name].join('_'),
               });
@@ -2017,11 +2024,13 @@ function createStyleBox_ProbSymbol(layer_name) {
       .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
+        const _opts = rendering_params
+          ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
+          : current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                field_color,
-                               current_layers[layer_name].colors_breaks.length,
-                              //  "quantiles",
-                               current_layers[layer_name].options_disc)
+                               _opts.breaks.length - 1,
+                               _opts)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {

@@ -2153,7 +2153,8 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   current_layers[layer_to_add] = {
     n_features: nb_features,
     renderer: rendering_params.renderer || 'PropSymbols',
-    symbol: symbol_type,
+    // symbol: symbol_type,
+    symbol: 'path',
     rendered_field: field,
     size: [ref_value, ref_size],
     // "stroke-width-const": 1,
@@ -3743,11 +3744,15 @@ const fields_FlowMap = {
       );
     });
 
-    if (fields.length >= 3) {
-      field_j.node().value = fields[1];
-      field_fij.node().value = fields[2];
-      field_j.node().dispatchEvent(new Event('change'));
-      field_fij.node().dispatchEvent(new Event('change'));
+    if (layer && joined_dataset.length > 0) {
+      section2.selectAll('.params').attr('disabled', null);
+      const fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      if (fields.length >= 3) {
+        field_j.node().value = fields[1];
+        field_fij.node().value = fields[2];
+        field_j.node().dispatchEvent(new Event('change'));
+        field_fij.node().dispatchEvent(new Event('change'));
+      }
     }
   },
 
@@ -3905,7 +3910,7 @@ const render_label = function render_label(layer, rendering_params, options) {
     { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
     { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
-
+  console.log(new_layer_data);
   const selection = map.insert('g', '.legend')
     .attrs({ id: layer_id, class: 'layer no_clip' })
     .selectAll('text')

@@ -1866,6 +1866,9 @@ function remove_layer_cleanup(name) {
     // Disabled the button allowing the user to choose type for its layer :
     document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
 
+    // Set all the representation modes to "unavailable":
+    getAvailablesFunctionnalities();
+
     reset_user_values();
 
     // Reset the projection (if the projection was defined via proj4):
