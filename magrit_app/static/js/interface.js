@@ -1582,13 +1582,62 @@ function add_sample_layer() {
     prepare_extra_dataset_availables();
   }
   const fields_type_sample = new Map([
-    ['GrandParisMunicipalities', [{"name":"DEP","type":"category","has_duplicate":true},{"name":"IDCOM","type":"id"},{"name":"EPT","type":"category","has_duplicate":true},{"name":"INC","type":"stock"},{"name":"LIBCOM","type":"id"},{"name":"LIBEPT","type":"category","has_duplicate":true},{"name":"TH","type":"stock"},{"name":"UID","type":"id"},{"name":"IncPerTH","type":"ratio"}]],
-    ['martinique', [{"name":"INSEE_COM","type":"id"},{"name":"NOM_COM","type":"id","not_number":true},{"name":"STATUT","type":"category","has_duplicate":true},{"name":"SUPERFICIE","type":"stock"},{"name":"P13_POP","type":"stock"},{"name":"P13_LOG","type":"stock"},{"name":"P13_LOGVAC","type":"stock"},{"name":"Part_Logements_Vacants","type":"ratio"}]],
-    ['nuts2-2013-data', [{"name":"id","type":"id","not_number":true},{"name":"name","type":"id","not_number":true},{"name":"POP","type":"stock"},{"name":"GDP","type":"stock"},{"name":"UNEMP","type":"ratio"},{"name":"COUNTRY","type":"category","has_duplicate":true}]],
-    ['voronoi_communes_2016_2-2', [{ name: 'INSEE_COM', type: 'id' }]],
-    ['departements_2016_2-2', [{ name: 'CODE_DEPT', type: 'id' }, { name: 'NOM_DEPT', type: 'id' }, { name: 'CODE_CHF', type: 'id' }, { name: 'NOM_CHF', type: 'id' }, { name: 'CODE_REG', type: 'category', has_duplicate: true }, { name: 'NOM_REG', type: 'category', has_duplicate: true }]],
-    ['brazil', [{"name":"ADMIN_NAME","type":"id","not_number":true},{"name":"Abbreviation","type":"id","not_number":true},{"name":"Capital","type":"id","not_number":true},{"name":"GDP_per_capita_2012","type":"stock"},{"name":"Life_expectancy_2014","type":"ratio"},{"name":"Pop2014","type":"stock"},{"name":"REGIONS","type":"category","has_duplicate":true},{"name":"STATE2010","type":"id"},{"name":"popdensity2014","type":"ratio"}]],
-    ['world_countries_data', [{"name":"ISO2","type":"id","not_number":true},{"name":"ISO3","type":"id","not_number":true},{"name":"ISONUM","type":"id"},{"name":"NAMEen","type":"id","not_number":true},{"name":"NAMEfr","type":"id","not_number":true},{"name":"UNRegion","type":"category","has_duplicate":true},{"name":"GrowthRate","type":"ratio"},{"name":"PopDensity","type":"ratio"},{"name":"PopTotal","type":"stock"},{"name":"JamesBond","type":"stock"}]]
+    ['GrandParisMunicipalities', [
+      { name: 'DEPARTEMENT', type: 'category', has_duplicate: true },
+      { name: 'IDCOM', type: 'id' },
+      { name: 'EPT', type: 'category', has_duplicate: true },
+      { name: 'REVENUS', type: 'stock' },
+      { name: 'LIBCOM', type: 'id' },
+      { name: 'LIBEPT', type: 'category', has_duplicate: true },
+      { name: 'MENAGES_FISCAUX', type: 'stock' },
+      { name: 'UID', type: 'id' },
+      { name: 'REVENUS_PAR_MENAGE', type: 'ratio' }]],
+    ['martinique', [
+      { name: 'INSEE_COM', type: 'id' },
+      { name: 'NOM_COM', type: 'id', not_number: true },
+      { name: 'STATUT', type: 'category', has_duplicate: true },
+      { name: 'SUPERFICIE', type: 'stock' },
+      { name: 'P13_POP', type: 'stock' },
+      { name: 'P13_LOG', type: 'stock' },
+      { name: 'P13_LOGVAC', type: 'stock' },
+      { name: 'Part_Logements_Vacants', type: 'ratio' }]],
+    ['nuts2-2013-data', [
+      { name: 'id', type: 'id', not_number: true },
+      { name: 'name', type: 'id', not_number: true },
+      { name: 'POP', type: 'stock' },
+      { name: 'GDP', type: 'stock' },
+      { name: 'UNEMP', type: 'ratio' },
+      { name: 'COUNTRY', type: 'category', has_duplicate: true }]],
+    ['voronoi_communes_2016_2-2', [
+      { name: 'INSEE_COM', type: 'id' }]],
+    ['departements_2016_2-2', [
+      { name: 'CODE_DEPT', type: 'id' },
+      { name: 'NOM_DEPT', type: 'id' },
+      { name: 'CODE_CHF', type: 'id' },
+      { name: 'NOM_CHF', type: 'id' },
+      { name: 'CODE_REG', type: 'category', has_duplicate: true },
+      { name: 'NOM_REG', type: 'category', has_duplicate: true }]],
+    ['brazil', [
+      { name: 'ADMIN_NAME', type: 'id', not_number: true },
+      { name: 'Abbreviation', type: 'id', not_number: true },
+      { name: 'Capital', type: 'id', not_number: true },
+      { name: 'GDP_per_capita_2012', type: 'stock' },
+      { name: 'Life_expectancy_2014', type: 'ratio' },
+      { name: 'Pop2014', type: 'stock' },
+      { name: 'REGIONS', type: 'category', has_duplicate: true },
+      { name: 'STATE2010', type: 'id' },
+      { name: 'popdensity2014', type: 'ratio' }]],
+    ['world_countries_data', [
+      { name: 'ISO2', type: 'id', not_number: true },
+      { name: 'ISO3', type: 'id', not_number: true },
+      { name: 'ISONUM', type: 'id' },
+      { name: 'NAMEen', type: 'id', not_number: true },
+      { name: 'NAMEfr', type: 'id', not_number: true },
+      { name: 'UNRegion', type: 'category', has_duplicate: true },
+      { name: 'GrowthRate', type: 'ratio' },
+      { name: 'PopDensity', type: 'ratio' },
+      { name: 'PopTotal', type: 'stock' },
+      { name: 'JamesBond', type: 'stock' }]],
   ]);
   const suggested_projection = new Map([
     ['GrandParisMunicipalities', ['proj4', 'EPSG:2154']],

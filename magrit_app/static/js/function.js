@@ -3623,6 +3623,7 @@ function fillMenu_FlowMap() {
     .attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
   [
+    ['app_page.common.no_classification', 'no_classification'],
     ['app_page.common.equal_interval', 'equal_interval'],
     ['app_page.common.quantiles', 'quantiles'],
     ['app_page.common.Q6', 'Q6'],
