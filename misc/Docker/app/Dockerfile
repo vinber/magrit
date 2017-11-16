@@ -34,6 +34,7 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
     && npm -g install topojson \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s /usr/bin/nodejs /usr/bin/node
+    && sed -e '/save/ s/^#*/#/' -i /etc/redis/redis.conf
 
 WORKDIR /home
 

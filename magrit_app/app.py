@@ -1027,6 +1027,7 @@ async def convert_tabular(request):
 
     # For xls, ods and xlsx files :
     allowed_datatypes = (
+        "application/octet-stream",
         "application/vnd.ms-excel",
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.oasis.opendocument.spreadsheet")
@@ -1048,6 +1049,7 @@ async def convert_tabular(request):
         request.app['logger'].info(
             'Unknown tabular file format : {} / {}'
             .format(name, datatype))
+        message = None
 
     request.app['logger'].info(
         ' - timing : spreadsheet -> csv : {:.4f}s'
