@@ -4,13 +4,14 @@ Source des données d'exemples
 ### Communes de la métropole du Grand-Paris :   
 Fond de carte : Institut national de l’information géographique et forestière (1)  
 Variables :    
-- DEPCOM : code communal (2)  
+- IDCOM : code communal (2)  
 - LIBCOM : nom de la commune (2)     
 - EPT : code le l’Établissement Public Territorial (3)     
 - LIBEPT : nom de l’Établissement Public Territorial (3)  
-- DEP : code du département (2)     
-- INC : somme des revenus déclarés par les ménages (4)  
-- TH : nombre de ménages fiscaux (4)  
+- DEPARTEMENT : code du département (2)     
+- REVENUS : somme des revenus déclarés par les ménages (4)    
+- MENAGES_FISCAUX : nombre de ménages fiscaux (4)  
+- REVENUS_PAR_MENAGE : revenu moyen par ménage fiscal   
 
 (1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a>  
 (2) : INSEE, 2016  
@@ -41,9 +42,9 @@ Variables :
 Fond de carte : Institut national de l’information géographique et forestière (1)
 
 Variables :  
-- INSEE_COM : Code INSEE de la commune
-- NOM_COM : Nom de la commune
-- STATUT :
+- INSEE_COM : Code INSEE de la commune (1)
+- NOM_COM : Nom de la commune (2)
+- STATUT : Statut administratif de la commune (2)
 - POP2013 : Population de la commune (2)
 - DENSPOP : Densité de population en habitants par kilomètres carrés (2)
 - NbLogements : Nombre de logements (2)

@@ -1,5 +1,3 @@
-
-
 /**
 * Return a basic operator as a function, each one taking two numbers in arguments
 *
@@ -213,7 +211,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         document.querySelector('body').style.cursor = 'wait';
         compute_and_add(chooses_handler).then(
           (resolved) => {
-            if (current_layers[layer_name].targeted) {
+            if (current_layers[layer_name] && current_layers[layer_name].targeted) {
               current_layers[layer_name].fields_type.push(
                 type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
               if (window.fields_handler) {

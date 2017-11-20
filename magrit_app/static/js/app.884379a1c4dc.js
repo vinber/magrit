@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.c6423fa3e41a.json'
+      loadPath: 'static/locales/{{lng}}/translation.884379a1c4dc.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -6564,7 +6564,6 @@ function make_prop_line(rendering_params, geojson_line_layer) {
       ref_value = rendering_params.ref_value,
       symbol_type = rendering_params.symbol,
       layer_to_add = rendering_params.new_name,
-      zs = d3.zoomTransform(svg_map).k,
       propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
   if (!geojson_line_layer) {
@@ -7952,18 +7951,35 @@ function fillMenu_FlowMap() {
   discretization_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
   var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
-  [['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
+  [['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks'], ['app_page.common.no_classification', 'no_classification']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
   });
+  var with_discretisation = dv2.append('div').attr('id', 'FlowMap_discSection').style('display', 'none');
+  var without_discretisation = dv2.append('div').attr('id', 'FlowMap_noDiscSection');
 
-  var nb_class_section = dv2.append('p').attr('class', 'params_section2');
+  var b = without_discretisation.append('p').attr('class', 'params_section2');
+  b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' }).html(i18next.t('app_page.func_options.choroprop.fixed_size'));
+  b.insert('input').attrs({
+    id: 'FlowMap_ref_size',
+    type: 'number',
+    class: 'params',
+    min: 0.1,
+    max: 100.0,
+    step: 'any' }).property('value', 20).style('width', '50px');
+  b.append('span').html(' (px)');
+
+  var c = without_discretisation.append('p').attr('class', 'params_section2');
+  c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' }).html(i18next.t('app_page.func_options.choroprop.on_value'));
+  c.insert('input').styles({ width: '100px', 'margin-left': '10px' }).attrs({ type: 'number', class: 'params', id: 'FlowMap_ref_value' }).attrs({ min: 0.1, step: 0.1 });
+
+  var nb_class_section = with_discretisation.append('p').attr('class', 'params_section2');
   nb_class_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class' }).html(i18next.t('app_page.func_options.flow.nb_class'));
-  nb_class_section.insert('input').attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33, value: 8 }).style('width', '50px');
+  nb_class_section.insert('input').attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33 }).property('value', 8).style('width', '50px');
 
-  dv2.append('p').attrs({ class: 'params', id: 'FlowMap_discTable' });
-  dv2.append('p').attr('class', 'params_section2').insert('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' }).html(i18next.t('app_page.func_options.flow.ref_layer_field'));
+  with_discretisation.append('p').attrs({ class: 'params', id: 'FlowMap_discTable' });
+  with_discretisation.append('p').attr('class', 'params_section2').insert('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' }).html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-  var join_field_section = dv2.append('p').attr('class', 'params_section2');
+  var join_field_section = with_discretisation.append('p').attr('class', 'params_section2');
   join_field_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' }).html(i18next.t('app_page.func_options.flow.join_field'));
   join_field_section.insert('select').attrs({ class: 'params', id: 'FlowMap_field_join' });
 
@@ -7982,6 +7998,8 @@ var fields_FlowMap = {
         join_field = section2.select('#FlowMap_field_join'),
         nb_class_input = section2.select('#FlowMap_nbClass'),
         disc_type = section2.select('#FlowMap_discKind'),
+        ref_value = section2.select('#FlowMap_ref_value'),
+        ref_size = section2.select('#FlowMap_ref_size'),
         ok_button = section2.select('#FlowMap_yes'),
         uo_layer_name = section2.select('#FlowMap_output_name');
 
@@ -8013,27 +8031,38 @@ var fields_FlowMap = {
 
     field_fij.on('change', function () {
       var name = this.value,
-          nclass = nb_class_input.node().value,
-          disc = disc_type.node().value,
-          min_size = 0.5,
-          max_size = 10;
+          disc = disc_type.node().value;
       values_fij = joined_dataset[0].map(function (obj) {
         return +obj[name];
       });
-      make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
+      if (disc === 'no_classification') {
+        ref_size.property('value', max_fast(values_fij));
+      } else {
+        var nclass = nb_class_input.node().value,
+            min_size = 0.5,
+            max_size = 10;
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
+      }
     });
 
     disc_type.on('change', function () {
-      var name = field_fij.node().value,
-          disc = this.value,
-          min_size = 0.5,
-          max_size = 10;
-      var nclass = nb_class_input.node().value;
-      if (disc === 'Q6') {
-        nclass = 6;
-        nb_class_input.attr('value', 6);
+      var disc = this.value;
+      if (disc === 'no_classification') {
+        section2.select('#FlowMap_noDiscSection').style('display', null);
+        section2.select('#FlowMap_discSection').style('display', 'none');
+      } else {
+        section2.select('#FlowMap_noDiscSection').style('display', 'none');
+        section2.select('#FlowMap_discSection').style('display', null);
+        var name = field_fij.node().value,
+            min_size = 0.5,
+            max_size = 10;
+        var nclass = nb_class_input.node().value;
+        if (disc === 'Q6') {
+          nclass = 6;
+          nb_class_input.attr('value', 6);
+        }
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
       }
-      make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
     });
 
     nb_class_input.on('change', function () {
@@ -8046,7 +8075,12 @@ var fields_FlowMap = {
     });
 
     ok_button.on('click', function () {
-      render_FlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, disc_type.node().value, uo_layer_name.node().value);
+      var discretisation = disc_type.node().value;
+      if (discretisation === 'no_classification') {
+        render_ProportionalFlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, ref_size.node().value, ref_value.node().value, uo_layer_name.node().value);
+      } else {
+        render_GraduatedFlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, discretisation, uo_layer_name.node().value);
+      }
     });
 
     if (layer && joined_dataset.length > 0) {
@@ -8083,7 +8117,69 @@ var fields_FlowMap = {
   }
 };
 
-function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type, new_user_layer_name) {
+function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field, ref_size, ref_value, new_user_layer_name) {
+  var ref_layer = Object.getOwnPropertyNames(user_data)[0],
+      formToSend = new FormData(),
+      join_field_to_send = {};
+
+  join_field_to_send[name_join_field] = user_data[ref_layer].map(function (obj) {
+    return obj[name_join_field];
+  });
+
+  formToSend.append('json', JSON.stringify({
+    topojson: current_layers[ref_layer].key_name,
+    csv_table: JSON.stringify(joined_dataset[0]),
+    field_i: field_i,
+    field_j: field_j,
+    field_fij: field_fij,
+    join_field: join_field_to_send
+  }));
+
+  xhrequest('POST', 'compute/links', formToSend, true).then(function (data) {
+    var options = { result_layer_on_add: true, func_name: 'flow' };
+    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+      options.choosed_name = new_user_layer_name;
+    }
+
+    var new_layer_name = add_layer_topojson(data, options);
+    if (!new_layer_name) return;
+    var layer_to_render = map.select('#' + _app.layer_to_id.get(new_layer_name)).selectAll('path'),
+        fij_field_name = field_fij,
+        fij_values = result_data[new_layer_name].map(function (obj) {
+      return +obj[fij_field_name];
+    }),
+        nb_ft = fij_values.length;
+
+    var propSize = new PropSizer(ref_value, ref_size, 'line');
+    layer_to_render.each(function (d) {
+      d.properties.color = 'red';
+      d.properties['prop_value'] = propSize.scale(d.properties[field_fij]);
+    });
+
+    layer_to_render.styles(function (d) {
+      return {
+        fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties['prop_value'] };
+    });
+
+    current_layers[new_layer_name] = {
+      n_features: nb_ft,
+      renderer: 'LinksProportional',
+      // symbol: symbol_type,
+      symbol: 'path',
+      rendered_field: field_fij,
+      size: [ref_value, ref_size],
+      // "stroke-width-const": 1,
+      is_result: true,
+      ref_layer_name: ref_layer,
+      fill_color: { single: 'red' },
+      type: 'Line'
+    };
+    switch_accordion_section();
+    handle_legend(new_layer_name);
+  });
+}
+
+function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, disc_type, new_user_layer_name) {
   var ref_layer = Object.getOwnPropertyNames(user_data)[0],
       formToSend = new FormData(),
       join_field_to_send = {};
@@ -10034,7 +10130,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false
       });
     }
-  } else if (files[0]._ext.indexOf('.xls') > -1 || files[0]._ext.indexOf('.ods') > -1) {
+  } else if (files[0]._ext.indexOf('xls') > -1 || files[0]._ext.indexOf('ods') > -1) {
     elem.style.border = '';
     if (target_layer_on_add) {
       convert_dataset(files[0]);
@@ -10262,7 +10358,7 @@ function prepare_drop_section() {
         handleOneByOneShp(files);
       } else {
         var opts = void 0;
-        if (files[0].name.indexOf('.csv') > -1 || files[0].name.indexOf('.tsv') > -1 || files[0].name.indexOf('.txt') > -1 || files[0].name.indexOf('.xls') > -1 || files[0].name.indexOf('.xlsx') > -1 || files[0].name.indexOf('.ods') > -1) {
+        if (files[0]._ext === 'csv' || files[0]._ext === 'tsv' || files[0]._ext === 'txt' || files[0]._ext.indexOf('xls') > -1 || files[0]._ext.indexOf('ods') > -1) {
           opts = { target: i18next.t('app_page.common.ext_dataset') };
         } else {
           opts = _app.targeted_layer_added ? { layout: i18next.t('app_page.common.layout_l') } : { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
@@ -10285,17 +10381,15 @@ function prepare_drop_section() {
               if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
                 reject(i18next.t('app_page.common.no_value'));
               } else {
-                // resolve();
-                // handle_upload_files(files, value === "target", elem);
-                resolve(handle_upload_files(files, value === 'target', elem));
+                resolve(value);
               }
             });
           }
         }).then(function (value) {
+          handle_upload_files(files, value === 'target', elem);
           overlay_drop.style.display = 'none';
         }, function (dismiss) {
           overlay_drop.style.display = 'none';
-          console.log(dismiss);
         });
       }
     });
@@ -10329,8 +10423,8 @@ function prepare_drop_section() {
         elem.style.border = '';
         return;
       }
-      var files = prepareFileExt(e.dataTransfer.files);
-      target_layer_on_add = elem.id === 'section1';
+      var files = prepareFileExt(e.dataTransfer.files),
+          target_layer_on_add = elem.id === 'section1';
       if (files.length === 1 && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
         handleOneByOneShp(files, target_layer_on_add);
       } else {
@@ -10924,7 +11018,7 @@ function add_layer_topojson(text) {
     };
   }
 
-  map.insert('g', '.legend').attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('.subunit').data(topojson.feature(topoObj, topoObj_objects).features).enter().append('path').attrs({ d: path_to_use, height: '100%', width: '100%' }).attr('id', func_data_idx).styles({
+  map.insert('g', '.legend').attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('.subunit').data(topojson.feature(topoObj, topoObj_objects).features).enter().append('path').attrs({ d: path_to_use, height: '100%', width: '100%', id: func_data_idx }).styles({
     stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
     'stroke-opacity': 1,
     fill: type !== 'Line' ? random_color1 : null,
@@ -14218,6 +14312,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15403,6 +15498,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -18761,7 +18857,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -18927,6 +19024,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -19685,7 +19783,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     if (valid) {
       document.querySelector('body').style.cursor = 'wait';
       compute_and_add(chooses_handler).then(function (resolved) {
-        if (current_layers[layer_name].targeted) {
+        if (current_layers[layer_name] && current_layers[layer_name].targeted) {
           current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
           if (window.fields_handler) {
             fields_handler.unfill();
@@ -19866,7 +19964,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

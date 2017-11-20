@@ -2077,7 +2077,6 @@ function make_prop_line(rendering_params, geojson_line_layer) {
     ref_value = rendering_params.ref_value,
     symbol_type = rendering_params.symbol,
     layer_to_add = rendering_params.new_name,
-    zs = d3.zoomTransform(svg_map).k,
     propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
   if (!geojson_line_layer) {
@@ -3623,34 +3622,65 @@ function fillMenu_FlowMap() {
     .attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
   [
-    ['app_page.common.no_classification', 'no_classification'],
     ['app_page.common.equal_interval', 'equal_interval'],
     ['app_page.common.quantiles', 'quantiles'],
     ['app_page.common.Q6', 'Q6'],
     ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
     ['app_page.common.jenks', 'jenks'],
+    ['app_page.common.no_classification', 'no_classification'],
   ].forEach((field) => {
     disc_type.append('option')
       .text(i18next.t(field[0]))
       .attrs({ value: field[1], 'data-i18n': `[text]${field[0]}` });
   });
+  const with_discretisation = dv2.append('div')
+    .attr('id', 'FlowMap_discSection')
+    .style('display', 'none');
+  const without_discretisation = dv2.append('div')
+    .attr('id', 'FlowMap_noDiscSection');
 
-  const nb_class_section = dv2.append('p').attr('class', 'params_section2');
+  const b = without_discretisation.append('p').attr('class', 'params_section2');
+  b.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' })
+    .html(i18next.t('app_page.func_options.choroprop.fixed_size'));
+  b.insert('input')
+    .attrs({
+      id: 'FlowMap_ref_size',
+      type: 'number',
+      class: 'params',
+      min: 0.1,
+      max: 100.0,
+      step: 'any' })
+    .property('value', 20)
+    .style('width', '50px');
+  b.append('span').html(' (px)');
+
+  const c = without_discretisation.append('p').attr('class', 'params_section2');
+  c.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' })
+    .html(i18next.t('app_page.func_options.choroprop.on_value'));
+  c.insert('input')
+    .styles({ width: '100px', 'margin-left': '10px' })
+    .attrs({ type: 'number', class: 'params', id: 'FlowMap_ref_value' })
+    .attrs({ min: 0.1, step: 0.1 });
+
+  const nb_class_section = with_discretisation.append('p').attr('class', 'params_section2');
   nb_class_section.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class' })
     .html(i18next.t('app_page.func_options.flow.nb_class'));
   nb_class_section.insert('input')
-    .attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33, value: 8 })
+    .attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33 })
+    .property('value', 8)
     .style('width', '50px');
 
-  dv2.append('p')
+  with_discretisation.append('p')
     .attrs({ class: 'params', id: 'FlowMap_discTable' });
-  dv2.append('p').attr('class', 'params_section2')
+  with_discretisation.append('p').attr('class', 'params_section2')
     .insert('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' })
     .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-  const join_field_section = dv2.append('p').attr('class', 'params_section2');
+  const join_field_section = with_discretisation.append('p').attr('class', 'params_section2');
   join_field_section.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' })
     .html(i18next.t('app_page.func_options.flow.join_field'));
@@ -3672,6 +3702,8 @@ const fields_FlowMap = {
       join_field = section2.select('#FlowMap_field_join'),
       nb_class_input = section2.select('#FlowMap_nbClass'),
       disc_type = section2.select('#FlowMap_discKind'),
+      ref_value = section2.select('#FlowMap_ref_value'),
+      ref_size = section2.select('#FlowMap_ref_size'),
       ok_button = section2.select('#FlowMap_yes'),
       uo_layer_name = section2.select('#FlowMap_output_name');
 
@@ -3704,25 +3736,36 @@ const fields_FlowMap = {
 
     field_fij.on('change', function () {
       const name = this.value,
-        nclass = nb_class_input.node().value,
-        disc = disc_type.node().value,
-        min_size = 0.5,
-        max_size = 10;
+        disc = disc_type.node().value;
       values_fij = joined_dataset[0].map(obj => +obj[name]);
-      make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
+      if (disc === 'no_classification') {
+        ref_size.property('value', max_fast(values_fij));
+      } else {
+        const nclass = nb_class_input.node().value,
+          min_size = 0.5,
+          max_size = 10;
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
+      }
     });
 
     disc_type.on('change', function () {
-      const name = field_fij.node().value,
-        disc = this.value,
-        min_size = 0.5,
-        max_size = 10;
-      let nclass = nb_class_input.node().value;
-      if (disc === 'Q6') {
-        nclass = 6;
-        nb_class_input.attr('value', 6);
+      const disc = this.value;
+      if (disc === 'no_classification') {
+        section2.select('#FlowMap_noDiscSection').style('display', null);
+        section2.select('#FlowMap_discSection').style('display', 'none');
+      } else {
+        section2.select('#FlowMap_noDiscSection').style('display', 'none');
+        section2.select('#FlowMap_discSection').style('display', null);
+        const name = field_fij.node().value,
+          min_size = 0.5,
+          max_size = 10;
+        let nclass = nb_class_input.node().value;
+        if (disc === 'Q6') {
+          nclass = 6;
+          nb_class_input.attr('value', 6);
+        }
+        make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
       }
-      make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
     });
 
     nb_class_input.on('change', function () {
@@ -3735,14 +3778,27 @@ const fields_FlowMap = {
     });
 
     ok_button.on('click', () => {
-      render_FlowMap(
-        field_i.node().value,
-        field_j.node().value,
-        field_fij.node().value,
-        join_field.node().value,
-        disc_type.node().value,
-        uo_layer_name.node().value,
-      );
+      const discretisation = disc_type.node().value;
+      if (discretisation === 'no_classification') {
+        render_ProportionalFlowMap(
+          field_i.node().value,
+          field_j.node().value,
+          field_fij.node().value,
+          join_field.node().value,
+          ref_size.node().value,
+          ref_value.node().value,
+          uo_layer_name.node().value,
+        );
+      } else {
+        render_GraduatedFlowMap(
+          field_i.node().value,
+          field_j.node().value,
+          field_fij.node().value,
+          join_field.node().value,
+          discretisation,
+          uo_layer_name.node().value,
+        );
+      }
     });
 
     if (layer && joined_dataset.length > 0) {
@@ -3779,7 +3835,67 @@ const fields_FlowMap = {
   },
 };
 
-function render_FlowMap(field_i, field_j, field_fij, name_join_field, disc_type, new_user_layer_name) {
+function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field, ref_size, ref_value, new_user_layer_name) {
+  const ref_layer = Object.getOwnPropertyNames(user_data)[0],
+    formToSend = new FormData(),
+    join_field_to_send = {};
+
+  join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
+
+  formToSend.append('json', JSON.stringify({
+    topojson: current_layers[ref_layer].key_name,
+    csv_table: JSON.stringify(joined_dataset[0]),
+    field_i: field_i,
+    field_j: field_j,
+    field_fij: field_fij,
+    join_field: join_field_to_send,
+  }));
+
+  xhrequest('POST', 'compute/links', formToSend, true)
+    .then((data) => {
+      const options = { result_layer_on_add: true, func_name: 'flow' };
+      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+        options.choosed_name = new_user_layer_name;
+      }
+
+      const new_layer_name = add_layer_topojson(data, options);
+      if (!new_layer_name) return;
+      const layer_to_render = map.select(`#${_app.layer_to_id.get(new_layer_name)}`).selectAll('path'),
+        fij_field_name = field_fij,
+        fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
+        nb_ft = fij_values.length;
+
+      const propSize = new PropSizer(ref_value, ref_size, 'line');
+      layer_to_render.each(function(d) {
+        d.properties.color = 'red';
+        d.properties['prop_value'] = propSize.scale(d.properties[field_fij]);
+      })
+
+      layer_to_render
+        .styles((d) => {
+          return {
+            fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties['prop_value'] };
+        });
+
+      current_layers[new_layer_name] = {
+        n_features: nb_ft,
+        renderer: 'LinksProportional',
+        // symbol: symbol_type,
+        symbol: 'path',
+        rendered_field: field_fij,
+        size: [ref_value, ref_size],
+        // "stroke-width-const": 1,
+        is_result: true,
+        ref_layer_name: ref_layer,
+        fill_color: { single: 'red' },
+        type: 'Line',
+      };
+      switch_accordion_section();
+      handle_legend(new_layer_name);
+    });
+}
+
+function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, disc_type, new_user_layer_name) {
   const ref_layer = Object.getOwnPropertyNames(user_data)[0],
     formToSend = new FormData(),
     join_field_to_send = {};

@@ -159,7 +159,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
         allowOutsideClick: false,
       });
     }
-  } else if (files[0]._ext.indexOf('.xls') > -1 || files[0]._ext.indexOf('.ods') > -1) {
+  } else if (files[0]._ext.indexOf('xls') > -1 || files[0]._ext.indexOf('ods') > -1) {
     elem.style.border = '';
     if (target_layer_on_add) {
       convert_dataset(files[0]);
@@ -393,8 +393,8 @@ function prepare_drop_section() {
             handleOneByOneShp(files);
           } else {
             let opts;
-            if (files[0].name.indexOf('.csv') > -1 || files[0].name.indexOf('.tsv') > -1 || files[0].name.indexOf('.txt') > -1
-                    || files[0].name.indexOf('.xls') > -1 || files[0].name.indexOf('.xlsx') > -1 || files[0].name.indexOf('.ods') > -1) {
+            if (files[0]._ext === 'csv' || files[0]._ext === 'tsv' || files[0]._ext === 'txt'
+                    || files[0]._ext.indexOf('xls') > -1 || files[0]._ext.indexOf('ods') > -1) {
               opts = { target: i18next.t('app_page.common.ext_dataset') };
             } else {
               opts = _app.targeted_layer_added
@@ -418,16 +418,14 @@ function prepare_drop_section() {
                 if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
                   reject(i18next.t('app_page.common.no_value'));
                 } else {
-                  // resolve();
-                  // handle_upload_files(files, value === "target", elem);
-                  resolve(handle_upload_files(files, value === 'target', elem));
+                  resolve(value);
                 }
               }),
             }).then((value) => {
+              handle_upload_files(files, value === 'target', elem);
               overlay_drop.style.display = 'none';
             }, (dismiss) => {
               overlay_drop.style.display = 'none';
-              console.log(dismiss);
             });
           }
         });
@@ -463,7 +461,7 @@ function prepare_drop_section() {
           elem.style.border = '';
           return;
         }
-        const files = prepareFileExt(e.dataTransfer.files);
+        const files = prepareFileExt(e.dataTransfer.files),
           target_layer_on_add = (elem.id === 'section1');
         if (files.length === 1
               && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
@@ -1070,8 +1068,7 @@ function add_layer_topojson(text, options = {}) {
     .data(topojson.feature(topoObj, topoObj_objects).features)
     .enter()
     .append('path')
-    .attrs({ d: path_to_use, height: '100%', width: '100%' })
-    .attr('id', func_data_idx)
+    .attrs({ d: path_to_use, height: '100%', width: '100%', id: func_data_idx })
     .styles({
       stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
       'stroke-opacity': 1,
