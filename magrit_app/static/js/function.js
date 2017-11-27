@@ -3622,12 +3622,12 @@ function fillMenu_FlowMap() {
     .attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
   [
+    ['app_page.common.no_classification', 'no_classification'],
     ['app_page.common.equal_interval', 'equal_interval'],
     ['app_page.common.quantiles', 'quantiles'],
     ['app_page.common.Q6', 'Q6'],
     ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
     ['app_page.common.jenks', 'jenks'],
-    ['app_page.common.no_classification', 'no_classification'],
   ].forEach((field) => {
     disc_type.append('option')
       .text(i18next.t(field[0]))
@@ -3651,7 +3651,6 @@ function fillMenu_FlowMap() {
       min: 0.1,
       max: 100.0,
       step: 'any' })
-    .property('value', 20)
     .style('width', '50px');
   b.append('span').html(' (px)');
 
@@ -3703,7 +3702,7 @@ const fields_FlowMap = {
       nb_class_input = section2.select('#FlowMap_nbClass'),
       disc_type = section2.select('#FlowMap_discKind'),
       ref_value = section2.select('#FlowMap_ref_value'),
-      ref_size = section2.select('#FlowMap_ref_size'),
+      ref_size = section2.select('#FlowMap_ref_size').property('value', 20),
       ok_button = section2.select('#FlowMap_yes'),
       uo_layer_name = section2.select('#FlowMap_output_name');
 
@@ -3735,13 +3734,13 @@ const fields_FlowMap = {
     let values_fij;
 
     field_fij.on('change', function () {
-      const name = this.value,
-        disc = disc_type.node().value;
+      const name = this.value;
+      const disc = disc_type.node().value;
       values_fij = joined_dataset[0].map(obj => +obj[name]);
       if (disc === 'no_classification') {
-        ref_size.property('value', max_fast(values_fij));
+        ref_value.property('value', max_fast(values_fij));
       } else {
-        const nclass = nb_class_input.node().value,
+        const nclass = +nb_class_input.node().value,
           min_size = 0.5,
           max_size = 10;
         make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
@@ -3750,19 +3749,21 @@ const fields_FlowMap = {
 
     disc_type.on('change', function () {
       const disc = this.value;
-      if (disc === 'no_classification') {
+      const name = field_fij.node().value;
+      values_fij = joined_dataset[0].map(obj => +obj[name]);
+      if (disc === 'no_classification') {
         section2.select('#FlowMap_noDiscSection').style('display', null);
         section2.select('#FlowMap_discSection').style('display', 'none');
+        ref_value.property('value', max_fast(values_fij));
       } else {
         section2.select('#FlowMap_noDiscSection').style('display', 'none');
         section2.select('#FlowMap_discSection').style('display', null);
-        const name = field_fij.node().value,
-          min_size = 0.5,
+        const min_size = 0.5,
           max_size = 10;
-        let nclass = nb_class_input.node().value;
+        let nclass = +nb_class_input.node().value;
         if (disc === 'Q6') {
           nclass = 6;
-          nb_class_input.attr('value', 6);
+          nb_class_input.property('value', 6);
         }
         make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
       }
@@ -3779,14 +3780,14 @@ const fields_FlowMap = {
 
     ok_button.on('click', () => {
       const discretisation = disc_type.node().value;
-      if (discretisation === 'no_classification') {
+      if (discretisation === 'no_classification') {
         render_ProportionalFlowMap(
           field_i.node().value,
           field_j.node().value,
           field_fij.node().value,
           join_field.node().value,
-          ref_size.node().value,
-          ref_value.node().value,
+          +ref_size.node().value,
+          +ref_value.node().value,
           uo_layer_name.node().value,
         );
       } else {
@@ -3814,17 +3815,6 @@ const fields_FlowMap = {
   },
 
   unfill: function () {
-    // const field_i = document.getElementById('FlowMap_field_i'),
-    //   field_j = document.getElementById('FlowMap_field_j'),
-    //   field_fij = document.getElementById('FlowMap_field_fij'),
-    //   join_field = document.getElementById('FlowMap_field_join');
-    //
-    // for (let i = field_i.childElementCount - 1; i > -1; --i) {
-    //   field_i.removeChild(field_i.children[i]);
-    //   field_j.removeChild(field_j.children[i]);
-    //   field_fij.removeChild(field_fij.children[i]);
-    // }
-    // unfillSelectInput(join_field);
     unfillSelectInput(document.getElementById('FlowMap_field_i'));
     unfillSelectInput(document.getElementById('FlowMap_field_j'));
     unfillSelectInput(document.getElementById('FlowMap_field_fij'));
@@ -3857,39 +3847,38 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
       if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
         options.choosed_name = new_user_layer_name;
       }
-
-      const new_layer_name = add_layer_topojson(data, options);
+      const temp = JSON.parse(data);
+      temp.file.objects.LinksLayer.geometries = temp.file.objects.LinksLayer.geometries.sort(
+        (a, b) => +b.properties[field_fij] - +a.properties[field_fij]);
+      const new_layer_name = add_layer_topojson(JSON.stringify(temp), options);
       if (!new_layer_name) return;
       const layer_to_render = map.select(`#${_app.layer_to_id.get(new_layer_name)}`).selectAll('path'),
         fij_field_name = field_fij,
         fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
-        nb_ft = fij_values.length;
+        nb_ft = fij_values.length,
+        t_field_name = 'prop_value';
 
       const propSize = new PropSizer(ref_value, ref_size, 'line');
-      layer_to_render.each(function(d) {
-        d.properties.color = 'red';
-        d.properties['prop_value'] = propSize.scale(d.properties[field_fij]);
+      layer_to_render.each((d) => {
+        d.properties.color = 'red'; // eslint-disable-line no-param-reassign
+        d.properties[t_field_name] = propSize.scale(d.properties[field_fij]); // eslint-disable-line no-param-reassign
       })
 
       layer_to_render
-        .styles((d) => {
-          return {
-            fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties['prop_value'] };
-        });
+        .styles(d => ({ fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] }));
 
-      current_layers[new_layer_name] = {
+      Object.assign(current_layers[new_layer_name], {
         n_features: nb_ft,
         renderer: 'LinksProportional',
-        // symbol: symbol_type,
         symbol: 'path',
         rendered_field: field_fij,
         size: [ref_value, ref_size],
-        // "stroke-width-const": 1,
+        'stroke-width-const': undefined,
         is_result: true,
         ref_layer_name: ref_layer,
         fill_color: { single: 'red' },
         type: 'Line',
-      };
+      });
       switch_accordion_section();
       handle_legend(new_layer_name);
     });
@@ -4027,7 +4016,6 @@ const render_label = function render_label(layer, rendering_params, options) {
     { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
     { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
-  console.log(new_layer_data);
   const selection = map.insert('g', '.legend')
     .attrs({ id: layer_id, class: 'layer no_clip' })
     .selectAll('text')

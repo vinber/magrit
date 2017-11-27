@@ -1,16 +1,18 @@
 # Carte des liens
 
 Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.
-Différents éléments, tels que la présence de chevauchements trop nombreux, peuvent nuire à la lisibilité de ce type de représentation,
-Ce type de carte requiert généralement d'effectuer une sélection après le premier rendu, consistant par exemple à ne pas représenter les flux les plus faibles.
+Différents éléments, tels que la présence de chevauchements trop nombreux, peuvent nuire à la lisibilité de ce type de représentation.  
+Ce type de carte requiert généralement d'effectuer une sélection après le premier rendu, consistant par exemple à ne pas représenter les flux les plus faibles.  
 
+Magrit propose de représenter l'épaisseur de la ligne de plusieurs façons : **en discrétisant les valeurs à utiliser** (choix d'un type de discrétisation et d'un nombre de classes, permettant parfois une meilleure hiérarchisation des informations) ou **sans discrétiser les valeurs** (l'épaisseur des lignes est ainsi strictement proportionnelle à la valeur de son intensité).
 
 > ### Paramètres
-> * Le champ contenant les identifiants des entités 'origine'.
-> * Le champ contenant les identifiants des entités 'destination'.
-> * Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.
-> * Le type de méthode à utiliser pour discrétiser les valeurs.
-> * Le nombre de classes à créer lors de l'application de la méthode précédemment définie.
+> * Le champ du jeu de données externe contenant les identifiants des entités 'origine'.
+> * Le champ du jeu de données externe contenant les identifiants des entités 'destination'.
+> * Le champ du jeu de données externe contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.
+> * Le champ du fond de carte (de type *identifiant*) contenant les identifiants des entités.
+> * Le choix entre des liens proportionnels (sans discrétisation) ou le choix d'un type de méthode à utiliser pour discrétiser les valeurs.
+> * Le cas échéant, le nombre de classes à créer lors de l'application de la méthode précédemment définie.
 
 #### Exemple :
 
@@ -33,7 +35,10 @@ Ainsi, les premières lignes d'une table décrivant des liens entre pays europé
 | LUX           | FR            | 3     |
 
 
-Une table d'exemple de ce type peut être téléchargée ci-dessous; elle permet la réalisation d'une carte de lien lorsqu'elle est utilisé avec le fond des pays européens.
+Une table d'exemple de ce type peut être téléchargée ci-dessous; lorsqu'elle est utilisé avec le fond des pays européens, également ci-dessous, elle permet la réalisation d'une carte de lien en sélectionant les champs suivants :  
+- *Champ origine* : **i**  
+- *Champ destination* : **j**  
+- *Champ intensité* : **fij**  
 
 <p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/links.csv">Table d'exemple</a></p>
 <p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/nuts0.geojson">Fond de carte des pays européens</a></p>

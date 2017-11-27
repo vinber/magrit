@@ -9,8 +9,6 @@ Changes
 - New: allow to make proportionnal links (ie. without data classification, only graduated links were available until now).
 
 
-
-
 0.5.7 (2017-11-08)
 ------------------
 

@@ -72,6 +72,7 @@
             "Q6": "Q6",
             "arithmetic_progression": "Arithmetic progression",
             "jenks": "Jenks",
+            "no_classification": "No classification",
             "geometric_progression": "Geometric progression",
             "stddev_f": "Standard deviation",
             "user_defined": "User defined",
@@ -352,7 +353,8 @@
             "tissot": "Tissot's indicatrices <i>(Polygons)</i>",
             "world_countries": "World land surface <i>(Polygons)</i>",
             "world_capitals": "Most populated cities in the world <i>(Points)</i>",
-            "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>"
+            "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>",
+            "france_contour_2016_2-2": "Contour of metropolitan France (based on GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Sample dataset",

@@ -106,9 +106,15 @@ Les spécifications des formats <a href="http://www.gdal.org/drv_kml.html">KML</
 <li><code>tsv</code> (champs séparés par une tabulation)</li>
 <li><code>xls</code>, <code>xlsx</code> et <code>ods</code> (à condition que la feuille à utiliser soit la première du document et contienne seulement la table de données).</li>
 </ul>
+<p>La table de données importée à cette étape peut avoir deux utilités :</p>
+<ul>
+<li>effectuer une jointure pour enrichir le fond de carte à utiliser</li>
+<li>servir de référence pour la création d'une carte de liens</li>
+</ul>
 <h2>Jointure des données</h2>
-<p>Lorsqu'un fond de carte et un jeu de données externes ont été ajoutés, il devient possible de les joindre.
-Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans les logiciels SIG ou dans certaines bases de données) et s'effectue en choisissant les colonnes d'identifiants dans le jeu de données et dans le fond de carte.</p>
+<p>Lorsqu'un fond de carte et un jeu de données externes ont été ajoutés, il devient possible d'associer le fond de carte et ce jeu de données. Cette association est possible grâce à la <strong>correspondance entre les valeurs d'identifiants</strong> se trouvant dans le fond de carte et celles se trouvant dans la table de données.
+Cette opération est appelée &quot;<strong>jointure</strong>&quot; (c'est également le cas dans les logiciels SIG ou les systèmes de gestion de bases de données) et s'effectue ici simplement en choisissant le nom de la colonne contenant des valeurs d'identifiants dans le jeu de données et dans le fond de carte.<br />
+Pour assurer le bon fonctionnement de cette méthode, les valeurs prisent par les identifiants , d'une part pour le fond de carte et d'autre part pour le jeu de données externe, doivent être uniques.</p>
 <p style="text-align: center;">
 <img src="img/win_jnt_fr.png" alt="Dialogue de jointure"/>
 </p>
@@ -116,6 +122,30 @@ Cette opération et appelée &quot;jointure&quot; (c'est également le cas dans 
 <p><img src="img/joinfalse.png" alt="joinfalse" style="width: 35px;"/> Apparence de l'élément avant jointure<br />
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
+<p>Exemple des valeurs attributaires du fond de carte (avant jointure) :</p>
+<table><thead><tr><td> Id       </td><td> Nom             </td></tr></thead>
+<tr><td> BE       </td><td> Belgique        </td></tr>
+<tr><td> DE       </td><td> Allemagne       </td></tr>
+<tr><td> LU       </td><td> Luxembourg      </td></tr>
+<tr><td> FR       </td><td> France          </td></tr>
+<tr><td> GB       </td><td> Grande-Bretagne </td></tr>
+</table>
+<p>Exemple des valeurs attributaires du jeu de données externe :</p>
+<table><thead><tr><td> ISO2     </td><td> JAMESBOND_VISITES </td><td> POP_DENSITY    </td></tr></thead>
+<tr><td> FR       </td><td> 4                 </td><td> 117.6          </td></tr>
+<tr><td> LU       </td><td> 0                 </td><td> 218.9          </td></tr>
+<tr><td> DE       </td><td> 2                 </td><td> 231.5          </td></tr>
+<tr><td> GB       </td><td> 22                </td><td> 267.5          </td></tr>
+<tr><td> BE       </td><td> 0                 </td><td> 373.1          </td></tr>
+</table>
+<p>Exemple des valeurs attributaires du fond de carte (après jointure avec le jeu de données externe, en utilisant respectivement les champs <strong>Id</strong> et <strong>ISO2</strong>) :</p>
+<table><thead><tr><td> Id       </td><td> Nom             </td><td> ISO2     </td><td> JAMESBOND_VISITES </td><td> POP_DENSITY    </td></tr></thead>
+<tr><td> BE       </td><td> Belgique        </td><td> BE       </td><td> 0                 </td><td> 373.1          </td></tr>
+<tr><td> DE       </td><td> Allemagne       </td><td> DE       </td><td> 2                 </td><td> 231.5          </td></tr>
+<tr><td> LU       </td><td> Luxembourg      </td><td> LU       </td><td> 0                 </td><td> 218.9          </td></tr>
+<tr><td> FR       </td><td> France          </td><td> FR       </td><td> 4                 </td><td> 117.6          </td></tr>
+<tr><td> GB       </td><td> Grande-Bretagne </td><td> GB       </td><td> 22                </td><td> 267.5          </td></tr>
+</table>
 <h2>Typage des données</h2>
 <p>À chaque type de données est associé un certain nombre de modes de représentation possibles. Une fois les données importées il est donc important de définir le type de chacune des variables à cartographier.</p>
 <p>5 types de données sont possibles :</p>
@@ -465,7 +495,7 @@ La donnée de ratio est représentée à l’intérieur du figuré représentant
 </ul>
 <h1>Carroyage</h1>
 <p>La méthode du carroyage est une méthode permettant d'essayer de s'affranchir de l'arbitraire et de l'irrégularité d'un découpage administratif.<br />
-Elle met en évidence les grandes tendances de le répartition spatiale d'une donnée et de traiter des données, en découpant le territoire en unités régulières.
+Elle met en évidence les grandes tendances de le répartition spatiale d'un phénomène et permet de traiter la donnée en découpant le territoire en unités régulières.
 Les carreaux ainsi créés sont affectés de la valeur de la variable observée pour les entités intersectées, au prorata des surfaces concernées.</p>
 <blockquote>
 <h3>Paramètres</h3>
@@ -550,16 +580,18 @@ La visualisation de lignes de discontinuités permet de mettre en exergue les ru
 </p>
 <h1>Carte des liens</h1>
 <p>Ce type de carte représente, avec des lignes d'épaisseur proportionnelle à l'intensité du phénomène, les connexions (flux/liens) existant entre des couples de lieux.
-Différents éléments, tels que la présence de chevauchements trop nombreux, peuvent nuire à la lisibilité de ce type de représentation,
+Différents éléments, tels que la présence de chevauchements trop nombreux, peuvent nuire à la lisibilité de ce type de représentation.<br />
 Ce type de carte requiert généralement d'effectuer une sélection après le premier rendu, consistant par exemple à ne pas représenter les flux les plus faibles.</p>
+<p>Magrit propose de représenter l'épaisseur de la ligne de plusieurs façons : <strong>en discrétisant les valeurs à utiliser</strong> (choix d'un type de discrétisation et d'un nombre de classes, permettant parfois une meilleure hiérarchisation des informations) ou <strong>sans discrétiser les valeurs</strong> (l'épaisseur des lignes est ainsi strictement proportionnelle à la valeur de son intensité).</p>
 <blockquote>
 <h3>Paramètres</h3>
 <ul>
-<li>Le champ contenant les identifiants des entités 'origine'.</li>
-<li>Le champ contenant les identifiants des entités 'destination'.</li>
-<li>Le champ contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.</li>
-<li>Le type de méthode à utiliser pour discrétiser les valeurs.</li>
-<li>Le nombre de classes à créer lors de l'application de la méthode précédemment définie.</li>
+<li>Le champ du jeu de données externe contenant les identifiants des entités 'origine'.</li>
+<li>Le champ du jeu de données externe contenant les identifiants des entités 'destination'.</li>
+<li>Le champ du jeu de données externe contenant les valeurs de l'intensité du phénomène entre 'i' et 'j'.</li>
+<li>Le champ du fond de carte (de type <em>identifiant</em>) contenant les identifiants des entités.</li>
+<li>Le choix entre des liens proportionnels (sans discrétisation) ou le choix d'un type de méthode à utiliser pour discrétiser les valeurs.</li>
+<li>Le cas échéant, le nombre de classes à créer lors de l'application de la méthode précédemment définie.</li>
 </ul>
 </blockquote>
 <h4>Exemple :</h4>
@@ -576,7 +608,12 @@ Ainsi, les premières lignes d'une table décrivant des liens entre pays europé
 <tr><td> LUX           </td><td> DE            </td><td> 6     </td></tr>
 <tr><td> LUX           </td><td> FR            </td><td> 3     </td></tr>
 </table>
-<p>Une table d'exemple de ce type peut être téléchargée ci-dessous; elle permet la réalisation d'une carte de lien lorsqu'elle est utilisé avec le fond des pays européens.</p>
+<p>Une table d'exemple de ce type peut être téléchargée ci-dessous; lorsqu'elle est utilisé avec le fond des pays européens, également ci-dessous, elle permet la réalisation d'une carte de lien en sélectionant les champs suivants :</p>
+<ul>
+<li><em>Champ origine</em> : <strong>i</strong></li>
+<li><em>Champ destination</em> : <strong>j</strong></li>
+<li><em>Champ intensité</em> : <strong>fij</strong></li>
+</ul>
 <p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/links.csv">Table d'exemple</a></p>
 <p><a href="https://raw.githubusercontent.com/riatelab/magrit/master/magrit_app/static/data_sample/nuts0.geojson">Fond de carte des pays européens</a></p>
 <h1>Carte qualitative (pictogrammes)</h1>
@@ -761,13 +798,14 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
 <p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
 Variables :</p>
 <ul>
-<li>DEPCOM : code communal (2)</li>
+<li>IDCOM : code communal (2)</li>
 <li>LIBCOM : nom de la commune (2)</li>
 <li>EPT : code le l’Établissement Public Territorial (3)</li>
 <li>LIBEPT : nom de l’Établissement Public Territorial (3)</li>
-<li>DEP : code du département (2)</li>
-<li>INC : somme des revenus déclarés par les ménages (4)</li>
-<li>TH : nombre de ménages fiscaux (4)</li>
+<li>DEPARTEMENT : code du département (2)</li>
+<li>REVENUS : somme des revenus déclarés par les ménages (4)</li>
+<li>MENAGES_FISCAUX : nombre de ménages fiscaux (4)</li>
+<li>REVENUS_PAR_MENAGE : revenu moyen par ménage fiscal</li>
 </ul>
 <p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes France Métropolitaine</a><br />
 (2) : INSEE, 2016<br />
@@ -794,9 +832,9 @@ Variables :</p>
 <p>Fond de carte : Institut national de l’information géographique et forestière (1)</p>
 <p>Variables :</p>
 <ul>
-<li>INSEE_COM : Code INSEE de la commune</li>
-<li>NOM_COM : Nom de la commune</li>
-<li>STATUT :</li>
+<li>INSEE_COM : Code INSEE de la commune (1)</li>
+<li>NOM_COM : Nom de la commune (2)</li>
+<li>STATUT : Statut administratif de la commune (2)</li>
 <li>POP2013 : Population de la commune (2)</li>
 <li>DENSPOP : Densité de population en habitants par kilomètres carrés (2)</li>
 <li>NbLogements : Nombre de logements (2)</li>
@@ -858,16 +896,16 @@ Variables :</p>
 (2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)<br />
 (3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015</p>
 <h1>FAQ</h1>
-<h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3>
 <h3>Pourquoi un nombre trop important de couleurs dans une palette peut nuire à la lisibilité de la carte ?</h3>
-<p>L'oeil humain ne distingue correctement qu'un nombre de couleurs limité. L'utilisation d'un nombre de couleurs élevé lors de la conception d'une palette pour une carte choroplèthe empêche de percevoir avec précision les limites entre les classes et rend ainsi difficile de trouver la classe d'appartenance d'une entité.</p>
-<h3>Pourquoi certains fond de cartes posent un problème lors de certains traitement ? Qu'est-ce que la &quot;topologie&quot; d'un fond de carte ?</h3>
+<p>L’œil humain ne distingue correctement qu'un nombre de couleurs limité. L'utilisation d'un nombre de couleurs élevé lors de la conception d'une palette pour une carte choroplèthe empêche de percevoir avec précision les limites entre les classes et rend ainsi difficile de trouver la classe d'appartenance d'une entité.</p>
 <h3>Pourquoi une limite de taille est-elle fixée lors de l'import d'un fond de carte ?</h3>
 <p>La taille maximale des fichiers pouvant être importés dans Magrit est limitée à 20Mo. Plusieurs raisons ont motivé ce choix et visent essentiellement à éviter des ralentissements indésirables dans le navigateur de l'utilisateur.
-D'une part le temps d'envoi d'un fichier volumineux peut être non-néligeable en fonction de la qualité de la connexion (un fichier de 20Mo prend en moyenne xx secondes avec une connexion xyz). D'autre part Magrit utilise la technologie SVG pour effectuer le rendu des cartes dans le navigateur. Cette technologie est performante mais se prête difficilement à l'affichage des couches contenant un nombre très élevé d'entitées.
+D'une part le temps d'envoi d'un fichier volumineux peut être importante en fonction de la qualité de la connexion (un fichier de 20Mo peut nécessiter plusieurs minutes). D'autre part Magrit utilise la technologie SVG pour effectuer le rendu des cartes dans le navigateur. Cette technologie est performante mais se prête difficilement à l'affichage des couches contenant un nombre très élevé d'entitées.
 Ce type de limite permet également de s'interroger sur l'intéret d'une carte thématique contenant un nombre d'entités très élevé ou contenant des géométrie très détaillées. En effet, en fonction du type de données ou de l'échelle de travail, il peut être utile de faire appel au préalable à certaines techniques de préparation des données (aggrégation dans le cas d'un semi de points très important par exemple) ou de préparation du fond de carte (généralisation des géométries utilisées par exemple).</p>
 <h3>Pourquoi le rendu de certains exports SVG n'est pas le même dans Inkscape/Adobe Illustrator que lors de l'affichage de la carte dans Magrit ?</h3>
-<p>// TODO: Parler des fonts/ Dire d'ouvrir le fichier svg dans un navigateur pour vérifier le résultat/ Evoquer exports svg spéciaux AI ?</p>
+<p>Lors de l'ouverture des exports SVG contenant des polices de caractères autres que celle définie par défaut, il est possible que certains logiciels ne les affichent pas correctement. Actuellement ces polices sont stockées dans le fichier SVG exporté par Magrit, ce qui n'est pas supporté par Inkscape par exemple (ce dernier nécessite que la police soit installée sur le système afin qu'elle soit reconnue). Nous travaillons actuellement à proposer un export séparée pour les polices de caractère lorsque nécessaire. De plus il est possible de vérifier le rendu SVG exporté par Magrit en ouvrant le fichier SVG avec un navigateur web (en le faisant glisser dans Firefox ou Chromium par exemple), afin de s'assurer que le rendu est conforme à ce qui était attendu.</p>
+<h3>Pourquoi certains fond de cartes posent un problème lors de certains traitement ? Qu'est-ce que la &quot;topologie&quot; d'un fond de carte ?</h3>
+<h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3>
 <h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3>
 <h3>Utilisation des cookies et respect de la vie privée</h3>
 <p>Plusieurs <em>cookies</em> et fonctionnalités de <em>stockages temporaires</em>, locales et distantes, sont utilisés par l'application. Toutes se veulent non-intrusives et nous nous engageons à ce que les données envoyées/traitées par l'application ne soient utilisées et accessibles qu'à l'utilisateur à qui elles appartiennent.</p>
@@ -939,9 +977,10 @@ Cette application contient la projection <em>Bertin 1953</em>, contribuée à <a
 <p>Matthieu Viry : Développement &amp; Conception</p>
 <p>Timothée Giraud &amp; Nicolas Lambert : Conception</p>
 <h2>Financement</h2>
-<p><a href="http://riate.cnrs.fr">UMS Riate</a> (Tutelles : Université Paris Diderot - CNRS - CGET)</p>
-<p><a href="http://www.ums-riate.fr"><img src="img/riate_blue_red.png" alt="RIATE logo" style="max-height:26px;"></a></p>
-<p><img src="img/bandologo.png" alt="upd7_cnrs_cget_logo" style="max-height:26px;"></p>
+<p><a href="http://riate.cnrs.fr">UMS RIATE</a> (tutelles : Université Paris Diderot - CNRS - CGET)</p>
+<div style="text-align:center;padding:20px;">
+<img src="img/bandologo.png" alt="upd7_cnrs_cget_logo" style="max-height:60px;">
+</div>
 
                 </div>
 

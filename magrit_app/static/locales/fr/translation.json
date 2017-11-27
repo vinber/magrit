@@ -73,6 +73,7 @@
             "arithmetic_progression": "Progression arithmétique",
             "jenks": "Jenks",
             "geometric_progression": "Progression géométrique",
+            "no_classification": "Pas de discrétisation",
             "stddev_f": "Écart-type",
             "user_defined": "Personnalisé",
             "up_element": "Vers le haut",
@@ -353,7 +354,8 @@
             "tissot": "Indicatrices de Tissot <i>(Polygones)</i>",
             "world_countries": "Emprise des terres émergées<i>(Polygones)</i>",
             "world_capitals": "Villes les plus peuplées du monde<i>(Points)</i>",
-            "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>"
+            "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>",
+            "france_contour_2016_2-2": "Contour de la France Métropolitaine (basé sur GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",

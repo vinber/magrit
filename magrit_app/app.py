@@ -576,7 +576,7 @@ async def links_map(posted_data, user_id, app):
         posted_data["field_fij"],
         n_field_name)
 
-    new_name = ''.join(["Links_", n_field_name])
+    new_name = 'LinksLayer'
     res = await geojson_to_topojson2(result_geojson, new_name)
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(

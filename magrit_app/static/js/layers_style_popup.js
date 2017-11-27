@@ -671,7 +671,8 @@ function createStyleBox_Line(layer_name) {
     .then((confirmed) => {
       if (confirmed) {
         if (renderer !== undefined && rendering_params !== undefined
-              && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
+              && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo'
+              && renderer !== 'LinksProportional') {
           current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
           const colors_breaks = [];
           for (let i = rendering_params.breaks.length - 1; i > 0; --i) {
@@ -710,7 +711,7 @@ function createStyleBox_Line(layer_name) {
           redraw_legend('line_class', layer_name);
         }
 
-        if (renderer && renderer.startsWith('PropSymbols')) {
+        if (renderer && (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional')) {
           redraw_legend('line_symbol', layer_name);
         }
 
@@ -972,7 +973,7 @@ function createStyleBox_Line(layer_name) {
      .style('display', 'inline').style('float', 'right')
      .html(` ${border_opacity}`);
 
-  if (!renderer || (!renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'LinksGraduated')) {
+  if (!renderer || (!renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer')) {
     const width_section = popup.append('p');
     width_section.append('span')
       .html(i18next.t('app_page.layer_style_popup.width'));
@@ -985,7 +986,7 @@ function createStyleBox_Line(layer_name) {
         map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
         current_layers[layer_name]['stroke-width-const'] = val;
       });
-  } else if (renderer.startsWith('PropSymbols')) {
+  } else if (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional') {
     const field_used = current_layers[layer_name].rendered_field;
     const d_values = result_data[layer_name].map(f => +f[field_used]);
     const prop_val_content = popup.append('p');

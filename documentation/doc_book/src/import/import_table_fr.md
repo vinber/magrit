@@ -10,3 +10,8 @@ Plusieurs format sont pris en charge pour l'import des données :
 - ```csv``` (champs séparés par une virgule ou par un point virgule)
 - ```tsv``` (champs séparés par une tabulation)
 - ```xls```, ```xlsx``` et ```ods``` (à condition que la feuille à utiliser soit la première du document et contienne seulement la table de données).
+
+
+La table de données importée à cette étape peut avoir deux utilités :
+- effectuer une jointure pour enrichir le fond de carte à utiliser
+- servir de référence pour la création d'une carte de liens

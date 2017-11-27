@@ -212,8 +212,13 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         compute_and_add(chooses_handler).then(
           (resolved) => {
             if (current_layers[layer_name] && current_layers[layer_name].targeted) {
-              current_layers[layer_name].fields_type.push(
-                type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
+              const type_field = type_col2(user_data[layer_name], chooses_handler.new_name)[0];
+              let existing = current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
+              if (existing < 0) {
+                current_layers[layer_name].fields_type.push(type_field);
+              } else {
+                current_layers[layer_name].fields_type[existing] = type_field;
+              }
               if (window.fields_handler) {
                 fields_handler.unfill();
                 fields_handler.fill(layer_name);

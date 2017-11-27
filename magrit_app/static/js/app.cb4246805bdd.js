@@ -1131,25 +1131,25 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.884379a1c4dc.json'
+      loadPath: 'static/locales/{{lng}}/translation.cb4246805bdd.json'
     }
   }, function (err, tr) {
     if (err) {
       throw err;
     } else {
       window.localize = locI18next.init(i18next);
-      getEpsgProjection();
-      setUpInterface(params.reload);
-      localize('.i18n');
-      bindTooltips();
+      getEpsgProjection().then(function (data) {
+        _app.epsg_projections = JSON.parse(data);
+        setUpInterface(params.reload);
+        localize('.i18n');
+        bindTooltips();
+      });
     }
   });
 })();
 
 function getEpsgProjection() {
-  xhrequest('GET', 'static/json/epsg.json', undefined, false).then(function (data) {
-    _app.epsg_projections = JSON.parse(data);
-  });
+  return xhrequest('GET', 'static/json/epsg.json', undefined, false);
 }
 
 // To bind the set of small buttons
@@ -1594,7 +1594,7 @@ function handle_bg_color(color) {
 function handle_click_hand(behavior) {
   var hb = d3.select('.hand_button');
   // eslint-disable-next-line no-param-reassign
-  var b = (behavior && (typeof behavior === 'undefined' ? 'undefined' : _typeof(behavior)) !== 'object' ? behavior : false) || !hb.classed('locked') ? 'lock' : 'unlock';
+  var b = (typeof behavior === 'undefined' ? 'undefined' : _typeof(behavior)) === 'object' ? !hb.classed('locked') ? 'lock' : 'unlock' : behavior && typeof behavior === 'string' ? behavior : false;
   if (b === 'lock') {
     hb.classed('locked', true);
     hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
@@ -7951,7 +7951,7 @@ function fillMenu_FlowMap() {
   discretization_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
   var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
-  [['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks'], ['app_page.common.no_classification', 'no_classification']].forEach(function (field) {
+  [['app_page.common.no_classification', 'no_classification'], ['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
   });
   var with_discretisation = dv2.append('div').attr('id', 'FlowMap_discSection').style('display', 'none');
@@ -7965,7 +7965,7 @@ function fillMenu_FlowMap() {
     class: 'params',
     min: 0.1,
     max: 100.0,
-    step: 'any' }).property('value', 20).style('width', '50px');
+    step: 'any' }).style('width', '50px');
   b.append('span').html(' (px)');
 
   var c = without_discretisation.append('p').attr('class', 'params_section2');
@@ -7999,7 +7999,7 @@ var fields_FlowMap = {
         nb_class_input = section2.select('#FlowMap_nbClass'),
         disc_type = section2.select('#FlowMap_discKind'),
         ref_value = section2.select('#FlowMap_ref_value'),
-        ref_size = section2.select('#FlowMap_ref_size'),
+        ref_size = section2.select('#FlowMap_ref_size').property('value', 20),
         ok_button = section2.select('#FlowMap_yes'),
         uo_layer_name = section2.select('#FlowMap_output_name');
 
@@ -8030,15 +8030,15 @@ var fields_FlowMap = {
     var values_fij = void 0;
 
     field_fij.on('change', function () {
-      var name = this.value,
-          disc = disc_type.node().value;
+      var name = this.value;
+      var disc = disc_type.node().value;
       values_fij = joined_dataset[0].map(function (obj) {
         return +obj[name];
       });
       if (disc === 'no_classification') {
-        ref_size.property('value', max_fast(values_fij));
+        ref_value.property('value', max_fast(values_fij));
       } else {
-        var nclass = nb_class_input.node().value,
+        var nclass = +nb_class_input.node().value,
             min_size = 0.5,
             max_size = 10;
         make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
@@ -8047,19 +8047,23 @@ var fields_FlowMap = {
 
     disc_type.on('change', function () {
       var disc = this.value;
+      var name = field_fij.node().value;
+      values_fij = joined_dataset[0].map(function (obj) {
+        return +obj[name];
+      });
       if (disc === 'no_classification') {
         section2.select('#FlowMap_noDiscSection').style('display', null);
         section2.select('#FlowMap_discSection').style('display', 'none');
+        ref_value.property('value', max_fast(values_fij));
       } else {
         section2.select('#FlowMap_noDiscSection').style('display', 'none');
         section2.select('#FlowMap_discSection').style('display', null);
-        var name = field_fij.node().value,
-            min_size = 0.5,
+        var min_size = 0.5,
             max_size = 10;
-        var nclass = nb_class_input.node().value;
+        var nclass = +nb_class_input.node().value;
         if (disc === 'Q6') {
           nclass = 6;
-          nb_class_input.attr('value', 6);
+          nb_class_input.property('value', 6);
         }
         make_min_max_tableau(values_fij, nclass, disc, min_size, max_size, 'FlowMap_discTable');
       }
@@ -8077,7 +8081,7 @@ var fields_FlowMap = {
     ok_button.on('click', function () {
       var discretisation = disc_type.node().value;
       if (discretisation === 'no_classification') {
-        render_ProportionalFlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, ref_size.node().value, ref_value.node().value, uo_layer_name.node().value);
+        render_ProportionalFlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, +ref_size.node().value, +ref_value.node().value, uo_layer_name.node().value);
       } else {
         render_GraduatedFlowMap(field_i.node().value, field_j.node().value, field_fij.node().value, join_field.node().value, discretisation, uo_layer_name.node().value);
       }
@@ -8096,17 +8100,6 @@ var fields_FlowMap = {
   },
 
   unfill: function unfill() {
-    // const field_i = document.getElementById('FlowMap_field_i'),
-    //   field_j = document.getElementById('FlowMap_field_j'),
-    //   field_fij = document.getElementById('FlowMap_field_fij'),
-    //   join_field = document.getElementById('FlowMap_field_join');
-    //
-    // for (let i = field_i.childElementCount - 1; i > -1; --i) {
-    //   field_i.removeChild(field_i.children[i]);
-    //   field_j.removeChild(field_j.children[i]);
-    //   field_fij.removeChild(field_fij.children[i]);
-    // }
-    // unfillSelectInput(join_field);
     unfillSelectInput(document.getElementById('FlowMap_field_i'));
     unfillSelectInput(document.getElementById('FlowMap_field_j'));
     unfillSelectInput(document.getElementById('FlowMap_field_fij'));
@@ -8140,40 +8133,42 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
       options.choosed_name = new_user_layer_name;
     }
-
-    var new_layer_name = add_layer_topojson(data, options);
+    var temp = JSON.parse(data);
+    temp.file.objects.LinksLayer.geometries = temp.file.objects.LinksLayer.geometries.sort(function (a, b) {
+      return +b.properties[field_fij] - +a.properties[field_fij];
+    });
+    var new_layer_name = add_layer_topojson(JSON.stringify(temp), options);
     if (!new_layer_name) return;
     var layer_to_render = map.select('#' + _app.layer_to_id.get(new_layer_name)).selectAll('path'),
         fij_field_name = field_fij,
         fij_values = result_data[new_layer_name].map(function (obj) {
       return +obj[fij_field_name];
     }),
-        nb_ft = fij_values.length;
+        nb_ft = fij_values.length,
+        t_field_name = 'prop_value';
 
     var propSize = new PropSizer(ref_value, ref_size, 'line');
     layer_to_render.each(function (d) {
-      d.properties.color = 'red';
-      d.properties['prop_value'] = propSize.scale(d.properties[field_fij]);
+      d.properties.color = 'red'; // eslint-disable-line no-param-reassign
+      d.properties[t_field_name] = propSize.scale(d.properties[field_fij]); // eslint-disable-line no-param-reassign
     });
 
     layer_to_render.styles(function (d) {
-      return {
-        fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties['prop_value'] };
+      return { fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] };
     });
 
-    current_layers[new_layer_name] = {
+    Object.assign(current_layers[new_layer_name], {
       n_features: nb_ft,
       renderer: 'LinksProportional',
-      // symbol: symbol_type,
       symbol: 'path',
       rendered_field: field_fij,
       size: [ref_value, ref_size],
-      // "stroke-width-const": 1,
+      'stroke-width-const': undefined,
       is_result: true,
       ref_layer_name: ref_layer,
       fill_color: { single: 'red' },
       type: 'Line'
-    };
+    });
     switch_accordion_section();
     handle_legend(new_layer_name);
   });
@@ -8313,7 +8308,6 @@ var render_label = function render_label(layer, rendering_params, options) {
         self_parent.style.display = 'none';
       } }];
   };
-  console.log(new_layer_data);
   var selection = map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' }).selectAll('text').data(new_layer_data).enter().insert('text');
   if (pt_position) {
     selection.attrs(function (d, i) {
@@ -12856,7 +12850,7 @@ function createStyleBox_Line(layer_name) {
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true }).then(function (confirmed) {
     if (confirmed) {
-      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo') {
+      if (renderer !== undefined && rendering_params !== undefined && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo' && renderer !== 'LinksProportional') {
         current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
         var colors_breaks = [];
         for (var i = rendering_params.breaks.length - 1; i > 0; --i) {
@@ -12893,7 +12887,7 @@ function createStyleBox_Line(layer_name) {
         redraw_legend('line_class', layer_name);
       }
 
-      if (renderer && renderer.startsWith('PropSymbols')) {
+      if (renderer && (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional')) {
         redraw_legend('line_symbol', layer_name);
       }
 
@@ -13108,7 +13102,7 @@ function createStyleBox_Line(layer_name) {
 
   opacity_section.append('span').attr('id', 'opacity_val_txt').style('display', 'inline').style('float', 'right').html(' ' + border_opacity);
 
-  if (!renderer || !renderer.startsWith('PropSymbols') && renderer !== 'DiscLayer' && renderer !== 'LinksGraduated') {
+  if (!renderer || !renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer') {
     var width_section = popup.append('p');
     width_section.append('span').html(i18next.t('app_page.layer_style_popup.width'));
     width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
@@ -13117,7 +13111,7 @@ function createStyleBox_Line(layer_name) {
       map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
       current_layers[layer_name]['stroke-width-const'] = val;
     });
-  } else if (renderer.startsWith('PropSymbols')) {
+  } else if (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional') {
     var field_used = current_layers[layer_name].rendered_field;
     var d_values = result_data[layer_name].map(function (f) {
       return +f[field_used];
@@ -14312,7 +14306,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15498,7 +15491,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -17814,7 +17806,7 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
-    } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
+    } else if ((current_layer_prop.renderer.indexOf('PropSymbols') > -1 || current_layer_prop.renderer === 'LinksProportional') && current_layer_prop.type === 'Line') {
       var _type_symbol = current_layer_prop.symbol;
       selection = map.select('#' + layer_id).selectAll('path');
       var _features = Array.prototype.map.call(svg_map.querySelector('#' + layer_id).getElementsByTagName('path'), function (d) {
@@ -18460,14 +18452,15 @@ function apply_user_preferences(json_pref) {
         add_layout_feature(layer_type, options);
         layer_id = _app.layer_to_id.get(layer_name);
         // ... or this is a layer of proportionnals symbols :
-      } else if (_layer.renderer && _layer.renderer.startsWith('PropSymbol')) {
-        var geojson_layer = _layer.symbol === 'line' ? _layer.geo_line : _layer.geo_pt;
+      } else if (_layer.renderer && (_layer.renderer.startsWith('PropSymbol') || _layer.renderer === 'LinksProportional')) {
+        var geojson_layer = _layer.geo_line || _layer.geo_pt;
+        var _s2 = _layer.symbol === 'path' ? 'line' : _layer.symbol;
         var rendering_params = {
           new_name: layer_name,
           field: _layer.rendered_field,
           ref_value: _layer.size[0],
           ref_size: _layer.size[1],
-          symbol: _layer.symbol,
+          symbol: _s2,
           nb_features: geojson_layer.features.length,
           ref_layer_name: _layer.ref_layer_name,
           renderer: _layer.renderer
@@ -18483,7 +18476,7 @@ function apply_user_preferences(json_pref) {
           rendering_params.break_val = _layer.break_val;
         }
 
-        if (_layer.symbol === 'line') {
+        if (_layer.symbol === 'line' || _layer.symbol === 'path') {
           make_prop_line(rendering_params, geojson_layer);
         } else {
           make_prop_symbols(rendering_params, geojson_layer);
@@ -18857,8 +18850,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19024,7 +19016,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -19784,7 +19775,15 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       document.querySelector('body').style.cursor = 'wait';
       compute_and_add(chooses_handler).then(function (resolved) {
         if (current_layers[layer_name] && current_layers[layer_name].targeted) {
-          current_layers[layer_name].fields_type.push(type_col2(user_data[layer_name], chooses_handler.new_name)[0]);
+          var type_field = type_col2(user_data[layer_name], chooses_handler.new_name)[0];
+          var existing = current_layers[layer_name].fields_type.findIndex(function (el) {
+            return el.name === type_field.name;
+          });
+          if (existing < 0) {
+            current_layers[layer_name].fields_type.push(type_field);
+          } else {
+            current_layers[layer_name].fields_type[existing] = type_field;
+          }
           if (window.fields_handler) {
             fields_handler.unfill();
             fields_handler.fill(layer_name);
@@ -19964,8 +19963,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

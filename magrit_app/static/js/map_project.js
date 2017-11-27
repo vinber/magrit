@@ -289,7 +289,8 @@ function get_map_template() {
       if (current_layer_prop.break_val) {
         layer_style_i.break_val = current_layer_prop.break_val;
       }
-    } else if (current_layer_prop.renderer.indexOf('PropSymbols') > -1 && current_layer_prop.type === 'Line') {
+    } else if ((current_layer_prop.renderer.indexOf('PropSymbols') > -1 || current_layer_prop.renderer === 'LinksProportional')
+        && current_layer_prop.type === 'Line') {
       const type_symbol = current_layer_prop.symbol;
       selection = map.select(`#${layer_id}`).selectAll('path');
       const features = Array.prototype.map.call(
@@ -931,14 +932,15 @@ function apply_user_preferences(json_pref) {
         add_layout_feature(layer_type, options);
         layer_id = _app.layer_to_id.get(layer_name);
       // ... or this is a layer of proportionnals symbols :
-      } else if (_layer.renderer && _layer.renderer.startsWith('PropSymbol')) {
-        const geojson_layer = _layer.symbol === 'line' ? _layer.geo_line : _layer.geo_pt;
+      } else if (_layer.renderer && (_layer.renderer.startsWith('PropSymbol') || _layer.renderer === 'LinksProportional')) {
+        const geojson_layer = _layer.geo_line || _layer.geo_pt;
+        const s = _layer.symbol === 'path' ? 'line' : _layer.symbol;
         const rendering_params = {
           new_name: layer_name,
           field: _layer.rendered_field,
           ref_value: _layer.size[0],
           ref_size: _layer.size[1],
-          symbol: _layer.symbol,
+          symbol: s,
           nb_features: geojson_layer.features.length,
           ref_layer_name: _layer.ref_layer_name,
           renderer: _layer.renderer,
@@ -954,7 +956,7 @@ function apply_user_preferences(json_pref) {
           rendering_params.break_val = _layer.break_val;
         }
 
-        if (_layer.symbol === 'line') {
+        if (_layer.symbol === 'line' || _layer.symbol === 'path') {
           make_prop_line(rendering_params, geojson_layer);
         } else {
           make_prop_symbols(rendering_params, geojson_layer);

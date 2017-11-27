@@ -1427,20 +1427,19 @@ function parseQuery(search) {
         throw err;
       } else {
         window.localize = locI18next.init(i18next);
-        getEpsgProjection();
-        setUpInterface(params.reload);
-        localize('.i18n');
-        bindTooltips();
+        getEpsgProjection().then((data) => {
+          _app.epsg_projections = JSON.parse(data);
+          setUpInterface(params.reload);
+          localize('.i18n');
+          bindTooltips();
+        });
       }
     });
 })();
 
 
 function getEpsgProjection() {
-  xhrequest('GET', 'static/json/epsg.json', undefined, false)
-    .then((data) => {
-      _app.epsg_projections = JSON.parse(data);
-    });
+  return xhrequest('GET', 'static/json/epsg.json', undefined, false);
 }
 
 
@@ -1893,7 +1892,7 @@ function handle_bg_color(color) {
 function handle_click_hand(behavior) {
   const hb = d3.select('.hand_button');
   // eslint-disable-next-line no-param-reassign
-  const b = (behavior && typeof behavior !== 'object' ? behavior : false) || !hb.classed('locked') ? 'lock' : 'unlock';
+  const b = typeof behavior === 'object' ? (!hb.classed('locked') ? 'lock' : 'unlock') : (behavior && typeof behavior === 'string' ? behavior : false);
   if (b === 'lock') {
     hb.classed('locked', true);
     hb.html('<img src="static/img/Twemoji_1f512.png" width="18" height="18" alt="locked"/>');
