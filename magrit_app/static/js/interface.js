@@ -1521,6 +1521,9 @@ function add_layout_layers() {
     [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
     [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
     [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
+    [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
+    [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+    [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
     [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
     [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
     [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
@@ -1602,6 +1605,8 @@ function add_sample_layer() {
       { name: 'COUNTRY', type: 'category', has_duplicate: true }]],
     ['voronoi_communes_2016_2-2', [
       { name: 'INSEE_COM', type: 'id' }]],
+    ['regions_2016_2-2', [
+      { name: 'CODE_REG', type: 'id' }]],
     ['departements_2016_2-2', [
       { name: 'CODE_DEPT', type: 'id' },
       { name: 'NOM_DEPT', type: 'id' },
@@ -1619,6 +1624,15 @@ function add_sample_layer() {
       { name: 'REGIONS', type: 'category', has_duplicate: true },
       { name: 'STATE2010', type: 'id' },
       { name: 'popdensity2014', type: 'ratio' }]],
+    ['FR_communes', [
+      { name: 'INSEE_COM', type: 'id' },
+      { name: 'NOM_COM', type: 'id' },
+      { name: 'SUPERFICIE', type: 'stock' },
+      { name: 'POPULATION', type: 'stock' },
+      { name: 'CODE_DEPT', type: 'category', has_duplicate: true },
+      { name: 'NOM_DEPT', type: 'category', has_duplicate: true },
+      { name: 'CODE_REG', type: 'category', has_duplicate: true },
+      { name: 'NOM_REG', type: 'category', has_duplicate: true }]],
     ['world_countries_data', [
       { name: 'ISO2', type: 'id', not_number: true },
       { name: 'ISO3', type: 'id', not_number: true },
@@ -1631,6 +1645,7 @@ function add_sample_layer() {
       { name: 'PopTotal', type: 'stock' },
       { name: 'JamesBond', type: 'stock' }]],
   ]);
+
   const suggested_projection = new Map([
     ['GrandParisMunicipalities', ['proj4', 'EPSG:2154']],
     ['martinique', ['proj4', 'EPSG:2973']],
@@ -1639,16 +1654,40 @@ function add_sample_layer() {
     ['departements_2016_2-2', ['proj4', 'EPSG:2154']],
     ['brazil', ['proj4', 'EPSG:5527']],
     ['world_countries_data', ['d3', 'NaturalEarth2']],
+    ['commune_dep_971', ['proj4', 'EPSG:32620']],
+    ['commune_dep_972', ['proj4', 'EPSG:32620']],
+    ['commune_dep_973', ['proj4', 'EPSG:2972']],
+    ['commune_dep_974', ['proj4', 'EPSG:2975']],
+    ['commune_dep_976', ['proj4', 'EPSG:7075']],
   ]);
   const target_layers = [
    [i18next.t('app_page.sample_layer_box.target_layer'), ''],
    [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
    [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'],
-   [i18next.t('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
    [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+   [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
    [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
    [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'],
    [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'],
+   [i18next.t('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'],
+   [i18next.t('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'],
+   [i18next.t('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'],
+   [i18next.t('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'],
+   [i18next.t('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
+   [i18next.t('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
+   [i18next.t('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
   ];
   const dialog_res = [];
   let selec,
@@ -1660,10 +1699,16 @@ function add_sample_layer() {
       if (confirmed) {
         if (content.attr('id') === 'panel1') {
           if (selec) {
+            const sugg_proj = selec.indexOf('communes_reg') > -1
+              ? ['proj4', 'EPSG:2154']
+              : suggested_projection.get(selec);
+            const _fields_type = (selec.indexOf('communes_reg') > -1 || selec.indexOf('commune_dep') > 1)
+              ? fields_type_sample.get('FR_communes')
+              : fields_type_sample.get(selec);
             add_sample_geojson(selec, {
               target_layer_on_add: true,
-              fields_type: fields_type_sample.get(selec),
-              default_projection: suggested_projection.get(selec),
+              fields_type: _fields_type,
+              default_projection: sugg_proj,
             });
           }
         } else if (content.attr('id') === 'panel2') {

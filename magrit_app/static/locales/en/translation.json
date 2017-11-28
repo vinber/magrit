@@ -354,7 +354,8 @@
             "world_countries": "World land surface <i>(Polygons)</i>",
             "world_capitals": "Most populated cities in the world <i>(Points)</i>",
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>",
-            "france_contour_2016_2-2": "Contour of metropolitan France (based on GEOFLA® 2016 v2.2)"
+            "france_contour_2016_2-2": "Contour of metropolitan France (based on GEOFLA® 2016 v2.2)",
+            "departements_vor_2016_2": "Departments of Metropolitan France (adapted to the \"voronoi\" basemap - based on GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Sample dataset",
@@ -364,13 +365,32 @@
             "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
             "voronoi_communes_2016_2-2": "Municipalities of metropolitan France (<i>Voronoi polygons</i> - based on GEOFLA® 2016 v2.2)",
             "departements_2016_2-2": "Departments of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
+            "departements_2016_2-2": "Regions of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
             "nuts2_data": "Nuts 2 (2013) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states <i>(Polygons)</i>",
             "world_countries": "World countries <i>(Polygons)</i>",
             "us_states": "U.S.A states <i>(Polygons)</i>",
             "more_basemaps": "More basemaps...",
             "back_sample": "Back to sample datasets",
-            "extra_basemaps_info": "These basemaps include, for each country, the geometries of the first subnational administrative level and variables of stock (population at two dates) and ratio (population density and growth rate). The basemaps come from the Natural Earth Data site.<a id=\"link1\">Natural Earth Data</a>. Other metadata are available on their <a id=\"link2\">repository page</a>."
+            "extra_basemaps_info": "These basemaps include, for each country, the geometries of the first subnational administrative level and variables of stock (population at two dates) and ratio (population density and growth rate). The basemaps come from the Natural Earth Data site.<a id=\"link1\">Natural Earth Data</a>. Other metadata are available on their <a id=\"link2\">repository page</a>.",
+            "communes_reg_11": "metropolitan France - Municipalities 2016 - Ile-de-France",
+            "communes_reg_24": "metropolitan France - Municipalities 2016 - Centre-Val de loire",
+            "communes_reg_27": "metropolitan France - Municipalities 2016 - Bourgogne-Franche-Comté",
+            "communes_reg_28": "metropolitan France - Municipalities 2016 - Normandie",
+            "communes_reg_32": "metropolitan France - Municipalities 2016 - Nord-Pas-de-Calais-Picardie",
+            "communes_reg_44": "metropolitan France - Municipalities 2016 - Alsace-Champagne-Ardenne-Loraine",
+            "communes_reg_52": "metropolitan France - Municipalities 2016 - Pays de la Loire",
+            "communes_reg_53": "metropolitan France - Municipalities 2016 - Bretagne",
+            "communes_reg_75": "metropolitan France - Municipalities 2016 - Aquitaine-Limousin-Poitou-Charentes",
+            "communes_reg_76": "metropolitan France - Municipalities 2016 - Languedoc-Roussillon-Midi-Pyrénées",
+            "communes_reg_84": "metropolitan France - Municipalities 2016 - Auvergne-Rhone-Alpes",
+            "communes_reg_93": "metropolitan France - Municipalities 2016 - Provence-Alpes-Cote d'Azur",
+            "communes_reg_94": "metropolitan France - Municipalities 2016 - Corse",
+            "commune_dep_972": "metropolitan France - Municipalities 2016 - Martinique",
+            "commune_dep_973": "metropolitan France - Municipalities 2016 - Guyane",
+            "commune_dep_974": "metropolitan France - Municipalities 2016 - La Réunion",
+            "commune_dep_976": "metropolitan France - Municipalities 2016 - Mayotte",
+            "commune_dep_971": "metropolitan France - Municipalities 2016 - Guadeloupe"
         },
         "export_box": {
             "geo": "Export layers to a geographic format",

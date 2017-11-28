@@ -350,7 +350,8 @@
             "world_countries": "Tierras emergidas <i>(Polígonos)</i>",
             "world_capitals": "Ciudades de mayor población <i>(Puntos)</i>",
             "disclamer_nuts": "<i>* sin Madeira (PT), Azores (PT), las Islas Canarias (ES) <br>ni las regiones francesas de ultramar</i>",
-            "france_contour_2016_2-2": "Contorno de la Francia metropolitana (basado en GEOFLA® 2016 v2.2)"
+            "france_contour_2016_2-2": "Contorno de la Francia metropolitana (basado en GEOFLA® 2016 v2.2)",
+            "departements_vor_2016_2": "Departamentos de Francia metropolitana (adaptados al fondo \"voronoi\" - basado en GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Conjunto de datos de ejemplo",
@@ -360,13 +361,32 @@
             "martinique": "Comunas de Martinica (región francesa de ultramar) <i>(Polígonos)</i>",
             "voronoi_communes_2016_2-2": "Comunas de Francia metropolitana (<i>Polígonos tipo voronoi</i> - basado en GEOFLA® 2016 v2.2)",
             "departements_2016_2-2": "Departamentos de Francia metropolitana (GEOFLA® 2016 v2.2 - <i>Polígonos</i>)",
+            "regions_2016_2-2": "Regiones de Francia metropolitana (GEOFLA® 2016 v2.2 - <i>Polígonos</i>)",
             "nuts2_data": "Nuts 2 (2013) con datos <i>(Polígonos)</i>",
             "brazil": "Estados de Brasil",
             "world_countries": "Países del mundo <i>(Polígonos)</i>",
             "us_states": "Estados Unidos <i>(Polígonos)</i>",
             "back_sample": "Regresar al conjunto de dato anterior",
             "extra_basemaps_info": "Estas capas contienen, para cada país, la división político-administrativa de primer nivel así como datos de población, densidad y tasa de crecimiento. Las capas provienen del sitio <a id=\"link1\">Natural Earth Data</a> y el resto de los metadatos están disponibles en la <a id=\"link2\">página del proyecto</a>.",
-            "more_basemaps": "Más capas geográficas..."
+            "more_basemaps": "Más capas geográficas...",
+            "communes_reg_11": "Francia metropolitana - Comunas 2016 - Ile-de-France",
+            "communes_reg_24": "Francia metropolitana - Comunas 2016 - Centre-Val de loire",
+            "communes_reg_27": "Francia metropolitana - Comunas 2016 - Bourgogne-Franche-Comté",
+            "communes_reg_28": "Francia metropolitana - Comunas 2016 - Normandie",
+            "communes_reg_32": "Francia metropolitana - Comunas 2016 - Nord-Pas-de-Calais-Picardie",
+            "communes_reg_44": "Francia metropolitana - Comunas 2016 - Alsace-Champagne-Ardenne-Loraine",
+            "communes_reg_52": "Francia metropolitana - Comunas 2016 - Pays de la Loire",
+            "communes_reg_53": "Francia metropolitana - Comunas 2016 - Bretagne",
+            "communes_reg_75": "Francia metropolitana - Comunas 2016 - Aquitaine-Limousin-Poitou-Charentes",
+            "communes_reg_76": "Francia metropolitana - Comunas 2016 - Languedoc-Roussillon-Midi-Pyrénées",
+            "communes_reg_84": "Francia metropolitana - Comunas 2016 - Auvergne-Rhone-Alpes",
+            "communes_reg_93": "Francia metropolitana - Comunas 2016 - Provence-Alpes-Cote d'Azur",
+            "communes_reg_94": "Francia metropolitana - Comunas 2016 - Corse",
+            "commune_dep_972": "Francia metropolitana - Comunas 2016 - Martinique",
+            "commune_dep_973": "Francia metropolitana - Comunas 2016 - Guyane",
+            "commune_dep_974": "Francia metropolitana - Comunas 2016 - La Réunion",
+            "commune_dep_976": "Francia metropolitana - Comunas 2016 - Mayotte",
+            "commune_dep_971": "Francia metropolitana - Comunas 2016 - Guadeloupe"
         },
         "export_box": {
             "geo": "Exportar en un formato compatible para los SIG",
