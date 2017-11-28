@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.cb4246805bdd.json'
+      loadPath: 'static/locales/{{lng}}/translation.e2478a896600.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -10885,8 +10885,12 @@ function updateLayer(layer_name) {
   current_layers[layer_name].original_fields = new Set(fields);
   var lyr_id = _app.layer_to_id.get(layer_name);
   var k = Object.keys(_target_layer_file.objects)[0];
-  var selection = map.select('#' + lyr_id).selectAll('path').data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features);
+  var selection = map.select('#' + lyr_id).selectAll('path').data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features, function (d) {
+    return d.id;
+  });
   selection.exit().remove();
+  scale_to_lyr(layer_name);
+  center_map(layer_name);
   zoom_without_redraw();
   update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
 }
@@ -10984,35 +10988,28 @@ function add_layer_topojson(text) {
   var field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
   var path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
   var nb_fields = field_names.length;
-  var func_data_idx = void 0;
-
-  if (data_to_load && nb_fields > 0) {
-    func_data_idx = function func_data_idx(d, ix) {
-      if (d.id != undefined && d.id != ix) {
-        d.properties['_uid'] = d.id;
-        d.id = +ix;
+  topoObj_objects.geometries.forEach(function (d, ix) {
+    if (data_to_load && nb_fields > 0) {
+      if (d.id !== undefined && d.id !== ix) {
+        d.properties._uid = d.id; // eslint-disable-line no-param-reassign
+        d.id = +ix; // eslint-disable-line no-param-reassign
       }
       user_data[lyr_name_to_add].push(d.properties);
-      return 'feature_' + ix;
-    };
-  } else if (data_to_load) {
-    func_data_idx = function func_data_idx(d, ix) {
-      d.properties.id = d.id || ix;
+    } else if (data_to_load) {
+      d.properties.id = d.id = ix; // eslint-disable-line no-param-reassign, no-multi-assign
       user_data[lyr_name_to_add].push({ id: d.properties.id });
-      return 'feature_' + ix;
-    };
-  } else if (result_layer_on_add) {
-    func_data_idx = function func_data_idx(d, ix) {
+    } else if (result_layer_on_add) {
       result_data[lyr_name_to_add].push(d.properties);
-      return 'feature_' + ix;
-    };
-  } else {
-    func_data_idx = function func_data_idx(_, ix) {
-      return 'feature_' + ix;
-    };
-  }
+    }
+  });
 
-  map.insert('g', '.legend').attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('.subunit').data(topojson.feature(topoObj, topoObj_objects).features).enter().append('path').attrs({ d: path_to_use, height: '100%', width: '100%', id: func_data_idx }).styles({
+  var func_data_idx = function func_data_idx(_, ix) {
+    return 'feature_' + ix;
+  };
+
+  map.insert('g', '.legend').attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' }).styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).selectAll('.subunit').data(topojson.feature(topoObj, topoObj_objects).features, function (d) {
+    return d.id;
+  }).enter().append('path').attrs({ d: path_to_use, id: func_data_idx }).styles({
     stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
     'stroke-opacity': 1,
     fill: type !== 'Line' ? random_color1 : null,
@@ -11059,7 +11056,7 @@ function add_layer_topojson(text) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name === 'smooth') {
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
     fields_handler.fill();
   }
 
@@ -12086,89 +12083,25 @@ function valid_join_check_display(val, prop) {
   }
 }
 
-// Where the real join is done
-// Its two main results are:
-//    -the update of the global "field_join_map" array
-//       (storing the relation between index of the geometry
-//         layer and index of the external dataset)
-//    -the update of the global "user_data" object, adding actualy the value
-//     to each object representing each feature of the layer
-function valid_join_on(layer_name, field1, field2) {
-  var join_values1 = [],
-      join_values2 = [];
-  var hits = 0,
-      val = void 0;
-
-  field_join_map = [];
-
-  for (var i = 0, len = joined_dataset[0].length; i < len; i++) {
-    join_values2.push(joined_dataset[0][i][field2]);
-  }
-  for (var _i = 0, _len = user_data[layer_name].length; _i < _len; _i++) {
-    join_values1.push(user_data[layer_name][_i][field1]);
-  }
-
-  if (has_duplicate(join_values1) || has_duplicate(join_values2)) {
-    return swal('', i18next.t('app_page.join_box.error_not_uniques'), 'warning');
-  }
-
-  if (typeof join_values1[0] === 'number' && typeof join_values2[0] === 'string') {
-    for (var _i2 = 0, _len2 = join_values1.length; _i2 < _len2; _i2++) {
-      val = join_values2.indexOf(String(join_values1[_i2]));
-      if (val !== -1) {
-        field_join_map.push(val);
-        hits += 1;
-      } else {
-        field_join_map.push(undefined);
-      }
-    }
-  } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'string') {
-    for (var _i3 = 0, _len3 = join_values1.length; _i3 < _len3; _i3++) {
-      val = join_values2.indexOf(Number(join_values1[_i3]));
-      if (val !== -1) {
-        field_join_map.push(val);
-        hits += 1;
-      } else {
-        field_join_map.push(undefined);
-      }
-    }
-  } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'number') {
-    for (var _i4 = 0, _len4 = join_values1.length; _i4 < _len4; _i4++) {
-      val = join_values2.indexOf(join_values1[_i4]);
-      if (val !== -1) {
-        field_join_map.push(val);
-        hits += 1;
-      } else {
-        field_join_map.push(undefined);
-      }
-    }
-  } else {
-    for (var _i5 = 0, _len5 = join_values1.length; _i5 < _len5; _i5++) {
-      val = join_values2.indexOf(String(join_values1[_i5]));
-      if (val !== -1) {
-        field_join_map.push(val);
-        hits += 1;
-      } else {
-        field_join_map.push(undefined);
-      }
-    }
-  }
-
+function valid_join_on(layer_name, join_values1, join_values2, field1, field2, hits) {
+  var ext_dataset = joined_dataset[0];
+  var layer_dataset = user_data[layer_name];
   var prop = [hits, '/', join_values1.length].join('');
   var f_name = '';
+  var val = void 0;
 
   if (hits >= join_values1.length) {
     swal({ title: '',
       text: i18next.t('app_page.common.success'),
       type: 'success',
       allowOutsideClick: true });
-    var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-    for (var _i6 = 0, _len6 = join_values1.length; _i6 < _len6; _i6++) {
-      val = field_join_map[_i6];
+    var fields_name_to_add = Object.getOwnPropertyNames(ext_dataset[0]);
+    for (var i = 0, len = join_values1.length; i < len; i++) {
+      val = field_join_map[i];
       for (var j = 0, leng = fields_name_to_add.length; j < leng; j++) {
         f_name = fields_name_to_add[j];
         if (f_name.length > 0) {
-          user_data[layer_name][_i6][f_name] = joined_dataset[0][val][f_name];
+          layer_dataset[i][f_name] = ext_dataset[val][f_name];
         }
       }
     }
@@ -12186,16 +12119,16 @@ function valid_join_on(layer_name, field1, field2) {
       confirmButtonText: i18next.t('app_page.common.yes'),
       cancelButtonText: i18next.t('app_page.common.no')
     }).then(function () {
-      var fields_name_to_add = Object.getOwnPropertyNames(joined_dataset[0][0]);
-      for (var _i7 = 0, _len7 = field_join_map.length; _i7 < _len7; _i7++) {
-        val = field_join_map[_i7];
+      var fields_name_to_add = Object.getOwnPropertyNames(ext_dataset[0]);
+      for (var _i = 0, _len = field_join_map.length; _i < _len; _i++) {
+        val = field_join_map[_i];
         for (var _j = 0, _leng = fields_name_to_add.length; _j < _leng; _j++) {
           f_name = fields_name_to_add[_j];
           if (f_name.length > 0) {
             var t_val = void 0;
             if (val == undefined) t_val = null; // eslint-disable-line
-            else if (joined_dataset[0][val][f_name] === '') t_val = null;else t_val = joined_dataset[0][val][f_name];
-            user_data[layer_name][_i7][f_name] = val != undefined ? joined_dataset[0][val][f_name] : null; // eslint-disable-line
+            else if (ext_dataset[val][f_name] === '') t_val = null;else t_val = ext_dataset[val][f_name];
+            layer_dataset[_i][f_name] = val != undefined ? ext_dataset[val][f_name] : null; // eslint-disable-line
           }
         }
       }
@@ -12211,13 +12144,13 @@ function valid_join_on(layer_name, field1, field2) {
         cancelButtonText: i18next.t('app_page.common.no')
       }).then(function () {
         var k = Object.keys(_target_layer_file.objects);
-        _target_layer_file.objects[k[0]].geometries;
+        var geoms = _target_layer_file.objects[k[0]].geometries;
         var temp1 = [];
         var temp2 = [];
-        for (var _i8 = 0; _i8 < user_data[layer_name].length; _i8++) {
-          if (field_join_map[_i8]) {
-            temp1.push(user_data[layer_name][_i8]);
-            temp2.push(_target_layer_file.objects[k[0]].geometries[_i8]);
+        for (var _i2 = 0; _i2 < layer_dataset.length; _i2++) {
+          if (field_join_map[_i2] !== undefined) {
+            temp1.push(layer_dataset[_i2]);
+            temp2.push(geoms[_i2]);
           }
         }
         user_data[layer_name] = temp1;
@@ -12249,6 +12182,99 @@ function valid_join_on(layer_name, field1, field2) {
   return Promise.resolve(false);
 }
 
+// Where the real join is done
+// Its two main results are:
+//    -the update of the global "field_join_map" array
+//       (storing the relation between index of the geometry
+//         layer and index of the external dataset)
+//    -the update of the global "user_data" object, adding actualy the value
+//     to each object representing each feature of the layer
+function prepare_join_on(layer_name, field1, field2) {
+  var join_values1 = [],
+      join_values2 = [];
+  var layer_dataset = user_data[layer_name];
+  var ext_dataset = joined_dataset[0];
+  var nb_features = layer_dataset.length;
+  var hits = 0;
+  var val = void 0;
+
+  field_join_map = [];
+
+  for (var i = 0, len = ext_dataset.length; i < len; i++) {
+    join_values2.push(ext_dataset[i][field2]);
+  }
+  for (var _i3 = 0, _len2 = layer_dataset.length; _i3 < _len2; _i3++) {
+    join_values1.push(layer_dataset[_i3][field1]);
+  }
+  if (has_duplicate(join_values1) || has_duplicate(join_values2)) {
+    return swal('', i18next.t('app_page.join_box.error_not_uniques'), 'warning');
+  }
+  if (nb_features > 5000) {
+    document.getElementById('overlay').style.display = '';
+    var jointure_worker = new Worker('static/js/webworker_jointure.js');
+    _app.webworker_to_cancel = jointure_worker;
+    jointure_worker.postMessage([join_values1, join_values2]);
+    jointure_worker.onmessage = function (e) {
+      var _e$data = _slicedToArray(e.data, 2),
+          join_map = _e$data[0],
+          _hits = _e$data[1];
+
+      _app.webworker_to_cancel = undefined;
+      hits = _hits;
+      field_join_map = join_map;
+      document.getElementById('overlay').style.display = 'none';
+      valid_join_on(layer_name, join_values1, join_values2, field1, field2, hits).then(function (valid) {
+        jointure_worker.terminate();
+        if (valid) make_box_type_fields(layer_name);
+      });
+    };
+  } else {
+    if (typeof join_values1[0] === 'number' && typeof join_values2[0] === 'string') {
+      for (var _i4 = 0; _i4 < nb_features; _i4++) {
+        val = join_values2.indexOf(String(join_values1[_i4]));
+        if (val !== -1) {
+          field_join_map.push(val);
+          hits += 1;
+        } else {
+          field_join_map.push(undefined);
+        }
+      }
+    } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'string') {
+      for (var _i5 = 0; _i5 < nb_features; _i5++) {
+        val = join_values2.indexOf(Number(join_values1[_i5]));
+        if (val !== -1) {
+          field_join_map.push(val);
+          hits += 1;
+        } else {
+          field_join_map.push(undefined);
+        }
+      }
+    } else if (typeof join_values2[0] === 'number' && typeof join_values1[0] === 'number') {
+      for (var _i6 = 0; _i6 < nb_features; _i6++) {
+        val = join_values2.indexOf(join_values1[_i6]);
+        if (val !== -1) {
+          field_join_map.push(val);
+          hits += 1;
+        } else {
+          field_join_map.push(undefined);
+        }
+      }
+    } else {
+      for (var _i7 = 0; _i7 < nb_features; _i7++) {
+        val = join_values2.indexOf(String(join_values1[_i7]));
+        if (val !== -1) {
+          field_join_map.push(val);
+          hits += 1;
+        } else {
+          field_join_map.push(undefined);
+        }
+      }
+    }
+    valid_join_on(layer_name, join_values1, join_values2, field1, field2, hits).then(function (valid) {
+      if (valid) make_box_type_fields(layer_name);
+    });
+  }
+}
 // Function creating the join box, filled by two "select" input, one containing
 // the field names of the geometry layer, the other one containing those from
 // the external dataset, in order to let the user choose the common field to do
@@ -12265,9 +12291,9 @@ var createJoinBox = function createJoinBox(layer) {
   }
   button1.push('</select>');
 
-  for (var _i9 = 0, _len8 = ext_dataset_fields.length; _i9 < _len8; _i9++) {
-    if (ext_dataset_fields[_i9].length > 0) {
-      button2.push(['<option value="', ext_dataset_fields[_i9], '">', ext_dataset_fields[_i9], '</option>'].join(''));
+  for (var _i8 = 0, _len3 = ext_dataset_fields.length; _i8 < _len3; _i8++) {
+    if (ext_dataset_fields[_i8].length > 0) {
+      button2.push(['<option value="', ext_dataset_fields[_i8], '">', ext_dataset_fields[_i8], '</option>'].join(''));
     }
   }
   button2.push('</select>');
@@ -12276,9 +12302,7 @@ var createJoinBox = function createJoinBox(layer) {
 
   make_confirm_dialog2('joinBox', i18next.t('app_page.join_box.title'), { html_content: inner_box, widthFitContent: true }).then(function (confirmed) {
     if (confirmed) {
-      valid_join_on(layer, lastChoice.field1, lastChoice.field2).then(function (valid) {
-        if (valid) make_box_type_fields(layer);
-      });
+      prepare_join_on(layer, lastChoice.field1, lastChoice.field2);
     }
   });
 
@@ -19951,13 +19975,20 @@ var boxExplore2 = {
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
     var list_per_page_select = [5, 10, 15, 20, 25];
     if (this.nb_features > 25) {
+      if (this.nb_features > 100) {
+        list_per_page_select.push(100);
+      }
       list_per_page_select.push(this.nb_features);
+    }
+    var per_page_value = list_per_page_select[list_per_page_select.length - 1];
+    if (per_page_value > 1000) {
+      per_page_value = 100;
     }
     var myTable = document.getElementById('myTable');
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
-      perPage: list_per_page_select[list_per_page_select.length - 1],
+      perPage: per_page_value,
       perPageSelect: list_per_page_select,
       labels: {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
@@ -19975,7 +20006,6 @@ var boxExplore2 = {
     box.style.height = null;
 
     setTimeout(function () {
-      // box.querySelector(".dataTable-pagination").style.width = "80%";
       var bbox = box.querySelector('#myTable').getBoundingClientRect(),
           new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
       var new_width = bbox.width;
@@ -19990,7 +20020,6 @@ var boxExplore2 = {
       }
       box.style.left = (window.innerWidth - new_width) / 2 + 'px';
     }, 200);
-    // setSelected(document.querySelector('.dataTable-selector'), list_per_page_select[list_per_page_select.length - 1]);
   },
   get_available_tables: function get_available_tables() {
     var target_layer = Object.getOwnPropertyNames(user_data),

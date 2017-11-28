@@ -401,13 +401,20 @@ const boxExplore2 = {
     this.box_table.node().appendChild(createTableDOM(the_table, { id: 'myTable' }));
     const list_per_page_select = [5, 10, 15, 20, 25];
     if (this.nb_features > 25) {
+      if (this.nb_features > 100) {
+        list_per_page_select.push(100);
+      }
       list_per_page_select.push(this.nb_features);
+    }
+    let per_page_value = list_per_page_select[list_per_page_select.length - 1];
+    if (per_page_value > 1000) {
+      per_page_value = 100;
     }
     const myTable = document.getElementById('myTable');
     this.datatable = new DataTable(myTable, {
       sortable: true,
       searchable: true,
-      perPage: list_per_page_select[list_per_page_select.length - 1],
+      perPage: per_page_value,
       perPageSelect: list_per_page_select,
       labels: {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
@@ -426,7 +433,6 @@ const boxExplore2 = {
     box.style.height = null;
 
     setTimeout(() => {
-      // box.querySelector(".dataTable-pagination").style.width = "80%";
       const bbox = box.querySelector('#myTable').getBoundingClientRect(),
         new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
       let new_width = bbox.width;
@@ -440,7 +446,6 @@ const boxExplore2 = {
       }
       box.style.left = `${(window.innerWidth - new_width) / 2}px`;
     }, 200);
-    // setSelected(document.querySelector('.dataTable-selector'), list_per_page_select[list_per_page_select.length - 1]);
   },
 
   get_available_tables() {

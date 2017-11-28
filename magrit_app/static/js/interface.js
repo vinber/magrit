@@ -936,8 +936,10 @@ function updateLayer(layer_name) {
   const k = Object.keys(_target_layer_file.objects)[0];
   const selection = map.select(`#${lyr_id}`)
     .selectAll('path')
-    .data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features);
+    .data(topojson.feature(_target_layer_file, _target_layer_file.objects[k]).features, d => d.id);
   selection.exit().remove();
+  scale_to_lyr(layer_name);
+  center_map(layer_name);
   zoom_without_redraw();
   update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
 }
@@ -1032,43 +1034,36 @@ function add_layer_topojson(text, options = {}) {
     current_layers[lyr_name_to_add].is_result = true;
   }
 
-  const field_names = topoObj_objects.geometries[0].properties ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
-  const path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
+  const field_names = topoObj_objects.geometries[0].properties
+    ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
+  const path_to_use = options.pointRadius
+    ? path.pointRadius(options.pointRadius) : path;
   const nb_fields = field_names.length;
-  let func_data_idx;
-
-  if (data_to_load && nb_fields > 0) {
-    func_data_idx = (d, ix) => {
-      if (d.id != undefined && d.id != ix) {
-        d.properties['_uid'] = d.id;
-        d.id = +ix;
+  topoObj_objects.geometries.forEach((d, ix) => {
+    if (data_to_load && nb_fields > 0) {
+      if (d.id !== undefined && d.id !== ix) {
+        d.properties._uid = d.id; // eslint-disable-line no-param-reassign
+        d.id = +ix; // eslint-disable-line no-param-reassign
       }
       user_data[lyr_name_to_add].push(d.properties);
-      return `feature_${ix}`;
-    };
-  } else if (data_to_load) {
-    func_data_idx = (d, ix) => {
-      d.properties.id = d.id || ix;
+    } else if (data_to_load) {
+      d.properties.id = d.id = ix; // eslint-disable-line no-param-reassign, no-multi-assign
       user_data[lyr_name_to_add].push({ id: d.properties.id });
-      return `feature_${ix}`;
-    };
-  } else if (result_layer_on_add) {
-    func_data_idx = (d, ix) => {
+    } else if (result_layer_on_add) {
       result_data[lyr_name_to_add].push(d.properties);
-      return `feature_${ix}`;
-    };
-  } else {
-    func_data_idx = (_, ix) => `feature_${ix}`;
-  }
+    }
+  });
+
+  const func_data_idx = (_, ix) => `feature_${ix}`;
 
   map.insert('g', '.legend')
     .attrs({ id: lyr_id, class: data_to_load ? 'targeted_layer layer' : 'layer' })
     .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
     .selectAll('.subunit')
-    .data(topojson.feature(topoObj, topoObj_objects).features)
+    .data(topojson.feature(topoObj, topoObj_objects).features, d => d.id)
     .enter()
     .append('path')
-    .attrs({ d: path_to_use, height: '100%', width: '100%', id: func_data_idx })
+    .attrs({ d: path_to_use, id: func_data_idx })
     .styles({
       stroke: type !== 'Line' ? 'rgb(0, 0, 0)' : random_color1,
       'stroke-opacity': 1,
@@ -1119,7 +1114,7 @@ function add_layer_topojson(text, options = {}) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  if (!target_layer_on_add && _app.current_functionnality != undefined && _app.current_functionnality.name === 'smooth') {
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
     fields_handler.fill();
   }
 
