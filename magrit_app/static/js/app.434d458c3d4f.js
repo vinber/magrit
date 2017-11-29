@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.c645b6aa6bec.json'
+      loadPath: 'static/locales/{{lng}}/translation.434d458c3d4f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8519,7 +8519,7 @@ var drag_waffle = d3.drag().filter(function () {
 }).subject(function () {
   var t = d3.select(this);
   var prev_translate = t.attr('transform');
-  prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
+  prev_translate = prev_translate ? prev_translate.slice(10, -1).split(/[ ,]+/).map(function (f) {
     return +f;
   }) : [0, 0];
   return {
@@ -8720,7 +8720,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
     }
   }
   // Set the desired class name :
-  node_new_layer.classList = ['layer'];
+  node_new_layer.className.baseVal = 'layer';
   // Reset visibility and filter attributes to default values:
   node_new_layer.style.visibility = '';
   node_new_layer.removeAttribute('filter');
@@ -9906,13 +9906,13 @@ function getMaximalAvailableRectangle(legend_nodes) {
 function getTranslateNewLegend() {
   var legends = svg_map.querySelectorAll('.legend_feature');
   if (legends.length === 0) {
-    return [0, 0];
+    return { x: 0, y: 0 };
   }
   try {
     return getMaximalAvailableRectangle(legends);
   } catch (e) {
     console.log(e);
-    return [0, 0];
+    return { x: 0, y: 0 };
   }
 }
 
@@ -11490,7 +11490,7 @@ function add_sample_layer() {
   if (!_app.list_extrabasemaps) {
     prepare_extra_dataset_availables();
   }
-  var fields_type_sample = new Map([['GrandParisMunicipalities', [{ name: 'DEPARTEMENT', type: 'category', has_duplicate: true }, { name: 'IDCOM', type: 'id' }, { name: 'EPT', type: 'category', has_duplicate: true }, { name: 'REVENUS', type: 'stock' }, { name: 'LIBCOM', type: 'id' }, { name: 'LIBEPT', type: 'category', has_duplicate: true }, { name: 'MENAGES_FISCAUX', type: 'stock' }, { name: 'UID', type: 'id' }, { name: 'REVENUS_PAR_MENAGE', type: 'ratio' }]], ['martinique', [{ name: 'INSEE_COM', type: 'id' }, { name: 'NOM_COM', type: 'id', not_number: true }, { name: 'STATUT', type: 'category', has_duplicate: true }, { name: 'SUPERFICIE', type: 'stock' }, { name: 'P13_POP', type: 'stock' }, { name: 'P13_LOG', type: 'stock' }, { name: 'P13_LOGVAC', type: 'stock' }, { name: 'Part_Logements_Vacants', type: 'ratio' }]], ['nuts2-2013-data', [{ name: 'id', type: 'id', not_number: true }, { name: 'name', type: 'id', not_number: true }, { name: 'POP', type: 'stock' }, { name: 'GDP', type: 'stock' }, { name: 'UNEMP', type: 'ratio' }, { name: 'COUNTRY', type: 'category', has_duplicate: true }]], ['voronoi_communes_2016_2-2', [{ name: 'INSEE_COM', type: 'id' }]], ['regions_2016_2-2', [{ name: 'CODE_REG', type: 'id' }]], ['departements_2016_2-2', [{ name: 'CODE_DEPT', type: 'id' }, { name: 'NOM_DEPT', type: 'id' }, { name: 'CODE_CHF', type: 'id' }, { name: 'NOM_CHF', type: 'id' }, { name: 'CODE_REG', type: 'category', has_duplicate: true }, { name: 'NOM_REG', type: 'category', has_duplicate: true }]], ['brazil', [{ name: 'ADMIN_NAME', type: 'id', not_number: true }, { name: 'Abbreviation', type: 'id', not_number: true }, { name: 'Capital', type: 'id', not_number: true }, { name: 'GDP_per_capita_2012', type: 'stock' }, { name: 'Life_expectancy_2014', type: 'ratio' }, { name: 'Pop2014', type: 'stock' }, { name: 'REGIONS', type: 'category', has_duplicate: true }, { name: 'STATE2010', type: 'id' }, { name: 'popdensity2014', type: 'ratio' }]], ['FR_communes', [{ name: 'INSEE_COM', type: 'id' }, { name: 'NOM_COM', type: 'id' }, { name: 'SUPERFICIE', type: 'stock' }, { name: 'POPULATION', type: 'stock' }, { name: 'CODE_DEPT', type: 'category', has_duplicate: true }, { name: 'NOM_DEPT', type: 'category', has_duplicate: true }, { name: 'CODE_REG', type: 'category', has_duplicate: true }, { name: 'NOM_REG', type: 'category', has_duplicate: true }]], ['world_countries_data', [{ name: 'ISO2', type: 'id', not_number: true }, { name: 'ISO3', type: 'id', not_number: true }, { name: 'ISONUM', type: 'id' }, { name: 'NAMEen', type: 'id', not_number: true }, { name: 'NAMEfr', type: 'id', not_number: true }, { name: 'UNRegion', type: 'category', has_duplicate: true }, { name: 'GrowthRate', type: 'ratio' }, { name: 'PopDensity', type: 'ratio' }, { name: 'PopTotal', type: 'stock' }, { name: 'JamesBond', type: 'stock' }]]]);
+  var fields_type_sample = new Map([['GrandParisMunicipalities', [{ name: 'DEPARTEMENT', type: 'category', has_duplicate: true }, { name: 'IDCOM', type: 'id' }, { name: 'EPT', type: 'category', has_duplicate: true }, { name: 'REVENUS', type: 'stock' }, { name: 'LIBCOM', type: 'id' }, { name: 'LIBEPT', type: 'category', has_duplicate: true }, { name: 'MENAGES_FISCAUX', type: 'stock' }, { name: 'UID', type: 'id' }, { name: 'REVENUS_PAR_MENAGE', type: 'ratio' }]], ['martinique', [{ name: 'INSEE_COM', type: 'id' }, { name: 'NOM_COM', type: 'id', not_number: true }, { name: 'STATUT', type: 'category', has_duplicate: true }, { name: 'SUPERFICIE', type: 'stock' }, { name: 'P13_POP', type: 'stock' }, { name: 'P13_LOG', type: 'stock' }, { name: 'P13_LOGVAC', type: 'stock' }, { name: 'Part_Logements_Vacants', type: 'ratio' }]], ['nuts2-2013-data', [{ name: 'id', type: 'id', not_number: true }, { name: 'name', type: 'id', not_number: true }, { name: 'POP', type: 'stock' }, { name: 'GDP', type: 'stock' }, { name: 'UNEMP', type: 'ratio' }, { name: 'COUNTRY', type: 'category', has_duplicate: true }]], ['voronoi_communes_2016_2-2', [{ name: 'INSEE_COM', type: 'id' }]], ['regions_2016_2-2', [{ name: 'CODE_REG', type: 'id' }]], ['departements_2016_2-2', [{ name: 'CODE_DEPT', type: 'id' }, { name: 'CODE_REG', type: 'category', has_duplicate: true }]], ['brazil', [{ name: 'ADMIN_NAME', type: 'id', not_number: true }, { name: 'Abbreviation', type: 'id', not_number: true }, { name: 'Capital', type: 'id', not_number: true }, { name: 'GDP_per_capita_2012', type: 'stock' }, { name: 'Life_expectancy_2014', type: 'ratio' }, { name: 'Pop2014', type: 'stock' }, { name: 'REGIONS', type: 'category', has_duplicate: true }, { name: 'STATE2010', type: 'id' }, { name: 'popdensity2014', type: 'ratio' }]], ['FR_communes', [{ name: 'INSEE_COM', type: 'id' }, { name: 'NOM_COM', type: 'id' }, { name: 'SUPERFICIE', type: 'stock' }, { name: 'POPULATION', type: 'stock' }, { name: 'CODE_DEPT', type: 'category', has_duplicate: true }, { name: 'NOM_DEPT', type: 'category', has_duplicate: true }, { name: 'CODE_REG', type: 'category', has_duplicate: true }, { name: 'NOM_REG', type: 'category', has_duplicate: true }]], ['world_countries_data', [{ name: 'ISO2', type: 'id', not_number: true }, { name: 'ISO3', type: 'id', not_number: true }, { name: 'ISONUM', type: 'id' }, { name: 'NAMEen', type: 'id', not_number: true }, { name: 'NAMEfr', type: 'id', not_number: true }, { name: 'UNRegion', type: 'category', has_duplicate: true }, { name: 'GrowthRate', type: 'ratio' }, { name: 'PopDensity', type: 'ratio' }, { name: 'PopTotal', type: 'stock' }, { name: 'JamesBond', type: 'stock' }]]]);
 
   var suggested_projection = new Map([['GrandParisMunicipalities', ['proj4', 'EPSG:2154']], ['martinique', ['proj4', 'EPSG:2973']], ['nuts2-2013-data', ['proj4', 'EPSG:3035']], ['voronoi_communes_2016_2-2', ['proj4', 'EPSG:2154']], ['departements_2016_2-2', ['proj4', 'EPSG:2154']], ['brazil', ['proj4', 'EPSG:5527']], ['world_countries_data', ['d3', 'NaturalEarth2']], ['commune_dep_971', ['proj4', 'EPSG:32620']], ['commune_dep_972', ['proj4', 'EPSG:32620']], ['commune_dep_973', ['proj4', 'EPSG:2972']], ['commune_dep_974', ['proj4', 'EPSG:2975']], ['commune_dep_976', ['proj4', 'EPSG:7075']]]);
   var target_layers = [[i18next.t('app_page.sample_layer_box.target_layer'), ''], [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'], [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'], [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'], [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'], [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'], [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'], [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'], [i18next.t('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'], [i18next.t('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'], [i18next.t('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'], [i18next.t('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'], [i18next.t('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'], [i18next.t('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'], [i18next.t('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'], [i18next.t('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'], [i18next.t('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'], [i18next.t('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'], [i18next.t('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'], [i18next.t('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'], [i18next.t('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'], [i18next.t('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'], [i18next.t('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'], [i18next.t('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'], [i18next.t('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'], [i18next.t('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'], [i18next.t('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2']];
@@ -14338,7 +14338,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15524,7 +15523,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -16132,7 +16130,7 @@ function handle_legend(layer) {
         // of the map, if not, move them in:
         // .. so it's actually a feature if the legend is redrawn on its origin location
         // after being moved too close to the outer border of the map :
-        var tol = 7.5;
+        var tol = 10;
 
         var _get_map_xy = get_map_xy0(),
             x0 = _get_map_xy.x,
@@ -16306,16 +16304,19 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     var t = d3.select(this),
         prev_translate = t.attr('transform'),
         snap_lines = get_coords_snap_lines(t.attr('id') + ' ' + t.attr('class'));
-    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(function (f) {
+
+    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(/[ ,]+/).map(function (f) {
       return +f;
     }) : [0, 0];
+    if (prev_translate.length === 1) prev_translate = [prev_translate[0], 0];
+
     return {
       x: t.attr('x') + prev_translate[0],
       y: t.attr('y') + prev_translate[1],
       map_locked: !!map_div.select('#hand_button').classed('locked'),
       map_offset: get_map_xy0(),
       snap_lines: snap_lines,
-      offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')]
+      offset: [+legend_group.select('#under_rect').attr('x'), +legend_group.select('#under_rect').attr('y')]
     };
   }).on('start', function () {
     d3.event.sourceEvent.stopPropagation();
@@ -16332,10 +16333,10 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     var Max = Math.max;
     var new_value = [d3.event.x, d3.event.y];
     var prev_value = legend_group.attr('transform');
-    prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(function (f) {
+    prev_value = prev_value ? prev_value.slice(10, -1).split(/[ ,]+/).map(function (f) {
       return +f;
     }) : [0, 0];
-
+    if (prev_value.length === 1) prev_value = [prev_value[0], 0];
     legend_group.attr('transform', 'translate(' + new_value + ')').style('cursor', 'grabbing');
 
     var bbox_elem = legend_group.node().getBoundingClientRect(),
@@ -16385,11 +16386,11 @@ var drag_legend_func = function drag_legend_func(legend_group) {
       }
     }
 
-    if (bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)) {
+    if (bbox_elem.width < w && (bbox_elem.left < map_offset.x - 10 || bbox_elem.left + bbox_elem.width > map_offset.x + +w + 10)) {
       val_x = prev_value[0];
       change = true;
     }
-    if (bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)) {
+    if (bbox_elem.height < h && (bbox_elem.top < map_offset.y - 10 || bbox_elem.top + bbox_elem.height > map_offset.y + +h + 10)) {
       val_y = prev_value[1];
       change = true;
     }
@@ -16604,9 +16605,10 @@ function make_underlying_rect(legend_root, under_rect, fill) {
       x0 = _get_map_xy2.x,
       y0 = _get_map_xy2.y;
 
-  translate = translate ? translate.split('translate(')[1].split(')')[0].split(',').map(function (d) {
+  translate = translate ? translate.split('translate(')[1].split(')')[0].split(/[ ,]+/).map(function (d) {
     return +d;
   }) : [0, 0];
+  if (translate.length === 1) translate = [translate[0], 0];
 
   var x_top_left = bboxLegend.left - x0 - 12.5 - translate[0];
   var y_top_left = bboxLegend.top - y0 - 12.5 - translate[1];
@@ -17184,10 +17186,7 @@ function display_box_value_symbol(layer_name) {
     current_layers[layer_name].size_legend_symbol = undefined;
     redraw_sample_legend(original_values);
   });
-  // val1.node().value = values_to_use[0].value;
-  // val2.node().value = values_to_use[1].value;
-  // val3.node().value = values_to_use[2].value;
-  // val4.node().value = values_to_use[3].value;
+
   redraw_sample_legend();
   return prom;
 }
@@ -17224,9 +17223,9 @@ function createlegendEditBox(legend_id, layer_name) {
   if (document.querySelector('.' + box_class)) document.querySelector('.' + box_class).remove();
   var original_params = {
     title_content: title_content.textContent,
-    y_title: title_content.y.baseVal[0].value,
+    y_title: title_content.y.baseVal.getItem(0).value,
     subtitle_content: subtitle_content.textContent,
-    y_subtitle: subtitle_content.y.baseVal[0].value,
+    y_subtitle: subtitle_content.y.baseVal.getItem(0).value,
     note_content: note_content.textContent,
     no_data_txt: no_data_txt != null ? no_data_txt.textContent : null,
     ratio_waffle_txt: ratio_waffle_txt != null ? ratio_waffle_txt.textContent : null
@@ -17243,9 +17242,9 @@ function createlegendEditBox(legend_id, layer_name) {
   make_confirm_dialog2(box_class, layer_name).then(function (confirmed) {
     if (!confirmed) {
       title_content.textContent = original_params.title_content;
-      title_content.y.baseVal[0].value = original_params.y_title;
+      title_content.y.baseVal.getItem(0).value = original_params.y_title;
       subtitle_content.textContent = original_params.subtitle_content;
-      subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
+      subtitle_content.y.baseVal.getItem(0).value = original_params.y_subtitle;
       note_content.textContent = original_params.note_content;
       if (no_data_txt) {
         no_data_txt.textContent = original_params.no_data_txt;
@@ -17276,13 +17275,13 @@ function createlegendEditBox(legend_id, layer_name) {
     var empty = subtitle_content.textContent == '';
     // Move up the title to its original position if the subtitle isn't empty :
     if (empty && this.value != '') {
-      title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+      title_content.y.baseVal.getItem(0).value = title_content.y.baseVal.getItem(0).value - 15;
     }
     // Change the displayed content :
     subtitle_content.textContent = this.value;
     // Move down the title (if it wasn't already moved down), if the new subtitle is empty
     if (!empty && subtitle_content.textContent == '') {
-      title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+      title_content.y.baseVal.getItem(0).value = title_content.y.baseVal.getItem(0).value + 15;
     }
   });
 
@@ -17477,7 +17476,7 @@ function move_legends() {
       if (legend_bbox.left + legend_bbox.width > dim_width) {
         var current_transform = legends_type[i].getAttribute('transform');
 
-        var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(','),
+        var _$exec$1$split = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/),
             _$exec$1$split2 = _slicedToArray(_$exec$1$split, 2),
             val_x = _$exec$1$split2[0],
             val_y = _$exec$1$split2[1];
@@ -17488,7 +17487,7 @@ function move_legends() {
       if (legend_bbox.top + legend_bbox.height > dim_heght) {
         var _current_transform = legends_type[i].getAttribute('transform');
 
-        var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(','),
+        var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(/[ ,]+/),
             _$exec$1$split4 = _slicedToArray(_$exec$1$split3, 2),
             _val_x = _$exec$1$split4[0],
             _val_y = _$exec$1$split4[1];
@@ -18884,8 +18883,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19051,7 +19049,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20006,8 +20003,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

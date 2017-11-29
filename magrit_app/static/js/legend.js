@@ -20,7 +20,7 @@ function handle_legend(layer) {
         // of the map, if not, move them in:
         // .. so it's actually a feature if the legend is redrawn on its origin location
         // after being moved too close to the outer border of the map :
-        const tol = 7.5;
+        const tol = 10;
         const { x: x0, y: y0 } = get_map_xy0();
         const limit_left = x0 - tol;
         const limit_right = x0 + +w + tol;
@@ -200,14 +200,17 @@ const drag_legend_func = function (legend_group) {
       let t = d3.select(this),
         prev_translate = t.attr('transform'),
         snap_lines = get_coords_snap_lines(`${t.attr('id')} ${t.attr('class')}`);
-      prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+
+      prev_translate = prev_translate ? prev_translate.slice(10, -1).split(/[ ,]+/).map(f => +f) : [0, 0];
+      if (prev_translate.length === 1) prev_translate = [prev_translate[0], 0];
+
       return {
         x: t.attr('x') + prev_translate[0],
         y: t.attr('y') + prev_translate[1],
         map_locked: !!map_div.select('#hand_button').classed('locked'),
         map_offset: get_map_xy0(),
         snap_lines,
-        offset: [legend_group.select('#under_rect').attr('x'), legend_group.select('#under_rect').attr('y')],
+        offset: [+legend_group.select('#under_rect').attr('x'), +legend_group.select('#under_rect').attr('y')],
       };
     })
     .on('start', () => {
@@ -225,8 +228,8 @@ const drag_legend_func = function (legend_group) {
       const Max = Math.max;
       const new_value = [d3.event.x, d3.event.y];
       let prev_value = legend_group.attr('transform');
-      prev_value = prev_value ? prev_value.slice(10, -1).split(',').map(f => +f) : [0, 0];
-
+      prev_value = prev_value ? prev_value.slice(10, -1).split(/[ ,]+/).map(f => +f) : [0, 0];
+      if (prev_value.length === 1) prev_value = [prev_value[0], 0];
       legend_group.attr('transform', `translate(${new_value})`)
           .style('cursor', 'grabbing');
 
@@ -277,11 +280,11 @@ const drag_legend_func = function (legend_group) {
         }
       }
 
-      if (bbox_elem.width < w && (bbox_elem.left < map_offset.x || bbox_elem.left + bbox_elem.width > map_offset.x + w)) {
+      if (bbox_elem.width < w && (bbox_elem.left < (map_offset.x - 10) || bbox_elem.left + bbox_elem.width > (map_offset.x + +w + 10))) {
         val_x = prev_value[0];
         change = true;
       }
-      if (bbox_elem.height < h && (bbox_elem.top < map_offset.y || bbox_elem.top + bbox_elem.height > map_offset.y + h)) {
+      if (bbox_elem.height < h && (bbox_elem.top < (map_offset.y - 10) || bbox_elem.top + bbox_elem.height > (map_offset.y + +h + 10))) {
         val_y = prev_value[1];
         change = true;
       }
@@ -549,8 +552,9 @@ function make_underlying_rect(legend_root, under_rect, fill) {
   const { x: x0, y: y0 } = get_map_xy0();
 
   translate = translate
-          ? translate.split('translate(')[1].split(')')[0].split(',').map(d => +d)
+          ? translate.split('translate(')[1].split(')')[0].split(/[ ,]+/).map(d => +d)
           : [0, 0];
+  if (translate.length === 1) translate = [translate[0], 0];
 
   const x_top_left = bboxLegend.left - x0 - 12.5 - translate[0];
   const y_top_left = bboxLegend.top - y0 - 12.5 - translate[1];
@@ -1244,10 +1248,7 @@ function display_box_value_symbol(layer_name) {
       current_layers[layer_name].size_legend_symbol = undefined;
       redraw_sample_legend(original_values);
     });
-  // val1.node().value = values_to_use[0].value;
-  // val2.node().value = values_to_use[1].value;
-  // val3.node().value = values_to_use[2].value;
-  // val4.node().value = values_to_use[3].value;
+
   redraw_sample_legend();
   return prom;
 }
@@ -1284,9 +1285,9 @@ function createlegendEditBox(legend_id, layer_name) {
   if (document.querySelector(`.${box_class}`)) document.querySelector(`.${box_class}`).remove();
   const original_params = {
     title_content: title_content.textContent,
-    y_title: title_content.y.baseVal[0].value,
+    y_title: title_content.y.baseVal.getItem(0).value,
     subtitle_content: subtitle_content.textContent,
-    y_subtitle: subtitle_content.y.baseVal[0].value,
+    y_subtitle: subtitle_content.y.baseVal.getItem(0).value,
     note_content: note_content.textContent,
     no_data_txt: no_data_txt != null ? no_data_txt.textContent : null,
     ratio_waffle_txt: ratio_waffle_txt != null ? ratio_waffle_txt.textContent : null,
@@ -1304,9 +1305,9 @@ function createlegendEditBox(legend_id, layer_name) {
     .then((confirmed) => {
       if (!confirmed) {
         title_content.textContent = original_params.title_content;
-        title_content.y.baseVal[0].value = original_params.y_title;
+        title_content.y.baseVal.getItem(0).value = original_params.y_title;
         subtitle_content.textContent = original_params.subtitle_content;
-        subtitle_content.y.baseVal[0].value = original_params.y_subtitle;
+        subtitle_content.y.baseVal.getItem(0).value = original_params.y_subtitle;
         note_content.textContent = original_params.note_content;
         if (no_data_txt) {
           no_data_txt.textContent = original_params.no_data_txt;
@@ -1350,13 +1351,13 @@ function createlegendEditBox(legend_id, layer_name) {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
       if (empty && this.value != '') {
-        title_content.y.baseVal[0].value = title_content.y.baseVal[0].value - 15;
+        title_content.y.baseVal.getItem(0).value = title_content.y.baseVal.getItem(0).value - 15;
       }
       // Change the displayed content :
       subtitle_content.textContent = this.value;
       // Move down the title (if it wasn't already moved down), if the new subtitle is empty
       if (!empty && subtitle_content.textContent == '') {
-        title_content.y.baseVal[0].value = title_content.y.baseVal[0].value + 15;
+        title_content.y.baseVal.getItem(0).value = title_content.y.baseVal.getItem(0).value + 15;
       }
     });
 
@@ -1596,14 +1597,14 @@ function move_legends() {
       const legend_bbox = legends_type[i].getBoundingClientRect();
       if ((legend_bbox.left + legend_bbox.width) > dim_width) {
         const current_transform = legends_type[i].getAttribute('transform');
-        const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(',');
+        const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/);
         const trans_x = legend_bbox.left + legend_bbox.width - dim_width;
         legends_type[i].setAttribute('transform',
             ['translate(', [+val_x - trans_x, val_y], ')'].join(''));
       }
       if ((legend_bbox.top + legend_bbox.height) > dim_heght) {
         const current_transform = legends_type[i].getAttribute('transform');
-        const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(',');
+        const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/);
         const trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
         legends_type[i].setAttribute('transform',
             ['translate(', [val_x, +val_y - trans_y], ')'].join(''));

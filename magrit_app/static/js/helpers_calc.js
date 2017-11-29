@@ -583,13 +583,13 @@ function getMaximalAvailableRectangle(legend_nodes) {
 function getTranslateNewLegend() {
   const legends = svg_map.querySelectorAll('.legend_feature');
   if (legends.length === 0) {
-    return [0, 0];
+    return { x: 0, y: 0 };
   }
   try {
     return getMaximalAvailableRectangle(legends);
   } catch (e) {
     console.log(e);
-    return [0, 0];
+    return { x: 0, y: 0 };
   }
 }
 

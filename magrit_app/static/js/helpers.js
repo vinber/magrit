@@ -76,7 +76,7 @@ const drag_waffle = d3.drag()
   .subject(function () {
     const t = d3.select(this);
     let prev_translate = t.attr('transform');
-    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(',').map(f => +f) : [0, 0];
+    prev_translate = prev_translate ? prev_translate.slice(10, -1).split(/[ ,]+/).map(f => +f) : [0, 0];
     return {
       x: t.attr('x') + prev_translate[0],
       y: t.attr('y') + prev_translate[1],
@@ -287,7 +287,7 @@ function copy_layer(ref_layer, new_name, type_result, fields_to_copy) {
     }
   }
   // Set the desired class name :
-  node_new_layer.classList = ['layer'];
+  node_new_layer.className.baseVal = 'layer';
   // Reset visibility and filter attributes to default values:
   node_new_layer.style.visibility = '';
   node_new_layer.removeAttribute('filter');

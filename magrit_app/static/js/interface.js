@@ -1611,11 +1611,7 @@ function add_sample_layer() {
       { name: 'CODE_REG', type: 'id' }]],
     ['departements_2016_2-2', [
       { name: 'CODE_DEPT', type: 'id' },
-      { name: 'NOM_DEPT', type: 'id' },
-      { name: 'CODE_CHF', type: 'id' },
-      { name: 'NOM_CHF', type: 'id' },
-      { name: 'CODE_REG', type: 'category', has_duplicate: true },
-      { name: 'NOM_REG', type: 'category', has_duplicate: true }]],
+      { name: 'CODE_REG', type: 'category', has_duplicate: true }]],
     ['brazil', [
       { name: 'ADMIN_NAME', type: 'id', not_number: true },
       { name: 'Abbreviation', type: 'id', not_number: true },
