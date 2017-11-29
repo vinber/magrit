@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Export des données - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,12 +81,14 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h1>Export</h1>
+                    <a class="header" href="./export_fr.html#export" id="export"><h1>Export</h1></a>
 <p>Magrit offre plusieurs possibilités d'export :</p>
 <ul>
 <li>export de la carte réalisée (format vectoriel ou raster),</li>
@@ -77,7 +98,7 @@
 <p style="text-align: center;">
 <img src="img/win_exp_fr.png" alt="Dialogue d'export">
 </p>
-<h2>Export au format SVG</h2>
+<a class="header" href="./export_fr.html#export-au-format-svg" id="export-au-format-svg"><h2>Export au format SVG</h2></a>
 <p style="text-align: center;">
 <img src="img/win_svg_fr.png" alt="Dialogue d'export"/>
 </p>
@@ -88,13 +109,13 @@
 <li>Les exports SVG fournis par l'application visent en priorité l'affichage de l'image par un navigateur web et/ou son édition par un outil comme <a href="https://inkscape.org">Inkscape</a>, Adobe Illustrator ou <a href="https://github.com/SVG-Edit/svgedit">SVGEdit</a>.</li>
 </ul>
 </blockquote>
-<h2>Export au format PNG</h2>
+<a class="header" href="./export_fr.html#export-au-format-png" id="export-au-format-png"><h2>Export au format PNG</h2></a>
 <p style="text-align: center;">
 <img src="img/win_exp_fr.png" alt="Dialogue d'export"/>
 </p>
 <p>Cette méthode permet d'exporter la carte dans un format &quot;raster&quot;, c'est à dire composé de pixels.
 La résolution de ce type de fichier est fixe et il est proposé de choisir la résolution en fonction de son futur usage (affichage écran, impression petit ou grand format, etc.).</p>
-<h2>Export d'un fichier de couche géographique</h2>
+<a class="header" href="./export_fr.html#export-dun-fichier-de-couche-géographique" id="export-dun-fichier-de-couche-géographique"><h2>Export d'un fichier de couche géographique</h2></a>
 <p style="text-align: center;">
 <img src="img/win_geo_fr.png" alt="Dialogue d'export"/>
 </p>
@@ -108,25 +129,25 @@ La résolution de ce type de fichier est fixe et il est proposé de choisir la r
 </ul>
 <p>Différents systèmes de projection sont proposés par défaut lors de l'export mais il est possible de choisir tout type de système de référence supporté par le projet <a href="https://github.com/OSGeo/proj.4/wiki">Proj.4</a>.<br />
 Les couches qui peuvent être exportées par cette fonctionnalité sont celles importées pour la réalisation de la carte ainsi que celle créées par certains modes de représentations (carroyages, cartogrammes, discontinuités, liens et cartes lissées).</p>
-<h2>Sauvegarde du projet en cours</h2>
+<a class="header" href="./export_fr.html#sauvegarde-du-projet-en-cours" id="sauvegarde-du-projet-en-cours"><h2>Sauvegarde du projet en cours</h2></a>
 <p style="text-align: center;">
 <img src="img/win_prj_fr.png" alt="Dialogue d'export"/>
 </p>
 <p>Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format <em>JSON</em>.
-Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
+Le fichier exporté pourra être ouvert à nouveau, depuis n'importe quel poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.</p>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./layout_fr.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./layout_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./datasets_fr.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="./datasets_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -156,6 +177,12 @@ Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsq
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>

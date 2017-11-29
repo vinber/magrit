@@ -27,7 +27,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 - **Moyenne et écart-type**  
 Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).
 
-- Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de saisir manuellement les bornes de classes.
+- Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de **saisir manuellement les bornes de classes**.
 
 
 Le panneau principal de la boite de dialogue représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.

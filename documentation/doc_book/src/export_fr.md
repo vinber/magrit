@@ -55,7 +55,7 @@ Les couches qui peuvent être exportées par cette fonctionnalité sont celles i
 
 
 Cette fonctionnalité permet de sauvegarder l'état d'une session et de l'exporter au format *JSON*.
-Le fichier exporté pourra être ouvert à nouveau, depuis n'importe qu'elle poste, et permet de continuer la session de travail.
+Le fichier exporté pourra être ouvert à nouveau, depuis n'importe quel poste, et permet de continuer la session de travail.
 Cette fonctionnalité de sauvegarde du projet est activée automatiquement lorsque l'utilisateur quitte la page; la session est alors sauvegardée localement dans le navigateur pour une éventuelle reprise ultérieure.
 
 

@@ -53,7 +53,9 @@ function click_button_add_layer() {
 */
 function handle_upload_files(files, target_layer_on_add, elem) {
   const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
-
+  if (files[0] && !files[0]._ext) {
+    files = prepareFileExt(files);
+  }
   if (tot_size > MAX_INPUT_SIZE) {
     // elem.style.border = '3px dashed red';
     elem.style.border = '';

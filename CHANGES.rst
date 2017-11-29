@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.6.0 (2017-11-xx)
+0.6.0 (2017-11-29)
 ------------------
 
 - New: ask the user if he wants to remove the un-joined features from his basemap (after a partial join).

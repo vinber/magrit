@@ -2,6 +2,7 @@ Source des données d'exemples
 =============================
 
 ### Communes de la métropole du Grand-Paris :   
+
 Fond de carte : Institut national de l’information géographique et forestière (1)  
 Variables :    
 - IDCOM : code communal (2)  
@@ -20,7 +21,8 @@ Variables :
 
 
 ### États fédéraux brésiliens :
-Fond de carte :  
+
+Fond de carte :    
 Variables :  
 - ADMIN_NAME : Nom de l’État
 - Abbreviation : Abréviation du nom
@@ -39,8 +41,7 @@ Variables :
 
 ### Communes de Martinique :
 
-Fond de carte : Institut national de l’information géographique et forestière (1)
-
+Fond de carte : Institut national de l’information géographique et forestière (1)  
 Variables :  
 - INSEE_COM : Code INSEE de la commune (1)
 - NOM_COM : Nom de la commune (2)
@@ -55,34 +56,9 @@ Variables :
 (2) : INSEE 2013
 
 
-### Communes de France métropolitaine (fond *voronoi*) :
-
-Localisation des centroides ayant permis la construction des polygones de voronoi : Institut national de l’information géographique et forestière (1)
-Trait de cote ayant servi au découpage des polygones : Institut national de l’information géographique et forestière (1)
-
-Variables :  
-- INSEE_COM : Code INSEE de la commune (1)
-
-(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Communes France Métropolitaine</a>  
-
-
-### Départements de France métropolitaine :
-
-Fond de carte : Institut national de l’information géographique et forestière (1)
-
-Variables :  
-- CODE_DEPT : Code géographique du département (1)
-- NOM_DEPT : Nom du département (1)
-- CODE_CHF : Code géographique de la préfécture du département (1)
-- NOM_CHF : Nom de la préfecture du département (1)
-- CODE_REG : Code géographique de la région à laquelle appartient le département (1)
-- NOM_REG : Nom de la région à laquelle appartient le département (1)
-
-(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Départements France Métropolitaine</a>  
-
-
 ### Régions européennes Nuts 2 :
-Fond de carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017  
+
+Fond de carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017   
 Variable :  
 - ID : Code NUTS2
 - NAME : Nom
@@ -97,8 +73,9 @@ Variable :
 
 
 ### Pays du monde :   
+
 Fond de carte : UMS RIATE, 2017  
-Variables :  
+Variables :   
 - ISO2 : Code ISO 3166-1 alpha-2
 - ISO3 : Code ISO 3166-1 alpha-3
 - ISONUM : Code ISO 3166-1 numeric
@@ -113,3 +90,44 @@ Variables :
 (1) : United Nations Statistics Division, <a href="http://unstats.un.org/unsd/methods/m49/m49regnf.htm">http://unstats.un.org/unsd/methods/m49/m49regnf.htm</a>  
 (2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)  
 (3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015  
+
+
+### Communes de France métropolitaine (fond *voronoi*) :  
+
+Localisation des centroides ayant permis la construction des polygones de voronoi : Institut national de l’information géographique et forestière (1)
+Trait de cote ayant servi au découpage des polygones : Institut national de l’information géographique et forestière (1)
+
+Variables :  
+- INSEE_COM : Code INSEE de la commune (1)
+
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Communes France Métropolitaine</a>  
+
+
+### Départements de France métropolitaine :  
+
+Fond de carte : Institut national de l’information géographique et forestière (1)  
+Variables :  
+- CODE_DEPT : Code géographique du département (1)
+- NOM_DEPT : Nom du département (1)
+- CODE_CHF : Code géographique de la préfécture du département (1)
+- NOM_CHF : Nom de la préfecture du département (1)
+- CODE_REG : Code géographique de la région à laquelle appartient le département (1)
+- NOM_REG : Nom de la région à laquelle appartient le département (1)
+
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Départements France Métropolitaine</a>  
+
+
+### Communes de France Métropolitaine (par région) / Communes d'Outre-Mer (par département) :   
+
+Fond de carte : Institut national de l’information géographique et forestière (1)  
+Variables :  
+- INSEE_COM : Code INSEE de la commune (1)
+- NOM_COM : Nom de la commune (1)
+- SUPERFICIE : Superficie de la commune (1)
+- POPULATION : Population communale 2016 (1)
+- CODE_DEPT : Code géographique du département auquel appartient la commune (1)
+- NOM_DEPT : Nom du département auquel appartient la commune (1)
+- CODE_REG : Code géographique de la région à laquelle appartient la commune (1)
+- NOM_REG : Nom de la région à laquelle appartient la commune (1)
+
+(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2</a>  

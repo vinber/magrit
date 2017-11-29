@@ -14,4 +14,4 @@ Plusieurs format sont pris en charge pour l'import des données :
 
 La table de données importée à cette étape peut avoir deux utilités :
 - effectuer une jointure pour enrichir le fond de carte à utiliser
-- servir de référence pour la création d'une carte de liens
+- servir de référence pour la création d'une carte de liens (il n'est dans ce cas pas nécessaire d'effectuer une jointure)

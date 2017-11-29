@@ -1,7 +1,7 @@
 # Carte des discontinuités
 
 Les cartes de discontinuités mettent en avant les limites (ou "frontières") entre les entités étudiées, en leur affectant une épaisseur relative au différentiel de valeur existant entre elles.
-Deux méthodes permettent de calculer ce différentiel, on parlera ainsi soit de **discontinuité absolue** (écart absolu entre les valeurs de la variable étudiée c'est à dire *max(A,B) - min(A,B)*) ou de discontinuité relative (rapport *max(A,B) / min(A,B)*).
+Deux méthodes permettent de calculer ce différentiel, on parlera ainsi soit de **discontinuité absolue** (écart absolu entre les valeurs de la variable étudiée c'est à dire *max(A,B) - min(A,B)*) ou de **discontinuité relative** (rapport *max(A,B) / min(A,B)*).
 La visualisation de lignes de discontinuités permet de mettre en exergue les ruptures spatiales des phénomènes socio-économiques étudiés, qui selon la formule de Brunet et Dolphus (1990) montre que *« l’espace géographique est fondamentalement discontinu »*. Cette représentation est particulièrement pertinente lorsqu'elle peut être combinée à une représentation par aplats de couleurs (Cf. cartes de ratio).
 
 > ### Paramètres
@@ -13,7 +13,7 @@ La visualisation de lignes de discontinuités permet de mettre en exergue les ru
 > * La couleur utilisée pour représenter les discontinuités.
 
 
-#### Exemple de rendu à partir d'un jeu de données d'exemple :
+#### ExempleW :
 
 <p style="text-align: center;">
 <img src="img/discont.png" alt="discont_map" style="width: 480px;"/>

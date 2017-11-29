@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Questions fréquemment posées - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,35 +81,37 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h1>FAQ</h1>
-<h3>Pourquoi un nombre trop important de couleurs dans une palette peut nuire à la lisibilité de la carte ?</h3>
+                    <a class="header" href="./FAQ_fr.html#faq" id="faq"><h1>FAQ</h1></a>
+<a class="header" href="./FAQ_fr.html#pourquoi-un-nombre-trop-important-de-couleurs-dans-une-palette-peut-nuire-à-la-lisibilité-de-la-carte-" id="pourquoi-un-nombre-trop-important-de-couleurs-dans-une-palette-peut-nuire-à-la-lisibilité-de-la-carte-"><h3>Pourquoi un nombre trop important de couleurs dans une palette peut nuire à la lisibilité de la carte ?</h3></a>
 <p>L’œil humain ne distingue correctement qu'un nombre de couleurs limité. L'utilisation d'un nombre de couleurs élevé lors de la conception d'une palette pour une carte choroplèthe empêche de percevoir avec précision les limites entre les classes et rend ainsi difficile de trouver la classe d'appartenance d'une entité.</p>
-<h3>Pourquoi une limite de taille est-elle fixée lors de l'import d'un fond de carte ?</h3>
+<a class="header" href="./FAQ_fr.html#pourquoi-une-limite-de-taille-est-elle-fixée-lors-de-limport-dun-fond-de-carte-" id="pourquoi-une-limite-de-taille-est-elle-fixée-lors-de-limport-dun-fond-de-carte-"><h3>Pourquoi une limite de taille est-elle fixée lors de l'import d'un fond de carte ?</h3></a>
 <p>La taille maximale des fichiers pouvant être importés dans Magrit est limitée à 20Mo. Plusieurs raisons ont motivé ce choix et visent essentiellement à éviter des ralentissements indésirables dans le navigateur de l'utilisateur.
 D'une part le temps d'envoi d'un fichier volumineux peut être importante en fonction de la qualité de la connexion (un fichier de 20Mo peut nécessiter plusieurs minutes). D'autre part Magrit utilise la technologie SVG pour effectuer le rendu des cartes dans le navigateur. Cette technologie est performante mais se prête difficilement à l'affichage des couches contenant un nombre très élevé d'entitées.
 Ce type de limite permet également de s'interroger sur l'intéret d'une carte thématique contenant un nombre d'entités très élevé ou contenant des géométrie très détaillées. En effet, en fonction du type de données ou de l'échelle de travail, il peut être utile de faire appel au préalable à certaines techniques de préparation des données (aggrégation dans le cas d'un semi de points très important par exemple) ou de préparation du fond de carte (généralisation des géométries utilisées par exemple).</p>
-<h3>Pourquoi le rendu de certains exports SVG n'est pas le même dans Inkscape/Adobe Illustrator que lors de l'affichage de la carte dans Magrit ?</h3>
+<a class="header" href="./FAQ_fr.html#pourquoi-le-rendu-de-certains-exports-svg-nest-pas-le-même-dans-inkscapeadobe-illustrator-que-lors-de-laffichage-de-la-carte-dans-magrit-" id="pourquoi-le-rendu-de-certains-exports-svg-nest-pas-le-même-dans-inkscapeadobe-illustrator-que-lors-de-laffichage-de-la-carte-dans-magrit-"><h3>Pourquoi le rendu de certains exports SVG n'est pas le même dans Inkscape/Adobe Illustrator que lors de l'affichage de la carte dans Magrit ?</h3></a>
 <p>Lors de l'ouverture des exports SVG contenant des polices de caractères autres que celle définie par défaut, il est possible que certains logiciels ne les affichent pas correctement. Actuellement ces polices sont stockées dans le fichier SVG exporté par Magrit, ce qui n'est pas supporté par Inkscape par exemple (ce dernier nécessite que la police soit installée sur le système afin qu'elle soit reconnue). Nous travaillons actuellement à proposer un export séparée pour les polices de caractère lorsque nécessaire. De plus il est possible de vérifier le rendu SVG exporté par Magrit en ouvrant le fichier SVG avec un navigateur web (en le faisant glisser dans Firefox ou Chromium par exemple), afin de s'assurer que le rendu est conforme à ce qui était attendu.</p>
-<h3>Pourquoi certains fond de cartes posent un problème lors de certains traitement ? Qu'est-ce que la &quot;topologie&quot; d'un fond de carte ?</h3>
-<h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3>
-<h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3>
+<a class="header" href="./FAQ_fr.html#pourquoi-certains-fond-de-cartes-posent-un-problème-lors-de-certains-traitement--quest-ce-que-la-topologie-dun-fond-de-carte-" id="pourquoi-certains-fond-de-cartes-posent-un-problème-lors-de-certains-traitement--quest-ce-que-la-topologie-dun-fond-de-carte-"><h3>Pourquoi certains fond de cartes posent un problème lors de certains traitement ? Qu'est-ce que la &quot;topologie&quot; d'un fond de carte ?</h3></a>
+<a class="header" href="./FAQ_fr.html#pourquoi-magrit-émet-un-message-davertissement-lorsque-la-géométrie-de-certaines-entités-dune-couche-est-nulle-" id="pourquoi-magrit-émet-un-message-davertissement-lorsque-la-géométrie-de-certaines-entités-dune-couche-est-nulle-"><h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3></a>
+<a class="header" href="./FAQ_fr.html#pourquoi-nest-il-pas-possible-dafficher-un-fond-type-openstreetmap-lors-de-la-réalisation-dune-carte-avec-magrit-" id="pourquoi-nest-il-pas-possible-dafficher-un-fond-type-openstreetmap-lors-de-la-réalisation-dune-carte-avec-magrit-"><h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3></a>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./dataset_source_fr.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./dataset_source_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./privacy.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="./privacy.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -120,6 +141,12 @@ Ce type de limite permet également de s'interroger sur l'intéret d'une carte t
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>

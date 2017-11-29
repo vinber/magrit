@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Source des jeux de données d'exemple - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,13 +81,15 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h1>Source des données d'exemples</h1>
-<h3>Communes de la métropole du Grand-Paris :</h3>
+                    <a class="header" href="./dataset_source_fr.html#source-des-données-dexemples" id="source-des-données-dexemples"><h1>Source des données d'exemples</h1></a>
+<a class="header" href="./dataset_source_fr.html#communes-de-la-métropole-du-grand-paris-" id="communes-de-la-métropole-du-grand-paris-"><h3>Communes de la métropole du Grand-Paris :</h3></a>
 <p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
 Variables :</p>
 <ul>
@@ -85,7 +106,7 @@ Variables :</p>
 (2) : INSEE, 2016<br />
 (3) : <a href="http://www.apur.org/article/composition-12-territoires-metropole-grand-paris">Atelier parisien d'urbanisme</a> 2016<br />
 (4) : Direction générale des finances publiques, impôts de 2014 sur les revenus de 2013</p>
-<h3>États fédéraux brésiliens :</h3>
+<a class="header" href="./dataset_source_fr.html#États-fédéraux-brésiliens-" id="États-fédéraux-brésiliens-"><h3>États fédéraux brésiliens :</h3></a>
 <p>Fond de carte :<br />
 Variables :</p>
 <ul>
@@ -102,9 +123,9 @@ Variables :</p>
 <p>(1) : '2014 IBGE Estimates - Estimates of Resident Population in Brazil, Federative Units and Municipalities&quot; (PDF) (en Portugais). <a href="ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf">ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf</a>. Consulté le 25 janv. 2017.<br />
 (2) : Wikipedia. Consulté le 25 janv. 2017.<br />
 (3) : Wikipedia. Consulté le 25 janv. 2017.</p>
-<h3>Communes de Martinique :</h3>
-<p>Fond de carte : Institut national de l’information géographique et forestière (1)</p>
-<p>Variables :</p>
+<a class="header" href="./dataset_source_fr.html#communes-de-martinique-" id="communes-de-martinique-"><h3>Communes de Martinique :</h3></a>
+<p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
+Variables :</p>
 <ul>
 <li>INSEE_COM : Code INSEE de la commune (1)</li>
 <li>NOM_COM : Nom de la commune (2)</li>
@@ -117,27 +138,7 @@ Variables :</p>
 </ul>
 <p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2015 v2.1 Communes Martinique</a><br />
 (2) : INSEE 2013</p>
-<h3>Communes de France métropolitaine (fond <em>voronoi</em>) :</h3>
-<p>Localisation des centroides ayant permis la construction des polygones de voronoi : Institut national de l’information géographique et forestière (1)
-Trait de cote ayant servi au découpage des polygones : Institut national de l’information géographique et forestière (1)</p>
-<p>Variables :</p>
-<ul>
-<li>INSEE_COM : Code INSEE de la commune (1)</li>
-</ul>
-<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Communes France Métropolitaine</a></p>
-<h3>Départements de France métropolitaine :</h3>
-<p>Fond de carte : Institut national de l’information géographique et forestière (1)</p>
-<p>Variables :</p>
-<ul>
-<li>CODE_DEPT : Code géographique du département (1)</li>
-<li>NOM_DEPT : Nom du département (1)</li>
-<li>CODE_CHF : Code géographique de la préfécture du département (1)</li>
-<li>NOM_CHF : Nom de la préfecture du département (1)</li>
-<li>CODE_REG : Code géographique de la région à laquelle appartient le département (1)</li>
-<li>NOM_REG : Nom de la région à laquelle appartient le département (1)</li>
-</ul>
-<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Départements France Métropolitaine</a></p>
-<h3>Régions européennes Nuts 2 :</h3>
+<a class="header" href="./dataset_source_fr.html#régions-européennes-nuts-2-" id="régions-européennes-nuts-2-"><h3>Régions européennes Nuts 2 :</h3></a>
 <p>Fond de carte : GREAT, NUTS 2 Version 2013, UMS RIATE 2017<br />
 Variable :</p>
 <ul>
@@ -151,7 +152,7 @@ Variable :</p>
 <p>(1) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:34:48 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00096">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00096</a><br />
 (2) : Eurostat, Dernière mise à jour: 18.01.2017, Date d'extraction: 23 janv. 2017 16:38:34 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00004">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00004</a><br />
 (3) : Eurostat, Dernière mise à jour: 19.01.2017, Date d'extraction: 23 janv. 2017 16:56:02 CET, <a href="http://ec.europa.eu/eurostat/tgm/table.do?tab=table&init=1&plugin=1&language=fr&pcode=tgs00010">http://ec.europa.eu/eurostat/tgm/table.do?tab=table&amp;init=1&amp;plugin=1&amp;language=fr&amp;pcode=tgs00010</a></p>
-<h3>Pays du monde :</h3>
+<a class="header" href="./dataset_source_fr.html#pays-du-monde-" id="pays-du-monde-"><h3>Pays du monde :</h3></a>
 <p>Fond de carte : UMS RIATE, 2017<br />
 Variables :</p>
 <ul>
@@ -169,18 +170,52 @@ Variables :</p>
 <p>(1) : United Nations Statistics Division, <a href="http://unstats.un.org/unsd/methods/m49/m49regnf.htm">http://unstats.un.org/unsd/methods/m49/m49regnf.htm</a><br />
 (2) : Population Division of the Department of Economic and Social Affairs of the United Nations Secretariat, World Population Prospects: The 2015 Revision, <a href="http://esa.un.org/unpd/wpp/index.htm">http://esa.un.org/unpd/wpp/index.htm</a>, July 2015, Variant : Medium, Année 2015)<br />
 (3) : UMS RIATE d'après Wikipedia, de Dr. No en 1962 à Spectre en 2015</p>
+<a class="header" href="./dataset_source_fr.html#communes-de-france-métropolitaine-fond-voronoi-" id="communes-de-france-métropolitaine-fond-voronoi-"><h3>Communes de France métropolitaine (fond <em>voronoi</em>) :</h3></a>
+<p>Localisation des centroides ayant permis la construction des polygones de voronoi : Institut national de l’information géographique et forestière (1)
+Trait de cote ayant servi au découpage des polygones : Institut national de l’information géographique et forestière (1)</p>
+<p>Variables :</p>
+<ul>
+<li>INSEE_COM : Code INSEE de la commune (1)</li>
+</ul>
+<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Communes France Métropolitaine</a></p>
+<a class="header" href="./dataset_source_fr.html#départements-de-france-métropolitaine-" id="départements-de-france-métropolitaine-"><h3>Départements de France métropolitaine :</h3></a>
+<p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
+Variables :</p>
+<ul>
+<li>CODE_DEPT : Code géographique du département (1)</li>
+<li>NOM_DEPT : Nom du département (1)</li>
+<li>CODE_CHF : Code géographique de la préfécture du département (1)</li>
+<li>NOM_CHF : Nom de la préfecture du département (1)</li>
+<li>CODE_REG : Code géographique de la région à laquelle appartient le département (1)</li>
+<li>NOM_REG : Nom de la région à laquelle appartient le département (1)</li>
+</ul>
+<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2 Départements France Métropolitaine</a></p>
+<a class="header" href="./dataset_source_fr.html#communes-de-france-métropolitaine-par-région--communes-doutre-mer-par-département-" id="communes-de-france-métropolitaine-par-région--communes-doutre-mer-par-département-"><h3>Communes de France Métropolitaine (par région) / Communes d'Outre-Mer (par département) :</h3></a>
+<p>Fond de carte : Institut national de l’information géographique et forestière (1)<br />
+Variables :</p>
+<ul>
+<li>INSEE_COM : Code INSEE de la commune (1)</li>
+<li>NOM_COM : Nom de la commune (1)</li>
+<li>SUPERFICIE : Superficie de la commune (1)</li>
+<li>POPULATION : Population communale 2016 (1)</li>
+<li>CODE_DEPT : Code géographique du département auquel appartient la commune (1)</li>
+<li>NOM_DEPT : Nom du département auquel appartient la commune (1)</li>
+<li>CODE_REG : Code géographique de la région à laquelle appartient la commune (1)</li>
+<li>NOM_REG : Nom de la région à laquelle appartient la commune (1)</li>
+</ul>
+<p>(1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2</a></p>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./datasets_fr.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./datasets_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./FAQ_fr.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="./FAQ_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -210,6 +245,12 @@ Variables :</p>
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>

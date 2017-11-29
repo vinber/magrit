@@ -7,14 +7,14 @@ Différentes bibliothèques et applications sont utilisées :
 
 | Nom                                                   | Version | Licence        |
 |-------------------------------------------------------|---------|----------------|
-| [aiohttp](http://aiohttp.readthedocs.io)              | 2.2     | Apache-2.0     |
+| [aiohttp](http://aiohttp.readthedocs.io)              | 2.3     | Apache-2.0     |
 | [Cython](http://cython.org)                           |         | Apache-2.0     |
 | [geostats](https://github.com/simogeo/geostats)       |         | MIT            |
 | [JsChardet](https://github.com/aadsm/jschardet)       |         | LPGL-2.1       |
 | [NumPy](http://www.numpy.org/)                        |         | BSD-3-Clause   |
 | [scipy](https://scipy.org/scipylib/)                  |         | BSD-3-Clause   |
 | [aioredis](https://github.com/aio-libs/aioredis)      |         | MIT            |
-| [Bluebird](bluebirdjs.com)                            |         | MIT            |
+| [Bluebird](http://bluebirdjs.com)                     |         | MIT            |
 | [bootstrap](https://getbootstrap.com/docs/3.3/)       |         | MIT            |
 | [cchardet](https://github.com/PyYoshi/cChardet)       |         | MIT            |
 | [ColorBrewer](http://colorbrewer2.org/)               |         | Apache-2.0     |
@@ -24,7 +24,7 @@ Différentes bibliothèques et applications sont utilisées :
 | [geopandas](http://geopandas.org)                     |         | BSD-3-Clause   |
 | [Gunicorn](http://gunicorn.org)                       |         | MIT            |
 | [i18next](https://www.i18next.com)                    |         | MIT            |
-| [matplotlib](https://matplotlib.org)                  | 2.0     | BSD-like       |
+| [matplotlib](https://matplotlib.org)                  | 2.1     | BSD-like       |
 | [nginx](https://nginx.org/)                           |         | BSD-2-Clause   |
 | [Node.js](https://nodejs.org)                         |         | X11            |
 | [npm](https://www.npmjs.com)                          |         | Artistic-2.0   |
@@ -39,6 +39,7 @@ Différentes bibliothèques et applications sont utilisées :
 | [ujson](https://github.com/esnme/ultrajson)           |         | BSD-like       |
 | [uvloop](https://github.com/MagicStack/uvloop)        |         | MIT/Apache-2.0 |
 | [xlrd](https://github.com/python-excel/xlrd)          |         | BSD-like       |
+
 
 Certaines des bibliothèques utilisées ont été developpées pour l'occasion :
 

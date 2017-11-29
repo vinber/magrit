@@ -3860,7 +3860,7 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
 
       const propSize = new PropSizer(ref_value, ref_size, 'line');
       layer_to_render.each((d) => {
-        d.properties.color = 'red'; // eslint-disable-line no-param-reassign
+        d.properties.color = '#FF0000'; // eslint-disable-line no-param-reassign
         d.properties[t_field_name] = propSize.scale(d.properties[field_fij]); // eslint-disable-line no-param-reassign
       })
 
@@ -3876,7 +3876,7 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
         'stroke-width-const': undefined,
         is_result: true,
         ref_layer_name: ref_layer,
-        fill_color: { single: 'red' },
+        fill_color: { single: '#FF0000' },
         type: 'Line',
       });
       switch_accordion_section();

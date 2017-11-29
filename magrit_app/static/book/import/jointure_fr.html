@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Les docs de Magrit</title>
+        <title>Jointure des données - Les docs de Magrit</title>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="Documentation utilisateur de Magrit">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,7 +10,8 @@
         <base href="../">
 
         <link rel="stylesheet" href="book.css">
-        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
 
         <link rel="shortcut icon" href="favicon.png">
 
@@ -19,9 +20,20 @@
 
         <link rel="stylesheet" href="highlight.css">
         <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
 
-        <!-- MathJax -->
-        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
 
         <!-- Fetch JQuery from CDN but have a local fallback -->
         <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -30,18 +42,25 @@
                 document.write(unescape("%3Cscript src='jquery.js'%3E%3C/script%3E"));
             }
         </script>
+
+        <!-- Fetch store.js from local - TODO add CDN when 2.x.x is available on cdnjs -->
+        <script src="store.js"></script>
+
+        <!-- Custom JS script -->
+        
+
     </head>
     <body class="light">
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script type="text/javascript">
-            var theme = localStorage.getItem('theme');
-            if (theme == null) { theme = 'light'; }
+            var theme = store.get('mdbook-theme');
+            if (theme === null || theme === undefined) { theme = 'light'; }
             $('body').removeClass().addClass(theme);
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script type="text/javascript">
-            var sidebar = localStorage.getItem('sidebar');
+            var sidebar = store.get('mdbook-sidebar');
             if (sidebar === "hidden") { $("html").addClass("sidebar-hidden") }
             else if (sidebar === "visible") { $("html").addClass("sidebar-visible") }
         </script>
@@ -52,7 +71,7 @@
 
         <div id="page-wrapper" class="page-wrapper">
 
-            <div class="page">
+            <div class="page" tabindex="-1">
                 <div id="menu-bar" class="menu-bar">
                     <div class="left-buttons">
                         <i id="sidebar-toggle" class="fa fa-bars"></i>
@@ -62,12 +81,14 @@
                     <h1 class="menu-title">Les docs de Magrit</h1>
 
                     <div class="right-buttons">
-                        <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        <a href="print.html">
+                            <i id="print-button" class="fa fa-print" title="Print this book"></i>
+                        </a>
                     </div>
                 </div>
 
                 <div id="content" class="content">
-                    <h2>Jointure des données</h2>
+                    <a class="header" href="./import/jointure_fr.html#jointure-des-données" id="jointure-des-données"><h2>Jointure des données</h2></a>
 <p>Lorsqu'un fond de carte et un jeu de données externes ont été ajoutés, il devient possible d'associer le fond de carte et ce jeu de données. Cette association est possible grâce à la <strong>correspondance entre les valeurs d'identifiants</strong> se trouvant dans le fond de carte et celles se trouvant dans la table de données.
 Cette opération est appelée &quot;<strong>jointure</strong>&quot; (c'est également le cas dans les logiciels SIG ou les systèmes de gestion de bases de données) et s'effectue ici simplement en choisissant le nom de la colonne contenant des valeurs d'identifiants dans le jeu de données et dans le fond de carte.<br />
 Pour assurer le bon fonctionnement de cette méthode, les valeurs prisent par les identifiants , d'une part pour le fond de carte et d'autre part pour le jeu de données externe, doivent être uniques.</p>
@@ -79,41 +100,41 @@ Pour assurer le bon fonctionnement de cette méthode, les valeurs prisent par le
 <img src="img/jointrue.png" alt="jointrue" style="width: 35px;"/> Apparence de l'élément après jointure des champs</p>
 </blockquote>
 <p>Exemple des valeurs attributaires du fond de carte (avant jointure) :</p>
-<table><thead><tr><td> Id       </td><td> Nom             </td></tr></thead>
-<tr><td> BE       </td><td> Belgique        </td></tr>
-<tr><td> DE       </td><td> Allemagne       </td></tr>
-<tr><td> LU       </td><td> Luxembourg      </td></tr>
-<tr><td> FR       </td><td> France          </td></tr>
-<tr><td> GB       </td><td> Grande-Bretagne </td></tr>
-</table>
+<table><thead><tr><th> Id       </th><th align="right"> Nom             </th></tr></thead><tbody>
+<tr><td> BE       </td><td align="right"> Belgique        </td></tr>
+<tr><td> DE       </td><td align="right"> Allemagne       </td></tr>
+<tr><td> LU       </td><td align="right"> Luxembourg      </td></tr>
+<tr><td> FR       </td><td align="right"> France          </td></tr>
+<tr><td> GB       </td><td align="right"> Grande-Bretagne </td></tr>
+</tbody></table>
 <p>Exemple des valeurs attributaires du jeu de données externe :</p>
-<table><thead><tr><td> ISO2     </td><td> JAMESBOND_VISITES </td><td> POP_DENSITY    </td></tr></thead>
-<tr><td> FR       </td><td> 4                 </td><td> 117.6          </td></tr>
-<tr><td> LU       </td><td> 0                 </td><td> 218.9          </td></tr>
-<tr><td> DE       </td><td> 2                 </td><td> 231.5          </td></tr>
-<tr><td> GB       </td><td> 22                </td><td> 267.5          </td></tr>
-<tr><td> BE       </td><td> 0                 </td><td> 373.1          </td></tr>
-</table>
+<table><thead><tr><th align="right"> ISO2     </th><th> JAMESBOND_VISITES </th><th> POP_DENSITY    </th></tr></thead><tbody>
+<tr><td> FR       </td><td align="center"> 4                 </td><td align="right"> 117.6          </td></tr>
+<tr><td> LU       </td><td align="center"> 0                 </td><td align="right"> 218.9          </td></tr>
+<tr><td> DE       </td><td align="center"> 2                 </td><td align="right"> 231.5          </td></tr>
+<tr><td> GB       </td><td align="center"> 22                </td><td align="right"> 267.5          </td></tr>
+<tr><td> BE       </td><td align="center"> 0                 </td><td align="right"> 373.1          </td></tr>
+</tbody></table>
 <p>Exemple des valeurs attributaires du fond de carte (après jointure avec le jeu de données externe, en utilisant respectivement les champs <strong>Id</strong> et <strong>ISO2</strong>) :</p>
-<table><thead><tr><td> Id       </td><td> Nom             </td><td> ISO2     </td><td> JAMESBOND_VISITES </td><td> POP_DENSITY    </td></tr></thead>
-<tr><td> BE       </td><td> Belgique        </td><td> BE       </td><td> 0                 </td><td> 373.1          </td></tr>
-<tr><td> DE       </td><td> Allemagne       </td><td> DE       </td><td> 2                 </td><td> 231.5          </td></tr>
-<tr><td> LU       </td><td> Luxembourg      </td><td> LU       </td><td> 0                 </td><td> 218.9          </td></tr>
-<tr><td> FR       </td><td> France          </td><td> FR       </td><td> 4                 </td><td> 117.6          </td></tr>
-<tr><td> GB       </td><td> Grande-Bretagne </td><td> GB       </td><td> 22                </td><td> 267.5          </td></tr>
-</table>
+<table><thead><tr><th align="center"> Id       </th><th align="right"> Nom             </th><th> ISO2     </th><th> JAMESBOND_VISITES </th><th> POP_DENSITY    </th></tr></thead><tbody>
+<tr><td> BE       </td><td align="right"> Belgique        </td><td> BE       </td><td align="center"> 0                 </td><td align="right"> 373.1          </td></tr>
+<tr><td> DE       </td><td align="right"> Allemagne       </td><td> DE       </td><td align="center"> 2                 </td><td align="right"> 231.5          </td></tr>
+<tr><td> LU       </td><td align="right"> Luxembourg      </td><td> LU       </td><td align="center"> 0                 </td><td align="right"> 218.9          </td></tr>
+<tr><td> FR       </td><td align="right"> France          </td><td> FR       </td><td align="center"> 4                 </td><td align="right"> 117.6          </td></tr>
+<tr><td> GB       </td><td align="right"> Grande-Bretagne </td><td> GB       </td><td align="center"> 22                </td><td align="right"> 267.5          </td></tr>
+</tbody></table>
 
                 </div>
 
                 <!-- Mobile navigation buttons -->
                 
-                    <a href="./import/import_table_fr.html" class="mobile-nav-chapters previous">
+                    <a rel="prev" href="./import/import_table_fr.html" class="mobile-nav-chapters previous">
                         <i class="fa fa-angle-left"></i>
                     </a>
                 
 
                 
-                    <a href="./import/datatype_fr.html" class="mobile-nav-chapters next">
+                    <a rel="next" href="./import/datatype_fr.html" class="mobile-nav-chapters next">
                         <i class="fa fa-angle-right"></i>
                     </a>
                 
@@ -143,6 +164,12 @@ Pour assurer le bon fonctionnement de cette méthode, les valeurs prisent par le
         </script>
 
         <!-- Livereload script (if served using the cli tool) -->
+        
+
+        
+
+        
+
         
 
         <script src="highlight.js"></script>

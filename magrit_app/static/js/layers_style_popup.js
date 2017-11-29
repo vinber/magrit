@@ -712,6 +712,9 @@ function createStyleBox_Line(layer_name) {
         }
 
         if (renderer && (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional')) {
+          selection.each(function (d) {
+            d.properties.color = this.style.stroke; // eslint-disable-line no-param-reassign
+          });
           redraw_legend('line_symbol', layer_name);
         }
 

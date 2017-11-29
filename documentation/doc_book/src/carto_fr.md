@@ -27,3 +27,4 @@ D'autres méthodes permettent de créer des représentations originales :
 * [carte lissée](./carto/smooth_fr.html)
 * [carte de discontinuités](./carto/discont_fr.html)
 * [carte de liens](./carto/links_fr.html)
+* [carte en gaufre](./carto/waffle_fr.html)

@@ -46,7 +46,7 @@ from pyexcel import get_book
 # Web related stuff :
 import jinja2
 import aiohttp_jinja2
-from aioredis import create_pool, create_reconnecting_redis
+from aioredis import create_pool, create_redis_pool
 from aiohttp import web, ClientSession
 from aiohttp_session import get_session, session_middleware, redis_storage
 from multidict import MultiDict
@@ -1128,7 +1128,7 @@ async def init(loop, port=None, watch_change=False):
     logger = logging.getLogger("magrit_app.main")
     redis_cookie = await create_pool(
         ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
-    redis_conn = await create_reconnecting_redis(
+    redis_conn = await create_redis_pool(
         ('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
         loop=loop,
@@ -1251,7 +1251,7 @@ def main():
         srv.close()
         loop.run_until_complete(srv.wait_closed())
         loop.run_until_complete(app.shutdown())
-        loop.run_until_complete(handler.finish_connections(60.0))
+        loop.run_until_complete(handler.shutdown(60.0))
         loop.run_until_complete(app.cleanup())
     loop.close()
 
