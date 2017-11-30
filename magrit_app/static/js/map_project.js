@@ -47,7 +47,7 @@ function get_map_template() {
       subtitle: lgd_node.querySelector('#legendsubtitle').innerHTML,
       bottom_note: lgd_node.querySelector('#legend_bottom_note').innerHTML,
     };
-    if (type_lgd === 'legend_root') {
+    if (type_lgd === 'legend_root' || type_lgd === 'legend_root_horiz') {
       result.boxgap = lgd_node.getAttribute('boxgap');
       const no_data = lgd_node.querySelector('#no_data_txt');
       if (no_data) result.no_data_txt = no_data.innerHTML;
@@ -1197,6 +1197,16 @@ function rehandle_legend(layer_name, properties) {
                           prop.rect_fill_value,
                           prop.ratio_txt,
                           prop.bottom_note);
+    } else if (prop.type === 'legend_root_horiz') {
+      createLegend_choro_horizontal(layer_name,
+                                    prop.field,
+                                    prop.title,
+                                    prop.subtitle,
+                                    prop.boxgap,
+                                    prop.rect_fill_value,
+                                    prop.rounding_precision,
+                                    prop.no_data_txt,
+                                    prop.bottom_note);
     }
     const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
     lgd.setAttribute('transform', prop.transform);
