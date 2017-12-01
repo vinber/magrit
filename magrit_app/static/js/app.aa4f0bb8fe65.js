@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.394428b8633c.json'
+      loadPath: 'static/locales/{{lng}}/translation.aa4f0bb8fe65.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -9220,6 +9220,12 @@ var cloneObj = function cloneObj(obj) {
 };
 
 function change_layer_name(old_name, new_name) {
+  // Temporarily deactivate the tooltip displaying information under the cursor:
+  var restart_info = false;
+  if (document.getElementById('info_features').className === 'active') {
+    displayInfoOnMove();
+    restart_info = true;
+  }
   var old_id = _app.layer_to_id.get(old_name);
   var new_id = encodeId(new_name);
   current_layers[new_name] = cloneObj(current_layers[old_name]);
@@ -9280,6 +9286,10 @@ function change_layer_name(old_name, new_name) {
   _app.layer_to_id.delete(old_name);
   _app.id_to_layer.delete(old_id);
   binds_layers_buttons(new_name);
+
+  if (restart_info) {
+    displayInfoOnMove();
+  }
 }
 
 function prepareFileExt(files_to_send) {
@@ -9296,6 +9306,10 @@ function prepareFileExt(files_to_send) {
     }
   });
   return files_to_send;
+}
+
+function getCopyReversed(arr) {
+  return arr.slice().reverse();
 }
 'use strict';
 
@@ -10450,7 +10464,6 @@ function convert_dataset(file) {
     ajaxData.append('file[]', file);
     xhrequest('POST', 'convert_tabular', ajaxData, true).then(function (raw_data) {
       var data = JSON.parse(raw_data);
-      dataset_name = data.name;
       swal({
         title: '',
         text: i18next.t('app_page.common.warn_xls_sheet') + (data.message ? '\n' + i18next.t(data.message[0], { sheet_name: data.message[1][0] }) : ''),
@@ -10458,7 +10471,18 @@ function convert_dataset(file) {
         allowOutsideClick: false,
         allowEscapeKey: false
       }).then(function () {
-        add_dataset(d3.csvParse(data.file));
+        var tmp_dataset = d3.csvParse(data.file);
+        var field_names = Object.getOwnPropertyNames(tmp_dataset[0]).map(function (el) {
+          return el.toLowerCase ? el.toLowerCase() : el;
+        });
+        if (!_app.targeted_layer_added && (field_names.indexOf('x') > -1 || field_names.indexOf('lat') > -1 || field_names.indexOf('latitude') > -1)) {
+          if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
+            add_csv_geom(data.file, data.name);
+            return;
+          }
+        }
+        dataset_name = data.name;
+        add_dataset(tmp_dataset);
       }, function (dismiss) {
         return null;
       });
@@ -16183,7 +16207,7 @@ function createLegend(layer, title) {
   var lgd_pos = getTranslateNewLegend();
 
   if (renderer.indexOf('Choropleth') > -1 || renderer.indexOf('Gridded') > -1 || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
-    el = createLegend_choro_horizontal(layer, field, title, field, 4);
+    el = createLegend_choro(layer, field, title, field, 4);
   } else if (renderer.indexOf('Categorical') > -1) {
     el = createLegend_choro(layer, field, title, field, 4);
   } else if (renderer.indexOf('LinksGraduated') !== -1 || renderer.indexOf('DiscLayer') !== -1) {
@@ -17097,8 +17121,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
   var no_data_txt = arguments[7];
   var note_bottom = arguments[8];
 
-  var boxheight = 18,
-      boxwidth = 36,
+  var boxheight = 16,
+      boxwidth = 42,
       xpos = 30,
       ypos = 30,
       y_pos2 = ypos + boxheight * 1.8,
@@ -17106,32 +17130,14 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
 
   var boxgap = +box_gap;
 
-  var last_pos = null,
-      nb_class = void 0,
-      data_colors_label = void 0;
-
-  // if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
-  //   data_colors_label = [];
-  //   current_layers[layer].color_map.forEach((v, k) => {
-  //     data_colors_label.push({ value: v[1], color: v[0] });
-  //   });
-  //   nb_class = current_layers[layer].color_map.size;
-  // } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
-  //   data_colors_label = [];
-  //   current_layers[layer].symbols_map.forEach((v, k) => {
-  //     data_colors_label.push({ value: k, image: v });
-  //   });
-  //   nb_class = current_layers[layer].symbols_map.size;
-  // } else {
-  data_colors_label = current_layers[layer].colors_breaks.map(function (obj) {
+  var data_colors_label = current_layers[layer].colors_breaks.map(function (obj) {
     return { value: obj[0], color: obj[1] };
-  });
-  nb_class = current_layers[layer].colors_breaks.length;
+  }).reverse();
+  var nb_class = data_colors_label;
+
   if (rounding_precision === undefined) {
-    var breaks = current_layers[layer].options_disc.breaks;
-    rounding_precision = get_lgd_display_precision(breaks);
+    rounding_precision = get_lgd_display_precision(current_layers[layer].options_disc.breaks);
   }
-  // }
 
   var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' }).attrs({ id: 'legend_root_horiz',
     class: tmp_class_name,
@@ -17164,29 +17170,12 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
     return 'lg legend_' + i;
   });
 
-  // if (current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
   legend_elems.append('rect').attr('x', function (d, i) {
     return xpos + (boxgap + boxwidth) * i;
   }).attr('y', y_pos2).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
     return { fill: d.color, stroke: d.color };
   });
-  // } else {
-  //   legend_elems
-  //     .append('image')
-  //     .attrs((d, i) => ({
-  //       x: xpos + boxwidth,
-  //       y: y_pos2 + (i * boxgap) + (i * boxheight),
-  //       width: boxwidth,
-  //       height: boxheight,
-  //       'xlink:href': d.image[0],
-  //     }));
-  // }
 
-  // if (current_layers[layer].renderer.indexOf('Choropleth') > -1
-  //       || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
-  //       || current_layers[layer].renderer.indexOf('Gridded') > -1
-  //       || current_layers[layer].renderer.indexOf('Stewart') > -1) {
-  var tmp_pos = void 0;
   legend_elems.append('text').attr('x', function (d, i) {
     return xpos + (boxgap + boxwidth) * i;
   }).attr('y', y_pos2 + boxheight + 20).attr('text-anchor', 'middle').styles({ 'font-size': '10px' }).text(function (d) {
@@ -17196,14 +17185,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
   legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + (boxgap + boxwidth) * data_colors_label.length).attr('y', y_pos2 + boxheight + 20).attr('text-anchor', 'middle').styles({ 'font-size': '10px' }).text(function (d) {
     return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
   });
-  // } else {
-  //   legend_elems
-  //     .append('text')
-  //     .attr('x', xpos + boxwidth * 2 + 10)
-  //     .attr('y', (d, i) => y_pos2 + i * boxheight + (i * boxgap) + (boxheight * 2 / 3))
-  //     .styles({ 'text-anchor': 'middle', 'font-size': '10px' })
-  //     .text(d => d.value);
-  // }
+
   if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
     var gp_no_data = legend_root.append('g');
     gp_no_data.append('rect').attrs({ x: xpos + (boxgap + boxwidth) * data_colors_label.length,
@@ -17226,7 +17208,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
     'font-size': '11px',
     'font-family': 'verdana'
   });
-  // .text(note_bottom != null ? note_bottom : '');
+
   // Center the title and the subtitle:
   var bb = legend_root.node().getBoundingClientRect();
 
@@ -17240,7 +17222,6 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
   bottom_note.attr('x', x_middle).text(note_bottom != null ? note_bottom : '');
   legend_root.call(drag_legend_func(legend_root));
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-  // legend_root.select('#legendtitle').text(title || "");
   make_legend_context_menu(legend_root, layer);
   return legend_root;
 }
@@ -17514,7 +17495,7 @@ function createlegendEditBox(legend_id, layer_name) {
         var nb_float = +this.value;
         d3.select('#precision_change_txt').html(nb_float);
         legend_node.setAttribute('rounding_precision', nb_float);
-        if (legend_id === 'legend_root') {
+        if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz') {
           for (var _i = 0; _i < legend_boxes._groups[0].length; _i++) {
             var values = legend_boxes._groups[0][_i].__data__.value.split(' - ');
             legend_boxes._groups[0][_i].innerHTML = round_value(+values[1], nb_float).toLocaleString();
@@ -17539,12 +17520,12 @@ function createlegendEditBox(legend_id, layer_name) {
     }
   }
 
-  if (legend_id === 'legend_root') {
+  if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz') {
     var current_state = +legend_node.getAttribute('boxgap') === 0;
     var gap_section = box_body.insert('p');
     gap_section.append('input').style('margin-left', '0px').attrs({ type: 'checkbox', id: 'style_lgd' }).property('checked', current_state).on('change', function () {
       var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-      legend_node = svg_map.querySelector(['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
+      legend_node = svg_map.querySelector('#' + legend_id + '.lgdf_' + _app.layer_to_id.get(layer_name));
       var boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
       var rounding_precision = legend_node.getAttribute('rounding_precision');
       var transform_param = legend_node.getAttribute('transform'),
@@ -17554,10 +17535,14 @@ function createlegendEditBox(legend_id, layer_name) {
       var _no_data_txt = legend_node.querySelector('#no_data_txt');
       _no_data_txt = _no_data_txt != null ? _no_data_txt.textContent : null;
       legend_node.remove();
-      createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+      if (legend_id === 'legend_root') {
+        createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+      } else if (legend_id === 'legend_root_horiz') {
+        createLegend_choro_horizontal(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+      }
       bind_selections();
       if (transform_param) {
-        svg_map.querySelector(['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
+        svg_map.querySelector('#' + legend_id + '.lgdf_' + _app.layer_to_id.get(layer_name)).setAttribute('transform', transform_param);
       }
     });
     gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
@@ -17616,51 +17601,38 @@ function createlegendEditBox(legend_id, layer_name) {
     make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
   });
 
-  if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz') {
+  if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz' && current_layers[layer_name].options_disc) {
     var change_legend_type = box_body.insert('p');
-    var vert_layout = change_legend_type.append('span').attr('id', 'vert_layout').attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').style('cursor', 'pointer').text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
-    var horiz_layout = change_legend_type.append('span').attr('id', 'horiz_layout').attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').style('cursor', 'pointer').text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));
+    var vert_layout = change_legend_type.append('p').attr('id', 'vert_layout').attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
+    var horiz_layout = change_legend_type.append('p').attr('id', 'horiz_layout').attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));
     change_legend_type.selectAll('.opts_lgd_layout').on('click', function () {
-      if (!this.classList.contains('selected')) {
+      if (this.classList.contains('selected')) {
         return;
       }
-      this.classList.remove('selected');
-      if (this.id === 'vert_layout') {
-        horiz_layout.attr('class', 'opts_lgd_layout selected');
-        var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-        legend_node = svg_map.querySelector(['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-        var boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
-        var rounding_precision = legend_node.getAttribute('rounding_precision');
-        var transform_param = legend_node.getAttribute('transform'),
-            lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
-            lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
-            note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-        var _no_data_txt = legend_node.querySelector('#no_data_txt');
-        _no_data_txt = _no_data_txt != null ? _no_data_txt.textContent : null;
-        legend_node.remove();
+      change_legend_type.selectAll('.opts_lgd_layout').attr('class', 'opts_lgd_layout');
+      this.classList.add('selected');
+      var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+      legend_node = svg_map.querySelector('#' + legend_id + '.lgdf_' + _app.layer_to_id.get(layer_name));
+      var boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
+      var rounding_precision = legend_node.getAttribute('rounding_precision');
+      var transform_param = legend_node.getAttribute('transform'),
+          lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
+          lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
+          note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+      var _no_data_txt = legend_node.querySelector('#no_data_txt');
+      _no_data_txt = _no_data_txt != null ? _no_data_txt.textContent : null;
+      legend_node.remove();
+
+      if (this.id === 'horiz_layout') {
         createLegend_choro_horizontal(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
-        bind_selections();
-        if (transform_param) {
-          svg_map.querySelector(['#legend_root_horiz.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
-        }
+        legend_id = 'legend_root_horiz';
       } else {
-        vert_layout.attr('class', 'opts_lgd_layout selected');
-        var _rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
-        legend_node = svg_map.querySelector(['#legend_root_horiz.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-        var _boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
-        var _rounding_precision = legend_node.getAttribute('rounding_precision');
-        var _transform_param = legend_node.getAttribute('transform'),
-            _lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
-            _lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
-            _note = legend_node.querySelector('#legend_bottom_note').innerHTML;
-        var _no_data_txt2 = legend_node.querySelector('#no_data_txt');
-        _no_data_txt2 = _no_data_txt2 != null ? _no_data_txt2.textContent : null;
-        legend_node.remove();
-        createLegend_choro(layer_name, _rendered_field, _lgd_title, _lgd_subtitle, _boxgap, rect_fill_value, _rounding_precision, _no_data_txt2, _note);
-        bind_selections();
-        if (_transform_param) {
-          svg_map.querySelector(['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', _transform_param);
-        }
+        createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+        legend_id = 'legend_root';
+      }
+      bind_selections();
+      if (transform_param) {
+        svg_map.querySelector('#' + legend_id + '.lgdf_' + _app.layer_to_id.get(layer_name)).setAttribute('transform', transform_param);
       }
     });
   }

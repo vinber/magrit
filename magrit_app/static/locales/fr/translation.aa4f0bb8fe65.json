@@ -474,7 +474,9 @@
             "under_rectangle": "Afficher un rectangle sous la légende",
             "info_tooltip_line_break": "Le saut de ligne est possible par l'insertion du symbole <i> \\n </i>",
             "choice_break_symbol": "Personnaliser les valeurs des symboles...",
-            "ratio_waffle_txt": "Texte correspondant au ratio"
+            "ratio_waffle_txt": "Texte correspondant au ratio",
+            "lgd_layout_horizontal": "Disposition horizontale",
+            "lgd_layout_vertical": "Disposition verticale"
         },
         "legend_symbol_values_box": {
             "reset": "Remise à zéro des valeurs",

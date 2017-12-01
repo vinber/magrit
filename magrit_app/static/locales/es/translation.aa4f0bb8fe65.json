@@ -469,7 +469,9 @@
             "under_rectangle": "Enmarcar la leyenda",
             "info_tooltip_line_break": "Para hacer un salto de línea insertar el símbolo <i> \\n </i>",
             "choice_break_symbol": "Personalizar el valor de los símbolos...",
-            "ratio_waffle_txt": "Texto correspondiente a la proporción"
+            "ratio_waffle_txt": "Texto correspondiente a la proporción",
+            "lgd_layout_horizontal": "Disposición horizontal",
+            "lgd_layout_vertical": "Disposición vertical"
         },
         "legend_symbol_values_box": {
             "reset": "Valores de reseteado",

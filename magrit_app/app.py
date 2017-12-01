@@ -924,9 +924,9 @@ async def rawcsv_to_geo(data):
         ''.join([
             ft_template_start,
             '''{0},{1}'''.format(ft[geo_col_x], ft[geo_col_y]),
-            ''']},"properties":''',
-            str({k: v for k, v in zip(col_names, ft[1:])}).replace("'", '"'),
-            '''}'''
+            ''']},"properties":{''',
+            ','.join([':'.join((json.dumps(k), json.dumps(v))) for k, v in zip(col_names, ft[1:])]),
+            '''}}'''
             ]) for ft in df.itertuples()]
 
     return ''.join([
@@ -977,7 +977,8 @@ async def convert_csv_geo(request):
 
     res = await rawcsv_to_geo(data)
     result = await geojson_to_topojson2(res.encode(), file_name)
-
+    print(res)
+    print('\n\n\n', result)
     if not result:
         return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))
 

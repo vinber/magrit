@@ -475,7 +475,9 @@
             "under_rectangle": "Display a box under the legend",
             "info_tooltip_line_break": "Line break allowed with symbol <i> \\n </i>",
             "choice_break_symbol": "Customize symbols values...",
-            "ratio_waffle_txt": "Text corresponding to the ratio"
+            "ratio_waffle_txt": "Text corresponding to the ratio",
+            "lgd_layout_horizontal": "Horizontal layout",
+            "lgd_layout_vertical": "Vertical layout"
         },
         "legend_symbol_values_box": {
             "reset": "Reset to default values",

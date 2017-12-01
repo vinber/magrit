@@ -765,6 +765,12 @@ const cloneObj = (obj) => {
 };
 
 function change_layer_name(old_name, new_name) {
+  // Temporarily deactivate the tooltip displaying information under the cursor:
+  let restart_info = false;
+  if (document.getElementById('info_features').className === 'active') {
+    displayInfoOnMove();
+    restart_info = true;
+  }
   const old_id = _app.layer_to_id.get(old_name);
   const new_id = encodeId(new_name);
   current_layers[new_name] = cloneObj(current_layers[old_name]);
@@ -825,6 +831,10 @@ function change_layer_name(old_name, new_name) {
   _app.layer_to_id.delete(old_name);
   _app.id_to_layer.delete(old_id);
   binds_layers_buttons(new_name);
+
+  if (restart_info) {
+    displayInfoOnMove();
+  }
 }
 
 function prepareFileExt(files_to_send) {
@@ -837,4 +847,8 @@ function prepareFileExt(files_to_send) {
     }
   });
   return files_to_send;
+}
+
+function getCopyReversed(arr) {
+  return arr.slice().reverse();
 }

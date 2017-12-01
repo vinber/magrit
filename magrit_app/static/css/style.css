@@ -1083,3 +1083,13 @@ Copyright (c) 2015 Tobias Ahlin (license MIT)
     -webkit-transform: scaleY(1.0);
   }
 }
+
+.opts_lgd_layout {
+  margin: 2px;
+  pointer: cursor;
+}
+
+.opts_lgd_layout.selected:before {
+  content: "\2713 ";
+  font-weight: 800;
+}

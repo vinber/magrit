@@ -496,7 +496,6 @@ function convert_dataset(file) {
     xhrequest('POST', 'convert_tabular', ajaxData, true)
       .then((raw_data) => {
         const data = JSON.parse(raw_data);
-        dataset_name = data.name;
         swal({
           title: '',
           text: i18next.t('app_page.common.warn_xls_sheet') + (data.message ? '\n' + i18next.t(data.message[0], { sheet_name: data.message[1][0] }) : ''),
@@ -504,7 +503,16 @@ function convert_dataset(file) {
           allowOutsideClick: false,
           allowEscapeKey: false,
         }).then(() => {
-          add_dataset(d3.csvParse(data.file));
+          const tmp_dataset = d3.csvParse(data.file);
+          const field_names = Object.getOwnPropertyNames(tmp_dataset[0]).map(el => (el.toLowerCase ? el.toLowerCase() : el));
+          if (!_app.targeted_layer_added && (field_names.indexOf('x') > -1 || field_names.indexOf('lat') > -1 || field_names.indexOf('latitude') > -1)) {
+            if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
+              add_csv_geom(data.file, data.name);
+              return;
+            }
+          }
+          dataset_name = data.name;
+          add_dataset(tmp_dataset);
         }, dismiss => null);
       }, (error) => {
         display_error_during_computation();
