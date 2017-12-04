@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.c74b12bb8f02.json'
+      loadPath: 'static/locales/{{lng}}/translation.d0449f916c2f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -12886,11 +12886,17 @@ function createStyleBox_Line(layer_name) {
       opacity = selection.style('fill-opacity');
 
   var fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  var prev_random_colors = void 0;
   var prev_col_breaks = void 0;
   var rendering_params = void 0;
 
   if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.stroke);
+    });
   }
 
   var border_opacity = selection.style('stroke-opacity'),
@@ -12997,8 +13003,8 @@ function createStyleBox_Line(layer_name) {
         if (fill_meth === 'single') {
           selection.style('stroke', fill_prev.single).style('stroke-opacity', border_opacity);
         } else if (fill_meth === 'random') {
-          selection.style('stroke-opacity', border_opacity).style('stroke', function () {
-            return Colors.names[Colors.random()];
+          selection.style('stroke-opacity', border_opacity).style('stroke', function (d, i) {
+            return prev_random_colors[i] || Colors.names[Colors.random()];
           });
         } else if (fill_meth === 'class' && renderer === 'LinksGraduated') {
           selection.style('stroke-opacity', function (d, i) {
@@ -13222,8 +13228,14 @@ function createStyleBox(layer_name) {
   var fill_prev = cloneObj(current_layers[layer_name].fill_color);
   var prev_col_breaks = void 0;
   var rendering_params = void 0;
+  var prev_random_colors = void 0;
   if (current_layers[layer_name].colors_breaks && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.fill);
+    });
   }
   var border_opacity = selection.style('stroke-opacity'),
       stroke_width = +current_layers[layer_name]['stroke-width-const'];
@@ -13297,8 +13309,8 @@ function createStyleBox(layer_name) {
             return fill_prev.class[i];
           }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
         } else if (fill_meth === 'random') {
-          selection.style('fill', function () {
-            return Colors.names[Colors.random()];
+          selection.style('fill', function (d, i) {
+            return prev_random_colors[i] || Colors.names[Colors.random()];
           }).style('stroke', stroke_prev);
         } else if (fill_meth === 'categorical') {
           fill_categorical(layer_name, fill_prev.categorical[0], 'path', fill_prev.categorical[1]);
@@ -13929,6 +13941,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   var rendering_params = void 0;
   var stroke_prev = selection.style('stroke');
   var stroke_width = selection.style('stroke-width');
+  var prev_random_colors = void 0;
 
   var opacity = selection.style('fill-opacity'),
       border_opacity = selection.style('stroke-opacity');
@@ -13961,6 +13974,11 @@ function createStyleBox_ProbSymbol(layer_name) {
     prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
   } else if (current_layers[layer_name].break_val !== undefined) {
     prev_col_breaks = current_layers[layer_name].break_val;
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.fill);
+    });
   }
   if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
   if (stroke_width.endsWith('px')) stroke_width = stroke_width.substring(0, stroke_width.length - 2);
@@ -14039,8 +14057,8 @@ function createStyleBox_ProbSymbol(layer_name) {
         }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
         current_layers[layer_name].colors_breaks = prev_col_breaks;
       } else if (fill_meth === 'random') {
-        selection.style('fill', function (_) {
-          return Colors.names[Colors.random()];
+        selection.style('fill', function (d, i) {
+          return prev_random_colors[i] || Colors.names[Colors.random()];
         }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
       } else if (fill_meth === 'categorical') {
         fill_categorical(layer_name, fill_prev.categorical[0], type_symbol, fill_prev.categorical[1]);

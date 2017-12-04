@@ -636,12 +636,18 @@ function createStyleBox_Line(layer_name) {
     opacity = selection.style('fill-opacity');
 
   const fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  let prev_random_colors;
   let prev_col_breaks;
   let rendering_params;
 
   if (current_layers[layer_name].colors_breaks
       && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.stroke);
+    });
   }
 
   const border_opacity = selection.style('stroke-opacity'),
@@ -758,7 +764,7 @@ function createStyleBox_Line(layer_name) {
              .style('stroke-opacity', border_opacity);
           } else if (fill_meth === 'random') {
             selection.style('stroke-opacity', border_opacity)
-             .style('stroke', () => Colors.names[Colors.random()]);
+             .style('stroke', (d,i) => prev_random_colors[i] || Colors.names[Colors.random()]);
           } else if (fill_meth === 'class' && renderer === 'LinksGraduated') {
             selection.style('stroke-opacity', (d, i) => current_layers[layer_name].linksbyId[i][0])
              .style('stroke', stroke_prev);
@@ -1035,9 +1041,15 @@ function createStyleBox(layer_name) {
   const fill_prev = cloneObj(current_layers[layer_name].fill_color);
   let prev_col_breaks;
   let rendering_params;
+  let prev_random_colors;
   if (current_layers[layer_name].colors_breaks
       && current_layers[layer_name].colors_breaks instanceof Array) {
     prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.fill);
+    });
   }
   const border_opacity = selection.style('stroke-opacity'),
     stroke_width = +current_layers[layer_name]['stroke-width-const'];
@@ -1118,7 +1130,7 @@ function createStyleBox(layer_name) {
               .style('stroke-opacity', border_opacity)
               .style('stroke', stroke_prev);
           } else if (fill_meth === 'random') {
-            selection.style('fill', () => Colors.names[Colors.random()])
+            selection.style('fill', (d, i) => prev_random_colors[i] || Colors.names[Colors.random()])
               .style('stroke', stroke_prev);
           } else if (fill_meth === 'categorical') {
             fill_categorical(layer_name, fill_prev.categorical[0], 'path', fill_prev.categorical[1]);
@@ -1916,6 +1928,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   let rendering_params;
   let stroke_prev = selection.style('stroke');
   let stroke_width = selection.style('stroke-width');
+  let prev_random_colors;
 
   const opacity = selection.style('fill-opacity'),
     border_opacity = selection.style('stroke-opacity');
@@ -1950,6 +1963,11 @@ function createStyleBox_ProbSymbol(layer_name) {
     prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
   } else if (current_layers[layer_name].break_val !== undefined) {
     prev_col_breaks = current_layers[layer_name].break_val;
+  } else if (fill_prev.random) {
+    prev_random_colors = [];
+    selection.each(function (d) {
+      prev_random_colors.push(this.style.fill);
+    });
   }
   if (stroke_prev.startsWith('rgb')) stroke_prev = rgb2hex(stroke_prev);
   if (stroke_width.endsWith('px')) stroke_width = stroke_width.substring(0, stroke_width.length - 2);
@@ -2032,7 +2050,7 @@ function createStyleBox_ProbSymbol(layer_name) {
             .style('stroke', stroke_prev);
           current_layers[layer_name].colors_breaks = prev_col_breaks;
         } else if (fill_meth === 'random') {
-          selection.style('fill', _ => Colors.names[Colors.random()])
+          selection.style('fill', (d, i) => prev_random_colors[i] || Colors.names[Colors.random()])
             .style('stroke-opacity', border_opacity)
             .style('stroke', stroke_prev);
         } else if (fill_meth === 'categorical') {
