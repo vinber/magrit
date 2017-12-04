@@ -355,7 +355,7 @@
             "world_capitals": "Most populated cities in the world <i>(Points)</i>",
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>",
             "france_contour_2016_2-2": "Contour of metropolitan France (based on GEOFLA® 2016 v2.2)",
-            "departements_vor_2016_2": "Departments of Metropolitan France (adapted to the \"voronoi\" basemap - based on GEOFLA® 2016 v2.2)"
+            "departements_vor_2016_2-2": "Departments of Metropolitan France (adapted to the \"voronoi\" basemap - based on GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Sample dataset",
@@ -785,7 +785,7 @@
             "customizable1": "Customizable",
             "customizable2": "Produced maps are customizable thanks to a large choice of projections, color palettes, fonts and more...!",
             "realized_by1": "Made by UMS RIATE",
-            "realized_by2": "Magrit is developed and maintained by members of <a href=\"http://www.ums-riate.fr\">UMS RIATE</a>.",
+            "realized_by2": "Magrit is developed and maintained by members of <a href=\"http://riate.cnrs.fr\">UMS RIATE</a>.",
             "user_manual1": "Documented",
             "user_manual2": "A full description of each method is available in the <a href=\"/docs/index.html\">user manual</a>.",
             "box1_title": "Free and Open-Source",

@@ -102,6 +102,15 @@ def guess_separator(file):
             else:
                 return None
 
+def extractShpZip(myzip, slots, directory):
+    for ext, member in slots.items():
+        rv = myzip.extract(member, path=directory)
+        if not ext in rv:
+            os.rename(rv, rv.replace(ext.upper(), ext))
+            slots[ext] = rv.replace(ext.upper(), ext)
+        else:
+            slots[ext] = rv
+    return slots
 
 def fetch_zip_clean(dir_path, layer_name):
     filenames = os.listdir(dir_path)

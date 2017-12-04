@@ -54,7 +54,8 @@ from multidict import MultiDict
 try:
     from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
-        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
+        extractShpZip, mmh3_file)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
@@ -67,7 +68,8 @@ try:
 except:
    from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
-       run_calc, savefile, get_key, fetch_zip_clean, prepare_folder, mmh3_file)
+       run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
+       extractShpZip, mmh3_file)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
    from .helpers.geo import (
@@ -144,7 +146,8 @@ async def get_sample_layer(request):
         result = result.decode()
         request.app['logger'].debug(
             '{} - Used result from redis'.format(user_id))
-        request.app['redis_conn'].pexpire(f_name, 86400000)
+        asyncio.ensure_future(
+            request.app['redis_conn'].pexpire(f_name, 86400000))
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
@@ -190,7 +193,8 @@ async def convert_topo(request):
         result = result.decode()
         request.app['logger'].debug(
             '{} - Used result from redis'.format(user_id))
-        request.app['redis_conn'].pexpire(f_name, 86400000)
+        asyncio.ensure_future(
+            request.app['redis_conn'].pexpire(f_name, 86400000))
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(hash_val, name), '}'
@@ -280,7 +284,8 @@ async def convert(request):
     if result:
         request.app['logger'].debug(
             '{} - Used result from redis'.format(user_id))
-        request.app['redis_conn'].pexpire(f_name, 86400000)
+        asyncio.ensure_future(
+            request.app['redis_conn'].pexpire(f_name, 86400000))
         if "shp" in datatype:
             proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
 
@@ -313,22 +318,22 @@ async def convert(request):
 
         with ZipFile(dataZip) as myzip:
             list_files = myzip.namelist()
-            list_files = [dir_path + i for i in list_files]
+            # list_files = [dir_path + i for i in list_files]
             slots = {"shp": None, "prj": None, "dbf": None, "shx": None}
             names = []
             try:
                 for f in list_files:
                     name, ext = f.split('.')
                     names.append(name)
-                    if 'shp' in ext:
+                    if 'shp' in ext.lower():
                         slots['shp'] = f
-                    elif 'prj' in ext:
+                    elif 'prj' in ext.lower():
                         slots['prj'] = f
-                    elif 'shx' in ext:
+                    elif 'shx' in ext.lower():
                         slots['shx'] = f
-                    elif 'dbf' in ext:
+                    elif 'dbf' in ext.lower():
                         slots['dbf'] = f
-                    elif 'cpg' in ext:
+                    elif 'cpg' in ext.lower():
                         slots['cpg'] = f
                 assert(all(v is not None for v in slots.values()))
                 assert(all(name == names[0] for name in names))
@@ -339,7 +344,7 @@ async def convert(request):
                 return convert_error('Error with zip file content')
 
             os.mkdir(dir_path)
-            myzip.extractall(path=dir_path)
+            slots = extractShpZip(myzip, slots, dir_path)
             try:
                 res = await request.app.loop.run_in_executor(
                     request.app["ProcessPool"],
@@ -424,7 +429,8 @@ async def convert_extrabasemap(request):
             if result:
                 request.app['logger'].debug(
                     '{} - Used result from redis'.format(user_id))
-                request.app['redis_conn'].pexpire(f_name, 86400000)
+                asyncio.ensure_future(
+                    request.app['redis_conn'].pexpire(f_name, 86400000))
                 return web.Response(text=''.join(
                     ['{"key":', str(hashed_input),
                      ',"file":', result.decode(), '}']))
@@ -908,33 +914,55 @@ async def handler_exists_layer2(request):
 
 
 async def rawcsv_to_geo(data):
+    sp = '\r\n' if '\r\n' in data else '\n'
+    data = [d for d in data.split(sp) if not all((c == ',') for c in d)]
+    data.append(sp)
+    data = sp.join(data)
+    # Create a dataframe from our csv data:
     df = pd.read_csv(StringIO(data))
     df.replace(np.NaN, '', inplace=True)
-    geo_col_y = [colnb for colnb, col in enumerate(df.columns)
-                 if col.lower() in {"y", "latitude", "lat"}
-                 ][0] + 1
-    geo_col_x = [colnb for colnb, col in enumerate(df.columns)
+    # Replace spaces in columns names:
+    df.columns = [i.replace(' ', '_') for i in df.columns]
+    # Fetch the name of the column containing latitude coordinates
+    geo_col_y, name_geo_col_y = [(colnb + 1, col) for colnb, col in enumerate(df.columns)
+                 if col.lower() in {"y", "latitude", "lat"}][0]
+    # Fetch the name of the column containing longitude coordinates
+    geo_col_x, name_geo_col_x = [(colnb + 1, col) for colnb, col in enumerate(df.columns)
                  if col.lower() in {"x", "longitude", "lon", "lng", "long"}
-                 ][0] + 1
-    col_names = df.columns = [i.replace(' ', '_') for i in df.columns]
-    # Ugly minified geojson construction "by hand" :
-    ft_template_start = \
-        '''{"type":"Feature","geometry":{"type":"Point","coordinates":['''
-    geojson_features = [
-        ''.join([
-            ft_template_start,
-            '''{0},{1}'''.format(ft[geo_col_x], ft[geo_col_y]),
-            ''']},"properties":{''',
-            ','.join([':'.join((json.dumps(k), json.dumps(v))) for k, v in zip(col_names, ft[1:])]),
-            '''}}'''
-            ]) for ft in df.itertuples()]
+                 ][0]
+    if df[name_geo_col_x].dtype == object:
+        try:
+            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+        except:
+            df[name_geo_col_x] = df[name_geo_col_x].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+    if df[name_geo_col_y].dtype == object:
+        try:
+            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+        except:
+            df[name_geo_col_y] = df[name_geo_col_y].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
 
-    return ''.join([
-        '''{"type":"FeatureCollection","features":[''',
-        ','.join(geojson_features),
-        """]}"""
-        ])
+    # Prepare the name of the columns to keep:
+    columns_to_keep = [(n + 1, i) for n, i in enumerate(df.columns) if i not in (name_geo_col_x, name_geo_col_y)]
+    features = []
+    for ft in df.itertuples():
+        new_ft = {
+            "geometry": {
+                "type": "Point",
+                "coordinates": [ft[geo_col_x], ft[geo_col_y]]
+            },
+            "properties": {},
+            "type": "Feature"
+            }
+        for nb_c, name_c in columns_to_keep:
+            new_ft['properties'][name_c] = ft[nb_c]
+        features.append(new_ft)
 
+    return json.dumps({
+        "type": "FeatureCollection",
+        "features": features,
+    })
 
 async def calc_helper(request):
     posted_data = await request.post()

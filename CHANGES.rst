@@ -1,6 +1,20 @@
 Changes
 =======
 
+0.6.1 (2017-12-xx)
+------------------
+
+- New: add a new kind of layout for legends in use for choropleth maps.
+
+- Fix some bugs occuring while loading user files.
+
+- Fix some typo in the interface.
+
+- Improve support for Edge and Safari.
+
+- 
+
+
 0.6.0 (2017-11-29)
 ------------------
 

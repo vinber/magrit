@@ -351,7 +351,7 @@
             "world_capitals": "Ciudades de mayor población <i>(Puntos)</i>",
             "disclamer_nuts": "<i>* sin Madeira (PT), Azores (PT), las Islas Canarias (ES) <br>ni las regiones francesas de ultramar</i>",
             "france_contour_2016_2-2": "Contorno de la Francia metropolitana (basado en GEOFLA® 2016 v2.2)",
-            "departements_vor_2016_2": "Departamentos de Francia metropolitana (adaptados al fondo \"voronoi\" - basado en GEOFLA® 2016 v2.2)"
+            "departements_vor_2016_2-2": "Departamentos de Francia metropolitana (adaptados al fondo \"voronoi\" - basado en GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Conjunto de datos de ejemplo",
@@ -780,7 +780,7 @@
             "customizable1": "Personalizable",
             "customizable2": "En los mapas se puede personalizar la proyección, las rampas de colores, las fuentes de texto y permite integrar elementos como: cuadros de texto, escala gráfica, etc.",
             "realized_by1": "Elaborado por la UMS RIATE",
-            "realized_by2": "El proyecto es desarrollado y mantenido por los miembros de la <a href=\"http://www.ums-riate.fr\">UMS RIATE</a>.",
+            "realized_by2": "El proyecto es desarrollado y mantenido por los miembros de la <a href=\"http://riate.cnrs.fr\">UMS RIATE</a>.",
             "user_manual1": "Documentado",
             "user_manual2": "Una descripción completa de cada método está disponible en el <a href=\"/docs/index.html\">manual de usuario</a> (en francés).",
             "box1_title": "Libre y gratuito",

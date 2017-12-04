@@ -364,6 +364,8 @@ def on_geom(geom):
 def repairCoordsPole(geojson):
     for ft in geojson['features']:
         geom = ft["geometry"]
+        if not geom or not 'type' in geom or not 'coordinates' in geom:
+            continue
         if "MultiPolygon" in geom["type"]:
             for poly in geom['coordinates']:
                 # exterior = poly[:1]

@@ -14,7 +14,7 @@
  "france_contour_2016_2-2": "/static/data_sample/france_contour_2016_2-2.geojson",
  "regions_2016_2-2": "/static/data_sample/regions_2016_2-2.geojson",
  "departements_2016_2-2": "/static/data_sample/departements_2016_2-2.geojson",
- "departements__vor_2016_2-2": "/static/data_sample/departements_vor_2016_2-2.geojson",
+ "departements_vor_2016_2-2": "/static/data_sample/departements_vor_2016_2-2.geojson",
  "world_countries_data": "/static/data_sample/country.geojson",
  "world_country": "/static/data_sample/World.geojson",
  "world_cities": "/static/data_sample/world_cities_extract5000.geojson",
