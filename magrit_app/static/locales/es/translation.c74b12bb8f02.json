@@ -100,7 +100,8 @@
             "class_plural": "{{count}} clases",
             "download_link": "Enlace para descargar",
             "missing_epsg": "No hay coincidencias",
-            "drop_msg": "Suelta los archivos en la ventana ..."
+            "drop_msg": "Suelta los archivos en la ventana ...",
+            "incorrect_value": "Valor incorrecto"
         },
         "notification":{
           "brush_map_cancelled": "No se detectó rectángulo. Se canceló la operación.",
@@ -611,7 +612,8 @@
             "layer_shadow": "Añadir una sombra",
             "let_draggable": "Permitir símbolos mover",
             "ref_colors": "Colores:",
-            "ref_size": "Tamaño del símbolo"
+            "ref_size": "Tamaño del símbolo",
+            "filter_label": "Filtrar las etiquetas de acuerdo con el valor de un campo?"
         },
         "lm_buttons":{
             "zoom+": "Acercar",

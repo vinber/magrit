@@ -6,9 +6,11 @@ Changes
 
 - New: add a new kind of layout for legends in use for choropleth maps.
 
+- New: allow to create labels according to the values of a given field (such as creating "Name" labels for cities with larger "Population" than xxx)
+
 - Fix some bugs occuring while loading user files.
 
-- Fix some typo in the interface.
+- Fix some typos in the interface.
 
 - Improve support for Edge and Safari.
 

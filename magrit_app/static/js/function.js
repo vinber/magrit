@@ -3968,6 +3968,14 @@ const render_label = function render_label(layer, rendering_params, options) {
   const layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
     ? check_layer_name(rendering_params.uo_layer_name)
     : check_layer_name(`Labels_${layer}`);
+  let filter_test = () => true;
+  if (rendering_params.filter_options !== undefined) {
+    if (rendering_params.filter_options.type_filter === 'sup') {
+      filter_test = (prop) => prop[rendering_params.filter_options.field] > rendering_params.filter_options.filter_value;
+    } else if (rendering_params.filter_options.type_filter === 'inf') {
+      filter_test = (prop) => prop[rendering_params.filter_options.field] < rendering_params.filter_options.filter_value;
+    }
+  }
   const layer_id = encodeId(layer_to_add);
   let pt_position;
   _app.layer_to_id.set(layer_to_add, layer_id);
@@ -3987,6 +3995,7 @@ const render_label = function render_label(layer, rendering_params, options) {
     nb_ft = ref_selection.length;
     for (let i = 0; i < nb_ft; i++) {
       const ft = ref_selection[i].__data__;
+      if (!filter_test(ft.properties)) continue;
       let coords;
       if (ft.geometry.type.indexOf('Multi') === -1) {
         coords = d3.geoCentroid(ft.geometry);

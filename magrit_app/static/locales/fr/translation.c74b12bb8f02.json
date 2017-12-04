@@ -100,7 +100,8 @@
             "class_plural": "{{count}} classes",
             "download_link": "Lien de téléchargement",
             "missing_epsg": "Pas de correspondance trouvée pour ce code EPSG",
-            "drop_msg": "Déposez vos fichiers dans la fenêtre..."
+            "drop_msg": "Déposez vos fichiers dans la fenêtre...",
+            "incorrect_value": "Valeur incorrecte"
         },
         "table": {
             "search": "Recherche...",
@@ -616,7 +617,8 @@
             "layer_shadow": "Ajouter une ombre à la couche",
             "let_draggable": "Autoriser le déplacement des symboles",
             "ref_colors": "Couleurs:",
-            "ref_size": "Taille du symbole"
+            "ref_size": "Taille du symbole",
+            "filter_label": "Filtrer les labels selon la valeur d'un champ ?"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",

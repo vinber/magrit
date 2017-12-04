@@ -99,7 +99,8 @@
             "class": "{{count}} class",
             "download_link": "Download link",
             "missing_epsg": "No match found for this EPSG code",
-            "drop_msg": "Drop your file(s) in the window ..."
+            "drop_msg": "Drop your file(s) in the window ...",
+            "incorrect_value": "Incorrect value"
         },
         "table": {
             "search": "Search...",
@@ -617,7 +618,8 @@
             "layer_shadow": "Add a shadow",
             "let_draggable": "Allow moving symbols",
             "ref_colors": "Colors:",
-            "ref_size": "Symbol size"
+            "ref_size": "Symbol size",
+            "filter_label": "Filter labels according to the value of a field?"
         },
         "lm_buttons":{
             "zoom+": "Zoom in",

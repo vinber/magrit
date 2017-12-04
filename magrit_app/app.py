@@ -931,17 +931,17 @@ async def rawcsv_to_geo(data):
                  if col.lower() in {"x", "longitude", "lon", "lng", "long"}
                  ][0]
     if df[name_geo_col_x].dtype == object:
-        try:
-            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
-        except:
-            df[name_geo_col_x] = df[name_geo_col_x].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
-            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+        # try:
+        #     df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+        # except:
+        df[name_geo_col_x] = df[name_geo_col_x].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+        df[name_geo_col_x] = df[name_geo_col_x].astype(float)
     if df[name_geo_col_y].dtype == object:
-        try:
-            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
-        except:
-            df[name_geo_col_y] = df[name_geo_col_y].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
-            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+        # try:
+        #     df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+        # except:
+        df[name_geo_col_y] = df[name_geo_col_y].apply(lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+        df[name_geo_col_y] = df[name_geo_col_y].astype(float)
 
     # Prepare the name of the columns to keep:
     columns_to_keep = [(n + 1, i) for n, i in enumerate(df.columns) if i not in (name_geo_col_x, name_geo_col_y)]

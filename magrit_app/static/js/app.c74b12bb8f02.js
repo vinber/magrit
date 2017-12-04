@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.314aa68fac96.json'
+      loadPath: 'static/locales/{{lng}}/translation.c74b12bb8f02.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8258,6 +8258,20 @@ var render_label = function render_label(layer, rendering_params, options) {
   var font_size = rendering_params.ref_font_size + 'px';
   var new_layer_data = [];
   var layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0 ? check_layer_name(rendering_params.uo_layer_name) : check_layer_name('Labels_' + layer);
+  var filter_test = function filter_test() {
+    return true;
+  };
+  if (rendering_params.filter_options !== undefined) {
+    if (rendering_params.filter_options.type_filter === 'sup') {
+      filter_test = function filter_test(prop) {
+        return prop[rendering_params.filter_options.field] > rendering_params.filter_options.filter_value;
+      };
+    } else if (rendering_params.filter_options.type_filter === 'inf') {
+      filter_test = function filter_test(prop) {
+        return prop[rendering_params.filter_options.field] < rendering_params.filter_options.filter_value;
+      };
+    }
+  }
   var layer_id = encodeId(layer_to_add);
   var pt_position = void 0;
   _app.layer_to_id.set(layer_to_add, layer_id);
@@ -8276,6 +8290,7 @@ var render_label = function render_label(layer, rendering_params, options) {
     nb_ft = ref_selection.length;
     for (var i = 0; i < nb_ft; i++) {
       var ft = ref_selection[i].__data__;
+      if (!filter_test(ft.properties)) continue;
       var coords = void 0;
       if (ft.geometry.type.indexOf('Multi') === -1) {
         coords = d3.geoCentroid(ft.geometry);
@@ -13646,6 +13661,11 @@ function make_generate_labels_graticule_section(parent_node) {
 */
 function make_generate_labels_section(parent_node, layer_name) {
   var _fields = get_fields_name(layer_name) || [];
+  var fields_num = Object.entries(type_col(layer_name)).filter(function (a) {
+    return a[1] === "number";
+  }).map(function (a) {
+    return a[0];
+  });
   if (_fields && _fields.length > 0) {
     var labels_section = parent_node.append('p');
     var input_fields = {};
@@ -13659,7 +13679,7 @@ function make_generate_labels_section(parent_node, layer_name) {
     }).on('click', function () {
       swal({
         title: '',
-        text: i18next.t('app_page.layer_style_popup.field_label'),
+        html: '<div id="content_label_box">\n<p style="margin: 2px 0 2px 0;">' + i18next.t('app_page.layer_style_popup.field_label') + '</p>\n<select id="label_box_field">\n<option value="___">' + i18next.t('app_page.common.field') + '</option>\n</select>\n<div id="label_box_filter_section" style="margin: 10px 0 10px 0;font-size:0.9em;"></div>\n</div>',
         type: 'question',
         customClass: 'swal2_custom',
         showCancelButton: true,
@@ -13668,23 +13688,67 @@ function make_generate_labels_section(parent_node, layer_name) {
         allowOutsideClick: false,
         confirmButtonColor: '#DD6B55',
         confirmButtonText: i18next.t('app_page.common.confirm'),
-        input: 'select',
-        inputPlaceholder: i18next.t('app_page.common.field'),
+        // input: 'select',
+        // inputPlaceholder: i18next.t('app_page.common.field'),
         inputOptions: input_fields,
-        inputValidator: function inputValidator(value) {
+        onOpen: function onOpen() {
+          var sel = d3.select('#label_box_field');
+          _fields.forEach(function (f_name) {
+            sel.append('option').property('value', f_name).text(f_name);
+          });
+          if (fields_num.length > 0) {
+            var section_filter = d3.select('#label_box_filter_section');
+            var filter_checkbox = section_filter.append('input').attrs({ type: 'checkbox', id: 'label_box_filter_chk' }).on('change', function () {
+              if (this.checked) {
+                subsection_filter_label.style('display', null);
+              } else {
+                subsection_filter_label.style('display', 'none');
+              }
+            });
+            section_filter.append('label').attr('for', 'label_box_filter_chk').html(i18next.t('app_page.layer_style_popup.filter_label'));
+            var subsection_filter_label = section_filter.append('div').style('display', 'none');
+            var sel2 = subsection_filter_label.append('select').attr('id', 'label_box_filter_field');
+            fields_num.forEach(function (f_name) {
+              sel2.append('option').property('value', f_name).text(f_name);
+            });
+            var sel3 = subsection_filter_label.append('select').attr('id', 'label_box_filter_type');
+            sel3.append('option').property('value', 'sup').text('>');
+            sel3.append('option').property('value', 'inf').text('<');
+            subsection_filter_label.append('input').attrs({ type: 'number', id: 'label_box_filter_value' });
+          }
+        },
+        preConfirm: function preConfirm() {
           return new Promise(function (resolve, reject) {
-            if (_fields.indexOf(value) < 0) {
-              reject(i18next.t('app_page.common.no_value'));
-            } else {
-              render_label(layer_name, {
-                label_field: value,
-                color: '#000',
-                font: 'verdana',
-                ref_font_size: 12,
-                uo_layer_name: ['Labels', value, layer_name].join('_')
-              });
-              resolve();
-            }
+            setTimeout(function () {
+              var selected_field = document.getElementById('label_box_field').value;
+              var to_filter = document.getElementById('label_box_filter_chk').checked;
+              var filter_options = undefined;
+              if (to_filter) {
+                var filter_value = document.getElementById('label_box_filter_value').value;
+                if (!filter_value || isNaN(filter_value)) {
+                  reject(i18next.t('app_page.common.incorrect_value'));
+                  return;
+                }
+                filter_options = {
+                  field: document.getElementById('label_box_filter_field').value,
+                  type_filter: document.getElementById('label_box_filter_type').value,
+                  filter_value: filter_value
+                };
+              }
+              if (_fields.indexOf(selected_field) < 0) {
+                reject(i18next.t('app_page.common.no_value'));
+              } else {
+                render_label(layer_name, {
+                  label_field: selected_field,
+                  filter_options: filter_options,
+                  color: '#000',
+                  font: 'verdana',
+                  ref_font_size: 12,
+                  uo_layer_name: ['Labels', selected_field, layer_name].join('_')
+                });
+                resolve();
+              }
+            }, 50);
           });
         }
       }).then(function (value) {
