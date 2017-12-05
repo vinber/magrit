@@ -16,8 +16,8 @@ env:
     - GDALBUILD=$HOME/gdalbuild
 before_install:
   - ./misc/install_gdal.sh
-  - export PATH=$GDALINST/gdal-2.1.2/bin:$PATH
-  - export LD_LIBRARY_PATH=$GDALINST/gdal-2.1.2/lib:$LD_LIBRARY_PATH
+  - export PATH=$GDALINST/gdal-2.2.1/bin:$PATH
+  - export LD_LIBRARY_PATH=$GDALINST/gdal-2.2.1/lib:$LD_LIBRARY_PATH
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3

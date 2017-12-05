@@ -5,11 +5,10 @@ import numpy as np
 import ujson as json
 import cchardet as chardet
 import tempfile
-from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
 from osgeo.gdal import VectorTranslate, OpenEx, UseExceptions as gdal_UseExceptions
-from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
+from pyproj import Proj as pyproj_Proj
 from shapely.geos import TopologicalError
 from shapely.geometry import shape, mapping, MultiPolygon
 from shapely.ops import transform
@@ -115,6 +114,7 @@ def get_encoding_dbf(file_path):
 def vectorTranslate_to_geojson(file_path):
     try:
         with tempfile.TemporaryDirectory() as tmpdirname:
+            # TODO: Sanitize the field names ?
             gdal_UseExceptions()
             srcDS = OpenEx(file_path)
             ds = VectorTranslate(
@@ -122,6 +122,7 @@ def vectorTranslate_to_geojson(file_path):
                 srcDS=srcDS,
                 format = 'GeoJSON',
                 dstSRS='EPSG:4326',
+                skipFailures=True,
                 layerCreationOptions = ['WRITE_BBOX=YES', 'WRITE_NAME=NO'])
             if not ds:
                 return
@@ -141,9 +142,9 @@ def vectorTranslate_to_geojson(file_path):
 def ogr_to_geojson(file_path):
     result = vectorTranslate_to_geojson(file_path)
     if result:
-        print('Success with VectorTranslate')
+        print('Conversion Successful with VectorTranslate')
         return result
-    print('Fail with VectorTranslate - Use OGR python bindings')
+
     if 'kml' in file_path:
         file_format = "KML"
     elif 'gml' in file_path:
@@ -179,40 +180,6 @@ def ogr_to_geojson(file_path):
         result = None
     return result
 
-#def ogr_to_geojson(filepath):
-#    res = []
-#    reproject = True
-#    change_field_name = True
-#    with fiona.open(filepath) as f:
-#        if not f.crs:
-#            reproject = False
-#        if not any(' ' in field_name for field_name in f.schema['properties']):
-#            change_field_name = False
-#
-#        if reproject and change_field_name:
-#            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
-#            for item in f.values():
-#                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
-#                item['properties'] = OrderedDict(
-#                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
-#                res.append(item)
-#        elif change_field_name:
-#            for item in f.values():
-#                item['properties'] = OrderedDict(
-#                    (k.replace(' ', '_'), v) for k, v in item['properties'].items())
-#                res.append(item)
-#        elif reproject:
-#            project = partial(pyproj_transform, pyproj_Proj(f.crs), pyproj_Proj({'init': 'epsg:4326'}))
-#            for item in f.values():
-#                item['geometry'] = mapping(transform(project, shape(item['geometry'])))
-#                res.append(item)
-#        else:
-#            res = [item for item in f.values()]
-#
-#    return ''.join(
-#        ('''{"type":"FeatureCollection", "features":''',
-#         json.dumps(res),
-#         '''}''')).encode()
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
@@ -289,6 +256,7 @@ def olson_transform(geojson, scale_values):
 
 
 def reproj_convert_layer_kml(geojson_path):
+    ## TODO : Use VectorTranslate to make the conversion?
     process = Popen(["ogr2ogr", "-f", "KML",
                      "-preserve_fid",
                      "-t_srs", "EPSG:4326",
@@ -299,6 +267,7 @@ def reproj_convert_layer_kml(geojson_path):
 
 def reproj_convert_layer(geojson_path, output_path,
                          file_format, output_crs, input_crs="epsg:4326"):
+    ## TODO : Use VectorTranslate to make the conversion?
     layer_name = output_path.split('/')
     layer_name = layer_name[len(layer_name) - 1].split('.')[0]
 
@@ -352,15 +321,6 @@ def reproj_convert_layer(geojson_path, output_path,
         with open(output_path.replace(".shp", ".cpg"), "w") as encoding_file:
             encoding_file.write("ISO-8859-1")
     return 0
-
-
-def reproj_layer(geojson, output_crs, input_crs="epsg:4326"):
-    reproj = partial(pyproj_transform,
-                     pyproj_Proj(init=input_crs),
-                     pyproj_Proj(output_crs))
-    for feature in geojson["features"]:
-        feature["geometry"] = mapping(transform(
-            reproj, shape(feature["geometry"])))
 
 
 def check_projection(proj4string):

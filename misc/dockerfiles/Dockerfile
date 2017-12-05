@@ -35,12 +35,12 @@ ENV GDALOPTS="  --with-geos \
 		        --with-spatialite \
 		        --with-static-proj4=/usr/lib"
 
-RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download.osgeo.org/gdal/2.1.3/gdal-2.1.3.tar.gz \
-    && tar -xzf gdal-2.1.3.tar.gz && cd gdal-2.1.3 && ./configure --prefix=$GDALINST/gdal-2.1.3 $GDALOPTS \
+RUN mkdir $GDALBUILD && mkdir $GDALINST && cd $GDALBUILD && wget http://download.osgeo.org/gdal/2.2.1/gdal-2.2.1.tar.gz \
+    && tar -xzf gdal-2.2.1.tar.gz && cd gdal-2.2.1 && ./configure --prefix=$GDALINST/gdal-2.2.1 $GDALOPTS \
 	&& make -s -j 2 && make install
 
-ENV PATH="${GDALINST}/gdal-2.1.3/bin:${PATH}"
-ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.1.3/lib:${LD_LIBRARY_PATH}"
+ENV PATH="${GDALINST}/gdal-2.2.1/bin:${PATH}"
+ENV LD_LIBRARY_PATH="${GDALINST}/gdal-2.2.1/lib:${LD_LIBRARY_PATH}"
 
 ARG CACHEBUST=1
 
