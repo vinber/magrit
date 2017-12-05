@@ -69,7 +69,7 @@ function createLegend(layer, title) {
 
   if (renderer.indexOf('Choropleth') > -1 || renderer.indexOf('Gridded') > -1
             || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
-    el = createLegend_choro(layer, field, title, field, 4);
+    el = createLegend_choro(layer, field, title, field, 0);
   } else if (renderer.indexOf('Categorical') > -1) {
     el = createLegend_choro(layer, field, title, field, 4);
   } else if (renderer.indexOf('LinksGraduated') !== -1
@@ -1153,7 +1153,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
       class: tmp_class_name,
       layer_field: field,
       transform: 'translate(0,0)',
-      boxgap,
+      boxgap: boxgap,
       rounding_precision,
       layer_name: layer,
     });
@@ -1202,7 +1202,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     .attr('y', y_pos2 + boxheight + 20)
     .attr('text-anchor', 'middle')
     .styles({ 'font-size': '10px' })
-    .text(d => round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString());
+    .text(d => round_value(+d.value.split(' - ')[0], rounding_precision).toLocaleString());
 
   legend_root
     .insert('text').attr('id', 'lgd_choro_min_val')
@@ -1210,13 +1210,13 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     .attr('y', y_pos2 + boxheight + 20)
     .attr('text-anchor', 'middle')
     .styles({ 'font-size': '10px' })
-    .text(d => round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString());
+    .text(d => round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[1], rounding_precision).toLocaleString());
 
   if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
     const gp_no_data = legend_root.append('g');
     gp_no_data
       .append('rect')
-      .attrs({ x: xpos + (boxgap + boxwidth) * data_colors_label.length,
+      .attrs({ x: xpos + boxwidth +(boxgap + boxwidth) * data_colors_label.length,
         y: y_pos2,
         width: boxwidth,
         height: boxheight })
@@ -1226,7 +1226,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     gp_no_data
       .append('text')
       .attrs({
-        x: xpos + (boxgap + boxwidth) * (data_colors_label.length + 1),
+        x: xpos + (boxwidth / 2) + (boxgap + boxwidth) * (data_colors_label.length + 1),
         y: y_pos2 + boxheight + 20,
         id: 'no_data_txt',
         'text-anchor': 'middle' })
@@ -1729,7 +1729,7 @@ function createlegendEditBox(legend_id, layer_name) {
         this.classList.add('selected');
         const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
-        const boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
+        const boxgap = +legend_node.getAttribute('boxgap');
         const rounding_precision = legend_node.getAttribute('rounding_precision');
         const transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -1757,7 +1757,9 @@ function createlegendEditBox(legend_id, layer_name) {
 function move_legends() {
   const xy0_map = get_map_xy0();
   const dim_width = w + xy0_map.x;
-  const dim_heght = h + xy0_map.y;
+  const dim_height = h + xy0_map.y;
+
+  // Move the legends and the scalebar according to svg map resizing:
   const legends = [
     svg_map.querySelectorAll('.legend_feature'),
     svg_map.querySelectorAll('#scale_bar.legend'),
@@ -1773,12 +1775,44 @@ function move_legends() {
         legends_type[i].setAttribute('transform',
             ['translate(', [+val_x - trans_x, val_y], ')'].join(''));
       }
-      if ((legend_bbox.top + legend_bbox.height) > dim_heght) {
+      if ((legend_bbox.top + legend_bbox.height) > dim_height) {
         const current_transform = legends_type[i].getAttribute('transform');
         const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/);
-        const trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
+        const trans_y = legend_bbox.top + legend_bbox.height - dim_height;
         legends_type[i].setAttribute('transform',
             ['translate(', [val_x, +val_y - trans_y], ')'].join(''));
+      }
+    }
+  }
+
+  // Move the text_annotation according to svg map resizing:
+  const text_annot = document.querySelectorAll('.txt_annot');
+  for (let i = 0, len_i = text_annot.length; i < len_i; i++) {
+    const legend_bbox = text_annot[i].getBoundingClientRect();
+    if ((legend_bbox.left + legend_bbox.width) > dim_width) {
+      const trans_x = legend_bbox.left + legend_bbox.width - dim_width;
+      let annot = d3.select(text_annot[i]);
+      let x_rect = +annot.select('rect').attr('x') - trans_x;
+      let x_txt = +annot.select('text').attr('x') - trans_x;
+      if (x_txt > 0) {
+        annot.select('rect')
+          .attr('x', x_rect);
+        annot.select('text')
+          .attr('x', x_txt)
+          .selectAll('tspan')
+          .attr('x', x_txt);
+      }
+    }
+    if ((legend_bbox.top + legend_bbox.height) > dim_height) {
+      const trans_y = legend_bbox.top + legend_bbox.height - dim_height;
+      let annot = d3.select(text_annot[i]);
+      let y_rect = +annot.select('rect').attr('y') - trans_y;
+      let y_txt = +annot.select('text').attr('y') - trans_y;
+      if (y_txt > 0) {
+        annot.select('rect')
+          .attr('y', y_rect);
+        annot.select('text')
+          .attr('y', y_txt);
       }
     }
   }

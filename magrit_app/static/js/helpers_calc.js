@@ -566,9 +566,13 @@ function getMaximalAvailableRectangle(legend_nodes) {
   }
   for (let i = 0; i < legend_nodes.length; i++) {
     const bbox = legend_nodes[i].getBoundingClientRect();
-    const bx = Math.floor(bbox.left - x0);
-    const by = Math.floor(bbox.top - y0);
-    fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+    let bx = Math.floor(bbox.left - x0);
+    let by = Math.floor(bbox.top - y0);
+    if (bx < 0) bx = 0;
+    if (by < 0) by = 0;
+    const bx2 = (bx + Math.floor(bbox.width)) >= cols ? cols - 1 : bx + Math.floor(bbox.width);
+    const by2 = (by + Math.floor(bbox.height)) >= rows ? rows - 1 : by + Math.floor(bbox.height);
+    fillMat([bx, bx2], [by, by2]);
   }
   return getMaxRect(mat);
 }

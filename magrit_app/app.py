@@ -410,10 +410,11 @@ async def convert(request):
 
     elif ('octet-stream' in datatype or 'text/json' in datatype
             or 'application/geo+json' in datatype
+            or 'application/json' in datatype
             or 'application/vnd.google-earth.kml+xml' in datatype
             or 'application/gml+xml' in datatype) \
             and ("kml" in name.lower()
-                 or "gml" in name.lower() or "geojson" in name.lower()):
+                 or "gml" in name.lower() or 'json' in name.lower()):
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await request.app.loop.run_in_executor(

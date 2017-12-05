@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7043d08be747.json'
+      loadPath: 'static/locales/{{lng}}/translation.894223955948.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -9915,7 +9915,11 @@ function getMaximalAvailableRectangle(legend_nodes) {
     var bbox = legend_nodes[_i4].getBoundingClientRect();
     var bx = Math.floor(bbox.left - x0);
     var by = Math.floor(bbox.top - y0);
-    fillMat([bx, bx + Math.floor(bbox.width)], [by, by + Math.floor(bbox.height)]);
+    if (bx < 0) bx = 0;
+    if (by < 0) by = 0;
+    var bx2 = bx + Math.floor(bbox.width) >= cols ? cols - 1 : bx + Math.floor(bbox.width);
+    var by2 = by + Math.floor(bbox.height) >= rows ? rows - 1 : by + Math.floor(bbox.height);
+    fillMat([bx, bx2], [by, by2]);
   }
   return getMaxRect(mat);
 }
@@ -10097,7 +10101,7 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       });
       // Send the file to the server for conversion :
     } else {
-      if (files[0]._ext !== 'json') {
+      if (files[0]._ext.indexOf('json') < 0) {
         handle_single_file(files[0], target_layer_on_add);
       } else {
         var rd = new FileReader();
@@ -12422,18 +12426,12 @@ function make_random_color(layer) {
   var symbol = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'path';
 
   var block = d3.select('#fill_color_section');
-  block.selectAll('span').remove();
-  block.insert('span').styles({ cursor: 'pointer', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.toggle_colors')).on('click', function (d, i) {
+  block.insert('span').attr('id', 'random_color_btn').styles({ cursor: 'pointer', 'text-align': 'center' }).html(i18next.t('app_page.layer_style_popup.toggle_colors')).on('click', function (d, i) {
     map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function () {
-      return Colors.names[Colors.random()];
-    });
+      return randomColor();
+    }); // Colors.names[Colors.random()]);
     current_layers[layer].fill_color = { random: true };
-    make_random_color(layer, symbol);
   });
-  map.select('#' + _app.layer_to_id.get(layer)).selectAll(symbol).transition().style('fill', function () {
-    return Colors.names[Colors.random()];
-  });
-  current_layers[layer].fill_color = { random: true };
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map) {
@@ -12467,9 +12465,6 @@ function make_categorical_color_menu(fields, layer, fill_prev) {
     Array.from(cats.keys()).forEach(function (val) {
       color_cat_map.set(val, Colors.names[Colors.random()]);
     });
-    // for (let val of cats) {
-    //   color_cat_map.set(val, Colors.names[Colors.random()]);
-    // }
     current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
     fill_categorical(layer, field_name, symbol, color_cat_map);
   });
@@ -13369,6 +13364,7 @@ function createStyleBox(layer_name) {
           make_categorical_color_menu(fields, layer_name, fill_prev);
         } else if (this.value === 'random') {
           make_random_color(layer_name);
+          document.getElementById('random_color_btn').click();
         }
       });
       setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
@@ -13862,7 +13858,7 @@ function createStyleBoxWaffle(layer_name) {
     var val = +this.value;
     var nCol = current_layers[layer_name].nCol;
     current_layers[layer_name].size = val;
-    selection.selectAll('g').selectAll(symbol).each(function (d, i) {
+    selection.selectAll('g').selectAll(symbol).each(function (_, i) {
       if (symbol === 'circle') {
         var t_x = round(i % nCol * 2 * val);
         var t_y = floor(floor(i / nCol) * 2 * val);
@@ -14053,7 +14049,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
         current_layers[layer_name].colors_breaks = prev_col_breaks;
       } else if (fill_meth === 'random') {
-        selection.style('fill', function (d, i) {
+        selection.style('fill', function (_, i) {
           return prev_random_colors[i] || Colors.names[Colors.random()];
         }).style('stroke-opacity', border_opacity).style('stroke', stroke_prev);
       } else if (fill_meth === 'categorical') {
@@ -14180,6 +14176,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         current_layers[layer_name].fill_color = cloneObj(fill_prev);
       } else if (this.value === 'random') {
         make_random_color(layer_name, type_symbol);
+        document.getElementById('random_color_btn').click();
       }
     });
     setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
@@ -16285,7 +16282,7 @@ function createLegend(layer, title) {
   var lgd_pos = getTranslateNewLegend();
 
   if (renderer.indexOf('Choropleth') > -1 || renderer.indexOf('Gridded') > -1 || renderer.indexOf('Stewart') > -1 || renderer.indexOf('TypoSymbols') > -1) {
-    el = createLegend_choro(layer, field, title, field, 4);
+    el = createLegend_choro(layer, field, title, field, 0);
   } else if (renderer.indexOf('Categorical') > -1) {
     el = createLegend_choro(layer, field, title, field, 4);
   } else if (renderer.indexOf('LinksGraduated') !== -1 || renderer.indexOf('DiscLayer') !== -1) {
@@ -17257,22 +17254,22 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
   legend_elems.append('text').attr('x', function (d, i) {
     return xpos + (boxgap + boxwidth) * i;
   }).attr('y', y_pos2 + boxheight + 20).attr('text-anchor', 'middle').styles({ 'font-size': '10px' }).text(function (d) {
-    return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
+    return round_value(+d.value.split(' - ')[0], rounding_precision).toLocaleString();
   });
 
   legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + (boxgap + boxwidth) * data_colors_label.length).attr('y', y_pos2 + boxheight + 20).attr('text-anchor', 'middle').styles({ 'font-size': '10px' }).text(function (d) {
-    return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
+    return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[1], rounding_precision).toLocaleString();
   });
 
   if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
     var gp_no_data = legend_root.append('g');
-    gp_no_data.append('rect').attrs({ x: xpos + (boxgap + boxwidth) * data_colors_label.length,
+    gp_no_data.append('rect').attrs({ x: xpos + boxwidth + (boxgap + boxwidth) * data_colors_label.length,
       y: y_pos2,
       width: boxwidth,
       height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
 
     gp_no_data.append('text').attrs({
-      x: xpos + (boxgap + boxwidth) * (data_colors_label.length + 1),
+      x: xpos + boxwidth / 2 + (boxgap + boxwidth) * (data_colors_label.length + 1),
       y: y_pos2 + boxheight + 20,
       id: 'no_data_txt',
       'text-anchor': 'middle' }).styles({ 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : 'No data');
@@ -17691,7 +17688,7 @@ function createlegendEditBox(legend_id, layer_name) {
       this.classList.add('selected');
       var rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
       legend_node = svg_map.querySelector('#' + legend_id + '.lgdf_' + _app.layer_to_id.get(layer_name));
-      var boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
+      var boxgap = +legend_node.getAttribute('boxgap');
       var rounding_precision = legend_node.getAttribute('rounding_precision');
       var transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -17719,7 +17716,9 @@ function createlegendEditBox(legend_id, layer_name) {
 function move_legends() {
   var xy0_map = get_map_xy0();
   var dim_width = w + xy0_map.x;
-  var dim_heght = h + xy0_map.y;
+  var dim_height = h + xy0_map.y;
+
+  // Move the legends and the scalebar according to svg map resizing:
   var legends = [svg_map.querySelectorAll('.legend_feature'), svg_map.querySelectorAll('#scale_bar.legend')];
   for (var j = 0; j < 2; ++j) {
     var legends_type = legends[j];
@@ -17736,7 +17735,7 @@ function move_legends() {
         var trans_x = legend_bbox.left + legend_bbox.width - dim_width;
         legends_type[i].setAttribute('transform', ['translate(', [+val_x - trans_x, val_y], ')'].join(''));
       }
-      if (legend_bbox.top + legend_bbox.height > dim_heght) {
+      if (legend_bbox.top + legend_bbox.height > dim_height) {
         var _current_transform = legends_type[i].getAttribute('transform');
 
         var _$exec$1$split3 = /\(([^\)]+)\)/.exec(_current_transform)[1].split(/[ ,]+/),
@@ -17744,8 +17743,34 @@ function move_legends() {
             _val_x = _$exec$1$split4[0],
             _val_y = _$exec$1$split4[1];
 
-        var trans_y = legend_bbox.top + legend_bbox.height - dim_heght;
+        var trans_y = legend_bbox.top + legend_bbox.height - dim_height;
         legends_type[i].setAttribute('transform', ['translate(', [_val_x, +_val_y - trans_y], ')'].join(''));
+      }
+    }
+  }
+
+  // Move the text_annotation according to svg map resizing:
+  var text_annot = document.querySelectorAll('.txt_annot');
+  for (var _i4 = 0, len_i = text_annot.length; _i4 < len_i; _i4++) {
+    var _legend_bbox = text_annot[_i4].getBoundingClientRect();
+    if (_legend_bbox.left + _legend_bbox.width > dim_width) {
+      var _trans_x = _legend_bbox.left + _legend_bbox.width - dim_width;
+      var annot = d3.select(text_annot[_i4]);
+      var x_rect = +annot.select('rect').attr('x') - _trans_x;
+      var x_txt = +annot.select('text').attr('x') - _trans_x;
+      if (x_txt > 0) {
+        annot.select('rect').attr('x', x_rect);
+        annot.select('text').attr('x', x_txt).selectAll('tspan').attr('x', x_txt);
+      }
+    }
+    if (_legend_bbox.top + _legend_bbox.height > dim_height) {
+      var _trans_y = _legend_bbox.top + _legend_bbox.height - dim_height;
+      var _annot = d3.select(text_annot[_i4]);
+      var y_rect = +_annot.select('rect').attr('y') - _trans_y;
+      var y_txt = +_annot.select('text').attr('y') - _trans_y;
+      if (y_txt > 0) {
+        _annot.select('rect').attr('y', y_rect);
+        _annot.select('text').attr('y', y_txt);
       }
     }
   }
@@ -20082,6 +20107,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
           } else {
             current_layers[layer_name].fields_type[existing] = type_field;
           }
+          getAvailablesFunctionnalities(layer_name);
           if (window.fields_handler) {
             fields_handler.unfill();
             fields_handler.fill(layer_name);

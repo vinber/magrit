@@ -58,23 +58,17 @@ function make_single_color_menu(layer, fill_prev, symbol = 'path') {
 
 function make_random_color(layer, symbol = 'path') {
   const block = d3.select('#fill_color_section');
-  block.selectAll('span').remove();
   block.insert('span')
+    .attr('id', 'random_color_btn')
     .styles({ cursor: 'pointer', 'text-align': 'center' })
     .html(i18next.t('app_page.layer_style_popup.toggle_colors'))
     .on('click', (d, i) => {
       map.select(`#${_app.layer_to_id.get(layer)}`)
         .selectAll(symbol)
         .transition()
-        .style('fill', () => Colors.names[Colors.random()]);
+        .style('fill', () => randomColor());// Colors.names[Colors.random()]);
       current_layers[layer].fill_color = { random: true };
-      make_random_color(layer, symbol);
     });
-  map.select(`#${_app.layer_to_id.get(layer)}`)
-    .selectAll(symbol)
-    .transition()
-    .style('fill', () => Colors.names[Colors.random()]);
-  current_layers[layer].fill_color = { random: true };
 }
 
 function fill_categorical(layer, field_name, symbol, color_cat_map) {
@@ -105,9 +99,6 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') 
     Array.from(cats.keys()).forEach((val) => {
       color_cat_map.set(val, Colors.names[Colors.random()]);
     });
-    // for (let val of cats) {
-    //   color_cat_map.set(val, Colors.names[Colors.random()]);
-    // }
     current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
     fill_categorical(layer, field_name, symbol, color_cat_map);
   });
@@ -1204,6 +1195,7 @@ function createStyleBox(layer_name) {
           make_categorical_color_menu(fields, layer_name, fill_prev);
         } else if (this.value === 'random') {
           make_random_color(layer_name);
+          document.getElementById('random_color_btn').click();
         }
       });
       setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);
@@ -1831,7 +1823,7 @@ function createStyleBoxWaffle(layer_name) {
       selection
         .selectAll('g')
         .selectAll(symbol)
-        .each(function (d, i) {
+        .each(function (_, i) {
           if (symbol === 'circle') {
             const t_x = round((i % nCol) * 2 * val);
             const t_y = floor(floor(i / nCol) * 2 * val);
@@ -2050,7 +2042,7 @@ function createStyleBox_ProbSymbol(layer_name) {
             .style('stroke', stroke_prev);
           current_layers[layer_name].colors_breaks = prev_col_breaks;
         } else if (fill_meth === 'random') {
-          selection.style('fill', (d, i) => prev_random_colors[i] || Colors.names[Colors.random()])
+          selection.style('fill', (_, i) => prev_random_colors[i] || Colors.names[Colors.random()])
             .style('stroke-opacity', border_opacity)
             .style('stroke', stroke_prev);
         } else if (fill_meth === 'categorical') {
@@ -2208,6 +2200,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         current_layers[layer_name].fill_color = cloneObj(fill_prev);
       } else if (this.value === 'random') {
         make_random_color(layer_name, type_symbol);
+        document.getElementById('random_color_btn').click();
       }
     });
     setSelected(fill_method.node(), Object.getOwnPropertyNames(fill_prev)[0]);

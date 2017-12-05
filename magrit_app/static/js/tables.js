@@ -219,6 +219,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
               } else {
                 current_layers[layer_name].fields_type[existing] = type_field;
               }
+              getAvailablesFunctionnalities(layer_name);
               if (window.fields_handler) {
                 fields_handler.unfill();
                 fields_handler.fill(layer_name);
