@@ -6,15 +6,13 @@ Changes
 
 - New: add a new kind of layout for legends in use for choropleth maps.
 
-- New: allow to create labels according to the values of a given field (such as creating "Name" labels for cities with larger "Population" than xxx)
+- New: allow to create labels according to the values of a given field (such as creating "Name" labels only for cities with larger "Population" than xxx)
 
-- Fix some bugs occuring while loading user files.
+- Fix some bugs occuring while loading user files and improve the support for tabular file containing coordinates.
 
-- Fix some typos in the interface.
+- Fix some typos in the interface and improve the displaying of the projection name when the projection is coming from a proj.4 string. 
 
 - Improve support for Edge and Safari.
-
-- 
 
 
 0.6.0 (2017-11-29)

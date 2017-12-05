@@ -839,9 +839,10 @@ function change_layer_name(old_name, new_name) {
 
 function prepareFileExt(files_to_send) {
   Array.prototype.forEach.call(files_to_send, (f) => {
-    f._ext = null;
+    f._ext = '';
     if (f.name.indexOf('.') > -1) {
-      const [name, ext] = f.name.split('.');
+      const name = f.name.substring(0, f.name.lastIndexOf("."));
+      const ext = f.name.substring(f.name.lastIndexOf(".") + 1, f.name.length);
       f._name = [name, ext.toLowerCase()].join('.');
       f._ext = ext.toLowerCase();
     }

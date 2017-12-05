@@ -1183,7 +1183,8 @@ function add_layer_topojson(text, options = {}) {
         _app.last_projection = parsedJSON.proj;
         current_proj_name = 'def_proj4';
         change_projection_4(_proj);
-        addLastProjectionSelect('def_proj4', _app.last_projection);
+        const custom_name = tryFindNameProj(_app.last_projection);
+        addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
         if (target_layer_on_add && joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {

@@ -4,15 +4,17 @@ import re
 import numpy as np
 import ujson as json
 import cchardet as chardet
+import tempfile
 from functools import partial
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
+from osgeo.gdal import VectorTranslate, OpenEx, UseExceptions as gdal_UseExceptions
 from pyproj import transform as pyproj_transform, Proj as pyproj_Proj
 from shapely.geos import TopologicalError
 from shapely.geometry import shape, mapping, MultiPolygon
 from shapely.ops import transform
 from shapely.affinity import scale
-from os.path import exists
+from os.path import exists, join as path_join
 from pandas import read_json as pd_read_json
 from geopandas import GeoDataFrame
 from struct import unpack
@@ -110,7 +112,38 @@ def get_encoding_dbf(file_path):
     return encoding['encoding']
 
 
+def vectorTranslate_to_geojson(file_path):
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            gdal_UseExceptions()
+            srcDS = OpenEx(file_path)
+            ds = VectorTranslate(
+                path_join(tmpdirname, 'result.geojson'),
+                srcDS=srcDS,
+                format = 'GeoJSON',
+                dstSRS='EPSG:4326',
+                layerCreationOptions = ['WRITE_BBOX=YES', 'WRITE_NAME=NO'])
+            if not ds:
+                return
+            p = ds.GetDescription()
+            del ds
+            with open(p, 'rb') as f:
+                result = f.read()
+            if not result or len(result) < 20:
+                return
+
+            return result
+    except Exception as err:
+        print(err)
+        return
+
+
 def ogr_to_geojson(file_path):
+    result = vectorTranslate_to_geojson(file_path)
+    if result:
+        print('Success with VectorTranslate')
+        return result
+    print('Fail with VectorTranslate - Use OGR python bindings')
     if 'kml' in file_path:
         file_format = "KML"
     elif 'gml' in file_path:

@@ -76,6 +76,16 @@ def guess_separator(file):
     """
     Ugly helper function to return the (guessed) separator of a csv file
     (TODO: replace by something better)
+
+    Parameters
+    ----------
+    file: str
+        Path to file to use.
+
+    Returns
+    -------
+    sep: str or None
+        The guessed separator or None.
     """
     with open(file, 'r') as f:
         l = f.readline()
@@ -103,6 +113,29 @@ def guess_separator(file):
                 return None
 
 def extractShpZip(myzip, slots, directory):
+    """
+    Extract in "directory" the member of "myzip" which are listed in "slots".
+    Replace any extension in uppercase by its lowercase couterpart and updated
+    the "slots" dictionnary according to hold the real path of the extracted
+    files.
+
+    Parameters
+    ----------
+    myzip:
+
+    slots: dict
+        A mapping containing the reference extensions of the file to extract
+        and their real name in the archive.
+
+    directory: str
+        The temporary directory in which extract the files.
+
+    Returns
+    -------
+    slots: dict
+        A mapping containing the reference extensions and the real path of the
+        extracted files.
+    """
     for ext, member in slots.items():
         rv = myzip.extract(member, path=directory)
         if not ext in rv:

@@ -133,6 +133,8 @@ const createBoxProj4 = function createBoxProj4() {
         custom_name = rv.name;
         proj_str = rv.proj4;
       }
+    } else {
+      custom_name = tryFindNameProj(proj_str);
     }
     clean_up_box();
     try {
@@ -623,3 +625,11 @@ const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
   };
   return d3.geoProjection(projRaw);
 };
+
+const tryFindNameProj = (proj_str) => {
+  let o = Object.entries(_app.epsg_projections)
+    .filter(proj => proj[1].proj4.indexOf(proj_str) > -1
+      || proj[1].proj4.replace('+towgs84=0,0,0,0,0,0,0 ', '').indexOf(proj_str) > -1);
+  if (o.length > 0) return o[0][1].name;
+  else return undefined;
+}
