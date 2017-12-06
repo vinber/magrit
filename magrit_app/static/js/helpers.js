@@ -432,7 +432,8 @@ const type_col = function type_col(layerName, target) {
 };
 
 const type_col2 = function type_col2(table, _field, skip_if_empty_values = false) {
-// Function returning an object like {"field1": "field_type", "field2": "field_type"},
+// Function returning an array of objects like
+// {name: "field1", type: "field_type"}, {name: "field2", type: "field_type"}, (...)]
 //  for the fields of the selected layer.
   const result = [];
   const nbFeatures = table.length;
@@ -475,6 +476,8 @@ const type_col2 = function type_col2(table, _field, skip_if_empty_values = false
     field = fields[j];
     const hasDup = dups[field];
     if (field.toLowerCase() === 'id' && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+    } else if (!hasDup && tmp[field].every(ft => ft === 'string' || ft === 'stock')) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
     } else if (tmp[field].every(ft => ft === 'stock' || ft === 'empty') && tmp[field].indexOf('stock') > -1) {
       result.push({ name: field, type: 'stock', has_duplicate: hasDup });

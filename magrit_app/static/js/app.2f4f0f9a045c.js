@@ -507,10 +507,10 @@ function setUpInterface(reload_project) {
     var arg = void 0;
     if (sections[0].style.display === 'none') {
       arg = '';
-      document.getElementById('map_center_menu_ico').classList = 'active';
+      document.getElementById('map_center_menu_ico').classList.add('active');
     } else {
       arg = 'none';
-      document.getElementById('map_center_menu_ico').classList = '';
+      document.getElementById('map_center_menu_ico').classList.remove('active');
     }
     sections[0].style.display = arg;
     sections[1].style.display = arg;
@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.894223955948.json'
+      loadPath: 'static/locales/{{lng}}/translation.2f4f0f9a045c.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8875,7 +8875,8 @@ var type_col = function type_col(layerName, target) {
 var type_col2 = function type_col2(table, _field) {
   var skip_if_empty_values = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
-  // Function returning an object like {"field1": "field_type", "field2": "field_type"},
+  // Function returning an array of objects like
+  // {name: "field1", type: "field_type"}, {name: "field2", type: "field_type"}, (...)]
   //  for the fields of the selected layer.
   var result = [];
   var nbFeatures = table.length;
@@ -8919,6 +8920,10 @@ var type_col2 = function type_col2(table, _field) {
     field = fields[_j2];
     var hasDup = dups[field];
     if (field.toLowerCase() === 'id' && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+    } else if (!hasDup && tmp[field].every(function (ft) {
+      return ft === 'string' || ft === 'stock';
+    })) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
     } else if (tmp[field].every(function (ft) {
       return ft === 'stock' || ft === 'empty';
@@ -12831,7 +12836,7 @@ function createStyleBoxGraticule(layer_name) {
 *
 */
 function redraw_legend(type_legend, layer_name, field) {
-  var _ref = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined,
+  var _ref = type_legend === 'choro' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] : type_legend === 'choro_horiz' ? [['#legend_root_horiz.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro_horizontal] : type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] : type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] : type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined,
       _ref2 = _slicedToArray(_ref, 2),
       selector = _ref2[0],
       legend_func = _ref2[1];
@@ -12849,7 +12854,7 @@ function redraw_legend(type_legend, layer_name, field) {
       opacity: lgd.querySelector('#under_rect').style.fillOpacity
     } : undefined;
 
-    if (type_legend === 'default') {
+    if (type_legend === 'choro') {
       var no_data_txt = lgd.querySelector('#no_data_txt');
       no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
@@ -12931,13 +12936,17 @@ function createStyleBox_Line(layer_name) {
           breaks: rendering_params.breaks,
           extra_options: rendering_params.extra_options
         };
-        redraw_legend('default', layer_name, rendering_params.field);
+        if (document.querySelector(['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer_name)].join(' ')).id === 'legend_root') {
+          redraw_legend('choro', layer_name, rendering_params.field);
+        } else {
+          redraw_legend('choro_horiz', layer_name, rendering_params.field);
+        }
       } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params !== undefined) {
         current_layers[layer_name].color_map = rendering_params.color_map;
         current_layers[layer_name].fill_color = {
           class: [].concat(rendering_params.colorsByFeature)
         };
-        redraw_legend('default', layer_name, rendering_params.field);
+        redraw_legend('choro', layer_name, rendering_params.field);
       } else if (renderer === 'DiscLayer') {
         selection.each(function (d) {
           d.properties.prop_val = this.style.strokeWidth; // eslint-disable-line no-param-reassign
@@ -13276,7 +13285,11 @@ function createStyleBox(layer_name) {
       }
 
       if (rendering_params !== undefined && rendering_params.field !== undefined) {
-        redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+        if (document.querySelector(['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer_name)].join(' ')).id === 'legend_root') {
+          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+        } else {
+          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+        }
       }
       // Change the layer name if requested :
       if (new_layer_name !== layer_name) {
@@ -13544,7 +13557,12 @@ function createStyleBoxStewart(layer_name) {
       current_layers[layer_name].fill_color.class = rendering_params.breaks.map(function (obj) {
         return obj[1];
       });
-      redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+      // Redraw the legend if necessary:
+      if (document.querySelector(['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer_name)].join(' ')).id === 'legend_root') {
+        redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+      } else {
+        redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+      }
       // Change the layer name if requested :
       if (new_layer_name !== layer_name) {
         change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
@@ -13558,7 +13576,11 @@ function createStyleBoxStewart(layer_name) {
       current_layers[layer_name]['stroke-width-const'] = stroke_width;
       var fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
       recolor_stewart(prev_palette.name, prev_palette.reversed);
-      redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+      if (document.querySelector(['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer_name)].join(' ')).id === 'legend_root') {
+        redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+      } else {
+        redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+      }
       current_layers[layer_name].colors_breaks = prev_col_breaks;
       current_layers[layer_name].fill_color = fill_prev;
       zoom_without_redraw();
@@ -13665,10 +13687,11 @@ function make_generate_labels_graticule_section(parent_node) {
 */
 function make_generate_labels_section(parent_node, layer_name) {
   var _fields = get_fields_name(layer_name) || [];
-  var fields_num = Object.entries(type_col(layer_name)).filter(function (a) {
-    return a[1] === "number";
+  // const table = make_table(layer_name);
+  var fields_num = type_col2(make_table(layer_name)).filter(function (a) {
+    return a.type === 'ratio' || a.type === 'stock';
   }).map(function (a) {
-    return a[0];
+    return a.name;
   });
   if (_fields && _fields.length > 0) {
     var labels_section = parent_node.append('p');
@@ -14019,7 +14042,11 @@ function createStyleBox_ProbSymbol(layer_name) {
         }
         current_layers[layer_name].rendered_field2 = rendering_params.field;
         // Also change the legend if there is one displayed :
-        redraw_legend('default', layer_name, rendering_params.field);
+        if (document.querySelector(['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer_name)].join(' ')).id === 'legend_root') {
+          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+        } else {
+          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+        }
       }
       // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
       //     selection.each((d,i) => {
@@ -14437,7 +14464,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -14507,13 +14533,19 @@ var UserArrow = function () {
   _createClass(UserArrow, [{
     key: 'add_defs_marker',
     value: function add_defs_marker() {
-      defs.append('marker').attrs({ id: 'arrow_head',
+      defs.append('marker').attrs({
+        id: 'arrow_head',
         viewBox: '0 -5 10 10',
         refX: 5,
         refY: 0,
         orient: 'auto',
         markerWidth: 4,
-        markerHeight: 4 }).style('stroke-width', 1).append('path').attr('d', 'M0,-5L10,0L0,5').attr('class', 'arrowHead');
+        markerHeight: 4
+      }).append('path').attrs({
+        d: 'M0,-5L10,0L0,5',
+        class: 'arrowHead',
+        fill: 'context-fill'
+      });
       if (this.parent.childNodes[0].tagName !== 'defs') {
         this.parent.insertBefore(defs.node(), this.parent.childNodes[0]);
       }
@@ -14536,10 +14568,9 @@ var UserArrow = function () {
           } }];
       };
 
-      this.arrow = this.svg_elem.append('g').style('cursor', 'all-scroll').attrs({ class: 'arrow legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString() });
+      this.arrow = this.svg_elem.append('g').style('cursor', 'all-scroll').attrs({ class: 'arrow legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString(), 'marker-end': this.hide_head ? null : 'url(#arrow_head)' });
 
       this.arrow.insert('line').attrs({
-        'marker-end': this.hide_head ? null : 'url(#arrow_head)',
         x1: this.pt1[0],
         y1: this.pt1[1],
         x2: this.pt2[0],
@@ -15623,7 +15654,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19162,8 +19192,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19329,7 +19358,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20294,8 +20322,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

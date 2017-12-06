@@ -629,10 +629,10 @@ function setUpInterface(reload_project) {
     let arg;
     if (sections[0].style.display === 'none') {
       arg = '';
-      document.getElementById('map_center_menu_ico').classList = 'active';
+      document.getElementById('map_center_menu_ico').classList.add('active');
     } else {
       arg = 'none';
-      document.getElementById('map_center_menu_ico').classList = '';
+      document.getElementById('map_center_menu_ico').classList.remove('active');
     }
     sections[0].style.display = arg;
     sections[1].style.display = arg;

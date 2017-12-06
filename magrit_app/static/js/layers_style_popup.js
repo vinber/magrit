@@ -568,7 +568,8 @@ function createStyleBoxGraticule(layer_name) {
 *
 */
 function redraw_legend(type_legend, layer_name, field) {
-  const [selector, legend_func] = type_legend === 'default' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
+  const [selector, legend_func] = type_legend === 'choro' ? [['#legend_root.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro] :
+       type_legend === 'choro_horiz' ? [['#legend_root_horiz.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro_horizontal] :
        type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] :
        type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] :
        type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined;
@@ -585,7 +586,7 @@ function redraw_legend(type_legend, layer_name, field) {
       opacity: lgd.querySelector('#under_rect').style.fillOpacity,
     } : undefined;
 
-    if (type_legend === 'default') {
+    if (type_legend === 'choro') {
       let no_data_txt = lgd.querySelector('#no_data_txt');
       no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
 
@@ -687,13 +688,17 @@ function createStyleBox_Line(layer_name) {
             breaks: rendering_params.breaks,
             extra_options: rendering_params.extra_options,
           };
-          redraw_legend('default', layer_name, rendering_params.field);
+          if (document.querySelector(['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer_name)}`].join(' ')).id === 'legend_root') {
+            redraw_legend('choro', layer_name, rendering_params.field);
+          } else {
+            redraw_legend('choro_horiz', layer_name, rendering_params.field);
+          }
         } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params !== undefined) {
           current_layers[layer_name].color_map = rendering_params.color_map;
           current_layers[layer_name].fill_color = {
             class: [].concat(rendering_params.colorsByFeature),
           };
-          redraw_legend('default', layer_name, rendering_params.field);
+          redraw_legend('choro', layer_name, rendering_params.field);
         } else if (renderer === 'DiscLayer') {
           selection.each(function (d) {
             d.properties.prop_val = this.style.strokeWidth; // eslint-disable-line no-param-reassign
@@ -1094,7 +1099,11 @@ function createStyleBox(layer_name) {
         }
 
         if ((rendering_params !== undefined && rendering_params.field !== undefined)) {
-          redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+          if (document.querySelector(['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer_name)}`].join(' ')).id === 'legend_root') {
+            redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+          } else {
+            redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+          }
         }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
@@ -1421,7 +1430,12 @@ function createStyleBoxStewart(layer_name) {
       if (confirmed) {
         current_layers[layer_name].colors_breaks = rendering_params.breaks;
         current_layers[layer_name].fill_color.class = rendering_params.breaks.map(obj => obj[1]);
-        redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+        // Redraw the legend if necessary:
+        if (document.querySelector(['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer_name)}`].join(' ')).id === 'legend_root') {
+          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+        } else {
+          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+        }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
           change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
@@ -1436,7 +1450,11 @@ function createStyleBoxStewart(layer_name) {
         current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
         recolor_stewart(prev_palette.name, prev_palette.reversed);
-        redraw_legend('default', layer_name, current_layers[layer_name].rendered_field);
+        if (document.querySelector(['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer_name)}`].join(' ')).id === 'legend_root') {
+          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+        } else {
+          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+        }
         current_layers[layer_name].colors_breaks = prev_col_breaks;
         current_layers[layer_name].fill_color = fill_prev;
         zoom_without_redraw();
@@ -1595,7 +1613,10 @@ function make_generate_labels_graticule_section(parent_node) {
 */
 function make_generate_labels_section(parent_node, layer_name) {
   const _fields = get_fields_name(layer_name) || [];
-  const fields_num = Object.entries(type_col(layer_name)).filter(a => a[1] === "number").map(a => a[0]);
+  // const table = make_table(layer_name);
+  const fields_num = type_col2(make_table(layer_name))
+    .filter(a => a.type === 'ratio' || a.type === 'stock')
+    .map(a => a.name);
   if (_fields && _fields.length > 0) {
     const labels_section = parent_node.append('p');
     const input_fields = {};
@@ -2009,7 +2030,11 @@ function createStyleBox_ProbSymbol(layer_name) {
           }
           current_layers[layer_name].rendered_field2 = rendering_params.field;
           // Also change the legend if there is one displayed :
-          redraw_legend('default', layer_name, rendering_params.field);
+          if (document.querySelector(['legend', 'legend_feature', `lgdf_${_app.layer_to_id.get(layer_name)}`].join(' ')).id === 'legend_root') {
+            redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+          } else {
+            redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+          }
         }
         // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
         //     selection.each((d,i) => {

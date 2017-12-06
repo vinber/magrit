@@ -411,6 +411,7 @@ async def convert(request):
     elif ('octet-stream' in datatype or 'text/json' in datatype
             or 'application/geo+json' in datatype
             or 'application/json' in datatype
+            or 'text/plain' in datatype
             or 'application/vnd.google-earth.kml+xml' in datatype
             or 'application/gml+xml' in datatype) \
             and ("kml" in name.lower()
