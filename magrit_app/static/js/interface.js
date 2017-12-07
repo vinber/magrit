@@ -1054,6 +1054,8 @@ function add_layer_topojson(text, options = {}) {
       if (d.id !== undefined && d.id !== ix) {
         d.properties._uid = d.id; // eslint-disable-line no-param-reassign
         d.id = +ix; // eslint-disable-line no-param-reassign
+      } else if (!d.id) {
+        d.id = +ix; // eslint-disable-line no-param-reassign
       }
       user_data[lyr_name_to_add].push(d.properties);
     } else if (data_to_load) {

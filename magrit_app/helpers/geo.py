@@ -45,6 +45,12 @@ def get_proj4_string(wkt_proj):
             else res
 
 
+def read_shp_crs(path):
+    with open(path, 'r') as f:
+        proj_info_str = f.read()
+    return proj_info_str
+
+
 def convert_ogr_to_geojson(file_path, file_format):
 
     regex_field_name = re.compile("[^a-zA-Z0-9_-ëêàáâãæêéèñòóô]+")
@@ -140,11 +146,6 @@ def vectorTranslate_to_geojson(file_path):
 
 
 def ogr_to_geojson(file_path):
-    result = vectorTranslate_to_geojson(file_path)
-    if result:
-        print('Conversion Successful with VectorTranslate')
-        return result
-
     if 'kml' in file_path:
         file_format = "KML"
     elif 'gml' in file_path:
@@ -172,6 +173,11 @@ def ogr_to_geojson(file_path):
             content = raw_content.decode(encoding['encoding'])
             with open(file_path, 'wb') as f:
                 f.write(content.encode())
+
+    result = vectorTranslate_to_geojson(file_path)
+    if result:
+        print('Conversion Successful with VectorTranslate')
+        return result
 
     try:
         result = convert_ogr_to_geojson(file_path, file_format)

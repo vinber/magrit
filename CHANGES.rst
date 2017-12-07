@@ -10,7 +10,7 @@ Changes
 
 - Fix some bugs occuring while loading user files and improve the support for tabular file containing coordinates.
 
-- Fix some typos in the interface and improve the displaying of the projection name when the projection is coming from a proj.4 string. 
+- Fix some typos in the interface and improve the displaying of the projection name when the projection is coming from a proj.4 string.
 
 - Improve support for Edge and Safari.
 

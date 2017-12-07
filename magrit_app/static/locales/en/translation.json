@@ -356,7 +356,8 @@
             "world_capitals": "Most populated cities in the world <i>(Points)</i>",
             "disclamer_nuts": "<i>* without Madeira (PT), Azores (PT), Canarias (ES) islands<br>and French overseas departments</i>",
             "france_contour_2016_2-2": "Contour of metropolitan France (based on GEOFLA® 2016 v2.2)",
-            "departements_vor_2016_2-2": "Departments of Metropolitan France (adapted to the \"voronoi\" basemap - based on GEOFLA® 2016 v2.2)"
+            "departements_vor_2016_2-2": "Departments of Metropolitan France (adapted to the \"voronoi\" basemap - based on GEOFLA® 2016 v2.2)",
+            "regions_vor_2016_2-2": "Regions of metropolitan France (adapted to the \"voronoi\" basemap - GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Sample dataset",
@@ -366,7 +367,7 @@
             "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",
             "voronoi_communes_2016_2-2": "Municipalities of metropolitan France (<i>Voronoi polygons</i> - based on GEOFLA® 2016 v2.2)",
             "departements_2016_2-2": "Departments of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
-            "departements_2016_2-2": "Regions of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
+            "regions_2016_2-2": "Regions of metropolitan France (GEOFLA® 2016 v2.2 - <i>Polygons</i>)",
             "nuts2_data": "Nuts 2 (2013) European subdivisions <i>(Polygons)</i>",
             "brazil": "Brazilian federal states <i>(Polygons)</i>",
             "world_countries": "World countries <i>(Polygons)</i>",

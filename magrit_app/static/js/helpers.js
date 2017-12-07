@@ -693,17 +693,27 @@ function getAvailablesFunctionnalities(layerName) {
   } else {
     Array.prototype.forEach.call(func_id, d => d.style.filter = 'invert(0%) saturate(100%)');
   }
+
+  // That representation needs both Stock and Ratio variables:
   if (fields_stock.length === 0 || fields_ratio.length === 0) {
     document.getElementById('button_choroprop').style.filter = 'grayscale(100%)';
   } else {
     document.getElementById('button_choroprop').style.filter = 'invert(0%) saturate(100%)';
   }
+  // That representation needs both Stock and Categorical variables:
   if (fields_stock.length === 0 || fields_categ.length === 0) {
     document.getElementById('button_proptypo').style.filter = 'grayscale(100%)';
   } else {
     document.getElementById('button_proptypo').style.filter = 'invert(0%) saturate(100%)';
   }
-  // Special case for the "waffle" kind of map (it needs 2 or more stock variables)
+  // That representation needs either a Stock or a Ratio variable:
+  if (current_layers[layerName].type === 'Polygon'
+      && (fields_stock.length > 0 || fields_ratio.length > 0)) {
+    document.getElementById('button_discont').style.filter = 'invert(0%) saturate(100%)';
+  } else {
+    document.getElementById('button_discont').style.filter = 'grayscale(100%)';
+  }
+  // Special case for the "waffle" kind of map as it needs 2 or more stock variables:
   if (fields_stock.length < 2) {
     document.getElementById('button_two_stocks').style.filter = 'grayscale(100%)';
   } else {

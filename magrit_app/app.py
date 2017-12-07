@@ -55,13 +55,13 @@ try:
     from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-        extractShpZip, mmh3_file)
+        extractShpZip)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
-        make_geojson_links, TopologicalError, ogr_to_geojson)
+        make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
     from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
@@ -69,13 +69,13 @@ except:
    from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-       extractShpZip, mmh3_file)
+       extractShpZip)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
    from .helpers.geo import (
        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
        check_projection, olson_transform, get_proj4_string,
-       make_geojson_links, TopologicalError, ogr_to_geojson)
+       make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
    from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
    from .helpers.grid_layer import get_grid_layer
    from .helpers.error_middleware404 import error_middleware
@@ -157,7 +157,12 @@ async def remove_layer(request):
             request.app["redis_conn"].delete(f_name))
     return web.Response(text=json.dumps({"code": "Ok"}))
 
+
 async def get_sample_layer(request):
+    """
+    Returns the sample layer requested by the user
+    (in the first panel of the left menu).
+    """
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
 
@@ -182,21 +187,21 @@ async def get_sample_layer(request):
             ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
             ]))
     else:
-        res = await request.app.loop.run_in_executor(
-            request.app["ThreadPool"],
-            ogr_to_geojson, path)
-
-        # request.app['logger'].debug(
-        #     '{} - Transform coordinates from GeoJSON'.format(user_id))
-        result = await geojson_to_topojson(res, name)
+        with open(path, 'r') as f:
+            data = f.read()
         asyncio.ensure_future(
             request.app['redis_conn'].set(
-                f_name, result, pexpire=86400000))
+                f_name, data, pexpire=86400000))
         return web.Response(text=''.join(
-            ['{"key":', hash_val, ',"file":', result, '}']
+            ['{"key":', hash_val, ',"file":', data, '}']
             ))
 
 async def convert_topo(request):
+    """
+    Convert/sanitize a topojson layer uploaded by the user and
+    store it (in topojson format) in redis during the user session
+    for a possible later use.
+    """
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
 
@@ -259,16 +264,15 @@ def get_user_id(session_redis, app_users, app=None):
         return user_id
 
 
-def read_shp_crs(path):
-    with open(path, 'r') as f:
-        proj_info_str = f.read()
-    return proj_info_str
-
-
 def convert_error(message='Error converting input file'):
     return web.Response(text='{{"Error": "{}"}}'.format(message))
 
 async def convert(request):
+    """
+    Convert/sanitize a layer uploaded by the user and
+    store it (in topojson format) in redis during the user session
+    for a possible later use.
+    """
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis, request.app['app_users'])
@@ -277,16 +281,19 @@ async def convert(request):
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and "file[]" not in posted_data:
         list_files = []
+        tmp_buf = []
         for i in range(len(posted_data) - 1):
             field = posted_data.getall('file[{}]'.format(i))[0]
             name, ext = field[1].rsplit('.', 1)
             file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
             list_files.append(file_name)
             savefile(file_name, field[2].read())
+            if '.shp' in file_name or '.dbf' in file_name:
+                tmp_buf.append(field[2].read())
         shp_path = [i for i in list_files if 'shp' in i][0]
         layer_name = shp_path.replace(
             ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
-        hashed_input = mmh3_file(shp_path)
+        hashed_input = mmh3_hash(b''.join(tmp_buf))
         name = shp_path.split(os.path.sep)[2]
         datatype = "shp"
     # If there is a single file (geojson, kml, gml or zip) to handle :
@@ -463,7 +470,7 @@ async def convert_extrabasemap(request):
             f_name = '_'.join([user_id, str(hashed_input)])
 
             asyncio.ensure_future(
-                request.app['redis_conn'].incr('layers'))
+                request.app['redis_conn'].incr('extra_sample_layers'))
 
             result = await request.app['redis_conn'].get(f_name)
             if result:
@@ -1087,19 +1094,26 @@ async def get_stats_json(request):
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
         ])
-    layers, sample_layers = await asyncio.gather(*[
-        redis_conn.get('layers'), redis_conn.get('sample_layers')])
+    layers, sample_layers, extra_sample_layers = await asyncio.gather(*[
+        redis_conn.get('layers'),
+        redis_conn.get('sample_layers'),
+        redis_conn.get('extra_sample_layers')])
     view_onepage, single_view_onepage = await asyncio.gather(*[
         redis_conn.get('view_onepage'), redis_conn.get('single_view_onepage')])
     contact = await redis_conn.lrange('contact', 0, -1)
     count = await redis_conn.get('single_view_modulepage')
-    return web.Response(text=json.dumps(
-        {"count": count, "layer": layers,
-         "view_onepage": view_onepage,
-         "single_view_onepage": single_view_onepage,
-         "sample": sample_layers, "contact": contact,
-         "t": {"stewart": stewart, "dougenik": doug,
-               "gridded": gridded, "olson": olson, "links": links}}))
+    return web.Response(text=json.dumps({
+        "view_onepage": view_onepage,
+        "single_view_onepage": single_view_onepage,
+        "count": count,
+        "layer": layers,
+        "sample": sample_layers,
+        "extra_sample_layers": extra_sample_layers,
+        "contact": contact,
+        "t": {
+            "stewart": stewart, "dougenik": doug,
+            "gridded": gridded, "olson": olson, "links": links}
+        }))
 
 
 async def convert_tabular(request):
@@ -1248,7 +1262,7 @@ async def init(loop, port=None, watch_change=False):
     app['logger'] = logger
     app['version'] = get_version()
     with open('static/json/sample_layers.json', 'r') as f:
-        app['db_layers'] = json.loads(f.read().replace('/static', 'static'))[0]
+        app['db_layers'] = json.loads(f.read())
     app['ThreadPool'] = ThreadPoolExecutor(6)
     app['ProcessPool'] = ProcessPoolExecutor(6)
     app['app_name'] = "Magrit"

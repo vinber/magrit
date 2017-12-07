@@ -357,7 +357,8 @@
             "world_capitals": "Villes les plus peuplées du monde<i>(Points)</i>",
             "disclamer_nuts": "<i>* sans Madeire (PT), les Açores (PT), les îles Canaries (ES) <br>et les régions françaises d'outre-mer</i>",
             "france_contour_2016_2-2": "Contour de la France Métropolitaine (basé sur GEOFLA® 2016 v2.2)",
-            "departements_vor_2016_2-2": "Départements de France Métrop. (adapté au fond \"voronoi\" 2016 des communes - basé sur GEOFLA® 2016 v2.2)"
+            "departements_vor_2016_2-2": "Départements de France Métrop. (adapté au fond \"voronoi\" 2016 des communes - basé sur GEOFLA® 2016 v2.2)",
+            "regions_2016_2-2": "Régions de France Métrop. (adapté au fond \"voronoi\" 2016 des communes - GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",

@@ -351,7 +351,8 @@
             "world_capitals": "Ciudades de mayor población <i>(Puntos)</i>",
             "disclamer_nuts": "<i>* sin Madeira (PT), Azores (PT), las Islas Canarias (ES) <br>ni las regiones francesas de ultramar</i>",
             "france_contour_2016_2-2": "Contorno de la Francia metropolitana (basado en GEOFLA® 2016 v2.2)",
-            "departements_vor_2016_2-2": "Departamentos de Francia metropolitana (adaptados al fondo \"voronoi\" - basado en GEOFLA® 2016 v2.2)"
+            "departements_vor_2016_2-2": "Departamentos de Francia metropolitana (adaptados al fondo \"voronoi\" - basado en GEOFLA® 2016 v2.2)",
+            "regions_vor_2016_2-2": "Regiones de Francia metropolitana (adaptados al fondo \"voronoi\" - GEOFLA® 2016 v2.2)"
         },
         "sample_layer_box": {
             "title": "Conjunto de datos de ejemplo",

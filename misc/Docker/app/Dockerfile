@@ -79,4 +79,4 @@ RUN cd /home/app/magrit/ \
 EXPOSE 9999
 
 CMD service redis-server start \
-    && gunicorn "magrit_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2 --chdir /home/app/magrit/
+    && gunicorn "magrit_app.app:create_app()" --bind 0.0.0.0:9999 --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 3 --chdir /home/app/magrit/

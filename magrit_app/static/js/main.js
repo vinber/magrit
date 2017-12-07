@@ -2880,7 +2880,9 @@ function fill_export_png_options(displayed_ratio) {
 let beforeUnloadWindow = (event) => {
   get_map_template().then((jsonParams) => {
     window.localStorage.removeItem('magrit_project');
-    window.localStorage.setItem('magrit_project', jsonParams);
+    if (jsonParams.length < 5500000) {
+      window.localStorage.setItem('magrit_project', jsonParams);
+    }
   });
   // eslint-disable-next-line no-param-reassign
   event.returnValue = (_app.targeted_layer_added
