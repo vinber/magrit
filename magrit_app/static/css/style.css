@@ -875,11 +875,11 @@ img.layout_ft_ico:hover {
     min-height: 310px;
 }
 
-#txtwzr_table > tbody > tr > td, #txtwzr_table > thead > tr > th {
+/*#txtwzr_table > tbody > tr > td, #txtwzr_table > thead > tr > th {
     border-top: 1px solid #999;
     padding: 8px;
     vertical-align: top;
-}
+}*/
 
 #box_projection > p {
     clear: both;
@@ -943,13 +943,13 @@ img.layout_ft_ico:hover {
     padding: 12px !important;
 }
 
-#_m_free_draw_layer > path {
+/*#_m_free_draw_layer > path {
     fill: none;
     stroke: #000;
     stroke-width: 3px;
     stroke-linejoin: round;
     stroke-linecap: round;
-}
+}*/
 
 .switch-field {
   font-family: "Lucida Grande", Tahoma, Verdana, sans-serif;
@@ -1092,4 +1092,5 @@ Copyright (c) 2015 Tobias Ahlin (license MIT)
 .opts_lgd_layout.selected:before {
   content: "\2713 ";
   font-weight: 800;
+  font-size: 1.75em;
 }

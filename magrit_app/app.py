@@ -423,6 +423,11 @@ async def convert(request):
             or 'application/gml+xml' in datatype) \
             and ("kml" in name.lower()
                  or "gml" in name.lower() or 'json' in name.lower()):
+        filepath = filepath.replace(
+            '.KML', '.kml').replace(
+            '.GML', '.gml').replace(
+            '.GEOJSON', '.geojson').replace(
+            '.JSON', '.json')
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await request.app.loop.run_in_executor(
@@ -439,6 +444,8 @@ async def convert(request):
         asyncio.ensure_future(
             request.app['redis_conn'].set(
                 f_name, result, pexpire=86400000))
+
+        os.remove(filepath)
     else:
         request.app['logger'].info("Incorrect datatype :\n{}name:\n{}"
                    .format(datatype, name))
@@ -863,6 +870,11 @@ async def call_stewart(posted_data, user_id, app):
 
 
 async def geo_compute(request):
+    """
+    Function dispatching between the various available fonctionalities
+    (smoothed map, links creation, dougenik or olson cartogram, etc.)
+    and returning (if nothing went wrong) the result to be added on the map.
+    """
     s_t = time.time()
     function = request.match_info['function']
     if function not in request.app['geo_function']:
@@ -880,6 +892,10 @@ async def geo_compute(request):
 
 
 async def handler_exists_layer(request):
+    """
+    Function used when a layer is requested for the export of a project-file.
+    The returned layer is in TopoJSON format.
+    """
     session_redis = await get_session(request)
     user_id = get_user_id(session_redis, request.app['app_users'])
     res = await request.app['redis_conn'].get(
@@ -968,6 +984,20 @@ async def handler_exists_layer2(request):
 
 
 async def rawcsv_to_geo(data):
+    """
+    Actually convert a csv file containing coordinates to a GeoJSON FeatureCollection of
+    points.
+
+    Parameters
+    ----------
+    data: str
+        The csv file, as a string.
+
+    Returns
+    -------
+    geojson: str
+        The resulting GeoJSON FeatureCollection.
+    """
     # Determine what is the line separator in use:
     sp = '\r\n' if '\r\n' in data else '\n'
     # Remove "empty lines" if any
@@ -1023,6 +1053,12 @@ async def rawcsv_to_geo(data):
     })
 
 async def calc_helper(request):
+    """
+    Compute basic operation between two arrays (in order to create a new column
+    on a layer when the user request it).
+    This computation happens on the server only when there is
+    too many features to handle it in the user browser.
+    """
     posted_data = await request.post()
     val1 = np.array(json.loads(posted_data['var1']))
     val2 = np.array(json.loads(posted_data['var2']))
@@ -1044,6 +1080,11 @@ async def calc_helper(request):
 
 
 async def convert_csv_geo(request):
+    """
+    Handle the conversion of a csv file with coordinates to a TopoJSON layer, as
+    the other layers uploaded in Magrit, and store the result in redis during
+    the user session for a possible later use.
+    """
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis, request.app['app_users'])
@@ -1117,6 +1158,11 @@ async def get_stats_json(request):
 
 
 async def convert_tabular(request):
+    """
+    Handle the conversion of a tabular file (xls, ods or xlsx) to a csv file
+    and return the result in the browser.
+    If the tabular file contains multiple sheets, only the first one is used.
+    """
     st = time.time()
     posted_data = await request.post()
 

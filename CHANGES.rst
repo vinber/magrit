@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.6.1 (2017-12-xx)
+0.6.1 (2017-12-11)
 ------------------
 
 - New: add a new kind of layout for legends in use for choropleth maps.
@@ -12,7 +12,7 @@ Changes
 
 - Fix some typos in the interface and improve the displaying of the projection name when the projection is coming from a proj.4 string.
 
-- Improve support for Edge and Safari.
+- Slightly improve support for Edge and Safari.
 
 
 0.6.0 (2017-11-29)

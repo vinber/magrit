@@ -11,7 +11,6 @@ from osgeo.gdal import VectorTranslate, OpenEx, UseExceptions as gdal_UseExcepti
 from pyproj import Proj as pyproj_Proj
 from shapely.geos import TopologicalError
 from shapely.geometry import shape, mapping, MultiPolygon
-from shapely.ops import transform
 from shapely.affinity import scale
 from os.path import exists, join as path_join
 from pandas import read_json as pd_read_json
@@ -46,13 +45,216 @@ def get_proj4_string(wkt_proj):
 
 
 def read_shp_crs(path):
+    """
+    Read the .prj file given with a shapefile.
+
+    Parameters
+    ----------
+    path: str
+        Path to the .prj file to be readed.
+
+    Returns
+    -------
+    esriwktproj: str
+        The projection in ESRI WKT format.
+    """
     with open(path, 'r') as f:
         proj_info_str = f.read()
     return proj_info_str
 
+def get_field_names(srcDS):
+    """
+    Sanitize field names if necessary (if containing whitespace for example)
+    by replacing them on the returned GeoJSON.
+
+    Parameters
+    ----------
+    srcDS: gdal.Dataset
+        The dataset object, before conversion, used to fetch the name of each field
+        and decide if it needs to be sanitized.
+
+    Returns
+    -------
+    result: list of dict
+        An empty list if there is no field name to be changed, or a list of
+        dict (each one like {"old": "b@d name", "new": "b_d_name"}).
+    """
+    regex_field_name = re.compile("[^a-zA-Z0-9_-ëêàáâãæêéèñòóô]+")
+    layer = srcDS.GetLayer()
+    layer_defn = layer.GetLayerDefn()
+    names = []
+    for i in range(layer_defn.GetFieldCount()):
+        fieldDefn = layer_defn.GetFieldDefn(i)
+        col_name = fieldDefn.GetNameRef()
+        new_col_name = regex_field_name.sub('_', col_name)
+        if not col_name == new_col_name:
+            names.append({
+                "old": col_name.encode(),
+                "new": new_col_name.encode()
+            })
+    return names
+
+
+def get_encoding_dbf(file_path):
+    with open(file_path, 'rb') as f:
+        nb_records, len_header = unpack('<xxxxLH22x', f.read(32))
+        f.seek(len_header)
+        encoding = chardet.detect(f.read())
+    return encoding['encoding']
+
+
+def replace_field_names(raw_geojson, fields_map):
+    """
+    Sanitize field names if necessary (if containing whitespace for example)
+    by replacing them on the returned GeoJSON.
+
+    Parameters
+    ----------
+    raw_geojson: bytes
+        The GeoJSON FeatureCollection on which operate
+        (as bytes, encoded in UTF-8)
+    fields_map: list of dict
+        A list of dict, each one containing informations about a field name
+        to be replaced.
+
+    Returns
+    -------
+    result: bytes
+        The resulting GeoJSON FeatureCollection.
+    """
+    print('Replacing field names')
+    nb_elem = raw_geojson.count(b'\"type\": \"Feature\"')
+    for o in fields_map:
+        old_field_name = b''.join([b' \"', o['old'], b'\":'])
+        if raw_geojson.count(old_field_name) != nb_elem:
+            continue
+        raw_geojson = raw_geojson.replace(
+            old_field_name, b''.join([b' \"', o['new'], b'\":']))
+    return raw_geojson
+
+
+def ogr_to_geojson(file_path):
+    """
+    Entry point to convert a layer (in a format supported by ogr) to a GeoJSON layer.
+    This function takes care of creating a .cpg file if it is missing and if the
+    encoding doesn't seems to be ISO-8859-1 or UTF-8; it also takes care
+    of sanitizing field names (against whitespace for example).
+    The conversion is handled by gdal.VectorTranslate function (with 'skipfailure' option),
+    with a fallback on python OGR bindings (trying to handle to conversion anyway,
+    by skipping problematic geometry/feature too).
+
+    Parameters
+    ----------
+    file_path: str
+        Path of the input file.
+
+    Returns
+    -------
+    raw_geojson: bytes
+        The resulting GeoJSON FeatureCollection.
+    """
+    if 'kml' in file_path:
+        file_format = "KML"
+    elif 'gml' in file_path:
+        file_format = "GML"
+    elif 'geojson' in file_path:
+        file_format = "GeoJSON"
+    elif 'shp' in file_path:
+        file_format = "ESRI ShapeFile"
+    else:
+        return None
+
+    if file_format == "ESRI ShapeFile" \
+            and not exists(file_path.replace('.shp', '.cpg')):
+        file_path_cpg = file_path.replace('.shp', '.cpg')
+        encoding = get_encoding_dbf(file_path.replace('.shp', '.dbf'))
+
+        with open(file_path_cpg, 'wb') as f:
+            f.write(encoding.encode())
+
+    elif file_format == "GeoJSON":
+        with open(file_path, 'rb') as f:
+            raw_content = f.read()
+        encoding = chardet.detect(raw_content)
+        if encoding['encoding'] is not 'UTF-8':
+            content = raw_content.decode(encoding['encoding'])
+            with open(file_path, 'wb') as f:
+                f.write(content.encode())
+
+    result = vectorTranslate_to_geojson(file_path)
+    if result:
+        print('Conversion Successful with VectorTranslate')
+        return result
+
+    try:
+        result = convert_ogr_to_geojson(file_path, file_format)
+    except Exception as err:
+        print(err)
+        result = None
+    return result
+
+
+def vectorTranslate_to_geojson(file_path):
+    """
+    Convert a layer (in a format supported by ogr) to a GeoJSON layer.
+
+    Parameters
+    ----------
+    file_path: str
+        Path of the input file.
+
+    Returns
+    -------
+    raw_geojson: bytes
+        The resulting GeoJSON FeatureCollection.
+    """
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            gdal_UseExceptions()
+            srcDS = OpenEx(file_path)
+            field_names_to_replace = get_field_names(srcDS)
+            ds = VectorTranslate(
+                path_join(tmpdirname, 'result.geojson'),
+                srcDS=srcDS,
+                format = 'GeoJSON',
+                dstSRS='EPSG:4326',
+                skipFailures=True,
+                layerCreationOptions = ['WRITE_BBOX=YES', 'WRITE_NAME=NO'])
+            if not ds:
+                return
+            p = ds.GetDescription()
+            del ds
+            with open(p, 'rb') as f:
+                result = f.read()
+            if not result or len(result) < 20:
+                return
+            if field_names_to_replace:
+                result = replace_field_names(result, field_names_to_replace)
+                print('Field names replaced')
+
+            return result
+    except Exception as err:
+        print(err)
+        return
+
 
 def convert_ogr_to_geojson(file_path, file_format):
+    """
+    Convert a layer (in a format supported by ogr) to a GeoJSON layer.
+    Used in fallback, if the conversion failed with 'VectorTranslate'.
 
+    Parameters
+    ----------
+    file_path: str
+        Path of the input file.
+    file_format: str
+        Format of the input layer
+
+    Returns
+    -------
+    raw_geojson: bytes
+        The resulting GeoJSON FeatureCollection.
+    """
     regex_field_name = re.compile("[^a-zA-Z0-9_-ëêàáâãæêéèñòóô]+")
 
     in_driver = GetDriverByName(file_format)
@@ -107,84 +309,6 @@ def convert_ogr_to_geojson(file_path, file_format):
         ','.join(res),
         ''']}'''
         ]).encode()
-
-
-def get_encoding_dbf(file_path):
-    with open(file_path, 'rb') as f:
-        nb_records, len_header = unpack('<xxxxLH22x', f.read(32))
-        f.seek(len_header)
-        encoding = chardet.detect(f.read())
-    return encoding['encoding']
-
-
-def vectorTranslate_to_geojson(file_path):
-    try:
-        with tempfile.TemporaryDirectory() as tmpdirname:
-            # TODO: Sanitize the field names ?
-            gdal_UseExceptions()
-            srcDS = OpenEx(file_path)
-            ds = VectorTranslate(
-                path_join(tmpdirname, 'result.geojson'),
-                srcDS=srcDS,
-                format = 'GeoJSON',
-                dstSRS='EPSG:4326',
-                skipFailures=True,
-                layerCreationOptions = ['WRITE_BBOX=YES', 'WRITE_NAME=NO'])
-            if not ds:
-                return
-            p = ds.GetDescription()
-            del ds
-            with open(p, 'rb') as f:
-                result = f.read()
-            if not result or len(result) < 20:
-                return
-
-            return result
-    except Exception as err:
-        print(err)
-        return
-
-
-def ogr_to_geojson(file_path):
-    if 'kml' in file_path:
-        file_format = "KML"
-    elif 'gml' in file_path:
-        file_format = "GML"
-    elif 'geojson' in file_path:
-        file_format = "GeoJSON"
-    elif 'shp' in file_path:
-        file_format = "ESRI ShapeFile"
-    else:
-        return None
-
-    if file_format == "ESRI ShapeFile" \
-            and not exists(file_path.replace('.shp', '.cpg')):
-        file_path_cpg = file_path.replace('.shp', '.cpg')
-        encoding = get_encoding_dbf(file_path.replace('.shp', '.dbf'))
-
-        with open(file_path_cpg, 'wb') as f:
-            f.write(encoding.encode())
-
-    elif file_format == "GeoJSON":
-        with open(file_path, 'rb') as f:
-            raw_content = f.read()
-        encoding = chardet.detect(raw_content)
-        if encoding['encoding'] is not 'UTF-8':
-            content = raw_content.decode(encoding['encoding'])
-            with open(file_path, 'wb') as f:
-                f.write(content.encode())
-
-    result = vectorTranslate_to_geojson(file_path)
-    if result:
-        print('Conversion Successful with VectorTranslate')
-        return result
-
-    try:
-        result = convert_ogr_to_geojson(file_path, file_format)
-    except Exception as err:
-        print(err)
-        result = None
-    return result
 
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
