@@ -287,9 +287,10 @@ async def convert(request):
             name, ext = field[1].rsplit('.', 1)
             file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
             list_files.append(file_name)
-            savefile(file_name, field[2].read())
+            content = field[2].read()
+            savefile(file_name, content)
             if '.shp' in file_name or '.dbf' in file_name:
-                tmp_buf.append(field[2].read())
+                tmp_buf.append(content)
         shp_path = [i for i in list_files if 'shp' in i][0]
         layer_name = shp_path.replace(
             ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')

@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.6.2 (2017-12-12)
+------------------
+
+- Fix bug when importing shapefiles (due to wrong hash computation).
+
+
 0.6.1 (2017-12-11)
 ------------------
 
