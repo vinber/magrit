@@ -168,9 +168,9 @@ def ogr_to_geojson(file_path):
             and not exists(file_path.replace('.shp', '.cpg')):
         file_path_cpg = file_path.replace('.shp', '.cpg')
         encoding = get_encoding_dbf(file_path.replace('.shp', '.dbf'))
-
-        with open(file_path_cpg, 'wb') as f:
-            f.write(encoding.encode())
+        if encoding:
+            with open(file_path_cpg, 'wb') as f:
+                f.write(encoding.encode())
 
     elif file_format == "GeoJSON":
         with open(file_path, 'rb') as f:
