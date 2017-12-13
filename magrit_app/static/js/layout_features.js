@@ -546,6 +546,16 @@ class Textbox {
         width: this.width + 20 });
   }
 
+  updateLineHeight() {
+    const self = this;
+    self.lineHeight = Math.round(self.fontSize * 1.4);
+    self.textAnnot.selectAll('tspan').each(function (d, i) {
+      if (i !== 0) {
+        d3.select(this).attr('dy', self.lineHeight);
+      }
+    });
+  }
+
   editStyle() {
     const map_xy0 = get_map_xy0();
     const self = this;
@@ -658,13 +668,9 @@ class Textbox {
       .styles({ width: '60px', margin: '0 15px' })
       .on('change', function () {
         self.fontSize = +this.value;
-        self.lineHeight = Math.round(self.fontSize * 1.4);
         text_elem.style('font-size', `${self.fontSize}px`);
-        text_elem.selectAll('tspan').each(function (d, i) {
-          if (i !== 0) {
-            d3.select(this).attr('dy', self.lineHeight);
-          }
-        });
+        self.updateLineHeight();
+        self.update_bbox();
       });
 
     options_font.append('input')
@@ -1326,11 +1332,11 @@ class UserRectangle {
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
       this.pt1 = [
-        (origin_pt[0] - zoom_param.x) / zoom_param.k,
-        (origin_pt[1] - zoom_param.y) / zoom_param.k
+        (+origin_pt[0] - zoom_param.x) / zoom_param.k,
+        (+origin_pt[1] - zoom_param.y) / zoom_param.k,
       ];
     } else {
-      this.pt1 = origin_pt;
+      this.pt1 = [+origin_pt[0], +origin_pt[1]];
     }
 
     this.drag_behavior = d3.drag()
@@ -1358,7 +1364,7 @@ class UserRectangle {
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
           ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
         self.pt1 = [+subject.x + tx, +subject.y + ty];
-        self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
+        // self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
           // if(_app.autoalign_features){
           //     let snap_lines_x = subject.snap_lines.x,
           //         snap_lines_y = subject.snap_lines.y;
@@ -1684,11 +1690,11 @@ class UserEllipse {
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
       this.pt1 = [
-        (origin_pt[0] - zoom_param.x) / zoom_param.k,
-        (origin_pt[1] - zoom_param.y) / zoom_param.k,
+        (+origin_pt[0] - zoom_param.x) / zoom_param.k,
+        (+origin_pt[1] - zoom_param.y) / zoom_param.k,
       ];
     } else {
-      this.pt1 = origin_pt;
+      this.pt1 = [+origin_pt[0], +origin_pt[1]];
     }
     const self = this;
     this.drag_behavior = d3.drag()
@@ -1896,16 +1902,16 @@ class UserEllipse {
       document.getElementById('hand_button').onclick = handle_click_hand;
     };
 
-        // Change the behavior of the 'lock' button :
+    // Change the behavior of the 'lock' button :
     document.getElementById('hand_button').onclick = function () {
       cleanup_edit_state();
       handle_click_hand();
     };
-        // Desactive the ability to drag the ellipse :
+    // Desactive the ability to drag the ellipse :
     self.ellipse.on('.drag', null);
-        // Desactive the ability to zoom/move on the map ;
+    // Desactive the ability to zoom/move on the map ;
     handle_click_hand('lock');
-        // Add a layer to intercept click on the map :
+    // Add a layer to intercept click on the map :
     let edit_layer = map.insert('g');
     edit_layer.append('rect')
       .attrs({ x: 0, y: 0, width: w, height: h, class: 'edit_rect' })

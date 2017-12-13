@@ -19,6 +19,7 @@ Options:
 """
 
 import os
+import re
 import sys
 import ujson as json
 import time
@@ -55,7 +56,7 @@ try:
     from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-        extractShpZip)
+        extractShpZip, guess_separator)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
@@ -69,7 +70,7 @@ except:
    from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-       extractShpZip)
+       extractShpZip, guess_separator)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
    from .helpers.geo import (
@@ -319,8 +320,8 @@ async def convert(request):
 
     result = await request.app['redis_conn'].get(f_name)
     if result:
-        # request.app['logger'].debug(
-        #     '{} - Used result from redis'.format(user_id))
+        # We know this user and his layer has already been loaded into Redis,
+        # so let's use it instead of doing a new conversion again:
         asyncio.ensure_future(
             request.app['redis_conn'].pexpire(f_name, 86400000))
         if "shp" in datatype:
@@ -349,7 +350,7 @@ async def convert(request):
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_name, result, pexpire=86400000))
 
-        # Read the orignal projection to propose it later:
+        # Read the orignal projection to propose it later (client side):
         proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
         clean_files()
 
@@ -424,11 +425,19 @@ async def convert(request):
             or 'application/gml+xml' in datatype) \
             and ("kml" in name.lower()
                  or "gml" in name.lower() or 'json' in name.lower()):
-        filepath = filepath.replace(
-            '.KML', '.kml').replace(
-            '.GML', '.gml').replace(
-            '.GEOJSON', '.geojson').replace(
-            '.JSON', '.json')
+        ext = filepath.rsplit('.', 1)[1]
+        # Sanitize the extension name in case it's badly written (will help for
+        # the conversion to come)
+        # (replaces .json by .geojson, .KML by .kml, .GeoJSON by .geojson, etc.)
+        if 'json' in ext.lower():
+            new_ext = 'geojson'
+        elif 'gml' in ext.lower():
+            new_ext = 'gml'
+        elif 'kml' in ext.lower():
+            new_ext = 'kml'
+        filepath = ''.join([filepath[:-len(ext)], new_ext])
+
+        # Convert the file to a GeoJSON file with sanitized column names:
         with open(filepath, 'wb') as f:
             f.write(data)
         res = await request.app.loop.run_in_executor(
@@ -436,25 +445,29 @@ async def convert(request):
             ogr_to_geojson, filepath)
 
         if not res:
-            return convert_error('Error reading the input file')
+            return convert_error(
+                'Error reading the input file ({} format)'.format(new_ext))
 
+        # Convert the file to a TopoJSON:
         result = await geojson_to_topojson(res, layer_name)
         if not result:
             return convert_error('Error reading the input file')
 
+        # Store it in redis for possible later use:
         asyncio.ensure_future(
             request.app['redis_conn'].set(
                 f_name, result, pexpire=86400000))
 
+        # Remove the temporary file previously created:
         os.remove(filepath)
     else:
+        # Datatype was not detected; so nothing was done
+        # (Shouldn't really occur as it has already been
+        # checked client side before sending it):
         request.app['logger'].info("Incorrect datatype :\n{}name:\n{}"
                    .format(datatype, name))
         return convert_error('Incorrect datatype')
 
-    # request.app['logger'].debug(
-    #     '{} - Converted, stored in redis and sent back to client'
-    #     .format(user_id))
     return web.Response(text=''.join(
         ['{"key":', str(hashed_input),
          ',"file":', result,
@@ -499,9 +512,6 @@ async def convert_extrabasemap(request):
                     request.app['redis_conn'].set(
                         f_name, result, pexpire=86400000))
 
-            # request.app['logger'].debug(
-            #     '{} - Converted, stored in redis and sent back to client'
-            #     .format(user_id))
             return web.Response(text=''.join(
                 ['{"key":', str(hashed_input), ',"file":', result, '}']))
 
@@ -984,7 +994,7 @@ async def handler_exists_layer2(request):
     return web.Response(text='{"Error": "Invalid file format"}')
 
 
-async def rawcsv_to_geo(data):
+async def rawcsv_to_geo(data, logger):
     """
     Actually convert a csv file containing coordinates to a GeoJSON FeatureCollection of
     points.
@@ -1006,9 +1016,11 @@ async def rawcsv_to_geo(data):
     data = [d for d in data.split(sp) if not all((c == ',') for c in d)]
     data.append(sp)
     data = sp.join(data)
+    # Determine what is the separator for values (either comma, colon or tab):
+    separator = guess_separator(None, data)
+
     # Create a dataframe from our csv data:
-    df = pd.read_csv(StringIO(data))
-    df.replace(np.NaN, '', inplace=True)
+    df = pd.read_csv(StringIO(data), sep=separator)
     # Replace spaces in columns names:
     df.columns = [i.replace(' ', '_') for i in df.columns]
     # Fetch the name of the column containing latitude coordinates
@@ -1018,15 +1030,52 @@ async def rawcsv_to_geo(data):
     geo_col_x, name_geo_col_x = [(colnb + 1, col) for colnb, col in enumerate(df.columns)
                  if col.lower() in {"x", "longitude", "lon", "lng", "long"}
                  ][0]
-    # Try to convert the coordinates to float:
-    if df[name_geo_col_x].dtype == object:
-        df[name_geo_col_x] = df[name_geo_col_x].apply(
-            lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
-        df[name_geo_col_x] = df[name_geo_col_x].astype(float)
-    if df[name_geo_col_y].dtype == object:
-        df[name_geo_col_y] = df[name_geo_col_y].apply(
-            lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
-        df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+    # Drop records containing empty values for latitude and/or longitude:
+    df.dropna(subset=[name_geo_col_x, name_geo_col_y], inplace=True)
+    # Replace NaN values by empty string (some column type might be changed to
+    # 'Object' if thay contains empty values)
+    df.replace(np.NaN, '', inplace=True)
+    # Let's be sure there isn't empty values in the latitude/longitude columns:
+    df = df[df[name_geo_col_x] != '']
+    df = df[df[name_geo_col_y] != '']
+
+    # Try to convert the coordinates to float by applying the operation to the
+    # whole column :
+    # (can fail if some cells are containing 'bad' values)
+    try:
+        if df[name_geo_col_x].dtype == object:
+            df[name_geo_col_x] = df[name_geo_col_x].apply(
+                lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+        if df[name_geo_col_y].dtype == object:
+            df[name_geo_col_y] = df[name_geo_col_y].apply(
+                lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+    except Exception as err:
+        logger.info(
+            'Latitude/Longitude columns conversion failed using \'astype\':'
+            '\n{}'.format(err))
+        # Conversion failed so we are gonna look in each cell of the x and y
+        # columns and creating a boolean array based on wheter the x and y columns
+        # contains number:
+        reg = re.compile('[+-]?\d+(?:\.\d+)?')
+        mat = df[[name_geo_col_x, name_geo_col_y]].applymap(
+            lambda x: True if re.match(reg, x) else False)
+        # Use that boolean array to filter the dataframe:
+        df = df[(mat[name_geo_col_x] & mat[name_geo_col_y])]
+        # Try the conversion again :
+        try:
+            df[name_geo_col_x] = df[name_geo_col_x].apply(
+                lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_y] = df[name_geo_col_y].apply(
+                lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
+            df[name_geo_col_x] = df[name_geo_col_x].astype(float)
+            df[name_geo_col_y] = df[name_geo_col_y].astype(float)
+        except Exception as err:
+            logger.info(
+                'Latitude/Longitude columns conversion failed after filtering'
+                'using regex:\n{}'.format(err))
+            return None
 
     # Prepare the name of the columns to keep:
     columns_to_keep = [
@@ -1104,12 +1153,18 @@ async def convert_csv_geo(request):
             ['{"key":', hash_val, ',"file":', result.decode(), '}']))
 
     # Convert the csv file to a GeoJSON file:
-    res = await rawcsv_to_geo(data)
+    res = await rawcsv_to_geo(data, request.app['logger'])
+    if not res:
+        return web.Response(text=json.dumps(
+            {'Error': 'An error occured when trying to convert a tabular file'
+            '(containing coordinates) to a geographic layer'}))
 
     # Convert the GeoJSON file to a TopoJSON file:
     result = await geojson_to_topojson(res.encode(), file_name)
     if not result:
-        return web.Response(text=json.dumps({'Error': 'Wrong CSV input'}))
+        return web.Response(text=json.dumps(
+            {'Error': 'An error occured when trying to convert a tabular file'
+            '(containing coordinates) to a geographic layer'}))
 
     asyncio.ensure_future(
         request.app['redis_conn'].set(
@@ -1274,7 +1329,7 @@ async def init(loop, port=None, watch_change=False):
         ('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
         loop=loop,
-        client_max_size=16384**2,
+        client_max_size=17408**2,
         middlewares=[
             error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])

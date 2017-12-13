@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.2a4154a2ecf5.json'
+      loadPath: 'static/locales/{{lng}}/translation.244eb39b13d4.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -10013,7 +10013,7 @@ function scale_to_bbox(bbox) {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var MAX_INPUT_SIZE = 25200000;
+var MAX_INPUT_SIZE = 27300000;
 
 /**
 * Function triggered when some images of the interface are clicked
@@ -10031,10 +10031,10 @@ function click_button_add_layer() {
     input.setAttribute('accept', '.xls,.xlsx,.csv,.tsv,.ods,.txt');
     target_layer_on_add = true;
   } else if (self.id === 'input_geom' || self.id === 'img_in_geom') {
-    input.setAttribute('accept', '.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
+    input.setAttribute('accept', '.gml,.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
     target_layer_on_add = true;
   } else if (self.id === 'input_layout_geom') {
-    input.setAttribute('accept', '.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
+    input.setAttribute('accept', '.gml,.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
   }
   input.setAttribute('type', 'file');
   input.setAttribute('multiple', '');
@@ -14477,6 +14477,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -14972,6 +14973,17 @@ var Textbox = function () {
         width: this.width + 20 });
     }
   }, {
+    key: 'updateLineHeight',
+    value: function updateLineHeight() {
+      var self = this;
+      self.lineHeight = Math.round(self.fontSize * 1.4);
+      self.textAnnot.selectAll('tspan').each(function (d, i) {
+        if (i !== 0) {
+          d3.select(this).attr('dy', self.lineHeight);
+        }
+      });
+    }
+  }, {
     key: 'editStyle',
     value: function editStyle() {
       var _this3 = this;
@@ -15070,13 +15082,9 @@ var Textbox = function () {
 
       options_font.append('input').attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 0.1, value: self.fontSize }).styles({ width: '60px', margin: '0 15px' }).on('change', function () {
         self.fontSize = +this.value;
-        self.lineHeight = Math.round(self.fontSize * 1.4);
         text_elem.style('font-size', self.fontSize + 'px');
-        text_elem.selectAll('tspan').each(function (d, i) {
-          if (i !== 0) {
-            d3.select(this).attr('dy', self.lineHeight);
-          }
-        });
+        self.updateLineHeight();
+        self.update_bbox();
       });
 
       options_font.append('input').attrs({ type: 'color', id: 'font_color', value: rgb2hex(current_options.color) }).style('width', '60px').on('change', function () {
@@ -15651,9 +15659,9 @@ var UserRectangle = function () {
     var self = this;
     if (!untransformed) {
       var zoom_param = svg_map.__zoom;
-      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+      this.pt1 = [(+origin_pt[0] - zoom_param.x) / zoom_param.k, (+origin_pt[1] - zoom_param.y) / zoom_param.k];
     } else {
-      this.pt1 = origin_pt;
+      this.pt1 = [+origin_pt[0], +origin_pt[1]];
     }
 
     this.drag_behavior = d3.drag().subject(function () {
@@ -15662,6 +15670,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15678,7 +15687,7 @@ var UserRectangle = function () {
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
           ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;
       self.pt1 = [+subject.x + tx, +subject.y + ty];
-      self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
+      // self.pt2 = [self.pt1[0] + self.width, self.pt1[1] + self.height];
       // if(_app.autoalign_features){
       //     let snap_lines_x = subject.snap_lines.x,
       //         snap_lines_y = subject.snap_lines.y;
@@ -15977,9 +15986,9 @@ var UserEllipse = function () {
 
     if (!untransformed) {
       var zoom_param = svg_map.__zoom;
-      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
+      this.pt1 = [(+origin_pt[0] - zoom_param.x) / zoom_param.k, (+origin_pt[1] - zoom_param.y) / zoom_param.k];
     } else {
-      this.pt1 = origin_pt;
+      this.pt1 = [+origin_pt[0], +origin_pt[1]];
     }
     var self = this;
     this.drag_behavior = d3.drag().subject(function () {
@@ -18570,7 +18579,8 @@ function apply_user_preferences(json_pref) {
             y: _ft4.position_y
           });
           new_txt_box.fontSize = +_ft4.style.split('font-size: ')[1].split('px')[0];
-          new_txt_box.fontFamily = _ft4.style.split('font-family: ')[1].split(';')[0];
+          new_txt_box.fontFamily = (_ft4.style.split('font-family: ')[1].split(';')[0] || '').replace(', ', ',');
+          new_txt_box.updateLineHeight();
           new_txt_box.update_text(_ft4.content);
         }
       }
@@ -19200,7 +19210,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19366,6 +19377,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20330,7 +20342,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

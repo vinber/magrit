@@ -9,7 +9,7 @@
 * In the case of sending multiple files unziped, this limit corresponds
 * to the sum of the size of each file.
 */
-const MAX_INPUT_SIZE = 25200000;
+const MAX_INPUT_SIZE = 27300000;
 
 /**
 * Function triggered when some images of the interface are clicked
@@ -27,10 +27,10 @@ function click_button_add_layer() {
     input.setAttribute('accept', '.xls,.xlsx,.csv,.tsv,.ods,.txt');
     target_layer_on_add = true;
   } else if (self.id === 'input_geom' || self.id === 'img_in_geom') {
-    input.setAttribute('accept', '.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
+    input.setAttribute('accept', '.gml,.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
     target_layer_on_add = true;
   } else if (self.id === 'input_layout_geom') {
-    input.setAttribute('accept', '.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
+    input.setAttribute('accept', '.gml,.kml,.geojson,.topojson,.shp,.dbf,.shx,.prj,.cpg,.json');
   }
   input.setAttribute('type', 'file');
   input.setAttribute('multiple', '');

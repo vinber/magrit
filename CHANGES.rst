@@ -1,10 +1,20 @@
 Changes
 =======
 
+0.6.3 (2017-12-14)
+------------------
+
+- Fix encoding issue of some sample basemaps (introduced in 0.6.1).
+
+- Fix some errors that appeared when loading some datasets (especially while converting a csv to geojson when some cells of the coordinate columns contains weird stuff).
+
+- Fix error with line height on text annotation with custom font when reloading a project file.
+
+
 0.6.2 (2017-12-12)
 ------------------
 
-- Fix bug when importing shapefiles (due to wrong hash computation).
+- Fix bug when importing shapefiles (due to wrong hash computation / was introduced in 0.6.1).
 
 
 0.6.1 (2017-12-11)

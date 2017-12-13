@@ -72,7 +72,7 @@ def get_key(var):
             return k
 
 
-def guess_separator(file):
+def guess_separator(file, raw_data=None):
     """
     Ugly helper function to return the (guessed) separator of a csv file
     (TODO: replace by something better)
@@ -82,14 +82,25 @@ def guess_separator(file):
     file: str
         Path to file to use.
 
+    raw_data: str
+        Csv file as string (optionnal, to be used if the csv file is already in
+        memory; so it won't use the 'file' parameters if raw_data isn't empty).
+
     Returns
     -------
     sep: str or None
         The guessed separator or None.
     """
-    with open(file, 'r') as f:
-        l = f.readline()
-        l2 = f.readline()
+    if file:
+        with open(file, 'r') as f:
+            l = f.readline()
+            l2 = f.readline()
+    elif raw_data:
+        raw_data = raw_data.split('\r\n' if '\r\n' in raw_data else '\n')
+        l = raw_data[0]
+        l2 = raw_data[1]
+    else:
+        return None
     c_comma1 = l.count(',')
     c_smcol1 = l.count(';')
     if '\t' in l and not (c_comma1 or c_smcol1):

@@ -699,7 +699,8 @@ function apply_user_preferences(json_pref) {
               y: ft.position_y,
             });
           new_txt_box.fontSize = +ft.style.split('font-size: ')[1].split('px')[0];
-          new_txt_box.fontFamily = ft.style.split('font-family: ')[1].split(';')[0];
+          new_txt_box.fontFamily = (ft.style.split('font-family: ')[1].split(';')[0] || '').replace(', ', ',');
+          new_txt_box.updateLineHeight();
           new_txt_box.update_text(ft.content);
         }
       }
