@@ -21,6 +21,7 @@ Options:
 import os
 import re
 import sys
+import traceback
 import ujson as json
 import time
 import docopt
@@ -179,8 +180,6 @@ async def get_sample_layer(request):
     result = await request.app['redis_conn'].get(f_name)
     if result:
         result = result.decode()
-        # request.app['logger'].debug(
-        #     '{} - Used result from redis'.format(user_id))
         asyncio.ensure_future(
             request.app['redis_conn'].pexpire(f_name, 86400000))
         return web.Response(text=''.join([
@@ -226,8 +225,6 @@ async def convert_topo(request):
     result = await request.app['redis_conn'].get(f_name)
     if result:
         result = result.decode()
-        # request.app['logger'].debug(
-        #     '{} - Used result from redis'.format(user_id))
         asyncio.ensure_future(
             request.app['redis_conn'].pexpire(f_name, 86400000))
         return web.Response(text=''.join([
@@ -237,7 +234,6 @@ async def convert_topo(request):
 
     asyncio.ensure_future(
         request.app['redis_conn'].set(f_name, data, pexpire=86400000))
-    # request.app['logger'].debug('Caching the TopoJSON')
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":null}']
         ))
@@ -281,23 +277,29 @@ async def convert(request):
     # If a shapefile is provided as multiple files
     # (.shp, .dbf, .shx, and .prj are expected), not ziped :
     if "action" in posted_data and "file[]" not in posted_data:
-        list_files = []
-        tmp_buf = []
-        for i in range(len(posted_data) - 1):
-            field = posted_data.getall('file[{}]'.format(i))[0]
-            name, ext = field[1].rsplit('.', 1)
-            file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
-            list_files.append(file_name)
-            content = field[2].read()
-            savefile(file_name, content)
-            if '.shp' in file_name or '.dbf' in file_name:
-                tmp_buf.append(content)
-        shp_path = [i for i in list_files if 'shp' in i][0]
-        layer_name = shp_path.replace(
-            ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
-        hashed_input = mmh3_hash(b''.join(tmp_buf))
-        name = shp_path.split(os.path.sep)[2]
-        datatype = "shp"
+        try:
+            list_files, tmp_buf = [], []
+            for i in range(len(posted_data) - 1):
+                field = posted_data.getall('file[{}]'.format(i))[0]
+                name, ext = field[1].rsplit('.', 1)
+                file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
+                list_files.append(file_name)
+                content = field[2].read()
+                savefile(file_name, content)
+                if '.shp' in file_name or '.dbf' in file_name:
+                    tmp_buf.append(content)
+            shp_path = [i for i in list_files if 'shp' in i][0]
+            layer_name = shp_path.replace(
+                ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
+            hashed_input = mmh3_hash(b''.join(tmp_buf))
+            name = shp_path.split(os.path.sep)[2]
+            datatype = "shp"
+        except Exception as err:
+            _tb = traceback.format_exc(limit=2)
+            request.app['logger'].info(
+                'Error while loading shapefile : {}\n{}\n{}'.format(err, _tb, list_files))
+            return convert_error('Error while loading shapefile')
+
     # If there is a single file (geojson, kml, gml or zip) to handle :
     elif "action" in posted_data and "file[]" in posted_data:
         try:
@@ -309,8 +311,11 @@ async def convert(request):
             hashed_input = mmh3_hash(data)
             filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
-            request.app['logger'].info("posted data :\n{}\nError:\n{}\nName:\n{}"
-                       .format(posted_data, err, field[1]))
+            _tb = traceback.format_exc(limit=2)
+            request.app['logger'].info(
+                'Error while loading single file : {}\n{}'.format(err, _tb))
+            request.app['logger'].info(
+                "posted data :\n{}\nName:\n{}".format(posted_data, field[1]))
             return convert_error('Incorrect datatype')
 
     f_name = '_'.join([user_id, str(hashed_input)])
@@ -383,8 +388,9 @@ async def convert(request):
                 # Each file has the same "base" name:
                 assert(all(name == names[0] for name in names))
             except Exception as err:
+                _tb = traceback.format_exc(limit=2)
                 request.app['logger'].info(
-                    'Error with content of zip file : {}'.format(err))
+                    'Error with content of zip file : {}'.format(_tb))
                 return convert_error('Error with zip file content')
 
             os.mkdir(dir_path)
@@ -410,8 +416,9 @@ async def convert(request):
             except (asyncio.CancelledError, CancelledError):
                 return
             except Exception as err:
+                _tb = traceback.format_exc(limit=2)
                 request.app['logger'].info(
-                    'Error with content of zip file : {}'.format(err))
+                    'Error with content of zip file : {}\n{}'.format(err, _tb))
                 return convert_error('Error with zip file content')
             finally:
                 [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
@@ -495,8 +502,6 @@ async def convert_extrabasemap(request):
 
             result = await request.app['redis_conn'].get(f_name)
             if result:
-                # request.app['logger'].debug(
-                #     '{} - Used result from redis'.format(user_id))
                 asyncio.ensure_future(
                     request.app['redis_conn'].pexpire(f_name, 86400000))
                 return web.Response(text=''.join(
@@ -546,7 +551,6 @@ async def store_contact_info(request):
 
 
 async def carto_doug(posted_data, user_id, app):
-    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
     ref_layer = await app['redis_conn'].get(f_name)
@@ -561,16 +565,10 @@ async def carto_doug(posted_data, user_id, app):
     tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
     savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 
-    try:
-        result = await app.loop.run_in_executor(
-            app["ThreadPool"],
-            make_carto_doug,
-            tmp_path, n_field_name, iterations)
-    except asyncio.CancelledError:
-        app['logger'].info(
-            'Cancelled after {:.4f}s : carto_doug'
-            .format(time.time()-st))
-        return
+    result = await app.loop.run_in_executor(
+        app["ThreadPool"],
+        make_carto_doug,
+        tmp_path, n_field_name, iterations)
 
     os.remove(tmp_path)
     new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
@@ -579,11 +577,7 @@ async def carto_doug(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, str(hash_val)]), res, pexpire=86400000))
-    asyncio.ensure_future(
-        app['redis_conn'].lpush('dougenik_time', time.time()-st))
-    app['logger'].info(
-        '{} - timing : carto_doug : {:.4f}s'
-        .format(user_id, time.time()-st))
+
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 # async def compute_discont(posted_data, user_id, app):
@@ -624,7 +618,6 @@ async def carto_doug(posted_data, user_id, app):
 #     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 async def links_map(posted_data, user_id, app):
-    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
@@ -653,16 +646,11 @@ async def links_map(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, str(hash_val)]), res, pexpire=86400000))
-    app['logger'].info(
-        '{} - timing : links_on_py : {:.4f}s'
-        .format(user_id, time.time()-st))
-    asyncio.ensure_future(
-        app['redis_conn'].lpush('links_time', time.time()-st))
+
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 
 async def carto_gridded(posted_data, user_id, app):
-    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
 
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
@@ -680,41 +668,27 @@ async def carto_gridded(posted_data, user_id, app):
                  "result": None}
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
-    try:
-        result_geojson = await app.loop.run_in_executor(
-            app["ProcessPool"],
-            get_grid_layer,
-            filenames['src_layer'],
-            posted_data["cellsize"],
-            n_field_name,
-            posted_data["grid_shape"].lower())
-    except asyncio.CancelledError:
-        app['logger'].info(
-            'Cancelled after {:.4f}s : get_grid_layer'
-            .format(time.time()-st))
-        return
-    except (TopologicalError, ValueError) as err:
-        return json.dumps({"Error": "geometry_error"})
+    result_geojson = await app.loop.run_in_executor(
+        app["ProcessPool"],
+        get_grid_layer,
+        filenames['src_layer'],
+        posted_data["cellsize"],
+        n_field_name,
+        posted_data["grid_shape"].lower())
 
     new_name = '_'.join(['Gridded',
                          str(posted_data["cellsize"]),
                          n_field_name])
     res = await geojson_to_topojson(result_geojson.encode(), new_name)
 
-    app['logger'].info(
-        '{} - Gridded_on_py - {:.4f}'.format(user_id, st-time.time()))
-
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val]), res, pexpire=86400000))
-    asyncio.ensure_future(
-        app['redis_conn'].lpush('gridded_time', time.time()-st))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
 async def compute_olson(posted_data, user_id, app):
-    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
 
@@ -724,17 +698,11 @@ async def compute_olson(posted_data, user_id, app):
     scale_values = posted_data['scale_values']
     ref_layer_geojson = convert_from_topo(ref_layer)
 
-    try:
-        await app.loop.run_in_executor(
-            app["ThreadPool"],
-            olson_transform,
-            ref_layer_geojson,
-            scale_values)
-    except asyncio.CancelledError:
-        app['logger'].info(
-            'Cancelled after {:.4f}s : olson_transform'
-            .format(time.time()-st))
-        return
+    await app.loop.run_in_executor(
+        app["ThreadPool"],
+        olson_transform,
+        ref_layer_geojson,
+        scale_values)
 
     new_name = "_".join(["Olson_carto", str(posted_data["field_name"])])
     res = await geojson_to_topojson(
@@ -743,11 +711,6 @@ async def compute_olson(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val]), res, pexpire=86400000))
-    asyncio.ensure_future(
-        app['redis_conn'].lpush('olson_time', time.time()-st))
-    app['logger'].info(
-        '{} - timing : olson-like cartogram : {:.4f}s'
-        .format(user_id, time.time()-st))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
@@ -770,7 +733,6 @@ async def receiv_layer(request):
 
 
 async def call_stewart(posted_data, user_id, app):
-    st = time.time()
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
     point_layer = await app['redis_conn'].get(f_name)
@@ -822,41 +784,35 @@ async def call_stewart(posted_data, user_id, app):
 
     existing_obj = await app['redis_conn'].get(reusable_val)
 
-    try:
-        if existing_obj:
-            res, breaks = await app.loop.run_in_executor(
-                app["ThreadPool"],
-                resume_stewart,
-                existing_obj,
-                int(posted_data['nb_class']),
-                discretization,
-                posted_data['user_breaks'],
-                filenames["mask_layer"])
+    if existing_obj:
+        res, breaks = await app.loop.run_in_executor(
+            app["ThreadPool"],
+            resume_stewart,
+            existing_obj,
+            int(posted_data['nb_class']),
+            discretization,
+            posted_data['user_breaks'],
+            filenames["mask_layer"])
 
-        else:
-            res, breaks, dump_obj = await app.loop.run_in_executor(
-                app["ProcessPool"],
-                quick_stewart_mod,
-                filenames['point_layer'],
-                n_field_name1,
-                int(posted_data['span']),
-                float(posted_data['beta']),
-                posted_data['typefct'].lower(),
-                int(posted_data['nb_class']),
-                discretization,
-                posted_data['resolution'],
-                filenames["mask_layer"],
-                n_field_name2,
-                posted_data['user_breaks'])
+    else:
+        res, breaks, dump_obj = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            quick_stewart_mod,
+            filenames['point_layer'],
+            n_field_name1,
+            int(posted_data['span']),
+            float(posted_data['beta']),
+            posted_data['typefct'].lower(),
+            int(posted_data['nb_class']),
+            discretization,
+            posted_data['resolution'],
+            filenames["mask_layer"],
+            n_field_name2,
+            posted_data['user_breaks'])
 
-            asyncio.ensure_future(
-                app['redis_conn'].set(
-                    reusable_val, dump_obj, pexpire=43200000))
-    except asyncio.CancelledError:
-        app['logger'].info(
-            'Cancelled after {:.4f}s : stewart'
-            .format(time.time()-st))
-        return
+        asyncio.ensure_future(
+            app['redis_conn'].set(
+                reusable_val, dump_obj, pexpire=43200000))
 
     os.remove(filenames['point_layer'])
     if filenames['mask_layer']:
@@ -868,11 +824,6 @@ async def call_stewart(posted_data, user_id, app):
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val]), res, pexpire=86400000))
-    asyncio.ensure_future(
-        app['redis_conn'].lpush('stewart_time', time.time()-st))
-    app['logger'].info(
-        '{} - timing : stewart_on_py : {:.4f}s'
-        .format(user_id, time.time()-st))
 
     return "|||".join([
         ''.join(['{"key":', hash_val, ',"file":', res, '}']),
@@ -897,8 +848,37 @@ async def geo_compute(request):
         user_id = get_user_id(session_redis, request.app['app_users'])
         func = request.app['geo_function'][function]
         request.app['logger'].info(
-            'Python - p1 : {:.4f}'.format(time.time()-s_t))
-        data_response = await func(posted_data, user_id, request.app)
+            'Dispatch between functions : {:.4f}s'.format(time.time()-s_t))
+        s_t = time.time()
+        try:
+            data_response = await func(posted_data, user_id, request.app)
+            asyncio.ensure_future(
+                request.app['redis_conn'].lpush(
+                '{}_time'.format(function), time.time()-s_t))
+            request.app['logger'].info(
+                '{}: {:.4f}s'.format(function, time.time()-s_t))
+
+        except (asyncio.CancelledError, CancelledError):
+            request.app['logger'].info(
+                'Cancelled after {:.4f}s : {}'
+                .format(time.time()-s_t, function))
+            data_response = json.dumps({})
+
+        except TopologicalError as err:
+            _tb = traceback.format_exc()
+            request.app['logger'].info(
+                'Error on "{}" after {:.4f}s\n{}'
+                .format(function, time.time()-s_t, _tb))
+            data_response = json.dumps({
+                "Error": "Geometry error ({})".format(err)})
+
+        except Exception as err:
+            _tb = traceback.format_exc()
+            request.app['logger'].info(
+                'Error on \"{}\" after {:.4f}s\n{}'
+                .format(function, time.time()-s_t, _tb))
+            data_response = json.dumps({"Error": "{}".format(err)})
+
         return web.Response(text=data_response)
 
 
@@ -1035,10 +1015,16 @@ async def rawcsv_to_geo(data, logger):
     # Replace NaN values by empty string (some column type might be changed to
     # 'Object' if thay contains empty values)
     df.replace(np.NaN, '', inplace=True)
-    # Let's be sure there isn't empty values in the latitude/longitude columns:
-    df = df[df[name_geo_col_x] != '']
-    df = df[df[name_geo_col_y] != '']
-
+    # Let's try to be sure there isn't empty values in the latitude/longitude columns:
+    try:
+        if df[name_geo_col_x].dtype == object:
+            df = df[df[name_geo_col_x] != '']
+        if df[name_geo_col_y].dtype == object:
+            df = df[df[name_geo_col_y] != '']
+    except Exception as err:
+        logger.info(
+            'Latitude/Longitude columns filtering failed:'
+            '\n{}'.format(err))
     # Try to convert the coordinates to float by applying the operation to the
     # whole column :
     # (can fail if some cells are containing 'bad' values)
@@ -1052,9 +1038,10 @@ async def rawcsv_to_geo(data, logger):
                 lambda x: x.replace(',', '.') if hasattr(x, 'replace') else x)
             df[name_geo_col_y] = df[name_geo_col_y].astype(float)
     except Exception as err:
+        _tb = traceback.format_exc(limit=1)
         logger.info(
             'Latitude/Longitude columns conversion failed using \'astype\':'
-            '\n{}'.format(err))
+            '\n{}\n{}'.format(err, _tb))
         # Conversion failed so we are gonna look in each cell of the x and y
         # columns and creating a boolean array based on wheter the x and y columns
         # contains number:
@@ -1072,9 +1059,10 @@ async def rawcsv_to_geo(data, logger):
             df[name_geo_col_x] = df[name_geo_col_x].astype(float)
             df[name_geo_col_y] = df[name_geo_col_y].astype(float)
         except Exception as err:
+            _tb = traceback.format_exc(limit=2)
             logger.info(
                 'Latitude/Longitude columns conversion failed after filtering'
-                'using regex:\n{}'.format(err))
+                'using regex:\n{}\n{}'.format(err, _tb))
             return None
 
     # Prepare the name of the columns to keep:
@@ -1147,8 +1135,6 @@ async def convert_csv_geo(request):
 
     result = await request.app['redis_conn'].get(f_name)
     if result:
-        # request.app['logger'].debug(
-        #         '{} - Used result from redis'.format(user_id))
         return web.Response(text=''.join(
             ['{"key":', hash_val, ',"file":', result.decode(), '}']))
 
@@ -1171,8 +1157,8 @@ async def convert_csv_geo(request):
             f_name, result, pexpire=86400000))
 
     request.app['logger'].info(
-        '{} - timing : csv -> geojson -> topojson : {:.4f}s'
-        .format(user_id, time.time()-st))
+        'timing : csv -> geojson -> topojson : {:.4f}s'
+        .format(time.time()-st))
 
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":', result, '}']
@@ -1186,7 +1172,7 @@ async def get_stats_json(request):
     redis_conn = request.app['redis_conn']
     stewart, doug, gridded, olson, links = await asyncio.gather(*[
         redis_conn.lrange('stewart_time', 0, -1),
-        redis_conn.lrange('dougenik_time', 0, -1),
+        redis_conn.lrange('carto_doug_time', 0, -1),
         redis_conn.lrange('gridded_time', 0, -1),
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
@@ -1249,7 +1235,7 @@ async def convert_tabular(request):
         message = None
 
     request.app['logger'].info(
-        ' - timing : spreadsheet -> csv : {:.4f}s'
+        'timing : spreadsheet -> csv : {:.4f}s'
         .format(time.time()-st))
     return web.Response(text=json.dumps(
         {"file": result, "name": name, "message": message}))
