@@ -6,6 +6,7 @@ from geopandas import GeoDataFrame, GeoSeries
 from shapely.geometry import Polygon
 from math import ceil
 from shapely.ops import cascaded_union
+from shapely import speedups
 import rtree
 import numpy as np
 import ujson as json
@@ -28,6 +29,8 @@ def to_float(v):
         return np.NaN
 
 def get_grid_layer(input_file, height, field_name, grid_shape="square"):
+    if speedups.available and not speedups.enabled:
+        speedups.enable()
     proj_robinson = (
             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
