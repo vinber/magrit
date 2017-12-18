@@ -5,6 +5,7 @@
 """
 import pytest
 import ujson as json
+import logging
 
 from magrit_app.app import rawcsv_to_geo, _init
 from magrit_app.helpers.topo_to_geo import convert_from_topo
@@ -40,7 +41,8 @@ def cli(loop, test_client):
     return loop.run_until_complete(test_client(app))
 
 async def test_convert_csv_to_geo(read_csv):
-    res = await rawcsv_to_geo(read_csv)
+    logger = logging.getLogger()
+    res = await rawcsv_to_geo(read_csv, logger)
     "FeatureCollection" in res
 
 def test_convert_from_topo(read_topo, read_verif_topo):
