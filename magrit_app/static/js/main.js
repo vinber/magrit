@@ -1031,13 +1031,14 @@ function setUpInterface(reload_project) {
     { id: 'zoom_in', i18n: '[tooltip-title]app_page.lm_buttons.zoom+', tooltip_position: 'left', class: 'zoom_button i18n', html: '+' },
     { id: 'info_button', i18n: '[tooltip-title]app_page.lm_buttons.i', tooltip_position: 'left', class: 'info_button i18n', html: 'i' },
     { id: 'brush_zoom_button', i18n: '[tooltip-title]app_page.lm_buttons.zoom_rect', tooltip_position: 'left', class: 'brush_zoom_button i18n', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' },
-    { id: 'hand_button', i18n: '[tooltip-title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button active i18n', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
+    { id: 'hand_button', i18n: '[tooltip-title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button i18n', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
   ];
 
   const selec = lm.selectAll('input')
     .data(lm_buttons)
     .enter()
     .append('p')
+    .attr('class', 'cont_map_btn')
     .style('margin', 'auto')
     .insert('button')
     .attrs(elem => ({
@@ -1474,6 +1475,7 @@ function displayInfoOnMove() {
     map.selectAll('.layer').selectAll('rect').on('mouseover', null);
     info_features.classed('active', false);
     info_features.style('display', 'none').html('');
+    document.getElementById('info_button').classed('active', false);
     svg_map.style.cursor = '';
   } else {
     map.select('.brush').remove();
@@ -1514,6 +1516,7 @@ function displayInfoOnMove() {
 
     info_features.classed('active', true);
     svg_map.style.cursor = 'help';
+    document.getElementById('info_button').classed('active', true);
   }
 }
 

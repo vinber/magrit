@@ -10,8 +10,10 @@
 const handleZoomRect = function () {
   const b = map.select('.brush');
   if (b.node()) {
+    d3.select('#brush_zoom_button').classed('active', false);
     b.remove();
   } else {
+    d3.select('#brush_zoom_button').classed('active', true);
     makeZoomRect();
   }
 };
