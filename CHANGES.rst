@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.6.4 (2017-12-xx)
+------------------
+
+- Slightly change how field type is determined.
+
+- Try to improve the 'active'/'pushed' effect on buttons located on the bottom-right of the map.
+
+
 0.6.3 (2017-12-14)
 ------------------
 

@@ -401,7 +401,7 @@ const type_col = function type_col(layerName, target) {
       tmpType = typeof table[i][field];
       if (tmpType === 'string' && table[i][field].length === 0) {
         tmpType = 'empty';
-      } else if (tmpType === 'string' && !isNaN(Number(table[i][field]))) {
+      } else if ((tmpType === 'string' && !isNaN(Number(table[i][field]))) || tmpType === 'number') {
         tmpType = 'number';
       } else if (tmpType === 'object' && isFinite(table[i][field])) {
         tmpType = 'empty';
@@ -466,19 +466,29 @@ const type_col2 = function type_col2(table, _field, skip_if_empty_values = false
       } else if (tmpType === 'string' && val.length === 0) {
         tmpType = 'empty';
       } else if ((tmpType === 'string' && !isNaN(Number(val))) || tmpType === 'number') {
-        const _val = Number(table[i][field]);
-        tmpType = (_val | 0) === val ? 'stock' : 'ratio';
+        const _val = Number(val);
+        tmpType = (_val | 0) === val
+          ? 'stock' : (_val | 0) === +val ? 'stock' : 'ratio';
       }
       tmp[fields[j]].push(tmpType);
     }
   }
+  let nb_id_field = 0;
   for (let j = 0, len = fields.length; j < len; ++j) {
     field = fields[j];
     const hasDup = dups[field];
-    if (field.toLowerCase() === 'id' && !hasDup) {
+    if ((field.toLowerCase() === 'id' || field.toLowerCase().indexOf('name') > -1 || field.toLowerCase().indexOf('nom') > -1) && !hasDup) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
-    } else if (!hasDup && tmp[field].every(ft => ft === 'string' || ft === 'stock')) {
+      nb_id_field += 1;
+    } else if (field.toLowerCase().indexOf('id') > -1 && nb_id_field < 1 && !hasDup) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
+    } else if (!hasDup && nb_id_field < 1 && tmp[field].every(ft => ft === 'string' || ft === 'stock')) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
+    } else if (tmp[field].every(ft => ft === 'string') && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
     } else if (tmp[field].every(ft => ft === 'stock' || ft === 'empty') && tmp[field].indexOf('stock') > -1) {
       result.push({ name: field, type: 'stock', has_duplicate: hasDup });
     } else if (tmp[field].every(ft => ft === 'string' || ft === 'empty') && tmp[field].indexOf('string') > -1) {

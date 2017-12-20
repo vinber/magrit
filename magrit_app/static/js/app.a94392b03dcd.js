@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.474728b63af6.json'
+      loadPath: 'static/locales/{{lng}}/translation.a94392b03dcd.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8845,7 +8845,7 @@ var type_col = function type_col(layerName, target) {
       tmpType = _typeof(table[i][field]);
       if (tmpType === 'string' && table[i][field].length === 0) {
         tmpType = 'empty';
-      } else if (tmpType === 'string' && !isNaN(Number(table[i][field]))) {
+      } else if (tmpType === 'string' && !isNaN(Number(table[i][field])) || tmpType === 'number') {
         tmpType = 'number';
       } else if (tmpType === 'object' && isFinite(table[i][field])) {
         tmpType = 'empty';
@@ -8914,21 +8914,32 @@ var type_col2 = function type_col2(table, _field) {
       } else if (tmpType === 'string' && val.length === 0) {
         tmpType = 'empty';
       } else if (tmpType === 'string' && !isNaN(Number(val)) || tmpType === 'number') {
-        var _val = Number(table[i][field]);
-        tmpType = (_val | 0) === val ? 'stock' : 'ratio';
+        var _val = Number(val);
+        tmpType = (_val | 0) === val ? 'stock' : (_val | 0) === +val ? 'stock' : 'ratio';
       }
       tmp[fields[j]].push(tmpType);
     }
   }
+  var nb_id_field = 0;
   for (var _j2 = 0, _len2 = fields.length; _j2 < _len2; ++_j2) {
     field = fields[_j2];
     var hasDup = dups[field];
-    if (field.toLowerCase() === 'id' && !hasDup) {
+    if ((field.toLowerCase() === 'id' || field.toLowerCase().indexOf('name') > -1 || field.toLowerCase().indexOf('nom') > -1) && !hasDup) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
-    } else if (!hasDup && tmp[field].every(function (ft) {
+      nb_id_field += 1;
+    } else if (field.toLowerCase().indexOf('id') > -1 && nb_id_field < 1 && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
+    } else if (!hasDup && nb_id_field < 1 && tmp[field].every(function (ft) {
       return ft === 'string' || ft === 'stock';
     })) {
       result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
+    } else if (tmp[field].every(function (ft) {
+      return ft === 'string';
+    }) && !hasDup) {
+      result.push({ name: field, type: 'id', has_duplicate: hasDup });
+      nb_id_field += 1;
     } else if (tmp[field].every(function (ft) {
       return ft === 'stock' || ft === 'empty';
     }) && tmp[field].indexOf('stock') > -1) {
@@ -14479,6 +14490,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15671,6 +15683,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19626,7 +19639,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19792,6 +19806,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20756,7 +20771,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
