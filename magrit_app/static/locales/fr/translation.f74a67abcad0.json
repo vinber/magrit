@@ -820,7 +820,7 @@
         "message": "Message",
         "contact": "Contact",
         "index": "Acceuil",
-        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">magrit [at] ums-riate [point] fr</span>"
+        "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler ? Merci d'utiliser ce formulaire pour nous contacter et nous faire part de vos retours d'expérience!<br><span class=\"link_email\">matthieu.viry [at] cnrs [point] fr</span>"
     },
     "page404": {
         "message1": "Erreur 404 - Page introuvable",
