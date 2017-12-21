@@ -3,6 +3,7 @@
 @author: mz
 """
 import os
+import re
 from contextlib import ContextDecorator
 from io import BytesIO
 from random import choice
@@ -20,12 +21,12 @@ LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
              113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
 
-reg_a = re.compile("[àáâãæ]")
+reg_a = re.compile("[àáâãäæ]")
 reg_i = re.compile("[ïîì]")
 reg_e = re.compile("[êëéè]")
 reg_o = re.compile("[òóôö]")
 reg_u = re.compile("[ûüù]")
-reg_A = re.compile("[ÀÁÂÃ]")
+reg_A = re.compile("[ÀÁÂÃÄ]")
 reg_I = re.compile("[ÏÎÌ]")
 reg_E = re.compile("[ÊËÉÈ]")
 reg_O = re.compile("[ÒÓÔÖ]")
