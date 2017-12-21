@@ -8,6 +8,8 @@ Changes
 
 - Try to improve the 'active'/'pushed' effect on buttons located on the bottom-right of the map.
 
+- Try to be lighter on the use of memory (by reducing the TTL of redis entries and by not saving (for later reuse) intermediate results anymore when calculating potentials).
+
 
 0.6.3 (2017-12-14)
 ------------------

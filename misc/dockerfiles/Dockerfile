@@ -7,12 +7,15 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
         python3.6 python3.6-dev libgeos-dev \
         libfreetype6-dev libfreetype6 libproj-dev libspatialindex-dev libv8-3.14-dev libffi-dev \
         nodejs nodejs-dev node-gyp npm redis-server libuv1-dev unzip wget \
-        libxslt1-dev libxml2 libxml2-dev libkml-dev \
+        libxslt1-dev libxml2 libxml2-dev libkml-dev locales \
     && npm -g install topojson \
     && rm -rf /var/lib/apt/lists/* \
     && ln -s /usr/bin/nodejs /usr/bin/node \
     && sed -e '/save/ s/^#*/#/' -i /etc/redis/redis.conf \
-    && sysctl vm.overcommit_memory=1
+    && sysctl vm.overcommit_memory=1 \
+    && locale-gen fr_FR.UTF-8
+
+ENV LANG='fr_FR.UTF-8' LANGUAGE='fr_FR' LC_ALL='fr_FR.UTF-8'
 
 WORKDIR /home
 

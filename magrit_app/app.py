@@ -57,28 +57,28 @@ try:
     from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
         run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-        extractShpZip, guess_separator)
+        extractShpZip, guess_separator, clean_name)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
         make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
-    from helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+    from helpers.stewart_smoomapy import quick_stewart_mod # , resume_stewart
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
 except:
    from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
-       extractShpZip, guess_separator)
+       extractShpZip, guess_separator, clean_name)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
    from .helpers.geo import (
        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
        check_projection, olson_transform, get_proj4_string,
        make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
-   from .helpers.stewart_smoomapy import quick_stewart_mod, resume_stewart
+   from .helpers.stewart_smoomapy import quick_stewart_mod # , resume_stewart
    from .helpers.grid_layer import get_grid_layer
    from .helpers.error_middleware404 import error_middleware
 
@@ -181,7 +181,7 @@ async def get_sample_layer(request):
     if result:
         result = result.decode()
         asyncio.ensure_future(
-            request.app['redis_conn'].pexpire(f_name, 86400000))
+            request.app['redis_conn'].pexpire(f_name, 43200000))
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
@@ -191,7 +191,7 @@ async def get_sample_layer(request):
             data = f.read()
         asyncio.ensure_future(
             request.app['redis_conn'].set(
-                f_name, data, pexpire=86400000))
+                f_name, data, pexpire=43200000))
         return web.Response(text=''.join(
             ['{"key":', hash_val, ',"file":', data, '}']
             ))
@@ -226,14 +226,14 @@ async def convert_topo(request):
     if result:
         result = result.decode()
         asyncio.ensure_future(
-            request.app['redis_conn'].pexpire(f_name, 86400000))
+            request.app['redis_conn'].pexpire(f_name, 43200000))
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(hash_val, name), '}'
             ]))
 
     asyncio.ensure_future(
-        request.app['redis_conn'].set(f_name, data, pexpire=86400000))
+        request.app['redis_conn'].set(f_name, data, pexpire=43200000))
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":null}']
         ))
@@ -282,7 +282,9 @@ async def convert(request):
             for i in range(len(posted_data) - 1):
                 field = posted_data.getall('file[{}]'.format(i))[0]
                 name, ext = field[1].rsplit('.', 1)
-                file_name = ''.join(['/tmp/', user_id, '_', '.'.join([name, ext.lower()])])
+                file_name = ''.join(
+                    ['/tmp/', user_id, '_', '.'.join(
+                        [clean_name(name), ext.lower()])])
                 list_files.append(file_name)
                 content = field[2].read()
                 savefile(file_name, content)
@@ -328,7 +330,7 @@ async def convert(request):
         # We know this user and his layer has already been loaded into Redis,
         # so let's use it instead of doing a new conversion again:
         asyncio.ensure_future(
-            request.app['redis_conn'].pexpire(f_name, 86400000))
+            request.app['redis_conn'].pexpire(f_name, 43200000))
         if "shp" in datatype:
             # Read the orignal projection to propose it later:
             proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
@@ -353,7 +355,7 @@ async def convert(request):
             return convert_error()
 
         asyncio.ensure_future(
-            request.app['redis_conn'].set(f_name, result, pexpire=86400000))
+            request.app['redis_conn'].set(f_name, result, pexpire=43200000))
 
         # Read the orignal projection to propose it later (client side):
         proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
@@ -412,7 +414,7 @@ async def convert(request):
 
                 asyncio.ensure_future(
                     request.app['redis_conn'].set(
-                        f_name, result, pexpire=86400000))
+                        f_name, result, pexpire=43200000))
             except (asyncio.CancelledError, CancelledError):
                 return
             except Exception as err:
@@ -432,7 +434,7 @@ async def convert(request):
             or 'application/gml+xml' in datatype) \
             and ("kml" in name.lower()
                  or "gml" in name.lower() or 'json' in name.lower()):
-        ext = filepath.rsplit('.', 1)[1]
+        fname, ext = filepath.rsplit('.', 1)
         # Sanitize the extension name in case it's badly written (will help for
         # the conversion to come)
         # (replaces .json by .geojson, .KML by .kml, .GeoJSON by .geojson, etc.)
@@ -442,7 +444,7 @@ async def convert(request):
             new_ext = 'gml'
         elif 'kml' in ext.lower():
             new_ext = 'kml'
-        filepath = ''.join([filepath[:-len(ext)], new_ext])
+        filepath = ''.join([clean_name(fname), new_ext])
 
         # Convert the file to a GeoJSON file with sanitized column names:
         with open(filepath, 'wb') as f:
@@ -463,7 +465,7 @@ async def convert(request):
         # Store it in redis for possible later use:
         asyncio.ensure_future(
             request.app['redis_conn'].set(
-                f_name, result, pexpire=86400000))
+                f_name, result, pexpire=43200000))
 
         # Remove the temporary file previously created:
         os.remove(filepath)
@@ -503,7 +505,7 @@ async def convert_extrabasemap(request):
             result = await request.app['redis_conn'].get(f_name)
             if result:
                 asyncio.ensure_future(
-                    request.app['redis_conn'].pexpire(f_name, 86400000))
+                    request.app['redis_conn'].pexpire(f_name, 43200000))
                 return web.Response(text=''.join(
                     ['{"key":', str(hashed_input),
                      ',"file":', result.decode(), '}']))
@@ -515,7 +517,7 @@ async def convert_extrabasemap(request):
             else:
                 asyncio.ensure_future(
                     request.app['redis_conn'].set(
-                        f_name, result, pexpire=86400000))
+                        f_name, result, pexpire=43200000))
 
             return web.Response(text=''.join(
                 ['{"key":', str(hashed_input), ',"file":', result, '}']))
@@ -576,7 +578,7 @@ async def carto_doug(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, str(hash_val)]), res, pexpire=86400000))
+            user_id, str(hash_val)]), res, pexpire=43200000))
 
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
@@ -645,7 +647,7 @@ async def links_map(posted_data, user_id, app):
     hash_val = mmh3_hash(res)
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, str(hash_val)]), res, pexpire=86400000))
+            user_id, str(hash_val)]), res, pexpire=43200000))
 
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
@@ -684,7 +686,7 @@ async def carto_gridded(posted_data, user_id, app):
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=86400000))
+            user_id, hash_val]), res, pexpire=43200000))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
@@ -710,7 +712,7 @@ async def compute_olson(posted_data, user_id, app):
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=86400000))
+            user_id, hash_val]), res, pexpire=43200000))
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
@@ -728,7 +730,7 @@ async def receiv_layer(request):
     f_name = '_'.join([user_id, str(h_val)])
     res = await geojson_to_topojson(data.encode(), layer_name)
     asyncio.ensure_future(
-        request.app['redis_conn'].set(f_name, res, pexpire=86400000))
+        request.app['redis_conn'].set(f_name, res, pexpire=43200000))
     return web.Response(text=''.join(['{"key":', str(h_val), '}']))
 
 
@@ -773,46 +775,60 @@ async def call_stewart(posted_data, user_id, app):
         savefile(filenames['mask_layer'],
                  topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
-    reusable_val = '_'.join([user_id,
-                             str(posted_data['topojson']),
-                             n_field_name1,
-                             n_field_name2 if n_field_name2 else "",
-                             str(posted_data["span"]),
-                             str(posted_data['beta']),
-                             str(posted_data['resolution']),
-                             posted_data['typefct'].lower()])
+    # reusable_val = '_'.join([user_id,
+    #                          str(posted_data['topojson']),
+    #                          n_field_name1,
+    #                          n_field_name2 if n_field_name2 else "",
+    #                          str(posted_data["span"]),
+    #                          str(posted_data['beta']),
+    #                          str(posted_data['resolution']),
+    #                          posted_data['typefct'].lower()])
+    # existing_obj = await app['redis_conn'].get(reusable_val)
+    # if existing_obj:
+    #     res, breaks = await app.loop.run_in_executor(
+    #         app["ThreadPool"],
+    #         resume_stewart,
+    #         existing_obj,
+    #         int(posted_data['nb_class']),
+    #         discretization,
+    #         posted_data['user_breaks'],
+    #         filenames["mask_layer"])
 
-    existing_obj = await app['redis_conn'].get(reusable_val)
+    # else:
+    #     res, breaks, dump_obj = await app.loop.run_in_executor(
+    #         app["ProcessPool"],
+    #         quick_stewart_mod,
+    #         filenames['point_layer'],
+    #         n_field_name1,
+    #         int(posted_data['span']),
+    #         float(posted_data['beta']),
+    #         posted_data['typefct'].lower(),
+    #         int(posted_data['nb_class']),
+    #         discretization,
+    #         posted_data['resolution'],
+    #         filenames["mask_layer"],
+    #         n_field_name2,
+    #         posted_data['user_breaks'])
+    #
+    #     asyncio.ensure_future(
+    #         app['redis_conn'].set(
+    #             reusable_val, dump_obj, pexpire=43200000))
 
-    if existing_obj:
-        res, breaks = await app.loop.run_in_executor(
-            app["ThreadPool"],
-            resume_stewart,
-            existing_obj,
-            int(posted_data['nb_class']),
-            discretization,
-            posted_data['user_breaks'],
-            filenames["mask_layer"])
+    res, breaks = await app.loop.run_in_executor(
+        app["ProcessPool"],
+        quick_stewart_mod,
+        filenames['point_layer'],
+        n_field_name1,
+        int(posted_data['span']),
+        float(posted_data['beta']),
+        posted_data['typefct'].lower(),
+        int(posted_data['nb_class']),
+        discretization,
+        posted_data['resolution'],
+        filenames["mask_layer"],
+        n_field_name2,
+        posted_data['user_breaks'])
 
-    else:
-        res, breaks, dump_obj = await app.loop.run_in_executor(
-            app["ProcessPool"],
-            quick_stewart_mod,
-            filenames['point_layer'],
-            n_field_name1,
-            int(posted_data['span']),
-            float(posted_data['beta']),
-            posted_data['typefct'].lower(),
-            int(posted_data['nb_class']),
-            discretization,
-            posted_data['resolution'],
-            filenames["mask_layer"],
-            n_field_name2,
-            posted_data['user_breaks'])
-
-        asyncio.ensure_future(
-            app['redis_conn'].set(
-                reusable_val, dump_obj, pexpire=43200000))
 
     os.remove(filenames['point_layer'])
     if filenames['mask_layer']:
@@ -823,7 +839,7 @@ async def call_stewart(posted_data, user_id, app):
 
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=86400000))
+            user_id, hash_val]), res, pexpire=43200000))
 
     return "|||".join([
         ''.join(['{"key":', hash_val, ',"file":', res, '}']),
@@ -1154,7 +1170,7 @@ async def convert_csv_geo(request):
 
     asyncio.ensure_future(
         request.app['redis_conn'].set(
-            f_name, result, pexpire=86400000))
+            f_name, result, pexpire=43200000))
 
     request.app['logger'].info(
         'timing : csv -> geojson -> topojson : {:.4f}s'

@@ -20,6 +20,17 @@ LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
              113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
 
+reg_a = re.compile("[àáâãæ]")
+reg_i = re.compile("[ïîì]")
+reg_e = re.compile("[êëéè]")
+reg_o = re.compile("[òóôö]")
+reg_u = re.compile("[ûüù]")
+reg_A = re.compile("[ÀÁÂÃ]")
+reg_I = re.compile("[ÏÎÌ]")
+reg_E = re.compile("[ÊËÉÈ]")
+reg_O = re.compile("[ÒÓÔÖ]")
+reg_U = re.compile("[ÛÜÙ]")
+
 def run_calc(val1, val2, operator):
     result = {
         "+": val1.__add__, "-": val1.__sub__,
@@ -70,6 +81,17 @@ def get_key(var):
                     for i in range(25)])
         if k not in var:
             return k
+
+
+def clean_name(name):
+    name = reg_i.sub(
+        'i', reg_a.sub('a', reg_u.sub('u', reg_o.sub('o', reg_e.sub('e', name)
+        ))))
+    name = reg_I.sub(
+        'I', reg_A.sub('A', reg_U.sub('U', reg_O.sub('O', reg_E.sub('E', name)
+        ))))
+    return re.sub(
+        '[^a-z.A-Z0-9_-]+', '_', name.replace('ñ', 'n').replace('Ñ', 'N'))
 
 
 def guess_separator(file, raw_data=None):
