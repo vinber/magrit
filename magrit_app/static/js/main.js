@@ -1475,10 +1475,11 @@ function displayInfoOnMove() {
     map.selectAll('.layer').selectAll('rect').on('mouseover', null);
     info_features.classed('active', false);
     info_features.style('display', 'none').html('');
-    document.getElementById('info_button').classed('active', false);
+    d3.select('#info_button').classed('active', false);
     svg_map.style.cursor = '';
   } else {
     map.select('.brush').remove();
+    d3.select('#brush_zoom_button').classed('active', false);
     const layers = svg_map.querySelectorAll('.layer'),
       nb_layer = layers.length;
     let top_visible_layer = null;
@@ -1516,7 +1517,7 @@ function displayInfoOnMove() {
 
     info_features.classed('active', true);
     svg_map.style.cursor = 'help';
-    document.getElementById('info_button').classed('active', true);
+    d3.select('#info_button').classed('active', true);
   }
 }
 
@@ -1893,7 +1894,7 @@ function handle_bg_color(color) {
 }
 
 function handle_click_hand(behavior) {
-  const hb = d3.select('.hand_button');
+  const hb = d3.select('#hand_button');
   // eslint-disable-next-line no-param-reassign
   const b = typeof behavior === 'object' ? (!hb.classed('locked') ? 'lock' : 'unlock') : (behavior && typeof behavior === 'string' ? behavior : false);
   if (b === 'lock') {
@@ -2550,8 +2551,8 @@ function canvas_mod_size(shape) {
     map.attr('width', w)
       .call(zoom_without_redraw);
     map_div.style('width', `${w}px`);
-    if (w + 360 + 30 < window.innerWidth) {
-      document.querySelector('.light-menu').style.right = '-30px';
+    if (w + 360 + 33 < window.innerWidth) {
+      document.querySelector('.light-menu').style.right = '-33px';
     } else {
       document.querySelector('.light-menu').style.right = '0px';
     }

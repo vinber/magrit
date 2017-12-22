@@ -13,6 +13,9 @@ const handleZoomRect = function () {
     d3.select('#brush_zoom_button').classed('active', false);
     b.remove();
   } else {
+    if (d3.select('#info_button').classed('active')) {
+      displayInfoOnMove();
+    }
     d3.select('#brush_zoom_button').classed('active', true);
     makeZoomRect();
   }

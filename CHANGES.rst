@@ -1,14 +1,16 @@
 Changes
 =======
 
-0.6.4 (2017-12-xx)
+0.6.4 (2017-12-22)
 ------------------
 
 - Slightly change how field type is determined.
 
 - Try to improve the 'active'/'pushed' effect on buttons located on the bottom-right of the map.
 
-- Try to be lighter on the use of memory (by reducing the TTL of redis entries and by not saving (for later reuse) intermediate results anymore when calculating potentials).
+- Try to be lighter on the use of memory (by reducing the TTL of redis entries and by not saving (for later reuse) intermediate results anymore when computing potentials).
+
+- Explicitly set locale and language parameters on docker image and make a better sanitizing of layer names.
 
 
 0.6.3 (2017-12-14)

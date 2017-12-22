@@ -1131,7 +1131,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f74a67abcad0.json'
+      loadPath: 'static/locales/{{lng}}/translation.d543c084f9da.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1199,10 +1199,11 @@ function displayInfoOnMove() {
     map.selectAll('.layer').selectAll('rect').on('mouseover', null);
     info_features.classed('active', false);
     info_features.style('display', 'none').html('');
-    document.getElementById('info_button').classed('active', false);
+    d3.select('#info_button').classed('active', false);
     svg_map.style.cursor = '';
   } else {
     map.select('.brush').remove();
+    d3.select('#brush_zoom_button').classed('active', false);
     var layers = svg_map.querySelectorAll('.layer'),
         nb_layer = layers.length;
     var top_visible_layer = null;
@@ -1238,7 +1239,7 @@ function displayInfoOnMove() {
 
     info_features.classed('active', true);
     svg_map.style.cursor = 'help';
-    document.getElementById('info_button').classed('active', true);
+    d3.select('#info_button').classed('active', true);
   }
 }
 
@@ -1594,7 +1595,7 @@ function handle_bg_color(color) {
 }
 
 function handle_click_hand(behavior) {
-  var hb = d3.select('.hand_button');
+  var hb = d3.select('#hand_button');
   // eslint-disable-next-line no-param-reassign
   var b = (typeof behavior === 'undefined' ? 'undefined' : _typeof(behavior)) === 'object' ? !hb.classed('locked') ? 'lock' : 'unlock' : behavior && typeof behavior === 'string' ? behavior : false;
   if (b === 'lock') {
@@ -2190,8 +2191,8 @@ function canvas_mod_size(shape) {
     w = +shape[0];
     map.attr('width', w).call(zoom_without_redraw);
     map_div.style('width', w + 'px');
-    if (w + 360 + 30 < window.innerWidth) {
-      document.querySelector('.light-menu').style.right = '-30px';
+    if (w + 360 + 33 < window.innerWidth) {
+      document.querySelector('.light-menu').style.right = '-33px';
     } else {
       document.querySelector('.light-menu').style.right = '0px';
     }
@@ -21134,6 +21135,9 @@ var handleZoomRect = function handleZoomRect() {
     d3.select('#brush_zoom_button').classed('active', false);
     b.remove();
   } else {
+    if (d3.select('#info_button').classed('active')) {
+      displayInfoOnMove();
+    }
     d3.select('#brush_zoom_button').classed('active', true);
     makeZoomRect();
   }
