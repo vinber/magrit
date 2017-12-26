@@ -24,7 +24,7 @@
 FROM ubuntu:latest
 MAINTAINER mth
 
-RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:fkrull/deadsnakes \
+RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa \
 		&& apt-get update \
 		&& apt-get install -y gcc libpython3.6-dev libopenblas-dev libopenblas-base \
         python3.6 python3.6-dev libgeos-dev \
