@@ -559,7 +559,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
     reader = new FileReader(),
     ajaxData = new FormData();
   ajaxData.append('file[]', f);
-  xhrequest('POST', 'convert_topojson', ajaxData, false)
+  xhrequest('POST', 'convert_topojson', ajaxData, true)
     .then((res) => {
       const key = JSON.parse(res).key;
       reader.onloadend = () => {

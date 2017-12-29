@@ -849,10 +849,10 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
     size_interm1 = size_min + diff_size / 3,
     size_interm2 = size_interm1 + diff_size / 3,
     ref_symbols_params = [
-        { size: size_max, value: val_max },
-        { size: size_interm2, value: val_interm2 },
-        { size: size_interm1, value: val_interm1 },
-        { size: size_min, value: val_min },
+      { size: size_max, value: val_max },
+      { size: size_interm2, value: val_interm2 },
+      { size: size_interm1, value: val_interm1 },
+      { size: size_min, value: val_min },
     ];
 
   if (rounding_precision === undefined) {
@@ -1008,7 +1008,8 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
 
   const legend_root = map.insert('g')
     .styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' })
-    .attrs({ id: 'legend_root',
+    .attrs({
+      id: 'legend_root',
       class: tmp_class_name,
       layer_field: field,
       transform: 'translate(0,0)',
@@ -1082,9 +1083,12 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
       .text(d => round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString());
 
     legend_root
-      .insert('text').attr('id', 'lgd_choro_min_val')
-      .attr('x', xpos + boxwidth * 2 + 10)
-      .attr('y', tmp_pos + boxheight + boxgap)
+      .insert('text')
+      .attrs({
+        id: 'lgd_choro_min_val',
+        x: xpos + boxwidth * 2 + 10,
+        y: tmp_pos + boxheight + boxgap,
+      })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(d => round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString());
   } else {
@@ -1099,12 +1103,16 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
     const gp_no_data = legend_root.append('g');
     gp_no_data
       .append('rect')
-      .attrs({ x: xpos + boxheight,
+      .attrs({
+        x: xpos + boxheight,
         y: last_pos + 2 * boxheight,
         width: boxwidth,
-        height: boxheight })
-      .style('fill', current_layers[layer].options_disc.no_data)
-      .style('stroke', current_layers[layer].options_disc.no_data);
+        height: boxheight
+      })
+      .styles({
+        fill: current_layers[layer].options_disc.no_data,
+        stroke: current_layers[layer].options_disc.no_data,
+      });
 
     gp_no_data
       .append('text')
@@ -1149,7 +1157,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
 
   const legend_root = map.insert('g')
     .styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' })
-    .attrs({ id: 'legend_root_horiz',
+    .attrs({
+      id: 'legend_root_horiz',
       class: tmp_class_name,
       layer_field: field,
       transform: 'translate(0,0)',
@@ -1205,10 +1214,13 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     .text(d => round_value(+d.value.split(' - ')[0], rounding_precision).toLocaleString());
 
   legend_root
-    .insert('text').attr('id', 'lgd_choro_min_val')
-    .attr('x', xpos + (boxgap + boxwidth) * data_colors_label.length)
-    .attr('y', y_pos2 + boxheight + 20)
-    .attr('text-anchor', 'middle')
+    .insert('text')
+    .attrs({
+      id: 'lgd_choro_min_val',
+      x: xpos + (boxgap + boxwidth) * data_colors_label.length,
+      y: y_pos2 + boxheight + 20,
+      'text-anchor': 'middle',
+    })
     .styles({ 'font-size': '10px' })
     .text(d => round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[1], rounding_precision).toLocaleString());
 
@@ -1216,12 +1228,16 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     const gp_no_data = legend_root.append('g');
     gp_no_data
       .append('rect')
-      .attrs({ x: xpos + boxwidth +(boxgap + boxwidth) * data_colors_label.length,
+      .attrs({
+        x: xpos + boxwidth +(boxgap + boxwidth) * data_colors_label.length,
         y: y_pos2,
         width: boxwidth,
-        height: boxheight })
-      .style('fill', current_layers[layer].options_disc.no_data)
-      .style('stroke', current_layers[layer].options_disc.no_data);
+        height: boxheight
+      })
+      .styles({
+        fill: current_layers[layer].options_disc.no_data,
+        stroke: current_layers[layer].options_disc.no_data,
+      });
 
     gp_no_data
       .append('text')
@@ -1240,7 +1256,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
       id: 'legend_bottom_note',
       x: xpos + boxwidth,
       y: y_pos2 + boxheight + 40,
-      'text-anchor': 'middle' })
+      'text-anchor': 'middle'
+    })
     .styles({
       'font-size': '11px',
       'font-family': 'verdana',
@@ -1454,8 +1471,8 @@ function createlegendEditBox_symbol() {
     .html(i18next.t('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
-    .styles({ float: 'right' })
-    .attr('value', title_content.textContent)
+    .style('float', 'right')
+    .property('value', title_content.textContent)
     .on('keyup', function () {
       title_content.textContent = this.value;
     });
@@ -1464,8 +1481,8 @@ function createlegendEditBox_symbol() {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .attr('value', subtitle_content.textContent)
-    .styles({ float: 'right' })
+    .property('value', subtitle_content.textContent)
+    .style('float', 'right')
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -1484,7 +1501,7 @@ function createlegendEditBox_symbol() {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .attr('value', note_content.textContent)
+    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .on('keyup', function () {
       note_content.textContent = this.value;
@@ -1495,7 +1512,7 @@ function createlegendEditBox_symbol() {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
-      .attr('value', ratio_waffle_txt.textContent)
+      .property('value', ratio_waffle_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .on('keyup', function () {
         ratio_waffle_txt.textContent = this.value;
@@ -1549,9 +1566,11 @@ function createlegendEditBox_symbol() {
   const rectangle_options1 = box_body.insert('p');
   rectangle_options1.insert('input')
     .style('margin-left', '0px')
-    .attrs({ type: 'checkbox',
+    .attrs({
+      type: 'checkbox',
       id: 'rect_lgd_checkbox',
-      checked: rect_fill_value.color === undefined ? null : true })
+    })
+    .property('checked', rect_fill_value.color === undefined ? null : true)
     .on('change', function () {
       if (this.checked) {
         rectangle_options2.style('display', '');
@@ -1574,9 +1593,11 @@ function createlegendEditBox_symbol() {
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
   rectangle_options2.insert('input')
-    .attrs({ id: 'choice_color_under_rect',
+    .attrs({
+      id: 'choice_color_under_rect',
       type: 'color',
-      value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) })
+    })
+    .property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color))
     .on('change', function () {
       rect_fill_value = { color: this.value, opacity: 1 };
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
@@ -1660,8 +1681,8 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     .html(i18next.t('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
-    .styles({ float: 'right' })
-    .attr('value', title_content.textContent)
+    .style('float', 'right')
+    .property('value', title_content.textContent)
     .on('keyup', function () {
       title_content.textContent = this.value;
     });
@@ -1670,8 +1691,8 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .attr('value', subtitle_content.textContent)
-    .styles({ float: 'right' })
+    .property('value', subtitle_content.textContent)
+    .style('float', 'right')
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -1690,7 +1711,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .attr('value', note_content.textContent)
+    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .on('keyup', function () {
       note_content.textContent = this.value;
@@ -1701,7 +1722,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.no_data'));
     d.insert('input')
-      .attr('value', no_data_txt.textContent)
+      .property('value', no_data_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .on('keyup', function () {
         no_data_txt.textContent = this.value;
@@ -1745,8 +1766,9 @@ function createlegendEditBox_choro(legend_id, layer_name) {
       .html(i18next.t('app_page.legend_style_box.float_rounding'));
 
     e.append('input')
-      .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec })
+      .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1 })
       .styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' })
+      .property('value', current_nb_dec)
       .on('change', function () {
         const nb_float = +this.value;
         d3.select('#precision_change_txt').html(nb_float);
@@ -1773,7 +1795,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
         }
       });
     e.append('span')
-      .styles({ float: 'right' })
+      .style('float', 'right')
       .attr('id', 'precision_change_txt')
       .html(`${current_nb_dec}`);
   }
@@ -1813,9 +1835,11 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   const rectangle_options1 = box_body.insert('p');
   rectangle_options1.insert('input')
     .style('margin-left', '0px')
-    .attrs({ type: 'checkbox',
+    .attrs({
+      type: 'checkbox',
       id: 'rect_lgd_checkbox',
-      checked: rect_fill_value.color === undefined ? null : true })
+    })
+    .property('checked', rect_fill_value.color === undefined ? null : true)
     .on('change', function () {
       if (this.checked) {
         rectangle_options2.style('display', '');
@@ -1836,15 +1860,14 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
   rectangle_options2.insert('input')
-    .attrs({ id: 'choice_color_under_rect',
-      type: 'color',
-      value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) })
+    .attrs({ id: 'choice_color_under_rect', type: 'color' })
+    .property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color))
     .on('change', function () {
       rect_fill_value = { color: this.value, opacity: 1 };
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 
-  if (legend_id === 'legend_root' || (legend_id === 'legend_root_horiz' && current_layers[layer_name].options_disc)) {
+  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && current_layers[layer_name].options_disc)) {
     const change_legend_type = box_body.insert('p');
     const vert_layout = change_legend_type.append('p')
       .attr('id', 'vert_layout')
@@ -1969,8 +1992,8 @@ function createlegendEditBox(legend_id, layer_name) {
     .html(i18next.t('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
-    .styles({ float: 'right' })
-    .attr('value', title_content.textContent)
+    .style('float', 'right')
+    .property('value', title_content.textContent)
     .on('keyup', function () {
       title_content.textContent = this.value;
     });
@@ -1979,8 +2002,8 @@ function createlegendEditBox(legend_id, layer_name) {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .attr('value', subtitle_content.textContent)
-    .styles({ float: 'right' })
+    .property('value', subtitle_content.textContent)
+    .style('float', 'right')
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -1999,7 +2022,7 @@ function createlegendEditBox(legend_id, layer_name) {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .attr('value', note_content.textContent)
+    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .on('keyup', function () {
       note_content.textContent = this.value;
@@ -2010,7 +2033,7 @@ function createlegendEditBox(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.no_data'));
     d.insert('input')
-      .attr('value', no_data_txt.textContent)
+      .property('value', no_data_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .on('keyup', function () {
         no_data_txt.textContent = this.value;
@@ -2020,7 +2043,7 @@ function createlegendEditBox(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
-      .attr('value', ratio_waffle_txt.textContent)
+      .property('value', ratio_waffle_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .on('keyup', function () {
         ratio_waffle_txt.textContent = this.value;
@@ -2083,8 +2106,9 @@ function createlegendEditBox(legend_id, layer_name) {
         .html(i18next.t('app_page.legend_style_box.float_rounding'));
 
       e.append('input')
-        .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1, value: current_nb_dec })
+        .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1 })
         .styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' })
+        .property('value', current_nb_dec)
         .on('change', function () {
           const nb_float = +this.value;
           d3.select('#precision_change_txt').html(nb_float);
@@ -2111,7 +2135,7 @@ function createlegendEditBox(legend_id, layer_name) {
           }
         });
       e.append('span')
-        .styles({ float: 'right' })
+        .style('float', 'right')
         .attr('id', 'precision_change_txt')
         .html(`${current_nb_dec}`);
     }
@@ -2212,15 +2236,14 @@ function createlegendEditBox(legend_id, layer_name) {
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
   rectangle_options2.insert('input')
-    .attrs({ id: 'choice_color_under_rect',
-      type: 'color',
-      value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) })
+    .attrs({ id: 'choice_color_under_rect', type: 'color' })
+    .property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color))
     .on('change', function () {
       rect_fill_value = { color: this.value, opacity: 1 };
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 
-  if (legend_id === 'legend_root' || (legend_id === 'legend_root_horiz' && current_layers[layer_name].options_disc)) {
+  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && current_layers[layer_name].options_disc)) {
     const change_legend_type = box_body.insert('p');
     const vert_layout = change_legend_type.append('p')
       .attr('id', 'vert_layout')

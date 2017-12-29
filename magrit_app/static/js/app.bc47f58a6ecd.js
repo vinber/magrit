@@ -398,13 +398,16 @@ function setUpInterface(reload_project) {
   e.append('span').styles({ display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub' }).html(sys_run_button.replace('submit', 'Title properties')).on('click', handle_title_properties);
 
   var f = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  f.append('input').styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' }).attrs({ type: 'color', id: 'bg_color', value: '#ffffff', class: 'list_elem_section4 m_elem_right' }).on('change', function () {
+  f.append('input').styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' }).attrs({ type: 'color', id: 'bg_color', class: 'list_elem_section4 m_elem_right' }).property('value', '#ffffff').on('change', function () {
     handle_bg_color(this.value);
   });
-  f.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.background_color');
+  f.append('p').attrs({
+    class: 'list_elem_section4 i18n',
+    'data-i18n': '[html]app_page.section4.background_color'
+  });
 
   var a1 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a1.append('input').attrs({ id: 'input-width', type: 'number', value: w, class: 'list_elem_section4 m_elem_right' }).on('change', function () {
+  a1.append('input').attrs({ id: 'input-width', type: 'number', class: 'list_elem_section4 m_elem_right' }).property('value', w).on('change', function () {
     var new_width = +this.value;
     if (new_width === 0 || isNaN(new_width)) {
       this.value = w;
@@ -422,10 +425,13 @@ function setUpInterface(reload_project) {
     }
     document.getElementById('input-height').value = h;
   });
-  a1.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_width');
+  a1.append('p').attrs({
+    class: 'list_elem_section4 i18n',
+    'data-i18n': '[html]app_page.section4.map_width'
+  });
 
   var a2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  a2.append('input').attrs({ id: 'input-height', type: 'number', value: h, class: 'm_elem_right list_elem_section4' }).on('change', function () {
+  a2.append('input').attrs({ id: 'input-height', type: 'number', class: 'm_elem_right list_elem_section4' }).property('value', h).on('change', function () {
     var new_height = +this.value;
     if (new_height === 0 || isNaN(new_height)) {
       this.value = h;
@@ -443,7 +449,10 @@ function setUpInterface(reload_project) {
     }
     document.getElementById('input-width').value = w;
   });
-  a2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_height');
+  a2.append('p').attrs({
+    class: 'list_elem_section4 i18n',
+    'data-i18n': '[html]app_page.section4.map_height'
+  });
 
   var b = dv4.append('li').styles({ margin: '1px', padding: '4px 0' });
   var ratio_select = b.append('select').attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
@@ -524,8 +533,8 @@ function setUpInterface(reload_project) {
     id: 'input-center-x',
     class: 'm_elem_right',
     type: 'number',
-    value: round_value(zoom_prop.x, 2),
-    step: 'any' }).on('change', function () {
+    step: 'any'
+  }).property('value', round_value(zoom_prop.x, 2)).on('change', function () {
     svg_map.__zoom.x = +this.value;
     zoom_without_redraw();
   });
@@ -533,22 +542,24 @@ function setUpInterface(reload_project) {
   var c2 = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
   c2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_center_y');
 
-  c2.append('input').attrs({ id: 'input-center-y',
+  c2.append('input').attrs({
+    id: 'input-center-y',
     class: 'list_elem_section4 m_elem_right',
     type: 'number',
-    value: round_value(zoom_prop.y, 2),
-    step: 'any' }).style('width', '80px').on('change', function () {
+    step: 'any'
+  }).property('value', round_value(zoom_prop.y, 2)).style('width', '80px').on('change', function () {
     svg_map.__zoom.y = +this.value;
     zoom_without_redraw();
   });
 
   var d = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
   d.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_scale_k');
-  d.append('input').attrs({ id: 'input-scale-k',
+  d.append('input').attrs({
+    id: 'input-scale-k',
     class: 'list_elem_section4 m_elem_right',
     type: 'number',
-    value: round_value(zoom_prop.k * proj.scale(), 2),
-    step: 'any' }).style('width', '80px').on('change', function () {
+    step: 'any'
+  }).property('value', round_value(zoom_prop.k * proj.scale(), 2)).style('width', '80px').on('change', function () {
     svg_map.__zoom.k = +this.value / proj.scale();
     zoom_without_redraw();
   });
@@ -558,13 +569,14 @@ function setUpInterface(reload_project) {
 
   g.append('span').style('float', 'right').html('°');
 
-  g.append('input').attrs({ id: 'canvas_rotation_value_txt',
+  g.append('input').attrs({
+    id: 'canvas_rotation_value_txt',
     class: 'without_spinner',
     type: 'number',
-    value: 0,
     min: 0,
     max: 360,
-    step: 'any' }).styles({ width: '30px', 'margin-left': '10px', float: 'right', 'font-size': '11.5px' }).on('change', function () {
+    step: 'any'
+  }).property('value', 0).styles({ width: '30px', 'margin-left': '10px', float: 'right', 'font-size': '11.5px' }).on('change', function () {
     var val = +this.value,
         old_value = document.getElementById('form_rotate').value;
     if (isNaN(val) || val < -361) {
@@ -715,7 +727,7 @@ function setUpInterface(reload_project) {
   var exp_a = export_png_options.append('p');
   exp_a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.width' });
 
-  exp_a.append('input').style('width', '60px').attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1, value: w }).on('change', function () {
+  exp_a.append('input').style('width', '60px').attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', w).on('change', function () {
     var ratio = h / w,
         export_png_height = document.getElementById('export_png_height');
     export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
@@ -726,7 +738,7 @@ function setUpInterface(reload_project) {
   var exp_b = export_png_options.append('p');
   exp_b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
 
-  exp_b.append('input').style('width', '60px').attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1, value: h }).on('change', function () {
+  exp_b.append('input').style('width', '60px').attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', h).on('change', function () {
     var ratio = h / w,
         export_png_width = document.getElementById('export_png_width');
     export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
@@ -737,7 +749,7 @@ function setUpInterface(reload_project) {
   var export_name = dv5b.append('p');
   export_name.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.filename' });
 
-  export_name.append('input').attrs({ id: 'export_filename', class: 'm_elem_right', type: 'text' });
+  export_name.append('input').attrs({ id: 'export_filename', class: 'm_elem_right', type: 'text' }).property('value', 'export.svg');
 
   var export_geo_options = dv5b.append('p').attr('id', 'export_options_geo').style('display', 'none');
 
@@ -1131,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.d543c084f9da.json'
+      loadPath: 'static/locales/{{lng}}/translation.bc47f58a6ecd.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2096,16 +2108,16 @@ function handle_title_properties() {
     }
   });
   var box_content = d3.select('.mapTitleitleDialogBox').select('.modal-body').append('div').style('margin', '15x');
-  box_content.append('p').html(i18next.t('app_page.title_box.font_size')).insert('input').attrs({ type: 'number', min: 2, max: 40, step: 1, value: +title_props.size.split('px')[0] }).style('width', '65px').on('change', function () {
+  box_content.append('p').html(i18next.t('app_page.title_box.font_size')).insert('input').attrs({ type: 'number', min: 2, max: 40, step: 1 }).property('value', +title_props.size.split('px')[0]).style('width', '65px').on('change', function () {
     title.style('font-size', this.value + 'px');
   });
-  box_content.append('p').html(i18next.t('app_page.title_box.xpos')).insert('input').attrs({ type: 'number', min: 0, max: 100, step: 1, value: title_props.position_x_pct }).style('width', '65px').on('change', function () {
+  box_content.append('p').html(i18next.t('app_page.title_box.xpos')).insert('input').attrs({ type: 'number', min: 0, max: 100, step: 1 }).property('value', title_props.position_x_pct).style('width', '65px').on('change', function () {
     title.attr('x', w * +this.value / 100);
   });
-  box_content.append('p').html(i18next.t('app_page.title_box.ypos')).insert('input').attrs({ type: 'number', min: 0, max: 100, step: 1, value: title_props.position_y_pct }).style('width', '65px').on('change', function () {
+  box_content.append('p').html(i18next.t('app_page.title_box.ypos')).insert('input').attrs({ type: 'number', min: 0, max: 100, step: 1 }).property('value', title_props.position_y_pct).style('width', '65px').on('change', function () {
     title.attr('y', h * +this.value / 100);
   });
-  box_content.append('p').html(i18next.t('app_page.title_box.font_color')).insert('input').attrs({ type: 'color', value: rgb2hex(title_props.color) }).on('change', function () {
+  box_content.append('p').html(i18next.t('app_page.title_box.font_color')).insert('input').attr('type', 'color').property('value', rgb2hex(title_props.color)).on('change', function () {
     title.style('fill', this.value);
   });
 
@@ -2169,13 +2181,13 @@ function handle_title_properties() {
 
   buffer_section1.append('label').attrs({ for: 'title_buffer_chkbox' }).text(i18next.t('app_page.title_box.buffer'));
 
-  var buffer_color = buffer_section2.insert('input').style('float', 'left').attrs({ type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : '#ffffff' }).on('change', function () {
+  var buffer_color = buffer_section2.insert('input').style('float', 'left').attrs({ type: 'color' }).property('value', hasBuffer ? rgb2hex(title_props.stroke) : '#ffffff').on('change', function () {
     title.style('stroke', this.value);
   });
 
   buffer_section2.insert('span').style('float', 'right').html(' px');
 
-  var buffer_width = buffer_section2.insert('input').styles({ float: 'right', width: '60px' }).attrs({ type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1 }).on('change', function () {
+  var buffer_width = buffer_section2.insert('input').styles({ float: 'right', width: '60px' }).attrs({ type: 'number', step: '0.1' }).property('value', hasBuffer ? +title_props.stroke_width.replace('px', '') : 1).on('change', function () {
     title.style('stroke-width', this.value + 'px');
   });
 }
@@ -2293,10 +2305,10 @@ function unpatchSvgForInkscape() {
 }
 
 function check_output_name(name, extension) {
-  var part = name.split('.');
-  var regexpName = new RegExp(/^[a-z0-9_]+$/i);
-  if (regexpName.test(part[0]) && part[0].length < 250) {
-    return part[0] + '.' + extension;
+  var _name = name.toLowerCase().indexOf(extension) > -1 ? name.substring(0, name.lastIndexOf('.')) : name;
+  var regexpName = new RegExp(/^[().a-z0-9_-]+$/i);
+  if (regexpName.test(_name) && _name.length < 250) {
+    return _name + '.' + extension;
   }
   return 'export.' + extension;
 }
@@ -10575,7 +10587,7 @@ function handle_TopoJSON_files(files, target_layer_on_add) {
       reader = new FileReader(),
       ajaxData = new FormData();
   ajaxData.append('file[]', f);
-  xhrequest('POST', 'convert_topojson', ajaxData, false).then(function (res) {
+  xhrequest('POST', 'convert_topojson', ajaxData, true).then(function (res) {
     var key = JSON.parse(res).key;
     reader.onloadend = function () {
       var text = reader.result;
@@ -17162,7 +17174,8 @@ function createLegend_choro(layer, field, title, subtitle) {
     }
   }
 
-  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' }).attrs({ id: 'legend_root',
+  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' }).attrs({
+    id: 'legend_root',
     class: tmp_class_name,
     layer_field: field,
     transform: 'translate(0,0)',
@@ -17217,7 +17230,11 @@ function createLegend_choro(layer, field, title, subtitle) {
       return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
     });
 
-    legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + boxwidth * 2 + 10).attr('y', tmp_pos + boxheight + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+    legend_root.insert('text').attrs({
+      id: 'lgd_choro_min_val',
+      x: xpos + boxwidth * 2 + 10,
+      y: tmp_pos + boxheight + boxgap
+    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
       return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[0], rounding_precision).toLocaleString();
     });
   } else {
@@ -17229,10 +17246,15 @@ function createLegend_choro(layer, field, title, subtitle) {
   }
   if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
     var gp_no_data = legend_root.append('g');
-    gp_no_data.append('rect').attrs({ x: xpos + boxheight,
+    gp_no_data.append('rect').attrs({
+      x: xpos + boxheight,
       y: last_pos + 2 * boxheight,
       width: boxwidth,
-      height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
+      height: boxheight
+    }).styles({
+      fill: current_layers[layer].options_disc.no_data,
+      stroke: current_layers[layer].options_disc.no_data
+    });
 
     gp_no_data.append('text').attrs({ x: xpos + boxwidth * 2 + 10, y: last_pos + 2.7 * boxheight, id: 'no_data_txt' }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : 'No data');
 
@@ -17275,7 +17297,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
     rounding_precision = get_lgd_display_precision(current_layers[layer].options_disc.breaks);
   }
 
-  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' }).attrs({ id: 'legend_root_horiz',
+  var legend_root = map.insert('g').styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' }).attrs({
+    id: 'legend_root_horiz',
     class: tmp_class_name,
     layer_field: field,
     transform: 'translate(0,0)',
@@ -17318,16 +17341,26 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
     return round_value(+d.value.split(' - ')[0], rounding_precision).toLocaleString();
   });
 
-  legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', xpos + (boxgap + boxwidth) * data_colors_label.length).attr('y', y_pos2 + boxheight + 20).attr('text-anchor', 'middle').styles({ 'font-size': '10px' }).text(function (d) {
+  legend_root.insert('text').attrs({
+    id: 'lgd_choro_min_val',
+    x: xpos + (boxgap + boxwidth) * data_colors_label.length,
+    y: y_pos2 + boxheight + 20,
+    'text-anchor': 'middle'
+  }).styles({ 'font-size': '10px' }).text(function (d) {
     return round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[1], rounding_precision).toLocaleString();
   });
 
   if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
     var gp_no_data = legend_root.append('g');
-    gp_no_data.append('rect').attrs({ x: xpos + boxwidth + (boxgap + boxwidth) * data_colors_label.length,
+    gp_no_data.append('rect').attrs({
+      x: xpos + boxwidth + (boxgap + boxwidth) * data_colors_label.length,
       y: y_pos2,
       width: boxwidth,
-      height: boxheight }).style('fill', current_layers[layer].options_disc.no_data).style('stroke', current_layers[layer].options_disc.no_data);
+      height: boxheight
+    }).styles({
+      fill: current_layers[layer].options_disc.no_data,
+      stroke: current_layers[layer].options_disc.no_data
+    });
 
     gp_no_data.append('text').attrs({
       x: xpos + boxwidth / 2 + (boxgap + boxwidth) * (data_colors_label.length + 1),
@@ -17340,7 +17373,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
     id: 'legend_bottom_note',
     x: xpos + boxwidth,
     y: y_pos2 + boxheight + 40,
-    'text-anchor': 'middle' }).styles({
+    'text-anchor': 'middle'
+  }).styles({
     'font-size': '11px',
     'font-family': 'verdana'
   });
@@ -17528,13 +17562,13 @@ function createlegendEditBox_symbol() {
   var a = box_body.append('p');
   a.append('span').html(i18next.t('app_page.legend_style_box.lgd_title'));
 
-  a.append('input').styles({ float: 'right' }).attr('value', title_content.textContent).on('keyup', function () {
+  a.append('input').style('float', 'right').property('value', title_content.textContent).on('keyup', function () {
     title_content.textContent = this.value;
   });
 
   var b = box_body.append('p');
   b.insert('span').html(i18next.t('app_page.legend_style_box.var_name'));
-  b.insert('input').attr('value', subtitle_content.textContent).styles({ float: 'right' }).on('keyup', function () {
+  b.insert('input').property('value', subtitle_content.textContent).style('float', 'right').on('keyup', function () {
     var empty = subtitle_content.textContent == '';
     // Move up the title to its original position if the subtitle isn't empty :
     if (empty && this.value != '') {
@@ -17550,14 +17584,14 @@ function createlegendEditBox_symbol() {
 
   var c = box_body.insert('p');
   c.insert('span').html(i18next.t('app_page.legend_style_box.additionnal_notes'));
-  c.insert('input').attr('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+  c.insert('input').property('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
     note_content.textContent = this.value;
   });
 
   if (ratio_waffle_txt) {
     var d = box_body.insert('p');
     d.insert('span').html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
-    d.insert('input').attr('value', ratio_waffle_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+    d.insert('input').property('value', ratio_waffle_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
       ratio_waffle_txt.textContent = this.value;
     });
   }
@@ -17595,9 +17629,10 @@ function createlegendEditBox_symbol() {
   gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
 
   var rectangle_options1 = box_body.insert('p');
-  rectangle_options1.insert('input').style('margin-left', '0px').attrs({ type: 'checkbox',
-    id: 'rect_lgd_checkbox',
-    checked: rect_fill_value.color === undefined ? null : true }).on('change', function () {
+  rectangle_options1.insert('input').style('margin-left', '0px').attrs({
+    type: 'checkbox',
+    id: 'rect_lgd_checkbox'
+  }).property('checked', rect_fill_value.color === undefined ? null : true).on('change', function () {
     if (this.checked) {
       rectangle_options2.style('display', '');
       var r = document.getElementById('choice_color_under_rect');
@@ -17611,9 +17646,10 @@ function createlegendEditBox_symbol() {
   rectangle_options1.append('label').attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' }).html(i18next.t('app_page.legend_style_box.under_rectangle'));
 
   var rectangle_options2 = rectangle_options1.insert('span').styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
-  rectangle_options2.insert('input').attrs({ id: 'choice_color_under_rect',
-    type: 'color',
-    value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) }).on('change', function () {
+  rectangle_options2.insert('input').attrs({
+    id: 'choice_color_under_rect',
+    type: 'color'
+  }).property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color)).on('change', function () {
     rect_fill_value = { color: this.value, opacity: 1 };
     make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
   });
@@ -17688,13 +17724,13 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   var a = box_body.append('p');
   a.append('span').html(i18next.t('app_page.legend_style_box.lgd_title'));
 
-  a.append('input').styles({ float: 'right' }).attr('value', title_content.textContent).on('keyup', function () {
+  a.append('input').style('float', 'right').property('value', title_content.textContent).on('keyup', function () {
     title_content.textContent = this.value;
   });
 
   var b = box_body.append('p');
   b.insert('span').html(i18next.t('app_page.legend_style_box.var_name'));
-  b.insert('input').attr('value', subtitle_content.textContent).styles({ float: 'right' }).on('keyup', function () {
+  b.insert('input').property('value', subtitle_content.textContent).style('float', 'right').on('keyup', function () {
     var empty = subtitle_content.textContent == '';
     // Move up the title to its original position if the subtitle isn't empty :
     if (empty && this.value != '') {
@@ -17710,14 +17746,14 @@ function createlegendEditBox_choro(legend_id, layer_name) {
 
   var c = box_body.insert('p');
   c.insert('span').html(i18next.t('app_page.legend_style_box.additionnal_notes'));
-  c.insert('input').attr('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+  c.insert('input').property('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
     note_content.textContent = this.value;
   });
 
   if (no_data_txt) {
     var d = box_body.insert('p');
     d.insert('span').html(i18next.t('app_page.legend_style_box.no_data'));
-    d.insert('input').attr('value', no_data_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+    d.insert('input').property('value', no_data_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
       no_data_txt.textContent = this.value;
     });
   }
@@ -17761,7 +17797,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     var e = box_body.append('p');
     e.append('span').html(i18next.t('app_page.legend_style_box.float_rounding'));
 
-    e.append('input').attrs({ id: 'precision_range', type: 'range', min: -+max_nb_left, max: max_nb_decimals, step: 1, value: current_nb_dec }).styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' }).on('change', function () {
+    e.append('input').attrs({ id: 'precision_range', type: 'range', min: -+max_nb_left, max: max_nb_decimals, step: 1 }).styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' }).property('value', current_nb_dec).on('change', function () {
       var nb_float = +this.value;
       d3.select('#precision_change_txt').html(nb_float);
       legend_node.setAttribute('rounding_precision', nb_float);
@@ -17786,7 +17822,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
         legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val, nb_float).toLocaleString();
       }
     });
-    e.append('span').styles({ float: 'right' }).attr('id', 'precision_change_txt').html('' + current_nb_dec);
+    e.append('span').style('float', 'right').attr('id', 'precision_change_txt').html('' + current_nb_dec);
   }
 
   var current_state = +legend_node.getAttribute('boxgap') === 0;
@@ -17816,9 +17852,10 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
 
   var rectangle_options1 = box_body.insert('p');
-  rectangle_options1.insert('input').style('margin-left', '0px').attrs({ type: 'checkbox',
-    id: 'rect_lgd_checkbox',
-    checked: rect_fill_value.color === undefined ? null : true }).on('change', function () {
+  rectangle_options1.insert('input').style('margin-left', '0px').attrs({
+    type: 'checkbox',
+    id: 'rect_lgd_checkbox'
+  }).property('checked', rect_fill_value.color === undefined ? null : true).on('change', function () {
     if (this.checked) {
       rectangle_options2.style('display', '');
       var r = document.getElementById('choice_color_under_rect');
@@ -17832,14 +17869,12 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   rectangle_options1.append('label').attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' }).html(i18next.t('app_page.legend_style_box.under_rectangle'));
 
   var rectangle_options2 = rectangle_options1.insert('span').styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
-  rectangle_options2.insert('input').attrs({ id: 'choice_color_under_rect',
-    type: 'color',
-    value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) }).on('change', function () {
+  rectangle_options2.insert('input').attrs({ id: 'choice_color_under_rect', type: 'color' }).property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color)).on('change', function () {
     rect_fill_value = { color: this.value, opacity: 1 };
     make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
   });
 
-  if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz' && current_layers[layer_name].options_disc) {
+  if (legend_id === 'legend_root_horiz' || legend_id === 'legend_root' && current_layers[layer_name].options_disc) {
     var change_legend_type = box_body.insert('p');
     var vert_layout = change_legend_type.append('p').attr('id', 'vert_layout').attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
     var horiz_layout = change_legend_type.append('p').attr('id', 'horiz_layout').attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));
@@ -17951,13 +17986,13 @@ function createlegendEditBox(legend_id, layer_name) {
   var a = box_body.append('p');
   a.append('span').html(i18next.t('app_page.legend_style_box.lgd_title'));
 
-  a.append('input').styles({ float: 'right' }).attr('value', title_content.textContent).on('keyup', function () {
+  a.append('input').style('float', 'right').property('value', title_content.textContent).on('keyup', function () {
     title_content.textContent = this.value;
   });
 
   var b = box_body.append('p');
   b.insert('span').html(i18next.t('app_page.legend_style_box.var_name'));
-  b.insert('input').attr('value', subtitle_content.textContent).styles({ float: 'right' }).on('keyup', function () {
+  b.insert('input').property('value', subtitle_content.textContent).style('float', 'right').on('keyup', function () {
     var empty = subtitle_content.textContent == '';
     // Move up the title to its original position if the subtitle isn't empty :
     if (empty && this.value != '') {
@@ -17973,20 +18008,20 @@ function createlegendEditBox(legend_id, layer_name) {
 
   var c = box_body.insert('p');
   c.insert('span').html(i18next.t('app_page.legend_style_box.additionnal_notes'));
-  c.insert('input').attr('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+  c.insert('input').property('value', note_content.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
     note_content.textContent = this.value;
   });
 
   if (no_data_txt) {
     var d = box_body.insert('p');
     d.insert('span').html(i18next.t('app_page.legend_style_box.no_data'));
-    d.insert('input').attr('value', no_data_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+    d.insert('input').property('value', no_data_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
       no_data_txt.textContent = this.value;
     });
   } else if (ratio_waffle_txt) {
     var _d = box_body.insert('p');
     _d.insert('span').html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
-    _d.insert('input').attr('value', ratio_waffle_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
+    _d.insert('input').property('value', ratio_waffle_txt.textContent).styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' }).on('keyup', function () {
       ratio_waffle_txt.textContent = this.value;
     });
   }
@@ -18043,7 +18078,7 @@ function createlegendEditBox(legend_id, layer_name) {
       var e = box_body.append('p');
       e.append('span').html(i18next.t('app_page.legend_style_box.float_rounding'));
 
-      e.append('input').attrs({ id: 'precision_range', type: 'range', min: -+max_nb_left, max: max_nb_decimals, step: 1, value: current_nb_dec }).styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' }).on('change', function () {
+      e.append('input').attrs({ id: 'precision_range', type: 'range', min: -+max_nb_left, max: max_nb_decimals, step: 1 }).styles({ float: 'right', width: '90px', 'vertical-align': 'middle', 'margin-left': '10px' }).property('value', current_nb_dec).on('change', function () {
         var nb_float = +this.value;
         d3.select('#precision_change_txt').html(nb_float);
         legend_node.setAttribute('rounding_precision', nb_float);
@@ -18068,7 +18103,7 @@ function createlegendEditBox(legend_id, layer_name) {
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val2, nb_float).toLocaleString();
         }
       });
-      e.append('span').styles({ float: 'right' }).attr('id', 'precision_change_txt').html('' + current_nb_dec);
+      e.append('span').style('float', 'right').attr('id', 'precision_change_txt').html('' + current_nb_dec);
     }
   }
 
@@ -18146,14 +18181,12 @@ function createlegendEditBox(legend_id, layer_name) {
   rectangle_options1.append('label').attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' }).html(i18next.t('app_page.legend_style_box.under_rectangle'));
 
   var rectangle_options2 = rectangle_options1.insert('span').styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
-  rectangle_options2.insert('input').attrs({ id: 'choice_color_under_rect',
-    type: 'color',
-    value: rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color) }).on('change', function () {
+  rectangle_options2.insert('input').attrs({ id: 'choice_color_under_rect', type: 'color' }).property('value', rect_fill_value.color === undefined ? '#ffffff' : rgb2hex(rect_fill_value.color)).on('change', function () {
     rect_fill_value = { color: this.value, opacity: 1 };
     make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
   });
 
-  if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz' && current_layers[layer_name].options_disc) {
+  if (legend_id === 'legend_root_horiz' || legend_id === 'legend_root' && current_layers[layer_name].options_disc) {
     var change_legend_type = box_body.insert('p');
     var vert_layout = change_legend_type.append('p').attr('id', 'vert_layout').attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
     var horiz_layout = change_legend_type.append('p').attr('id', 'horiz_layout').attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout').text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));

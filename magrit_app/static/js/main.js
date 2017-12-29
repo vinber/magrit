@@ -503,14 +503,19 @@ function setUpInterface(reload_project) {
   const f = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   f.append('input')
     .styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' })
-    .attrs({ type: 'color', id: 'bg_color', value: '#ffffff', class: 'list_elem_section4 m_elem_right' })
+    .attrs({ type: 'color', id: 'bg_color', class: 'list_elem_section4 m_elem_right' })
+    .property('value', '#ffffff')
     .on('change', function () { handle_bg_color(this.value); });
-  f.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.background_color');
+  f.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.background_color',
+    });
 
   const a1 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   a1.append('input')
-    .attrs({ id: 'input-width', type: 'number', value: w, class: 'list_elem_section4 m_elem_right' })
+    .attrs({ id: 'input-width', type: 'number', class: 'list_elem_section4 m_elem_right' })
+    .property('value', w)
     .on('change', function () {
       const new_width = +this.value;
       if (new_width === 0 || isNaN(new_width)) {
@@ -529,12 +534,16 @@ function setUpInterface(reload_project) {
       }
       document.getElementById('input-height').value = h;
     });
-  a1.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_width');
+  a1.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_width',
+    });
 
   const a2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   a2.append('input')
-    .attrs({ id: 'input-height', type: 'number', value: h, class: 'm_elem_right list_elem_section4' })
+    .attrs({ id: 'input-height', type: 'number', class: 'm_elem_right list_elem_section4' })
+    .property('value', h)
     .on('change', function () {
       const new_height = +this.value;
       if (new_height === 0 || isNaN(new_height)) {
@@ -553,8 +562,11 @@ function setUpInterface(reload_project) {
       }
       document.getElementById('input-width').value = w;
     });
-  a2.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_height');
+  a2.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_height',
+    });
 
   const b = dv4.append('li').styles({ margin: '1px', padding: '4px 0' });
   const ratio_select = b.append('select')
@@ -649,8 +661,9 @@ function setUpInterface(reload_project) {
       id: 'input-center-x',
       class: 'm_elem_right',
       type: 'number',
-      value: round_value(zoom_prop.x, 2),
-      step: 'any' })
+      step: 'any',
+    })
+    .property('value', round_value(zoom_prop.x, 2))
     .on('change', function () {
       svg_map.__zoom.x = +this.value;
       zoom_without_redraw();
@@ -661,11 +674,13 @@ function setUpInterface(reload_project) {
     .attr('data-i18n', '[html]app_page.section4.map_center_y');
 
   c2.append('input')
-    .attrs({ id: 'input-center-y',
+    .attrs({
+      id: 'input-center-y',
       class: 'list_elem_section4 m_elem_right',
       type: 'number',
-      value: round_value(zoom_prop.y, 2),
-      step: 'any' })
+      step: 'any',
+    })
+    .property('value', round_value(zoom_prop.y, 2))
     .style('width', '80px')
     .on('change', function () {
       svg_map.__zoom.y = +this.value;
@@ -676,11 +691,13 @@ function setUpInterface(reload_project) {
   d.append('p').attr('class', 'list_elem_section4 i18n')
           .attr('data-i18n', '[html]app_page.section4.map_scale_k');
   d.append('input')
-    .attrs({ id: 'input-scale-k',
+    .attrs({
+      id: 'input-scale-k',
       class: 'list_elem_section4 m_elem_right',
       type: 'number',
-      value: round_value(zoom_prop.k * proj.scale(), 2),
-      step: 'any' })
+      step: 'any',
+    })
+    .property('value', round_value(zoom_prop.k * proj.scale(), 2))
     .style('width', '80px')
     .on('change', function () {
       svg_map.__zoom.k = +this.value / proj.scale();
@@ -696,13 +713,15 @@ function setUpInterface(reload_project) {
       .html('°');
 
   g.append('input')
-    .attrs({ id: 'canvas_rotation_value_txt',
+    .attrs({
+      id: 'canvas_rotation_value_txt',
       class: 'without_spinner',
       type: 'number',
-      value: 0,
       min: 0,
       max: 360,
-      step: 'any' })
+      step: 'any',
+    })
+    .property('value', 0)
     .styles({ width: '30px', 'margin-left': '10px', float: 'right', 'font-size': '11.5px' })
     .on('change', function () {
       const val = +this.value,
@@ -881,7 +900,8 @@ function setUpInterface(reload_project) {
 
   exp_a.append('input')
     .style('width', '60px')
-    .attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1, value: w })
+    .attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1 })
+    .property('value', w)
     .on('change', function () {
       const ratio = h / w,
         export_png_height = document.getElementById('export_png_height');
@@ -898,7 +918,8 @@ function setUpInterface(reload_project) {
 
   exp_b.append('input')
     .style('width', '60px')
-    .attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1, value: h })
+    .attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1 })
+    .property('value', h)
     .on('change', function () {
       const ratio = h / w,
         export_png_width = document.getElementById('export_png_width');
@@ -914,7 +935,8 @@ function setUpInterface(reload_project) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.filename' });
 
   export_name.append('input')
-    .attrs({ id: 'export_filename', class: 'm_elem_right', type: 'text' });
+    .attrs({ id: 'export_filename', class: 'm_elem_right', type: 'text' })
+    .property('value', 'export.svg');
 
   const export_geo_options = dv5b.append('p')
     .attr('id', 'export_options_geo')
@@ -2435,24 +2457,28 @@ function handle_title_properties() {
   box_content.append('p')
     .html(i18next.t('app_page.title_box.font_size'))
     .insert('input')
-    .attrs({ type: 'number', min: 2, max: 40, step: 1, value: +title_props.size.split('px')[0] })
+    .attrs({ type: 'number', min: 2, max: 40, step: 1 })
+    .property('value', +title_props.size.split('px')[0])
     .style('width', '65px')
     .on('change', function () { title.style('font-size', `${this.value}px`); });
   box_content.append('p')
     .html(i18next.t('app_page.title_box.xpos'))
     .insert('input')
-    .attrs({ type: 'number', min: 0, max: 100, step: 1, value: title_props.position_x_pct })
+    .attrs({ type: 'number', min: 0, max: 100, step: 1 })
+    .property('value', title_props.position_x_pct)
     .style('width', '65px')
     .on('change', function () { title.attr('x', w * +this.value / 100); });
   box_content.append('p')
     .html(i18next.t('app_page.title_box.ypos'))
     .insert('input')
-    .attrs({ type: 'number', min: 0, max: 100, step: 1, value: title_props.position_y_pct })
+    .attrs({ type: 'number', min: 0, max: 100, step: 1  })
+    .property('value', title_props.position_y_pct)
     .style('width', '65px')
     .on('change', function () { title.attr('y', h * +this.value / 100); });
   box_content.append('p').html(i18next.t('app_page.title_box.font_color'))
     .insert('input')
-    .attrs({ type: 'color', value: rgb2hex(title_props.color) })
+    .attr('type', 'color')
+    .property('value', rgb2hex(title_props.color))
     .on('change', function () { title.style('fill', this.value); });
 
   const font_select = box_content.append('p')
@@ -2522,7 +2548,8 @@ function handle_title_properties() {
 
   let buffer_color = buffer_section2.insert('input')
     .style('float', 'left')
-    .attrs({ type: 'color', value: hasBuffer ? rgb2hex(title_props.stroke) : '#ffffff' })
+    .attrs({ type: 'color' })
+    .property('value', hasBuffer ? rgb2hex(title_props.stroke) : '#ffffff')
     .on('change', function () {
       title.style('stroke', this.value);
     });
@@ -2533,7 +2560,8 @@ function handle_title_properties() {
 
   let buffer_width = buffer_section2.insert('input')
     .styles({ float: 'right', width: '60px' })
-    .attrs({ type: 'number', step: '0.1', value: hasBuffer ? +title_props.stroke_width.replace('px', '') : 1 })
+    .attrs({ type: 'number', step: '0.1' })
+    .property('value', hasBuffer ? +title_props.stroke_width.replace('px', '') : 1)
     .on('change', function () {
       title.style('stroke-width', `${this.value}px`);
     });
@@ -2651,10 +2679,12 @@ function unpatchSvgForInkscape() {
 }
 
 function check_output_name(name, extension) {
-  const part = name.split('.');
-  const regexpName = new RegExp(/^[a-z0-9_]+$/i);
-  if (regexpName.test(part[0]) && part[0].length < 250) {
-    return `${part[0]}.${extension}`;
+  const _name = name.toLowerCase().indexOf(extension) > -1
+    ? name.substring(0, name.lastIndexOf('.'))
+    : name;
+  const regexpName = new RegExp(/^[().a-z0-9_-]+$/i);
+  if (regexpName.test(_name) && _name.length < 250) {
+    return `${_name}.${extension}`;
   }
   return `export.${extension}`;
 }
