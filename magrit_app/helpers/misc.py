@@ -11,11 +11,13 @@ from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
 from mmh3 import hash as mmh3_hash
 from ujson import dumps as json_dumps
+from os.path import join as path_join
 
 try:
     from .cy_misc import get_name
 except:
     from magrit_app.helpers.cy_misc import get_name
+
 
 LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
@@ -40,39 +42,21 @@ def run_calc(val1, val2, operator):
         }[operator](val2).tolist()
     return json_dumps(result)
 
-class TimedCall(ContextDecorator):
-    def __init__(self, prefix=None):
-        self.prefix = prefix if prefix else ""
-
-    def __enter__(self):
-        self.t = time()
-        return self
-
-    def __exit__(self, *exc):
-        print("{}{:.4f}s".format(self.prefix, time()-self.t))
-        return False
-
-
-def prepare_folder():
-    for i in range(10):
-        try:
-            tmp_path = "/tmp/" + get_name()
-            os.mkdir(tmp_path)
-            return tmp_path
-        except:
-            continue
-    raise ValueError("Unable to create folder")
-
 
 def savefile(path, raw_data):
+    """
+    Write some raw content (`raw_data`, given as bytes) using the given `path`.
+
+    Parameters
+    ----------
+    path: str
+        Path of file to be created.
+
+    raw_data: bytes
+        Content of the file to be created.
+    """
     with open(path, 'wb') as f:
         f.write(raw_data)
-
-
-def mmh3_file(path):
-    with open(path, 'rb') as f:
-        buf = f.read()
-    return mmh3_hash(buf)
 
 
 def get_key(var):
@@ -146,16 +130,19 @@ def guess_separator(file, raw_data=None):
             else:
                 return None
 
+
 def extractShpZip(myzip, slots, directory):
     """
-    Extract in "directory" the member of "myzip" which are listed in "slots".
+    Extract in "directory" the members of "myzip" which are listed in "slots".
     Replace any extension in uppercase by its lowercase couterpart and updated
     the "slots" dictionnary according to hold the real path of the extracted
     files.
 
     Parameters
     ----------
-    myzip:
+    myzip: zipfile.ZipFile
+        The opened ZipFile object containing the members of the Shapefile to
+        be extracted.
 
     slots: dict
         A mapping containing the reference extensions of the file to extract
@@ -179,23 +166,50 @@ def extractShpZip(myzip, slots, directory):
             slots[ext] = rv
     return slots
 
-def fetch_zip_clean(dir_path, layer_name):
+def zip_layer_folder(dir_path, layer_name):
+    """
+    Create a zip archive with the content of the folder located at `dir_path`
+    and name it with `layer_name`.
+
+    Parameters
+    ----------
+    dir_path: str
+        The path to the temporary folder in which are located the files to
+        be zipped.
+
+    layer_name: str
+        The name of the concerned layer (will be used as file name for the
+        zip archive).
+
+    Returns
+    -------
+    raw_content: str
+        The zip archive
+    archive_name: str
+        The name of the archive (used later in the header of the response).
+    """
     filenames = os.listdir(dir_path)
-    if len(filenames) == 1:
-        filename = '/'.join([dir_path, filenames[0]])
-        with open(filename, 'rb') as f:
-            raw_data = f.read()
-        os.remove(filename)
-        os.removedirs(dir_path)
-        return raw_data, filenames[0]
-    else:
-        zip_stream = BytesIO()
-        myZip = ZipFile(zip_stream, "w", compression=ZIP_DEFLATED)
-        for filename in filenames:
-            f_name = "".join([dir_path, "/", filename])
-            myZip.write(f_name, filename, ZIP_DEFLATED)
-            os.remove(f_name)
-        myZip.close()
-        zip_stream.seek(0)
-        os.removedirs(dir_path)
-        return zip_stream.read(), ''.join([filename.split(".")[0], ".zip"])
+    zip_stream = BytesIO()
+    myZip = ZipFile(zip_stream, "w", compression=ZIP_DEFLATED)
+    for filename in filenames:
+        f_name = path_join(dir_path, filename)
+        myZip.write(f_name, filename, ZIP_DEFLATED)
+    myZip.close()
+    zip_stream.seek(0)
+    return zip_stream.read(), ''.join([layer_name, ".zip"])
+
+
+# def mmh3_file(path):
+#     with open(path, 'rb') as f:
+#         buf = f.read()
+#     return mmh3_hash(buf)
+
+# def prepare_folder():
+#     for i in range(10):
+#         try:
+#             tmp_path = "/tmp/" + get_name()
+#             os.mkdir(tmp_path)
+#             return tmp_path
+#         except:
+#             continue
+#     raise ValueError("Unable to create folder")

@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-from smoomapy import SmoothStewart
-from geopandas import GeoDataFrame
-from .geo import repairCoordsPole
-# from .cy_misc import get_name
-# import pickle
-# import os
 import tempfile
 import ujson as json
 from os.path import join as path_join
+from smoomapy import SmoothStewart
+from geopandas import GeoDataFrame
+from .geo import repairCoordsPole
 
 
 def quick_stewart_mod(input_geojson_points, variable_name, span,

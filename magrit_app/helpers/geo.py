@@ -62,6 +62,7 @@ def read_shp_crs(path):
         proj_info_str = f.read()
     return proj_info_str
 
+
 def get_field_names(srcDS):
     """
     Sanitize field names if necessary (if containing whitespace for example)
@@ -386,6 +387,20 @@ def olson_transform(geojson, scale_values):
 
 
 def reproj_convert_layer_kml(geojson_path):
+    """
+    Convert a GeoJSON FeatureCollection to KML format
+    (used when the user requests an export).
+
+    Parameters
+    ----------
+    geojson_path: str
+        Path of the input GeoJSON FeatureCollection to be converted.
+
+    Returns
+    -------
+    result: bytes
+        The resulting KML file.
+    """
     ## TODO : Use VectorTranslate to make the conversion?
     process = Popen(["ogr2ogr", "-f", "KML",
                      "-preserve_fid",
@@ -395,9 +410,33 @@ def reproj_convert_layer_kml(geojson_path):
     return stdout
 
 
-def reproj_convert_layer(geojson_path, output_path,
-                         file_format, output_crs, input_crs="epsg:4326"):
+def reproj_convert_layer(geojson_path, output_path, file_format, output_crs):
+    """
+    Convert a GeoJSON FeatureCollection to GML or ESRI Shapefile format and
+    reproject the geometries if needed (used when the user requests an export).
+
+    Parameters
+    ----------
+    geojson_path: str
+        Path of the input GeoJSON FeatureCollection to be converted.
+
+    output_path: str
+        Path for the resulting Shapefile/GML (should be in a directory
+        created by tempfile.TemporaryDirectory).
+
+    file_format: str
+        The format of the expected result ('ESRI Shapefile' or 'GML' is expected).
+
+    output_crs: str
+        The output srs to use (in proj4 string format).
+
+    Returns
+    -------
+    result_code: int
+        Should return 0 if everything went fine..
+    """
     ## TODO : Use VectorTranslate to make the conversion?
+    input_crs = "epsg:4326"
     layer_name = output_path.split('/')
     layer_name = layer_name[len(layer_name) - 1].split('.')[0]
 
@@ -454,6 +493,7 @@ def reproj_convert_layer(geojson_path, output_path,
 
 
 def check_projection(proj4string):
+    """Check if a proj4string is valid."""
     if not isinstance(proj4string, str):
         return False
     if proj4string[0] == '"' and proj4string[len(proj4string) - 1] == '"':

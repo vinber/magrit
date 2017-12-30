@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 import asyncio
 import aionotify
 import sys
@@ -30,7 +29,8 @@ files = [
     'context-menu.js',
     'text_import_wizard.js',
     'join_popup.js',
-    'map_project.js'
+    'map_project.js',
+    'sample_topo.js'
     ]
 
 

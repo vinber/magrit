@@ -32,11 +32,14 @@ import uvloop
 import pandas as pd
 import numpy as np
 import matplotlib; matplotlib.use('Agg')
+
+from tempfile import TemporaryDirectory
 from base64 import b64encode
 from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO, BytesIO
+from os.path import join as path_join
 
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
@@ -56,7 +59,7 @@ from multidict import MultiDict
 try:
     from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
-        run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
+        run_calc, savefile, get_key, zip_layer_folder,
         extractShpZip, guess_separator, clean_name)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
@@ -64,13 +67,13 @@ try:
         reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
         check_projection, olson_transform, get_proj4_string,
         make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
-    from helpers.stewart_smoomapy import quick_stewart_mod # , resume_stewart
+    from helpers.stewart_smoomapy import quick_stewart_mod
     from helpers.grid_layer import get_grid_layer
     from helpers.error_middleware404 import error_middleware
 except:
    from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
-       run_calc, savefile, get_key, fetch_zip_clean, prepare_folder,
+       run_calc, savefile, get_key, zip_layer_folder,
        extractShpZip, guess_separator, clean_name)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
@@ -78,15 +81,17 @@ except:
        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
        check_projection, olson_transform, get_proj4_string,
        make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
-   from .helpers.stewart_smoomapy import quick_stewart_mod # , resume_stewart
+   from .helpers.stewart_smoomapy import quick_stewart_mod
    from .helpers.grid_layer import get_grid_layer
    from .helpers.error_middleware404 import error_middleware
-
-pp = '(aiohttp_app) '
 
 
 @aiohttp_jinja2.template('index.html')
 async def index_handler(request):
+    """
+    Handler for the index page.
+    Index page visitors (new/already known) are also counted in this function.
+    """
     asyncio.ensure_future(
         request.app['redis_conn'].incr('view_onepage'),
         loop=request.app.loop)
@@ -98,6 +103,25 @@ async def index_handler(request):
     session['already_seen'] = True
     return {'app_name': request.app['app_name'],
             'version': request.app['version']}
+
+
+@aiohttp_jinja2.template('modules.html')
+async def serve_main_page(request):
+    """
+    Handler for the application real page.
+    """
+    session_redis = await get_session(request)
+    get_user_id(session_redis, request.app['app_users'], request.app)
+    return {'app_name': request.app['app_name'],
+            'version': request.app['version']}
+
+
+@aiohttp_jinja2.template('contact_form.html')
+async def serve_contact_form(request):
+    """
+    Handler for the contact page.
+    """
+    return {"app_name": request.app["app_name"]}
 
 
 async def geojson_to_topojson(data, layer_name):
@@ -196,48 +220,6 @@ async def get_sample_layer(request):
             ['{"key":', hash_val, ',"file":', data, '}']
             ))
 
-async def convert_topo(request):
-    """
-    Convert/sanitize a topojson layer uploaded by the user and
-    store it (in topojson format) in redis during the user session
-    for a possible later use.
-    """
-    posted_data, session_redis = \
-        await asyncio.gather(*[request.post(), get_session(request)])
-
-    try:
-        file_field = posted_data['file[]']
-        name = file_field.filename
-        data = file_field.file.read()
-
-    except Exception as err:
-        request.app['logger'].info("posted data :\n{}\nerr:\n{}"
-                   .format(posted_data, err))
-        return web.Response(text='{"Error": "Incorrect datatype"}')
-
-    user_id = get_user_id(session_redis, request.app['app_users'])
-    hash_val = str(mmh3_hash(data))
-    f_name = '_'.join([user_id, hash_val])
-
-    asyncio.ensure_future(
-        request.app['redis_conn'].incr('layers'))
-
-    result = await request.app['redis_conn'].get(f_name)
-    if result:
-        result = result.decode()
-        asyncio.ensure_future(
-            request.app['redis_conn'].pexpire(f_name, 43200000))
-        return web.Response(text=''.join([
-            '{"key":', hash_val,
-            ',"file":', result.replace(hash_val, name), '}'
-            ]))
-
-    asyncio.ensure_future(
-        request.app['redis_conn'].set(f_name, data, pexpire=43200000))
-    return web.Response(text=''.join(
-        ['{"key":', hash_val, ',"file":null}']
-        ))
-
 
 def get_user_id(session_redis, app_users, app=None):
     """
@@ -263,6 +245,51 @@ def get_user_id(session_redis, app_users, app=None):
 
 def convert_error(message='Error converting input file'):
     return web.Response(text='{{"Error": "{}"}}'.format(message))
+
+
+async def convert_topo(request):
+    """
+    Convert/sanitize a topojson layer uploaded by the user and
+    store it (in topojson format) in redis during the user session
+    for a possible later use.
+    """
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+
+    try:
+        file_field = posted_data['file[]']
+        name = file_field.filename
+        data = file_field.file.read()
+
+    except Exception as err:
+        request.app['logger'].info(
+            "Error while reading TopoJSON file\nPosted data :\n{}\nerr:\n{}"
+            .format(posted_data, err))
+        return convert_error("Incorrect datatype")
+
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    hash_val = str(mmh3_hash(data))
+    f_name = '_'.join([user_id, hash_val])
+
+    asyncio.ensure_future(
+        request.app['redis_conn'].incr('layers'))
+
+    result = await request.app['redis_conn'].get(f_name)
+    if result:
+        result = result.decode()
+        asyncio.ensure_future(
+            request.app['redis_conn'].pexpire(f_name, 43200000))
+        return web.Response(text=''.join([
+            '{"key":', hash_val,
+            ',"file":', result.replace(hash_val, name), '}'
+            ]))
+
+    asyncio.ensure_future(
+        request.app['redis_conn'].set(f_name, data, pexpire=43200000))
+    return web.Response(text=''.join(
+        ['{"key":', hash_val, ',"file":null}']
+        ))
+
 
 async def convert(request):
     """
@@ -317,7 +344,7 @@ async def convert(request):
             request.app['logger'].info(
                 'Error while loading single file : {}\n{}'.format(err, _tb))
             request.app['logger'].info(
-                "posted data :\n{}\nName:\n{}".format(posted_data, field[1]))
+                "Posted data :\n{}\nName:\n{}".format(posted_data, field[1]))
             return convert_error('Incorrect datatype')
 
     f_name = '_'.join([user_id, str(hashed_input)])
@@ -523,20 +550,11 @@ async def convert_extrabasemap(request):
                 ['{"key":', str(hashed_input), ',"file":', result, '}']))
 
 
-@aiohttp_jinja2.template('modules.html')
-async def serve_main_page(request):
-    session_redis = await get_session(request)
-    get_user_id(session_redis, request.app['app_users'], request.app)
-    return {'app_name': request.app['app_name'],
-            'version': request.app['version']}
-
-
-@aiohttp_jinja2.template('contact_form.html')
-async def serve_contact_form(request):
-    return {"app_name": request.app["app_name"]}
-
-
 async def store_contact_info(request):
+    """
+    Handle a message posted in the contact page by storing it (with the
+    relevant details) in JSON format in redis.
+    """
     posted_data = await request.post()
     date = datetime.fromtimestamp(
         time.time()).strftime("%B %d, %Y at %H:%M:%S")
@@ -716,25 +734,7 @@ async def compute_olson(posted_data, user_id, app):
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
-async def receiv_layer(request):
-    """
-    Store a layer sent (and created) in the UI (such as a discontinuity layer)
-    in order to maybe use it later during the user session.
-    """
-    posted_data, session_redis = \
-        await asyncio.gather(*[request.post(), get_session(request)])
-    user_id = get_user_id(session_redis, request.app['app_users'])
-    layer_name = posted_data['layer_name']
-    data = posted_data['geojson']
-    h_val = mmh3_hash(data)
-    f_name = '_'.join([user_id, str(h_val)])
-    res = await geojson_to_topojson(data.encode(), layer_name)
-    asyncio.ensure_future(
-        request.app['redis_conn'].set(f_name, res, pexpire=43200000))
-    return web.Response(text=''.join(['{"key":', str(h_val), '}']))
-
-
-async def call_stewart(posted_data, user_id, app):
+async def compute_stewart(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
     point_layer = await app['redis_conn'].get(f_name)
@@ -829,7 +829,6 @@ async def call_stewart(posted_data, user_id, app):
         n_field_name2,
         posted_data['user_breaks'])
 
-
     os.remove(filenames['point_layer'])
     if filenames['mask_layer']:
         os.remove(filenames['mask_layer'])
@@ -898,6 +897,24 @@ async def geo_compute(request):
         return web.Response(text=data_response)
 
 
+async def receiv_layer(request):
+    """
+    Store a layer sent (and created) in the UI (such as a discontinuity layer)
+    in order to maybe use it later during the user session.
+    """
+    posted_data, session_redis = \
+        await asyncio.gather(*[request.post(), get_session(request)])
+    user_id = get_user_id(session_redis, request.app['app_users'])
+    layer_name = posted_data['layer_name']
+    data = posted_data['geojson']
+    h_val = mmh3_hash(data)
+    f_name = '_'.join([user_id, str(h_val)])
+    res = await geojson_to_topojson(data.encode(), layer_name)
+    asyncio.ensure_future(
+        request.app['redis_conn'].set(f_name, res, pexpire=43200000))
+    return web.Response(text=''.join(['{"key":', str(h_val), '}']))
+
+
 async def handler_exists_layer(request):
     """
     Function used when a layer is requested for the export of a project-file.
@@ -934,71 +951,75 @@ async def handler_exists_layer2(request):
             .format(user_id, layer_name, layer_name_redis))
         return web.Response(
             text='{"Error": "Unable to fetch the layer on the server"}')
-    elif file_format == "TopoJSON":
-        return web.Response(text=res.decode())
-    else:
-        try:
-            res_geojson = topojson_to_geojson(json.loads(res.decode()))
-            if "GeoJSON" in file_format:
-                return web.Response(text=res_geojson)
-            elif "KML" in file_format:
-                tmp_path = prepare_folder()
-                output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
+
+    try:
+        if "TopoJSON" in file_format:
+            return web.Response(text=res.decode())
+
+        res_geojson = topojson_to_geojson(json.loads(res.decode()))
+
+        if "GeoJSON" in file_format:
+            return web.Response(text=res_geojson)
+
+        elif "KML" in file_format:
+            with TemporaryDirectory() as tmp_path:
+                output_path = path_join(
+                    tmp_path, "{}.geojson".format(layer_name))
                 savefile(output_path, res_geojson.encode())
                 result = reproj_convert_layer_kml(output_path)
-                os.remove(output_path)
-                os.removedirs(tmp_path)
                 return web.Response(text=result.decode())
-            else:
-                out_proj = check_projection(
-                    projection["name"] if "name" in projection
-                    else projection["proj4string"])
-                if not out_proj:
-                    return web.Response(
-                        text=json.dumps(
-                            {'Error': 'app_page.common.error_proj4_string'}))
 
-                available_formats = {"ESRI Shapefile": ".shp",
-                                     "KML": ".kml",
-                                     "GML": ".gml"}
-                ext = available_formats[file_format]
-                tmp_path = prepare_folder()
-                output_path = ''.join([tmp_path, "/", layer_name, ".geojson"])
+        elif 'Shapefile' in file_format or 'GML' in file_format:
+            out_proj = check_projection(
+                projection["name"] if "name" in projection
+                else projection["proj4string"])
+
+            if not out_proj:
+                return web.Response(text=json.dumps(
+                    {'Error': 'app_page.common.error_proj4_string'}))
+
+            ext = {"ESRI Shapefile": ".shp", "GML": ".gml"}[file_format]
+
+            with TemporaryDirectory() as tmp_path:
+                output_path = path_join(
+                    tmp_path, "{}.geojson".format(layer_name))
                 savefile(output_path, res_geojson.encode())
                 reproj_convert_layer(
                     output_path, output_path.replace(".geojson", ext),
                     file_format, out_proj
                     )
                 os.remove(output_path)
-                raw_data, filename = fetch_zip_clean(tmp_path, layer_name)
-                if ".zip" in filename:
-                    b64_zip = b64encode(raw_data)
-                    return web.Response(
-                        body=b64_zip,
-                        headers=MultiDict({
-                            "Content-Type": "application/octet-stream",
-                            "Content-Disposition": ''.join(
-                                ["attachment; filename=", layer_name, ".zip"]),
-                            "Content-length": str(len(b64_zip))}))
-                else:
-                    return web.Response(text=raw_data.decode())
-        except Exception as err:
-            request.app['logger'].info(
-                '{} - Error {} while converting layer {} to {} format)'
-                .format(user_id, err, layer_name, file_format))
-            return web.Response(text='{"Error": "Unexpected error"}')
+                raw_data, filename = zip_layer_folder(tmp_path, layer_name)
+                b64_zip = b64encode(raw_data)
+                return web.Response(
+                    body=b64_zip,
+                    headers=MultiDict({
+                        "Content-Type": "application/octet-stream",
+                        "Content-Disposition": ''.join(
+                            ["attachment; filename=", filename]),
+                        "Content-length": str(len(b64_zip))
+                    }))
+
+    except Exception as err:
+        request.app['logger'].info(
+            '{} - Error {} while converting layer {} to {} format)'
+            .format(user_id, err, layer_name, file_format))
+        return web.Response(text='{"Error": "Unexpected error"}')
+
     return web.Response(text='{"Error": "Invalid file format"}')
 
 
 async def rawcsv_to_geo(data, logger):
     """
-    Actually convert a csv file containing coordinates to a GeoJSON FeatureCollection of
-    points.
+    Actually convert a csv file containing coordinates to a GeoJSON
+    FeatureCollection of points.
 
     Parameters
     ----------
     data: str
         The csv file, as a string.
+    logger: logging.Logger
+        The logger to use to log info messages for errors or warnings.
 
     Returns
     -------
@@ -1106,6 +1127,7 @@ async def rawcsv_to_geo(data, logger):
         "features": features,
     })
 
+
 async def calc_helper(request):
     """
     Compute basic operation between two arrays (in order to create a new column
@@ -1174,11 +1196,12 @@ async def convert_csv_geo(request):
 
     request.app['logger'].info(
         'timing : csv -> geojson -> topojson : {:.4f}s'
-        .format(time.time()-st))
+        .format(time.time() - st))
 
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":', result, '}']
         ))
+
 
 async def get_stats_json(request):
     posted_data = await request.post()
@@ -1252,9 +1275,10 @@ async def convert_tabular(request):
 
     request.app['logger'].info(
         'timing : spreadsheet -> csv : {:.4f}s'
-        .format(time.time()-st))
+        .format(time.time() - st))
     return web.Response(text=json.dumps(
         {"file": result, "name": name, "message": message}))
+
 
 async def fetch_list_extrabasemaps(loop):
     url = 'https://api.github.com/repos/riatelab/basemaps/contents/'
@@ -1280,6 +1304,7 @@ async def fetch_list_extrabasemaps(loop):
                         name_url.append((filename, url))
                 return name_url
 
+
 async def get_extrabasemaps(request):
     list_url = await request.app['redis_conn'].get('extrabasemaps')
     if not list_url:
@@ -1293,12 +1318,31 @@ async def get_extrabasemaps(request):
 
 
 def prepare_list_svg_symbols():
+    """
+    Function to prepare (when the server application is started) the JSON file
+    containing the list of available symbols (which may be used as layout
+    features on the map). That list is fetched when the application is opened
+    client side.
+    """
     symbols = [i for i in os.listdir("static/img/svg_symbols/") if '.png' in i]
     with open("static/json/list_symbols.json", "w") as f:
         f.write(json.dumps(symbols))
 
 
 def check_port_available(port_nb):
+    """
+    Determine if a given port is currently available.
+
+    Parameters
+    ----------
+    port_nb: int
+        The port number to check.
+
+    Returns
+    -------
+    boolean
+        Wheter the port is available or not.
+    """
     if port_nb < 7000:
         return False
     with closing(socket(AF_INET, SOCK_STREAM)) as sock:
@@ -1307,7 +1351,22 @@ def check_port_available(port_nb):
     return True
 
 
+def get_version():
+    """
+    Get the current version of the Magrit application by reading the __init__.py
+    file (it's actually the only place where the version number is written).
+    The returned value will be used/displayed client side.
+    """
+    with open('__init__.py', 'r') as f:
+        ver = f.read()
+    ix = ver.find("'")
+    return ver[ix+1:ix + ver[ix+1:].find("'")+1]
+
+
 async def on_shutdown(app):
+    """
+    Function triggered when the application exits normally.
+    """
     await app["redis_conn"].quit()
     app["ProcessPool"].shutdown()
     app["ThreadPool"].shutdown()
@@ -1322,11 +1381,19 @@ async def on_shutdown(app):
         elif "Application.shutdown()" not in info[1]:
             task.cancel()
 
+
 async def init(loop, port=None, watch_change=False):
+    """
+    Function creating the various routes for the application and setting up
+    middlewares (for custom 404 error page, redis cookie storage and jinja2
+    templates).
+    """
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("magrit_app.main")
+    # redis connection used for server side cookie storage:
     redis_cookie = await create_pool(
         ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
+    # redis connection used for temporarily storing layers:
     redis_conn = await create_redis_pool(
         ('0.0.0.0', 6379), db=1, loop=loop)
     app = web.Application(
@@ -1361,6 +1428,9 @@ async def init(loop, port=None, watch_change=False):
     # add_route('POST', '/cache_topojson/{params}', cache_input_topojson)
     add_route('POST', '/helpers/calc', calc_helper)
     app.router.add_static('/static/', path='static', name='static')
+
+    # Store in the 'app' variable a reference to each variable we will need
+    # to reuse a various place (to avoid global variables):
     app['redis_conn'] = redis_conn
     app['app_users'] = set()
     app['logger'] = logger
@@ -1371,41 +1441,40 @@ async def init(loop, port=None, watch_change=False):
     app['ProcessPool'] = ProcessPoolExecutor(6)
     app['app_name'] = "Magrit"
     app['geo_function'] = {
-        "stewart": call_stewart, "gridded": carto_gridded, "links": links_map,
+        "stewart": compute_stewart, "gridded": carto_gridded, "links": links_map,
         "carto_doug": carto_doug, "olson": compute_olson}
     if watch_change:
         app['FileWatcher'] = JsFileWatcher()
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
+    # If port is None the application is started for unittests or by Gunicorn:
     if not port:
         return app
+    # If a port is specified the application is started "directly" and
+    # we need to create the server :
     else:
         handler = app.make_handler()
         srv = await loop.create_server(
             handler, '0.0.0.0', port)
         return srv, app, handler
 
-
 def _init(loop):
-    # Entry point to use with py.test unittest :
+    """
+    "Special" entry point used when running py.test unittests :
+    """
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
     return init(loop)
 
 
-def get_version():
-    with open('__init__.py', 'r') as f:
-        ver = f.read()
-    ix = ver.find("'")
-    return ver[ix+1:ix + ver[ix+1:].find("'")+1]
-
-
 def create_app(app_name="Magrit"):
-    # Entry point when using Gunicorn to run the application with something like :
-    # $ gunicorn "magrit_app.app:create_app('AppName')" \
-    #   --bind 0.0.0.0:9999 \
-    #   --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
+    """
+    Entry point when using Gunicorn to run the application with something like :
+    $ gunicorn "magrit_app.app:create_app('AppName')" \
+      --bind 0.0.0.0:9999 \
+      --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
+    """
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
@@ -1414,11 +1483,15 @@ def create_app(app_name="Magrit"):
     app['app_name'] = app_name
     return app
 
+
 def main():
-    # Entry point used when the application is started directly like :
-    # $ ./magrit_app/app.py --name AppName --port 9999
-    #   or when installed and started like :
-    # $ magrit --name AppName --port 9999
+    """
+    Entry point used when the application is started directly like :
+    $ ./magrit_app/app.py --name AppName --port 9999
+
+    Or when installed and started like :
+    $ magrit --name AppName --port 9999
+    """
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)

@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.bc47f58a6ecd.json'
+      loadPath: 'static/locales/{{lng}}/translation.b74dfc9690cb.json'
     }
   }, function (err, tr) {
     if (err) {
