@@ -1544,7 +1544,7 @@ function add_layout_layers() {
   ];
   const selec = { layout: null };
 
-  make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'))
+  make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'), { widthFitContent: true })
     .then((confirmed) => {
       if (confirmed) {
         if (selec.layout && selec.layout.length > 0) {

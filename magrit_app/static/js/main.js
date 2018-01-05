@@ -478,7 +478,6 @@ function setUpInterface(reload_project) {
 
   const section4 = d3.select('#section4');
   const dv4 = section4.append('div')
-    .attr('class', 'form-item')
     .style('margin', 'auto')
     .append('ul')
     .styles({ 'list-style': 'outside none none',
@@ -807,7 +806,7 @@ function setUpInterface(reload_project) {
   add_simplified_land_layer();
 
   const section5b = d3.select('#section5');
-  const dv5b = section5b.append('div').attr('class', 'form-item');
+  const dv5b = section5b.append('div');
 
   const type_export = dv5b.append('p');
   type_export.append('span')
@@ -894,7 +893,7 @@ function setUpInterface(reload_project) {
     }
   });
 
-  const exp_a = export_png_options.append('p');
+  const exp_a = export_png_options.append('p').style('margin', '20px 0');
   exp_a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.width' });
 
@@ -912,7 +911,7 @@ function setUpInterface(reload_project) {
     .attr('id', 'export_png_width_txt')
     .html(' (px)');
 
-  const exp_b = export_png_options.append('p');
+  const exp_b = export_png_options.append('p').style('margin', '20px 0');
   exp_b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
 

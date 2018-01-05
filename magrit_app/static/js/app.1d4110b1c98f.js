@@ -382,7 +382,7 @@ function setUpInterface(reload_project) {
     'data-placement': 'right' }).styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' }).on('click', click_button_add_layer);
 
   var section4 = d3.select('#section4');
-  var dv4 = section4.append('div').attr('class', 'form-item').style('margin', 'auto').append('ul').styles({ 'list-style': 'outside none none',
+  var dv4 = section4.append('div').style('margin', 'auto').append('ul').styles({ 'list-style': 'outside none none',
     display: 'inline-block',
     padding: '0px',
     width: '100%',
@@ -645,7 +645,7 @@ function setUpInterface(reload_project) {
   add_simplified_land_layer();
 
   var section5b = d3.select('#section5');
-  var dv5b = section5b.append('div').attr('class', 'form-item');
+  var dv5b = section5b.append('div');
 
   var type_export = dv5b.append('p');
   type_export.append('span').attr('class', 'i18n').attr('data-i18n', '[html]app_page.section5b.type');
@@ -724,7 +724,7 @@ function setUpInterface(reload_project) {
     }
   });
 
-  var exp_a = export_png_options.append('p');
+  var exp_a = export_png_options.append('p').style('margin', '20px 0');
   exp_a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.width' });
 
   exp_a.append('input').style('width', '60px').attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', w).on('change', function () {
@@ -735,7 +735,7 @@ function setUpInterface(reload_project) {
 
   exp_a.append('span').attr('id', 'export_png_width_txt').html(' (px)');
 
-  var exp_b = export_png_options.append('p');
+  var exp_b = export_png_options.append('p').style('margin', '20px 0');
   exp_b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section5b.height' });
 
   exp_b.append('input').style('width', '60px').attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', h).on('change', function () {
@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.b74dfc9690cb.json'
+      loadPath: 'static/locales/{{lng}}/translation.1d4110b1c98f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11533,7 +11533,7 @@ function add_layout_layers() {
   var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'], [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'], [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'], [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
   var selec = { layout: null };
 
-  make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title')).then(function (confirmed) {
+  make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'), { widthFitContent: true }).then(function (confirmed) {
     if (confirmed) {
       if (selec.layout && selec.layout.length > 0) {
         for (var i = 0; i < selec.layout.length; ++i) {

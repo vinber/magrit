@@ -119,13 +119,6 @@ input[type=range]:focus::-ms-fill-upper {
     letter-spacing: 3px;
 }
 
-#page {
-    width: 100%;
-    height : auto;
-    float: left;
-    text-align:center;
-}
-
 #menu {
     position: absolute;
     padding: 5px 2.5px 5px 2.5px;
@@ -174,16 +167,6 @@ a.logo {
     display:inline-block;
 }
 
-#footer {
-    font-family: 'Enriqueta', arial, serif;
-    line-height: 1.25;
-    margin: 10px;
-    font-size: 11px;
-    font-weight: bold;
-    color : #96a0a8;
-    margin: 0;
-}
-
 .item-menu {
     margin: auto;
     vertical-align:middle;
@@ -214,7 +197,6 @@ h3{
     color : #2e91ce;
     font-weight: bold;
 }
-
 
 a.menu {
     line-height:30px;
