@@ -1538,6 +1538,7 @@ function add_layout_layers() {
     [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
     [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
     [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
+    [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
     [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
     [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
     [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
