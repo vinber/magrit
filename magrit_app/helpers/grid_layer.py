@@ -77,7 +77,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         )
     grid = grid.to_crs({"init": "epsg:4326"})
 
-    total_bounds = gdf.total_bounds
+    total_bounds = grid.total_bounds
     if total_bounds[0] < -179.9999 or total_bounds[1] < -89.9999 \
             or total_bounds[2] > 179.9999 or total_bounds[3] > 89.9999:
         result = json.loads(grid.to_json())

@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f0481d8a00bc.json'
+      loadPath: 'static/locales/{{lng}}/translation.ea452ca8b543.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1543,8 +1543,8 @@ function remove_layer_cleanup(name) {
   if (a) a.remove();
 
   // Remove the layer from the "mask" section if the "smoothed map" menu is open :
-  if (_app.current_functionnality && _app.current_functionnality.name === 'smooth') {
-    var aa = document.getElementById('stewart_mask').querySelector('option[value="' + name + '"]');
+  if (_app.current_functionnality && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
+    var aa = document.querySelector('.mask_field').querySelector('option[value="' + name + '"]');
     if (aa) aa.remove();
     // Array.prototype.forEach.call(
     //   document.getElementById('stewart_mask').options, el => {
@@ -2908,7 +2908,7 @@ var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = [
 
 function getBreaks(values, type, n_class) {
   var _values = values.filter(function (v) {
-    return v && !isNaN(+v);
+    return v === 0 || v && !Number.isNaN(+v);
   }),
       no_data = values.length - _values.length,
       nb_class = +n_class || getOptNbClass(_values.length);
@@ -2963,7 +2963,7 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
       colors_map = [];
 
   for (var j = 0; j < values.length; ++j) {
-    if (values[j] != null && values[j] != '' && !isNaN(+values[j])) {
+    if (v === 0 || values[j] != null && values[j] != '' && !Number.isNaN(+values[j])) {
       var idx = serie.getClass(values[j]);
       colors_map.push(color_array[idx]);
     } else {
@@ -6347,7 +6347,7 @@ function fillMenu_Stewart() {
   var m = dialog_content.append('p').attr('class', 'params_section2').style('margin', 'auto');
   m.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask' }).html(i18next.t('app_page.func_options.smooth.mask'));
 
-  dialog_content.insert('select').attrs({ class: 'params', id: 'stewart_mask' }).styles({ position: 'relative', float: 'right', margin: '1px 0px 10px 0px' });
+  dialog_content.insert('select').attrs({ class: 'params mask_field', id: 'stewart_mask' }).styles({ position: 'relative', float: 'right', margin: '1px 0px 10px 0px' });
 
   [['exponential', 'app_page.func_options.smooth.func_exponential'], ['pareto', 'app_page.func_options.smooth.func_pareto']].forEach(function (fun_name) {
     func_selec.append('option').text(i18next.t(fun_name[1])).attrs({ value: fun_name[0], 'data-i18n': '[text]' + fun_name[1] });
@@ -7839,6 +7839,17 @@ function fillMenu_griddedMap(layer) {
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
   var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' });
 
+  var e = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
+  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
+
+  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' });
+
+  dialog_content.insert('select').attrs({ class: 'params mask_field opt_point', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
+
+  [['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
+    grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
+  });
+
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
   });
@@ -7855,6 +7866,23 @@ function fillMenu_griddedMap(layer) {
 var fields_griddedMap = {
   fill: function fill(layer) {
     if (!layer) return;
+    var type_layer = current_layers[layer].type;
+    section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
+    if (type_layer === 'Point') {
+      var mask_selec = d3.select('#Gridded_mask');
+      var other_layers = get_other_layer_names();
+      unfillSelectInput(mask_selec.node());
+      mask_selec.append('option').text('None').attr('value', 'None');
+      for (var i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+        lyr_name = other_layers[i];
+        if (current_layers[lyr_name].type === 'Polygon') {
+          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+          if (current_layers[lyr_name].targeted) {
+            default_selected_mask = lyr_name;
+          }
+        }
+      }
+    }
 
     // let fields = type_col(layer, "number"),
     var fields = getFieldsType('stock', layer),
@@ -7870,7 +7898,12 @@ var fields_griddedMap = {
       output_name.attr('value', ['Gridded', this.value, layer].join('_'));
     });
     ok_button.on('click', function () {
-      render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value);
+      var options = {};
+      if (type_layer === 'Point') {
+        options.mask = document.getElementById('Gridded_mask').value;
+        options.func = document.getElementById('Gridded_func').value;
+      }
+      render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value, options);
     });
     output_name.attr('value', ['Gridded', layer].join('_'));
     document.getElementById('Gridded_cellsize').value = get_first_guess_span('grid');
@@ -7883,7 +7916,7 @@ var fields_griddedMap = {
   }
 };
 
-function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name) {
+function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name, options) {
   var layer = Object.getOwnPropertyNames(user_data)[0],
       formToSend = new FormData(),
       var_to_send = {},
@@ -7902,31 +7935,36 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
       return i[field_n];
     });
   }
+  console.log(options);
   formToSend.append('json', JSON.stringify({
     topojson: current_layers[layer].key_name,
     var_name: var_to_send,
     cellsize: resolution * 1000,
-    grid_shape: cell_shape
+    grid_shape: cell_shape,
+    mask_layer: options.mask && options.mask !== 'None' ? current_layers[options.mask].key_name : null,
+    func: options.func ? options.func : null
   }));
-  xhrequest('POST', 'compute/gridded', formToSend, true).then(function (data) {
-    var options = { result_layer_on_add: true, func_name: 'grid' };
+  var url = options.func ? 'compute/gridded_point' : 'compute/gridded';
+  xhrequest('POST', url, formToSend, true).then(function (data) {
+    var _options = { result_layer_on_add: true, func_name: 'grid' };
     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-      options.choosed_name = new_user_layer_name;
+      _options.choosed_name = new_user_layer_name;
     }
-    var rendered_field = field_n + '_densitykm';
-    var n_layer_name = add_layer_topojson(data, options);
+    var rendered_field = options.func ? options.func : field_n + '_densitykm';
+    var n_layer_name = add_layer_topojson(data, _options);
     if (!n_layer_name) return;
     var res_data = result_data[n_layer_name],
         nb_ft = res_data.length,
         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
         d_values = [];
-
+    console.log(rendered_field);
     for (var i = 0; i < nb_ft; i++) {
       d_values.push(+res_data[i][rendered_field]);
     }
-
+    var disc_method = options.func ? 'jenks' : 'quantiles';
     current_layers[n_layer_name].renderer = 'Gridded';
-    var disc_result = discretize_to_colors(d_values, 'quantiles', opt_nb_class, color_palette);
+    var disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
+    console.log(d_values, disc_result);
     var rendering_params = {
       nb_class: opt_nb_class,
       type: 'quantiles',
@@ -9138,12 +9176,12 @@ function getAvailablesFunctionnalities(layerName) {
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
   } else if (current_layers[layerName].type === 'Point') {
     // layer type is Point
-    var _elems2 = section.querySelectorAll('#button_grid, #button_discont, #button_cartogram');
+    var _elems2 = section.querySelectorAll('#button_discont, #button_cartogram');
     for (var _i3 = 0, _len_i2 = _elems2.length; _i3 < _len_i2; _i3++) {
       _elems2[_i3].style.filter = 'grayscale(100%)';
     }
     func_id = section.querySelectorAll('#button_flow');
-    func_stock = section.querySelectorAll('#button_smooth, #button_prop');
+    func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {
@@ -11530,7 +11568,7 @@ function add_single_symbol(symbol_dataurl, x, y) {
 
 function add_layout_layers() {
   check_remove_existing_box('.sampleLayoutDialogBox');
-  var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'], [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'], [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'], [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
+  var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'], [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'], [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'], [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'], [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
   var selec = { layout: null };
 
   make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'), { widthFitContent: true }).then(function (confirmed) {

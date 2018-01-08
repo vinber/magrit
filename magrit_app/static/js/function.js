@@ -1823,7 +1823,7 @@ function fillMenu_Stewart() {
     .html(i18next.t('app_page.func_options.smooth.mask'));
 
   dialog_content.insert('select')
-    .attrs({ class: 'params', id: 'stewart_mask' })
+    .attrs({ class: 'params mask_field', id: 'stewart_mask' })
     .styles({ position: 'relative', float: 'right', margin: '1px 0px 10px 0px' });
 
   [
@@ -3462,6 +3462,27 @@ function fillMenu_griddedMap(layer) {
   const col_pal = d.insert('select')
     .attrs({ class: 'params', id: 'Gridded_color_pal' });
 
+  const e = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
+  e.append('span')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' })
+    .html(i18next.t('app_page.func_options.grid.func'));
+
+  const grid_func = e.insert('select')
+      .attrs({ class: 'params i18n', id: 'Gridded_func' });
+
+  dialog_content.insert('select')
+    .attrs({ class: 'params mask_field opt_point', id: 'Gridded_mask' })
+    .styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
+
+  [
+    ['app_page.func_options.grid.density', 'density'],
+    ['app_page.func_options.grid.mean', 'mean'],
+  ].forEach((f) => {
+    grid_func.append('option')
+      .text(i18next.t(f[0]))
+      .attrs({ value: f[1], 'data-i18n': `[text]${f[0]}` });
+  });
+
   [
     'Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
     'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds',
@@ -3486,6 +3507,23 @@ function fillMenu_griddedMap(layer) {
 const fields_griddedMap = {
   fill: function (layer) {
     if (!layer) return;
+    const type_layer = current_layers[layer].type;
+    section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
+    if (type_layer === 'Point') {
+      const mask_selec = d3.select('#Gridded_mask');
+      const other_layers = get_other_layer_names();
+      unfillSelectInput(mask_selec.node());
+      mask_selec.append('option').text('None').attr('value', 'None');
+      for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+        lyr_name = other_layers[i];
+        if (current_layers[lyr_name].type === 'Polygon') {
+          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+          if (current_layers[lyr_name].targeted) {
+            default_selected_mask = lyr_name;
+          }
+        }
+      }
+    }
 
     // let fields = type_col(layer, "number"),
     const fields = getFieldsType('stock', layer),
@@ -3501,12 +3539,18 @@ const fields_griddedMap = {
       output_name.attr('value', ['Gridded', this.value, layer].join('_'));
     });
     ok_button.on('click', () => {
+      const options = {};
+      if (type_layer === 'Point') {
+        options.mask = document.getElementById('Gridded_mask').value;
+        options.func = document.getElementById('Gridded_func').value;
+      }
       render_Gridded(
         field_selec.node().value,
         document.getElementById('Gridded_cellsize').value,
         grip_shape.node().value,
         document.getElementById('Gridded_color_pal').value,
         output_name.node().value,
+        options,
       );
     });
     output_name.attr('value', ['Gridded', layer].join('_'));
@@ -3520,7 +3564,7 @@ const fields_griddedMap = {
   },
 };
 
-function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name) {
+function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name, options) {
   const layer = Object.getOwnPropertyNames(user_data)[0],
     formToSend = new FormData(),
     var_to_send = {},
@@ -3539,32 +3583,37 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
   } else {
     var_to_send[field_n] = user_data[layer].map(i => i[field_n]);
   }
+  console.log(options);
   formToSend.append('json', JSON.stringify({
     topojson: current_layers[layer].key_name,
     var_name: var_to_send,
     cellsize: resolution * 1000,
     grid_shape: cell_shape,
+    mask_layer: options.mask && options.mask !== 'None' ? current_layers[options.mask].key_name : null,
+    func: options.func ? options.func : null,
   }));
-  xhrequest('POST', 'compute/gridded', formToSend, true)
+  const url = options.func ? 'compute/gridded_point' : 'compute/gridded';
+  xhrequest('POST', url, formToSend, true)
     .then((data) => {
-      const options = { result_layer_on_add: true, func_name: 'grid' };
+      const _options = { result_layer_on_add: true, func_name: 'grid' };
       if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-        options.choosed_name = new_user_layer_name;
+        _options.choosed_name = new_user_layer_name;
       }
-      const rendered_field = `${field_n}_densitykm`;
-      const n_layer_name = add_layer_topojson(data, options);
+      const rendered_field = options.func ? options.func : `${field_n}_densitykm`;
+      const n_layer_name = add_layer_topojson(data, _options);
       if (!n_layer_name) return;
       const res_data = result_data[n_layer_name],
         nb_ft = res_data.length,
         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
         d_values = [];
-
+      console.log(rendered_field);
       for (let i = 0; i < nb_ft; i++) {
         d_values.push(+res_data[i][rendered_field]);
       }
-
+      const disc_method = options.func ? 'jenks' : 'quantiles';
       current_layers[n_layer_name].renderer = 'Gridded';
-      const disc_result = discretize_to_colors(d_values, 'quantiles', opt_nb_class, color_palette);
+      const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
+      console.log(d_values, disc_result);
       const rendering_params = {
         nb_class: opt_nb_class,
         type: 'quantiles',

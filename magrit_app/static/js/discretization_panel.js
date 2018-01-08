@@ -1,7 +1,7 @@
 'use strict';
 
 function getBreaks(values, type, n_class) {
-  const _values = values.filter(v => v && !isNaN(+v)),
+  const _values = values.filter(v => v === 0 || v && !Number.isNaN(+v)),
     no_data = values.length - _values.length,
     nb_class = +n_class || getOptNbClass(_values.length);
   const serie = new geostats(_values);
@@ -39,7 +39,7 @@ const discretize_to_colors = (function discretize_to_colors(values, type, nb_cla
     no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
     colors_map = [];
   for (let j = 0; j < values.length; ++j) {
-    if (values[j] != null && values[j] != '' && !isNaN(+values[j])) {
+    if (v === 0 || (values[j] != null && values[j] != '' && !Number.isNaN(+values[j]))) {
       const idx = serie.getClass(values[j]);
       colors_map.push(color_array[idx]);
     } else {
