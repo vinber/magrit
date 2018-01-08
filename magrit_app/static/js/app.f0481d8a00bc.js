@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.1d4110b1c98f.json'
+      loadPath: 'static/locales/{{lng}}/translation.f0481d8a00bc.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -9289,15 +9289,15 @@ function change_layer_name(old_name, new_name) {
   list_elem.classList.remove(old_id);
   list_elem.classList.add(new_id);
   list_elem.setAttribute('layer_name', new_name);
-  list_elem.innerHTML = list_elem.innerHTML.replace(old_name, new_name);
+  list_elem.innerHTML = list_elem.innerHTML.replace(get_display_name_on_layer_list(old_name), get_display_name_on_layer_list(new_name));
   var b = svg_map.querySelector('#' + old_id);
   b.id = new_id;
-  var lgd_elem = document.querySelector('g[layer_name="' + old_name + '"]');
-  if (lgd_elem) {
+  var lgd_elems = document.querySelectorAll('g[layer_name="' + old_name + '"]');
+  lgd_elems.forEach(function (lgd_elem) {
     lgd_elem.setAttribute('layer_name', new_name);
     lgd_elem.classList.remove('lgdf_' + old_id);
     lgd_elem.classList.add('lgdf_' + new_id);
-  }
+  });
   if (Object.getOwnPropertyNames(result_data).indexOf(old_name) > -1) {
     result_data[new_name] = [].concat(result_data[old_name]);
     delete result_data[old_name];
@@ -14503,7 +14503,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15696,7 +15695,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -16834,31 +16832,6 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   var stroke_color = current_layers[layer].renderer === 'PropSymbolsChoro' || current_layers[layer].renderer === 'PropSymbolsTypo' || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? 'rgb(0, 0, 0)' : map.select('#' + _app.layer_to_id.get(layer)).select(symbol_type).style('stroke');
 
-  var legend_root = parent.insert('g').styles({
-    cursor: 'grab',
-    'font-size': '11px',
-    'font-family': 'verdana'
-  }).attrs({ id: 'legend_root_symbol',
-    class: tmp_class_name,
-    transform: 'translate(0,0)',
-    layer_name: layer,
-    nested: nested,
-    rounding_precision: rounding_precision,
-    layer_field: field
-  });
-
-  var rect_under_legend = legend_root.insert('rect');
-  legend_root.insert('text').attr('id', 'legendtitle').text(title).styles({
-    'font-size': '12px',
-    'font-family': 'verdana',
-    'font-weight': 'bold'
-  }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
-    'font-size': '12px',
-    'font-family': 'verdana',
-    'font-style': 'italic'
-  }).attrs({ x: xpos + space_elem, y: ypos + 15 });
-
   var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
   var type_param = symbol_type === 'circle' ? 'r' : 'width';
   var z_scale = +d3.zoomTransform(map.node()).k;
@@ -16884,6 +16857,11 @@ function createLegend_symbol(layer, field, title, subtitle) {
         size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
     size_interm1 = Math.pow(size_interm1, 2);
     current_layers[layer].size_legend_symbol = [{ value: val_max }, { value: round_value(propSize.get_value(size_interm2), r) }, { value: round_value(propSize.get_value(size_interm1), r) }, { value: val_min }];
+    if (current_layers[layer].size_legend_symbol[0].value - current_layers[layer].size_legend_symbol[1].value > 1) {
+      rounding_precision = 0;
+    } else {
+      rounding_precision = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min));
+    }
   }
 
   var t = current_layers[layer].size_legend_symbol;
@@ -16894,6 +16872,32 @@ function createLegend_symbol(layer, field, title, subtitle) {
   if (ref_symbols_params[2].value === 0) {
     ref_symbols_params.pop();
   }
+
+  var legend_root = parent.insert('g').styles({
+    cursor: 'grab',
+    'font-size': '11px',
+    'font-family': 'verdana'
+  }).attrs({ id: 'legend_root_symbol',
+    class: tmp_class_name,
+    transform: 'translate(0,0)',
+    layer_name: layer,
+    nested: nested,
+    rounding_precision: rounding_precision,
+    layer_field: field
+  });
+
+  var rect_under_legend = legend_root.insert('rect');
+  legend_root.insert('text').attr('id', 'legendtitle').text(title).styles({
+    'font-size': '12px',
+    'font-family': 'verdana',
+    'font-weight': 'bold'
+  }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
+    'font-size': '12px',
+    'font-family': 'verdana',
+    'font-style': 'italic'
+  }).attrs({ x: xpos + space_elem, y: ypos + 15 });
+
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
   });
@@ -17763,19 +17767,16 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   // the string representation of only two values but it will most likely do the job in many cases)
   var max_nb_decimals = 0;
   var max_nb_left = 0;
-  if (legend_id.indexOf('2') === -1) {
-    max_nb_decimals = get_max_nb_dec(layer_name);
-    max_nb_left = get_max_nb_left_sep(layer_name);
-  } else {
-    var nb_dec = [],
-        nb_left = [];
-    legend_boxes.each(function (d) {
-      nb_dec.push(get_nb_decimals(d.value));
-      nb_left.push(get_nb_left_separator(d.value));
-    });
-    max_nb_decimals = max_fast(nb_dec);
-    max_nb_left = min_fast(nb_left);
-  }
+
+  var nb_dec = [],
+      nb_left = [];
+  legend_boxes.each(function (d) {
+    nb_dec.push(get_nb_decimals(d.value));
+    nb_left.push(get_nb_left_separator(d.value));
+  });
+  max_nb_decimals = max_fast(nb_dec);
+  max_nb_left = min_fast(nb_left);
+
   max_nb_left = max_nb_left > 2 ? max_nb_left : 2;
   if (max_nb_decimals > 0 || max_nb_left >= 2) {
     if (legend_node.getAttribute('rounding_precision')) {
@@ -18037,13 +18038,14 @@ function createlegendEditBox(legend_id, layer_name) {
         }
       });
     });
-  } else if (current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols' && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('2'))) {
+  }
+  if (current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols' && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('legend_root_symbol') < 0)) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
     var max_nb_decimals = 0;
     var max_nb_left = 0;
-    if (legend_id.indexOf('2') === -1) {
+    if (legend_id.indexOf('legend_root_symbol') === -1) {
       //&& legend_id.indexOf('links') === -1) {
       max_nb_decimals = get_max_nb_dec(layer_name);
       max_nb_left = get_max_nb_left_sep(layer_name);
@@ -18082,25 +18084,32 @@ function createlegendEditBox(legend_id, layer_name) {
         var nb_float = +this.value;
         d3.select('#precision_change_txt').html(nb_float);
         legend_node.setAttribute('rounding_precision', nb_float);
-        if (legend_id === 'legend_root' || legend_id === 'legend_root_horiz') {
+        if (legend_id === 'legend_root') {
           for (var _i4 = 0; _i4 < legend_boxes._groups[0].length; _i4++) {
             var values = legend_boxes._groups[0][_i4].__data__.value.split(' - ');
             legend_boxes._groups[0][_i4].innerHTML = round_value(+values[1], nb_float).toLocaleString();
           }
           var min_val = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[0];
           legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(min_val, nb_float).toLocaleString();
-        } else if (legend_id === 'legend_root_symbol') {
+        } else if (legend_id === 'legend_root_horiz') {
           for (var _i5 = 0; _i5 < legend_boxes._groups[0].length; _i5++) {
-            var value = legend_boxes._groups[0][_i5].__data__.value;
-            legend_boxes._groups[0][_i5].innerHTML = round_value(+value, nb_float).toLocaleString();
+            var _values = legend_boxes._groups[0][_i5].__data__.value.split(' - ');
+            legend_boxes._groups[0][_i5].innerHTML = round_value(+_values[0], nb_float).toLocaleString();
+          }
+          var _min_val2 = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value.split(' - ')[1];
+          legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val2, nb_float).toLocaleString();
+        } else if (legend_id === 'legend_root_symbol') {
+          for (var _i6 = 0; _i6 < legend_boxes._groups[0].length; _i6++) {
+            var value = legend_boxes._groups[0][_i6].__data__.value;
+            legend_boxes._groups[0][_i6].innerHTML = round_value(+value, nb_float).toLocaleString();
           }
         } else if (legend_id === 'legend_root_lines_class') {
-          for (var _i6 = 0; _i6 < legend_boxes._groups[0].length; _i6++) {
-            var _value2 = legend_boxes._groups[0][_i6].__data__.value[1];
-            legend_boxes._groups[0][_i6].innerHTML = round_value(+_value2, nb_float).toLocaleString();
+          for (var _i7 = 0; _i7 < legend_boxes._groups[0].length; _i7++) {
+            var _value2 = legend_boxes._groups[0][_i7].__data__.value[1];
+            legend_boxes._groups[0][_i7].innerHTML = round_value(+_value2, nb_float).toLocaleString();
           }
-          var _min_val2 = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
-          legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val2, nb_float).toLocaleString();
+          var _min_val3 = +legend_boxes._groups[0][legend_boxes._groups[0].length - 1].__data__.value[0];
+          legend_node.querySelector('#lgd_choro_min_val').innerHTML = round_value(_min_val3, nb_float).toLocaleString();
         }
       });
       e.append('span').style('float', 'right').attr('id', 'precision_change_txt').html('' + current_nb_dec);
@@ -18261,11 +18270,11 @@ function move_legends() {
 
   // Move the text_annotation according to svg map resizing:
   var text_annot = document.querySelectorAll('.txt_annot');
-  for (var _i7 = 0, len_i = text_annot.length; _i7 < len_i; _i7++) {
-    var _legend_bbox = text_annot[_i7].getBoundingClientRect();
+  for (var _i8 = 0, len_i = text_annot.length; _i8 < len_i; _i8++) {
+    var _legend_bbox = text_annot[_i8].getBoundingClientRect();
     if (_legend_bbox.left + _legend_bbox.width > dim_width) {
       var _trans_x = _legend_bbox.left + _legend_bbox.width - dim_width;
-      var annot = d3.select(text_annot[_i7]);
+      var annot = d3.select(text_annot[_i8]);
       var x_rect = +annot.select('rect').attr('x') - _trans_x;
       var x_txt = +annot.select('text').attr('x') - _trans_x;
       if (x_txt > 0) {
@@ -18275,7 +18284,7 @@ function move_legends() {
     }
     if (_legend_bbox.top + _legend_bbox.height > dim_height) {
       var _trans_y = _legend_bbox.top + _legend_bbox.height - dim_height;
-      var _annot = d3.select(text_annot[_i7]);
+      var _annot = d3.select(text_annot[_i8]);
       var y_rect = +_annot.select('rect').attr('y') - _trans_y;
       var y_txt = +_annot.select('text').attr('y') - _trans_y;
       if (y_txt > 0) {
@@ -19673,8 +19682,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19840,7 +19848,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20805,8 +20812,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

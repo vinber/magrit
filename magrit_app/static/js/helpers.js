@@ -802,15 +802,17 @@ function change_layer_name(old_name, new_name) {
   list_elem.classList.remove(old_id);
   list_elem.classList.add(new_id);
   list_elem.setAttribute('layer_name', new_name);
-  list_elem.innerHTML = list_elem.innerHTML.replace(old_name, new_name);
+  list_elem.innerHTML = list_elem.innerHTML.replace(
+    get_display_name_on_layer_list(old_name),
+    get_display_name_on_layer_list(new_name));
   const b = svg_map.querySelector(`#${old_id}`);
   b.id = new_id;
-  const lgd_elem = document.querySelector(`g[layer_name="${old_name}"]`);
-  if (lgd_elem) {
+  const lgd_elems = document.querySelectorAll(`g[layer_name="${old_name}"]`);
+  lgd_elems.forEach(lgd_elem => {
     lgd_elem.setAttribute('layer_name', new_name);
     lgd_elem.classList.remove(`lgdf_${old_id}`);
     lgd_elem.classList.add(`lgdf_${new_id}`);
-  }
+  });
   if (Object.getOwnPropertyNames(result_data).indexOf(old_name) > -1) {
     result_data[new_name] = [].concat(result_data[old_name]);
     delete result_data[old_name];

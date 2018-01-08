@@ -1,14 +1,16 @@
 Changes
 =======
 
-0.6.5 (xxxx-xx-xx)
+0.6.5 (2018-01-xx)
 ------------------
 
 - Be more tolerant with in the regular expression used to filter the name of exported maps (by allowing dot, dash and parantheses for example).
 
 - Fix the displaying of the "waiting" overlay when loading a TopoJSON layer.
 
-- Fix the displaying of the "vertical layout" option for legend when used on a categorical choropleth map.
+- Fix the displaying of the "horizontal layout" option for legend when used on a categorical choropleth map + rounding precision for "horizontal layout" legend and "proportionnal symbols" legend.
+
+- Fix bug when changing layer name when using particularily long names.
 
 
 0.6.4 (2017-12-22)
