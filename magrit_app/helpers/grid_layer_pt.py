@@ -4,30 +4,13 @@
 """
 from geopandas import GeoDataFrame, GeoSeries
 from shapely.geometry import Polygon
-from math import ceil
 from shapely.ops import cascaded_union
 from shapely import speedups
-import rtree
 import numpy as np
 import ujson as json
 from .geo import repairCoordsPole, TopologicalError, multi_to_single
-from .grid_generator import square_grid_gen, diams_grid_gen, hex_grid_gen
-
-def idx_generator_func(bounds):
-    for i, bound in enumerate(bounds):
-        yield (i, bound, i)
-
-
-def make_index(bounds):
-    return rtree.index.Index([z for z in idx_generator_func(bounds)],
-                             Interleaved=True)
-
-
-def to_float(v):
-    try:
-        return float(v)
-    except:
-        return np.NaN
+from .grid_helpers import (
+    square_grid_gen, diams_grid_gen, hex_grid_gen, to_float, make_index)
 
 
 def get_func(func):
@@ -80,12 +63,10 @@ def get_grid_layer_pt(input_file, height, field_name,
 
     cell_generator = {
         "square": square_grid_gen,
-        # "square2": get_square_dens_grid,
         "diamond": diams_grid_gen,
-        # "diamond2": get_diams_dens_grid,
         "hexagon": hex_grid_gen,
-        # "hexagon2": get_hex_dens_grid
         }[grid_shape]
+
     res_geoms = get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator)
     grid = GeoDataFrame(
         index=range(len(res_geoms)),
@@ -93,12 +74,7 @@ def get_grid_layer_pt(input_file, height, field_name,
               func: [i[1] for i in res_geoms]},
         geometry=[i[0] for i in res_geoms],
         crs=gdf.crs
-        )
-    if mask:
-        grid.geometry = grid.geometry.intersection(mask)
-        grid = grid[~grid.geometry.is_empty]
-
-    grid = grid.to_crs({"init": "epsg:4326"})
+        ).to_crs({"init": "epsg:4326"})
 
     total_bounds = gdf.total_bounds
     if total_bounds[0] < -179.9999 or total_bounds[1] < -89.9999 \
@@ -132,7 +108,9 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
     res = []
     for rect, _cell in cell_generator(total_bounds, height):
         value = 0
-        cell = Polygon(_cell)
+        cell = mask.intersection(Polygon(_cell)) if mask else Polygon(_cell)
+        if not cell:
+            continue
         idx_pts = list(idx_intersects(rect, objects='raw'))
         if idx_pts:
             idx = geoms[idx_pts].intersects(cell).index

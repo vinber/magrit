@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.7b49a2a88948.json'
+      loadPath: 'static/locales/{{lng}}/translation.63473685044c.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -3220,6 +3220,35 @@ var display_discretization = function display_discretization(layer_name, field_n
       serie = new geostats(values);
       breaks = [];
       values = serie.sorted();
+      var deferred = Promise.pending();
+      if (values.length > 7500 && type === 'jenks') {
+        var jenks_worker = new Worker('static/js/webworker_jenks.js');
+        _app.webworker_to_cancel = jenks_worker;
+        document.getElementById('overlay').style.display = null;
+        document.getElementById('overlay').style.zIndex = 5000;
+        jenks_worker.postMessage([values, nb_class]);
+        jenks_worker.onmessage = function (e) {
+          breaks = e.data;
+          serie.setClassManually(breaks);
+          serie.doCount();
+          stock_class = Array.prototype.slice.call(serie.counter);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('overlay').style.zIndex = '';
+          _app.webworker_to_cancel = undefined;
+          bins = [];
+          for (var i = 0, len = stock_class.length, offset = 0; i < len; i++) {
+            var bin = {};
+            bin.val = stock_class[i];
+            bin.offset = i === 0 ? 0 : bins[i - 1].width + bins[i - 1].offset;
+            bin.width = breaks[i + 1] - breaks[i];
+            bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+            bins[i] = bin;
+          }
+          deferred.resolve(true);
+          jenks_worker.terminate();
+        };
+        return deferred.promise;
+      }
 
       if (type === 'Q6') {
         tmp = getBreaksQ6(values, serie.precision);
@@ -3260,13 +3289,15 @@ var display_discretization = function display_discretization(layer_name, field_n
         // if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
         serie.doCount();
         stock_class = Array.prototype.slice.call(serie.counter);
-        if (stock_class.length === 0) {
-          return;
-        }
       }
       // In order to avoid class limit falling out the serie limits with Std class :
       //            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
       //            ^^^ well finally not ?
+      if (stock_class.length === 0) {
+        deferred.resolve(false);
+        return deferred.promise;
+      }
+
       bins = [];
       for (var i = 0, len = stock_class.length, offset = 0; i < len; i++) {
         var bin = {};
@@ -3276,7 +3307,8 @@ var display_discretization = function display_discretization(layer_name, field_n
         bin.height = bin.val / (breaks[i + 1] - breaks[i]);
         bins[i] = bin;
       }
-      return true;
+      deferred.resolve(true);
+      return deferred.promise;
     },
     draw: function draw(provided_colors) {
       // Clean-up previously made histogram :
@@ -3464,8 +3496,9 @@ var display_discretization = function display_discretization(layer_name, field_n
     if (type === 'Q6') {
       update_nb_class(6);
     }
-    redisplay.compute();
-    redisplay.draw();
+    redisplay.compute().then(function (v) {
+      if (v) redisplay.draw();
+    });
   });
 
   available_functions.forEach(function (func) {
@@ -3482,8 +3515,9 @@ var display_discretization = function display_discretization(layer_name, field_n
       return;
     }
     std_dev_params.share = val;
-    redisplay.compute();
-    redisplay.draw();
+    redisplay.compute().then(function (v) {
+      if (v) redisplay.draw();
+    });
   });
   input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt2'));
   var std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
@@ -3491,8 +3525,9 @@ var display_discretization = function display_discretization(layer_name, field_n
   [[i18next.t('disc_box.stddev_center_mean'), 'center'], [i18next.t('disc_box.stddev_break_mean'), 'bound']].forEach(function (el) {
     std_dev_mean_choice.insert('input').attrs({ type: 'radio', name: 'role_mean', value: el[1], id: 'button_stddev_' + el[1] }).on('change', function () {
       std_dev_params.role_mean = this.value;
-      redisplay.compute();
-      redisplay.draw();
+      redisplay.compute().then(function (v) {
+        if (v) redisplay.draw();
+      });
     });
     std_dev_mean_choice.insert('label').style('font-weight', '400').attrs({ for: 'button_stddev_' + el[1] }).html(el[0]);
   });
@@ -3512,6 +3547,8 @@ var display_discretization = function display_discretization(layer_name, field_n
     max: max_nb_class,
     value: nb_class,
     step: 1 }).on('change', function () {
+    var _this = this;
+
     type = discretization.node().value;
     var old_nb_class = nb_class;
     if (type === 'Q6') {
@@ -3523,18 +3560,31 @@ var display_discretization = function display_discretization(layer_name, field_n
     // nb_class = +this.value;
     // txt_nb_class.node().value = nb_class;
     update_nb_class(+this.value);
-    var ret_val = redisplay.compute();
-    if (!ret_val) {
-      this.value = old_nb_class;
-      txt_nb_class.node().value = +old_nb_class;
-    } else {
-      redisplay.draw();
-      var ctl_class = document.getElementById('centr_class');
-      if (ctl_class) {
-        ctl_class.max = nb_class;
-        if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+    redisplay.compute().then(function (v) {
+      if (!v) {
+        _this.value = old_nb_class;
+        txt_nb_class.node().value = +old_nb_class;
+      } else {
+        redisplay.draw();
+        var ctl_class = document.getElementById('centr_class');
+        if (ctl_class) {
+          ctl_class.max = nb_class;
+          if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+        }
       }
-    }
+    });
+    // const ret_val = redisplay.compute();
+    // if (!ret_val) {
+    //   this.value = old_nb_class;
+    //   txt_nb_class.node().value = +old_nb_class;
+    // } else {
+    //   redisplay.draw();
+    //   const ctl_class = document.getElementById('centr_class');
+    //   if (ctl_class) {
+    //     ctl_class.max = nb_class;
+    //     if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+    //   }
+    // }
   });
 
   var ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
@@ -3663,8 +3713,9 @@ var display_discretization = function display_discretization(layer_name, field_n
     // txt_nb_class.node().value = +nb_class;
     // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
     // document.getElementById("nb_class_range").value = nb_class;
-    redisplay.compute();
-    redisplay.draw();
+    redisplay.compute().then(function (v) {
+      if (v) redisplay.draw();
+    });
   });
 
   accordionize('.accordion_disc', d3.select('#discretiz_charts').node());
@@ -3705,8 +3756,11 @@ var display_discretization = function display_discretization(layer_name, field_n
     user_break_list = options.breaks;
   }
 
-  redisplay.compute();
-  redisplay.draw(options.colors);
+  console.log(redisplay);
+
+  redisplay.compute().then(function (v) {
+    if (v) redisplay.draw(options.colors);
+  });
 
   var deferred = Promise.pending(),
       container = document.getElementById('discretiz_charts');
@@ -5387,6 +5441,11 @@ var fields_PropSymbolChoro = {
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
+      if (_values.length > 7500) {
+        ico_jenks.style('display', 'none');
+      } else {
+        ico_jenks.style('display', null);
+      }
     };
 
     if (fields_stock.length === 0 || fields_ratio.length === 0) {
@@ -5915,6 +5974,11 @@ var fields_Choropleth = {
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
+      if (_values.length > 7500) {
+        ico_jenks.style('display', 'none');
+      } else {
+        ico_jenks.style('display', null);
+      }
     };
 
     if (fields.length === 0) {
@@ -6348,10 +6412,10 @@ function fillMenu_Stewart() {
     id: 'stewart_breaks',
     'data-i18n': '[placeholder]app_page.common.expected_class',
     placeholder: i18next.t('app_page.common.expected_class') });
-  var m = dialog_content.append('p').attr('class', 'params_section2').style('margin', 'auto');
-  m.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask' }).html(i18next.t('app_page.func_options.smooth.mask'));
+  var m = dialog_content.append('div').attr('class', 'params_section2').style('margin', 'auto');
+  m.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
 
-  dialog_content.insert('select').attrs({ class: 'params mask_field', id: 'stewart_mask' }).styles({ position: 'relative', float: 'right', margin: '1px 0px 10px 0px' });
+  m.insert('select').attrs({ class: 'params mask_field', id: 'stewart_mask' }).styles({ position: 'relative', float: 'right' });
 
   [['exponential', 'app_page.func_options.smooth.func_exponential'], ['pareto', 'app_page.func_options.smooth.func_pareto']].forEach(function (fun_name) {
     func_selec.append('option').text(i18next.t(fun_name[1])).attrs({ value: fun_name[0], 'data-i18n': '[text]' + fun_name[1] });
@@ -7843,12 +7907,15 @@ function fillMenu_griddedMap(layer) {
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
   var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' });
 
-  var e = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
-  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
+  var e = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('display', 'none');
+  e.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' });
+  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
-  dialog_content.insert('select').attrs({ class: 'params mask_field opt_point', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
+  var f = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('padding-top', '10px').style('clear', 'both').style('display', 'none');
+  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
+
+  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
   [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
     grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
@@ -7881,14 +7948,10 @@ var fields_griddedMap = {
         lyr_name = other_layers[i];
         if (current_layers[lyr_name].type === 'Polygon') {
           mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-          if (current_layers[lyr_name].targeted) {
-            default_selected_mask = lyr_name;
-          }
         }
       }
     }
 
-    // let fields = type_col(layer, "number"),
     var fields = getFieldsType('stock', layer),
         field_selec = section2.select('#Gridded_field'),
         output_name = section2.select('#Gridded_output_name'),
@@ -7939,7 +8002,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
       return i[field_n];
     });
   }
-  console.log(options);
+
   formToSend.append('json', JSON.stringify({
     topojson: current_layers[layer].key_name,
     var_name: var_to_send,
@@ -7961,17 +8024,15 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         nb_ft = res_data.length,
         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
         d_values = [];
-    console.log(rendered_field);
     for (var i = 0; i < nb_ft; i++) {
       d_values.push(+res_data[i][rendered_field]);
     }
     var disc_method = options.func ? 'jenks' : 'quantiles';
     current_layers[n_layer_name].renderer = 'Gridded';
     var disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
-    console.log(d_values, disc_result);
     var rendering_params = {
       nb_class: opt_nb_class,
-      type: 'quantiles',
+      type: disc_method,
       schema: [color_palette],
       breaks: disc_result[2],
       colors: disc_result[3],
@@ -13433,7 +13494,7 @@ function createStyleBox(layer_name) {
       document.getElementById('point_radius_size_txt').value = current_pt_size;
       selection.attr('d', path.pointRadius(current_pt_size));
     });
-    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).property('value', +current_pt_size).on('change', function () {
       var pt_size_range = document.getElementById('point_radius_size');
       var old_value = pt_size_range.value;
       if (this.value === '' || isNaN(+this.value)) {
@@ -13441,6 +13502,7 @@ function createStyleBox(layer_name) {
       } else {
         this.value = round_value(+this.value, 2);
         pt_size_range.value = this.value;
+        current_pt_size = this.value;
         selection.attr('d', path.pointRadius(this.value));
       }
     });
@@ -14549,7 +14611,6 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15742,7 +15803,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19730,8 +19790,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19897,7 +19956,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20862,8 +20920,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

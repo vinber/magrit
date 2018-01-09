@@ -2,7 +2,27 @@
 """
 @author: mz
 """
+import rtree
+import numpy as np
 from math import ceil
+
+
+def idx_generator_func(bounds):
+    for i, bound in enumerate(bounds):
+        yield (i, bound, i)
+
+
+def make_index(bounds):
+    return rtree.index.Index([z for z in idx_generator_func(bounds)],
+                             Interleaved=True)
+
+
+def to_float(v):
+    try:
+        return float(v)
+    except:
+        return np.NaN
+
 
 def hex_grid_gen(total_bounds, height):
     xmin, ymin, xmax, ymax = total_bounds

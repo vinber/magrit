@@ -1,8 +1,10 @@
 Changes
 =======
 
-0.6.5 (2018-01-xx)
+0.7.0 (2018-01-xx)
 ------------------
+
+- New: allow to compute density grid from an input layer of points (and optionnaly a clipping mask).
 
 - Be more tolerant with in the regular expression used to filter the name of exported maps (by allowing dot, dash and parantheses for example).
 
@@ -11,6 +13,8 @@ Changes
 - Fix the displaying of the "horizontal layout" option for legend when used on a categorical choropleth map + rounding precision for "horizontal layout" legend and "proportionnal symbols" legend.
 
 - Fix bug when changing layer name when using particularily long names.
+
+- Compute jenks natural breaks in a web worker if the dataset contains more than 7500 features.
 
 
 0.6.4 (2017-12-22)

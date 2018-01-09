@@ -1173,6 +1173,7 @@ function createStyleBox(layer_name) {
     pt_size.append('input')
       .attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' })
       .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+      .property('value', +current_pt_size)
       .on('change', function () {
         const pt_size_range = document.getElementById('point_radius_size');
         const old_value = pt_size_range.value;
@@ -1181,6 +1182,7 @@ function createStyleBox(layer_name) {
         } else {
           this.value = round_value(+this.value, 2);
           pt_size_range.value = this.value;
+          current_pt_size = this.value;
           selection.attr('d', path.pointRadius(this.value));
         }
       });

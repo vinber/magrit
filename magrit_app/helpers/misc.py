@@ -166,6 +166,7 @@ def extractShpZip(myzip, slots, directory):
             slots[ext] = rv
     return slots
 
+
 def zip_layer_folder(dir_path, layer_name):
     """
     Create a zip archive with the content of the folder located at `dir_path`

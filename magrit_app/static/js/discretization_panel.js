@@ -417,6 +417,36 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       serie = new geostats(values);
       breaks = [];
       values = serie.sorted();
+      const deferred = Promise.pending();
+      if (values.length > 7500 && type === 'jenks') {
+        const jenks_worker = new Worker('static/js/webworker_jenks.js');
+        _app.webworker_to_cancel = jenks_worker;
+        document.getElementById('overlay').style.display = null;
+        document.getElementById('overlay').style.zIndex = 5000;
+        jenks_worker.postMessage(
+          [values, nb_class]);
+        jenks_worker.onmessage = function (e) {
+          breaks = e.data;
+          serie.setClassManually(breaks);
+          serie.doCount();
+          stock_class = Array.prototype.slice.call(serie.counter);
+          document.getElementById('overlay').style.display = 'none';
+          document.getElementById('overlay').style.zIndex = '';
+          _app.webworker_to_cancel = undefined;
+          bins = [];
+          for (let i = 0, len = stock_class.length, offset = 0; i < len; i++) {
+            const bin = {};
+            bin.val = stock_class[i];
+            bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
+            bin.width = breaks[i + 1] - breaks[i];
+            bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+            bins[i] = bin;
+          }
+          deferred.resolve(true);
+          jenks_worker.terminate();
+        };
+        return deferred.promise;
+      }
 
       if (type === 'Q6') {
         tmp = getBreaksQ6(values, serie.precision);
@@ -457,13 +487,15 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         // if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
         serie.doCount();
         stock_class = Array.prototype.slice.call(serie.counter);
-        if (stock_class.length === 0) {
-          return;
-        }
       }
       // In order to avoid class limit falling out the serie limits with Std class :
 //            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
 //            ^^^ well finally not ?
+      if (stock_class.length === 0) {
+        deferred.resolve(false);
+        return deferred.promise;
+      }
+
       bins = [];
       for (let i = 0, len = stock_class.length, offset = 0; i < len; i++) {
         const bin = {};
@@ -473,7 +505,8 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         bin.height = bin.val / (breaks[i + 1] - breaks[i]);
         bins[i] = bin;
       }
-      return true;
+      deferred.resolve(true);
+      return deferred.promise;
     },
 
     draw(provided_colors) {
@@ -682,8 +715,10 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       if (type === 'Q6') {
         update_nb_class(6);
       }
-      redisplay.compute();
-      redisplay.draw();
+      redisplay.compute().then((v) => {
+        if (v) redisplay.draw();
+      });
+
     });
 
   available_functions.forEach((func) => {
@@ -707,8 +742,10 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         return;
       }
       std_dev_params.share = val;
-      redisplay.compute();
-      redisplay.draw();
+      redisplay.compute().then((v) => {
+        if (v) redisplay.draw();
+      });
+
     });
   input_section_stddev.insert('span')
     .html(i18next.t('disc_box.stddev_share_txt2'));
@@ -724,8 +761,9 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       .attrs({ type: 'radio', name: 'role_mean', value: el[1], id: `button_stddev_${el[1]}` })
       .on('change', function () {
         std_dev_params.role_mean = this.value;
-        redisplay.compute();
-        redisplay.draw();
+        redisplay.compute().then((v) => {
+          if (v) redisplay.draw();
+        });
       });
     std_dev_mean_choice
       .insert('label')
@@ -769,18 +807,31 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       // nb_class = +this.value;
       // txt_nb_class.node().value = nb_class;
       update_nb_class(+this.value);
-      const ret_val = redisplay.compute();
-      if (!ret_val) {
-        this.value = old_nb_class;
-        txt_nb_class.node().value = +old_nb_class;
-      } else {
-        redisplay.draw();
-        const ctl_class = document.getElementById('centr_class');
-        if (ctl_class) {
-          ctl_class.max = nb_class;
-          if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+      redisplay.compute().then((v) => {
+        if (!v) {
+          this.value = old_nb_class;
+          txt_nb_class.node().value = +old_nb_class;
+        } else {
+          redisplay.draw();
+          const ctl_class = document.getElementById('centr_class');
+          if (ctl_class) {
+            ctl_class.max = nb_class;
+            if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+          }
         }
-      }
+      })
+      // const ret_val = redisplay.compute();
+      // if (!ret_val) {
+      //   this.value = old_nb_class;
+      //   txt_nb_class.node().value = +old_nb_class;
+      // } else {
+      //   redisplay.draw();
+      //   const ctl_class = document.getElementById('centr_class');
+      //   if (ctl_class) {
+      //     ctl_class.max = nb_class;
+      //     if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+      //   }
+      // }
     });
 
   const ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
@@ -954,8 +1005,10 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       // txt_nb_class.node().value = +nb_class;
       // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
       // document.getElementById("nb_class_range").value = nb_class;
-      redisplay.compute();
-      redisplay.draw();
+      redisplay.compute().then((v) => {
+        if (v) redisplay.draw();
+      });
+
     });
 
   accordionize('.accordion_disc', d3.select('#discretiz_charts').node());
@@ -996,8 +1049,11 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     user_break_list = options.breaks;
   }
 
-  redisplay.compute();
-  redisplay.draw(options.colors);
+  console.log(redisplay);
+
+  redisplay.compute().then((v) => {
+    if (v) redisplay.draw(options.colors);
+  });
 
   const deferred = Promise.pending(),
     container = document.getElementById('discretiz_charts');

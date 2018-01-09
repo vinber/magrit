@@ -637,7 +637,8 @@
                 "symbol_line": "Ligne",
                 "output": "Nom du résultat<br>",
                 "render": "Dessiner le résultat",
-                "discretization_choice": "Choix de la discrétisation"
+                "discretization_choice": "Choix de la discrétisation",
+                "mask": "Couche de masquage (opt.) "
             },
             "smooth": {
                 "field": "Valeur ",
@@ -650,8 +651,7 @@
                 "func_pareto": "Pareto ",
                 "nb_class": "Nombre de classes ",
                 "discretization": "Type de discrétisation ",
-                "break_values": "Limites de classes (opt.) ",
-                "mask": "Couche de masquage (opt.) "
+                "break_values": "Limites de classes (opt.) "
             },
             "prop": {
                 "field": "Valeur ",
@@ -694,7 +694,11 @@
                 "coloramp": "Palette de couleurs ",
                 "square": "Carré",
                 "diamond": "Diamant",
-                "hexagon": "Hexagone"
+                "hexagon": "Hexagone",
+                "func": "Type de calcul",
+                "mean": "Moyenne des valeurs",
+                "density_count": "Densité (comptage simple)",
+                "density": "Densité (utilisation d'un champ numérique)"
             },
             "cartogram": {
                 "algo": " Algorithme à utiliser ",

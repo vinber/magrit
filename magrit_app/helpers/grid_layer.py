@@ -11,23 +11,9 @@ import rtree
 import numpy as np
 import ujson as json
 from .geo import repairCoordsPole, TopologicalError, multi_to_single
-from .grid_generator import square_grid_gen, diams_grid_gen, hex_grid_gen
+from .grid_helpers import (
+    square_grid_gen, diams_grid_gen, hex_grid_gen, to_float, make_index)
 
-
-def idx_generator_func(bounds):
-    for i, bound in enumerate(bounds):
-        yield (i, bound, i)
-
-
-def make_index(bounds):
-    return rtree.index.Index([z for z in idx_generator_func(bounds)],
-                             Interleaved=True)
-
-def to_float(v):
-    try:
-        return float(v)
-    except:
-        return np.NaN
 
 def get_grid_layer(input_file, height, field_name, grid_shape="square"):
     if speedups.available and not speedups.enabled:
@@ -58,22 +44,12 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
 
     gdf.to_crs(crs=proj_robinson, inplace=True)
 
-    # res_geoms = {
-    #     "square": get_square_dens_grid2,
-    #     # "square2": get_square_dens_grid,
-    #     "diamond": get_diams_dens_grid2,
-    #     # "diamond2": get_diams_dens_grid,
-    #     "hexagon": get_hex_dens_grid2,
-    #     # "hexagon2": get_hex_dens_grid
-    #     }[grid_shape](gdf, height, field_name, mask)
     cell_generator = {
         "square": square_grid_gen,
-        # "square2": get_square_dens_grid,
         "diamond": diams_grid_gen,
-        # "diamond2": get_diams_dens_grid,
         "hexagon": hex_grid_gen,
-        # "hexagon2": get_hex_dens_grid
         }[grid_shape]
+
     res_geoms = get_dens_grid2(gdf, height, field_name, mask, cell_generator)
 
     n_field_name = "".join([field_name, "_densitykm"])
@@ -84,8 +60,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
               'total': [i[2] for i in res_geoms]},
         geometry=[i[0] for i in res_geoms],
         crs=gdf.crs
-        )
-    grid = grid.to_crs({"init": "epsg:4326"})
+        ).to_crs({"init": "epsg:4326"})
 
     total_bounds = grid.total_bounds
     if total_bounds[0] < -179.9999 or total_bounds[1] < -89.9999 \
@@ -96,14 +71,8 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
     else:
         return grid.to_json()
 
+
 def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
-    # xmin, ymin, xmax, ymax = gdf.total_bounds
-    # height = height * 1.45
-    # rows = ceil((ymax-ymin) / height) + 1
-    # cols = ceil((xmax-xmin) / height) + 2
-    # x_left_origin = xmin - height
-    # y_bottom_origin = ymin - height
-    # half_height = (height / 2)
     gdf['area_values'] = gdf.geometry.area
     gdf = multi_to_single(gdf)
     geoms = gdf.geometry
@@ -113,16 +82,6 @@ def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
     array_values = gdf[field_name].values
     res = []
     for rect, cell in cell_generator(gdf.total_bounds, height):
-    # for col in range((cols * 2) - 1):
-    #     t = col % 2
-    #     x1 = x_left_origin + ((col + 0) * half_height)
-    #     x2 = x_left_origin + ((col + 1) * half_height)
-    #     x3 = x_left_origin + ((col + 2) * half_height)
-    #     for row in range(rows):
-    #         y1 = y_bottom_origin + (((row * 2) + t) * half_height)
-    #         y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)
-    #         y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)
-    #
         idx_poly = list(idx_intersects(rect, objects='raw'))
         if idx_poly:
             p = mask.intersection(Polygon(cell))
@@ -265,48 +224,6 @@ def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
 #        x_right_origin = x_right_origin + height
 #
 #    return res
-
-# def get_square_dens_grid(gdf, height, field_name):
-#     xmin, ymin, xmax, ymax = gdf.total_bounds
-#     rows = ceil((ymax-ymin) / height)
-#     cols = ceil((xmax-xmin) / height)
-#
-#     x_left_origin = xmin
-#     x_right_origin = xmin + height
-#     y_top_origin = ymax
-#     y_bottom_origin = ymax - height
-#
-#     geoms = gdf.geometry
-#     index = make_index([g.bounds for g in geoms])
-#     idx_intersects = index.intersection
-#     mask = cascaded_union(gdf.geometry).buffer(5).buffer(-5)
-#     array_values = gdf[field_name].values
-#
-#     res = []
-#     for countcols in range(cols):
-#         y_top = y_top_origin
-#         y_bottom = y_bottom_origin
-#         for countrows in range(rows):
-#             p = Polygon([
-#                     (x_left_origin, y_top), (x_right_origin, y_top),
-#                     (x_right_origin, y_bottom), (x_left_origin, y_bottom)
-#                     ])
-#             idx_poly = list(idx_intersects(p.bounds, objects='raw'))
-#             if idx_poly:
-#                 p = p.intersection(mask)
-#                 if p:
-#                     idx = geoms[idx_poly].intersects(p)
-#                     idx = idx[idx].index
-#                     areas_part = geoms[idx].intersection(p).area.values / geoms[idx].area.values
-#                     density = (array_values[idx] * areas_part).sum() / p.area
-#                     res.append((p, density))
-#
-#             y_top = y_top - height
-#             y_bottom = y_bottom - height
-#         x_left_origin = x_left_origin + height
-#         x_right_origin = x_right_origin + height
-#
-#     return res
 
 #if __name__ == "__main__":
 #    import ujson as json

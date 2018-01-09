@@ -631,7 +631,8 @@
                 "symbol_line": "Línea",
                 "output": "Nombre de la capa resultante<br>",
                 "render": "Generar resultado",
-                "discretization_choice": "Tipo de discretización"
+                "discretization_choice": "Tipo de discretización",
+                "mask": "Capa con máscara (opt.) "
             },
             "smooth": {
                 "field": "Valor ",
@@ -644,8 +645,7 @@
                 "func_pareto": "Pareto ",
                 "nb_class": "Número de clases ",
                 "discretization": "Tipo de discretización ",
-                "break_values": "Límite de clases (opt.) ",
-                "mask": "Capa con máscara (opt.) "
+                "break_values": "Límite de clases (opt.) "
             },
             "prop": {
                 "field": "Valor ",
@@ -688,7 +688,11 @@
                 "coloramp": "Rampa de colores ",
                 "square": "Cuadrado",
                 "diamond": "Diamante",
-                "hexagon": "Hexágono"
+                "hexagon": "Hexágono",
+                "func": "Tipo de cálculo",
+                "mean": "Valores promedio",
+                "density_count": "Densidad (conteo simple)",
+                "density": "Densidad (usando un campo numérico)"
             },
             "cartogram": {
                 "algo": " Algoritmo ",

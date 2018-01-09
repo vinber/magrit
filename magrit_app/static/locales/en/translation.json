@@ -638,7 +638,8 @@
                 "symbol_line": "Line",
                 "output": "Output name<br>",
                 "render": "Render",
-                "discretization_choice": "Choose a discretization ..."
+                "discretization_choice": "Choose a discretization ...",
+                "mask": "Clipping mask layer (opt.) "
             },
             "smooth": {
                 "field": "Field ",
@@ -651,8 +652,7 @@
                 "func_pareto": "Pareto ",
                 "nb_class": "Number of class ",
                 "discretization": "Discretization type ",
-                "break_values": "Break values (opt.) ",
-                "mask": "Clipping mask layer (opt.) "
+                "break_values": "Break values (opt.) "
             },
             "prop": {
                 "field": "Field ",
@@ -694,7 +694,11 @@
                 "coloramp": "Coloramp ",
                 "square": "Square",
                 "diamond": "Diamond",
-                "hexagon": "Hexagon"
+                "hexagon": "Hexagon",
+                "func": "Calculation type",
+                "mean": "Average values",
+                "density_count": "Density (single counting)",
+                "density": "Density (using a numeric field)"
             },
             "cartogram": {
                 "algo": "Algorithm to use ",

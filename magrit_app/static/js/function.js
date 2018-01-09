@@ -894,6 +894,11 @@ const fields_PropSymbolChoro = {
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
+      if (_values.length > 7500) {
+        ico_jenks.style('display', 'none');
+      } else {
+        ico_jenks.style('display', null);
+      }
     };
 
     if (fields_stock.length === 0 || fields_ratio.length === 0) {
@@ -1375,6 +1380,11 @@ const fields_Choropleth = {
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
+      if (_values.length > 7500) {
+        ico_jenks.style('display', 'none');
+      } else {
+        ico_jenks.style('display', null);
+      }
     };
 
     if (fields.length === 0) {
@@ -1815,16 +1825,16 @@ function fillMenu_Stewart() {
       id: 'stewart_breaks',
       'data-i18n': '[placeholder]app_page.common.expected_class',
       placeholder: i18next.t('app_page.common.expected_class') });
-  const m = dialog_content.append('p')
+  const m = dialog_content.append('div')
     .attr('class', 'params_section2')
     .style('margin', 'auto');
-  m.append('span')
-    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.mask' })
-    .html(i18next.t('app_page.func_options.smooth.mask'));
+  m.append('p')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
+    .html(i18next.t('app_page.func_options.common.mask'));
 
-  dialog_content.insert('select')
+  m.insert('select')
     .attrs({ class: 'params mask_field', id: 'stewart_mask' })
-    .styles({ position: 'relative', float: 'right', margin: '1px 0px 10px 0px' });
+    .styles({ position: 'relative', float: 'right' });
 
   [
     ['exponential', 'app_page.func_options.smooth.func_exponential'],
@@ -3462,17 +3472,31 @@ function fillMenu_griddedMap(layer) {
   const col_pal = d.insert('select')
     .attrs({ class: 'params', id: 'Gridded_color_pal' });
 
-  const e = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
-  e.append('span')
+  const e = dialog_content.append('div')
+    .attr('class', 'params_section2 opt_point')
+    .style('display', 'none');
+  e.append('p')
+    .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' })
     .html(i18next.t('app_page.func_options.grid.func'));
 
   const grid_func = e.insert('select')
-      .attrs({ class: 'params i18n', id: 'Gridded_func' });
+      .attrs({ class: 'params i18n', id: 'Gridded_func' })
+      .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
-  dialog_content.insert('select')
-    .attrs({ class: 'params mask_field opt_point', id: 'Gridded_mask' })
-    .styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
+  const f = dialog_content.append('div')
+    .attr('class', 'params_section2 opt_point')
+    .style('padding-top', '10px')
+    .style('clear', 'both')
+    .style('display', 'none');
+  f.append('p')
+    .style('margin', 'auto')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
+    .html(i18next.t('app_page.func_options.common.mask'));
+
+  f.insert('select')
+    .attrs({ class: 'params mask_field', id: 'Gridded_mask' })
+    .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
   [
     ['app_page.func_options.grid.density_count', 'density_count'],
@@ -3519,14 +3543,10 @@ const fields_griddedMap = {
         lyr_name = other_layers[i];
         if (current_layers[lyr_name].type === 'Polygon') {
           mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-          if (current_layers[lyr_name].targeted) {
-            default_selected_mask = lyr_name;
-          }
         }
       }
     }
 
-    // let fields = type_col(layer, "number"),
     const fields = getFieldsType('stock', layer),
       field_selec = section2.select('#Gridded_field'),
       output_name = section2.select('#Gridded_output_name'),
@@ -3584,7 +3604,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
   } else {
     var_to_send[field_n] = user_data[layer].map(i => i[field_n]);
   }
-  console.log(options);
+
   formToSend.append('json', JSON.stringify({
     topojson: current_layers[layer].key_name,
     var_name: var_to_send,
@@ -3607,17 +3627,15 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         nb_ft = res_data.length,
         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
         d_values = [];
-      console.log(rendered_field);
       for (let i = 0; i < nb_ft; i++) {
         d_values.push(+res_data[i][rendered_field]);
       }
       const disc_method = options.func ? 'jenks' : 'quantiles';
       current_layers[n_layer_name].renderer = 'Gridded';
       const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
-      console.log(d_values, disc_result);
       const rendering_params = {
         nb_class: opt_nb_class,
-        type: 'quantiles',
+        type: disc_method,
         schema: [color_palette],
         breaks: disc_result[2],
         colors: disc_result[3],
