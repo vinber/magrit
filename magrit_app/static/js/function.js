@@ -3475,6 +3475,7 @@ function fillMenu_griddedMap(layer) {
     .styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
 
   [
+    ['app_page.func_options.grid.density_count', 'density_count'],
     ['app_page.func_options.grid.density', 'density'],
     ['app_page.func_options.grid.mean', 'mean'],
   ].forEach((f) => {

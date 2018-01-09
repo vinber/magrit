@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.ea452ca8b543.json'
+      loadPath: 'static/locales/{{lng}}/translation.7b49a2a88948.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2907,8 +2907,9 @@ function ContextMenu() {
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function getBreaks(values, type, n_class) {
+  // const _values = values.filter(v => v === 0 || (v && !Number.isNaN(+v))),
   var _values = values.filter(function (v) {
-    return v === 0 || v && !Number.isNaN(+v);
+    return isNumber(v);
   }),
       no_data = values.length - _values.length,
       nb_class = +n_class || getOptNbClass(_values.length);
@@ -2963,7 +2964,8 @@ var discretize_to_colors = function discretize_to_colors(values, type, nb_class,
       colors_map = [];
 
   for (var j = 0; j < values.length; ++j) {
-    if (v === 0 || values[j] != null && values[j] != '' && !Number.isNaN(+values[j])) {
+    // if (values[j] === 0 || (values[j] !== null && values[j] !== '' && !Number.isNaN(+values[j]))) {
+    if (isNumber(values[j])) {
       var idx = serie.getClass(values[j]);
       colors_map.push(color_array[idx]);
     } else {
@@ -3406,7 +3408,8 @@ var display_discretization = function display_discretization(layer_name, field_n
 
   for (var i = 0; i < nb_values; i++) {
     var value = db_data[i][field_name];
-    if (value != null && value !== '' && isFinite(value) && !isNaN(+value)) {
+    // if (value != null && value !== '' && isFinite(value) && !isNaN(+value)) {
+    if (isNumber(value)) {
       values.push(+db_data[i][field_name]);
       indexes.push(i);
     }
@@ -3719,7 +3722,8 @@ var display_discretization = function display_discretization(layer_name, field_n
     }
     for (var j = 0; j < db_data.length; ++j) {
       var _value = db_data[j][field_name];
-      if (_value !== null && isFinite(_value) && _value != '' && !isNaN(+_value)) {
+      // if (value !== null && value !== '' && !isNaN(+value)) {
+      if (isNumber(_value)) {
         var idx = serie.getClass(+_value);
         colors_map.push(color_array[idx]);
       } else {
@@ -7846,7 +7850,7 @@ function fillMenu_griddedMap(layer) {
 
   dialog_content.insert('select').attrs({ class: 'params mask_field opt_point', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', margin: '10px 0px 10px 0px', display: 'none' });
 
-  [['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
     grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
   });
 
@@ -8519,6 +8523,10 @@ var render_label_graticule = function render_label_graticule(layer, rendering_pa
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var isNumber = function isNumber(value) {
+  return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
+};
 
 var drag_elem_geo = d3.drag().subject(function () {
   var t = d3.select(this);
@@ -11178,7 +11186,7 @@ function add_layer_topojson(text) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
     fields_handler.fill();
   }
 
@@ -14541,6 +14549,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -15733,6 +15742,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19720,7 +19730,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19886,6 +19897,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20850,7 +20862,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

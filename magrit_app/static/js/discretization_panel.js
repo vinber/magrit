@@ -1,7 +1,8 @@
 'use strict';
 
 function getBreaks(values, type, n_class) {
-  const _values = values.filter(v => v === 0 || v && !Number.isNaN(+v)),
+  // const _values = values.filter(v => v === 0 || (v && !Number.isNaN(+v))),
+  const _values = values.filter(v => isNumber(v)),
     no_data = values.length - _values.length,
     nb_class = +n_class || getOptNbClass(_values.length);
   const serie = new geostats(_values);
@@ -39,7 +40,8 @@ const discretize_to_colors = (function discretize_to_colors(values, type, nb_cla
     no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
     colors_map = [];
   for (let j = 0; j < values.length; ++j) {
-    if (v === 0 || (values[j] != null && values[j] != '' && !Number.isNaN(+values[j]))) {
+    // if (values[j] === 0 || (values[j] !== null && values[j] !== '' && !Number.isNaN(+values[j]))) {
+    if (isNumber(values[j])) {
       const idx = serie.getClass(values[j]);
       colors_map.push(color_array[idx]);
     } else {
@@ -612,7 +614,8 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
   for (let i = 0; i < nb_values; i++) {
     const value = db_data[i][field_name];
-    if (value != null && value !== '' && isFinite(value) && !isNaN(+value)) {
+    // if (value != null && value !== '' && isFinite(value) && !isNaN(+value)) {
+    if (isNumber(value)) {
       values.push(+db_data[i][field_name]);
       indexes.push(i);
     }
@@ -1008,8 +1011,8 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     }
     for (let j = 0; j < db_data.length; ++j) {
       const value = db_data[j][field_name];
-      if (value !== null && isFinite(value)
-            && value != '' && !isNaN(+value)) {
+      // if (value !== null && value !== '' && !isNaN(+value)) {
+      if (isNumber(value)) {
         const idx = serie.getClass(+value);
         colors_map.push(color_array[idx]);
       } else {

@@ -1,3 +1,7 @@
+const isNumber = (value) => {
+ return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
+}
+
 const drag_elem_geo = d3.drag()
   .subject(function () {
     const t = d3.select(this);
