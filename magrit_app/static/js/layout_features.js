@@ -260,7 +260,7 @@ class UserArrow {
     return atan2(dy, dx) * (180 / PI);
   }
 
-  static calcDestFromOAD(origin, angle, distance) {
+  calcDestFromOAD(origin, angle, distance) {
     const theta = angle / (180 / PI),
       dx = distance * cos(theta),
       dy = distance * sin(theta);

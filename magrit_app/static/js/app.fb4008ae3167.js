@@ -1143,7 +1143,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.63473685044c.json'
+      loadPath: 'static/locales/{{lng}}/translation.fb4008ae3167.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -14611,6 +14611,7 @@ var UserArrow = function () {
         y1: t.attr('y1'),
         y2: t.attr('y2'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        //  , snap_lines: snap_lines
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -14827,6 +14828,14 @@ var UserArrow = function () {
       return atan2(dy, dx) * (180 / PI);
     }
   }, {
+    key: 'calcDestFromOAD',
+    value: function calcDestFromOAD(origin, angle, distance) {
+      var theta = angle / (180 / PI),
+          dx = distance * cos(theta),
+          dy = distance * sin(theta);
+      return [origin[0] + dx, origin[1] + dy];
+    }
+  }, {
     key: 'editStyle',
     value: function editStyle() {
       var current_options = { pt1: this.pt1.slice(),
@@ -14910,14 +14919,6 @@ var UserArrow = function () {
           self.arrow.select('line').attr('marker-end', 'url(#arrow_head)');
         }
       });
-    }
-  }], [{
-    key: 'calcDestFromOAD',
-    value: function calcDestFromOAD(origin, angle, distance) {
-      var theta = angle / (180 / PI),
-          dx = distance * cos(theta),
-          dy = distance * sin(theta);
-      return [origin[0] + dx, origin[1] + dy];
     }
   }]);
 
@@ -15803,6 +15804,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19790,7 +19792,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19956,6 +19959,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20920,7 +20924,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
