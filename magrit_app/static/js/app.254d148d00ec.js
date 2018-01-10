@@ -41,6 +41,8 @@ Function.prototype.memoize = function () {
 *
 */
 function setUpInterface(reload_project) {
+  // Create the waiting overlay to be ready to be displayed when needed:
+  _app.waitingOverlay = createWaitingOverlay();
   // Only ask for confirmation before leaving page if things have been done
   // (layer added, etc..)
   window.addEventListener('beforeunload', beforeUnloadWindow);
@@ -67,32 +69,6 @@ function setUpInterface(reload_project) {
       navigator.sendBeacon('/layers/delete', formToSend);
     }
   }, false);
-  var bg = document.createElement('div');
-  bg.id = 'overlay';
-  bg.style.display = 'none';
-  bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
-  var btn = document.createElement('button');
-  btn.style.fontSize = '13px';
-  btn.style.background = '#4b9cdb';
-  btn.style.border = '1px solid #298cda';
-  btn.style.fontWeight = 'bold';
-  btn.className = 'button_st3 i18n';
-  btn.setAttribute('data-i18n', '[html]app_page.common.cancel');
-  bg.appendChild(btn);
-  document.body.appendChild(bg);
-
-  btn.onclick = function () {
-    if (_app.xhr_to_cancel) {
-      _app.xhr_to_cancel.abort();
-      _app.xhr_to_cancel = undefined;
-    }
-    if (_app.webworker_to_cancel) {
-      _app.webworker_to_cancel.onmessage = null;
-      _app.webworker_to_cancel.terminate();
-      _app.webworker_to_cancel = undefined;
-    }
-    document.getElementById('overlay').style.display = 'none';
-  };
 
   var bg_drop = document.createElement('div');
   bg_drop.className = 'overlay_drop';
@@ -1143,7 +1119,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.ac40a79d6674.json'
+      loadPath: 'static/locales/{{lng}}/translation.254d148d00ec.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2385,7 +2361,7 @@ function _export_compo_png() {
   var scalefactor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
   var output_name = arguments[2];
 
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
   output_name = check_output_name(output_name, 'png');
   var dimensions_foreign_obj = patchSvgForForeignObj();
   patchSvgForFonts();
@@ -2404,7 +2380,7 @@ function _export_compo_png() {
     ctx = targetCanvas.getContext('2d');
     img = new Image();
   } catch (err) {
-    document.getElementById('overlay').style.display = 'none';
+    _app.waitingOverlay.hide();
     targetCanvas.remove();
     display_error_during_computation(String(err));
     return;
@@ -2413,7 +2389,7 @@ function _export_compo_png() {
     try {
       changeResolution(targetCanvas, scalefactor);
     } catch (err) {
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
       display_error_during_computation(i18next.t('app_page.common.error_too_high_resolution') + ' ' + String(err));
       return;
@@ -2426,7 +2402,7 @@ function _export_compo_png() {
     try {
       imgUrl = targetCanvas.toDataURL(mime_type);
     } catch (err) {
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
       display_error_during_computation(String(err));
       return;
@@ -2434,7 +2410,7 @@ function _export_compo_png() {
     clickLinkFromDataUrl(imgUrl, output_name).then(function (_) {
       unpatchSvgForFonts();
       unpatchSvgForForeignObj(dimensions_foreign_obj);
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
     }).catch(function (err) {
       display_error_during_computation();
@@ -3189,17 +3165,51 @@ var display_discretization = function display_discretization(layer_name, field_n
   };
 
   var make_overlay_elements = function make_overlay_elements() {
-    line_mean = overlay_svg.append('line').attr('class', 'line_mean').attr('x1', x(mean_serie)).attr('y1', 10).attr('x2', x(mean_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'blue', fill: 'none' }).classed('active', false);
+    line_mean = overlay_svg.append('line').attrs({
+      class: 'line_mean',
+      x1: x(mean_serie),
+      y1: 10,
+      x2: x(mean_serie),
+      y2: svg_h - margin.bottom
+    }).styles({ 'stroke-width': 0, stroke: 'blue', fill: 'none' }).classed('active', false);
 
-    txt_mean = overlay_svg.append('text').attr('y', 0).attr('dy', '0.75em').attr('x', x(mean_serie)).style('fill', 'none').attr('text-anchor', 'middle').text(i18next.t('disc_box.mean'));
+    txt_mean = overlay_svg.append('text').attrs({
+      y: 0,
+      dy: '0.75em',
+      x: x(mean_serie),
+      'text-anchor': 'middle'
+    }).style('fill', 'none').text(i18next.t('disc_box.mean'));
 
-    line_median = overlay_svg.append('line').attr('class', 'line_med').attr('x1', x(serie.median())).attr('y1', 10).attr('x2', x(serie.median())).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'darkgreen', fill: 'none' }).classed('active', false);
+    line_median = overlay_svg.append('line').attrs({
+      class: 'line_med',
+      x1: x(serie.median()),
+      y1: 10,
+      x2: x(serie.median()),
+      y2: svg_h - margin.bottom
+    }).styles({ 'stroke-width': 0, stroke: 'darkgreen', fill: 'none' }).classed('active', false);
 
-    txt_median = overlay_svg.append('text').attr('y', 0).attr('dy', '0.75em').attr('x', x(serie.median())).style('fill', 'none').attr('text-anchor', 'middle').text(i18next.t('disc_box.median'));
+    txt_median = overlay_svg.append('text').attrs({
+      y: 0,
+      dy: '0.75em',
+      x: x(serie.median()),
+      'text-anchor': 'middle'
+    }).style('fill', 'none').text(i18next.t('disc_box.median'));
 
-    line_std_left = overlay_svg.append('line').attr('class', 'lines_std').attr('x1', x(mean_serie - stddev_serie)).attr('y1', 10).attr('x2', x(mean_serie - stddev_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
+    line_std_left = overlay_svg.append('line').attrs({
+      class: 'lines_std',
+      x1: x(mean_serie - stddev_serie),
+      y1: 10,
+      x2: x(mean_serie - stddev_serie),
+      y2: svg_h - margin.bottom
+    }).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
 
-    line_std_right = overlay_svg.append('line').attr('class', 'lines_std').attr('x1', x(mean_serie + stddev_serie)).attr('y1', 10).attr('x2', x(mean_serie + stddev_serie)).attr('y2', svg_h - margin.bottom).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
+    line_std_right = overlay_svg.append('line').attrs({
+      class: 'lines_std',
+      x1: x(mean_serie + stddev_serie),
+      y1: 10,
+      x2: x(mean_serie + stddev_serie),
+      y2: svg_h - margin.bottom
+    }).styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' }).classed('active', false);
 
     rug_plot = overlay_svg.append('g').style('display', 'none');
     rug_plot.selectAll('.indiv').data(values.map(function (i) {
@@ -3224,16 +3234,14 @@ var display_discretization = function display_discretization(layer_name, field_n
       if (values.length > 7500 && type === 'jenks') {
         var jenks_worker = new Worker('static/js/webworker_jenks.js');
         _app.webworker_to_cancel = jenks_worker;
-        document.getElementById('overlay').style.display = null;
-        document.getElementById('overlay').style.zIndex = 5000;
+        waitingOverlay.display({ zIndex: 5000 });
         jenks_worker.postMessage([values, nb_class]);
         jenks_worker.onmessage = function (e) {
           breaks = e.data;
           serie.setClassManually(breaks);
           serie.doCount();
           stock_class = Array.prototype.slice.call(serie.counter);
-          document.getElementById('overlay').style.display = 'none';
-          document.getElementById('overlay').style.zIndex = '';
+          waitingOverlay.hide();
           _app.webworker_to_cancel = undefined;
           bins = [];
           for (var i = 0, len = stock_class.length, offset = 0; i < len; i++) {
@@ -3417,8 +3425,8 @@ var display_discretization = function display_discretization(layer_name, field_n
   };
 
   var modal_box = make_dialog_container('discretiz_charts', [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join(''), 'discretiz_charts_dialog');
-
-  var newBox = d3.select('#discretiz_charts').select('.modal-body');
+  var container = document.getElementById('discretiz_charts');
+  var newBox = d3.select(container).select('.modal-body');
   var db_data = void 0;
   if (result_data.hasOwnProperty(layer_name)) {
     db_data = result_data[layer_name];
@@ -3480,7 +3488,8 @@ var display_discretization = function display_discretization(layer_name, field_n
   }
   var precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
   var formatCount = d3.format(precision_axis);
-  var discretization = newBox.append('div').attr('id', 'discretization_panel').insert('p').insert('select').attr('class', 'params').on('change', function () {
+  var discretization_panel = newBox.append('div').attr('id', 'discretization_panel');
+  var discretization = discretization_panel.insert('p').insert('select').attr('class', 'params').on('change', function () {
     type = this.value;
     if (type === 'stddev_f') {
       input_section_stddev.style('display', '');
@@ -3505,9 +3514,9 @@ var display_discretization = function display_discretization(layer_name, field_n
     discretization.append('option').text(func[0]).attr('value', func[1]);
   });
 
-  var input_section_stddev = d3.select('#discretization_panel').insert('p').styles({ margin: 'auto', display: type === 'stddev_f' ? '' : 'none' });
+  var input_section_stddev = discretization_panel.insert('p').styles({ margin: 'auto', display: type === 'stddev_f' ? '' : 'none' });
   input_section_stddev.insert('span').html(i18next.t('disc_box.stddev_share_txt1'));
-  input_section_stddev.insert('input').attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share }).styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
+  input_section_stddev.insert('input').property('value', std_dev_params.share).attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share' }).styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' }).on('change', function () {
     var val = this.value;
     if (val === 0 || val * stddev_serie > max_serie - min_serie || val * stddev_serie * 21 < max_serie - min_serie) {
       // If the new value is too big or too small:
@@ -3532,20 +3541,19 @@ var display_discretization = function display_discretization(layer_name, field_n
     std_dev_mean_choice.insert('label').style('font-weight', '400').attrs({ for: 'button_stddev_' + el[1] }).html(el[0]);
   });
   document.getElementById('button_stddev_' + std_dev_params.role_mean).checked = true;
-  var txt_nb_class = d3.select('#discretization_panel').append('input').attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 }).styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' }).on('change', function () {
+  var txt_nb_class = discretization_panel.append('input').property('value', nb_class).attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, step: 1 }).styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' }).on('change', function () {
     var a = disc_nb_class.node();
     a.value = this.value;
     a.dispatchEvent(new Event('change'));
   });
 
-  d3.select('#discretization_panel').append('span').html(i18next.t('disc_box.class'));
+  discretization_panel.append('span').html(i18next.t('disc_box.class'));
 
-  var disc_nb_class = d3.select('#discretization_panel').insert('input').styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' }).attrs({
+  var disc_nb_class = discretization_panel.insert('input').property(nb_clas).styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' }).attrs({
     id: 'nb_class_range',
     type: 'range',
     min: 2,
     max: max_nb_class,
-    value: nb_class,
     step: 1 }).on('change', function () {
     var _this = this;
 
@@ -3573,18 +3581,6 @@ var display_discretization = function display_discretization(layer_name, field_n
         }
       }
     });
-    // const ret_val = redisplay.compute();
-    // if (!ret_val) {
-    //   this.value = old_nb_class;
-    //   txt_nb_class.node().value = +old_nb_class;
-    // } else {
-    //   redisplay.draw();
-    //   const ctl_class = document.getElementById('centr_class');
-    //   if (ctl_class) {
-    //     ctl_class.max = nb_class;
-    //     if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
-    //   }
-    // }
   });
 
   var ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
@@ -3600,9 +3596,10 @@ var display_discretization = function display_discretization(layer_name, field_n
       margin = { top: 7.5, right: 30, bottom: 7.5, left: 30 },
       height = svg_h - margin.top - margin.bottom;
 
-  d3.select('#discretiz_charts').select('.modal-dialog').styles({
+  d3.select(container).select('.modal-dialog').styles({
     width: svg_w + margin.top + margin.bottom + 90 + 'px',
-    height: window.innerHeight - 60 + 'px' });
+    height: window.innerHeight - 60 + 'px'
+  });
 
   if (values.length < 500) {
     // Only allow for beeswarm plot if there isn't too many values
@@ -3627,7 +3624,11 @@ var display_discretization = function display_discretization(layer_name, field_n
       document.getElementById('ref_histo_title').innerHTML = '<b>' + i18next.t('disc_box.hist_ref_title' + str_tr) + '</b>';
     });
   }
-  var div_svg = newBox.append('div').append('svg').attr('id', 'svg_discretization').attr('width', svg_w + margin.left + margin.right).attr('height', svg_h + margin.top + margin.bottom);
+  var div_svg = newBox.append('div').append('svg').attrs({
+    id: 'svg_discretization',
+    width: svg_w + margin.left + margin.right,
+    height: svg_h + margin.top + margin.bottom
+  });
 
   make_box_histo_option();
 
@@ -3648,12 +3649,11 @@ var display_discretization = function display_discretization(layer_name, field_n
 
   make_overlay_elements();
 
-  svg_histo.append('g').attr('class', 'x_axis').attr('transform', 'translate(0,' + height + ')').call(d3.axisBottom().scale(x).tickFormat(formatCount));
+  svg_histo.append('g').attrs({ class: 'x_axis', transform: 'translate(0,' + height + ')' }).call(d3.axisBottom().scale(x).tickFormat(formatCount));
 
   var b_accordion_colors = newBox.append('button').attrs({ class: 'accordion_disc active', id: 'btn_acc_disc_color' }).style('padding', '0 6px').html(i18next.t('disc_box.title_color_scheme'));
   var accordion_colors = newBox.append('div').attrs({ class: 'panel show', id: 'accordion_colors' }).style('width', '98%');
-  var color_scheme = accordion_colors // d3.select('#accordion_colors')
-  .append('div').attr('id', 'color_div').style('text-align', 'center');
+  var color_scheme = accordion_colors.append('div').attr('id', 'color_div').style('text-align', 'center');
 
   [[i18next.t('disc_box.sequential'), 'sequential'], [i18next.t('disc_box.diverging'), 'diverging']].forEach(function (el) {
     color_scheme.insert('label').style('margin', '20px').html(el[0]).insert('input').attrs({ type: 'radio', name: 'color_scheme', value: el[1], id: 'button_' + el[1] }).on('change', function () {
@@ -3703,7 +3703,10 @@ var display_discretization = function display_discretization(layer_name, field_n
   var accordion_breaks = newBox.append('div').attrs({ class: 'panel', id: 'accordion_breaks_vals' }).style('width', '98%');
   var user_defined_breaks = accordion_breaks.append('div').attr('id', 'user_breaks');
 
-  user_defined_breaks.insert('textarea').attr('id', 'user_breaks_area').attr('placeholder', i18next.t('app_page.common.expected_class')).style('width', '600px');
+  user_defined_breaks.insert('textarea').attrs({
+    id: 'user_breaks_area',
+    placeholder: i18next.t('app_page.common.expected_class')
+  }).style('width', '600px');
 
   user_defined_breaks.insert('button').text(i18next.t('app_page.common.valid')).on('click', function () {
     var old_nb_class = nb_class;
@@ -3718,7 +3721,7 @@ var display_discretization = function display_discretization(layer_name, field_n
     });
   });
 
-  accordionize('.accordion_disc', d3.select('#discretiz_charts').node());
+  accordionize('.accordion_disc', container);
 
   if (no_data > 0) {
     make_no_data_section();
@@ -3756,14 +3759,11 @@ var display_discretization = function display_discretization(layer_name, field_n
     user_break_list = options.breaks;
   }
 
-  console.log(redisplay);
-
   redisplay.compute().then(function (v) {
     if (v) redisplay.draw(options.colors);
   });
 
-  var deferred = Promise.pending(),
-      container = document.getElementById('discretiz_charts');
+  var deferred = Promise.pending();
 
   container.querySelector('.btn_ok').onclick = function () {
     breaks = breaks.map(function (i) {
@@ -4002,7 +4002,11 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
 
   ref_histo.append('p').attrs({ id: 'ref_histo_title' }).styles({ margin: 'auto', 'text-align': 'center' }).html('<b>' + i18next.t('disc_box.hist_ref_title') + '</b>');
 
-  var c = ref_histo.append('svg').attr('id', 'svg_ref_histo').attr('width', svg_w + m_margin.left + m_margin.right).attr('height', svg_h + m_margin.top + m_margin.bottom);
+  var c = ref_histo.append('svg').attrs({
+    id: 'svg_ref_histo',
+    width: svg_w + m_margin.left + m_margin.right,
+    height: svg_h + m_margin.top + m_margin.bottom
+  });
 
   var x = d3.scaleLinear().domain([serie.min(), serie.max()]).rangeRound([0, m_width]);
 
@@ -4024,14 +4028,15 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
           width: Math.abs(x(d.x1)) - Math.abs(x(d.x0)),
           height: m_height - y(d.length),
           x: 0,
-          transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')' };
+          transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')'
+        };
       }).styles({ fill: 'beige', stroke: 'black', 'stroke-width': '0.4px' });
 
-      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
+      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' }).style('text-anchor', 'end');
 
       svg_ref_histo.append('g').attr('class', 'y_axis').style('font-size', '10px').call(d3.axisLeft().scale(y).ticks(5).tickFormat(d3.format('.0f')));
     } else if (type === 'box_plot') {
-      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
+      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' }).style('text-anchor', 'end');
 
       var y_mid = (m_margin.top + m_height - m_margin.bottom) / 2;
 
@@ -4060,7 +4065,7 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
       for (var i = 0; i < 75; ++i) {
         simulation.tick();
       }
-      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attr('y', 4).attr('x', -4).attr('dy', '.45em').attr('transform', 'rotate(-40)').style('text-anchor', 'end');
+      svg_ref_histo.append('g').style('font-size', '10px').attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' }).call(d3.axisBottom().scale(x).ticks(4).tickFormat(formatCount)).selectAll('text').attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' }).style('text-anchor', 'end');
 
       var cell = svg_ref_histo.append('g').attr('class', 'cells').selectAll('g').data(d3.voronoi().extent([[0, 0], [m_width, m_height]]).x(function (d) {
         return d.x;
@@ -5244,7 +5249,7 @@ function render_twostocks_waffle(layer, rendering_params) {
   }
 
   var nb_features = result_data[layer_to_add].length;
-  var new_layer = map.insert('g', '.legend').attr('id', layer_id).attr('class', 'layer no_clip');
+  var new_layer = map.insert('g', '.legend').attrs({ id: layer_id, class: 'layer no_clip' });
 
   if (symbol_type === 'circle') {
     var r = rendering_params.size;
@@ -7466,7 +7471,7 @@ var render_discont = function render_discont() {
       math_max = Math.max,
       topo_to_use = _target_layer_file;
 
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
 
   // Discontinuity are computed in another thread to avoid blocking the ui
   // (a waiting message is displayed during this time to avoid action from the user)
@@ -7518,7 +7523,6 @@ var render_discont = function render_discont() {
       elem_data.properties.prop_val = p_size;
     }
 
-    document.getElementById('overlay').style.display = 'none';
     current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
       breaks: breaks,
@@ -7533,6 +7537,8 @@ var render_discont = function render_discont() {
       n_features: nb_ft
     };
     create_li_layer_elem(new_layer_name, nb_ft, ['Line', 'discont'], 'result');
+
+    _app.waitingOverlay.hide();
 
     {
       // Only display the 50% most important values :
@@ -7890,13 +7896,14 @@ function fillMenu_griddedMap(layer) {
 
   var b = dialog_content.append('p').attr('class', 'params_section2');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' }).html(i18next.t('app_page.func_options.grid.cellsize'));
-  b.insert('input').style('width', '100px').attrs({ type: 'number',
+  b.insert('input').style('width', '100px').property('value', 10.0).attrs({
+    type: 'number',
     class: 'params',
     id: 'Gridded_cellsize',
-    value: 10.0,
     min: 1.000,
     max: 7000,
-    step: 'any' });
+    step: 'any'
+  });
 
   var c = dialog_content.append('p').attr('class', 'params_section2');
   c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' }).html(i18next.t('app_page.func_options.grid.shape'));
@@ -8085,7 +8092,8 @@ function fillMenu_FlowMap() {
     class: 'params',
     min: 0.1,
     max: 100.0,
-    step: 'any' }).style('width', '50px');
+    step: 'any'
+  }).style('width', '50px');
   b.append('span').html(' (px)');
 
   var c = without_discretisation.append('p').attr('class', 'params_section2');
@@ -8589,6 +8597,53 @@ var isNumber = function isNumber(value) {
   return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
 };
 
+var createWaitingOverlay = function createWaitingOverlay() {
+  var bg = document.createElement('div');
+  bg.id = 'overlay';
+  bg.style.display = 'none';
+  bg.innerHTML = '\n<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">\n<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>\n<span style="z-index: 2;">...<br></span>\n<div class="spinner">\n  <div class="rect1"></div>\n  <div class="rect2"></div>\n  <div class="rect3"></div>\n  <div class="rect4"></div>\n  <div class="rect5"></div>\n</div>\n<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>';
+  var btn = document.createElement('button');
+  btn.style.fontSize = '13px';
+  btn.style.background = '#4b9cdb';
+  btn.style.border = '1px solid #298cda';
+  btn.style.fontWeight = 'bold';
+  btn.className = 'button_st3 i18n';
+  btn.setAttribute('data-i18n', '[html]app_page.common.cancel');
+  bg.appendChild(btn);
+  document.body.appendChild(bg);
+
+  btn.onclick = function () {
+    if (_app.xhr_to_cancel) {
+      _app.xhr_to_cancel.abort();
+      _app.xhr_to_cancel = undefined;
+    }
+    if (_app.webworker_to_cancel) {
+      _app.webworker_to_cancel.onmessage = null;
+      _app.webworker_to_cancel.terminate();
+      _app.webworker_to_cancel = undefined;
+    }
+    bg.style.display = 'none';
+  };
+  return {
+    display: function display() {
+      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      bg.style.display = '';
+      if (opts.cancel_button && opts.cancel_button === false) {
+        btn.style.display = 'none';
+      }
+      if (opts.zIndex) {
+        bg.style.zIndex = opts.zIndex;
+      }
+    },
+    hide: function hide() {
+      bg.style.display = 'none';
+      bg.style.zIndex = '';
+      btn.style.display = '';
+    }
+  };
+};
+
 var drag_elem_geo = d3.drag().subject(function () {
   var t = d3.select(this);
   return {
@@ -8770,7 +8825,7 @@ function request_data(method, url, data) {
 */
 function xhrequest(method, url, data, waitingMessage) {
   if (waitingMessage) {
-    document.getElementById('overlay').style.display = '';
+    _app.waitingOverlay.display();
   }
   return new Promise(function (resolve, reject) {
     var request = new XMLHttpRequest();
@@ -8780,14 +8835,14 @@ function xhrequest(method, url, data, waitingMessage) {
       resolve(resp.target.responseText);
       _app.xhr_to_cancel = undefined;
       if (waitingMessage) {
-        document.getElementById('overlay').style.display = 'none';
+        _app.waitingOverlay.hide();
       }
     };
     request.onerror = function (err) {
       reject(err);
       _app.xhr_to_cancel = undefined;
       if (waitingMessage) {
-        document.getElementById('overlay').style.display = 'none';
+        _app.waitingOverlay.hide();
       }
     };
     request.send(data);
@@ -9470,6 +9525,15 @@ function prepareFileExt(files_to_send) {
 function getCopyReversed(arr) {
   return arr.slice().reverse();
 }
+
+var isValidJSON = function isValidJSON(obj) {
+  try {
+    var a = JSON.parse(obj);
+    return [true, a];
+  } catch (e) {
+    return [false, e];
+  }
+};
 'use strict';
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
@@ -10146,6 +10210,8 @@ function scale_to_bbox(bbox) {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var MAX_INPUT_SIZE = 27300000;
 
 /**
@@ -10255,11 +10321,13 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       } else {
         var rd = new FileReader();
         rd.onloadend = function () {
-          var tmp = void 0;
-          try {
-            tmp = JSON.parse(rd.result);
-          } catch (e) {
-            console.log(e);
+          var _isValidJSON = isValidJSON(rd.result),
+              _isValidJSON2 = _slicedToArray(_isValidJSON, 2),
+              valid = _isValidJSON2[0],
+              tmp = _isValidJSON2[1];
+
+          if (!valid) {
+            console.log(tmp);
             return swal({
               title: i18next.t('app_page.common.error') + '!',
               text: i18next.t('app_page.common.alert_upload_invalid'),
@@ -11084,21 +11152,35 @@ function updateLayer(layer_name) {
   update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
 }
 
-// Add the TopoJSON to the 'svg' element :
+/**
+* Add a TopoJSON layer to the 'svg' element.
+*
+* @param {String} text - the text content to be parsed as a JS object.
+* @param {Object} url - options regarding the layer to be added (such as wether skipping
+*     the 'success' alert or not, which name to use for the layer, etc.).
+* @return {String} The actual name of the layer once added, or `undefined` if
+*     something went wrong.
+*/
 function add_layer_topojson(text) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-  var parsedJSON = void 0;
-  try {
-    parsedJSON = JSON.parse(text);
-  } catch (e) {
-    parsedJSON = { Error: 'Unable to load the layer' };
+  var _isValidJSON3 = isValidJSON(text),
+      _isValidJSON4 = _slicedToArray(_isValidJSON3, 2),
+      valid = _isValidJSON4[0],
+      parsedJSON = _isValidJSON4[1];
+  // If JSON.parse failed:
+
+
+  if (!valid) {
+    display_error_during_computation('Unable to load the layer');
+    return;
   }
+  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion:
   if (parsedJSON.Error) {
-    // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
     display_error_during_computation(parsedJSON.Error);
     return;
   }
+
   var result_layer_on_add = options.result_layer_on_add ? true : false,
       target_layer_on_add = options.target_layer_on_add ? true : false,
       skip_alert = options.skip_alert ? true : false,
@@ -11116,15 +11198,20 @@ function add_layer_topojson(text) {
   var type = void 0,
       _proj = void 0;
 
+  // We don't allow multiple layer to be added at the same time, so the TopoJSON
+  // file we are handling is supposed to only contains one layer. If it's not
+  // the case, a warning is displayed and only the first layer is added to the svg.
   if (layers_names.length > 1) {
     swal('', i18next.t('app_page.common.warning_multiple_layers'), 'warning');
   }
 
+  // Abort if the layer is empty (doesn't contains any feature)
   if (!topoObj_objects.geometries || topoObj_objects.geometries.length === 0) {
     display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
     return;
   }
 
+  // "Register" the layer name in the UI and it's corresponding id on the DOM :
   _app.layer_to_id.set(lyr_name_to_add, lyr_id);
   _app.id_to_layer.set(lyr_id, lyr_name_to_add);
 
@@ -11135,17 +11222,22 @@ function add_layer_topojson(text) {
     }
   }
 
+  // Abort if the layer doesn't contains any feature with a geometry type within
+  // "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"
   if (!type) {
     display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
     return;
   }
 
+  // Some special operations if this is the first layer to be added:
   if (_app.first_layer) {
+    // Remove the 'world' layout layer displayed when the application starts:
     remove_layer_cleanup('World');
     // const world_id = _app.layer_to_id.get('World');
     // const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
     // if (q) q.click();
-    // delete _app.first_layer;
+
+    // Read the projection information provided with the layer, if any:
     if (parsedJSON.proj) {
       try {
         _proj = proj4(parsedJSON.proj);
@@ -11154,6 +11246,7 @@ function add_layer_topojson(text) {
         console.log(e);
       }
     }
+    // delete _app.first_layer;
   }
 
   current_layers[lyr_name_to_add] = {
@@ -11353,6 +11446,7 @@ function add_layer_topojson(text) {
 *  Get the bounding box (in map/svg coordinates) of a layer using path.bounds()
 *
 *  @param {string} name - The name of layer
+*  @return {Array} The bbox [[xmin, ymin], [xmax, ymax]] of the layer.
 */
 function get_bbox_layer_path(name) {
   var selec = svg_map.querySelector('#' + _app.layer_to_id.get(name)).childNodes;
@@ -11383,7 +11477,7 @@ function get_bbox_layer_path(name) {
 * Redraw the path from all the current layers to reflect the change.
 *
 * @param {string} name - The name of layer to scale on
-* @return {undefined}
+* @return {void}
 */
 function scale_to_lyr(name) {
   var bbox_layer_path = get_bbox_layer_path(name);
@@ -11400,7 +11494,7 @@ function scale_to_lyr(name) {
 * Projection properties stay unchanged.
 *
 * @param {string} name - The name of layer to zoom on
-* @return {undefined}
+* @return {void}
 */
 function center_map(name) {
   var bbox_layer_path = get_bbox_layer_path(name);
@@ -11421,6 +11515,13 @@ function fitLayer(layer_name) {
   return [s, t];
 }
 
+/**
+* Helper function called when a new 'Sphere' layer is added, in order to put it
+* on the bottom of the other layer on the map.
+*
+* @param {string} sphere_id - The DOM id of the sphere.
+* @return {void}
+*/
 function setSphereBottom(sphere_id) {
   var layers_list = document.querySelector('.layer_list');
   layers_list.appendChild(layers_list.childNodes[0]);
@@ -11635,6 +11736,11 @@ function add_single_symbol(symbol_dataurl, x, y) {
   }).call(drag_elem_geo);
 }
 
+/**
+* Function to display the dialog allowing the choose and add layout layer(s).
+*
+* @return {void}
+*/
 function add_layout_layers() {
   check_remove_existing_box('.sampleLayoutDialogBox');
   var layout_layers = [[i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'], [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'], [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'], [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'], [i18next.t('app_page.layout_layer_box.quartier_paris'), 'quartier_paris'], [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'], [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'], [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'], [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'], [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'], [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'], [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'], [i18next.t('app_page.layout_layer_box.tissot'), 'tissot']];
@@ -11668,6 +11774,11 @@ function add_layout_layers() {
   box_body.append('span').style('font-size', '0.65rem').html(i18next.t('app_page.layout_layer_box.disclamer_nuts'));
 }
 
+/**
+* Function to display the dialog allowing the choose and add a sample target layer.
+*
+* @return {void}
+*/
 function add_sample_layer() {
   var prepare_extra_dataset_availables = function prepare_extra_dataset_availables() {
     request_data('GET', 'extrabasemaps').then(function (result) {
@@ -11767,6 +11878,12 @@ function add_sample_layer() {
   make_panel1();
 }
 
+/**
+* Helper function to add the 'world' layer (notably added) when the application
+* is started.
+*
+* @return {void}
+*/
 function add_simplified_land_layer() {
   var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -12405,7 +12522,7 @@ function prepare_join_on(layer_name, field1, field2) {
     return swal('', i18next.t('app_page.join_box.error_not_uniques'), 'warning');
   }
   if (nb_features > 5000) {
-    document.getElementById('overlay').style.display = '';
+    _app.waitingOverlay.display();
     var jointure_worker = new Worker('static/js/webworker_jointure.js');
     _app.webworker_to_cancel = jointure_worker;
     jointure_worker.postMessage([join_values1, join_values2]);
@@ -12417,7 +12534,7 @@ function prepare_join_on(layer_name, field1, field2) {
       _app.webworker_to_cancel = undefined;
       hits = _hits;
       field_join_map = join_map;
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       valid_join_on(layer_name, join_values1, join_values2, field1, field2, hits).then(function (valid) {
         jointure_worker.terminate();
         if (valid) make_box_type_fields(layer_name);
@@ -12565,7 +12682,7 @@ function make_single_color_menu(layer, fill_prev) {
       last_color = fill_prev && fill_prev.single ? fill_prev.single : '#FFF';
   var block = fill_color_section.insert('p');
   block.insert('span').html(i18next.t('app_page.layer_style_popup.fill_color'));
-  block.insert('input').style('float', 'right').attrs({ type: 'color', value: last_color }).on('change', function () {
+  block.insert('input').attr('type', 'color').property('value', last_color).style('float', 'right').on('change', function () {
     map.select(g_lyr_name).selectAll(symbol).transition().style('fill', this.value);
     current_layers[layer].fill_color = { single: this.value };
   });
@@ -12712,7 +12829,7 @@ function createStyleBoxTypoSymbols(layer_name) {
 
   var size_section = popup.append('p');
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.symbols_size'));
-  size_section.append('input').attrs({ min: 0, max: 200, step: 'any', value: 32, type: 'number' }).styles({ width: '60px', margin: 'auto' }).on('change', function () {
+  size_section.append('input').property('value', 32).attrs({ min: 0, max: 200, step: 'any', type: 'number' }).styles({ width: '60px', margin: 'auto' }).on('change', function () {
     var value = this.value;
     selection.transition().attrs(function () {
       var current_size = this.height.baseVal.value;
@@ -12828,15 +12945,15 @@ function createStyleBoxLabel(layer_name) {
     });
   });
 
-  popup.append('p').style('text-align', 'center').insert('button').attr('id', 'reset_labels_display').attr('class', 'button_st4').text(i18next.t('app_page.layer_style_popup.redraw_labels')).on('click', function () {
+  popup.append('p').style('text-align', 'center').insert('button').attrs({ id: 'reset_labels_display', class: 'button_st4' }).text(i18next.t('app_page.layer_style_popup.redraw_labels')).on('click', function () {
     selection.style('display', undefined);
   });
 
-  popup.insert('p').style('text-align', 'center').style('font-size', '9px').html(i18next.t('app_page.layer_style_popup.overrride_warning'));
+  popup.insert('p').styles({ 'text-align': 'center', 'font-size': '9px' }).html(i18next.t('app_page.layer_style_popup.overrride_warning'));
   var label_sizes = popup.append('p').attr('class', 'line_elem');
   label_sizes.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_size'));
   label_sizes.insert('span').style('float', 'right').html(' px');
-  label_sizes.insert('input').styles({ float: 'right', width: '70px' }).attr('type', 'number').attr('value', +current_layers[layer_name].default_size.replace('px', '')).on('change', function () {
+  label_sizes.insert('input').attr('type', 'number').styles({ float: 'right', width: '70px' }).property('value', +current_layers[layer_name].default_size.replace('px', '')).on('change', function () {
     var size = this.value + 'px';
     current_layers[layer_name].default_size = size;
     selection.style('font-size', size);
@@ -12844,7 +12961,7 @@ function createStyleBoxLabel(layer_name) {
 
   var default_color = popup.insert('p').attr('class', 'line_elem');
   default_color.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_color'));
-  default_color.insert('input').style('float', 'right').attrs({ type: 'color', value: current_layers[layer_name].fill_color }).on('change', function () {
+  default_color.insert('input').attr('type', 'color').style('float', 'right').property('value', current_layers[layer_name].fill_color).on('change', function () {
     current_layers[layer_name].fill_color = this.value;
     selection.transition().style('fill', this.value);
   });
@@ -12886,14 +13003,14 @@ function createStyleBoxGraticule(layer_name) {
 
   var color_choice = popup.append('p').attr('class', 'line_elem');
   color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
-  color_choice.append('input').style('float', 'right').attrs({ type: 'color', value: current_params.fill_color.single }).on('change', function () {
+  color_choice.append('input').attr('type', 'color').property('value', current_params.fill_color.single).style('float', 'right').on('change', function () {
     selection.style('stroke', this.value);
     current_layers.Graticule.fill_color.single = this.value;
   });
 
   var opacity_choice = popup.append('p').attr('class', 'line_elem');
   opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
-  opacity_choice.append('input').attrs({ type: 'range', value: current_params.opacity, min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  opacity_choice.append('input').property('value', current_params.opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-opacity', this.value);
     current_layers.Graticule.opacity = +this.value;
     popup.select('#graticule_opacity_txt').html(+this.value * 100 + '%');
@@ -12902,14 +13019,14 @@ function createStyleBoxGraticule(layer_name) {
 
   var stroke_width_choice = popup.append('p').attr('class', 'line_elem');
   stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
-  stroke_width_choice.append('input').attrs({ type: 'number', value: current_params['stroke-width-const'] }).styles({ width: '60px', float: 'right' }).on('change', function () {
+  stroke_width_choice.append('input').attr('type', 'number').property('value', current_params['stroke-width-const']).styles({ width: '60px', float: 'right' }).on('change', function () {
     selection_strokeW.style('stroke-width', this.value);
     current_layers.Graticule['stroke-width-const'] = +this.value;
   });
 
   var steps_choice = popup.append('p').attr('class', 'line_elem');
   steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
-  steps_choice.append('input').attrs({ id: 'graticule_range_steps', type: 'range', value: current_params.step, min: 0, max: 100, step: 1 }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
+  steps_choice.append('input').property('value', current_params.step).attrs({ id: 'graticule_range_steps', type: 'range', min: 0, max: 100, step: 1 }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
     var next_layer = selection_strokeW.node().nextSibling;
     var step_val = +this.value;
     var dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
@@ -12920,9 +13037,9 @@ function createStyleBoxGraticule(layer_name) {
     selection = map.select('#L_Graticule').selectAll('path');
     selection_strokeW = map.select('#L_Graticule');
     svg_map.insertBefore(selection_strokeW.node(), next_layer);
-    popup.select('#graticule_step_txt').attr('value', step_val);
+    popup.select('#graticule_step_txt').property('value', step_val);
   });
-  steps_choice.append('input').attrs({ type: 'number', value: current_params.step, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+  steps_choice.append('input').property('value', current_params.step).attrs({ type: 'number', min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
     var grat_range = document.getElementById('graticule_range_steps');
     grat_range.value = +this.value;
     grat_range.dispatchEvent(new MouseEvent('change'));
@@ -12930,12 +13047,12 @@ function createStyleBoxGraticule(layer_name) {
 
   var dasharray_choice = popup.append('p').attr('class', 'line_elem');
   dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
-  dasharray_choice.append('input').attrs({ type: 'range', value: current_params.dasharray, min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
+  dasharray_choice.append('input').property('value', current_params.dasharray).attrs({ type: 'range', min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' }).styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-dasharray', this.value);
     current_layers.Graticule.dasharray = +this.value;
-    popup.select('#graticule_dasharray_txt').attr('value', this.value);
+    popup.select('#graticule_dasharray_txt').property('value', this.value);
   });
-  dasharray_choice.append('input').attrs({ type: 'number', value: current_params.dasharray, min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
+  dasharray_choice.append('input').property('value', current_params.dasharray).attrs({ type: 'number', min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).on('change', function () {
     var grat_range = document.getElementById('graticule_range_dasharray');
     grat_range.value = +this.value;
     grat_range.dispatchEvent(new MouseEvent('change'));
@@ -13230,7 +13347,7 @@ function createStyleBox_Line(layer_name) {
   } else {
     var c_section = popup.append('p').attr('class', 'line_elem');
     c_section.insert('span').html(i18next.t('app_page.layer_style_popup.color'));
-    c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+    c_section.insert('input').attr('type', 'color').property('value', stroke_prev).style('float', 'right').on('change', function () {
       selection.style('stroke', this.value);
       current_layers[layer_name].fill_color = { single: this.value };
       // current_layers[layer_name].fill_color.single = this.value;
@@ -13249,7 +13366,7 @@ function createStyleBox_Line(layer_name) {
     threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
     // The legend will be updated in order to start on the minimum value displayed instead of
     //   using the minimum value of the serie (skipping unused class if necessary)
-    threshold_section.insert('input').attrs({ type: 'range', min: 0, max: max_val, step: 0.5, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+    threshold_section.insert('input').property('value', prev_min_display).attrs({ type: 'range', min: 0, max: max_val, step: 0.5 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
       var val = +this.value;
       popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
       selection.style('display', function (d) {
@@ -13285,7 +13402,7 @@ function createStyleBox_Line(layer_name) {
     }));
     var disc_part = popup.append('p').attr('class', 'line_elem');
     disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
-    disc_part.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: prev_min_display }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+    disc_part.insert('input').property('value', prev_min_display).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
       var val = +this.value;
       var lim = val !== 0 ? val * current_layers[layer_name].n_features : -1;
       popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
@@ -13318,7 +13435,7 @@ function createStyleBox_Line(layer_name) {
 
   var opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.opacity'));
-  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  opacity_section.insert('input').property('value', border_opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     opacity_section.select('#opacity_val_txt').html(' ' + this.value);
     selection.style('stroke-opacity', this.value);
   });
@@ -13328,7 +13445,7 @@ function createStyleBox_Line(layer_name) {
   if (!renderer || !renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer') {
     var width_section = popup.append('p');
     width_section.append('span').html(i18next.t('app_page.layer_style_popup.width'));
-    width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+    width_section.insert('input').property('value', stroke_width).attrs({ type: 'number', min: 0, step: 0.1 }).styles({ width: '60px', float: 'right' }).on('change', function () {
       var val = +this.value;
       var zoom_scale = +d3.zoomTransform(map.node()).k;
       map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
@@ -13342,7 +13459,7 @@ function createStyleBox_Line(layer_name) {
     var prop_val_content = popup.append('p');
     prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
     prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
-    prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
+    prop_val_content.insert('input').property('value', current_layers[layer_name].size[1]).styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' }).on('change', function () {
       var f_size = +this.value;
       var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
       current_layers[layer_name].size[1] = f_size;
@@ -13352,7 +13469,7 @@ function createStyleBox_Line(layer_name) {
 
     var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
     prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
-    prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
+    prop_val_content2.insert('input').property('value', +current_layers[layer_name].size[0]).styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1 }).on('change', function () {
       var f_val = +this.value;
       var prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
       redraw_prop_val(prop_values);
@@ -13489,12 +13606,12 @@ function createStyleBox(layer_name) {
     current_pt_size = current_layers[layer_name].pointRadius;
     var pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
-    pt_size.append('input').attrs({ type: 'range', min: 0, max: 80, value: current_pt_size, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+    pt_size.append('input').property('value', current_pt_size).attrs({ type: 'range', min: 0, max: 80, id: 'point_radius_size' }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
       current_pt_size = +this.value;
       document.getElementById('point_radius_size_txt').value = current_pt_size;
       selection.attr('d', path.pointRadius(current_pt_size));
     });
-    pt_size.append('input').attrs({ type: 'number', value: +current_pt_size, min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).property('value', +current_pt_size).on('change', function () {
+    pt_size.append('input').attrs({ type: 'number', min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' }).styles({ width: '30px', 'margin-left': '10px', float: 'right' }).property('value', +current_pt_size).on('change', function () {
       var pt_size_range = document.getElementById('point_radius_size');
       var old_value = pt_size_range.value;
       if (this.value === '' || isNaN(+this.value)) {
@@ -13617,7 +13734,7 @@ function createStyleBox(layer_name) {
 
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
-  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+  fill_opacity_section.insert('input').property('value', opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
     selection.style('fill-opacity', this.value);
     fill_opacity_section.select('#fill_opacity_txt').html(this.value * 100 + '%');
   });
@@ -13625,13 +13742,13 @@ function createStyleBox(layer_name) {
 
   var c_section = popup.append('p').attr('class', 'line_elem');
   c_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_color'));
-  c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+  c_section.insert('input').attr('type', 'color').property(stroke_prev).style('float', 'right').on('change', function () {
     selection.style('stroke', this.value);
   });
 
   var opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
-  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  opacity_section.insert('input').property('value', border_opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     opacity_section.select('#opacity_val_txt').html(' ' + this.value);
     selection.style('stroke-opacity', this.value);
   });
@@ -13640,7 +13757,7 @@ function createStyleBox(layer_name) {
 
   var width_section = popup.append('p');
   width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
-  width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+  width_section.insert('input').property('value', stroke_width).attrs({ type: 'number', min: 0, step: 0.1 }).styles({ width: '60px', float: 'right' }).on('change', function () {
     var val = +this.value;
     var zoom_scale = +d3.zoomTransform(map.node()).k;
     map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
@@ -13760,7 +13877,7 @@ function createStyleBoxStewart(layer_name) {
 
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
-  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
+  fill_opacity_section.insert('input').property('value', opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' }).on('change', function () {
     selection.style('fill-opacity', this.value);
     fill_opacity_section.select('#fill_opacity_txt').html(this.value * 100 + '%');
   });
@@ -13768,13 +13885,13 @@ function createStyleBoxStewart(layer_name) {
 
   var c_section = popup.append('p').attr('class', 'line_elem');
   c_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_color'));
-  c_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+  c_section.insert('input').attr('type', 'color').property('value', stroke_prev).style('float', 'right').on('change', function () {
     selection.style('stroke', this.value);
   });
 
   var opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
-  opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  opacity_section.insert('input').property('value', 'border_opacity').attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     opacity_section.select('#opacity_val_txt').html(' ' + this.value);
     selection.style('stroke-opacity', this.value);
   });
@@ -13783,7 +13900,7 @@ function createStyleBoxStewart(layer_name) {
 
   var width_section = popup.append('p');
   width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
-  width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+  width_section.insert('input').property('value', stroke_width).attrs({ type: 'number', min: 0, step: 0.1 }).styles({ width: '60px', float: 'right' }).on('change', function () {
     var val = +this.value;
     var zoom_scale = +d3.zoomTransform(map.node()).k;
     map.select(g_lyr_name).style('stroke-width', val / zoom_scale + 'px');
@@ -13793,7 +13910,8 @@ function createStyleBoxStewart(layer_name) {
   var shadow_section = popup.append('p');
   var chkbx = shadow_section.insert('input').style('margin', '0').property('checked', map.select(g_lyr_name).attr('filter') ? true : null).attrs({
     type: 'checkbox',
-    id: 'checkbox_shadow_layer' });
+    id: 'checkbox_shadow_layer'
+  });
   shadow_section.insert('label').attr('for', 'checkbox_shadow_layer').html(i18next.t('app_page.layer_style_popup.layer_shadow'));
   chkbx.on('change', function () {
     if (this.checked) {
@@ -13862,8 +13980,6 @@ function make_generate_labels_section(parent_node, layer_name) {
         allowOutsideClick: false,
         confirmButtonColor: '#DD6B55',
         confirmButtonText: i18next.t('app_page.common.confirm'),
-        // input: 'select',
-        // inputPlaceholder: i18next.t('app_page.common.field'),
         inputOptions: input_fields,
         onOpen: function onOpen() {
           var sel = d3.select('#label_box_field');
@@ -13991,7 +14107,7 @@ function createStyleBoxWaffle(layer_name) {
   var fill_opacity_section = popup.append('p').attr('class', 'line_elem').attr('id', 'fill_color_section');
 
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
-  fill_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: previous_params.fill_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  fill_opacity_section.insert('input').property('value', previous_params.fill_opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.selectAll(symbol).style('fill-opacity', +this.value);
     fill_opacity_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
   });
@@ -14004,7 +14120,7 @@ function createStyleBoxWaffle(layer_name) {
   var _loop = function _loop(i) {
     var p = ref_colors_section.append('p').style('margin', '15px 5px');
     p.append('span').html(current_layers[layer_name].rendered_field[i]);
-    p.insert('input').attr('type', 'color').attr('id', i).attr('value', current_layers[layer_name].fill_color[i]).style('float', 'right').on('change', function () {
+    p.insert('input').attrs({ id: i, type: 'color' }).property('value', current_layers[layer_name].fill_color[i]).style('float', 'right').on('change', function () {
       // eslint-disable-line no-loop-func
       var col = rgb2hex(this.value);
       var to_replace = current_layers[layer_name].fill_color[i];
@@ -14024,7 +14140,7 @@ function createStyleBoxWaffle(layer_name) {
   var size_section = popup.append('p').attr('class', 'line_elem').attr('id', 'size_section').style('clear', 'both');
 
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
-  size_section.insert('input').attrs({ type: 'range', min: 1, max: 40, step: 1, value: previous_params.size }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  size_section.insert('input').property('value', previous_params.size).attrs({ type: 'range', min: 1, max: 40, step: 1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     var val = +this.value;
     var nCol = current_layers[layer_name].nCol;
     current_layers[layer_name].size = val;
@@ -14050,7 +14166,7 @@ function createStyleBoxWaffle(layer_name) {
   var width_row_section = popup.append('p').attr('class', 'line_elem').attr('id', 'width_row_section');
 
   width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
-  width_row_section.insert('input').attrs({ type: 'range', min: 1, max: 10, step: 1, value: previous_params.nCol }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  width_row_section.insert('input').property('value', previous_params.nCol).attrs({ type: 'range', min: 1, max: 10, step: 1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     var val = +this.value;
     var size = current_layers[layer_name].size;
     current_layers[layer_name].nCol = val;
@@ -14280,7 +14396,7 @@ function createStyleBox_ProbSymbol(layer_name) {
     var fill_color_section = popup.append('div').attr('id', 'fill_color_section');
     fill_color_section.append('p').style('text-align', 'center').html(i18next.t('app_page.layer_style_popup.color_break'));
     var p2 = fill_color_section.append('p').style('display', 'inline');
-    var col1 = p2.insert('input').attr('type', 'color').attr('id', 'col1').attr('value', current_layers[layer_name].fill_color.two[0]).on('change', function () {
+    var col1 = p2.insert('input').attrs({ id: 'col1', type: 'color' }).property('value', current_layers[layer_name].fill_color.two[0]).on('change', function () {
       var _this = this;
 
       var new_break_val = +b_val.node().value;
@@ -14289,7 +14405,7 @@ function createStyleBox_ProbSymbol(layer_name) {
         return d_values[i] > new_break_val ? col2.node().value : _this.value;
       });
     });
-    var col2 = p2.insert('input').attr('type', 'color').attr('id', 'col2').attr('value', current_layers[layer_name].fill_color.two[1]).on('change', function () {
+    var col2 = p2.insert('input').attrs({ id: 'col2', type: 'color' }).property('value', current_layers[layer_name].fill_color.two[1]).on('change', function () {
       var _this2 = this;
 
       var new_break_val = +b_val.node().value;
@@ -14299,7 +14415,7 @@ function createStyleBox_ProbSymbol(layer_name) {
       });
     });
     fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.break_value'));
-    var b_val = fill_color_section.insert('input').attrs({ type: 'number', value: current_layers[layer_name].break_val }).style('width', '75px').on('change', function () {
+    var b_val = fill_color_section.insert('input').attr('type', 'number').property('value', current_layers[layer_name].break_val).style('width', '75px').on('change', function () {
       var new_break_val = +this.value;
       current_layers[layer_name].break_val = new_break_val;
       selection.transition().style('fill', function (d, i) {
@@ -14359,7 +14475,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   var fill_opct_section = popup.append('p').attr('class', 'line_elem');
   fill_opct_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
 
-  fill_opct_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  fill_opct_section.insert('input').property('value', opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('fill-opacity', this.value);
     fill_opct_section.select('#fill_opacity_txt').html(+this.value * 100 + '%');
   });
@@ -14368,14 +14484,14 @@ function createStyleBox_ProbSymbol(layer_name) {
 
   var border_color_section = popup.append('p').attr('class', 'line_elem');
   border_color_section.append('span').html(i18next.t('app_page.layer_style_popup.border_color'));
-  border_color_section.insert('input').attrs({ type: 'color', value: stroke_prev }).style('float', 'right').on('change', function () {
+  border_color_section.insert('input').attr('type', 'color').property('value', stroke_prev).style('float', 'right').on('change', function () {
     selection.transition().style('stroke', this.value);
   });
 
   var border_opacity_section = popup.append('p');
   border_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
 
-  border_opacity_section.insert('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1, value: border_opacity }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
+  border_opacity_section.insert('input').property('value', border_opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-opacity', this.value);
     border_opacity_section.select('#border_opacity_txt').html(+this.value * 100 + '%');
   });
@@ -14384,7 +14500,7 @@ function createStyleBox_ProbSymbol(layer_name) {
 
   var border_width_section = popup.append('p').attr('class', 'line_elem');
   border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
-  border_width_section.insert('input').attrs({ type: 'number', min: 0, step: 0.1, value: stroke_width }).styles({ width: '60px', float: 'right' }).on('change', function () {
+  border_width_section.insert('input').property('value', stroke_width).attrs({ type: 'number', min: 0, step: 0.1 }).styles({ width: '60px', float: 'right' }).on('change', function () {
     selection.style('stroke-width', this.value + 'px');
     current_layers[layer_name]['stroke-width-const'] = +this.value;
   });
@@ -14392,7 +14508,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   var prop_val_content = popup.append('p');
   prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: field_used }));
   prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
-  prop_val_content.insert('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any', value: current_layers[layer_name].size[1] }).on('change', function () {
+  prop_val_content.insert('input').property('value', current_layers[layer_name].size[1]).styles({ width: '60px', float: 'right' }).attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' }).on('change', function () {
     var f_size = +this.value;
     var prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, type_symbol);
     current_layers[layer_name].size[1] = f_size;
@@ -14402,7 +14518,7 @@ function createStyleBox_ProbSymbol(layer_name) {
 
   var prop_val_content2 = popup.append('p').attr('class', 'line_elem');
   prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
-  prop_val_content2.insert('input').styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1, value: +current_layers[layer_name].size[0] }).on('change', function () {
+  prop_val_content2.insert('input').property('value', +current_layers[layer_name].size[0]).styles({ width: '100px', float: 'right' }).attrs({ type: 'number', min: 0.1, step: 0.1 }).on('change', function () {
     var f_val = +this.value;
     var prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], type_symbol);
     redraw_prop_val(prop_values);
@@ -14412,7 +14528,8 @@ function createStyleBox_ProbSymbol(layer_name) {
   var allow_move_section = popup.append('p');
   var chkbx = allow_move_section.insert('input').style('margin', '0').property('checked', current_layers[layer_name].draggable ? true : null).attrs({
     type: 'checkbox',
-    id: 'checkbox_move_symbol' });
+    id: 'checkbox_move_symbol'
+  });
   allow_move_section.insert('label').attr('for', 'checkbox_move_symbol').html(i18next.t('app_page.layer_style_popup.let_draggable'));
   chkbx.on('change', function () {
     if (this.checked) {
@@ -14471,17 +14588,17 @@ function make_style_box_indiv_label(label_node) {
   var box_content = d3.select('.styleTextAnnotation').select('.modal-content').style('width', '300px').select('.modal-body').insert('div');
   var a = box_content.append('p').attr('class', 'line_elem');
   a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
-  a.append('input').attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any', value: +label_node.style.fontSize.slice(0, -2) }).styles({ width: '70px', float: 'right' }).on('change', function () {
+  a.append('input').property('value', +label_node.style.fontSize.slice(0, -2)).attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any' }).styles({ width: '70px', float: 'right' }).on('change', function () {
     label_node.style.fontSize = this.value + 'px'; // eslint-disable-line no-param-reassign
   });
   var b = box_content.append('p').attr('class', 'line_elem');
   b.insert('span').html(i18next.t('app_page.func_options.label.content'));
-  b.append('input').attrs({ value: label_node.textContent, id: 'label_content' }).styles({ width: '70px', float: 'right' }).on('keyup', function () {
+  b.append('input').attr('id', 'label_content').property('value', label_node.textContent).styles({ width: '70px', float: 'right' }).on('keyup', function () {
     label_node.textContent = this.value; // eslint-disable-line no-param-reassign
   });
   var c = box_content.append('p').attr('class', 'line_elem');
   c.insert('span').html(i18next.t('app_page.func_options.common.color'));
-  c.append('input').attrs({ type: 'color', value: rgb2hex(label_node.style.fill), id: 'label_color' }).styles({ width: '70px', float: 'right' }).on('change', function () {
+  c.append('input').property('value', rgb2hex(label_node.style.fill)).attrs({ type: 'color', id: 'label_color' }).styles({ width: '70px', float: 'right' }).on('change', function () {
     label_node.style.fill = this.value; // eslint-disable-line no-param-reassign
   });
   var d = box_content.append('p').attr('class', 'line_elem');
@@ -14604,15 +14721,14 @@ var UserArrow = function () {
     this.drag_behavior = d3.drag().subject(function () {
       // let snap_lines = get_coords_snap_lines(this.id + this.className);
       var t = d3.select(this.querySelector('line'));
-      return { x: +t.attr('x2') - +t.attr('x1'),
+      return {
+        x: +t.attr('x2') - +t.attr('x1'),
         y: +t.attr('y2') - +t.attr('y1'),
         x1: t.attr('x1'),
         x2: t.attr('x2'),
         y1: t.attr('y1'),
         y2: t.attr('y2'),
-        map_locked: !!map_div.select('#hand_button').classed('locked')
-        //  , snap_lines: snap_lines
-      };
+        map_locked: !!map_div.select('#hand_button').classed('locked') };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
       handle_click_hand('lock');
@@ -14681,13 +14797,15 @@ var UserArrow = function () {
   _createClass(UserArrow, [{
     key: 'add_defs_marker',
     value: function add_defs_marker() {
-      defs.append('marker').attrs({ id: 'arrow_head',
+      defs.append('marker').attrs({
+        id: 'arrow_head',
         viewBox: '0 -5 10 10',
         refX: 5,
         refY: 0,
         orient: 'auto',
         markerWidth: 4,
-        markerHeight: 4 }).style('stroke-width', 1).append('path').attr('d', 'M0,-5L10,0L0,5').attr('class', 'arrowHead');
+        markerHeight: 4
+      }).style('stroke-width', 1).append('path').attrs({ d: 'M0,-5L10,0L0,5', class: 'arrowHead' });
       if (this.parent.childNodes[0].tagName !== 'defs') {
         this.parent.insertBefore(defs.node(), this.parent.childNodes[0]);
       }
@@ -15077,7 +15195,7 @@ var Textbox = function () {
       var split = new_content.split('\n');
       this.textAnnot.selectAll('tspan').remove();
       for (var i = 0; i < split.length; i++) {
-        this.textAnnot.append('tspan').attr('x', this.x).attr('dy', i === 0 ? null : this.lineHeight).html(split[i]);
+        this.textAnnot.append('tspan').attrs({ x: this.x, dy: i === 0 ? null : this.lineHeight }).html(split[i]);
       }
       this.update_bbox();
     }
@@ -15101,10 +15219,12 @@ var Textbox = function () {
 
       this.width = bbox.width;
       this.height = bbox.height;
-      this.group.select('rect').attrs({ x: bbox.left - x0 - 10,
+      this.group.select('rect').attrs({
+        x: bbox.left - x0 - 10,
         y: bbox.top - y0 - 10,
         height: this.height + 20,
-        width: this.width + 20 });
+        width: this.width + 20
+      });
     }
   }, {
     key: 'updateLineHeight',
@@ -15351,7 +15471,7 @@ var scaleBar = {
     //   }).then(() => { null; }, () => { null; });
     //   return;
     // }
-    var scale_gp = map.append('g').attr('id', 'scale_bar').attr('class', 'legend scale'),
+    var scale_gp = map.append('g').attrs({ id: 'scale_bar', class: 'legend scale' }),
         x_pos = 40,
         y_pos = h - 100,
         bar_size = 50,
@@ -15381,8 +15501,8 @@ var scaleBar = {
 
     var scale_context_menu = new ContextMenu();
     this.under_rect = scale_gp.insert('rect').attrs({ x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: 'under_rect' }).styles({ fill: 'green', 'fill-opacity': 0 });
-    scale_gp.insert('rect').attr('id', 'rect_scale').attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style('fill', 'black');
-    scale_gp.insert('text').attr('id', 'text_limit_sup_scale').attrs({ x: x_pos + bar_size, y: y_pos - 5 }).styles({
+    scale_gp.insert('rect').attrs({ id: 'rect_scale', x: x_pos, y: y_pos, height: 2, width: this.bar_size }).style('fill', 'black');
+    scale_gp.insert('text').attrs({ id: 'text_limit_sup_scale', x: x_pos + bar_size, y: y_pos - 5 }).styles({
       'font-family': 'verdana',
       'font-size': '11px',
       'text-anchor': 'middle'
@@ -15749,22 +15869,28 @@ var northArrow = {
     var b = box_body.append('p').attr('class', 'line_elem2');
     b.append('span').html(i18next.t('app_page.north_arrow_edit_box.rotation'));
     b.append('span').style('float', 'right').html(' °');
-    b.append('input').attrs({ type: 'number',
+    b.append('input').attrs({
+      type: 'number',
       min: 0,
       max: 360,
       step: 'any',
       value: old_rotate,
       class: 'without_spinner',
-      id: 'txt_rotate_n_arrow' }).styles({ float: 'right', width: '40px' }).on('change', function () {
+      id: 'txt_rotate_n_arrow'
+    }).styles({ float: 'right', width: '40px' }).on('change', function () {
       var rotate_value = +this.value;
-      self.svg_node.attr('rotate', rotate_value);
-      self.svg_node.attr('transform', 'rotate(' + [rotate_value, self.x_center, self.y_center] + ')');
+      self.svg_node.attrs({
+        rotate: rotate_value,
+        transform: 'rotate(' + [rotate_value, self.x_center, self.y_center] + ')'
+      });
       document.getElementById('range_rotate_n_arrow').value = rotate_value;
     });
     b.append('input').attrs({ type: 'range', min: 0, max: 360, step: 0.1, id: 'range_rotate_n_arrow', value: old_rotate }).styles({ 'vertical-align': 'middle', width: '140px', float: 'right' }).on('change', function () {
       var rotate_value = +this.value;
-      self.svg_node.attr('rotate', rotate_value);
-      self.svg_node.attr('transform', 'rotate(' + [rotate_value, self.x_center, self.y_center] + ')');
+      self.svg_node.attrs({
+        rotate: rotate_value,
+        transform: 'rotate(' + [rotate_value, self.x_center, self.y_center] + ')'
+      });
       document.getElementById('txt_rotate_n_arrow').value = rotate_value;
     });
   },
@@ -15804,7 +15930,6 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
-        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -16328,7 +16453,14 @@ var UserEllipse = function () {
         cleanup_edit_state();
       });
 
-      var tmp_start_point = edit_layer.append('rect').attr('id', 'pt1').attr('class', 'ctrl_pt').attr('x', (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4).attr('y', self.pt1[1] * zoom_param.k + zoom_param.y - 4).attr('height', 8).attr('width', 8).call(d3.drag().on('drag', function () {
+      var tmp_start_point = edit_layer.append('rect').attrs({
+        id: 'pt1',
+        class: 'ctrl_pt',
+        height: 8,
+        width: 8,
+        x: (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4,
+        y: self.pt1[1] * zoom_param.k + zoom_param.y - 4
+      }).call(d3.drag().on('drag', function () {
         var t = d3.select(this);
         t.attr('x', d3.event.x - 4);
         var dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
@@ -16789,17 +16921,17 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').styles({
+  legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-weight': 'bold'
-  }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  }).text(title || '');
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
+  legend_root.insert('text').attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-style': 'italic'
-  }).attrs({ x: xpos + space_elem, y: ypos + 15 });
+  }).text(subtitle);
 
   var ref_symbols_params = [];
 
@@ -16858,11 +16990,15 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     return round_value(d.value[1], rounding_precision).toLocaleString();
   });
 
-  legend_root.insert('text').attr('id', 'lgd_choro_min_val').attr('x', x_text_pos).attr('y', tmp_pos + boxgap).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(round_value(ref_symbols_params[ref_symbols_params.length - 1].value[0], rounding_precision).toLocaleString());
+  legend_root.insert('text').attrs({ id: 'lgd_choro_min_val', x: x_text_pos, y: tmp_pos + boxgap }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(round_value(ref_symbols_params[ref_symbols_params.length - 1].value[0], rounding_precision).toLocaleString());
 
   legend_root.call(drag_legend_func(legend_root));
 
-  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).styles({
+  legend_root.append('g').insert('text').attrs({
+    id: 'legend_bottom_note',
+    x: xpos + space_elem,
+    y: last_pos + 2 * space_elem
+  }).styles({
     'font-size': '11px',
     'font-family': 'verdana'
   }).text(note_bottom != null ? note_bottom : '');
@@ -16997,16 +17133,17 @@ function createLegend_symbol(layer, field, title, subtitle) {
   });
 
   var rect_under_legend = legend_root.insert('rect');
-  legend_root.insert('text').attr('id', 'legendtitle').text(title).styles({
+  legend_root.insert('text').attrs(subtitle != '' ? { 'id': 'legendtitle', x: xpos + space_elem, y: ypos } : { 'id': 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-weight': 'bold'
-  }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
+  }).text(title);
+
+  legend_root.insert('text').attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-style': 'italic'
-  }).attrs({ x: xpos + space_elem, y: ypos + 15 });
+  }).text(subtitle);
 
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
@@ -17102,14 +17239,38 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
   if (current_layers[layer].break_val !== undefined) {
     var bottom_colors = legend_root.append('g');
-    bottom_colors.insert('text').attr('id', 'col1_txt').attr('x', xpos + space_elem).attr('y', last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('< ' + current_layers[layer].break_val.toLocaleString());
-    bottom_colors.insert('rect').attr('id', 'col1').attr('x', xpos + space_elem).attr('y', last_pos + 2 * space_elem).attrs({ width: space_elem, height: space_elem }).style('fill', current_layers[layer].fill_color.two[0]);
-    bottom_colors.insert('text').attr('id', 'col1_txt').attr('x', xpos + 3 * space_elem).attr('y', last_pos + 1.75 * space_elem).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('> ' + current_layers[layer].break_val.toLocaleString());
-    bottom_colors.insert('rect').attr('id', 'col2').attr('x', xpos + 3 * space_elem).attr('y', last_pos + 2 * space_elem).attrs({ width: space_elem, height: space_elem }).style('fill', current_layers[layer].fill_color.two[1]);
+    bottom_colors.insert('text').attrs({
+      id: 'col1_txt',
+      x: xpos + space_elem,
+      y: last_pos + 1.75 * space_elem
+    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('< ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors.insert('rect').attrs({
+      id: 'col1',
+      x: xpos + space_elem,
+      y: last_pos + 2 * space_elem,
+      width: space_elem,
+      height: space_elem
+    }).style('fill', current_layers[layer].fill_color.two[0]);
+    bottom_colors.insert('text').attrs({
+      id: 'col1_txt',
+      x: xpos + 3 * space_elem,
+      y: last_pos + 1.75 * space_elem
+    }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).html('> ' + current_layers[layer].break_val.toLocaleString());
+    bottom_colors.insert('rect').attrs({
+      id: 'col2',
+      x: xpos + 3 * space_elem,
+      y: last_pos + 2 * space_elem,
+      width: space_elem,
+      height: space_elem
+    }).style('fill', current_layers[layer].fill_color.two[1]);
     last_pos += 2.5 * space_elem;
   }
 
-  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + 2 * space_elem }).styles({
+  legend_root.append('g').insert('text').attrs({
+    id: 'legend_bottom_note',
+    x: xpos + space_elem,
+    y: last_pos + 2 * space_elem
+  }).styles({
     'font-size': '11px',
     'font-family': 'verdana'
   }).text(note_bottom != null ? note_bottom : '');
@@ -17165,17 +17326,17 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || 'Title').styles({
+  legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + space_elem, y: ypos } : { id: 'legendtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-weight': 'bold'
-  }).attrs(subtitle != '' ? { x: xpos + space_elem, y: ypos } : { x: xpos + space_elem, y: ypos + 15 });
+  }).text(title || 'Title');
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
+  legend_root.insert('text').attrs({ id: 'legendsubtitle', x: xpos + space_elem, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-style': 'italic'
-  }).attrs({ x: xpos + space_elem, y: ypos + 15 });
+  }).text(subtitle);
 
   var legend_elems = legend_root.selectAll('.legend').append('g').data(ref_symbols_params).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
@@ -17201,7 +17362,11 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
     return round_value(d.value, rounding_precision).toLocaleString();
   });
 
-  legend_root.append('g').insert('text').attr('id', 'legend_bottom_note').attrs({ x: xpos + space_elem, y: last_pos + space_elem }).styles({
+  legend_root.append('g').insert('text').attrs({
+    id: 'legend_bottom_note',
+    x: xpos + space_elem,
+    y: last_pos + space_elem
+  }).styles({
     'font-size': '11px',
     'font-family': 'verdana'
   }).text(note_bottom != null ? note_bottom : '');
@@ -17273,8 +17438,8 @@ function createLegend_choro(layer, field, title, subtitle) {
     nb_class = current_layers[layer].color_map.size;
   } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
     data_colors_label = [];
-    current_layers[layer].symbols_map.forEach(function (v, k) {
-      data_colors_label.push({ value: k, image: v });
+    current_layers[layer].symbols_map.forEach(function (v, _) {
+      data_colors_label.push({ value: v[2], image: v[0] });
     });
     nb_class = current_layers[layer].symbols_map.size;
   } else {
@@ -17300,17 +17465,17 @@ function createLegend_choro(layer, field, title, subtitle) {
 
   var rect_under_legend = legend_root.insert('rect');
 
-  legend_root.insert('text').attr('id', 'legendtitle').text(title || '').styles({
+  legend_root.insert('text').attrs(subtitle != '' ? { id: 'legendtitle', x: xpos + boxheight, y: ypos } : { id: 'legendtitle', x: xpos + boxheight, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-weight': 'bold'
-  }).attrs(subtitle != '' ? { x: xpos + boxheight, y: ypos } : { x: xpos + boxheight, y: ypos + 15 });
+  }).text(title || '');
 
-  legend_root.insert('text').attr('id', 'legendsubtitle').text(subtitle).styles({
+  legend_root.insert('text').attrs({ id: 'legendsubtitle', x: xpos + boxheight, y: ypos + 15 }).styles({
     'font-size': '12px',
     'font-family': 'verdana',
     'font-style': 'italic'
-  }).attrs({ x: xpos + boxheight, y: ypos + 15 });
+  }).text(subtitle);
 
   var legend_elems = legend_root.selectAll('.legend').append('g').data(data_colors_label).enter().insert('g').attr('class', function (d, i) {
     return 'lg legend_' + i;
@@ -17330,7 +17495,7 @@ function createLegend_choro(layer, field, title, subtitle) {
         y: y_pos2 + i * boxgap + i * boxheight,
         width: boxwidth,
         height: boxheight,
-        'xlink:href': d.image[0]
+        'xlink:href': d.image
       };
     });
   }
@@ -17381,7 +17546,6 @@ function createLegend_choro(layer, field, title, subtitle) {
   }).text(note_bottom != null ? note_bottom : '');
   legend_root.call(drag_legend_func(legend_root));
   make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
-  // legend_root.select('#legendtitle').text(title || "");
   make_legend_context_menu(legend_root, layer);
   return legend_root;
 }
@@ -18452,6 +18616,8 @@ var get_max_nb_left_sep = function get_max_nb_left_sep(layer_name) {
 
 /* eslint-disable no-loop-func */
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function get_map_template() {
@@ -18892,10 +19058,10 @@ function get_map_template() {
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template() {
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
   get_map_template().then(function (json_params) {
     var url = 'data:text/json;charset=utf-8,' + encodeURIComponent(json_params);
-    document.getElementById('overlay').style.display = 'none';
+    _app.waitingOverlay.hide();
     clickLinkFromDataUrl(url, 'magrit_project.json');
   });
 }
@@ -18925,70 +19091,78 @@ function display_error_loading_project(error) {
   });
 }
 
-function apply_user_preferences(json_pref) {
-  var getAppVersion = function getAppVersion(info) {
-    if (!info || !info.version) {
-      return { app_version: undefined, p_version: undefined };
-    }
-    var app_version = info.version;
-    var version_split = app_version.split('.');
-    var p_version = {
-      major: version_split[0],
-      minor: version_split[1],
-      patch: version_split[2]
-    };
-    return { app_version: app_version, p_version: p_version };
+var getAppVersion = function getAppVersion(info) {
+  if (!info || !info.version) {
+    return { app_version: undefined, p_version: undefined };
+  }
+  var app_version = info.version;
+  var version_split = app_version.split('.');
+  var p_version = {
+    major: version_split[0],
+    minor: version_split[1],
+    patch: version_split[2]
   };
-  var preferences = void 0;
-  try {
-    preferences = JSON.parse(json_pref);
-  } catch (err) {
-    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project') + err);
+  return { app_version: app_version, p_version: p_version };
+};
+
+var remove_all_layers = function remove_all_layers() {
+  var layer_names = Object.getOwnPropertyNames(current_layers);
+  for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
+    remove_layer_cleanup(layer_names[i]);
+  }
+  // Make sure there is no layers and legend/layout features on the map :
+  var _l = svg_map.childNodes;
+  var _ll = _l.length;
+  for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
+    _l[_i4].remove();
+  }
+  // Make sure there is no layers in the layer manager :
+  _l = layer_list.node().childNodes;
+  _ll = _l.length;
+  for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
+    _l[_i5].remove();
+  }
+  // Get a new object for where we are storing the main properties :
+  current_layers = {};
+};
+
+function apply_user_preferences(json_pref) {
+  // Try to read the project-file provided by the user:
+  var _isValidJSON = isValidJSON(json_pref),
+      _isValidJSON2 = _slicedToArray(_isValidJSON, 2),
+      valid = _isValidJSON2[0],
+      preferences = _isValidJSON2[1];
+
+  if (!valid) {
+    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project') + preferences);
     return;
   }
   var map_config = preferences.map_config;
   var layers = preferences.layers;
+  if (!layers || !map_config) {
+    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project'));
+    return;
+  }
 
   var _getAppVersion = getAppVersion(preferences.info),
       app_version = _getAppVersion.app_version,
       p_version = _getAppVersion.p_version;
 
-  if (!layers || !map_config) {
-    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project'));
-    return;
-  }
-  // Restore the state of the page (without open functionnality)
+  // Clean the map and the menus from existing layers:
+
+
+  remove_all_layers();
+
+  // Display waiting overlay:
+  _app.waitingOverlay.display({ cancel_button: false });
+
+  // Restore the state of the page (ie. without any open functionnality):
   if (window.fields_handler) {
     clean_menu_function();
   }
-  // Clean the values remembered for the user from the previous rendering if any :
-  reset_user_values();
-  {
-    var layer_names = Object.getOwnPropertyNames(current_layers);
-    for (var i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
-      remove_layer_cleanup(layer_names[i]);
-    }
-    var _l = void 0;
-    var _ll = void 0;
-    // Make sure there is no layers and legend/layout features on the map :
-    _l = svg_map.childNodes;
-    _ll = _l.length;
-    for (var _i4 = _ll - 1; _i4 > -1; _i4--) {
-      _l[_i4].remove();
-    }
-    // And in the layer manager :
-    _l = layer_list.node().childNodes;
-    _ll = _l.length;
-    for (var _i5 = _ll - 1; _i5 > -1; _i5--) {
-      _l[_i5].remove();
-    }
-    // Get a new object for where we are storing the main properties :
-    current_layers = {};
-  }
 
-  var a = document.getElementById('overlay');
-  a.style.display = '';
-  a.querySelector('button').style.display = 'none';
+  // Clean the values remembered for the user from the previous rendering if any:
+  reset_user_values();
 
   var restorePreviousPos = function restorePreviousPos(layer_id, current_position, type_symbol) {
     var selection = map.select('#' + layer_id).selectAll(type_symbol);
@@ -19063,9 +19237,7 @@ function apply_user_preferences(json_pref) {
         document.getElementById('canvas_rotation_value_txt').value = map_config.canvas_rotation;
         rotate_global(map_config.canvas_rotation);
       }
-      var overlay_elem = document.getElementById('overlay');
-      overlay_elem.style.display = 'none';
-      overlay_elem.querySelector('button').style.display = '';
+      _app.waitingOverlay.hide();
       var targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
       for (var ii = 0; ii < at_end.length; ii++) {
@@ -19119,16 +19291,16 @@ function apply_user_preferences(json_pref) {
         northArrow.displayed = map_config.layout_features.north_arrow.displayed;
       }
       if (map_config.layout_features.arrow) {
-        for (var _i6 = 0; _i6 < map_config.layout_features.arrow.length; _i6++) {
-          var ft = map_config.layout_features.arrow[_i6];
+        for (var i = 0; i < map_config.layout_features.arrow.length; i++) {
+          var ft = map_config.layout_features.arrow[i];
           var _arrow = new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
-          _arrow.hide_head = map_config.layout_features.arrow[_i6].marker_head === null;
-          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[_i6].marker_head);
+          _arrow.hide_head = map_config.layout_features.arrow[i].marker_head === null;
+          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[i].marker_head);
         }
       }
       if (map_config.layout_features.user_ellipse) {
-        for (var _i7 = 0; _i7 < map_config.layout_features.user_ellipse.length; _i7++) {
-          var _ft2 = map_config.layout_features.user_ellipse[_i7];
+        for (var _i6 = 0; _i6 < map_config.layout_features.user_ellipse.length; _i6++) {
+          var _ft2 = map_config.layout_features.user_ellipse[_i6];
           var ellps = new UserEllipse(_ft2.id, [_ft2.cx, _ft2.cy], svg_map, true);
           var ellps_node = ellps.ellipse.node().querySelector('ellipse');
           ellps_node.setAttribute('rx', _ft2.rx);
@@ -19138,8 +19310,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.user_rectangle) {
-        for (var _i8 = 0; _i8 < map_config.layout_features.user_rectangle.length; _i8++) {
-          var _ft3 = map_config.layout_features.user_rectangle[_i8],
+        for (var _i7 = 0; _i7 < map_config.layout_features.user_rectangle.length; _i7++) {
+          var _ft3 = map_config.layout_features.user_rectangle[_i7],
               rect = new UserRectangle(_ft3.id, [_ft3.x, _ft3.y], svg_map, true),
               rect_node = rect.rectangle.node().querySelector('rect');
           rect_node.setAttribute('height', _ft3.height);
@@ -19148,8 +19320,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.text_annot) {
-        for (var _i9 = 0; _i9 < map_config.layout_features.text_annot.length; _i9++) {
-          var _ft4 = map_config.layout_features.text_annot[_i9];
+        for (var _i8 = 0; _i8 < map_config.layout_features.text_annot.length; _i8++) {
+          var _ft4 = map_config.layout_features.text_annot[_i8];
           var new_txt_box = new Textbox(svg_map, _ft4.id, [_ft4.position_x, _ft4.position_y]);
           new_txt_box.textAnnot.node().setAttribute('style', _ft4.style);
           new_txt_box.textAnnot.attrs({
@@ -19167,8 +19339,8 @@ function apply_user_preferences(json_pref) {
         }
       }
       if (map_config.layout_features.single_symbol) {
-        for (var _i10 = 0; _i10 < map_config.layout_features.single_symbol.length; _i10++) {
-          var _ft5 = map_config.layout_features.single_symbol[_i10];
+        for (var _i9 = 0; _i9 < map_config.layout_features.single_symbol.length; _i9++) {
+          var _ft5 = map_config.layout_features.single_symbol[_i9];
           var symb = add_single_symbol(_ft5.href, _ft5.x, _ft5.y, _ft5.width, _ft5.height, _ft5.id);
           if (_ft5.scalable) {
             var parent_symb = symb.node().parentElement;
@@ -19235,8 +19407,8 @@ function apply_user_preferences(json_pref) {
 
   // Add each layer :
 
-  var _loop = function _loop(_i11) {
-    var _layer = layers[_i11];
+  var _loop = function _loop(i) {
+    var _layer = layers[i];
     var layer_name = _layer.layer_name,
         layer_type = _layer.layer_type,
         layer_id = void 0,
@@ -19568,8 +19740,8 @@ function apply_user_preferences(json_pref) {
     }
   };
 
-  for (var _i11 = map_config.n_layers - 1; _i11 > -1; --_i11) {
-    _loop(_i11);
+  for (var i = map_config.n_layers - 1; i > -1; --i) {
+    _loop(i);
   }
 }
 /* eslint-enable no-loop-func */
@@ -19706,7 +19878,9 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
   newbox.selectAll('.typo_class').append('span').attrs({ class: 'three_dots' }).style('cursor', 'grab');
 
   newbox.selectAll('.typo_class').append('input').styles({ width: '100px', height: 'auto', display: 'inline-block', 'vertical-align': 'middle', 'margin-right': '7.5px' }).attrs(function (d) {
-    return { class: 'typo_name', value: d.new_name, id: d.name };
+    return { class: 'typo_name', id: d.name };
+  }).property('value', function (d) {
+    return d.new_name;
   });
 
   newbox.selectAll('.typo_class').insert('p').attrs({ class: 'symbol_section', title: i18next.t('app_page.symbol_typo_box.title_click') }).style('background-image', function (d) {
@@ -19734,7 +19908,7 @@ var display_box_symbol_typo = function display_box_symbol_typo(layer, field, cat
     return i18next.t('app_page.symbol_typo_box.count_feature', { nb_features: d.nb_elem });
   });
 
-  newbox.selectAll('.typo_class').insert('input').attrs({ type: 'number', id: 'symbol_size', value: 50 }).styles({ width: '50px', display: 'inline-block' });
+  newbox.selectAll('.typo_class').insert('input').property('value', 50).attrs({ type: 'number', id: 'symbol_size' }).styles({ width: '50px', display: 'inline-block' });
 
   newbox.selectAll('.typo_class').insert('span').style('display', 'inline-block').html(' px');
 
@@ -19787,13 +19961,13 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       title: d[0]
     };
   }).styles(function (d) {
-    return { width: '32px',
+    return {
+      width: '32px',
       height: '32px',
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
-    };
+      'background-image': 'url("' + d[1] + '")' };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -19825,13 +19999,14 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
   });
 
   newbox.insert('p').style('text-align', 'center').html(i18next.t('app_page.box_choice_symbol.selected_symbol'));
-  newbox.insert('div').style('text-align', 'center').append('p').attrs({ class: 'symbol_section', id: 'current_symb' }).styles({ width: '32px',
+  newbox.insert('div').style('text-align', 'center').append('p').attrs({ class: 'symbol_section', id: 'current_symb' }).styles({
+    width: '32px',
     height: '32px',
+    margin: 'auto',
     display: 'inline-block',
     'border-radius': '10%',
     'background-size': '32px 32px',
     'vertical-align': 'middle',
-    margin: 'auto',
     'background-image': "url('')"
   });
 
@@ -19902,7 +20077,7 @@ function make_style_box_indiv_symbol(symbol_node) {
   var box_content = d3.select('.styleTextAnnotation').select('.modal-body').insert('div');
   var a = box_content.append('p').attr('class', 'line_elem');
   a.append('span').html(i18next.t('app_page.single_symbol_edit_box.image_size'));
-  a.append('input').style('float', 'right').attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any', value: current_options.size }).on('change', function () {
+  a.append('input').property('value', current_options.size).style('float', 'right').attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any' }).on('change', function () {
     var val = +this.value;
     symbol_node.setAttribute('width', val + 'px');
     symbol_node.setAttribute('height', val + 'px');
@@ -19959,7 +20134,6 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
-    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -20652,9 +20826,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     });
     field2 = div1.append('select').on('change', function () {
       chooses_handler.field2 = this.value;
-      if (this.value === 'user_const_value') {
-        val_opt.style('display', null);
-      }
+      val_opt.style('display', this.value === 'user_const_value' ? null : 'none');
     });
     if (type === 'math_compute') {
       math_operation.forEach(function (op) {
@@ -20695,11 +20867,9 @@ function add_field_table(table, layer_name, reOpenTableBox) {
   }
 
   function refresh_subtype_content(type, subtype) {
-    if (type !== 'string_field') {
-      if (field2.node().value !== 'user_const_value') {
-        val_opt.style('display', 'none');
-        txt_op.text('');
-      }
+    if (type !== 'string_field' && field2.node().value !== 'user_const_value') {
+      val_opt.style('display', 'none');
+      txt_op.text('');
     } else if (subtype === 'truncate') {
       txt_op.html(i18next.t('app_page.explore_box.add_field_box.keep_char'));
       field2.attr('disabled', true);
@@ -20769,7 +20939,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       div1 = box_content.append('div').attr('id', 'field_div1'),
       div2 = box_content.append('div').attr('id', 'field_div2');
 
-  var new_name = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_name')).insert('input').attr('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder')).on('keyup', check_name);
+  var new_name = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_name')).insert('input').property('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder')).on('keyup', check_name);
 
   var type_content = div1.append('p').html(i18next.t('app_page.explore_box.add_field_box.new_content')).insert('select').attr('id', 'type_content_select').on('change', function () {
     chooses_handler.type_operation = this.value;
@@ -20870,7 +21040,6 @@ var boxExplore2 = {
     this.nb_features = null;
     this.columns_names = null;
     this.columns_headers = null;
-    // this.top_buttons = null;
     this.tables = null;
     this.modal_box = null;
   },
@@ -20887,11 +21056,6 @@ var boxExplore2 = {
     for (var i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
       this.columns_headers.push({ data: col[i], title: col[i] });
     }
-    // if (this.top_buttons.select('#add_field_button').node()) {
-    //   this.top_buttons.select('#add_field_button').remove();
-    //   document.getElementById('table_intro').remove();
-    //   document.querySelector('.dataTable-wrapper').remove();
-    // }
 
     if (this.tables.get(table_name) && (table_name !== dataset_name || table_name === dataset_name && field_join_map.length === 0)) {
       this.footer.insert('button').attrs({ id: 'add_field_button', class: 'button_st4' }).styles({ position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em' }).html(i18next.t('app_page.explore_box.button_add_field')).on('click', function () {
@@ -20924,8 +21088,7 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
-      }
+        info: i18next.t('app_page.table.info') }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :
@@ -20981,8 +21144,6 @@ var boxExplore2 = {
     var container = document.getElementById('browse_data_box');
     this.box_table = d3.select(container).select('.modal-body');
     this.footer = d3.select(container).select('.modal-footer');
-    // this.top_buttons = this.box_table.append('p')
-    //   .styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
 
     var fn_cb = function fn_cb(evt) {
       helper_esc_key_twbs_cb(evt, _onclose);

@@ -37,6 +37,8 @@ Function.prototype.memoize = function () {
 *
 */
 function setUpInterface(reload_project) {
+  // Create the waiting overlay to be ready to be displayed when needed:
+  _app.waitingOverlay = createWaitingOverlay();
   // Only ask for confirmation before leaving page if things have been done
   // (layer added, etc..)
   window.addEventListener('beforeunload', beforeUnloadWindow);
@@ -67,43 +69,6 @@ function setUpInterface(reload_project) {
       navigator.sendBeacon('/layers/delete', formToSend);
     }
   }, false);
-  const bg = document.createElement('div');
-  bg.id = 'overlay';
-  bg.style.display = 'none';
-  bg.innerHTML = `
-<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
-<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
-<span style="z-index: 2;">...<br></span>
-<div class="spinner">
-  <div class="rect1"></div>
-  <div class="rect2"></div>
-  <div class="rect3"></div>
-  <div class="rect4"></div>
-  <div class="rect5"></div>
-</div>
-<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
-  const btn = document.createElement('button');
-  btn.style.fontSize = '13px';
-  btn.style.background = '#4b9cdb';
-  btn.style.border = '1px solid #298cda';
-  btn.style.fontWeight = 'bold';
-  btn.className = 'button_st3 i18n';
-  btn.setAttribute('data-i18n', '[html]app_page.common.cancel');
-  bg.appendChild(btn);
-  document.body.appendChild(bg);
-
-  btn.onclick = () => {
-    if (_app.xhr_to_cancel) {
-      _app.xhr_to_cancel.abort();
-      _app.xhr_to_cancel = undefined;
-    }
-    if (_app.webworker_to_cancel) {
-      _app.webworker_to_cancel.onmessage = null;
-      _app.webworker_to_cancel.terminate();
-      _app.webworker_to_cancel = undefined;
-    }
-    document.getElementById('overlay').style.display = 'none';
-  };
 
   const bg_drop = document.createElement('div');
   bg_drop.className = 'overlay_drop';
@@ -2757,7 +2722,7 @@ function export_compo_svg(output_name) {
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
 //   could be encountered in the browser (as 'out of memory' error)
 function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
   output_name = check_output_name(output_name, 'png');
   const dimensions_foreign_obj = patchSvgForForeignObj();
   patchSvgForFonts();
@@ -2778,7 +2743,7 @@ function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
     ctx = targetCanvas.getContext('2d');
     img = new Image();
   } catch (err) {
-    document.getElementById('overlay').style.display = 'none';
+    _app.waitingOverlay.hide();
     targetCanvas.remove();
     display_error_during_computation(String(err));
     return;
@@ -2787,7 +2752,7 @@ function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
     try {
       changeResolution(targetCanvas, scalefactor);
     } catch (err) {
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
       display_error_during_computation(`${i18next.t('app_page.common.error_too_high_resolution')} ${String(err)}`);
       return;
@@ -2800,7 +2765,7 @@ function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
     try {
       imgUrl = targetCanvas.toDataURL(mime_type);
     } catch (err) {
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
       display_error_during_computation(String(err));
       return;
@@ -2808,7 +2773,7 @@ function _export_compo_png(type = 'web', scalefactor = 1, output_name) {
     clickLinkFromDataUrl(imgUrl, output_name).then((_) => {
       unpatchSvgForFonts();
       unpatchSvgForForeignObj(dimensions_foreign_obj);
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       targetCanvas.remove();
     }).catch((err) => {
       display_error_during_computation();

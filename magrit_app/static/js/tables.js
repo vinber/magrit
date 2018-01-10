@@ -130,9 +130,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     field2 = div1.append('select')
       .on('change', function () {
         chooses_handler.field2 = this.value;
-        if (this.value === 'user_const_value') {
-          val_opt.style('display', null);
-        }
+        val_opt.style('display', this.value === 'user_const_value' ? null : 'none');
       });
     if (type === 'math_compute') {
       math_operation.forEach((op) => { operator.append('option').text(op).attr('value', op); });
@@ -173,11 +171,9 @@ function add_field_table(table, layer_name, reOpenTableBox) {
   }
 
   function refresh_subtype_content(type, subtype) {
-    if (type !== 'string_field') {
-      if (field2.node().value !== 'user_const_value') {
-        val_opt.style('display', 'none');
-        txt_op.text('');
-      }
+    if (type !== 'string_field' && field2.node().value !== 'user_const_value') {
+      val_opt.style('display', 'none');
+      txt_op.text('');
     } else if (subtype === 'truncate') {
       txt_op.html(i18next.t('app_page.explore_box.add_field_box.keep_char'));
       field2.attr('disabled', true);
@@ -248,12 +244,14 @@ function add_field_table(table, layer_name, reOpenTableBox) {
 
   const new_name = div1.append('p')
     .html(i18next.t('app_page.explore_box.add_field_box.new_name'))
-    .insert('input').attr('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'))
+    .insert('input')
+    .property('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'))
     .on('keyup', check_name);
 
   const type_content = div1.append('p')
     .html(i18next.t('app_page.explore_box.add_field_box.new_content'))
-    .insert('select').attr('id', 'type_content_select')
+    .insert('select')
+    .attr('id', 'type_content_select')
     .on('change', function () {
       chooses_handler.type_operation = this.value;
       refresh_type_content(this.value);
@@ -356,7 +354,6 @@ const boxExplore2 = {
     this.nb_features = null;
     this.columns_names = null;
     this.columns_headers = null;
-    // this.top_buttons = null;
     this.tables = null;
     this.modal_box = null;
   },
@@ -372,11 +369,6 @@ const boxExplore2 = {
     for (let i = 0, col = this.columns_names, len = col.length; i < len; ++i) {
       this.columns_headers.push({ data: col[i], title: col[i] });
     }
-    // if (this.top_buttons.select('#add_field_button').node()) {
-    //   this.top_buttons.select('#add_field_button').remove();
-    //   document.getElementById('table_intro').remove();
-    //   document.querySelector('.dataTable-wrapper').remove();
-    // }
 
     if (this.tables.get(table_name) && (table_name !== dataset_name
           || (table_name === dataset_name && field_join_map.length === 0))) {
@@ -477,8 +469,6 @@ const boxExplore2 = {
     const container = document.getElementById('browse_data_box');
     this.box_table = d3.select(container).select('.modal-body');
     this.footer = d3.select(container).select('.modal-footer');
-    // this.top_buttons = this.box_table.append('p')
-    //   .styles({ 'margin-left': '15px', display: 'inline', 'font-size': '12px' });
 
     const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
     let _onclose = () => {

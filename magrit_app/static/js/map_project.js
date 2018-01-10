@@ -442,10 +442,10 @@ function get_map_template() {
 
 // Function triggered when the user request a download of its map preferences
 function save_map_template() {
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
   get_map_template().then((json_params) => {
     const url = `data:text/json;charset=utf-8,${encodeURIComponent(json_params)}`;
-    document.getElementById('overlay').style.display = 'none';
+    _app.waitingOverlay.hide();
     clickLinkFromDataUrl(url, 'magrit_project.json');
   });
 }
@@ -473,66 +473,70 @@ function display_error_loading_project(error) {
   });
 }
 
-function apply_user_preferences(json_pref) {
-  const getAppVersion = (info) => {
-    if (!info || !info.version) {
-      return { app_version: undefined, p_version: undefined };
-    }
-    const app_version = info.version;
-    const version_split = app_version.split('.');
-    const p_version = {
-      major: version_split[0],
-      minor: version_split[1],
-      patch: version_split[2],
-    };
-    return { app_version, p_version };
+const getAppVersion = (info) => {
+  if (!info || !info.version) {
+    return { app_version: undefined, p_version: undefined };
+  }
+  const app_version = info.version;
+  const version_split = app_version.split('.');
+  const p_version = {
+    major: version_split[0],
+    minor: version_split[1],
+    patch: version_split[2],
   };
-  let preferences;
-  try {
-    preferences = JSON.parse(json_pref);
-  } catch (err) {
-    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project') + err);
+  return { app_version, p_version };
+};
+
+const remove_all_layers = () => {
+  const layer_names = Object.getOwnPropertyNames(current_layers);
+  for (let i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
+    remove_layer_cleanup(layer_names[i]);
+  }
+  // Make sure there is no layers and legend/layout features on the map :
+  let _l = svg_map.childNodes;
+  let _ll = _l.length;
+  for (let i = _ll - 1; i > -1; i--) {
+    _l[i].remove();
+  }
+  // Make sure there is no layers in the layer manager :
+  _l = layer_list.node().childNodes;
+  _ll = _l.length;
+  for (let i = _ll - 1; i > -1; i--) {
+    _l[i].remove();
+  }
+  // Get a new object for where we are storing the main properties :
+  current_layers = {};
+};
+
+function apply_user_preferences(json_pref) {
+  // Try to read the project-file provided by the user:
+  const [valid, preferences] = isValidJSON(json_pref);
+  if (!valid) {
+    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project') + preferences);
     return;
   }
   const map_config = preferences.map_config;
   const layers = preferences.layers;
-  const { app_version, p_version } = getAppVersion(preferences.info);
   if (!layers || !map_config) {
     display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project'));
     return;
   }
-  // Restore the state of the page (without open functionnality)
+  const { app_version, p_version } = getAppVersion(preferences.info);
+
+  // Clean the map and the menus from existing layers:
+  remove_all_layers();
+
+  // Display waiting overlay:
+  _app.waitingOverlay.display({ cancel_button: false });
+
+  // Restore the state of the page (ie. without any open functionnality):
   if (window.fields_handler) {
     clean_menu_function();
   }
-  // Clean the values remembered for the user from the previous rendering if any :
-  reset_user_values();
-  {
-    const layer_names = Object.getOwnPropertyNames(current_layers);
-    for (let i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
-      remove_layer_cleanup(layer_names[i]);
-    }
-    let _l;
-    let _ll;
-    // Make sure there is no layers and legend/layout features on the map :
-    _l = svg_map.childNodes;
-    _ll = _l.length;
-    for (let i = _ll - 1; i > -1; i--) {
-      _l[i].remove();
-    }
-    // And in the layer manager :
-    _l = layer_list.node().childNodes;
-    _ll = _l.length;
-    for (let i = _ll - 1; i > -1; i--) {
-      _l[i].remove();
-    }
-    // Get a new object for where we are storing the main properties :
-    current_layers = {};
-  }
 
-  const a = document.getElementById('overlay');
-  a.style.display = '';
-  a.querySelector('button').style.display = 'none';
+  // Clean the values remembered for the user from the previous rendering if any:
+  reset_user_values();
+
 
   const restorePreviousPos = (layer_id, current_position, type_symbol) => {
     const selection = map.select(`#${layer_id}`)
@@ -598,9 +602,7 @@ function apply_user_preferences(json_pref) {
         document.getElementById('canvas_rotation_value_txt').value = map_config.canvas_rotation;
         rotate_global(map_config.canvas_rotation);
       }
-      const overlay_elem = document.getElementById('overlay');
-      overlay_elem.style.display = 'none';
-      overlay_elem.querySelector('button').style.display = '';
+      _app.waitingOverlay.hide();
       const targeted_layer = Object.getOwnPropertyNames(user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
       for (let ii = 0; ii < at_end.length; ii++) {

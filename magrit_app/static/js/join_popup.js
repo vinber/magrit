@@ -201,7 +201,7 @@ function prepare_join_on(layer_name, field1, field2) {
     return swal('', i18next.t('app_page.join_box.error_not_uniques'), 'warning');
   }
   if (nb_features > 5000) {
-    document.getElementById('overlay').style.display = '';
+    _app.waitingOverlay.display();
     const jointure_worker = new Worker('static/js/webworker_jointure.js');
     _app.webworker_to_cancel = jointure_worker;
     jointure_worker.postMessage(
@@ -211,7 +211,7 @@ function prepare_join_on(layer_name, field1, field2) {
       _app.webworker_to_cancel = undefined;
       hits = _hits;
       field_join_map = join_map;
-      document.getElementById('overlay').style.display = 'none';
+      _app.waitingOverlay.hide();
       valid_join_on(layer_name, join_values1, join_values2, field1, field2, hits)
         .then((valid) => {
           jointure_worker.terminate();

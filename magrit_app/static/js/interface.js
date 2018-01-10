@@ -113,11 +113,9 @@ function handle_upload_files(files, target_layer_on_add, elem) {
       } else {
         const rd = new FileReader();
         rd.onloadend = () => {
-          let tmp;
-          try {
-            tmp = JSON.parse(rd.result);
-          } catch (e) {
-            console.log(e);
+          const [valid, tmp] = isValidJSON(rd.result);
+          if (!valid) {
+            console.log(tmp);
             return swal({
               title: `${i18next.t('app_page.common.error')}!`,
               text: i18next.t('app_page.common.alert_upload_invalid'),
@@ -954,19 +952,28 @@ function updateLayer(layer_name) {
   update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
 }
 
-// Add the TopoJSON to the 'svg' element :
+/**
+* Add a TopoJSON layer to the 'svg' element.
+*
+* @param {String} text - the text content to be parsed as a JS object.
+* @param {Object} url - options regarding the layer to be added (such as wether skipping
+*     the 'success' alert or not, which name to use for the layer, etc.).
+* @return {String} The actual name of the layer once added, or `undefined` if
+*     something went wrong.
+*/
 function add_layer_topojson(text, options = {}) {
-  let parsedJSON;
-  try {
-    parsedJSON = JSON.parse(text);
-  } catch (e) {
-    parsedJSON = { Error: 'Unable to load the layer' };
+  const [valid, parsedJSON] = isValidJSON(text);
+  // If JSON.parse failed:
+  if (!valid){
+    display_error_during_computation('Unable to load the layer');
+    return;
   }
+  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion:
   if (parsedJSON.Error) {
-    // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion
     display_error_during_computation(parsedJSON.Error);
     return;
   }
+
   const result_layer_on_add = options.result_layer_on_add ? true : false,
     target_layer_on_add = options.target_layer_on_add ? true : false,
     skip_alert = options.skip_alert ? true : false,
@@ -984,15 +991,20 @@ function add_layer_topojson(text, options = {}) {
   let type,
     _proj;
 
+  // We don't allow multiple layer to be added at the same time, so the TopoJSON
+  // file we are handling is supposed to only contains one layer. If it's not
+  // the case, a warning is displayed and only the first layer is added to the svg.
   if (layers_names.length > 1) {
     swal('', i18next.t('app_page.common.warning_multiple_layers'), 'warning');
   }
 
+  // Abort if the layer is empty (doesn't contains any feature)
   if (!topoObj_objects.geometries || topoObj_objects.geometries.length === 0) {
     display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
     return;
   }
 
+  // "Register" the layer name in the UI and it's corresponding id on the DOM :
   _app.layer_to_id.set(lyr_name_to_add, lyr_id);
   _app.id_to_layer.set(lyr_id, lyr_name_to_add);
 
@@ -1005,17 +1017,22 @@ function add_layer_topojson(text, options = {}) {
     }
   }
 
+  // Abort if the layer doesn't contains any feature with a geometry type within
+  // "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"
   if (!type) {
     display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
     return;
   }
 
+  // Some special operations if this is the first layer to be added:
   if (_app.first_layer) {
+    // Remove the 'world' layout layer displayed when the application starts:
     remove_layer_cleanup('World');
     // const world_id = _app.layer_to_id.get('World');
     // const q = document.querySelector(`.sortable.${world_id} > .layer_buttons > #eye_open`);
     // if (q) q.click();
-    // delete _app.first_layer;
+
+    // Read the projection information provided with the layer, if any:
     if (parsedJSON.proj) {
       try {
         _proj = proj4(parsedJSON.proj);
@@ -1024,6 +1041,7 @@ function add_layer_topojson(text, options = {}) {
         console.log(e);
       }
     }
+    // delete _app.first_layer;
   }
 
   current_layers[lyr_name_to_add] = {
@@ -1234,6 +1252,7 @@ function add_layer_topojson(text, options = {}) {
 *  Get the bounding box (in map/svg coordinates) of a layer using path.bounds()
 *
 *  @param {string} name - The name of layer
+*  @return {Array} The bbox [[xmin, ymin], [xmax, ymax]] of the layer.
 */
 function get_bbox_layer_path(name) {
   const selec = svg_map.querySelector('#' + _app.layer_to_id.get(name)).childNodes;
@@ -1264,7 +1283,7 @@ function get_bbox_layer_path(name) {
 * Redraw the path from all the current layers to reflect the change.
 *
 * @param {string} name - The name of layer to scale on
-* @return {undefined}
+* @return {void}
 */
 function scale_to_lyr(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
@@ -1283,7 +1302,7 @@ function scale_to_lyr(name) {
 * Projection properties stay unchanged.
 *
 * @param {string} name - The name of layer to zoom on
-* @return {undefined}
+* @return {void}
 */
 function center_map(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
@@ -1309,6 +1328,13 @@ function fitLayer(layer_name) {
   return [s, t];
 }
 
+/**
+* Helper function called when a new 'Sphere' layer is added, in order to put it
+* on the bottom of the other layer on the map.
+*
+* @param {string} sphere_id - The DOM id of the sphere.
+* @return {void}
+*/
 function setSphereBottom(sphere_id) {
   const layers_list = document.querySelector('.layer_list');
   layers_list.appendChild(layers_list.childNodes[0]);
@@ -1528,6 +1554,11 @@ function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', sy
     .call(drag_elem_geo);
 }
 
+/**
+* Function to display the dialog allowing the choose and add layout layer(s).
+*
+* @return {void}
+*/
 function add_layout_layers() {
   check_remove_existing_box('.sampleLayoutDialogBox');
   const layout_layers = [
@@ -1582,6 +1613,11 @@ function add_layout_layers() {
     .html(i18next.t('app_page.layout_layer_box.disclamer_nuts'));
 }
 
+/**
+* Function to display the dialog allowing the choose and add a sample target layer.
+*
+* @return {void}
+*/
 function add_sample_layer() {
   const prepare_extra_dataset_availables = () => {
     request_data('GET', 'extrabasemaps').then((result) => {
@@ -1812,6 +1848,12 @@ function add_sample_layer() {
   make_panel1();
 }
 
+/**
+* Helper function to add the 'world' layer (notably added) when the application
+* is started.
+*
+* @return {void}
+*/
 function add_simplified_land_layer(options = {}) {
   const skip_rescale = options.skip_rescale || false;
   const stroke = options.stroke || 'rgb(0,0,0)';

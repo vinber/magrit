@@ -677,8 +677,7 @@ function render_twostocks_waffle(layer, rendering_params) {
 
   const nb_features = result_data[layer_to_add].length;
   const new_layer = map.insert('g', '.legend')
-    .attr('id', layer_id)
-    .attr('class', 'layer no_clip');
+    .attrs({ id: layer_id, class: 'layer no_clip' });
 
   if (symbol_type === 'circle') {
     const r = rendering_params.size;
@@ -2968,7 +2967,7 @@ const render_discont = function () {
     math_max = Math.max,
     topo_to_use = _target_layer_file;
 
-  document.getElementById('overlay').style.display = '';
+  _app.waitingOverlay.display();
 
   // Discontinuity are computed in another thread to avoid blocking the ui
   // (a waiting message is displayed during this time to avoid action from the user)
@@ -3015,7 +3014,6 @@ const render_discont = function () {
       elem_data.properties.prop_val = p_size;
     }
 
-    document.getElementById('overlay').style.display = 'none';
     current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
       breaks: breaks,
@@ -3031,6 +3029,7 @@ const render_discont = function () {
     };
     create_li_layer_elem(new_layer_name, nb_ft, ['Line', 'discont'], 'result');
 
+    _app.waitingOverlay.hide();
 
     { // Only display the 50% most important values :
       // TODO : reintegrate this upstream in the layer creation :
@@ -3449,13 +3448,15 @@ function fillMenu_griddedMap(layer) {
     .html(i18next.t('app_page.func_options.grid.cellsize'));
   b.insert('input')
     .style('width', '100px')
-    .attrs({ type: 'number',
+    .property('value', 10.0)
+    .attrs({
+      type: 'number',
       class: 'params',
       id: 'Gridded_cellsize',
-      value: 10.0,
       min: 1.000,
       max: 7000,
-      step: 'any' });
+      step: 'any'
+    });
 
   const c = dialog_content.append('p').attr('class', 'params_section2');
   c.append('span')
@@ -3718,7 +3719,8 @@ function fillMenu_FlowMap() {
       class: 'params',
       min: 0.1,
       max: 100.0,
-      step: 'any' })
+      step: 'any'
+    })
     .style('width', '50px');
   b.append('span').html(' (px)');
 

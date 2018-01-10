@@ -60,7 +60,8 @@ const display_box_symbol_typo = function (layer, field, categories) {
   newbox.selectAll('.typo_class')
     .append('input')
     .styles({ width: '100px', height: 'auto', display: 'inline-block', 'vertical-align': 'middle', 'margin-right': '7.5px' })
-    .attrs(d => ({ class: 'typo_name', value: d.new_name, id: d.name }));
+    .attrs(d => ({ class: 'typo_name', id: d.name }))
+    .property('value', d => d.new_name);
 
   newbox.selectAll('.typo_class')
     .insert('p')
@@ -91,7 +92,8 @@ const display_box_symbol_typo = function (layer, field, categories) {
 
   newbox.selectAll('.typo_class')
     .insert('input')
-    .attrs({ type: 'number', id: 'symbol_size', value: 50 })
+    .property('value', 50)
+    .attrs({ type: 'number', id: 'symbol_size' })
     .styles({ width: '50px', display: 'inline-block' });
 
   newbox.selectAll('.typo_class')
@@ -154,7 +156,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       id: `p_${d[0].replace('.png', '')}`,
       title: d[0],
     }))
-    .styles(d => ({ width: '32px',
+    .styles(d => ({
+      width: '32px',
       height: '32px',
       margin: 'auto',
       display: 'inline-block',
@@ -204,13 +207,14 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     .style('text-align', 'center')
     .append('p')
     .attrs({ class: 'symbol_section', id: 'current_symb' })
-    .styles({ width: '32px',
+    .styles({
+      width: '32px',
       height: '32px',
+      margin: 'auto',
       display: 'inline-block',
       'border-radius': '10%',
       'background-size': '32px 32px',
       'vertical-align': 'middle',
-      margin: 'auto',
       'background-image': "url('')",
     });
 
@@ -283,8 +287,9 @@ function make_style_box_indiv_symbol(symbol_node) {
   a.append('span')
     .html(i18next.t('app_page.single_symbol_edit_box.image_size'));
   a.append('input')
+    .property('value', current_options.size)
     .style('float', 'right')
-    .attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any', value: current_options.size })
+    .attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any' })
     .on('change', function () {
       const val = +this.value;
       symbol_node.setAttribute('width', `${val}px`);

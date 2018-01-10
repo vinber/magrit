@@ -28,14 +28,14 @@ class UserArrow {
        .subject(function () {
               // let snap_lines = get_coords_snap_lines(this.id + this.className);
          const t = d3.select(this.querySelector('line'));
-         return { x: +t.attr('x2') - +t.attr('x1'),
+         return {
+           x: +t.attr('x2') - +t.attr('x1'),
            y: +t.attr('y2') - +t.attr('y1'),
            x1: t.attr('x1'),
            x2: t.attr('x2'),
            y1: t.attr('y1'),
            y2: t.attr('y2'),
-           map_locked: !!map_div.select('#hand_button').classed('locked'),
-                      //  , snap_lines: snap_lines
+           map_locked: !!map_div.select('#hand_button').classed('locked'),//  , snap_lines: snap_lines
          };
        })
       .on('start', () => {
@@ -107,17 +107,18 @@ class UserArrow {
 
   add_defs_marker() {
     defs.append('marker')
-      .attrs({ id: 'arrow_head',
+      .attrs({
+        id: 'arrow_head',
         viewBox: '0 -5 10 10',
         refX: 5,
         refY: 0,
         orient: 'auto',
         markerWidth: 4,
-        markerHeight: 4 })
+        markerHeight: 4
+      })
       .style('stroke-width', 1)
       .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
-      .attr('class', 'arrowHead');
+      .attrs({ d: 'M0,-5L10,0L0,5', class: 'arrowHead' });
     if (this.parent.childNodes[0].tagName !== 'defs') {
       this.parent.insertBefore(defs.node(), this.parent.childNodes[0]);
     }
@@ -518,8 +519,7 @@ class Textbox {
     this.textAnnot.selectAll('tspan').remove();
     for (let i = 0; i < split.length; i++) {
       this.textAnnot.append('tspan')
-        .attr('x', this.x)
-        .attr('dy', i === 0 ? null : this.lineHeight)
+        .attrs({ x: this.x, dy: i === 0 ? null : this.lineHeight })
         .html(split[i]);
     }
     this.update_bbox();
@@ -540,10 +540,12 @@ class Textbox {
     this.width = bbox.width;
     this.height = bbox.height;
     this.group.select('rect')
-      .attrs({ x: bbox.left - x0 - 10,
+      .attrs({
+        x: bbox.left - x0 - 10,
         y: bbox.top - y0 - 10,
         height: this.height + 20,
-        width: this.width + 20 });
+        width: this.width + 20
+      });
   }
 
   updateLineHeight() {
@@ -842,7 +844,7 @@ const scaleBar = {
     //   }).then(() => { null; }, () => { null; });
     //   return;
     // }
-    const scale_gp = map.append('g').attr('id', 'scale_bar').attr('class', 'legend scale'),
+    const scale_gp = map.append('g').attrs({ id: 'scale_bar', class: 'legend scale' }),
       x_pos = 40,
       y_pos = h - 100,
       bar_size = 50,
@@ -869,11 +871,11 @@ const scaleBar = {
     this.under_rect = scale_gp.insert('rect')
       .attrs({ x: x_pos - 10, y: y_pos - 20, height: 30, width: this.bar_size + 20, id: 'under_rect' })
       .styles({ fill: 'green', 'fill-opacity': 0 });
-    scale_gp.insert('rect').attr('id', 'rect_scale')
-      .attrs({ x: x_pos, y: y_pos, height: 2, width: this.bar_size })
+    scale_gp.insert('rect')
+      .attrs({ id: 'rect_scale', x: x_pos, y: y_pos, height: 2, width: this.bar_size })
       .style('fill', 'black');
-    scale_gp.insert('text').attr('id', 'text_limit_sup_scale')
-      .attrs({ x: x_pos + bar_size, y: y_pos - 5 })
+    scale_gp.insert('text')
+      .attrs({ id: 'text_limit_sup_scale', x: x_pos + bar_size, y: y_pos - 5 })
       .styles({
         'font-family': 'verdana',
         'font-size': '11px',
@@ -1290,18 +1292,22 @@ const northArrow = {
       .style('float', 'right')
       .html(' °');
     b.append('input')
-      .attrs({ type: 'number',
+      .attrs({
+        type: 'number',
         min: 0,
         max: 360,
         step: 'any',
         value: old_rotate,
         class: 'without_spinner',
-        id: 'txt_rotate_n_arrow' })
+        id: 'txt_rotate_n_arrow'
+      })
       .styles({ float: 'right', width: '40px' })
       .on('change', function () {
         const rotate_value = +this.value;
-        self.svg_node.attr('rotate', rotate_value);
-        self.svg_node.attr('transform', `rotate(${[rotate_value, self.x_center, self.y_center]})`);
+        self.svg_node.attrs({
+          rotate: rotate_value,
+          transform: `rotate(${[rotate_value, self.x_center, self.y_center]})`,
+        });
         document.getElementById('range_rotate_n_arrow').value = rotate_value;
       });
     b.append('input')
@@ -1309,8 +1315,10 @@ const northArrow = {
       .styles({ 'vertical-align': 'middle', width: '140px', float: 'right' })
       .on('change', function () {
         const rotate_value = +this.value;
-        self.svg_node.attr('rotate', rotate_value);
-        self.svg_node.attr('transform', `rotate(${[rotate_value, self.x_center, self.y_center]})`);
+        self.svg_node.attrs({
+          rotate: rotate_value,
+          transform: `rotate(${[rotate_value, self.x_center, self.y_center]})`,
+        });
         document.getElementById('txt_rotate_n_arrow').value = rotate_value;
       });
   },
@@ -1923,12 +1931,14 @@ class UserEllipse {
       });
 
     const tmp_start_point = edit_layer.append('rect')
-      .attr('id', 'pt1')
-      .attr('class', 'ctrl_pt')
-      .attr('x', (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4)
-      .attr('y', self.pt1[1] * zoom_param.k + zoom_param.y - 4)
-      .attr('height', 8)
-      .attr('width', 8)
+      .attrs({
+        id: 'pt1',
+        class: 'ctrl_pt',
+        height: 8,
+        width: 8,
+        x: (self.pt1[0] - ellipse_elem.rx.baseVal.value) * zoom_param.k + zoom_param.x - 4,
+        y: self.pt1[1] * zoom_param.k + zoom_param.y - 4,
+      })
       .call(d3.drag().on('drag', function () {
         const t = d3.select(this);
         t.attr('x', d3.event.x - 4);

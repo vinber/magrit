@@ -2,6 +2,62 @@ const isNumber = (value) => {
  return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
 }
 
+const createWaitingOverlay = () => {
+  const bg = document.createElement('div');
+  bg.id = 'overlay';
+  bg.style.display = 'none';
+  bg.innerHTML = `
+<img src="static/img/logo_magrit.png" alt="Magrit" style="left: 15px;position: absolute;" width="auto" height="26">
+<span class="i18n" style="z-index: 2; margin-top:85px; display: inline-block;" data-i18n="[html]app_page.common.loading_results"></span>
+<span style="z-index: 2;">...<br></span>
+<div class="spinner">
+  <div class="rect1"></div>
+  <div class="rect2"></div>
+  <div class="rect3"></div>
+  <div class="rect4"></div>
+  <div class="rect5"></div>
+</div>
+<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
+  const btn = document.createElement('button');
+  btn.style.fontSize = '13px';
+  btn.style.background = '#4b9cdb';
+  btn.style.border = '1px solid #298cda';
+  btn.style.fontWeight = 'bold';
+  btn.className = 'button_st3 i18n';
+  btn.setAttribute('data-i18n', '[html]app_page.common.cancel');
+  bg.appendChild(btn);
+  document.body.appendChild(bg);
+
+  btn.onclick = () => {
+    if (_app.xhr_to_cancel) {
+      _app.xhr_to_cancel.abort();
+      _app.xhr_to_cancel = undefined;
+    }
+    if (_app.webworker_to_cancel) {
+      _app.webworker_to_cancel.onmessage = null;
+      _app.webworker_to_cancel.terminate();
+      _app.webworker_to_cancel = undefined;
+    }
+    bg.style.display = 'none';
+  };
+  return {
+    display: (opts = {}) => {
+      bg.style.display = '';
+      if (opts.cancel_button && opts.cancel_button === false) {
+        btn.style.display = 'none';
+      }
+      if (opts.zIndex) {
+        bg.style.zIndex = opts.zIndex;
+      }
+    },
+    hide: () => {
+      bg.style.display = 'none';
+      bg.style.zIndex = '';
+      btn.style.display = '';
+    },
+  };
+};
+
 const drag_elem_geo = d3.drag()
   .subject(function () {
     const t = d3.select(this);
@@ -201,7 +257,7 @@ function request_data(method, url, data) {
 */
 function xhrequest(method, url, data, waitingMessage) {
   if (waitingMessage) {
-    document.getElementById('overlay').style.display = '';
+    _app.waitingOverlay.display();
   }
   return new Promise((resolve, reject) => {
     const request = new XMLHttpRequest();
@@ -211,14 +267,14 @@ function xhrequest(method, url, data, waitingMessage) {
       resolve(resp.target.responseText);
       _app.xhr_to_cancel = undefined;
       if (waitingMessage) {
-        document.getElementById('overlay').style.display = 'none';
+        _app.waitingOverlay.hide();
       }
     };
     request.onerror = (err) => {
       reject(err);
       _app.xhr_to_cancel = undefined;
       if (waitingMessage) {
-        document.getElementById('overlay').style.display = 'none';
+        _app.waitingOverlay.hide();
       }
     };
     request.send(data);
@@ -882,3 +938,12 @@ function prepareFileExt(files_to_send) {
 function getCopyReversed(arr) {
   return arr.slice().reverse();
 }
+
+const isValidJSON = obj => {
+  try {
+    const a = JSON.parse(obj);
+    return [true, a];
+  } catch (e) {
+    return [false, e];
+  }
+};

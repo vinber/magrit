@@ -342,54 +342,66 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
   const make_overlay_elements = () => {
     line_mean = overlay_svg.append('line')
-      .attr('class', 'line_mean')
-      .attr('x1', x(mean_serie))
-      .attr('y1', 10)
-      .attr('x2', x(mean_serie))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'line_mean',
+        x1: x(mean_serie),
+        y1: 10,
+        x2: x(mean_serie),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'blue', fill: 'none' })
       .classed('active', false);
 
     txt_mean = overlay_svg.append('text')
-      .attr('y', 0)
-      .attr('dy', '0.75em')
-      .attr('x', x(mean_serie))
+      .attrs({
+        y: 0,
+        dy: '0.75em',
+        x: x(mean_serie),
+        'text-anchor': 'middle',
+      })
       .style('fill', 'none')
-      .attr('text-anchor', 'middle')
       .text(i18next.t('disc_box.mean'));
 
     line_median = overlay_svg.append('line')
-      .attr('class', 'line_med')
-      .attr('x1', x(serie.median()))
-      .attr('y1', 10)
-      .attr('x2', x(serie.median()))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'line_med',
+        x1: x(serie.median()),
+        y1: 10,
+        x2: x(serie.median()),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'darkgreen', fill: 'none' })
       .classed('active', false);
 
     txt_median = overlay_svg.append('text')
-      .attr('y', 0)
-      .attr('dy', '0.75em')
-      .attr('x', x(serie.median()))
+      .attrs({
+        y: 0,
+        dy: '0.75em',
+        x: x(serie.median()),
+        'text-anchor': 'middle',
+      })
       .style('fill', 'none')
-      .attr('text-anchor', 'middle')
       .text(i18next.t('disc_box.median'));
 
     line_std_left = overlay_svg.append('line')
-      .attr('class', 'lines_std')
-      .attr('x1', x(mean_serie - stddev_serie))
-      .attr('y1', 10)
-      .attr('x2', x(mean_serie - stddev_serie))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'lines_std',
+        x1: x(mean_serie - stddev_serie),
+        y1: 10,
+        x2: x(mean_serie - stddev_serie),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' })
       .classed('active', false);
 
     line_std_right = overlay_svg.append('line')
-      .attr('class', 'lines_std')
-      .attr('x1', x(mean_serie + stddev_serie))
-      .attr('y1', 10)
-      .attr('x2', x(mean_serie + stddev_serie))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'lines_std',
+        x1: x(mean_serie + stddev_serie),
+        y1: 10,
+        x2: x(mean_serie + stddev_serie),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' })
       .classed('active', false);
 
@@ -421,8 +433,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       if (values.length > 7500 && type === 'jenks') {
         const jenks_worker = new Worker('static/js/webworker_jenks.js');
         _app.webworker_to_cancel = jenks_worker;
-        document.getElementById('overlay').style.display = null;
-        document.getElementById('overlay').style.zIndex = 5000;
+        waitingOverlay.display({ zIndex: 5000 });
         jenks_worker.postMessage(
           [values, nb_class]);
         jenks_worker.onmessage = function (e) {
@@ -430,8 +441,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           serie.setClassManually(breaks);
           serie.doCount();
           stock_class = Array.prototype.slice.call(serie.counter);
-          document.getElementById('overlay').style.display = 'none';
-          document.getElementById('overlay').style.zIndex = '';
+          waitingOverlay.hide();
           _app.webworker_to_cancel = undefined;
           bins = [];
           for (let i = 0, len = stock_class.length, offset = 0; i < len; i++) {
@@ -626,8 +636,8 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join(''),
     'discretiz_charts_dialog',
   );
-
-  const newBox = d3.select('#discretiz_charts').select('.modal-body');
+  const container = document.getElementById('discretiz_charts');
+  const newBox = d3.select(container).select('.modal-body');
   let db_data;
   if (result_data.hasOwnProperty(layer_name)) {
     db_data = result_data[layer_name];
@@ -694,9 +704,8 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   }
   const precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
   const formatCount = d3.format(precision_axis);
-  const discretization = newBox.append('div')
-    .attr('id', 'discretization_panel')
-    .insert('p')
+  const discretization_panel = newBox.append('div').attr('id', 'discretization_panel');
+  const discretization = discretization_panel.insert('p')
     .insert('select')
     .attr('class', 'params')
     .on('change', function () {
@@ -725,13 +734,13 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     discretization.append('option').text(func[0]).attr('value', func[1]);
   });
 
-  let input_section_stddev = d3.select('#discretization_panel')
-    .insert('p')
+  let input_section_stddev = discretization_panel.insert('p')
     .styles({ margin: 'auto', display: type === 'stddev_f' ? '' : 'none' });
   input_section_stddev.insert('span')
     .html(i18next.t('disc_box.stddev_share_txt1'));
   input_section_stddev.insert('input')
-    .attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share', value: std_dev_params.share })
+    .property('value', std_dev_params.share)
+    .attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share' })
     .styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' })
     .on('change', function () {
       const val = this.value;
@@ -772,8 +781,9 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       .html(el[0]);
   });
   document.getElementById(`button_stddev_${std_dev_params.role_mean}`).checked = true;
-  let txt_nb_class = d3.select('#discretization_panel').append('input')
-    .attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 })
+  let txt_nb_class = discretization_panel.append('input')
+    .property('value', nb_class)
+    .attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, step: 1 })
     .styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' })
     .on('change', function () {
       const a = disc_nb_class.node();
@@ -781,19 +791,19 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       a.dispatchEvent(new Event('change'));
     });
 
-  d3.select('#discretization_panel')
+  discretization_panel
     .append('span')
     .html(i18next.t('disc_box.class'));
 
-  let disc_nb_class = d3.select('#discretization_panel')
+  let disc_nb_class = discretization_panel
     .insert('input')
+    .property(nb_clas)
     .styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' })
     .attrs({
       id: 'nb_class_range',
       type: 'range',
       min: 2,
       max: max_nb_class,
-      value: nb_class,
       step: 1 })
     .on('change', function () {
       type = discretization.node().value;
@@ -820,18 +830,6 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           }
         }
       })
-      // const ret_val = redisplay.compute();
-      // if (!ret_val) {
-      //   this.value = old_nb_class;
-      //   txt_nb_class.node().value = +old_nb_class;
-      // } else {
-      //   redisplay.draw();
-      //   const ctl_class = document.getElementById('centr_class');
-      //   if (ctl_class) {
-      //     ctl_class.max = nb_class;
-      //     if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
-      //   }
-      // }
     });
 
   const ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
@@ -847,10 +845,12 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     margin = { top: 7.5, right: 30, bottom: 7.5, left: 30 },
     height = svg_h - margin.top - margin.bottom;
 
-  d3.select('#discretiz_charts').select('.modal-dialog')
+  d3.select(container)
+    .select('.modal-dialog')
     .styles({
       width: `${svg_w + margin.top + margin.bottom + 90}px`,
-      height: `${window.innerHeight - 60}px` });
+      height: `${window.innerHeight - 60}px`
+    });
 
   if (values.length < 500) { // Only allow for beeswarm plot if there isn't too many values
       // as it seems to be costly due to the "simulation" + the voronoi
@@ -879,9 +879,12 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       });
   }
   const div_svg = newBox.append('div')
-    .append('svg').attr('id', 'svg_discretization')
-    .attr('width', svg_w + margin.left + margin.right)
-    .attr('height', svg_h + margin.top + margin.bottom);
+    .append('svg')
+    .attrs({
+      id: 'svg_discretization',
+      width: svg_w + margin.left + margin.right,
+      height: svg_h + margin.top + margin.bottom,
+    })
 
   make_box_histo_option();
 
@@ -907,8 +910,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   make_overlay_elements();
 
   svg_histo.append('g')
-    .attr('class', 'x_axis')
-    .attr('transform', 'translate(0,' + height + ')')
+    .attrs({ class: 'x_axis', transform: `translate(0,${height})`})
     .call(d3.axisBottom()
     .scale(x)
     .tickFormat(formatCount));
@@ -920,7 +922,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   const accordion_colors = newBox.append('div')
     .attrs({ class: 'panel show', id: 'accordion_colors' })
     .style('width', '98%');
-  const color_scheme = accordion_colors // d3.select('#accordion_colors')
+  const color_scheme = accordion_colors
     .append('div')
     .attr('id', 'color_div')
     .style('text-align', 'center');
@@ -990,8 +992,10 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   const user_defined_breaks = accordion_breaks.append('div').attr('id', 'user_breaks');
 
   user_defined_breaks.insert('textarea')
-    .attr('id', 'user_breaks_area')
-    .attr('placeholder', i18next.t('app_page.common.expected_class'))
+    .attrs({
+      id: 'user_breaks_area',
+      placeholder: i18next.t('app_page.common.expected_class'),
+    })
     .style('width', '600px');
 
   user_defined_breaks
@@ -1011,7 +1015,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
     });
 
-  accordionize('.accordion_disc', d3.select('#discretiz_charts').node());
+  accordionize('.accordion_disc', container);
 
   if (no_data > 0) {
     make_no_data_section();
@@ -1049,14 +1053,11 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     user_break_list = options.breaks;
   }
 
-  console.log(redisplay);
-
   redisplay.compute().then((v) => {
     if (v) redisplay.draw(options.colors);
   });
 
-  const deferred = Promise.pending(),
-    container = document.getElementById('discretiz_charts');
+  const deferred = Promise.pending();
 
   container.querySelector('.btn_ok').onclick = function () {
     breaks = breaks.map(i => +i);
@@ -1321,9 +1322,11 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
     .html(`<b>${i18next.t('disc_box.hist_ref_title')}</b>`);
 
   const c = ref_histo.append('svg')
-    .attr('id', 'svg_ref_histo')
-    .attr('width', svg_w + m_margin.left + m_margin.right)
-    .attr('height', svg_h + m_margin.top + m_margin.bottom);
+    .attrs({
+      id: 'svg_ref_histo',
+      width: svg_w + m_margin.left + m_margin.right,
+      height: svg_h + m_margin.top + m_margin.bottom,
+    });
 
   const x = d3.scaleLinear()
     .domain([serie.min(), serie.max()])
@@ -1354,7 +1357,8 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
           width: Math.abs(x(d.x1)) - Math.abs(x(d.x0)),
           height: m_height - y(d.length),
           x: 0,
-          transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')' }))
+          transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')',
+        }))
         .styles({ fill: 'beige', stroke: 'black', 'stroke-width': '0.4px' });
 
       svg_ref_histo.append('g')
@@ -1365,10 +1369,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
           .ticks(4)
           .tickFormat(formatCount))
         .selectAll('text')
-        .attr('y', 4)
-        .attr('x', -4)
-        .attr('dy', '.45em')
-        .attr('transform', 'rotate(-40)')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
         .style('text-anchor', 'end');
 
       svg_ref_histo.append('g')
@@ -1387,10 +1388,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
           .ticks(4)
           .tickFormat(formatCount))
         .selectAll('text')
-        .attr('y', 4)
-        .attr('x', -4)
-        .attr('dy', '.45em')
-        .attr('transform', 'rotate(-40)')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
         .style('text-anchor', 'end');
 
       const y_mid = (m_margin.top + m_height - m_margin.bottom) / 2;
@@ -1449,10 +1447,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
           .ticks(4)
           .tickFormat(formatCount))
         .selectAll('text')
-        .attr('y', 4)
-        .attr('x', -4)
-        .attr('dy', '.45em')
-        .attr('transform', 'rotate(-40)')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
         .style('text-anchor', 'end');
 
       const cell = svg_ref_histo.append('g')
