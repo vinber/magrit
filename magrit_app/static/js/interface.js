@@ -1535,6 +1535,7 @@ function add_layout_layers() {
     [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
     [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
     [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
+    [i18next.t('app_page.layout_layer_box.quartier_paris'), 'quartier_paris'],
     [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
     [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
     [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
@@ -1592,6 +1593,16 @@ function add_sample_layer() {
     prepare_extra_dataset_availables();
   }
   const fields_type_sample = new Map([
+    ['quartier_paris', [
+      { name: 'n_sq_qu', type: 'id' },
+      { name: 'c_qu', type: 'id' },
+      { name: 'c_quinsee', type: 'id' },
+      { name: 'l_qu', type: 'id' },
+      { name: 'c_ar', type: 'category', has_duplicate: true },
+      { name: 'n_sq_ar', type: 'category', has_duplicate: true },
+      { name: 'surface', type: 'stock' },
+      { name: 'P12_POP', type: 'stock' },
+      { name: 'P07_POP', type: 'stock' }]],
     ['GrandParisMunicipalities', [
       { name: 'DEPARTEMENT', type: 'category', has_duplicate: true },
       { name: 'IDCOM', type: 'id' },
@@ -1658,6 +1669,7 @@ function add_sample_layer() {
   ]);
 
   const suggested_projection = new Map([
+    ['quartier_paris', ['proj4', 'EPSG:2154']],
     ['GrandParisMunicipalities', ['proj4', 'EPSG:2154']],
     ['martinique', ['proj4', 'EPSG:2973']],
     ['nuts2-2013-data', ['proj4', 'EPSG:3035']],
@@ -1674,6 +1686,7 @@ function add_sample_layer() {
   const target_layers = [
    [i18next.t('app_page.sample_layer_box.target_layer'), ''],
    [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
+   [i18next.t('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
    [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'],
    [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
    [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],

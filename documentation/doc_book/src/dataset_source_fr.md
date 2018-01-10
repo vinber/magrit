@@ -26,17 +26,16 @@ Fond de carte :
 Variables :  
 - ADMIN_NAME : Nom de l’État
 - Abbreviation : Abréviation du nom
-- Capital : Nom de la capitale administrative de l’État
+- Capital : Nom de la capitale administrative de l’État (2)
 - GDP_per_capita_2012 : Produit intérieur brut (PIB) par habitant
-- Life_expectancy_2014 : Espérance de vie à la naissance
+- Life_expectancy_2014 : Espérance de vie à la naissance (2)
 - Pop2014 : Population de l’État (1)
 - REGIONS : Nom de la région d'appartenance
 - STATE2010 : Code de l’État
 - popdensity2014 : Densité de population en habitants par kilomètres carrés
 
 (1) : '2014 IBGE Estimates - Estimates of Resident Population in Brazil, Federative Units and Municipalities" (PDF) (en Portugais). <a href="ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf">ftp://ftp.ibge.gov.br/Estimativas_de_Populacao/Estimativas_2014/estimativa_dou_2014.pdf</a>. Consulté le 25 janv. 2017.  
-(2) : Wikipedia. Consulté le 25 janv. 2017.  
-(3) : Wikipedia. Consulté le 25 janv. 2017.  
+(2) : Wikipedia. https://fr.wikipedia.org/wiki/%C3%89tats_du_Br%C3%A9sil#Listes_des_%C3%89tats_du_Br%C3%A9sil. Consulté le 25 janv. 2017.  
 
 
 ### Communes de Martinique :
@@ -131,3 +130,21 @@ Variables :
 - NOM_REG : Nom de la région à laquelle appartient la commune (1)
 
 (1) : IGN, <a href="http://professionnels.ign.fr/geofla">GEOFLA® 2016 v2.2</a>  
+
+
+### Quartiers administratifs de paris :
+
+Fond de carte : Mairie de Paris (1)   
+Variables :  
+- n_sq_qu : Identifiant séquentiel du quartier (1)
+- c_qu : Numéro de quartier (1)
+- c_quinsee : Numéro INSEE du quartier (1)
+- l_qu : Nom du quartier (1)
+- c_ar : Numéro d'arrondissement (1)
+- n_qu_ar : Lien avec l'arrondissement - Identifiant séquentiel (1)
+- surface : Superficie du quartier en m2 (1)
+- p12_pop : Population 2012 (2)
+- p07_pop : Population 2007 (2)
+
+(1) : Mairie de Paris/Direction de l'Urbanisme. Licence ODbL. Dernier traitement des données lors de la consultation : 1 janvier 2018 00:07. Consulté le 09 janvier 2018. https://opendata.paris.fr/explore/dataset/quartier_paris/information/  
+(2) : Atelier Parisien d'Urbanisme / INSEE - Données statistiques de l'Insee à l'IRIS sur le territoire de la Métropole du Grand Paris (ici agrégées par quartier) - http://opendata.apur.org/datasets/iris-demographie. Consulté le 09 janvier.
