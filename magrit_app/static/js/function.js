@@ -3481,33 +3481,33 @@ function fillMenu_griddedMap(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' })
     .html(i18next.t('app_page.func_options.grid.func'));
 
-  const grid_func = e.insert('select')
-      .attrs({ class: 'params i18n', id: 'Gridded_func' })
-      .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  const f = dialog_content.append('div')
-    .attr('class', 'params_section2 opt_point')
-    .style('padding-top', '10px')
-    .style('clear', 'both')
-    .style('display', 'none');
-  f.append('p')
-    .style('margin', 'auto')
-    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
-    .html(i18next.t('app_page.func_options.common.mask'));
-
-  f.insert('select')
-    .attrs({ class: 'params mask_field', id: 'Gridded_mask' })
-    .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  [
-    ['app_page.func_options.grid.density_count', 'density_count'],
-    ['app_page.func_options.grid.density', 'density'],
-    ['app_page.func_options.grid.mean', 'mean'],
-  ].forEach((f) => {
-    grid_func.append('option')
-      .text(i18next.t(f[0]))
-      .attrs({ value: f[1], 'data-i18n': `[text]${f[0]}` });
-  });
+  // const grid_func = e.insert('select')
+  //     .attrs({ class: 'params i18n', id: 'Gridded_func' })
+  //     .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  //
+  // const f = dialog_content.append('div')
+  //   .attr('class', 'params_section2 opt_point')
+  //   .style('padding-top', '10px')
+  //   .style('clear', 'both')
+  //   .style('display', 'none');
+  // f.append('p')
+  //   .style('margin', 'auto')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
+  //   .html(i18next.t('app_page.func_options.common.mask'));
+  //
+  // f.insert('select')
+  //   .attrs({ class: 'params mask_field', id: 'Gridded_mask' })
+  //   .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  //
+  // [
+  //   ['app_page.func_options.grid.density_count', 'density_count'],
+  //   ['app_page.func_options.grid.density', 'density'],
+  //   ['app_page.func_options.grid.mean', 'mean'],
+  // ].forEach((f) => {
+  //   grid_func.append('option')
+  //     .text(i18next.t(f[0]))
+  //     .attrs({ value: f[1], 'data-i18n': `[text]${f[0]}` });
+  // });
 
   [
     'Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
@@ -3533,20 +3533,20 @@ function fillMenu_griddedMap(layer) {
 const fields_griddedMap = {
   fill: function (layer) {
     if (!layer) return;
-    const type_layer = current_layers[layer].type;
-    section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
-    if (type_layer === 'Point') {
-      const mask_selec = d3.select('#Gridded_mask');
-      const other_layers = get_other_layer_names();
-      unfillSelectInput(mask_selec.node());
-      mask_selec.append('option').text('None').attr('value', 'None');
-      for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
-        lyr_name = other_layers[i];
-        if (current_layers[lyr_name].type === 'Polygon') {
-          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-        }
-      }
-    }
+    // const type_layer = current_layers[layer].type;
+    // section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
+    // if (type_layer === 'Point') {
+    //   const mask_selec = d3.select('#Gridded_mask');
+    //   const other_layers = get_other_layer_names();
+    //   unfillSelectInput(mask_selec.node());
+    //   mask_selec.append('option').text('None').attr('value', 'None');
+    //   for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+    //     lyr_name = other_layers[i];
+    //     if (current_layers[lyr_name].type === 'Polygon') {
+    //       mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+    //     }
+    //   }
+    // }
 
     const fields = getFieldsType('stock', layer),
       field_selec = section2.select('#Gridded_field'),
@@ -3562,10 +3562,10 @@ const fields_griddedMap = {
     });
     ok_button.on('click', () => {
       const options = {};
-      if (type_layer === 'Point') {
-        options.mask = document.getElementById('Gridded_mask').value;
-        options.func = document.getElementById('Gridded_func').value;
-      }
+      // if (type_layer === 'Point') {
+      //   options.mask = document.getElementById('Gridded_mask').value;
+      //   options.func = document.getElementById('Gridded_func').value;
+      // }
       render_Gridded(
         field_selec.node().value,
         document.getElementById('Gridded_cellsize').value,

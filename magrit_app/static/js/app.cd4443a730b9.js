@@ -1119,7 +1119,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.254d148d00ec.json'
+      loadPath: 'static/locales/{{lng}}/translation.cd4443a730b9.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7917,16 +7917,33 @@ function fillMenu_griddedMap(layer) {
   var e = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('display', 'none');
   e.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  var f = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('padding-top', '10px').style('clear', 'both').style('display', 'none');
-  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
-
-  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
-    grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
-  });
+  // const grid_func = e.insert('select')
+  //     .attrs({ class: 'params i18n', id: 'Gridded_func' })
+  //     .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  //
+  // const f = dialog_content.append('div')
+  //   .attr('class', 'params_section2 opt_point')
+  //   .style('padding-top', '10px')
+  //   .style('clear', 'both')
+  //   .style('display', 'none');
+  // f.append('p')
+  //   .style('margin', 'auto')
+  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
+  //   .html(i18next.t('app_page.func_options.common.mask'));
+  //
+  // f.insert('select')
+  //   .attrs({ class: 'params mask_field', id: 'Gridded_mask' })
+  //   .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  //
+  // [
+  //   ['app_page.func_options.grid.density_count', 'density_count'],
+  //   ['app_page.func_options.grid.density', 'density'],
+  //   ['app_page.func_options.grid.mean', 'mean'],
+  // ].forEach((f) => {
+  //   grid_func.append('option')
+  //     .text(i18next.t(f[0]))
+  //     .attrs({ value: f[1], 'data-i18n': `[text]${f[0]}` });
+  // });
 
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
@@ -7944,20 +7961,20 @@ function fillMenu_griddedMap(layer) {
 var fields_griddedMap = {
   fill: function fill(layer) {
     if (!layer) return;
-    var type_layer = current_layers[layer].type;
-    section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
-    if (type_layer === 'Point') {
-      var mask_selec = d3.select('#Gridded_mask');
-      var other_layers = get_other_layer_names();
-      unfillSelectInput(mask_selec.node());
-      mask_selec.append('option').text('None').attr('value', 'None');
-      for (var i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
-        lyr_name = other_layers[i];
-        if (current_layers[lyr_name].type === 'Polygon') {
-          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-        }
-      }
-    }
+    // const type_layer = current_layers[layer].type;
+    // section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
+    // if (type_layer === 'Point') {
+    //   const mask_selec = d3.select('#Gridded_mask');
+    //   const other_layers = get_other_layer_names();
+    //   unfillSelectInput(mask_selec.node());
+    //   mask_selec.append('option').text('None').attr('value', 'None');
+    //   for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+    //     lyr_name = other_layers[i];
+    //     if (current_layers[lyr_name].type === 'Polygon') {
+    //       mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+    //     }
+    //   }
+    // }
 
     var fields = getFieldsType('stock', layer),
         field_selec = section2.select('#Gridded_field'),
@@ -7973,10 +7990,10 @@ var fields_griddedMap = {
     });
     ok_button.on('click', function () {
       var options = {};
-      if (type_layer === 'Point') {
-        options.mask = document.getElementById('Gridded_mask').value;
-        options.func = document.getElementById('Gridded_func').value;
-      }
+      // if (type_layer === 'Point') {
+      //   options.mask = document.getElementById('Gridded_mask').value;
+      //   options.func = document.getElementById('Gridded_func').value;
+      // }
       render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value, options);
     });
     output_name.attr('value', ['Gridded', layer].join('_'));
@@ -9300,12 +9317,12 @@ function getAvailablesFunctionnalities(layerName) {
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
   } else if (current_layers[layerName].type === 'Point') {
     // layer type is Point
-    var _elems2 = section.querySelectorAll('#button_discont, #button_cartogram');
+    var _elems2 = section.querySelectorAll('#button_discont, #button_cartogram, #button_grid');
     for (var _i3 = 0, _len_i2 = _elems2.length; _i3 < _len_i2; _i3++) {
       _elems2[_i3].style.filter = 'grayscale(100%)';
     }
     func_id = section.querySelectorAll('#button_flow');
-    func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid');
+    func_stock = section.querySelectorAll('#button_smooth, #button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {
@@ -11340,7 +11357,11 @@ function add_layer_topojson(text) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  if (!target_layer_on_add && _app.current_functionnality !== undefined && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
+  // if (!target_layer_on_add && _app.current_functionnality !== undefined
+  //     && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
+  //   fields_handler.fill();
+  // }
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
     fields_handler.fill();
   }
 
@@ -14728,7 +14749,8 @@ var UserArrow = function () {
         x2: t.attr('x2'),
         y1: t.attr('y1'),
         y2: t.attr('y2'),
-        map_locked: !!map_div.select('#hand_button').classed('locked') };
+        map_locked: !!map_div.select('#hand_button').classed('locked') //  , snap_lines: snap_lines
+      };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
       handle_click_hand('lock');
@@ -15930,6 +15952,7 @@ var UserRectangle = function () {
         x: +t.attr('x'),
         y: +t.attr('y'),
         map_locked: !!map_div.select('#hand_button').classed('locked')
+        // , snap_lines: get_coords_snap_lines(this.id)
       };
     }).on('start', function () {
       d3.event.sourceEvent.stopPropagation();
@@ -19967,7 +19990,8 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       margin: 'auto',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'background-image': 'url("' + d[1] + '")' };
+      'background-image': 'url("' + d[1] + '")' // ['url("', d[1], '")'].join('')
+    };
   }).on('click', function () {
     box_select.selectAll('p').each(function () {
       this.style.border = '';
@@ -20134,6 +20158,7 @@ var createBoxProj4 = function createBoxProj4() {
   input_section.append('input').styles({ width: '90%' }).attrs({
     id: 'input_proj_string',
     placeholder: 'EPSG:3035'
+    // placeholder: '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs',
   });
 
   var fn_cb = function fn_cb(evt) {
@@ -21088,7 +21113,8 @@ var boxExplore2 = {
         placeholder: i18next.t('app_page.table.search'), // The search input placeholder
         perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
         noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info') }
+        info: i18next.t('app_page.table.info') // "Showing {start} to {end} of {rows} entries"
+      }
     });
     // Adjust the size of the box (on opening and after adding a new field)
     // and/or display scrollbar if its overflowing the size of the window minus a little margin :

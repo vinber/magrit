@@ -671,54 +671,54 @@ async def links_map(posted_data, user_id, app):
 
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
-async def carto_gridded_point(posted_data, user_id, app):
-    posted_data = json.loads(posted_data.get("json"))
-
-    f_name = '_'.join([user_id, str(posted_data['topojson'])])
-    ref_layer = await app['redis_conn'].get(f_name)
-
-    ref_layer = json.loads(ref_layer.decode())
-    new_field = posted_data['var_name']
-
-    n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0:
-        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
-
-    if posted_data['mask_layer']:
-        f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
-        mask_layer = await app['redis_conn'].get(f_name)
-
-    filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
-                 'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] else None,
-                 "result": None}
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-
-    if filenames['mask_layer']:
-        savefile(filenames['mask_layer'],
-                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
-
-    func = posted_data['func']
-
-    result_geojson = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_grid_layer_pt,
-        filenames['src_layer'],
-        posted_data["cellsize"],
-        n_field_name,
-        posted_data["grid_shape"].lower(),
-        filenames['mask_layer'],
-        func)
-
-    new_name = '_'.join(['Gridded',
-                         str(posted_data["cellsize"]),
-                         n_field_name])
-    res = await geojson_to_topojson(result_geojson.encode(), new_name)
-
-    hash_val = str(mmh3_hash(res))
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=43200000))
-    return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
+# async def carto_gridded_point(posted_data, user_id, app):
+#     posted_data = json.loads(posted_data.get("json"))
+#
+#     f_name = '_'.join([user_id, str(posted_data['topojson'])])
+#     ref_layer = await app['redis_conn'].get(f_name)
+#
+#     ref_layer = json.loads(ref_layer.decode())
+#     new_field = posted_data['var_name']
+#
+#     n_field_name = list(new_field.keys())[0]
+#     if len(new_field[n_field_name]) > 0:
+#         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+#
+#     if posted_data['mask_layer']:
+#         f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
+#         mask_layer = await app['redis_conn'].get(f_name)
+#
+#     filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
+#                  'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] else None,
+#                  "result": None}
+#     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+#
+#     if filenames['mask_layer']:
+#         savefile(filenames['mask_layer'],
+#                  topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+#
+#     func = posted_data['func']
+#
+#     result_geojson = await app.loop.run_in_executor(
+#         app["ProcessPool"],
+#         get_grid_layer_pt,
+#         filenames['src_layer'],
+#         posted_data["cellsize"],
+#         n_field_name,
+#         posted_data["grid_shape"].lower(),
+#         filenames['mask_layer'],
+#         func)
+#
+#     new_name = '_'.join(['Gridded',
+#                          str(posted_data["cellsize"]),
+#                          n_field_name])
+#     res = await geojson_to_topojson(result_geojson.encode(), new_name)
+#
+#     hash_val = str(mmh3_hash(res))
+#     asyncio.ensure_future(
+#         app['redis_conn'].set('_'.join([
+#             user_id, hash_val]), res, pexpire=43200000))
+#     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
 async def carto_gridded(posted_data, user_id, app):
@@ -1493,7 +1493,8 @@ async def init(loop, port=None, watch_change=False):
     app['app_name'] = "Magrit"
     app['geo_function'] = {
         "stewart": compute_stewart, "gridded": carto_gridded,
-        "gridded_point": carto_gridded_point, "links": links_map,
+        # "gridded_point": carto_gridded_point,
+        "links": links_map,
         "carto_doug": carto_doug, "olson": compute_olson}
     if watch_change:
         app['FileWatcher'] = JsFileWatcher()

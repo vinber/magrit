@@ -1,10 +1,8 @@
 Changes
 =======
 
-0.7.0 (2018-01-xx)
+0.6.5 (2018-01-xx)
 ------------------
-
-- New: allow to compute density grid from an input layer of points (and optionnaly a clipping mask).
 
 - Be more tolerant with in the regular expression used to filter the name of exported maps (by allowing dot, dash and parantheses for example).
 

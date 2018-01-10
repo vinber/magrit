@@ -1144,8 +1144,11 @@ function add_layer_topojson(text, options = {}) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  if (!target_layer_on_add && _app.current_functionnality !== undefined
-      && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
+  // if (!target_layer_on_add && _app.current_functionnality !== undefined
+  //     && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
+  //   fields_handler.fill();
+  // }
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
     fields_handler.fill();
   }
 
