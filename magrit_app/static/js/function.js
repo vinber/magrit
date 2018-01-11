@@ -195,8 +195,8 @@ const get_first_guess_span = function (func_name) {
     [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
   const height_km = haversine_dist(
     [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-  const val = Math.max(width_km, height_km) * const_mult;
-  return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
+  const val = Mmax(width_km, height_km) * const_mult;
+  return val > 10 ? Mround(val / 10) * 10 : Mround(val);
 };
 
 /**
@@ -214,7 +214,7 @@ function test_maxmin_resolution(cell_value) {
   const height_km = haversine_dist(
     [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
   // const area = width_km * height_km;
-  const bigger_side = Math.max(height_km, width_km);
+  const bigger_side = Mmax(height_km, width_km);
   if ((width_km * height_km) / (cell_value * cell_value) > 15000) {
     return 'higher';
   } else if (cell_value > bigger_side / 1.66) {
@@ -1169,9 +1169,11 @@ const fillMenu_Typo = function fillMenu_Typo() {
 
   const b = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
   b.append('button')
-    .attrs({ id: 'Typo_class',
+    .attrs({
+      id: 'Typo_class',
       class: 'button_disc params i18n',
-      'data-i18n': '[html]app_page.func_options.typo.color_choice' })
+      'data-i18n': '[html]app_page.func_options.typo.color_choice'
+    })
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
     .html(i18next.t('app_page.func_options.typo.color_choice'));
 
@@ -1230,7 +1232,8 @@ const fields_Typo = {
         : undefined;
       const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
       if (cats.length > 15) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: i18next.t('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -1284,7 +1287,8 @@ const fields_Typo = {
         }
       };
       if (params.color_map.size > 15 && !params.skip_alert) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: i18next.t('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -1820,10 +1824,12 @@ function fillMenu_Stewart() {
     .html(i18next.t('app_page.func_options.smooth.break_values'));
   bvs.insert('textarea')
     .styles({ width: '100%', height: '2.2em', 'font-size': '0.9em' })
-    .attrs({ class: 'params i18n',
+    .attrs({
+      class: 'params i18n',
       id: 'stewart_breaks',
       'data-i18n': '[placeholder]app_page.common.expected_class',
-      placeholder: i18next.t('app_page.common.expected_class') });
+      placeholder: i18next.t('app_page.common.expected_class'),
+    });
   const m = dialog_content.append('div')
     .attr('class', 'params_section2')
     .style('margin', 'auto');
@@ -1945,9 +1951,11 @@ const fields_Anamorphose = {
             current_layers[n_layer_name].scale_byFeature = transform;
             map.select(`#${_app.layer_to_id.get(n_layer_name)}`)
               .selectAll('path')
-              .style('fill-opacity', 0.8)
-              .style('stroke', 'black')
-              .style('stroke-opacity', 0.8);
+              .styles({
+                stroke: 'black',
+                'stroke-opacity': 0.8,
+                'fill-opacity': 0.8,
+              });
             switch_accordion_section();
           }, (err) => {
             display_error_during_computation();
@@ -2478,7 +2486,7 @@ function render_mini_chart_serie(values, parent, max_h, nb_bins) {
 
   ctx.fillStyle = color;
   for (let i = 0; i < bins; i++) {
-    const barheight = Math.floor(Math.min(class_count.counts[i] / cap, 1) * (height - 1));
+    const barheight = Math.floor(Mmin(class_count.counts[i] / cap, 1) * (height - 1));
     x += barspace;
     ctx.fillRect(x, height, barwidth, -barheight);
     x += barwidth;
@@ -2495,7 +2503,7 @@ function render_mini_chart_serie(values, parent, max_h, nb_bins) {
 }
 
 function make_mini_summary(summary) {
-  const p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
+  const p = Mmax(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
   const props = {
     min: summary.min,
     max: summary.max,
@@ -3049,7 +3057,7 @@ const render_discont = function () {
 
 function fillMenu_PropSymbol(layer) {
   const dialog_content = make_template_functionnality(section2),
-    max_allowed_size = Math.round(h / 2 - h / 10);
+    max_allowed_size = Mround(h / 2 - h / 10);
 
   const a = dialog_content.append('p').attr('class', 'params_section2').style('margin-top', '2px');
   a.append('span')

@@ -1357,7 +1357,7 @@ function createStyleBox(layer_name) {
     .html(i18next.t('app_page.layer_style_popup.border_color'));
   c_section.insert('input')
     .attr('type', 'color')
-    .property(stroke_prev)
+    .property('value', stroke_prev)
     .style('float', 'right')
     .on('change', function () {
       selection.style('stroke', this.value);

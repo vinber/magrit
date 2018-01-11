@@ -302,7 +302,7 @@
             "discont": "Discontinuities map",
             "typo": "Categorical map",
             "typosymbol": "Pictogram map",
-            "two_stocks": "Waffle/Treemap map"
+            "two_stocks": "Waffle map"
         },
         "projection_box":{
             "choice_projection": "Choose a projection",

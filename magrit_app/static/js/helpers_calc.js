@@ -80,10 +80,10 @@ function has_duplicate(arr) {
 */
 const round_value = function (val, nb) {
   if (nb === undefined) { return val; }
-  const dec_mult = +['1', Array(Math.abs(nb)).fill('0').join('')].join('');
+  const dec_mult = +['1', Array(Mabs(nb)).fill('0').join('')].join('');
   return nb >= 0
-        ? Math.round(+val * dec_mult) / dec_mult
-        : Math.round(+val / dec_mult) * dec_mult;
+        ? Mround(+val * dec_mult) / dec_mult
+        : Mround(+val / dec_mult) * dec_mult;
 };
 
 function get_nb_decimals(nb) {
@@ -215,7 +215,7 @@ function getBreaksQ6(serie, precision = null) {
   let j;
   const stock_class = [];
   for (let i = 0; i < 7; ++i) {
-    j = Math.round(q6_class[i]) - 1;
+    j = Mround(q6_class[i]) - 1;
     breaks.push(+serie[j]);
     stock_class.push(j - tmp);
     tmp = j;
@@ -440,7 +440,7 @@ function coslaw_dist(A, B) {
 function get_distance(pt1, pt2) {
   const xs = pt2[0] - pt1[1];
   const ys = pt2[1] - pt1[1];
-  return Math.sqrt((xs * xs) + (ys * ys));
+  return Msqrt((xs * xs) + (ys * ys));
 }
 
 /**
@@ -458,7 +458,7 @@ function getStdDev(values, mean_val) {
       // s += pow(values[i] - mean_val, 2);
     s += (values[i] - mean_val) ** 2;
   }
-  return Math.sqrt((1 / nb_val) * s);
+  return Msqrt((1 / nb_val) * s);
 }
 
 /**
@@ -618,7 +618,7 @@ function scale_to_bbox(bbox) {
     },
   };
   const bboxPath = path.bounds(feature);
-  s = 0.95 / Math.max(
+  s = 0.95 / Mmax(
     (bboxPath[1][0] - bboxPath[0][0]) / w, (bboxPath[1][1] - bboxPath[0][1]) / h) * proj.scale();
   t = [0, 0];
   proj.scale(s).translate(t);

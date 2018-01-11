@@ -33,6 +33,13 @@ Function.prototype.memoize = function () {
   };
 };
 
+var Mmax = Math.max;
+var Mmin = Math.min;
+var Mabs = Math.abs;
+var Mpow = Math.pow;
+var Msqrt = Math.sqrt;
+var Mround = Math.round;
+var Mceil = Math.ceil;
 /**
 * Function setting-up main elements of the interface
 *
@@ -202,12 +209,14 @@ function setUpInterface(reload_project) {
     });
   });
 
-  const_options.append('button').attrs({ id: 'current_app_lang', class: 'const_buttons' }).styles({ color: 'white',
+  const_options.append('button').attrs({ id: 'current_app_lang', class: 'const_buttons' }).styles({
+    color: 'white',
     cursor: 'pointer',
     'font-size': '14px',
     'vertical-align': 'super',
     background: 'transparent',
-    'font-weight': 'bold' }).html(i18next.language).on('click', function () {
+    'font-weight': 'bold'
+  }).html(i18next.language).on('click', function () {
     if (document.getElementById('menu_lang')) {
       document.getElementById('menu_lang').remove();
     } else {
@@ -265,10 +274,15 @@ function setUpInterface(reload_project) {
       b_accordion5 = menu.append('button').attr('id', 'btn_s5').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section5b.title'),
       accordion5 = menu.append('div').attr('class', 'panel').attr('id', 'accordion5b');
 
-  var section1 = accordion1.append('div').attr('id', 'section1').attr('class', 'i18n').attr('data-i18n', '[tooltip-title]app_page.tooltips.section1').attr('data-placement', 'right');
+  var section1 = accordion1.append('div').attrs({
+    id: 'section1',
+    class: 'i18n',
+    'data-i18n': '[tooltip-title]app_page.tooltips.section1',
+    'data-placement': 'right'
+  });
   window.section2_pre = accordion2_pre.append('div').attr('id', 'section2_pre');
   window.section2 = accordion2.append('div').attr('id', 'section2');
-  accordion3.append('div').attrs({ id: 'section3' });
+  accordion3.append('div').attr('id', 'section3');
   accordion4.append('div').attr('id', 'section4');
   accordion5.append('div').attr('id', 'section5');
 
@@ -295,11 +309,13 @@ function setUpInterface(reload_project) {
     id: 'btn_type_fields',
     class: 'i18n',
     'data-i18n': '[html]app_page.box_type_fields.title',
-    disabled: true }).styles({
+    disabled: true
+  }).styles({
     cursor: 'pointer',
     'border-radius': '4px',
     border: '1px solid lightgrey',
-    padding: '3.5px' }).html(i18next.t('app_page.box_type_fields.title')).on('click', function () {
+    padding: '3.5px'
+  }).html(i18next.t('app_page.box_type_fields.title')).on('click', function () {
     var layer_name = Object.getOwnPropertyNames(user_data)[0];
     make_box_type_fields(layer_name);
   });
@@ -308,9 +324,12 @@ function setUpInterface(reload_project) {
 
   var section3 = d3.select('#section3');
 
-  window.layer_list = section3.append('div').attrs({ class: 'i18n',
+  window.layer_list = section3.append('div').attrs({
+    class: 'i18n',
     'data-i18n': '[tooltip-title]app_page.tooltips.section3',
-    'data-placement': 'right' }).append('ul').attrs({ id: 'sortable', class: 'layer_list' });
+    'data-placement': 'right'
+  }).append('ul').attrs({ id: 'sortable', class: 'layer_list' });
+
   new Sortable(document.getElementById('sortable'), {
     animation: 100,
     onUpdate: function onUpdate(a) {
@@ -347,28 +366,36 @@ function setUpInterface(reload_project) {
 
   var dv3 = section3.append('div').style('padding-top', '10px').html('');
 
-  dv3.append('img').attrs({ src: 'static/img/b/addsample_t.png',
+  dv3.append('img').attrs({
+    src: 'static/img/b/addsample_t.png',
     class: 'i18n',
     'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout_sample',
-    'data-placement': 'right' }).styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' }).on('click', add_layout_layers);
-  dv3.append('img').attrs({ src: 'static/img/b/addgeom_t.png',
+    'data-placement': 'right'
+  }).styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' }).on('click', add_layout_layers);
+  dv3.append('img').attrs({
+    src: 'static/img/b/addgeom_t.png',
     id: 'input_layout_geom',
     class: 'i18n',
     'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout',
-    'data-placement': 'right' }).styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' }).on('click', click_button_add_layer);
+    'data-placement': 'right'
+  }).styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' }).on('click', click_button_add_layer);
 
   var section4 = d3.select('#section4');
-  var dv4 = section4.append('div').style('margin', 'auto').append('ul').styles({ 'list-style': 'outside none none',
+  var dv4 = section4.append('div').style('margin', 'auto').append('ul').styles({
+    'list-style': 'outside none none',
     display: 'inline-block',
     padding: '0px',
     width: '100%',
-    'margin-top': '0px' });
+    'margin-top': '0px'
+  });
 
   var e = dv4.append('li').styles({ margin: '1px', padding: '4px', 'text-align': 'center' });
-  e.append('input').attrs({ id: 'title',
+  e.append('input').attrs({
+    id: 'title',
     class: 'list_elem_section4 i18n',
     placeholder: '',
-    'data-i18n': '[placeholder]app_page.section4.map_title' }).styles({ margin: '0px 0px 0px 3px', width: '160px' }).on('keyup', function () {
+    'data-i18n': '[placeholder]app_page.section4.map_title'
+  }).styles({ margin: '0px 0px 0px 3px', width: '160px' }).on('keyup', function () {
     handle_title(this.value);
   });
   e.append('span').styles({ display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub' }).html(sys_run_button.replace('submit', 'Title properties')).on('click', handle_title_properties);
@@ -474,10 +501,11 @@ function setUpInterface(reload_project) {
   d2.append('button').styles({ margin: 0, padding: 0 }).attrs({
     id: 'resize_fit',
     class: 'm_elem_right list_elem_section4 button_st4 i18n',
-    'data-i18n': '[html]app_page.common.ok' }).on('click', function () {
+    'data-i18n': '[html]app_page.common.ok'
+  }).on('click', function () {
     document.getElementById('btn_s4').click();
     window.scrollTo(0, 0);
-    w = Math.round(window.innerWidth - 361);
+    w = Mround(window.innerWidth - 361);
     h = window.innerHeight - 55;
     canvas_mod_size([w, h]);
     document.getElementById('map_ratio_select').value = 'ratio_user';
@@ -486,7 +514,7 @@ function setUpInterface(reload_project) {
 
   var c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   c.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.map_center_menu').style('cursor', 'pointer');
-  c.append('span').attr('id', 'map_center_menu_ico').style('display', 'inline-table').style('cursor', 'pointer');
+  c.append('span').attr('id', 'map_center_menu_ico').styles({ display: 'inline-table', cursor: 'pointer' });
   c.on('click', function () {
     var sections = document.getElementsByClassName('to_hide');
     var arg = void 0;
@@ -576,9 +604,11 @@ function setUpInterface(reload_project) {
   });
 
   var g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  g2.append('input').styles({ margin: 0, padding: 0 }).attrs({ id: 'autoalign_features',
+  g2.append('input').styles({ margin: 0, padding: 0 }).attrs({
+    id: 'autoalign_features',
     type: 'checkbox',
-    class: 'm_elem_right list_elem_section4 i18n' }).on('change', function () {
+    class: 'm_elem_right list_elem_section4 i18n'
+  }).on('change', function () {
     _app.autoalign_features = this.checked;
   });
   g2.append('p').attr('class', 'list_elem_section4 i18n').attr('data-i18n', '[html]app_page.section4.autoalign_features');
@@ -668,8 +698,8 @@ function setUpInterface(reload_project) {
       in_h.value = h;
       in_w.value = w;
     } else if (value === 'user_defined') {
-      in_h.value = Math.round(h / 118.11 * 10) / 10;
-      in_w.value = Math.round(w / 118.11 * 10) / 10;
+      in_h.value = Mround(h / 118.11 * 10) / 10;
+      in_w.value = Mround(w / 118.11 * 10) / 10;
     } else if (value === 'A4_landscape') {
       in_h.value = 21.0;
       in_w.value = 29.7;
@@ -706,7 +736,7 @@ function setUpInterface(reload_project) {
   exp_a.append('input').style('width', '60px').attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', w).on('change', function () {
     var ratio = h / w,
         export_png_height = document.getElementById('export_png_height');
-    export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
+    export_png_height.value = Mround(+this.value * ratio * 10) / 10;
   });
 
   exp_a.append('span').attr('id', 'export_png_width_txt').html(' (px)');
@@ -717,7 +747,7 @@ function setUpInterface(reload_project) {
   exp_b.append('input').style('width', '60px').attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1 }).property('value', h).on('change', function () {
     var ratio = h / w,
         export_png_width = document.getElementById('export_png_width');
-    export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+    export_png_width.value = Mround(+this.value / ratio * 10) / 10;
   });
 
   exp_b.append('span').attr('id', 'export_png_height_txt').html(' (px)');
@@ -943,7 +973,8 @@ function make_ico_choice() {
       class: 'i18n',
       'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
       src: ['static/img/func_icons2/', ico_name].join(''),
-      id: 'button_' + func_name }).on('click', function () {
+      id: 'button_' + func_name
+    }).on('click', function () {
       // Do some clean-up related to the previously displayed options :
       if (window.fields_handler) {
         if (this.classList.contains('active')) {
@@ -999,7 +1030,7 @@ var t = proj.translate();
 var s = proj.scale();
 var current_proj_name = 'NaturalEarth2';
 var zoom = d3.zoom().on('zoom', zoom_without_redraw);
-var w = Math.round(window.innerWidth - 361);
+var w = Mround(window.innerWidth - 361);
 var h = window.innerHeight - 55;
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -1023,7 +1054,7 @@ var pos_lgds_elem = new Map();
 
 // The 'map':
 // (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
-var map = map_div.styles({ width: w + 'px', height: h + 'px' }).append('svg').attrs({ id: 'svg_map', width: w, height: h }).style('background-color', 'rgba(255, 255, 255, 0)').style('position', 'absolute').on('contextmenu', function (event) {
+var map = map_div.styles({ width: w + 'px', height: h + 'px' }).append('svg').attrs({ id: 'svg_map', width: w, height: h }).styles({ position: 'absolute', 'background-color': 'rgba(255, 255, 255, 0)' }).on('contextmenu', function (event) {
   d3.event.preventDefault();
 }).call(zoom);
 
@@ -1119,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.cd4443a730b9.json'
+      loadPath: 'static/locales/{{lng}}/translation.a1470d9c5090.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1532,12 +1563,14 @@ function remove_layer_cleanup(name) {
     // Updating the top of the menu (section 1) :
     document.getElementById('table_layer_s1').remove();
     document.getElementById('remove_target').remove();
-    d3.select('#img_in_geom').attrs({ id: 'img_in_geom',
+    d3.select('#img_in_geom').attrs({
+      id: 'img_in_geom',
       class: 'user_panel',
       src: 'static/img/b/addgeom.png',
       width: '24',
       height: '24',
-      alt: 'Geometry layer' }).on('click', click_button_add_layer);
+      alt: 'Geometry layer'
+    }).on('click', click_button_add_layer);
     d3.select('#input_geom').attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' }).html(i18next.t('app_page.section1.add_geom')).on('click', click_button_add_layer);
     // Unfiling the fields related to the targeted functionnality:
     if (_app.current_functionnality) {
@@ -2202,8 +2235,8 @@ function canvas_mod_size(shape) {
   } else {
     return;
   }
-  document.getElementById('export_png_width').value = Math.round(w * ratio * 10) / 10;
-  document.getElementById('export_png_height').value = Math.round(h * ratio * 10) / 10;
+  document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
+  document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
 }
 
 function patchSvgForFonts() {
@@ -2477,8 +2510,8 @@ function changeResolution(canvas, scaleFactor) {
   if (!canvas.style.width) canvas.style.width = canvas.width + 'px'; // eslint-disable-line no-param-reassign
   if (!canvas.style.height) canvas.style.height = canvas.height + 'px'; // eslint-disable-line no-param-reassign
 
-  canvas.width = Math.ceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
-  canvas.height = Math.ceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
+  canvas.width = Mceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
+  canvas.height = Mceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
   var ctx = canvas.getContext('2d');
   ctx.scale(scaleFactor, scaleFactor);
 }
@@ -3006,7 +3039,7 @@ var display_discretization = function display_discretization(layer_name, field_n
       min: 1,
       max: nb_class - 1,
       step: 1,
-      value: Math.round(nb_class / 2) }).on('change', function () {
+      value: Mround(nb_class / 2) }).on('change', function () {
       redisplay.draw();
     });
 
@@ -3346,7 +3379,7 @@ var display_discretization = function display_discretization(layer_name, field_n
 
           var class_right = nb_class - ctl_class_value + 1,
               class_left = ctl_class_value - 1,
-              max_col_nb = Math.max(class_right, class_left);
+              max_col_nb = Mmax(class_right, class_left);
 
           var right_pal = getColorBrewerArray(max_col_nb, right_palette);
           var left_pal = getColorBrewerArray(max_col_nb, left_palette);
@@ -3549,7 +3582,7 @@ var display_discretization = function display_discretization(layer_name, field_n
 
   discretization_panel.append('span').html(i18next.t('disc_box.class'));
 
-  var disc_nb_class = discretization_panel.insert('input').property(nb_clas).styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' }).attrs({
+  var disc_nb_class = discretization_panel.insert('input').property('value', nb_class).styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' }).attrs({
     id: 'nb_class_range',
     type: 'range',
     min: 2,
@@ -3577,7 +3610,7 @@ var display_discretization = function display_discretization(layer_name, field_n
         var ctl_class = document.getElementById('centr_class');
         if (ctl_class) {
           ctl_class.max = nb_class;
-          if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+          if (ctl_class > nb_class) ctl_class.value = Mround(nb_class / 2);
         }
       }
     });
@@ -3988,7 +4021,7 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
   var svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
       svg_w = w / 4 > 320 ? 320 : w / 4,
       values = serie.sorted(),
-      nb_bins = values.length / 3 > 51 ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+      nb_bins = values.length / 3 > 51 ? 50 : Mceil(Msqrt(values.length)) + 1;
 
   var q5 = serie.getQuantile(4).map(function (v) {
     return +v;
@@ -4025,7 +4058,7 @@ var prepare_ref_histo = function prepare_ref_histo(parent_node, serie, formatCou
       var bar = svg_ref_histo.selectAll('.bar').data(data).enter().append('rect').attrs(function (d) {
         return {
           class: 'bar',
-          width: Math.abs(x(d.x1)) - Math.abs(x(d.x0)),
+          width: Mabs(x(d.x1)) - Mabs(x(d.x0)),
           height: m_height - y(d.length),
           x: 0,
           transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')'
@@ -4799,8 +4832,8 @@ var get_first_guess_span = function get_first_guess_span(func_name) {
       const_mult = func_name === 'grid' ? 0.09 : 0.05;
   var width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
   var height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
-  var val = Math.max(width_km, height_km) * const_mult;
-  return val > 10 ? Math.round(val / 10) * 10 : Math.round(val);
+  var val = Mmax(width_km, height_km) * const_mult;
+  return val > 10 ? Mround(val / 10) * 10 : Mround(val);
 };
 
 /**
@@ -4816,7 +4849,7 @@ function test_maxmin_resolution(cell_value) {
   var width_km = haversine_dist([bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
   var height_km = haversine_dist([abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
   // const area = width_km * height_km;
-  var bigger_side = Math.max(height_km, width_km);
+  var bigger_side = Mmax(height_km, width_km);
   if (width_km * height_km / (cell_value * cell_value) > 15000) {
     return 'higher';
   } else if (cell_value > bigger_side / 1.66) {
@@ -5752,9 +5785,11 @@ var fillMenu_Typo = function fillMenu_Typo() {
   a.insert('select').attrs({ id: 'Typo_field_1', class: 'params' });
 
   var b = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
-  b.append('button').attrs({ id: 'Typo_class',
+  b.append('button').attrs({
+    id: 'Typo_class',
     class: 'button_disc params i18n',
-    'data-i18n': '[html]app_page.func_options.typo.color_choice' }).styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.func_options.typo.color_choice'));
+    'data-i18n': '[html]app_page.func_options.typo.color_choice'
+  }).styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.func_options.typo.color_choice'));
 
   make_layer_name_button(dv2, 'Typo_output_name');
   make_ok_button(dv2, 'Typo_yes');
@@ -5820,7 +5855,8 @@ var fields_Typo = {
           c_map = _prepare_categories_a4[1];
 
       if (cats.length > 15) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: i18next.t('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -5874,7 +5910,8 @@ var fields_Typo = {
         }
       };
       if (params.color_map.size > 15 && !params.skip_alert) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: i18next.t('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -6413,10 +6450,12 @@ function fillMenu_Stewart() {
 
   var bvs = dialog_content.append('p').attr('class', 'params_section2');
   bvs.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.break_values' }).html(i18next.t('app_page.func_options.smooth.break_values'));
-  bvs.insert('textarea').styles({ width: '100%', height: '2.2em', 'font-size': '0.9em' }).attrs({ class: 'params i18n',
+  bvs.insert('textarea').styles({ width: '100%', height: '2.2em', 'font-size': '0.9em' }).attrs({
+    class: 'params i18n',
     id: 'stewart_breaks',
     'data-i18n': '[placeholder]app_page.common.expected_class',
-    placeholder: i18next.t('app_page.common.expected_class') });
+    placeholder: i18next.t('app_page.common.expected_class')
+  });
   var m = dialog_content.append('div').attr('class', 'params_section2').style('margin', 'auto');
   m.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
 
@@ -6532,7 +6571,11 @@ var fields_Anamorphose = {
           current_layers[n_layer_name].scale_max = 1;
           current_layers[n_layer_name].ref_layer_name = layer;
           current_layers[n_layer_name].scale_byFeature = transform;
-          map.select('#' + _app.layer_to_id.get(n_layer_name)).selectAll('path').style('fill-opacity', 0.8).style('stroke', 'black').style('stroke-opacity', 0.8);
+          map.select('#' + _app.layer_to_id.get(n_layer_name)).selectAll('path').styles({
+            stroke: 'black',
+            'stroke-opacity': 0.8,
+            'fill-opacity': 0.8
+          });
           switch_accordion_section();
         }, function (err) {
           display_error_during_computation();
@@ -7035,7 +7078,7 @@ function render_mini_chart_serie(values, parent, max_h, nb_bins) {
 
   ctx.fillStyle = color;
   for (var i = 0; i < bins; i++) {
-    var barheight = Math.floor(Math.min(class_count.counts[i] / cap, 1) * (height - 1));
+    var barheight = Math.floor(Mmin(class_count.counts[i] / cap, 1) * (height - 1));
     x += barspace;
     ctx.fillRect(x, height, barwidth, -barheight);
     x += barwidth;
@@ -7052,7 +7095,7 @@ function render_mini_chart_serie(values, parent, max_h, nb_bins) {
 }
 
 function make_mini_summary(summary) {
-  var p = Math.max(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
+  var p = Mmax(get_nb_decimals(summary.min), get_nb_decimals(summary.max));
   var props = {
     min: summary.min,
     max: summary.max,
@@ -7561,7 +7604,7 @@ var render_discont = function render_discont() {
 
 function fillMenu_PropSymbol(layer) {
   var dialog_content = make_template_functionnality(section2),
-      max_allowed_size = Math.round(h / 2 - h / 10);
+      max_allowed_size = Mround(h / 2 - h / 10);
 
   var a = dialog_content.append('p').attr('class', 'params_section2').style('margin-top', '2px');
   a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
@@ -9636,8 +9679,8 @@ var round_value = function round_value(val, nb) {
   if (nb === undefined) {
     return val;
   }
-  var dec_mult = +['1', Array(Math.abs(nb)).fill('0').join('')].join('');
-  return nb >= 0 ? Math.round(+val * dec_mult) / dec_mult : Math.round(+val / dec_mult) * dec_mult;
+  var dec_mult = +['1', Array(Mabs(nb)).fill('0').join('')].join('');
+  return nb >= 0 ? Mround(+val * dec_mult) / dec_mult : Mround(+val / dec_mult) * dec_mult;
 };
 
 function get_nb_decimals(nb) {
@@ -9783,7 +9826,7 @@ function getBreaksQ6(serie) {
   var j = void 0;
   var stock_class = [];
   for (var i = 0; i < 7; ++i) {
-    j = Math.round(q6_class[i]) - 1;
+    j = Mround(q6_class[i]) - 1;
     breaks.push(+serie[j]);
     stock_class.push(j - tmp);
     tmp = j;
@@ -10015,7 +10058,7 @@ function coslaw_dist(A, B) {
 function get_distance(pt1, pt2) {
   var xs = pt2[0] - pt1[1];
   var ys = pt2[1] - pt1[1];
-  return Math.sqrt(xs * xs + ys * ys);
+  return Msqrt(xs * xs + ys * ys);
 }
 
 /**
@@ -10033,7 +10076,7 @@ function getStdDev(values, mean_val) {
     // s += pow(values[i] - mean_val, 2);
     s += Math.pow(values[i] - mean_val, 2);
   }
-  return Math.sqrt(1 / nb_val * s);
+  return Msqrt(1 / nb_val * s);
 }
 
 /**
@@ -10200,7 +10243,7 @@ function scale_to_bbox(bbox) {
     }
   };
   var bboxPath = path.bounds(feature);
-  s = 0.95 / Math.max((bboxPath[1][0] - bboxPath[0][0]) / w, (bboxPath[1][1] - bboxPath[0][1]) / h) * proj.scale();
+  s = 0.95 / Mmax((bboxPath[1][0] - bboxPath[0][0]) / w, (bboxPath[1][1] - bboxPath[0][1]) / h) * proj.scale();
   t = [0, 0];
   proj.scale(s).translate(t);
   map.selectAll('.layer').selectAll('path').attr('d', path);
@@ -11480,14 +11523,14 @@ function get_bbox_layer_path(name) {
     bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
   }
   if (current_proj_name === 'ConicConformal') {
-    var s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    var s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     var bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -55.1], [20.9, -36.7], [147.2, -42.2], [162.1, 67.0], [-160.2, 65.7]] });
-    var s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+    var s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
-    var _s = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    var _s = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     var _bbox_layer_path = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -35.0], [20.9, -35.0], [147.2, -35.0], [175.0, 75.0], [-175.0, 75.0]] });
-    var _s2 = Math.max((_bbox_layer_path[1][0] - _bbox_layer_path[0][0]) / w, (_bbox_layer_path[1][1] - _bbox_layer_path[0][1]) / h);
+    var _s2 = Mmax((_bbox_layer_path[1][0] - _bbox_layer_path[0][0]) / w, (_bbox_layer_path[1][1] - _bbox_layer_path[0][1]) / h);
     if (_s2 < _s) bbox_layer_path = _bbox_layer_path;
   }
   return bbox_layer_path;
@@ -11503,7 +11546,7 @@ function get_bbox_layer_path(name) {
 function scale_to_lyr(name) {
   var bbox_layer_path = get_bbox_layer_path(name);
   if (!bbox_layer_path) return;
-  s = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
+  s = 0.95 / Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
   t = [0, 0];
   proj.scale(s).translate(t);
   map.selectAll('.layer').selectAll('path').attr('d', path);
@@ -11519,7 +11562,7 @@ function scale_to_lyr(name) {
 */
 function center_map(name) {
   var bbox_layer_path = get_bbox_layer_path(name);
-  var zoom_scale = 0.95 / Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+  var zoom_scale = 0.95 / Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
   var zoom_translate = [(w - zoom_scale * (bbox_layer_path[1][0] + bbox_layer_path[0][0])) / 2, (h - zoom_scale * (bbox_layer_path[1][1] + bbox_layer_path[0][1])) / 2];
   var _zoom = svg_map.__zoom;
   _zoom.k = zoom_scale;
@@ -11530,7 +11573,7 @@ function center_map(name) {
 function fitLayer(layer_name) {
   proj.scale(1).translate([0, 0]);
   var b = get_bbox_layer_path(layer_name);
-  var s = 0.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
+  var s = 0.95 / Mmax((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
   var t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
   proj.scale(s).translate(t);
   return [s, t];
@@ -11613,7 +11656,7 @@ function add_layout_feature(selected_feature) {
     var graticule = d3.geoGraticule().step([step, step]);
     if (options.extent) {
       var bbox_layer = _target_layer_file.bbox;
-      var extent = [[Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10], [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
+      var extent = [[Mround((bbox_layer[0] - 10) / 10) * 10, Mround((bbox_layer[1] - 10) / 10) * 10], [Mround((bbox_layer[2] + 10) / 10) * 10, Mround((bbox_layer[3] + 10) / 10) * 10]];
       graticule = graticule.extent(extent);
       current_layers.Graticule.extent = extent;
     }
@@ -11748,7 +11791,8 @@ function add_single_symbol(symbol_dataurl, x, y) {
     y: y || h / 2,
     width: width,
     height: height,
-    'xlink:href': symbol_dataurl }).on('mouseover', function () {
+    'xlink:href': symbol_dataurl
+  }).on('mouseover', function () {
     this.style.cursor = 'pointer';
   }).on('mouseout', function () {
     this.style.cursor = 'initial';
@@ -13763,7 +13807,7 @@ function createStyleBox(layer_name) {
 
   var c_section = popup.append('p').attr('class', 'line_elem');
   c_section.insert('span').html(i18next.t('app_page.layer_style_popup.border_color'));
-  c_section.insert('input').attr('type', 'color').property(stroke_prev).style('float', 'right').on('change', function () {
+  c_section.insert('input').attr('type', 'color').property('value', stroke_prev).style('float', 'right').on('change', function () {
     selection.style('stroke', this.value);
   });
 
@@ -14709,14 +14753,10 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var max = Math.max;
-var min = Math.min;
-var abs = Math.abs;
 var sin = Math.sin;
 var cos = Math.cos;
 var PI = Math.PI;
 var atan2 = Math.atan2;
-var sqrt = Math.sqrt;
 
 var UserArrow = function () {
   function UserArrow(id, origin_pt, destination_pt) {
@@ -15036,7 +15076,7 @@ var UserArrow = function () {
         elem.dispatchEvent(new Event('change'));
       });
       s2.insert('input').attrs({ id: 'arrow_angle', type: 'range', value: angle, min: 0, max: 360, step: 1 }).styles({ width: '80px', 'vertical-align': 'middle', float: 'right' }).on('change', function () {
-        var distance = sqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
+        var distance = Msqrt((self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0]) + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
         var _angle = -+this.value;
 
         var _self$calcDestFromOAD = self.calcDestFromOAD(self.pt1, _angle, distance),
@@ -15128,31 +15168,31 @@ var Textbox = function () {
               snap_lines_y = d3.event.subject.snap_lines.y;
 
           var _loop = function _loop(i) {
-            if (abs(snap_lines_x[i][0] - xmin) < 10) {
-              var _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              var _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
+              var _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              var _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
               Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
                 el.x.baseVal.value = snap_lines_x[i][0];
               });
             }
-            if (abs(snap_lines_x[i][0] - xmax) < 10) {
-              var _y = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              var _y3 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
+              var _y = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              var _y3 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
               Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
                 el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
               });
             }
-            if (abs(snap_lines_y[i][0] - ymin) < 10) {
-              var x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              var x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
+              var x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              var x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
               t.y.baseVal.value = snap_lines_y[i][0];
             }
-            if (abs(snap_lines_y[i][0] - ymax) < 10) {
-              var _x5 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              var _x6 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
+              var _x5 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              var _x6 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(_x5, _x6, snap_lines_y[i][0], snap_lines_y[i][0]);
               t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
             }
@@ -15193,7 +15233,7 @@ var Textbox = function () {
       context_menu.showMenu(d3.event, document.querySelector('body'), getItems());
     });
 
-    this.lineHeight = Math.round(this.fontSize * 1.4);
+    this.lineHeight = Mround(this.fontSize * 1.4);
     this.textAnnot = text_elem;
     this.group = group_elem;
     this.fontFamily = 'verdana';
@@ -15252,7 +15292,7 @@ var Textbox = function () {
     key: 'updateLineHeight',
     value: function updateLineHeight() {
       var self = this;
-      self.lineHeight = Math.round(self.fontSize * 1.4);
+      self.lineHeight = Mround(self.fontSize * 1.4);
       self.textAnnot.selectAll('tspan').each(function (d, i) {
         if (i !== 0) {
           d3.select(this).attr('dy', self.lineHeight);
@@ -15548,14 +15588,14 @@ var scaleBar = {
     this.Scale = scale_gp;
     this.displayed = true;
     if (this.dist > 100) {
-      this.resize(Math.round(this.dist / 100) * 100);
+      this.resize(Mround(this.dist / 100) * 100);
     } else if (this.dist > 10) {
-      this.resize(Math.round(this.dist / 10) * 10);
-    } else if (Math.round(this.dist) > 1) {
-      this.resize(Math.round(this.dist));
-    } else if (Math.round(this.dist * 10) / 10 > 0.1) {
+      this.resize(Mround(this.dist / 10) * 10);
+    } else if (Mround(this.dist) > 1) {
+      this.resize(Mround(this.dist));
+    } else if (Mround(this.dist * 10) / 10 > 0.1) {
       this.precision = 1;
-      this.resize(Math.round(this.dist * 10) / 10);
+      this.resize(Mround(this.dist * 10) / 10);
     } else {
       var t = this.dist.toString().split('.');
       this.precision = t && t.length > 1 ? t[1].length : ('' + this.dist).length;
@@ -15759,27 +15799,27 @@ var northArrow = {
             snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
         for (var i = 0; i < snap_lines_x.length; i++) {
-          if (abs(snap_lines_x[i][0] - xmin) < 10) {
-            var _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-            var _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+          if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
+            var _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            var _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
             make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
             tx = snap_lines_x[i][0] + 7.5;
           }
-          if (abs(snap_lines_x[i][0] - xmax) < 10) {
-            var _y4 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-            var _y5 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+          if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
+            var _y4 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            var _y5 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
             make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y4, _y5);
             tx = snap_lines_x[i][0] - _bbox.width + 7.5;
           }
-          if (abs(snap_lines_y[i][0] - ymin) < 10) {
-            var _x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-            var _x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+          if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
+            var _x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            var _x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
             make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
             ty = snap_lines_y[i][0] + 7.5;
           }
-          if (abs(snap_lines_y[i][0] - ymax) < 10) {
-            var _x7 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-            var _x8 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+          if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
+            var _x7 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            var _x8 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
             make_red_line_snap(_x7, _x8, snap_lines_y[i][0], snap_lines_y[i][0]);
             ty = snap_lines_y[i][0] - _bbox.height + 7.5;
           }
@@ -16129,7 +16169,7 @@ var UserRectangle = function () {
         var a = self.pt1[1];
         self.pt1[1] = rectangle_elem.y.baseVal.value = dist;
         topleft = self.pt1.slice();
-        rectangle_elem.height.baseVal.value = self.height = Math.abs(self.height - (self.pt1[1] - a));
+        rectangle_elem.height.baseVal.value = self.height = Mabs(self.height - (self.pt1[1] - a));
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
@@ -16149,7 +16189,7 @@ var UserRectangle = function () {
         var a = self.pt1[0];
         self.pt1[0] = rectangle_elem.x.baseVal.value = dist; // topleft[0] - dist;
         topleft = self.pt1.slice();
-        rectangle_elem.width.baseVal.value = self.width = Math.abs(self.width + (a - self.pt1[0]));
+        rectangle_elem.width.baseVal.value = self.width = Mabs(self.width + (a - self.pt1[0]));
         map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
@@ -16766,8 +16806,8 @@ var drag_legend_func = function drag_legend_func(legend_group) {
     legend_group.style('cursor', 'grab');
     pos_lgds_elem.set(legend_group.attr('id') + ' ' + legend_group.attr('class'), legend_group.node().getBoundingClientRect());
   }).on('drag', function () {
-    var Min = Math.min;
-    var Max = Math.max;
+    var Min = Mmin;
+    var Max = Mmax;
     var new_value = [d3.event.x, d3.event.y];
     var prev_value = legend_group.attr('transform');
     prev_value = prev_value ? prev_value.slice(10, -1).split(/[ ,]+/).map(function (f) {
@@ -16792,28 +16832,28 @@ var drag_legend_func = function drag_legend_func(legend_group) {
       var snap_lines_x = d3.event.subject.snap_lines.x,
           snap_lines_y = d3.event.subject.snap_lines.y;
       for (var i = 0; i < snap_lines_x.length; i++) {
-        if (Math.abs(snap_lines_x[i][0] - xmin) < 10) {
+        if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
           var _y1 = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
           var _y2 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
           make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
           val_x = snap_lines_x[i][0] - d3.event.subject.offset[0];
           change = true;
         }
-        if (Math.abs(snap_lines_x[i][0] - xmax) < 10) {
+        if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
           var _y = Min(Min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
           var _y3 = Max(Max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
           make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
           val_x = snap_lines_x[i][0] - bbox_elem.width - d3.event.subject.offset[0];
           change = true;
         }
-        if (Math.abs(snap_lines_y[i][0] - ymin) < 10) {
+        if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
           var x1 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
           var x2 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
           make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
           val_y = snap_lines_y[i][0] - d3.event.subject.offset[1];
           change = true;
         }
-        if (Math.abs(snap_lines_y[i][0] - ymax) < 10) {
+        if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
           var _x2 = Min(Min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
           var _x3 = Max(Max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
           make_red_line_snap(_x2, _x3, snap_lines_y[i][0], snap_lines_y[i][0]);
@@ -16845,7 +16885,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   var xpos = 30;
   var ypos = 30;
   var y_pos2 = ypos + space_elem;
-  var tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+  var tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer);
   var nbVar = fields.length;
   var ref_colors = current_layers[layer].fill_color;
   var symbol = current_layers[layer].symbol;
@@ -16887,10 +16927,15 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
     return 'lg legend_' + i;
   });
 
-  legend_elems.append('rect').attr('x', xpos + boxwidth).attr('y', function (d, i) {
+  legend_elems.append('rect').attrs(function (d, i) {
     last_pos = y_pos2 + i * boxgap + i * boxheight;
-    return last_pos;
-  }).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
+    return {
+      x: xpos + boxwidth,
+      y: last_pos,
+      width: boxwidth,
+      height: boxheight
+    };
+  }).styles(function (d) {
     return { fill: d[1], stroke: d[1] };
   });
 
@@ -16929,7 +16974,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
       xpos = 30,
       ypos = 30,
       y_pos2 = ypos + space_elem,
-      tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' '),
+      tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer),
       breaks = current_layers[layer].breaks,
       nb_class = breaks.length;
 
@@ -16940,7 +16985,14 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     rounding_precision = get_lgd_display_precision(b_val);
   }
 
-  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_class', class: tmp_class_name, transform: 'translate(0,0)', rounding_precision: rounding_precision, layer_field: field, layer_name: layer }).styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' });
+  var legend_root = map.insert('g').attrs({
+    id: 'legend_root_lines_class',
+    class: tmp_class_name,
+    transform: 'translate(0,0)',
+    rounding_precision: rounding_precision,
+    layer_field: field,
+    layer_name: layer
+  }).styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' });
 
   var rect_under_legend = legend_root.insert('rect');
 
@@ -16967,9 +17019,9 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     var values = Array.prototype.map.call(svg_map.querySelector('#' + _app.layer_to_id.get(layer)).querySelectorAll('path'), function (d) {
       return +d.__data__.properties.disc_value;
     });
-    current_min_value = current_min_value !== 1 ? values[Math.round(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
+    current_min_value = current_min_value !== 1 ? values[Mround(current_min_value * current_layers[layer].n_features)] : values[values.length - 1];
   }
-  // for (const b_val of breaks) {
+
   for (var ix = 0; ix < nb_class; ix++) {
     var _b_val = breaks[ix];
     if (_b_val[1] !== 0) {
@@ -17063,20 +17115,19 @@ function make_underlying_rect(legend_root, under_rect, fill) {
     x: x_top_left,
     y: y_top_left,
     height: rect_height,
-    width: rect_width });
+    width: rect_width
+  });
 
   if (!fill || !fill.color || !fill.opacity) {
     under_rect.styles({ fill: 'green', 'fill-opacity': 0 });
-    legend_root.attr('visible_rect', 'false');
-    legend_root.on('mouseover', function () {
+    legend_root.attr('visible_rect', 'false').on('mouseover', function () {
       under_rect.style('fill-opacity', 0.1);
     }).on('mouseout', function () {
       under_rect.style('fill-opacity', 0);
     });
   } else {
     under_rect.styles({ fill: fill.color, 'fill-opacity': fill.opacity });
-    legend_root.attr('visible_rect', 'true');
-    legend_root.on('mouseover', null).on('mouseout', null);
+    legend_root.attr('visible_rect', 'true').on('mouseover', null).on('mouseout', null);
   }
 }
 
@@ -17094,7 +17145,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
   var ypos = 30;
   var y_pos2 = ypos + space_elem * 1.5;
   var nb_features = current_layers[layer].n_features;
-  var tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+  var tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer);
   var symbol_type = current_layers[layer].symbol;
 
   var color_symb_lgd = current_layers[layer].renderer === 'PropSymbolsChoro' || current_layers[layer].renderer === 'PropSymbolsTypo' || current_layers[layer].fill_color.two !== undefined || current_layers[layer].fill_color.random !== undefined ? '#FFF' : current_layers[layer].fill_color.single;
@@ -17117,19 +17168,18 @@ function createLegend_symbol(layer, field, title, subtitle) {
     }),
         size_max = +non_empty[0].getAttribute(type_param),
         size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
-        sqrt = Math.sqrt,
-        val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-        val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
-        r = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min)),
-        diff_size = sqrt(size_max) - sqrt(size_min),
-        size_interm1 = sqrt(size_min) + diff_size / 3,
-        size_interm2 = Math.pow(size_interm1 + diff_size / 3, 2);
-    size_interm1 = Math.pow(size_interm1, 2);
+        val_max = Mabs(+non_empty[0].__data__.properties[field]),
+        val_min = Mabs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+        r = Mmax(get_nb_decimals(val_max), get_nb_decimals(val_min)),
+        diff_size = Msqrt(size_max) - Msqrt(size_min),
+        size_interm1 = Msqrt(size_min) + diff_size / 3,
+        size_interm2 = Mpow(size_interm1 + diff_size / 3, 2);
+    size_interm1 = Mpow(size_interm1, 2);
     current_layers[layer].size_legend_symbol = [{ value: val_max }, { value: round_value(propSize.get_value(size_interm2), r) }, { value: round_value(propSize.get_value(size_interm1), r) }, { value: val_min }];
     if (current_layers[layer].size_legend_symbol[0].value - current_layers[layer].size_legend_symbol[1].value > 1) {
       rounding_precision = 0;
     } else {
-      rounding_precision = Math.max(get_nb_decimals(val_max), get_nb_decimals(val_min));
+      rounding_precision = Mmax(get_nb_decimals(val_max), get_nb_decimals(val_min));
     }
   }
 
@@ -17146,7 +17196,8 @@ function createLegend_symbol(layer, field, title, subtitle) {
     cursor: 'grab',
     'font-size': '11px',
     'font-family': 'verdana'
-  }).attrs({ id: 'legend_root_symbol',
+  }).attrs({
+    id: 'legend_root_symbol',
     class: tmp_class_name,
     transform: 'translate(0,0)',
     layer_name: layer,
@@ -17218,10 +17269,10 @@ function createLegend_symbol(layer, field, title, subtitle) {
 
       last_pos = y_pos2;last_size = 0;
       var x_text_pos = xpos + space_elem + max_size * 1.25;
-      legend_elems.append('text').attr('x', x_text_pos).attr('y', function (d, i) {
+      legend_elems.append('text').attrs(function (d, i) {
         last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
         last_size = d.size;
-        return last_pos + d.size * 0.6;
+        return { x: x_text_pos, y: last_pos + d.size * 0.6 };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
@@ -17236,8 +17287,11 @@ function createLegend_symbol(layer, field, title, subtitle) {
         };
       }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
       last_pos = y_pos2;last_size = 0;
-      legend_elems.append('text').attr('x', xpos + space_elem + boxgap + max_size * 1.5 + 5).attr('y', function (d) {
-        return ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2;
+      legend_elems.append('text').attrs(function (d) {
+        return {
+          x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
+          y: ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2
+        };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
@@ -17248,11 +17302,15 @@ function createLegend_symbol(layer, field, title, subtitle) {
           x: xpos + space_elem + boxgap,
           y: ypos + 45 + max_size - d.size,
           width: d.size,
-          height: d.size };
+          height: d.size
+        };
       }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
       last_pos = y_pos2;last_size = 0;
-      legend_elems.append('text').attr('x', xpos + space_elem + max_size * 1.25).attr('y', function (d) {
-        return ypos + 46 + max_size - d.size;
+      legend_elems.append('text').attrs(function (d) {
+        return {
+          x: xpos + space_elem + max_size * 1.25,
+          y: ypos + 46 + max_size - d.size
+        };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
@@ -17310,7 +17368,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
       xpos = 30,
       ypos = 30,
       y_pos2 = ypos + space_elem,
-      tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+      tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer);
 
   var ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName('path');
   var type_param = 'strokeWidth';
@@ -17320,8 +17378,8 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
   }),
       size_max = +non_empty[0].style[type_param],
       size_min = +non_empty[non_empty.length - 1].style[type_param],
-      val_max = Math.abs(+non_empty[0].__data__.properties[field]),
-      val_min = Math.abs(+non_empty[non_empty.length - 1].__data__.properties[field]),
+      val_max = Mabs(+non_empty[0].__data__.properties[field]),
+      val_min = Mabs(+non_empty[non_empty.length - 1].__data__.properties[field]),
       diff_size = size_max - size_min,
       diff_val = val_max - val_min,
       val_interm1 = val_min + diff_val / 3,
@@ -17336,12 +17394,14 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
     }));
   }
 
-  var legend_root = map.insert('g').attrs({ id: 'legend_root_lines_symbol',
+  var legend_root = map.insert('g').attrs({
+    id: 'legend_root_lines_symbol',
     class: tmp_class_name,
     transform: 'translate(0,0)',
     rounding_precision: rounding_precision,
     layer_field: field,
-    layer_name: layer }).styles({
+    layer_name: layer
+  }).styles({
     cursor: 'grab',
     'font-size': '11px',
     'font-family': 'verdana'
@@ -17445,7 +17505,7 @@ function createLegend_choro(layer, field, title, subtitle) {
       xpos = 30,
       ypos = 30,
       y_pos2 = ypos + boxheight * 1.8,
-      tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+      tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer);
 
   var boxgap = +box_gap;
 
@@ -17505,10 +17565,15 @@ function createLegend_choro(layer, field, title, subtitle) {
   });
 
   if (current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
-    legend_elems.append('rect').attr('x', xpos + boxwidth).attr('y', function (d, i) {
+    legend_elems.append('rect').attrs(function (d, i) {
       last_pos = y_pos2 + i * boxgap + i * boxheight;
-      return last_pos;
-    }).attrs({ width: boxwidth, height: boxheight }).styles(function (d) {
+      return {
+        x: xpos + boxwidth,
+        y: last_pos,
+        width: boxwidth,
+        height: boxheight
+      };
+    }).styles(function (d) {
       return { fill: d.color, stroke: d.color };
     });
   } else {
@@ -17525,9 +17590,9 @@ function createLegend_choro(layer, field, title, subtitle) {
 
   if (current_layers[layer].renderer.indexOf('Choropleth') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1 || current_layers[layer].renderer.indexOf('Gridded') > -1 || current_layers[layer].renderer.indexOf('Stewart') > -1) {
     var tmp_pos = void 0;
-    legend_elems.append('text').attr('x', xpos + boxwidth * 2 + 10).attr('y', function (d, i) {
+    legend_elems.append('text').attrs(function (d, i) {
       tmp_pos = y_pos2 + i * boxheight + i * boxgap;
-      return tmp_pos;
+      return { x: xpos + boxwidth * 2 + 10, y: tmp_pos };
     }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
       return round_value(+d.value.split(' - ')[1], rounding_precision).toLocaleString();
     });
@@ -17585,7 +17650,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
       xpos = 30,
       ypos = 30,
       y_pos2 = ypos + boxheight * 1.8,
-      tmp_class_name = ['legend', 'legend_feature', 'lgdf_' + _app.layer_to_id.get(layer)].join(' ');
+      tmp_class_name = 'legend legend_feature lgdf_' + _app.layer_to_id.get(layer);
 
   var boxgap = +box_gap;
 
@@ -17667,7 +17732,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle) {
       x: xpos + boxwidth / 2 + (boxgap + boxwidth) * (data_colors_label.length + 1),
       y: y_pos2 + boxheight + 20,
       id: 'no_data_txt',
-      'text-anchor': 'middle' }).styles({ 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : 'No data');
+      'text-anchor': 'middle'
+    }).styles({ 'font-size': '10px' }).text(no_data_txt != null ? no_data_txt : 'No data');
   }
 
   var bottom_note = legend_root.append('g').insert('text').attrs({
@@ -17705,7 +17771,7 @@ function display_box_value_symbol(layer_name) {
       non_empty = Array.prototype.filter.call(ref_symbols, function (d, i) {
     if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value;
   }),
-      val_max = Math.abs(+non_empty[0].__data__.properties[field]);
+      val_max = Mabs(+non_empty[0].__data__.properties[field]);
 
   var redraw_sample_legend = function () {
     var legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
@@ -18461,7 +18527,6 @@ function createlegendEditBox(legend_id, layer_name) {
       }
     });
     _gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
-    // document.getElementById('style_lgd').checked = current_state;
   }
   // Todo : Reactivate this functionnality :
   //    box_body.insert("p").html("Display features count ")
@@ -18471,9 +18536,7 @@ function createlegendEditBox(legend_id, layer_name) {
   //            });
 
   var rectangle_options1 = box_body.insert('p');
-  rectangle_options1.insert('input').style('margin-left', '0px').attrs({ type: 'checkbox',
-    id: 'rect_lgd_checkbox',
-    checked: rect_fill_value.color === undefined ? null : true }).on('change', function () {
+  rectangle_options1.insert('input').style('margin-left', '0px').property('checked', rect_fill_value.color === undefined ? null : true).attrs({ type: 'checkbox', id: 'rect_lgd_checkbox' }).on('change', function () {
     if (this.checked) {
       rectangle_options2.style('display', '');
       var r = document.getElementById('choice_color_under_rect');
@@ -21516,7 +21579,7 @@ var makeZoomRect = function makeZoomRect() {
       // Todo : use these two points to make zoom on them
       map.select('.brush').call(brush.move, null);
 
-      var zoom_scale = 0.95 / Math.max((path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
+      var zoom_scale = 0.95 / Mmax((path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
       var zoom_translate = [(w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2, (h - zoom_scale * (path_bounds[1][1] + path_bounds[0][1])) / 2];
       svg_map.__zoom.k = zoom_scale;
       svg_map.__zoom.x = zoom_translate[0];

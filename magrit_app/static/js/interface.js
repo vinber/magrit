@@ -1268,14 +1268,14 @@ function get_bbox_layer_path(name) {
     bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
   }
   if (current_proj_name === 'ConicConformal') {
-    const s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    const s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
-    const s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+    const s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
-    const s1 = Math.max((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
+    const s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
-    const s2 = Math.max((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
+    const s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   }
   return bbox_layer_path;
@@ -1291,7 +1291,7 @@ function get_bbox_layer_path(name) {
 function scale_to_lyr(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
   if (!bbox_layer_path) return;
-  s = 0.95 / Math.max(
+  s = 0.95 / Mmax(
     (bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w,
     (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h) * proj.scale();
   t = [0, 0];
@@ -1309,7 +1309,7 @@ function scale_to_lyr(name) {
 */
 function center_map(name) {
   const bbox_layer_path = get_bbox_layer_path(name);
-  const zoom_scale = 0.95 / Math.max(
+  const zoom_scale = 0.95 / Mmax(
     (bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w,
     (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
   const zoom_translate = [
@@ -1325,7 +1325,7 @@ function center_map(name) {
 function fitLayer(layer_name) {
   proj.scale(1).translate([0, 0]);
   const b = get_bbox_layer_path(layer_name);
-  const s = 0.95 / Math.max((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
+  const s = 0.95 / Mmax((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
   const t = [(w - s * (b[1][0] + b[0][0])) / 2, (h - s * (b[1][1] + b[0][1])) / 2];
   proj.scale(s).translate(t);
   return [s, t];
@@ -1414,8 +1414,8 @@ function add_layout_feature(selected_feature, options = {}) {
     if (options.extent) {
       const bbox_layer = _target_layer_file.bbox;
       const extent = [
-        [Math.round((bbox_layer[0] - 10) / 10) * 10, Math.round((bbox_layer[1] - 10) / 10) * 10],
-        [Math.round((bbox_layer[2] + 10) / 10) * 10, Math.round((bbox_layer[3] + 10) / 10) * 10]];
+        [Mround((bbox_layer[0] - 10) / 10) * 10, Mround((bbox_layer[1] - 10) / 10) * 10],
+        [Mround((bbox_layer[2] + 10) / 10) * 10, Mround((bbox_layer[3] + 10) / 10) * 10]];
       graticule = graticule.extent(extent);
       current_layers.Graticule.extent = extent;
     }
@@ -1548,7 +1548,8 @@ function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', sy
       y: y || h / 2,
       width: width,
       height: height,
-      'xlink:href': symbol_dataurl })
+      'xlink:href': symbol_dataurl
+    })
     .on('mouseover', function () { this.style.cursor = 'pointer'; })
     .on('mouseout', function () { this.style.cursor = 'initial'; })
     .on('dblclick contextmenu', function () {

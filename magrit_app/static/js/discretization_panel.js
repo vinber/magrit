@@ -138,7 +138,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
         min: 1,
         max: nb_class - 1,
         step: 1,
-        value: Math.round(nb_class / 2) })
+        value: Mround(nb_class / 2) })
       .on('change', () => { redisplay.draw(); });
 
     const pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
@@ -549,7 +549,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
           const class_right = nb_class - ctl_class_value + 1,
             class_left = ctl_class_value - 1,
-            max_col_nb = Math.max(class_right, class_left);
+            max_col_nb = Mmax(class_right, class_left);
 
           let right_pal = getColorBrewerArray(max_col_nb, right_palette);
           let left_pal = getColorBrewerArray(max_col_nb, left_palette);
@@ -797,7 +797,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
   let disc_nb_class = discretization_panel
     .insert('input')
-    .property(nb_clas)
+    .property('value', nb_class)
     .styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' })
     .attrs({
       id: 'nb_class_range',
@@ -826,7 +826,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           const ctl_class = document.getElementById('centr_class');
           if (ctl_class) {
             ctl_class.max = nb_class;
-            if (ctl_class > nb_class) ctl_class.value = Math.round(nb_class / 2);
+            if (ctl_class > nb_class) ctl_class.value = Mround(nb_class / 2);
           }
         }
       })
@@ -1306,7 +1306,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
   const svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
     svg_w = w / 4 > 320 ? 320 : w / 4,
     values = serie.sorted(),
-    nb_bins = (values.length / 3) > 51 ? 50 : Math.ceil(Math.sqrt(values.length)) + 1;
+    nb_bins = (values.length / 3) > 51 ? 50 : Mceil(Msqrt(values.length)) + 1;
 
   const q5 = serie.getQuantile(4).map(v => +v);
 
@@ -1354,7 +1354,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
         .append('rect')
         .attrs(d => ({
           class: 'bar',
-          width: Math.abs(x(d.x1)) - Math.abs(x(d.x0)),
+          width: Mabs(x(d.x1)) - Mabs(x(d.x0)),
           height: m_height - y(d.length),
           x: 0,
           transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')',

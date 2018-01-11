@@ -53,7 +53,7 @@ const makeZoomRect = function () {
         // Todo : use these two points to make zoom on them
       map.select('.brush').call(brush.move, null);
 
-      const zoom_scale = 0.95 / Math.max(
+      const zoom_scale = 0.95 / Mmax(
         (path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
       const zoom_translate = [
         (w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2,

@@ -28,7 +28,13 @@ Function.prototype.memoize = function () {
   };
 };
 
-
+const Mmax = Math.max;
+const Mmin = Math.min;
+const Mabs = Math.abs;
+const Mpow = Math.pow;
+const Msqrt = Math.sqrt;
+const Mround = Math.round;
+const Mceil = Math.ceil;
 /**
 * Function setting-up main elements of the interface
 *
@@ -245,12 +251,14 @@ function setUpInterface(reload_project) {
 
   const_options.append('button')
     .attrs({ id: 'current_app_lang', class: 'const_buttons' })
-    .styles({ color: 'white',
+    .styles({
+      color: 'white',
       cursor: 'pointer',
       'font-size': '14px',
       'vertical-align': 'super',
       background: 'transparent',
-      'font-weight': 'bold' })
+      'font-weight': 'bold'
+    })
     .html(i18next.language)
     .on('click', () => {
       if (document.getElementById('menu_lang')) {
@@ -308,13 +316,15 @@ function setUpInterface(reload_project) {
     accordion5 = menu.append('div').attr('class', 'panel').attr('id', 'accordion5b');
 
   const section1 = accordion1.append('div')
-    .attr('id', 'section1')
-    .attr('class', 'i18n')
-    .attr('data-i18n', '[tooltip-title]app_page.tooltips.section1')
-    .attr('data-placement', 'right');
+    .attrs({
+      id: 'section1',
+      class: 'i18n',
+      'data-i18n': '[tooltip-title]app_page.tooltips.section1',
+      'data-placement': 'right',
+    });
   window.section2_pre = accordion2_pre.append('div').attr('id', 'section2_pre');
   window.section2 = accordion2.append('div').attr('id', 'section2');
-  accordion3.append('div').attrs({ id: 'section3' });
+  accordion3.append('div').attr('id', 'section3');
   accordion4.append('div').attr('id', 'section4');
   accordion5.append('div').attr('id', 'section5');
 
@@ -367,12 +377,14 @@ function setUpInterface(reload_project) {
       id: 'btn_type_fields',
       class: 'i18n',
       'data-i18n': '[html]app_page.box_type_fields.title',
-      disabled: true })
+      disabled: true,
+    })
     .styles({
       cursor: 'pointer',
       'border-radius': '4px',
       border: '1px solid lightgrey',
-      padding: '3.5px' })
+      padding: '3.5px',
+    })
     .html(i18next.t('app_page.box_type_fields.title'))
     .on('click', () => {
       const layer_name = Object.getOwnPropertyNames(user_data)[0];
@@ -384,10 +396,14 @@ function setUpInterface(reload_project) {
   const section3 = d3.select('#section3');
 
   window.layer_list = section3.append('div')
-    .attrs({ class: 'i18n',
+    .attrs({
+      class: 'i18n',
       'data-i18n': '[tooltip-title]app_page.tooltips.section3',
-      'data-placement': 'right' })
-    .append('ul').attrs({ id: 'sortable', class: 'layer_list' });
+      'data-placement': 'right',
+    })
+    .append('ul')
+    .attrs({ id: 'sortable', class: 'layer_list' });
+
   new Sortable(document.getElementById('sortable'), {
     animation: 100,
     onUpdate: function (a) {
@@ -426,18 +442,22 @@ function setUpInterface(reload_project) {
     .style('padding-top', '10px').html('');
 
   dv3.append('img')
-    .attrs({ src: 'static/img/b/addsample_t.png',
+    .attrs({
+      src: 'static/img/b/addsample_t.png',
       class: 'i18n',
       'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout_sample',
-      'data-placement': 'right' })
+      'data-placement': 'right',
+    })
     .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
     .on('click', add_layout_layers);
   dv3.append('img')
-    .attrs({ src: 'static/img/b/addgeom_t.png',
+    .attrs({
+      src: 'static/img/b/addgeom_t.png',
       id: 'input_layout_geom',
       class: 'i18n',
       'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout',
-      'data-placement': 'right' })
+      'data-placement': 'right',
+    })
     .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
     .on('click', click_button_add_layer);
 
@@ -445,18 +465,22 @@ function setUpInterface(reload_project) {
   const dv4 = section4.append('div')
     .style('margin', 'auto')
     .append('ul')
-    .styles({ 'list-style': 'outside none none',
+    .styles({
+      'list-style': 'outside none none',
       display: 'inline-block',
       padding: '0px',
       width: '100%',
-      'margin-top': '0px' });
+      'margin-top': '0px',
+    });
 
   const e = dv4.append('li').styles({ margin: '1px', padding: '4px', 'text-align': 'center' });
   e.append('input')
-    .attrs({ id: 'title',
+    .attrs({
+      id: 'title',
       class: 'list_elem_section4 i18n',
       placeholder: '',
-      'data-i18n': '[placeholder]app_page.section4.map_title' })
+      'data-i18n': '[placeholder]app_page.section4.map_title',
+    })
     .styles({ margin: '0px 0px 0px 3px', width: '160px' })
     .on('keyup', function () { handle_title(this.value); });
   e.append('span')
@@ -581,11 +605,12 @@ function setUpInterface(reload_project) {
     .attrs({
       id: 'resize_fit',
       class: 'm_elem_right list_elem_section4 button_st4 i18n',
-      'data-i18n': '[html]app_page.common.ok' })
+      'data-i18n': '[html]app_page.common.ok',
+    })
     .on('click', () => {
       document.getElementById('btn_s4').click();
       window.scrollTo(0, 0);
-      w = Math.round(window.innerWidth - 361);
+      w = Mround(window.innerWidth - 361);
       h = window.innerHeight - 55;
       canvas_mod_size([w, h]);
       document.getElementById('map_ratio_select').value = 'ratio_user';
@@ -594,12 +619,13 @@ function setUpInterface(reload_project) {
     .attr('data-i18n', '[html]app_page.section4.resize_fit');
 
   const c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
-  c.append('p').attr('class', 'list_elem_section4 i18n')
+  c.append('p')
+    .attr('class', 'list_elem_section4 i18n')
     .attr('data-i18n', '[html]app_page.section4.map_center_menu')
     .style('cursor', 'pointer');
-  c.append('span').attr('id', 'map_center_menu_ico')
-    .style('display', 'inline-table')
-    .style('cursor', 'pointer');
+  c.append('span')
+    .attr('id', 'map_center_menu_ico')
+    .styles({ display: 'inline-table', cursor: 'pointer' });
   c.on('click', () => {
     const sections = document.getElementsByClassName('to_hide');
     let arg;
@@ -617,7 +643,8 @@ function setUpInterface(reload_project) {
   });
 
   const c1 = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
-  c1.append('p').attr('class', 'list_elem_section4 i18n')
+  c1.append('p')
+    .attr('class', 'list_elem_section4 i18n')
     .attr('data-i18n', '[html]app_page.section4.map_center_x');
   c1.append('input')
     .style('width', '80px')
@@ -715,9 +742,11 @@ function setUpInterface(reload_project) {
   const g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   g2.append('input')
     .styles({ margin: 0, padding: 0 })
-    .attrs({ id: 'autoalign_features',
+    .attrs({
+      id: 'autoalign_features',
       type: 'checkbox',
-      class: 'm_elem_right list_elem_section4 i18n' })
+      class: 'm_elem_right list_elem_section4 i18n',
+    })
     .on('change', function () {
       _app.autoalign_features = this.checked;
     });
@@ -826,8 +855,8 @@ function setUpInterface(reload_project) {
       in_h.value = h;
       in_w.value = w;
     } else if (value === 'user_defined') {
-      in_h.value = Math.round(h / 118.11 * 10) / 10;
-      in_w.value = Math.round(w / 118.11 * 10) / 10;
+      in_h.value = Mround(h / 118.11 * 10) / 10;
+      in_w.value = Mround(w / 118.11 * 10) / 10;
     } else if (value === 'A4_landscape') {
       in_h.value = 21.0;
       in_w.value = 29.7;
@@ -869,7 +898,7 @@ function setUpInterface(reload_project) {
     .on('change', function () {
       const ratio = h / w,
         export_png_height = document.getElementById('export_png_height');
-      export_png_height.value = Math.round(+this.value * ratio * 10) / 10;
+      export_png_height.value = Mround(+this.value * ratio * 10) / 10;
     });
 
   exp_a.append('span')
@@ -887,7 +916,7 @@ function setUpInterface(reload_project) {
     .on('change', function () {
       const ratio = h / w,
         export_png_width = document.getElementById('export_png_width');
-      export_png_width.value = Math.round(+this.value / ratio * 10) / 10;
+      export_png_width.value = Mround(+this.value / ratio * 10) / 10;
     });
 
   exp_b.append('span')
@@ -1182,7 +1211,8 @@ function make_ico_choice() {
         class: 'i18n',
         'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
         src: ['static/img/func_icons2/', ico_name].join(''),
-        id: `button_${func_name}` })
+        id: `button_${func_name}`,
+      })
       .on('click', function () {
         // Do some clean-up related to the previously displayed options :
         if (window.fields_handler) {
@@ -1241,7 +1271,7 @@ let t = proj.translate();
 let s = proj.scale();
 let current_proj_name = 'NaturalEarth2';
 let zoom = d3.zoom().on('zoom', zoom_without_redraw);
-let w = Math.round(window.innerWidth - 361);
+let w = Mround(window.innerWidth - 361);
 let h = window.innerHeight - 55;
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -1268,8 +1298,7 @@ const pos_lgds_elem = new Map();
 const map = map_div.styles({ width: `${w}px`, height: `${h}px` })
   .append('svg')
   .attrs({ id: 'svg_map', width: w, height: h })
-  .style('background-color', 'rgba(255, 255, 255, 0)')
-  .style('position', 'absolute')
+  .styles({ position: 'absolute', 'background-color': 'rgba(255, 255, 255, 0)' })
   .on('contextmenu', (event) => { d3.event.preventDefault(); })
   .call(zoom);
 
@@ -1826,12 +1855,14 @@ function remove_layer_cleanup(name) {
     document.getElementById('table_layer_s1').remove();
     document.getElementById('remove_target').remove();
     d3.select('#img_in_geom')
-      .attrs({ id: 'img_in_geom',
+      .attrs({
+        id: 'img_in_geom',
         class: 'user_panel',
         src: 'static/img/b/addgeom.png',
         width: '24',
         height: '24',
-        alt: 'Geometry layer' })
+        alt: 'Geometry layer',
+      })
       .on('click', click_button_add_layer);
     d3.select('#input_geom')
       .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
@@ -2568,8 +2599,8 @@ function canvas_mod_size(shape) {
   } else {
     return;
   }
-  document.getElementById('export_png_width').value = Math.round(w * ratio * 10) / 10;
-  document.getElementById('export_png_height').value = Math.round(h * ratio * 10) / 10;
+  document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
+  document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
 }
 
 function patchSvgForFonts() {
@@ -2843,8 +2874,8 @@ function changeResolution(canvas, scaleFactor) {
   if (!canvas.style.width) canvas.style.width = `${canvas.width}px`; // eslint-disable-line no-param-reassign
   if (!canvas.style.height) canvas.style.height = `${canvas.height}px`; // eslint-disable-line no-param-reassign
 
-  canvas.width = Math.ceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
-  canvas.height = Math.ceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
+  canvas.width = Mceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
+  canvas.height = Mceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
   const ctx = canvas.getContext('2d');
   ctx.scale(scaleFactor, scaleFactor);
 }

@@ -1,11 +1,8 @@
-const max = Math.max;
-const min = Math.min;
-const abs = Math.abs;
 const sin = Math.sin;
 const cos = Math.cos;
 const PI = Math.PI;
 const atan2 = Math.atan2;
-const sqrt = Math.sqrt;
+
 
 class UserArrow {
   constructor(id, origin_pt, destination_pt, parent = undefined, untransformed = false) {
@@ -344,7 +341,7 @@ class UserArrow {
       .attrs({ id: 'arrow_angle', type: 'range', value: angle, min: 0, max: 360, step: 1 })
       .styles({ width: '80px', 'vertical-align': 'middle', float: 'right' })
       .on('change', function () {
-        const distance = sqrt(
+        const distance = Msqrt(
           (self.pt1[0] - self.pt2[0]) * (self.pt1[0] - self.pt2[0])
           + (self.pt1[1] - self.pt2[1]) * (self.pt1[1] - self.pt2[1]));
         const _angle = -(+this.value);
@@ -425,31 +422,31 @@ class Textbox {
             snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
           for (let i = 0; i < snap_lines_x.length; i++) {
-            if (abs(snap_lines_x[i][0] - xmin) < 10) {
-              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
+              const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
               Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0];
               });
             }
-            if (abs(snap_lines_x[i][0] - xmax) < 10) {
-              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
+              const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
               Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
                 el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
               });
             }
-            if (abs(snap_lines_y[i][0] - ymin) < 10) {
-              const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
+              const x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
               t.y.baseVal.value = snap_lines_y[i][0];
             }
-            if (abs(snap_lines_y[i][0] - ymax) < 10) {
-              const x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              const x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
+              const x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
               t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
             }
@@ -497,7 +494,7 @@ class Textbox {
                             getItems());
     });
 
-    this.lineHeight = Math.round(this.fontSize * 1.4);
+    this.lineHeight = Mround(this.fontSize * 1.4);
     this.textAnnot = text_elem;
     this.group = group_elem;
     this.fontFamily = 'verdana';
@@ -550,7 +547,7 @@ class Textbox {
 
   updateLineHeight() {
     const self = this;
-    self.lineHeight = Math.round(self.fontSize * 1.4);
+    self.lineHeight = Mround(self.fontSize * 1.4);
     self.textAnnot.selectAll('tspan').each(function (d, i) {
       if (i !== 0) {
         d3.select(this).attr('dy', self.lineHeight);
@@ -904,14 +901,14 @@ const scaleBar = {
     this.Scale = scale_gp;
     this.displayed = true;
     if (this.dist > 100) {
-      this.resize(Math.round(this.dist / 100) * 100);
+      this.resize(Mround(this.dist / 100) * 100);
     } else if (this.dist > 10) {
-      this.resize(Math.round(this.dist / 10) * 10);
-    } else if (Math.round(this.dist) > 1) {
-      this.resize(Math.round(this.dist));
-    } else if (Math.round(this.dist * 10) / 10 > 0.1) {
+      this.resize(Mround(this.dist / 10) * 10);
+    } else if (Mround(this.dist) > 1) {
+      this.resize(Mround(this.dist));
+    } else if (Mround(this.dist * 10) / 10 > 0.1) {
       this.precision = 1;
-      this.resize(Math.round(this.dist * 10) / 10);
+      this.resize(Mround(this.dist * 10) / 10);
     } else {
       const t = this.dist.toString().split('.');
       this.precision = (t && t.length > 1) ? t[1].length : (`${this.dist}`).length;
@@ -1145,27 +1142,27 @@ const northArrow = {
             snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
           for (let i = 0; i < snap_lines_x.length; i++) {
-            if (abs(snap_lines_x[i][0] - xmin) < 10) {
-              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
+              const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
               tx = snap_lines_x[i][0] + 7.5;
             }
-            if (abs(snap_lines_x[i][0] - xmax) < 10) {
-              const _y1 = min(min(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              const _y2 = max(max(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
+              const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+              const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
               tx = snap_lines_x[i][0] - bbox.width + 7.5;
             }
-            if (abs(snap_lines_y[i][0] - ymin) < 10) {
-              const _x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              const _x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
+              const _x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const _x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
               ty = snap_lines_y[i][0] + 7.5;
             }
-            if (abs(snap_lines_y[i][0] - ymax) < 10) {
-              const _x1 = min(min(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              const _x2 = max(max(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
+              const _x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+              const _x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(_x1, _x2, snap_lines_y[i][0], snap_lines_y[i][0]);
               ty = snap_lines_y[i][0] - bbox.height + 7.5;
             }
@@ -1534,7 +1531,7 @@ class UserRectangle {
         const a = self.pt1[1];
         self.pt1[1] = rectangle_elem.y.baseVal.value = dist;
         topleft = self.pt1.slice();
-        rectangle_elem.height.baseVal.value = self.height = Math.abs(self.height - (self.pt1[1] - a));
+        rectangle_elem.height.baseVal.value = self.height = Mabs(self.height - (self.pt1[1] - a));
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
@@ -1556,7 +1553,7 @@ class UserRectangle {
         const a = self.pt1[0];
         self.pt1[0] = rectangle_elem.x.baseVal.value = dist; // topleft[0] - dist;
         topleft = self.pt1.slice();
-        rectangle_elem.width.baseVal.value = self.width = Math.abs(self.width + (a - self.pt1[0]));
+        rectangle_elem.width.baseVal.value = self.width = Mabs(self.width + (a - self.pt1[0]));
         map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
