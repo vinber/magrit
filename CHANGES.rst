@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.6.5 (2018-01-xx)
+0.6.5 (2018-01-12)
 ------------------
 
 - Be more tolerant with in the regular expression used to filter the name of exported maps (by allowing dot, dash and parantheses for example).
