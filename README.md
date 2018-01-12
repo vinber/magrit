@@ -37,7 +37,7 @@ These steps are detailed in the Wiki:
 - [Installing for development (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
 
 ## Examples
-<p><img src="https://github.com/mthh/example-magrit-projects/raw/master/nuts3_cagr2.png" height="250"/><img src="https://github.com/mthh/example-magrit-projects/raw/master/cinema_pot2.png" height="250"/><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="250"/></p>
+<p><img src="https://github.com/mthh/example-magrit-projects/raw/master/nuts3_cagr2.png" height="220"/><img src="https://github.com/mthh/example-magrit-projects/raw/master/cinema_pot2.png" height="230"/><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="230"/></p>
 
 More maps are available in the [gallery](http://magrit.hypotheses.org/galerie).
 
