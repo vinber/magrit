@@ -988,9 +988,10 @@ function createStyleBox_Line(layer_name) {
       selection.style('stroke-opacity', this.value);
     });
 
-  opacity_section.append('span').attr('id', 'opacity_val_txt')
-     .style('display', 'inline').style('float', 'right')
-     .html(` ${border_opacity}`);
+  opacity_section.append('span')
+    .attr('id', 'opacity_val_txt')
+    .styles({ display: 'inline', float: 'right' })
+    .html(` ${border_opacity}`);
 
   if (!renderer || (!renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer')) {
     const width_section = popup.append('p');
@@ -2298,14 +2299,13 @@ function createStyleBox_ProbSymbol(layer_name) {
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
     .on('change', function () {
       selection.style('stroke-opacity', this.value);
-      border_opacity_section.select('#border_opacity_txt')
-        .html(`${+this.value * 100}%`);
+      border_opacity_section.select('#border_opacity_txt').html( `${this.value}`);
     });
 
   border_opacity_section.append('span')
     .attr('id', 'border_opacity_txt')
     .style('float', 'right')
-    .html(`${+border_opacity * 100}%`);
+    .html(` ${border_opacity}`);
 
   const border_width_section = popup.append('p').attr('class', 'line_elem');
   border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));

@@ -659,8 +659,11 @@ function apply_user_preferences(json_pref) {
         for (let i = 0; i < map_config.layout_features.arrow.length; i++) {
           const ft = map_config.layout_features.arrow[i];
           const _arrow = new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+          const _line = _arrow.arrow.select('line').node();
           _arrow.hide_head = map_config.layout_features.arrow[i].marker_head === null;
-          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[i].marker_head);
+          _line.setAttribute('marker-end', map_config.layout_features.arrow[i].marker_head);
+          _line.style.stroke = map_config.layout_features.arrow[i].stroke;
+          _line.style.strokeWidth = map_config.layout_features.arrow[i].stroke_width;
         }
       }
       if (map_config.layout_features.user_ellipse) {

@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.a1470d9c5090.json'
+      loadPath: 'static/locales/{{lng}}/translation.b4430f80c936.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -13505,7 +13505,7 @@ function createStyleBox_Line(layer_name) {
     selection.style('stroke-opacity', this.value);
   });
 
-  opacity_section.append('span').attr('id', 'opacity_val_txt').style('display', 'inline').style('float', 'right').html(' ' + border_opacity);
+  opacity_section.append('span').attr('id', 'opacity_val_txt').styles({ display: 'inline', float: 'right' }).html(' ' + border_opacity);
 
   if (!renderer || !renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer') {
     var width_section = popup.append('p');
@@ -14558,10 +14558,10 @@ function createStyleBox_ProbSymbol(layer_name) {
 
   border_opacity_section.insert('input').property('value', border_opacity).attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' }).on('change', function () {
     selection.style('stroke-opacity', this.value);
-    border_opacity_section.select('#border_opacity_txt').html(+this.value * 100 + '%');
+    border_opacity_section.select('#border_opacity_txt').html('' + this.value);
   });
 
-  border_opacity_section.append('span').attr('id', 'border_opacity_txt').style('float', 'right').html(+border_opacity * 100 + '%');
+  border_opacity_section.append('span').attr('id', 'border_opacity_txt').style('float', 'right').html(' ' + border_opacity);
 
   var border_width_section = popup.append('p').attr('class', 'line_elem');
   border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
@@ -19380,8 +19380,11 @@ function apply_user_preferences(json_pref) {
         for (var i = 0; i < map_config.layout_features.arrow.length; i++) {
           var ft = map_config.layout_features.arrow[i];
           var _arrow = new UserArrow(ft.id, ft.pt1, ft.pt2, svg_map, true);
+          var _line = _arrow.arrow.select('line').node();
           _arrow.hide_head = map_config.layout_features.arrow[i].marker_head === null;
-          _arrow.arrow.select('line').attr('marker-end', map_config.layout_features.arrow[i].marker_head);
+          _line.setAttribute('marker-end', map_config.layout_features.arrow[i].marker_head);
+          _line.style.stroke = map_config.layout_features.arrow[i].stroke;
+          _line.style.strokeWidth = map_config.layout_features.arrow[i].stroke_width;
         }
       }
       if (map_config.layout_features.user_ellipse) {
