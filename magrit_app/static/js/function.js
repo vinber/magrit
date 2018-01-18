@@ -4047,6 +4047,7 @@ const render_label = function render_label(layer, rendering_params, options) {
   const selected_font = rendering_params.font;
   const font_size = `${rendering_params.ref_font_size}px`;
   let new_layer_data = [];
+  const warn_empty_features = [];
   const layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0
     ? check_layer_name(rendering_params.uo_layer_name)
     : check_layer_name(`Labels_${layer}`);
@@ -4073,13 +4074,16 @@ const render_label = function render_label(layer, rendering_params, options) {
     const type_ft_ref = current_layers[layer].symbol || 'path';
     const ref_selection = document.getElementById(_app.layer_to_id.get(layer))
       .getElementsByTagName(type_ft_ref);
-
+    let i_id = 0;
     nb_ft = ref_selection.length;
     for (let i = 0; i < nb_ft; i++) {
       const ft = ref_selection[i].__data__;
       if (!filter_test(ft.properties)) continue;
       let coords;
-      if (ft.geometry.type.indexOf('Multi') === -1) {
+      if (!ft.geometry) {
+        warn_empty_features.push([i, ft]);
+        continue;
+      } else if (ft.geometry.type.indexOf('Multi') === -1) {
         coords = d3.geoCentroid(ft.geometry);
       } else {
         const areas = [];
@@ -4093,9 +4097,9 @@ const render_label = function render_label(layer, rendering_params, options) {
         coords = d3.geoCentroid({
           type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
       }
-
+      i_id += 1;
       new_layer_data.push({
-        id: i,
+        id: i_id,
         type: 'Feature',
         properties: { label: ft.properties[label_field], x: coords[0], y: coords[1] },
         geometry: { type: 'Point', coordinates: coords },
@@ -4163,6 +4167,9 @@ const render_label = function render_label(layer, rendering_params, options) {
     default_size: font_size,
     default_font: selected_font,
   };
+  if (warn_empty_features.length > 0) {
+    setTimeout(() => { display_warning_empty_geom(warn_empty_features); }, 50);
+  }
   zoom_without_redraw();
   return layer_to_add;
 };

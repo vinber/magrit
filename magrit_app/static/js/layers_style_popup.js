@@ -1712,23 +1712,26 @@ function make_generate_labels_section(parent_node, layer_name) {
           preConfirm: () => new Promise((resolve, reject) => {
             setTimeout(() => {
               let selected_field = document.getElementById('label_box_field').value;
-              let to_filter = document.getElementById('label_box_filter_chk').checked;
               let filter_options = undefined;
-              if (to_filter) {
-                const filter_value = document.getElementById('label_box_filter_value').value;
-                if (!filter_value || isNaN(filter_value)) {
-                  reject(i18next.t('app_page.common.incorrect_value'));
-                  return;
+              if (fields_num.length > 0) {
+                let to_filter = document.getElementById('label_box_filter_chk').checked;
+                if (to_filter) {
+                  const filter_value = document.getElementById('label_box_filter_value').value;
+                  if (!filter_value || isNaN(filter_value)) {
+                    reject(i18next.t('app_page.common.incorrect_value'));
+                    return;
+                  }
+                  filter_options = {
+                    field: document.getElementById('label_box_filter_field').value,
+                    type_filter: document.getElementById('label_box_filter_type').value,
+                    filter_value: filter_value,
+                  };
                 }
-                filter_options = {
-                  field: document.getElementById('label_box_filter_field').value,
-                  type_filter: document.getElementById('label_box_filter_type').value,
-                  filter_value: filter_value,
-                };
               }
               if (_fields.indexOf(selected_field) < 0) {
                 reject(i18next.t('app_page.common.no_value'));
               } else {
+                resolve();
                 render_label(layer_name, {
                   label_field: selected_field,
                   filter_options: filter_options,
@@ -1737,14 +1740,13 @@ function make_generate_labels_section(parent_node, layer_name) {
                   ref_font_size: 12,
                   uo_layer_name: ['Labels', selected_field, layer_name].join('_'),
                 });
-                resolve();
               }
             }, 50);
           }),
         }).then((value) => {
-          console.log(value);
+          //console.log(value);
         }, (dismiss) => {
-          console.log(dismiss);
+          //console.log(dismiss);
         });
       });
   }

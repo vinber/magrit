@@ -6,6 +6,8 @@ Changes
 
 - Fix/improve some styling options in links menu and in links classification box.
 
+- Fix error occuring on labels creation when using a target layer with empty geometries and warn the user if it's the case (as for the other representations).
+
 
 0.6.5 (2018-01-12)
 ------------------

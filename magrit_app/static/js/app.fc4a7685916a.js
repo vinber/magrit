@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.5240788e8799.json'
+      loadPath: 'static/locales/{{lng}}/translation.fc4a7685916a.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8445,6 +8445,7 @@ var render_label = function render_label(layer, rendering_params, options) {
   var selected_font = rendering_params.font;
   var font_size = rendering_params.ref_font_size + 'px';
   var new_layer_data = [];
+  var warn_empty_features = [];
   var layer_to_add = rendering_params.uo_layer_name && rendering_params.uo_layer_name.length > 0 ? check_layer_name(rendering_params.uo_layer_name) : check_layer_name('Labels_' + layer);
   var filter_test = function filter_test() {
     return true;
@@ -8474,13 +8475,16 @@ var render_label = function render_label(layer, rendering_params, options) {
   } else if (layer) {
     var type_ft_ref = current_layers[layer].symbol || 'path';
     var ref_selection = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(type_ft_ref);
-
+    var i_id = 0;
     nb_ft = ref_selection.length;
     for (var i = 0; i < nb_ft; i++) {
       var ft = ref_selection[i].__data__;
       if (!filter_test(ft.properties)) continue;
       var coords = void 0;
-      if (ft.geometry.type.indexOf('Multi') === -1) {
+      if (!ft.geometry) {
+        warn_empty_features.push([i, ft]);
+        continue;
+      } else if (ft.geometry.type.indexOf('Multi') === -1) {
         coords = d3.geoCentroid(ft.geometry);
       } else {
         var areas = [];
@@ -8494,9 +8498,9 @@ var render_label = function render_label(layer, rendering_params, options) {
         coords = d3.geoCentroid({
           type: ft.geometry.type, coordinates: [ft.geometry.coordinates[ix_max]] });
       }
-
+      i_id += 1;
       new_layer_data.push({
-        id: i,
+        id: i_id,
         type: 'Feature',
         properties: { label: ft.properties[label_field], x: coords[0], y: coords[1] },
         geometry: { type: 'Point', coordinates: coords }
@@ -8564,6 +8568,11 @@ var render_label = function render_label(layer, rendering_params, options) {
     default_size: font_size,
     default_font: selected_font
   };
+  if (warn_empty_features.length > 0) {
+    setTimeout(function () {
+      display_warning_empty_geom(warn_empty_features);
+    }, 50);
+  }
   zoom_without_redraw();
   return layer_to_add;
 };
@@ -14076,23 +14085,26 @@ function make_generate_labels_section(parent_node, layer_name) {
           return new Promise(function (resolve, reject) {
             setTimeout(function () {
               var selected_field = document.getElementById('label_box_field').value;
-              var to_filter = document.getElementById('label_box_filter_chk').checked;
               var filter_options = undefined;
-              if (to_filter) {
-                var filter_value = document.getElementById('label_box_filter_value').value;
-                if (!filter_value || isNaN(filter_value)) {
-                  reject(i18next.t('app_page.common.incorrect_value'));
-                  return;
+              if (fields_num.length > 0) {
+                var to_filter = document.getElementById('label_box_filter_chk').checked;
+                if (to_filter) {
+                  var filter_value = document.getElementById('label_box_filter_value').value;
+                  if (!filter_value || isNaN(filter_value)) {
+                    reject(i18next.t('app_page.common.incorrect_value'));
+                    return;
+                  }
+                  filter_options = {
+                    field: document.getElementById('label_box_filter_field').value,
+                    type_filter: document.getElementById('label_box_filter_type').value,
+                    filter_value: filter_value
+                  };
                 }
-                filter_options = {
-                  field: document.getElementById('label_box_filter_field').value,
-                  type_filter: document.getElementById('label_box_filter_type').value,
-                  filter_value: filter_value
-                };
               }
               if (_fields.indexOf(selected_field) < 0) {
                 reject(i18next.t('app_page.common.no_value'));
               } else {
+                resolve();
                 render_label(layer_name, {
                   label_field: selected_field,
                   filter_options: filter_options,
@@ -14101,15 +14113,14 @@ function make_generate_labels_section(parent_node, layer_name) {
                   ref_font_size: 12,
                   uo_layer_name: ['Labels', selected_field, layer_name].join('_')
                 });
-                resolve();
               }
             }, 50);
           });
         }
       }).then(function (value) {
-        console.log(value);
+        //console.log(value);
       }, function (dismiss) {
-        console.log(dismiss);
+        //console.log(dismiss);
       });
     });
   }
