@@ -8,13 +8,14 @@
 [fr]  [Magrit](http://magrit.cnrs.fr) est une application de cartographie thématique développée par l'[UMS RIATE](http://www.riate.cnrs.fr).
 
 ## Basics
-- Magrit is an online application for thematic mapping (*cartography*)
-- It's intentionally simple (the UI follows the basic steps of map creation) and **designed for teaching and learning cartography**
-- It lets you import **your own geometry dataset** (**Shapefile**, **GeoJSON**, **GML**, etc.) and optionnaly your **tabular file** (**CSV**, **ODS**, etc.)
-- We also provide many sample datasets to try out the various representations and become familiar with the application
+- Magrit is an online application for thematic mapping (*cartography*).
+- It's intentionally simple (the UI follows the basic steps of map creation).
+- It's **designed for teaching and learning cartography**.
+- It lets you import **your own geometry dataset** (**Shapefile**, **GeoJSON**, **GML**, etc.) and optionnaly your **tabular file**.
+- We also provide many sample datasets to try out the various representations and become familiar with the application.
 - It allows to **render and combine a wide variety of maps**: choropleth, proportional symbols, cartogram, discontinuity, etc.
-- It supports the most popular modern desktop browsers: Chrome, Firefox and Opera (Edge and Safari are supported with limitations)
-- Server-side, Magrit is backed by a python 3.5+ application (particularly for some geoprocessing tasks relying on GDAL library)
+- It supports the most popular modern desktop browsers: Chrome, Firefox and Opera (+ Edge and Safari with limitations).
+- Server-side, Magrit is backed by a python 3.5+ application (particularly for some geoprocessing tasks relying on GDAL, GEOS and PROJ.4 libraries).
 - Client-side, Magrit is written in modern JS (ES6) and uses notably the d3.js library.
 
 
@@ -28,7 +29,7 @@ Most users should go on :
 ## Simple installation / Installation for development
 The only targeted/tested OS for development is currently GNU/Linux.   
 However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX) which is the preferred solution if you want to install Magrit for using it but don't want to do any development:   
-[Installation with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
+- [Installation with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
 
 To install Magrit directly on your GNU/Linux system you have to install some shared libraries and python libraries.
 Once installed, the python server application will take care to concatenate/transpile/etc. the JS and CSS code.

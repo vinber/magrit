@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.6.6 (2018-01-19)
+------------------
+
+- Fix/improve some styling options in links menu and in links classification box.
+
+
 0.6.5 (2018-01-12)
 ------------------
 
