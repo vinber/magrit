@@ -321,6 +321,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
   // title.style = "margin: 1px; word-spacing: 1.8em;";
   title.style.margin = '1px';
   title.style.wordSpacing = '1.8em';
+  title.style.paddingLeft = '22px';
   title.innerHTML = 'Min - Max - Size';
   parent_nd.appendChild(title);
 
@@ -337,7 +338,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input1.setAttribute('class', 'min_class');
     input1.setAttribute('step', 'any');
     input1.value = (+breaks[i][0][0]).toFixed(2);
-    input1.style.width = '60px';
     input1.style.position = 'unset';
     inner_line.appendChild(input1);
 
@@ -346,7 +346,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input2.setAttribute('class', 'max_class');
     input2.setAttribute('step', 'any');
     input2.value = (+breaks[i][0][1]).toFixed(2);
-    input2.style.width = '60px';
     input2.style.position = 'unset';
     inner_line.appendChild(input2);
 
@@ -356,7 +355,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input3.setAttribute('step', 'any');
     input3.value = (+breaks[i][1]).toFixed(2);
     input3.style.marginLeft = '20px';
-    input3.style.width = '55px';
     input3.style.position = 'unset';
     inner_line.appendChild(input3);
 
@@ -3691,12 +3689,15 @@ function fillMenu_FlowMap() {
   intensity_section.append('select')
     .attrs({ class: 'params', id: 'FlowMap_field_fij' });
 
-  const discretization_section = dv2.append('p').attr('class', 'params_section2');
-  discretization_section.append('span')
+  const discretization_section = dv2.append('div')
+    .attr('class', 'params_section2');
+  discretization_section.append('p')
+    .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' })
     .html(i18next.t('app_page.func_options.flow.discretization'));
   const disc_type = discretization_section.insert('select')
-    .attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
+    .attrs({ class: 'params i18n', id: 'FlowMap_discKind' })
+    .styles({ position: 'relative', float: 'right' });
 
   [
     ['app_page.common.no_classification', 'no_classification'],
@@ -3710,11 +3711,14 @@ function fillMenu_FlowMap() {
       .text(i18next.t(field[0]))
       .attrs({ value: field[1], 'data-i18n': `[text]${field[0]}` });
   });
+
   const with_discretisation = dv2.append('div')
     .attr('id', 'FlowMap_discSection')
-    .style('display', 'none');
+    .styles({ clear: 'both', display: 'none', 'padding-top': '2px' });
+
   const without_discretisation = dv2.append('div')
-    .attr('id', 'FlowMap_noDiscSection');
+    .attr('id', 'FlowMap_noDiscSection')
+    .styles({ clear: 'both', 'padding-top': '2px' });
 
   const b = without_discretisation.append('p').attr('class', 'params_section2');
   b.append('span')
@@ -3727,7 +3731,7 @@ function fillMenu_FlowMap() {
       class: 'params',
       min: 0.1,
       max: 100.0,
-      step: 'any'
+      step: 'any',
     })
     .style('width', '50px');
   b.append('span').html(' (px)');
@@ -3757,7 +3761,7 @@ function fillMenu_FlowMap() {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' })
     .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-  const join_field_section = with_discretisation.append('p').attr('class', 'params_section2');
+  const join_field_section = dv2.append('p').attr('class', 'params_section2');
   join_field_section.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' })
     .html(i18next.t('app_page.func_options.flow.join_field'));

@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.b4430f80c936.json'
+      loadPath: 'static/locales/{{lng}}/translation.5240788e8799.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4932,6 +4932,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
   // title.style = "margin: 1px; word-spacing: 1.8em;";
   title.style.margin = '1px';
   title.style.wordSpacing = '1.8em';
+  title.style.paddingLeft = '22px';
   title.innerHTML = 'Min - Max - Size';
   parent_nd.appendChild(title);
 
@@ -4948,7 +4949,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input1.setAttribute('class', 'min_class');
     input1.setAttribute('step', 'any');
     input1.value = (+breaks[i][0][0]).toFixed(2);
-    input1.style.width = '60px';
     input1.style.position = 'unset';
     inner_line.appendChild(input1);
 
@@ -4957,7 +4957,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input2.setAttribute('class', 'max_class');
     input2.setAttribute('step', 'any');
     input2.value = (+breaks[i][0][1]).toFixed(2);
-    input2.style.width = '60px';
     input2.style.position = 'unset';
     inner_line.appendChild(input2);
 
@@ -4967,7 +4966,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
     input3.setAttribute('step', 'any');
     input3.value = (+breaks[i][1]).toFixed(2);
     input3.style.marginLeft = '20px';
-    input3.style.width = '55px';
     input3.style.position = 'unset';
     inner_line.appendChild(input3);
 
@@ -8134,15 +8132,17 @@ function fillMenu_FlowMap() {
   intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.intensity_field'));
   intensity_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_fij' });
 
-  var discretization_section = dv2.append('p').attr('class', 'params_section2');
-  discretization_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
-  var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
+  var discretization_section = dv2.append('div').attr('class', 'params_section2');
+  discretization_section.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
+  var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' }).styles({ position: 'relative', float: 'right' });
 
   [['app_page.common.no_classification', 'no_classification'], ['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
   });
-  var with_discretisation = dv2.append('div').attr('id', 'FlowMap_discSection').style('display', 'none');
-  var without_discretisation = dv2.append('div').attr('id', 'FlowMap_noDiscSection');
+
+  var with_discretisation = dv2.append('div').attr('id', 'FlowMap_discSection').styles({ clear: 'both', display: 'none', 'padding-top': '2px' });
+
+  var without_discretisation = dv2.append('div').attr('id', 'FlowMap_noDiscSection').styles({ clear: 'both', 'padding-top': '2px' });
 
   var b = without_discretisation.append('p').attr('class', 'params_section2');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' }).html(i18next.t('app_page.func_options.choroprop.fixed_size'));
@@ -8167,7 +8167,7 @@ function fillMenu_FlowMap() {
   with_discretisation.append('p').attrs({ class: 'params', id: 'FlowMap_discTable' });
   with_discretisation.append('p').attr('class', 'params_section2').insert('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' }).html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
-  var join_field_section = with_discretisation.append('p').attr('class', 'params_section2');
+  var join_field_section = dv2.append('p').attr('class', 'params_section2');
   join_field_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' }).html(i18next.t('app_page.func_options.flow.join_field'));
   join_field_section.insert('select').attrs({ class: 'params', id: 'FlowMap_field_join' });
 

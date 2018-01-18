@@ -1095,11 +1095,21 @@ Copyright (c) 2015 Tobias Ahlin (license MIT)
 
 .opts_lgd_layout {
   margin: 2px;
-  pointer: cursor;
+  cursor: pointer;
 }
 
 .opts_lgd_layout.selected:before {
   content: "\2713 ";
   font-weight: 800;
   font-size: 1.75em;
+}
+
+p.breaks_vals > input[type="number"] {
+  width: 70px !important;
+  margin: 1px !important;
+  height: 1em !important;
+}
+
+p.breaks_vals > input[type="number"].size_class {
+  width: 60px !important;
 }
