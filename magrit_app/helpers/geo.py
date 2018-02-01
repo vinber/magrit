@@ -314,9 +314,11 @@ def convert_ogr_to_geojson(file_path, file_format):
 
 def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
+    gdf.loc[:, join_field] = gdf.loc[:, join_field].astype(str)
     gdf.set_index(join_field, inplace=True, drop=False)
     gdf.geometry = _compute_centroids(gdf.geometry)
     table = pd_read_json(csv_table)
+    table.loc[:, (field_i, field_j)] = table.loc[:, (field_i, field_j)].astype(str)
     table = \
         table[table[field_i].isin(gdf.index) & table[field_j].isin(gdf.index)]
     geoms_loc = gdf.geometry.loc

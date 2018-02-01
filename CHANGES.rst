@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.6.7 (2018-02-01)
+------------------
+
+- Fix links creation on some cases when using integers as identifiers.
+
+
 0.6.6 (2018-01-19)
 ------------------
 
