@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.fc4a7685916a.json'
+      loadPath: 'static/locales/{{lng}}/translation.f84a57add8e1.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7958,33 +7958,21 @@ function fillMenu_griddedMap(layer) {
   var e = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('display', 'none');
   e.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  // const grid_func = e.insert('select')
-  //     .attrs({ class: 'params i18n', id: 'Gridded_func' })
-  //     .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-  //
-  // const f = dialog_content.append('div')
-  //   .attr('class', 'params_section2 opt_point')
-  //   .style('padding-top', '10px')
-  //   .style('clear', 'both')
-  //   .style('display', 'none');
-  // f.append('p')
-  //   .style('margin', 'auto')
-  //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
-  //   .html(i18next.t('app_page.func_options.common.mask'));
-  //
-  // f.insert('select')
-  //   .attrs({ class: 'params mask_field', id: 'Gridded_mask' })
-  //   .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-  //
-  // [
-  //   ['app_page.func_options.grid.density_count', 'density_count'],
-  //   ['app_page.func_options.grid.density', 'density'],
-  //   ['app_page.func_options.grid.mean', 'mean'],
-  // ].forEach((f) => {
-  //   grid_func.append('option')
-  //     .text(i18next.t(f[0]))
-  //     .attrs({ value: f[1], 'data-i18n': `[text]${f[0]}` });
-  // });
+  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  var f = dialog_content.append('div').attr('class', 'params_section2 opt_point').styles({
+    clear: 'both',
+    display: 'none',
+    'padding-top': '10px'
+  });
+
+  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
+
+  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
+    grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
+  });
 
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
@@ -8002,20 +7990,20 @@ function fillMenu_griddedMap(layer) {
 var fields_griddedMap = {
   fill: function fill(layer) {
     if (!layer) return;
-    // const type_layer = current_layers[layer].type;
-    // section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
-    // if (type_layer === 'Point') {
-    //   const mask_selec = d3.select('#Gridded_mask');
-    //   const other_layers = get_other_layer_names();
-    //   unfillSelectInput(mask_selec.node());
-    //   mask_selec.append('option').text('None').attr('value', 'None');
-    //   for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
-    //     lyr_name = other_layers[i];
-    //     if (current_layers[lyr_name].type === 'Polygon') {
-    //       mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-    //     }
-    //   }
-    // }
+    var type_layer = current_layers[layer].type;
+    section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
+    if (type_layer === 'Point') {
+      var mask_selec = d3.select('#Gridded_mask');
+      var other_layers = get_other_layer_names();
+      unfillSelectInput(mask_selec.node());
+      mask_selec.append('option').text('None').attr('value', 'None');
+      for (var i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+        lyr_name = other_layers[i];
+        if (current_layers[lyr_name].type === 'Polygon') {
+          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+        }
+      }
+    }
 
     var fields = getFieldsType('stock', layer),
         field_selec = section2.select('#Gridded_field'),
@@ -8031,10 +8019,10 @@ var fields_griddedMap = {
     });
     ok_button.on('click', function () {
       var options = {};
-      // if (type_layer === 'Point') {
-      //   options.mask = document.getElementById('Gridded_mask').value;
-      //   options.func = document.getElementById('Gridded_func').value;
-      // }
+      if (type_layer === 'Point') {
+        options.mask = document.getElementById('Gridded_mask').value;
+        options.func = document.getElementById('Gridded_func').value;
+      }
       render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value, options);
     });
     output_name.attr('value', ['Gridded', layer].join('_'));
@@ -9369,12 +9357,12 @@ function getAvailablesFunctionnalities(layerName) {
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
   } else if (current_layers[layerName].type === 'Point') {
     // layer type is Point
-    var _elems2 = section.querySelectorAll('#button_discont, #button_cartogram, #button_grid');
+    var _elems2 = section.querySelectorAll('#button_discont, #button_cartogram');
     for (var _i3 = 0, _len_i2 = _elems2.length; _i3 < _len_i2; _i3++) {
       _elems2[_i3].style.filter = 'grayscale(100%)';
     }
     func_id = section.querySelectorAll('#button_flow');
-    func_stock = section.querySelectorAll('#button_smooth, #button_prop');
+    func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
   } else {
@@ -11409,13 +11397,12 @@ function add_layer_topojson(text) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
-  // if (!target_layer_on_add && _app.current_functionnality !== undefined
-  //     && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
-  //   fields_handler.fill();
-  // }
-  if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
+  if (!target_layer_on_add && _app.current_functionnality !== undefined && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
     fields_handler.fill();
   }
+  // if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
+  //   fields_handler.fill();
+  // }
 
   if (type === 'Point') {
     current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
