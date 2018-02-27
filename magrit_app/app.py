@@ -310,12 +310,12 @@ async def convert(request):
             list_files, tmp_buf = [], []
             for i in range(len(posted_data) - 1):
                 field = posted_data.getall('file[{}]'.format(i))[0]
-                name, ext = field[1].rsplit('.', 1)
+                name, ext = field.filename.rsplit('.', 1)
                 file_name = ''.join(
                     ['/tmp/', user_id, '_', '.'.join(
                         [clean_name(name), ext.lower()])])
                 list_files.append(file_name)
-                content = field[2].read()
+                content = field.file.read()
                 savefile(file_name, content)
                 if '.shp' in file_name or '.dbf' in file_name:
                     tmp_buf.append(content)
@@ -335,10 +335,10 @@ async def convert(request):
     elif "action" in posted_data and "file[]" in posted_data:
         try:
             field = posted_data.get('file[]')
-            name = field[1]
+            name = field.filename
             layer_name = name.rsplit('.', 1)[0]
-            data = field[2].read()
-            datatype = field[3]
+            data = field.file.read()
+            datatype = field.content_type
             hashed_input = mmh3_hash(data)
             filepath = ''.join(['/tmp/', user_id, "_", name])
         except Exception as err:
@@ -346,7 +346,7 @@ async def convert(request):
             request.app['logger'].info(
                 'Error while loading single file : {}\n{}'.format(err, _tb))
             request.app['logger'].info(
-                "Posted data :\n{}\nName:\n{}".format(posted_data, field[1]))
+                "Posted data :\n{}\nName:\n{}".format(posted_data, field.filename))
             return convert_error('Incorrect datatype')
 
     f_name = '_'.join([user_id, str(hashed_input)])
@@ -674,31 +674,45 @@ async def links_map(posted_data, user_id, app):
 async def carto_gridded_point(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
 
+    # Fetch the target layer:
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
     ref_layer = await app['redis_conn'].get(f_name)
-
     ref_layer = json.loads(ref_layer.decode())
-    new_field = posted_data['var_name']
 
-    n_field_name = list(new_field.keys())[0]
-    if len(new_field[n_field_name]) > 0:
-        join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    # Join a new field of value if necessary:
+    if posted_data['var_name']:
+        new_field = posted_data['var_name']
+
+        n_field_name = list(new_field.keys())[0]
+        if len(new_field[n_field_name]) > 0:
+            join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    else:
+        n_field_name = None
+
+    # Prepare the temporary filenames for the input layer(s) and for the result:
+    filenames = {
+        'src_layer': ''.join(['/tmp/', get_name(), '.geojson']),
+        'polygon_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['polygon_layer'] else None,
+        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] else None,
+        'result': None
+    }
+
+    # Save the necessary layer on the disk:
+    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
     if posted_data['mask_layer']:
         f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
         mask_layer = await app['redis_conn'].get(f_name)
-
-    filenames = {"src_layer": ''.join(['/tmp/', get_name(), '.geojson']),
-                 'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] else None,
-                 "result": None}
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
-
-    if filenames['mask_layer']:
         savefile(filenames['mask_layer'],
                  topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
-    func = posted_data['func']
+    if posted_data['polygon_layer']:
+        f_name = '_'.join([user_id, str(posted_data['polygon_layer'])])
+        polygon_layer = await app['redis_conn'].get(f_name)
+        savefile(filenames['polygon_layer'],
+                 topojson_to_geojson(json.loads(polygon_layer.decode())).encode())
 
+    # Compute the result:
     result_geojson = await app.loop.run_in_executor(
         app["ProcessPool"],
         get_grid_layer_pt,
@@ -707,17 +721,24 @@ async def carto_gridded_point(posted_data, user_id, app):
         n_field_name,
         posted_data["grid_shape"].lower(),
         filenames['mask_layer'],
-        func)
+        filenames['polygon_layer'],
+        posted_data['func_type'],
+        )
 
+    # Rename the result layer:
     new_name = '_'.join(['Gridded',
                          str(posted_data["cellsize"]),
-                         n_field_name])
+                         n_field_name or ''])
+    # Convert the result layer to TopoJSON:
     res = await geojson_to_topojson(result_geojson.encode(), new_name)
 
+    # Store it in redis:
     hash_val = str(mmh3_hash(res))
     asyncio.ensure_future(
         app['redis_conn'].set('_'.join([
             user_id, hash_val]), res, pexpire=43200000))
+
+    # Return it to the user:
     return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
@@ -735,8 +756,10 @@ async def carto_gridded(posted_data, user_id, app):
         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
 
     tmp_part = get_name()
-    filenames = {"src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
-                 "result": None}
+    filenames = {
+        "src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
+        "result": None
+    }
     savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
     result_geojson = await app.loop.run_in_executor(
@@ -1305,8 +1328,8 @@ async def convert_tabular(request):
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         "application/vnd.oasis.opendocument.spreadsheet")
 
-    _, name, data, datatype, _ = posted_data.get('file[]')
-
+    _file = posted_data.get('file[]')
+    name, data, datatype = _file.filename, _file.file, _file.content_type
     if datatype in allowed_datatypes:
         name, extension = name.rsplit('.', 1)
         book = get_book(file_content=data.read(), file_type=extension)

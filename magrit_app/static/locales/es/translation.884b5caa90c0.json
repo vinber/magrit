@@ -694,7 +694,11 @@
                 "func": "Tipo de cálculo",
                 "mean": "Valores promedio",
                 "density_count": "Densidad (conteo simple)",
-                "density": "Densidad (usando un campo numérico)"
+                "density": "Densidad (usando un campo numérico)",
+                "mesh_type": "El tipo de malla",
+                "regular_grid": "Cuadrícula regular",
+                "user_polygons": "capa de polígonos",
+                "user_polygon_layer": "Capa para usar"
             },
             "cartogram": {
                 "algo": " Algoritmo ",

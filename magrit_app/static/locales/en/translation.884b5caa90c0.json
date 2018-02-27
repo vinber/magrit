@@ -700,7 +700,11 @@
                 "func": "Calculation type",
                 "mean": "Average values",
                 "density_count": "Density (single counting)",
-                "density": "Density (using a numeric field)"
+                "density": "Density (using a numeric field)",
+                "mesh_type": "Type of mesh",
+                "regular_grid": "Regular grid",
+                "user_polygons": "Polygon layer",
+                "user_polygon_layer": "Layer to use"
             },
             "cartogram": {
                 "algo": "Algorithm to use ",

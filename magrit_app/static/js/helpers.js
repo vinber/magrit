@@ -841,6 +841,12 @@ const helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(_event, callback)
   }
 };
 
+/**
+* Clone a JS Object, taking care of also copying JS Map objects.
+*
+* @param {Array} obj - The object to be cloned.
+* @return {Array} The resulting Object (or Map).
+*/
 const cloneObj = (obj) => {
   if (obj === null || typeof obj !== 'object') return obj;
   else if (obj.toString() === '[object Map]') return new Map(obj.entries());
@@ -935,13 +941,28 @@ function prepareFileExt(files_to_send) {
   return files_to_send;
 }
 
+/**
+* Take an array to reverse it (acting on a copy of the input).
+*
+* @param {Array} arr - The array to be copied and reversed.
+* @return {Array} The resulting Array, letting the input Array untouched.
+*/
 function getCopyReversed(arr) {
   return arr.slice().reverse();
 }
 
-const isValidJSON = obj => {
+/**
+* Try to parse a JSON string into. Returns an Array of two elements :
+* like [true, data] if parsing suceeded or like [false, error] if it failed.
+*
+* @param {String} txt - The JSON string to be parsed.
+* @return {Array} An Array of two element, this first one is a Boolean (wheter
+* parsing the string sucedded or not) and the second is the resulting object or
+* the error thrown.
+*/
+const isValidJSON = txt => {
   try {
-    const a = JSON.parse(obj);
+    const a = JSON.parse(txt);
     return [true, a];
   } catch (e) {
     return [false, e];

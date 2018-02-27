@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f84a57add8e1.json'
+      loadPath: 'static/locales/{{lng}}/translation.884b5caa90c0.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7931,11 +7931,73 @@ function render_TypoSymbols(rendering_params, new_name) {
 function fillMenu_griddedMap(layer) {
   var dialog_content = make_template_functionnality(section2);
 
-  var a = dialog_content.append('p').attr('class', 'params_section2').style('margin-top', '2px');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
-  a.insert('select').attrs({ class: 'params', id: 'Gridded_field' });
+  var ee = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
 
-  var b = dialog_content.append('p').attr('class', 'params_section2');
+  ee.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.mesh_type' }).html(i18next.t('app_page.func_options.grid.mesh_type'));
+
+  var mesh_type = ee.insert('select').attrs({ class: 'params i18n', id: 'Gridded_mesh_type' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  var e = dialog_content.append('p').attr('class', 'params_section2 opt_point').styles({ display: 'none', clear: 'both' });
+
+  e.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
+
+  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  var aa = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_field').styles({ clear: 'both', 'margin-top': '2px', display: 'none' });
+
+  aa.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+
+  aa.insert('select').attrs({ class: 'params field_to_use', id: 'Gridded_field_pt' });
+
+  var gg = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_user_layer').styles({ display: 'none', clear: 'both' });
+
+  gg.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.user_polygon_layer' }).html(i18next.t('app_page.func_options.grid.user_polygon_layer'));
+
+  gg.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_polygon_layer' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  var bb = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({ display: 'none', clear: 'both' });
+
+  bb.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' }).html(i18next.t('app_page.func_options.grid.cellsize'));
+
+  bb.insert('input').style('width', '100px').property('value', 10.0).attrs({
+    type: 'number',
+    class: 'params',
+    id: 'Gridded_cellsize',
+    min: 1.000,
+    max: 7000,
+    step: 'any'
+  });
+
+  var cc = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({ display: 'none', clear: 'both' });
+  cc.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' }).html(i18next.t('app_page.func_options.grid.shape'));
+
+  var grid_shape_pt = cc.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape_pt' });
+
+  var f = dialog_content.append('p').attr('class', 'params_section2 opt_point').styles({
+    clear: 'both',
+    display: 'none',
+    'padding-top': '10px'
+  });
+
+  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
+
+  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
+  [['app_page.func_options.grid.regular_grid', 'regular_grid'], ['app_page.func_options.grid.user_polygons', 'user_polygons']].forEach(function (_f) {
+    mesh_type.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
+  });
+
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (_f) {
+    grid_func.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
+  });
+
+  var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').styles({ clear: 'both', 'margin-top': '2px' });
+
+  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+
+  a.insert('select').attrs({ class: 'params field_to_use', id: 'Gridded_field' });
+
+  var b = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('clear', 'both');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' }).html(i18next.t('app_page.func_options.grid.cellsize'));
   b.insert('input').style('width', '100px').property('value', 10.0).attrs({
     type: 'number',
@@ -7946,33 +8008,14 @@ function fillMenu_griddedMap(layer) {
     step: 'any'
   });
 
-  var c = dialog_content.append('p').attr('class', 'params_section2');
+  var c = dialog_content.append('p').attr('class', 'params_section2 opt_polygon');
   c.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' }).html(i18next.t('app_page.func_options.grid.shape'));
 
   var grid_shape = c.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape' });
 
-  var d = dialog_content.append('p').attr('class', 'params_section2');
+  var d = dialog_content.append('p').attr('class', 'params_section2').styles({ clear: 'both', 'padding-top': '2px' });
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
   var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' });
-
-  var e = dialog_content.append('div').attr('class', 'params_section2 opt_point').style('display', 'none');
-  e.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
-
-  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  var f = dialog_content.append('div').attr('class', 'params_section2 opt_point').styles({
-    clear: 'both',
-    display: 'none',
-    'padding-top': '10px'
-  });
-
-  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
-
-  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
-
-  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (f) {
-    grid_func.append('option').text(i18next.t(f[0])).attrs({ value: f[1], 'data-i18n': '[text]' + f[0] });
-  });
 
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
@@ -7980,6 +8023,7 @@ function fillMenu_griddedMap(layer) {
 
   [['app_page.func_options.grid.square', 'Square'], ['app_page.func_options.grid.diamond', 'Diamond'], ['app_page.func_options.grid.hexagon', 'Hexagon']].forEach(function (shape) {
     grid_shape.append('option').text(i18next.t(shape[0])).attrs({ value: shape[1], 'data-i18n': '[text]' + shape[0] });
+    grid_shape_pt.append('option').text(i18next.t(shape[0])).attrs({ value: shape[1], 'data-i18n': '[text]' + shape[0] });
   });
 
   make_layer_name_button(dialog_content, 'Gridded_output_name');
@@ -7991,8 +8035,10 @@ var fields_griddedMap = {
   fill: function fill(layer) {
     if (!layer) return;
     var type_layer = current_layers[layer].type;
+    section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
+      var user_polygon_layer = d3.select('#Gridded_polygon_layer');
       var mask_selec = d3.select('#Gridded_mask');
       var other_layers = get_other_layer_names();
       unfillSelectInput(mask_selec.node());
@@ -8001,42 +8047,150 @@ var fields_griddedMap = {
         lyr_name = other_layers[i];
         if (current_layers[lyr_name].type === 'Polygon') {
           mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+          user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
         }
       }
+      var current_mesh_type = document.getElementById('Gridded_mesh_type').value;
+      var current_func_type = document.getElementById('Gridded_func').value;
+      section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
+      section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
+      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' ? 'none' : null);
+      section2.select('#Gridded_mesh_type').on('change', function () {
+        if (this.value === 'regular_grid') {
+          section2.selectAll('.opt_point.opt_grid').style('display', null);
+          section2.selectAll('.opt_point.opt_user_layer').style('display', 'none');
+        } else if (this.value === 'user_polygons') {
+          section2.selectAll('.opt_point.opt_grid').style('display', 'none');
+          section2.selectAll('.opt_point.opt_user_layer').style('display', null);
+        }
+      });
+      section2.select('#Gridded_func').on('change', function () {
+        section2.select('.opt_point.opt_field').style('display', this.value === 'density' || this.value === 'mean' ? null : 'none');
+      });
     }
 
     var fields = getFieldsType('stock', layer),
-        field_selec = section2.select('#Gridded_field'),
-        output_name = section2.select('#Gridded_output_name'),
-        grip_shape = section2.select('#Gridded_shape'),
+        field_selecs = section2.selectAll('.field_to_use'),
+        output_name_field = section2.select('#Gridded_output_name'),
         ok_button = section2.select('#Gridded_yes');
 
     fields.forEach(function (field) {
-      field_selec.append('option').text(field).attr('value', field);
+      field_selecs.append('option').text(field).attr('value', field);
     });
-    field_selec.on('change', function () {
-      output_name.attr('value', ['Gridded', this.value, layer].join('_'));
+    field_selecs.on('change', function () {
+      output_name_field.attr('value', ['Gridded', this.value, layer].join('_'));
     });
     ok_button.on('click', function () {
-      var options = {};
+      var output_name = output_name_field.node().value;
       if (type_layer === 'Point') {
-        options.mask = document.getElementById('Gridded_mask').value;
-        options.func = document.getElementById('Gridded_func').value;
+        var params = {
+          mesh_type: document.getElementById('Gridded_mesh_type').value,
+          func_type: document.getElementById('Gridded_func').value,
+          field: document.getElementById('Gridded_field_pt').value,
+          resolution: document.getElementById('Gridded_cellsize').value,
+          cell_shape: document.getElementById('Gridded_shape_pt').value,
+          mask_layer: document.getElementById('Gridded_mask').value,
+          polygon_layer: document.getElementById('Gridded_polygon_layer').value,
+          color_palette: document.getElementById('Gridded_color_pal').value
+        };
+        render_GriddedFromPts(params, output_name);
+      } else {
+        render_Gridded(document.getElementById('Gridded_field').value, document.getElementById('Gridded_cellsize').value, document.getElementById('Gridded_shape').value, document.getElementById('Gridded_color_pal').value, output_name);
       }
-      render_Gridded(field_selec.node().value, document.getElementById('Gridded_cellsize').value, grip_shape.node().value, document.getElementById('Gridded_color_pal').value, output_name.node().value, options);
     });
-    output_name.attr('value', ['Gridded', layer].join('_'));
+    output_name_field.attr('value', ['Gridded', layer].join('_'));
     document.getElementById('Gridded_cellsize').value = get_first_guess_span('grid');
     section2.selectAll('.params').attr('disabled', null);
   },
   unfill: function unfill() {
-    var field_selec = document.getElementById('Gridded_field');
-    unfillSelectInput(field_selec);
+    unfillSelectInput(document.getElementById('Gridded_field'));
+    unfillSelectInput(document.getElementById('Gridded_field_pt'));
     section2.selectAll('.params').attr('disabled', true);
   }
 };
 
-function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name, options) {
+function render_GriddedFromPts(params, new_user_layer_name) {
+  var layer = Object.getOwnPropertyNames(user_data)[0],
+      formToSend = new FormData();
+  var var_to_send = null;
+
+  // If the mesh to be used is a regular grid, test that the resolution is
+  // not too high/too low:
+  if (params.mesh_type === 'regular_grid') {
+    var res_test = test_maxmin_resolution(params.resolution);
+    if (res_test) {
+      var message = res_test === 'low' ? i18next.t('app_page.common.error_too_low_resolution') : i18next.t('app_page.common.error_too_high_resolution');
+      display_error_during_computation(message);
+      return;
+    }
+  } else if (!params.polygon_layer in current_layers) {
+    display_error_during_computation('Unable to find the layer');
+    return;
+  }
+
+  // If the method require a numerical field:
+  if (params.func_type !== 'density_count') {
+    var field_name = params.field;
+    var_to_send = {};
+    if (current_layers[layer].original_fields.has(field_name)) {
+      var_to_send[field_name] = [];
+    } else {
+      var_to_send[field_name] = user_data[layer].map(function (i) {
+        return i[field_name];
+      });
+    }
+  }
+
+  formToSend.append('json', JSON.stringify({
+    topojson: current_layers[layer].key_name,
+    mesh_type: params.mesh_type,
+    var_name: var_to_send,
+    cellsize: params.resolution * 1000,
+    grid_shape: params.cell_shape,
+    polygon_layer: params.mesh_type !== 'regular_grid' ? current_layers[params.polygon_layer].key_name : null,
+    mask_layer: params.mask_layer !== 'None' ? current_layers[params.mask_layer].key_name : null,
+    func_type: params.func_type
+  }));
+
+  xhrequest('POST', 'compute/gridded_point', formToSend, true).then(function (data) {
+    var _options = { result_layer_on_add: true, func_name: 'grid' };
+    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+      _options.choosed_name = new_user_layer_name;
+    }
+    var rendered_field = params.func_type;
+    var n_layer_name = add_layer_topojson(data, _options);
+    if (!n_layer_name) return;
+    var res_data = result_data[n_layer_name],
+        nb_ft = res_data.length,
+        d_values = [];
+    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+    opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
+    for (var i = 0; i < nb_ft; i++) {
+      d_values.push(+res_data[i][rendered_field]);
+    }
+    var disc_method = 'jenks';
+    current_layers[n_layer_name].renderer = 'Gridded';
+    var disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
+    var rendering_params = {
+      nb_class: opt_nb_class,
+      type: disc_method,
+      schema: [params.color_palette],
+      breaks: disc_result[2],
+      colors: disc_result[3],
+      colorsByFeature: disc_result[4],
+      renderer: 'Gridded',
+      rendered_field: rendered_field
+    };
+    render_choro(n_layer_name, rendering_params);
+    handle_legend(n_layer_name);
+    switch_accordion_section();
+  }, function (error) {
+    display_error_during_computation();
+    console.log(error);
+  });
+}
+
+function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name) {
   var layer = Object.getOwnPropertyNames(user_data)[0],
       formToSend = new FormData(),
       var_to_send = {},
@@ -8060,17 +8214,15 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
     topojson: current_layers[layer].key_name,
     var_name: var_to_send,
     cellsize: resolution * 1000,
-    grid_shape: cell_shape,
-    mask_layer: options.mask && options.mask !== 'None' ? current_layers[options.mask].key_name : null,
-    func: options.func ? options.func : null
+    grid_shape: cell_shape
   }));
-  var url = options.func ? 'compute/gridded_point' : 'compute/gridded';
-  xhrequest('POST', url, formToSend, true).then(function (data) {
+
+  xhrequest('POST', 'compute/gridded', formToSend, true).then(function (data) {
     var _options = { result_layer_on_add: true, func_name: 'grid' };
     if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
       _options.choosed_name = new_user_layer_name;
     }
-    var rendered_field = options.func ? options.func : field_n + '_densitykm';
+    var rendered_field = field_n + '_densitykm';
     var n_layer_name = add_layer_topojson(data, _options);
     if (!n_layer_name) return;
     var res_data = result_data[n_layer_name],
@@ -8080,7 +8232,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
     for (var i = 0; i < nb_ft; i++) {
       d_values.push(+res_data[i][rendered_field]);
     }
-    var disc_method = options.func ? 'jenks' : 'quantiles';
+    var disc_method = 'quantiles';
     current_layers[n_layer_name].renderer = 'Gridded';
     var disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
     var rendering_params = {
@@ -9488,6 +9640,12 @@ var helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(_event, callback) {
   }
 };
 
+/**
+* Clone a JS Object, taking care of also copying JS Map objects.
+*
+* @param {Array} obj - The object to be cloned.
+* @return {Array} The resulting Object (or Map).
+*/
 var cloneObj = function cloneObj(obj) {
   if (obj === null || (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) !== 'object') return obj;else if (obj.toString() === '[object Map]') return new Map(obj.entries());
   return Object.assign({}, obj);
@@ -9579,13 +9737,28 @@ function prepareFileExt(files_to_send) {
   return files_to_send;
 }
 
+/**
+* Take an array to reverse it (acting on a copy of the input).
+*
+* @param {Array} arr - The array to be copied and reversed.
+* @return {Array} The resulting Array, letting the input Array untouched.
+*/
 function getCopyReversed(arr) {
   return arr.slice().reverse();
 }
 
-var isValidJSON = function isValidJSON(obj) {
+/**
+* Try to parse a JSON string into. Returns an Array of two elements :
+* like [true, data] if parsing suceeded or like [false, error] if it failed.
+*
+* @param {String} txt - The JSON string to be parsed.
+* @return {Array} An Array of two element, this first one is a Boolean (wheter
+* parsing the string sucedded or not) and the second is the resulting object or
+* the error thrown.
+*/
+var isValidJSON = function isValidJSON(txt) {
   try {
-    var a = JSON.parse(obj);
+    var a = JSON.parse(txt);
     return [true, a];
   } catch (e) {
     return [false, e];
