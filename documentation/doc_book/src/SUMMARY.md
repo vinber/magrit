@@ -1,6 +1,4 @@
-# Table des matières
-
-# Magrit 0.0.0-unreleased
+# Table des matières - Magrit
 
 - [Import des données](./import_fr.md)
 	- [Import du fond de carte](./import/import_layer_fr.md)
@@ -23,6 +21,7 @@
 	- [Carte de liens](./carto/links_fr.md)
 	- [Carte qualitative (pictogrammes)](./carto/typosymbol_fr.md)
 	- [Carte en gaufre](./carto/waffle_fr.md)
+	- [Analyse d'un semi de point](./carto/grid_pt_fr.md)
 - [Discrétisation des données](./discretisation_fr.md)
 - [Habillage de la carte](./layout_fr.md)
 - [Export des données](./export_fr.md)
