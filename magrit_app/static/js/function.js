@@ -3468,7 +3468,7 @@ function fillMenu_griddedMap(layer) {
 
   const grid_func = e.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_func' })
-    .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+    .styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
 
   const aa = dialog_content.append('p')
     .attr('class', 'params_section2 opt_point opt_field')
@@ -3525,7 +3525,7 @@ function fillMenu_griddedMap(layer) {
     .attrs({ class: 'params i18n', id: 'Gridded_shape_pt' });
 
   const f = dialog_content.append('p')
-    .attr('class', 'params_section2 opt_point')
+    .attr('class', 'params_section2 opt_point opt_grid')
     .styles({
       clear: 'both',
       display: 'none',
@@ -3554,6 +3554,7 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.density_count', 'density_count'],
     ['app_page.func_options.grid.density', 'density'],
     ['app_page.func_options.grid.mean', 'mean'],
+    ['app_page.func_options.grid.stddev', 'stddev'],
   ].forEach((_f) => {
     grid_func.append('option')
       .text(i18next.t(_f[0]))
@@ -3605,7 +3606,8 @@ function fillMenu_griddedMap(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' })
     .html(i18next.t('app_page.func_options.grid.coloramp'));
   const col_pal = d.insert('select')
-    .attrs({ class: 'params', id: 'Gridded_color_pal' });
+    .attrs({ class: 'params', id: 'Gridded_color_pal' })
+    .styles({ position: 'relative', float: 'right', });
 
   [
     'Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn',
@@ -3633,23 +3635,24 @@ function fillMenu_griddedMap(layer) {
 
 const fields_griddedMap = {
   fill: function (layer) {
+    const user_polygon_layer = d3.select('#Gridded_polygon_layer');
+    const mask_selec = d3.select('#Gridded_mask');
+    const other_layers = get_other_layer_names();
+    unfillSelectInput(mask_selec.node());
+    unfillSelectInput(user_polygon_layer.node());
+    mask_selec.append('option').text('None').attr('value', 'None');
+    for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+      lyr_name = other_layers[i];
+      if (current_layers[lyr_name].type === 'Polygon') {
+        mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+        user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
+      }
+    }
     if (!layer) return;
     const type_layer = current_layers[layer].type;
     section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
-      const user_polygon_layer = d3.select('#Gridded_polygon_layer');
-      const mask_selec = d3.select('#Gridded_mask');
-      const other_layers = get_other_layer_names();
-      unfillSelectInput(mask_selec.node());
-      mask_selec.append('option').text('None').attr('value', 'None');
-      for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
-        lyr_name = other_layers[i];
-        if (current_layers[lyr_name].type === 'Polygon') {
-          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-          user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
-        }
-      }
       const current_mesh_type = document.getElementById('Gridded_mesh_type').value;
       const current_func_type = document.getElementById('Gridded_func').value;
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');

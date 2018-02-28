@@ -699,6 +699,7 @@
                 "hexagon": "Hexagon",
                 "func": "Calculation type",
                 "mean": "Average values",
+                "stddev": "Standard deviation",
                 "density_count": "Density (single counting)",
                 "density": "Density (using a numeric field)",
                 "mesh_type": "Type of mesh",

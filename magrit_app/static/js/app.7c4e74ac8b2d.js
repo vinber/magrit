@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.884b5caa90c0.json'
+      loadPath: 'static/locales/{{lng}}/translation.7c4e74ac8b2d.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7941,7 +7941,7 @@ function fillMenu_griddedMap(layer) {
 
   e.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
 
   var aa = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_field').styles({ clear: 'both', 'margin-top': '2px', display: 'none' });
 
@@ -7973,7 +7973,7 @@ function fillMenu_griddedMap(layer) {
 
   var grid_shape_pt = cc.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape_pt' });
 
-  var f = dialog_content.append('p').attr('class', 'params_section2 opt_point').styles({
+  var f = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({
     clear: 'both',
     display: 'none',
     'padding-top': '10px'
@@ -7987,7 +7987,7 @@ function fillMenu_griddedMap(layer) {
     mesh_type.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
   });
 
-  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean']].forEach(function (_f) {
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean'], ['app_page.func_options.grid.stddev', 'stddev']].forEach(function (_f) {
     grid_func.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
   });
 
@@ -8015,7 +8015,7 @@ function fillMenu_griddedMap(layer) {
 
   var d = dialog_content.append('p').attr('class', 'params_section2').styles({ clear: 'both', 'padding-top': '2px' });
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
-  var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' });
+  var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' }).styles({ position: 'relative', float: 'right' });
 
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
@@ -8033,23 +8033,24 @@ function fillMenu_griddedMap(layer) {
 
 var fields_griddedMap = {
   fill: function fill(layer) {
+    var user_polygon_layer = d3.select('#Gridded_polygon_layer');
+    var mask_selec = d3.select('#Gridded_mask');
+    var other_layers = get_other_layer_names();
+    unfillSelectInput(mask_selec.node());
+    unfillSelectInput(user_polygon_layer.node());
+    mask_selec.append('option').text('None').attr('value', 'None');
+    for (var i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
+      lyr_name = other_layers[i];
+      if (current_layers[lyr_name].type === 'Polygon') {
+        mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
+        user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
+      }
+    }
     if (!layer) return;
     var type_layer = current_layers[layer].type;
     section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
-      var user_polygon_layer = d3.select('#Gridded_polygon_layer');
-      var mask_selec = d3.select('#Gridded_mask');
-      var other_layers = get_other_layer_names();
-      unfillSelectInput(mask_selec.node());
-      mask_selec.append('option').text('None').attr('value', 'None');
-      for (var i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
-        lyr_name = other_layers[i];
-        if (current_layers[lyr_name].type === 'Polygon') {
-          mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-          user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
-        }
-      }
       var current_mesh_type = document.getElementById('Gridded_mesh_type').value;
       var current_func_type = document.getElementById('Gridded_func').value;
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');

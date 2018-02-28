@@ -699,6 +699,7 @@
                 "hexagon": "Hexagone",
                 "func": "Type de calcul",
                 "mean": "Moyenne des valeurs",
+                "stddev": "Écart-type des valeurs",
                 "density_count": "Densité (comptage simple)",
                 "density": "Densité (utilisation d'un champ numérique)",
                 "mesh_type": "Type de maillage",
