@@ -110,7 +110,8 @@ def get_dens_from_pt(point_layer, field_name, polygon_layer, func):
         value = None
         idx_pts = list(idx_intersects(geom.bounds, objects='raw'))
         if idx_pts:
-            idx = pts_geoms[idx_pts].intersects(geom).index
+            t = pts_geoms[idx_pts].intersects(geom)
+            idx = t[t == True].index
             value = f((array_values[idx], geom.area))
         res.append(value)
     return res
@@ -143,7 +144,8 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
             continue
         idx_pts = list(idx_intersects(rect, objects='raw'))
         if idx_pts:
-            idx = geoms[idx_pts].intersects(cell).index
+            t = geoms[idx_pts].intersects(cell)
+            idx = t[t == True].index
             value = f((array_values[idx], cell.area))
         res.append((cell, value))
 

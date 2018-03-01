@@ -86,7 +86,8 @@ def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
         if idx_poly:
             p = mask.intersection(Polygon(cell))
             if p:
-                idx = geoms[idx_poly].intersects(p).index
+                t = geoms[idx_poly].intersects(p)
+                idx = t[t == True].index
                 areas_part = geoms[idx].intersection(p).area.values / area_values[idx]
                 _sum = (array_values[idx] * areas_part).sum()
                 density = _sum / p.area

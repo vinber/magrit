@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.0445b4952580.json'
+      loadPath: 'static/locales/{{lng}}/translation.bd43a2bba63e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8167,18 +8167,29 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
     opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
     for (var i = 0; i < nb_ft; i++) {
-      d_values.push(+res_data[i][rendered_field]);
+      d_values.push(res_data[i][rendered_field]);
     }
     var disc_method = 'jenks';
     current_layers[n_layer_name].renderer = 'Gridded';
-    var disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
+    // const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
+
+    var _discretize_to_colors21 = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette),
+        _discretize_to_colors22 = _slicedToArray(_discretize_to_colors21, 6),
+        nb_class = _discretize_to_colors22[0],
+        type = _discretize_to_colors22[1],
+        breaks = _discretize_to_colors22[2],
+        color_array = _discretize_to_colors22[3],
+        colors_map = _discretize_to_colors22[4],
+        no_data_color = _discretize_to_colors22[5];
+
     var rendering_params = {
-      nb_class: opt_nb_class,
-      type: disc_method,
+      nb_class: nb_class,
+      type: type,
       schema: [params.color_palette],
-      breaks: disc_result[2],
-      colors: disc_result[3],
-      colorsByFeature: disc_result[4],
+      breaks: breaks,
+      no_data: no_data_color,
+      colors: color_array,
+      colorsByFeature: colors_map,
       renderer: 'Gridded',
       rendered_field: rendered_field
     };

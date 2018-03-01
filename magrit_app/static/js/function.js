@@ -3779,18 +3779,21 @@ function render_GriddedFromPts(params, new_user_layer_name) {
       let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
       opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
       for (let i = 0; i < nb_ft; i++) {
-        d_values.push(+res_data[i][rendered_field]);
+        d_values.push(res_data[i][rendered_field]);
       }
       const disc_method = 'jenks';
       current_layers[n_layer_name].renderer = 'Gridded';
-      const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
+      const [
+        nb_class, type, breaks, color_array, colors_map, no_data_color
+      ] = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
       const rendering_params = {
-        nb_class: opt_nb_class,
-        type: disc_method,
+        nb_class: nb_class,
+        type: type,
         schema: [params.color_palette],
-        breaks: disc_result[2],
-        colors: disc_result[3],
-        colorsByFeature: disc_result[4],
+        breaks: breaks,
+        no_data: no_data_color,
+        colors: color_array,
+        colorsByFeature: colors_map,
         renderer: 'Gridded',
         rendered_field: rendered_field,
       };
