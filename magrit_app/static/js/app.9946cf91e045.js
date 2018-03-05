@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.884a5aa18d47.json'
+      loadPath: 'static/locales/{{lng}}/translation.9946cf91e045.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7961,7 +7961,7 @@ function fillMenu_griddedMap(layer) {
   bb.insert('input').style('width', '100px').property('value', 10.0).attrs({
     type: 'number',
     class: 'params',
-    id: 'Gridded_cellsize',
+    id: 'Gridded_cellsize_pt',
     min: 1.000,
     max: 7000,
     step: 'any'
@@ -8065,7 +8065,7 @@ var fields_griddedMap = {
         }
       });
       section2.select('#Gridded_func').on('change', function () {
-        section2.select('.opt_point.opt_field').style('display', this.value === 'density' || this.value === 'mean' ? null : 'none');
+        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' ? 'none' : null);
       });
     }
 
@@ -8087,12 +8087,16 @@ var fields_griddedMap = {
           mesh_type: document.getElementById('Gridded_mesh_type').value,
           func_type: document.getElementById('Gridded_func').value,
           field: document.getElementById('Gridded_field_pt').value,
-          resolution: document.getElementById('Gridded_cellsize').value,
+          resolution: document.getElementById('Gridded_cellsize_pt').value,
           cell_shape: document.getElementById('Gridded_shape_pt').value,
           mask_layer: document.getElementById('Gridded_mask').value,
           polygon_layer: document.getElementById('Gridded_polygon_layer').value,
           color_palette: document.getElementById('Gridded_color_pal').value
         };
+        if (params.mesh_type === 'user_polygons' && !params.polygon_layer) {
+          display_error_during_computation('A background layer is needed for this functionnality');
+          return;
+        }
         render_GriddedFromPts(params, output_name);
       } else {
         render_Gridded(document.getElementById('Gridded_field').value, document.getElementById('Gridded_cellsize').value, document.getElementById('Gridded_shape').value, document.getElementById('Gridded_color_pal').value, output_name);
@@ -8100,6 +8104,7 @@ var fields_griddedMap = {
     });
     output_name_field.attr('value', ['Gridded', layer].join('_'));
     document.getElementById('Gridded_cellsize').value = get_first_guess_span('grid');
+    document.getElementById('Gridded_cellsize_pt').value = get_first_guess_span('grid');
     section2.selectAll('.params').attr('disabled', null);
   },
   unfill: function unfill() {
