@@ -220,7 +220,12 @@ def vectorTranslate_to_geojson(file_path):
                 format = 'GeoJSON',
                 dstSRS='EPSG:4326',
                 skipFailures=True,
-                layerCreationOptions = ['WRITE_BBOX=YES', 'WRITE_NAME=NO'])
+                layerCreationOptions = [
+                    'WRITE_BBOX=YES',
+                    'WRITE_NAME=NO',
+                    'SIGNIFICANT_FIGURES=20',
+                    'COORDINATE_PRECISION=15',
+                ])
             if not ds:
                 return
             p = ds.GetDescription()
