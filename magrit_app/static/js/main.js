@@ -1842,11 +1842,11 @@ function remove_layer_cleanup(name) {
   // Remove the layer from the "mask" section if the "smoothed map" menu is open :
   if (_app.current_functionnality && (
       _app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
-    const aa = document.querySelector('.mask_field').querySelector(`option[value="${name}"]`);
-    if (aa) aa.remove();
-    // Array.prototype.forEach.call(
-    //   document.getElementById('stewart_mask').options, el => {
-    //      if (el.value == name) el.remove(); });
+    Array.prototype.slice.call(document.querySelectorAll('.mask_field'))
+      .forEach((elem) => {
+        const aa = elem.querySelector(`option[value="${name}"]`);
+        if (aa) aa.remove();
+      });
   }
 
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :

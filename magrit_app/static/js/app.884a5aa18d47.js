@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.bd43a2bba63e.json'
+      loadPath: 'static/locales/{{lng}}/translation.884a5aa18d47.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1551,11 +1551,10 @@ function remove_layer_cleanup(name) {
 
   // Remove the layer from the "mask" section if the "smoothed map" menu is open :
   if (_app.current_functionnality && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
-    var aa = document.querySelector('.mask_field').querySelector('option[value="' + name + '"]');
-    if (aa) aa.remove();
-    // Array.prototype.forEach.call(
-    //   document.getElementById('stewart_mask').options, el => {
-    //      if (el.value == name) el.remove(); });
+    Array.prototype.slice.call(document.querySelectorAll('.mask_field')).forEach(function (elem) {
+      var aa = elem.querySelector('option[value="' + name + '"]');
+      if (aa) aa.remove();
+    });
   }
 
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
@@ -8171,7 +8170,6 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     }
     var disc_method = 'jenks';
     current_layers[n_layer_name].renderer = 'Gridded';
-    // const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
 
     var _discretize_to_colors21 = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette),
         _discretize_to_colors22 = _slicedToArray(_discretize_to_colors21, 6),
