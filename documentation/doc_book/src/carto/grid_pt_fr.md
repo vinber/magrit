@@ -43,5 +43,5 @@ Plusieurs options d'analyse sont proposées et visent à calculer :
 - Type d'analyse : **Densité**
 - Couche de masquage/découpe : **Quartiers de Paris**
 - Carreaux en forme d'**hexagone**
-- Taille de référence : **0.8km**
+- Taille de référence : **1.2km**
 - Palette de couleur : **Blues**
