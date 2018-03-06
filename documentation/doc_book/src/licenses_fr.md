@@ -41,7 +41,7 @@ Différentes bibliothèques et applications sont utilisées :
 | [xlrd](https://github.com/python-excel/xlrd)          |         | BSD-like       |
 
 
-Certaines des bibliothèques utilisées ont été developpées pour l'occasion :
+Certaines des bibliothèques utilisées ont été développées pour l'occasion :
 
 | Nom                                                   | Version | Licence        |
 |-------------------------------------------------------|---------|----------------|
@@ -50,6 +50,6 @@ Certaines des bibliothèques utilisées ont été developpées pour l'occasion :
 | [smoomapy](https://github.com/mthh/smoomapy)          | 0.1.9   | MIT            |
 
 
-Cette application contient des [schémas de couleurs developpés par Cynthia Brewer](http://colorbrewer2.org).  
-Cette application contient des composants *(xlrd)* developpés par [David Giffin](david@giffin.org).  
-Cette application contient la projection *Bertin 1953*, contribuée à [d3-geo-projection](https://github.com/d3/d3-geo-projection) par [Philippe Rivière](https://visionscarto.net/).  
+Cette application contient des [schémas de couleurs développés par Cynthia Brewer](http://colorbrewer2.org).  
+Cette application contient des composants *(xlrd)* développés par [David Giffin](david@giffin.org).  
+Cette application contient la projection *Bertin 1953*, contribué à [d3-geo-projection](https://github.com/d3/d3-geo-projection) par [Philippe Rivière](https://visionscarto.net/).  

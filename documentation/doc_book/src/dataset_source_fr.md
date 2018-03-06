@@ -108,7 +108,7 @@ Fond de carte : Institut national de l’information géographique et forestièr
 Variables :  
 - CODE_DEPT : Code géographique du département (1)
 - NOM_DEPT : Nom du département (1)
-- CODE_CHF : Code géographique de la préfécture du département (1)
+- CODE_CHF : Code géographique de la préfecture du département (1)
 - NOM_CHF : Nom de la préfecture du département (1)
 - CODE_REG : Code géographique de la région à laquelle appartient le département (1)
 - NOM_REG : Nom de la région à laquelle appartient le département (1)
