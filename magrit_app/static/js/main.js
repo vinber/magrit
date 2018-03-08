@@ -2002,6 +2002,7 @@ function redraw_legends_symbols(targeted_node) {
       layer_name = _app.id_to_layer.get(layer_id),
       rendered_field = current_layers[layer_name].rendered_field,
       nested = legend_nodes[i].getAttribute('nested'),
+      join_line = legend_nodes[i].getAttribute('join_line'),
       display_value = legend_nodes[i].getAttribute('display'),
       visible = legend_nodes[i].style.visibility;
 
@@ -2022,6 +2023,7 @@ function redraw_legends_symbols(targeted_node) {
                         lgd_title,
                         lgd_subtitle,
                         nested,
+                        join_line,
                         rect_fill_value,
                         rounding_precision,
                         notes);

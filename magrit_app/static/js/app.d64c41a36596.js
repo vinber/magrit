@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.b04399845b96.json'
+      loadPath: 'static/locales/{{lng}}/translation.d64c41a36596.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1690,6 +1690,7 @@ function redraw_legends_symbols(targeted_node) {
         layer_name = _app.id_to_layer.get(layer_id),
         rendered_field = current_layers[layer_name].rendered_field,
         nested = legend_nodes[i].getAttribute('nested'),
+        join_line = legend_nodes[i].getAttribute('join_line'),
         display_value = legend_nodes[i].getAttribute('display'),
         visible = legend_nodes[i].style.visibility;
 
@@ -1705,7 +1706,7 @@ function redraw_legends_symbols(targeted_node) {
     } : undefined;
 
     legend_nodes[i].remove();
-    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, notes);
+    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, notes);
     var new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
     new_lgd.style.visibility = visible;
     if (transform_param) new_lgd.setAttribute('transform', transform_param);
@@ -17319,10 +17320,11 @@ function make_underlying_rect(legend_root, under_rect, fill) {
 
 function createLegend_symbol(layer, field, title, subtitle) {
   var nested = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 'false';
-  var rect_fill_value = arguments[5];
-  var rounding_precision = arguments[6];
-  var note_bottom = arguments[7];
-  var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
+  var join_line = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 'false';
+  var rect_fill_value = arguments[6];
+  var rounding_precision = arguments[7];
+  var note_bottom = arguments[8];
+  var options = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : {};
 
   var parent = options.parent || window.map;
   var space_elem = 18;
@@ -17388,6 +17390,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
     transform: 'translate(0,0)',
     layer_name: layer,
     nested: nested,
+    join_line: join_line,
     rounding_precision: rounding_precision,
     layer_field: field
   });
@@ -17463,24 +17466,56 @@ function createLegend_symbol(layer, field, title, subtitle) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
     }
-  } else if (nested === 'true') {
+  } else if (nested !== 'false') {
     if (symbol_type === 'circle') {
-      legend_elems.append('circle').attrs(function (d) {
-        return {
-          cx: xpos + space_elem + boxgap + max_size / 2,
-          cy: ypos + 45 + max_size + max_size / 2 - d.size,
-          r: d.size
-        };
-      }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
-      last_pos = y_pos2;last_size = 0;
-      legend_elems.append('text').attrs(function (d) {
-        return {
-          x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
-          y: ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2
-        };
-      }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
-        return round_value(d.value, rounding_precision).toLocaleString();
-      });
+      if (join_line === 'true') {
+        var render_line = d3.line().x(function (d) {
+          return d[0];
+        }).y(function (d) {
+          return d[1];
+        });
+        legend_elems.append('line').attrs(function (d) {
+          return {
+            x1: xpos + space_elem + boxgap + d.size,
+            x2: xpos + space_elem + boxgap + max_size * 1.5 + 3,
+            y1: ypos + 45 + max_size * 2 - max_size / 2 - d.size,
+            y2: ypos + 45 + max_size * 2 - max_size / 2 - d.size
+          };
+        }).attr('stroke', 'black');
+        legend_elems.append('circle').attrs(function (d) {
+          return {
+            cx: xpos + space_elem + boxgap + max_size / 2,
+            cy: ypos + 45 + max_size + max_size / 2 - d.size,
+            r: d.size
+          };
+        }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
+        last_pos = y_pos2;last_size = 0;
+        legend_elems.append('text').attrs(function (d) {
+          return {
+            x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
+            y: ypos + 48 + max_size * 2 - max_size / 2 - d.size
+          };
+        }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+          return round_value(d.value, rounding_precision).toLocaleString();
+        });
+      } else {
+        legend_elems.append('circle').attrs(function (d) {
+          return {
+            cx: xpos + space_elem + boxgap + max_size / 2,
+            cy: ypos + 45 + max_size + max_size / 2 - d.size,
+            r: d.size
+          };
+        }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
+        last_pos = y_pos2;last_size = 0;
+        legend_elems.append('text').attrs(function (d) {
+          return {
+            x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
+            y: ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2
+          };
+        }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
+          return round_value(d.value, rounding_precision).toLocaleString();
+        });
+      }
       last_pos = ypos + 30 + max_size + max_size / 2;
     } else if (symbol_type === 'rect') {
       legend_elems.append('rect').attrs(function (d) {
@@ -17963,6 +17998,7 @@ function display_box_value_symbol(layer_name) {
     var legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
     var rendered_field = current_layers[layer_name].rendered_field;
     var nested = legend_node.getAttribute('nested');
+    var join_line = legend_node.getAttribute('join_line');
     var rounding_precision = legend_node.getAttribute('rounding_precision');
     var lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
         lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
@@ -17978,7 +18014,7 @@ function display_box_value_symbol(layer_name) {
         val4.property('value', values[3].value);
       }
       sample_svg.selectAll('g').remove();
-      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, {}, rounding_precision, note, { parent: sample_svg });
+      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, {}, rounding_precision, note, { parent: sample_svg });
       sample_svg.select('g').select('#under_rect').remove();
       sample_svg.select('#legend_root_symbol').on('.drag', null);
     };
@@ -18166,6 +18202,7 @@ function createlegendEditBox_symbol() {
     legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
     var rendered_field = current_layers[layer_name].rendered_field;
     var nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
+    var join_line = legend_node.getAttribute('join_line');
     var rounding_precision = legend_node.getAttribute('rounding_precision');
     var transform_param = legend_node.getAttribute('transform'),
         lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -18173,13 +18210,35 @@ function createlegendEditBox_symbol() {
         note = legend_node.querySelector('#legend_bottom_note').innerHTML;
 
     legend_node.remove();
-    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
+    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
     bind_selections();
     if (transform_param) {
       svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
     }
   });
   gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
+
+  var current_state_line = legend_node.getAttribute('join_line') === 'true';
+  var join_line_section = box_body.insert('p');
+  join_line_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd_join_line', type: 'checkbox' }).property('checked', current_state_line).on('change', function () {
+    legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
+    var rendered_field = current_layers[layer_name].rendered_field;
+    var nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
+    var join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+    var rounding_precision = legend_node.getAttribute('rounding_precision');
+    var transform_param = legend_node.getAttribute('transform'),
+        lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
+        lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
+        note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+
+    legend_node.remove();
+    createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
+    bind_selections();
+    if (transform_param) {
+      svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
+    }
+  });
+  join_line_section.append('label').attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' }).html(i18next.t('app_page.legend_style_box.join_line'));
 
   var rectangle_options1 = box_body.insert('p');
   rectangle_options1.insert('input').style('margin-left', '0px').attrs({
@@ -18699,6 +18758,7 @@ function createlegendEditBox(legend_id, layer_name) {
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       var rendered_field = current_layers[layer_name].rendered_field;
       var nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
+      var join_line = legend_node.getAttribute('nested');
       var rounding_precision = legend_node.getAttribute('rounding_precision');
       var transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -18706,13 +18766,35 @@ function createlegendEditBox(legend_id, layer_name) {
           note = legend_node.querySelector('#legend_bottom_note').innerHTML;
 
       legend_node.remove();
-      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, rect_fill_value, rounding_precision, note);
+      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
       bind_selections();
       if (transform_param) {
         svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
       }
     });
     _gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
+
+    var current_state_line = legend_node.getAttribute('join_line') === 'true';
+    var join_line_section = box_body.insert('p');
+    join_line_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd_join_line', type: 'checkbox' }).property('checked', current_state_line).on('change', function () {
+      legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
+      var rendered_field = current_layers[layer_name].rendered_field;
+      var nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
+      var join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+      var rounding_precision = legend_node.getAttribute('rounding_precision');
+      var transform_param = legend_node.getAttribute('transform'),
+          lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
+          lgd_subtitle = legend_node.querySelector('#legendsubtitle').innerHTML,
+          note = legend_node.querySelector('#legend_bottom_note').innerHTML;
+
+      legend_node.remove();
+      createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
+      bind_selections();
+      if (transform_param) {
+        svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
+      }
+    });
+    join_line_section.append('label').attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' }).html(i18next.t('app_page.legend_style_box.join_line'));
   }
   // Todo : Reactivate this functionnality :
   //    box_body.insert("p").html("Display features count ")
@@ -18942,6 +19024,7 @@ function get_map_template() {
       if (no_data) result.no_data_txt = no_data.innerHTML;
     } else if (type_lgd === 'legend_root_symbol') {
       result.nested_symbols = lgd_node.getAttribute('nested');
+      result.join_line = lgd_node.getAttribute('join_line');
     } else if (type_lgd === 'legend_root_waffle') {
       var lyr_name = lgd_node.getAttribute('layer_name');
       result.field = current_layers[lyr_name].rendered_field;
@@ -20068,7 +20151,7 @@ function rehandle_legend(layer_name, properties) {
     if (prop.type === 'legend_root') {
       createLegend_choro(layer_name, prop.field, prop.title, prop.subtitle, prop.boxgap, prop.rect_fill_value, prop.rounding_precision, prop.no_data_txt, prop.bottom_note);
     } else if (prop.type === 'legend_root_symbol') {
-      createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
+      createLegend_symbol(layer_name, prop.field, prop.title, prop.subtitle, prop.nested_symbols, prop.join_line, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_class') {
       createLegend_discont_links(layer_name, prop.field, prop.title, prop.subtitle, prop.rect_fill_value, prop.rounding_precision, prop.bottom_note);
     } else if (prop.type === 'legend_root_lines_symbol') {

@@ -53,6 +53,7 @@ function get_map_template() {
       if (no_data) result.no_data_txt = no_data.innerHTML;
     } else if (type_lgd === 'legend_root_symbol') {
       result.nested_symbols = lgd_node.getAttribute('nested');
+      result.join_line = lgd_node.getAttribute('join_line');
     } else if (type_lgd === 'legend_root_waffle') {
       const lyr_name = lgd_node.getAttribute('layer_name');
       result.field = current_layers[lyr_name].rendered_field;
@@ -1176,6 +1177,7 @@ function rehandle_legend(layer_name, properties) {
                           prop.title,
                           prop.subtitle,
                           prop.nested_symbols,
+                          prop.join_line,
                           prop.rect_fill_value,
                           prop.rounding_precision,
                           prop.bottom_note);
