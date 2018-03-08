@@ -473,6 +473,7 @@
             "float_rounding": "Arrondi des nombres flottants<br> ",
             "gap_boxes": "Pas d'espaces entre les boites",
             "nested_symbols": "Symboles encastrés",
+            "join_line": "Affichage d'une ligne de jointure",
             "no_data": "Catégorie \"absence de données\"",
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Afficher un rectangle sous la légende",

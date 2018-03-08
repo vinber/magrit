@@ -467,6 +467,7 @@
             "float_rounding": "Redondear los número decimales<br> ",
             "gap_boxes": "Sin espacio entre los cuadros",
             "nested_symbols": "Símbolos sobrepuestos",
+            "join_line": "Mostrando una línea de unión",
             "no_data": "Categoría de elementos sin datos",
             "additionnal_notes": "Anotaciones adicionales<br>",
             "under_rectangle": "Enmarcar la leyenda",

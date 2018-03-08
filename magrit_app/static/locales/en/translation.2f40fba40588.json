@@ -474,6 +474,7 @@
             "float_rounding": "Floating number rounding precision<br> ",
             "gap_boxes": "No gap between color boxes",
             "nested_symbols": "Nested symbols",
+            "join_line": "Showing a join line",
             "no_data": "No data category name",
             "additionnal_notes": "Notes<br>",
             "under_rectangle": "Display a box under the legend",
