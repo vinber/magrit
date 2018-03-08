@@ -25,7 +25,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 
 
 - **Moyenne et écart-type**  
-Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).
+Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet pas de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).
 
 - Il est également possible d'utiliser les discrétisations en **progression arithmétique**, en **progression géométrique** ou de **saisir manuellement les bornes de classes**.
 
@@ -34,8 +34,8 @@ Le panneau principal de la boite de dialogue représente la distribution dans le
 C'est également dans ce panneau que se trouve le possibilité de changer le type de discrétisation, le nombre de classes souhaitées ainsi que la ou les progression(s) colorée(s) à utiliser.
 Les palettes proposées proviennent de l'outil [__*ColorBrewer*__](http://colorbrewer2.org) (projet sous Licence Apache 2.0. Crédits: *Cynthia Brewer, Mark Harrower and The Pennsylvania State University*).
 
-Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et *essaim d'abeilles*).
-La représentation sous forme de boite à moustache permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).
+Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustaches et *essaim d'abeilles*).
+La représentation sous forme de boite à moustaches permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).
 
 <p style="text-align: center;">
 <img src="img/box_plot.svg" alt="Box plot" style="width: 450px;"/>

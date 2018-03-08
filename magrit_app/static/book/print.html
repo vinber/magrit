@@ -708,18 +708,18 @@ Ainsi, les premières lignes d'une table décrivant des liens entre pays europé
 <li>Taille du symbole : <strong>5px</strong></li>
 </ul>
 <a class="header" href="print.html#analyse-dun-semi-de-points-à-travers-un-maillage" id="analyse-dun-semi-de-points-à-travers-un-maillage"><h1>Analyse d'un semi de points à travers un maillage</h1></a>
-<p>Cette méthode d'analyse permet de transformer et reporter les informations contenues dans un semi de points sur un maillage défini par l'utilisateur (une couche de polygones).</p>
-<p>Deux possibilités sont offertes à l'utilisateur concernant le maillage à utiliser :</p>
+<p>Cette méthode d'analyse permet de transformer et de reporter les informations contenues dans un semi de points sur un maillage choisi par l'utilisateur.</p>
+<p>Deux possibilités sont offertes à l'utilisateur concernant le choix du maillage à utiliser :</p>
 <ul>
 <li>utilisation d'une grille régulière (choix de la taille et de la forme des carreaux) crée par l'application</li>
 <li>utilisation d'une couche de polygones (fond administratif par exemple) fourni par l'utilisateur</li>
 </ul>
-<p>Plusieurs options d'analyse sont proposées:</p>
+<p>Plusieurs options d'analyse sont proposées et visent à calculer :</p>
 <ul>
-<li>calcul de la densité de points par cellule (utilisation d'une grille) ou par entités (utilisation d'un fond utilisateur)</li>
-<li>calcul de la densité de points pondérée par un champ numérique pour chaque cellule/entité.</li>
-<li>calcul de la moyenne des valeurs des points situés dans chaque cellule/entité.</li>
-<li>calcul de l'écart-type des valeurs des points situés dans chaque cellule/entité.</li>
+<li>la densité de points par cellule (utilisation d'une grille) ou par entité (utilisation d'un fond utilisateur)</li>
+<li>la densité de points pondérée par un champ numérique pour chaque cellule/entité.</li>
+<li>la moyenne des valeurs des points situés dans chaque cellule/entité.</li>
+<li>l'écart-type des valeurs des points situés dans chaque cellule/entité.</li>
 </ul>
 <blockquote>
 <a class="header" href="print.html#paramètres-11" id="paramètres-11"><h3>Paramètres</h3></a>
@@ -779,7 +779,7 @@ Cette méthode permet de créer des classes homogènes. En effet l'algorithme vi
 <ul>
 <li>
 <p><strong>Moyenne et écart-type</strong><br />
-Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).</p>
+Cette méthode propose de former des classes en fonction de la valeur de l'écart-type et de la moyenne. Ce mode de discrétisation ne permet pas de choisir directement un nombre de classe mais permet de choisir la portion d'écart-type qui correspond à la taille d'une classe ainsi que le rôle de la moyenne (utilisée comme borne de classe ou comme centre de classe).</p>
 </li>
 <li>
 <p>Il est également possible d'utiliser les discrétisations en <strong>progression arithmétique</strong>, en <strong>progression géométrique</strong> ou de <strong>saisir manuellement les bornes de classes</strong>.</p>
@@ -788,8 +788,8 @@ Cette méthode propose de former des classes en fonction de la valeur de l'écar
 <p>Le panneau principal de la boite de dialogue représente la distribution dans le nombre de classes désirées, avec des rectangles dont les surfaces correspondent à la fréquence relative d'observations dans la classe correspondante.
 C'est également dans ce panneau que se trouve le possibilité de changer le type de discrétisation, le nombre de classes souhaitées ainsi que la ou les progression(s) colorée(s) à utiliser.
 Les palettes proposées proviennent de l'outil <a href="http://colorbrewer2.org"><strong><em>ColorBrewer</em></strong></a> (projet sous Licence Apache 2.0. Crédits: <em>Cynthia Brewer, Mark Harrower and The Pennsylvania State University</em>).</p>
-<p>Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustache et <em>essaim d'abeilles</em>).
-La représentation sous forme de boite à moustache permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).</p>
+<p>Le panneau supérieur droit présente la distribution non-discrétisée selon 3 représentations (histogramme, boite à moustaches et <em>essaim d'abeilles</em>).
+La représentation sous forme de boite à moustaches permet de visualiser plusieurs caractéristiques de position de la série statistique (médiane, quartiles, minimum et maximum).</p>
 <p style="text-align: center;">
 <img src="img/box_plot.svg" alt="Box plot" style="width: 450px;"/>
 </p>
@@ -812,13 +812,13 @@ La représentation sous forme de boite à moustache permet de visualiser plusieu
 <li>Graticule</li>
 <li>Dessin de l'emprise du globe</li>
 </ul>
-<a class="header" href="print.html#des-couches-géographiques-dhabillage-peuvent-être-ajoutée-par-lutilisateur-" id="des-couches-géographiques-dhabillage-peuvent-être-ajoutée-par-lutilisateur-"><h3>Des couches géographiques d'habillage peuvent être ajoutée par l'utilisateur :</h3></a>
+<a class="header" href="print.html#des-couches-géographiques-dhabillage-peuvent-être-ajoutées-par-lutilisateur-" id="des-couches-géographiques-dhabillage-peuvent-être-ajoutées-par-lutilisateur-"><h3>Des couches géographiques d'habillage peuvent être ajoutées par l'utilisateur :</h3></a>
 <ul>
 <li>Ces couches peuvent être ajoutées par le gestionnaire de couches</li>
 <li>Ces couches servent seulement à l'habillage de la carte et ne peuvent pas être utilisées avec les différents types de représentations proposées
-(elles peuvent toutefois faire l'objet d'un mise en forme de base: choix d'une couleur unique de remplissage, choix d'une couleur unique de bordure, réglage de l'opacité et de l'épaisseur de la bordure)</li>
+(elles peuvent toutefois faire l'objet d'une mise en forme de base : choix d'une couleur unique de remplissage, choix d'une couleur unique de bordure, réglage de l'opacité et de l'épaisseur de la bordure)</li>
 </ul>
-<a class="header" href="print.html#dautres-éléments-peuvent-être-ajoutés-ils-sont-déplacables-au-curseur-et-paramétrables-via-un-clic-droit-" id="dautres-éléments-peuvent-être-ajoutés-ils-sont-déplacables-au-curseur-et-paramétrables-via-un-clic-droit-"><h3>D'autres éléments peuvent être ajoutés, ils sont déplacables au curseur et paramétrables via un clic droit :</h3></a>
+<a class="header" href="print.html#dautres-éléments-peuvent-être-ajoutés-ils-sont-déplaçables-au-curseur-et-paramétrables-via-un-clic-droit-" id="dautres-éléments-peuvent-être-ajoutés-ils-sont-déplaçables-au-curseur-et-paramétrables-via-un-clic-droit-"><h3>D'autres éléments peuvent être ajoutés, ils sont déplaçables au curseur et paramétrables via un clic droit :</h3></a>
 <ul>
 <li>Flèche d'orientation</li>
 <li>Échelle</li>
