@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.7.0 (2018-xx-xx)
+0.7.0 (2018-03-05)
 ------------------
 
 - New: allow to analyze a layer of points by two means : through a regular grid or through an existing layer of polygons. Informations computed are either the density of items (weighted or not) in each cell/polygon or a statistical summary (mean or standard deviation) about the items belonging to each cell/polygon.

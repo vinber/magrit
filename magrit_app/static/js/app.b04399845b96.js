@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.bd43a2bba63e.json'
+      loadPath: 'static/locales/{{lng}}/translation.b04399845b96.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -1551,11 +1551,10 @@ function remove_layer_cleanup(name) {
 
   // Remove the layer from the "mask" section if the "smoothed map" menu is open :
   if (_app.current_functionnality && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
-    var aa = document.querySelector('.mask_field').querySelector('option[value="' + name + '"]');
-    if (aa) aa.remove();
-    // Array.prototype.forEach.call(
-    //   document.getElementById('stewart_mask').options, el => {
-    //      if (el.value == name) el.remove(); });
+    Array.prototype.slice.call(document.querySelectorAll('.mask_field')).forEach(function (elem) {
+      var aa = elem.querySelector('option[value="' + name + '"]');
+      if (aa) aa.remove();
+    });
   }
 
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
@@ -7962,7 +7961,7 @@ function fillMenu_griddedMap(layer) {
   bb.insert('input').style('width', '100px').property('value', 10.0).attrs({
     type: 'number',
     class: 'params',
-    id: 'Gridded_cellsize',
+    id: 'Gridded_cellsize_pt',
     min: 1.000,
     max: 7000,
     step: 'any'
@@ -8066,7 +8065,7 @@ var fields_griddedMap = {
         }
       });
       section2.select('#Gridded_func').on('change', function () {
-        section2.select('.opt_point.opt_field').style('display', this.value === 'density' || this.value === 'mean' ? null : 'none');
+        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' ? 'none' : null);
       });
     }
 
@@ -8088,12 +8087,16 @@ var fields_griddedMap = {
           mesh_type: document.getElementById('Gridded_mesh_type').value,
           func_type: document.getElementById('Gridded_func').value,
           field: document.getElementById('Gridded_field_pt').value,
-          resolution: document.getElementById('Gridded_cellsize').value,
+          resolution: document.getElementById('Gridded_cellsize_pt').value,
           cell_shape: document.getElementById('Gridded_shape_pt').value,
           mask_layer: document.getElementById('Gridded_mask').value,
           polygon_layer: document.getElementById('Gridded_polygon_layer').value,
           color_palette: document.getElementById('Gridded_color_pal').value
         };
+        if (params.mesh_type === 'user_polygons' && !params.polygon_layer) {
+          display_error_during_computation('A background layer is needed for this functionnality');
+          return;
+        }
         render_GriddedFromPts(params, output_name);
       } else {
         render_Gridded(document.getElementById('Gridded_field').value, document.getElementById('Gridded_cellsize').value, document.getElementById('Gridded_shape').value, document.getElementById('Gridded_color_pal').value, output_name);
@@ -8101,6 +8104,7 @@ var fields_griddedMap = {
     });
     output_name_field.attr('value', ['Gridded', layer].join('_'));
     document.getElementById('Gridded_cellsize').value = get_first_guess_span('grid');
+    document.getElementById('Gridded_cellsize_pt').value = get_first_guess_span('grid');
     section2.selectAll('.params').attr('disabled', null);
   },
   unfill: function unfill() {
@@ -8171,7 +8175,6 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     }
     var disc_method = 'jenks';
     current_layers[n_layer_name].renderer = 'Gridded';
-    // const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
 
     var _discretize_to_colors21 = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette),
         _discretize_to_colors22 = _slicedToArray(_discretize_to_colors21, 6),

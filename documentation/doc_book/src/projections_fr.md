@@ -61,7 +61,7 @@ PARAMETER["Standard_Parallel_1",44.0],PARAMETER["Standard_Parallel_2",49.0],PARA
 
 Différents moyens permettent de trouver le système de coordonnées de référence adapté à la zone que l'on souhaite cartographier.
 - Utilisation du service http://projest.io/ns (suggestion de projections à partir de l'emprise de la zone à cartographier).
-- Utilisation d'une des projections d'emprise nationale suggérérés à partir d'une [liste](./projection_list_fr.html) maintenue en parallèle de *Magrit*.
+- Utilisation d'une des projections d'emprise nationale suggérée à partir d'une [liste](./projection_list_fr.html) maintenue en parallèle de *Magrit*.
 - Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)
 
 De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).

@@ -9,7 +9,7 @@ Ce type de représentation permet d'établir une correspondance entre des donné
 > * La valeur sur laquelle fixer la taille.
 > * Le type de symbole à utiliser (cercle ou carré).
 > * Le nom du champ contenant les valeurs à utiliser pour colorer les symboles.
-> * Le choix des couleurs correspondantes aux catégories à représenter
+> * Le choix des couleurs correspondantes aux catégories à représenter.
 
 
 #### Exemple :

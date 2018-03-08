@@ -8,7 +8,7 @@ La visualisation de lignes de discontinuités permet de mettre en exergue les ru
 > * Le champ contenant les valeurs à utiliser.
 > * Le champ contenant des identifiants uniques permettant d'identifier les tronçons.
 > * Le type de discontinuités (c'est à dire le rapport entre la valeur des deux entités, parmi 'relatif' ou 'absolu').
-> * Le nombre de classe à créer.
+> * Le nombre de classes à créer.
 > * La méthode utilisée pour discrétiser les valeurs.
 > * La couleur utilisée pour représenter les discontinuités.
 

@@ -35,7 +35,7 @@ Ainsi, les premières lignes d'une table décrivant des liens entre pays europé
 | LUX           | FR            | 3     |
 
 
-Une table d'exemple de ce type peut être téléchargée ci-dessous; lorsqu'elle est utilisé avec le fond des pays européens, également ci-dessous, elle permet la réalisation d'une carte de lien en sélectionant les champs suivants :  
+Une table d'exemple de ce type peut être téléchargée ci-dessous; lorsqu'elle est utilisée avec le fond des pays européens, également ci-dessous, elle permet la réalisation d'une carte de lien en sélectionnant les champs suivants :  
 - *Champ origine* : **i**  
 - *Champ destination* : **j**  
 - *Champ intensité* : **fij**  

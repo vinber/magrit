@@ -15,7 +15,7 @@ Cette méthode permet de représenter plusieurs stocks dans des unités comparab
 <img src="img/waffle_fontaines.png" alt="waffle_map" style="width: 480px;"/>
 </p>
 
-- Champs utilisé : **FONTAINE_POTABLE, FONTAINE_NON_POTABLE**
+- Champs utilisés : **FONTAINE_POTABLE, FONTAINE_NON_POTABLE**
 - Symbole : **cercle**
 - Nombre de symboles par ligne : **6**
 - Ratio : **1**

@@ -3,7 +3,7 @@
 Cette méthode d'analyse permet de transformer et de reporter les informations contenues dans un semi de points sur un maillage choisi par l'utilisateur.
 
 Deux possibilités sont offertes à l'utilisateur concernant le choix du maillage à utiliser :
-- utilisation d'une grille régulière (choix de la taille et de la forme des carreaux) crée par l'application
+- utilisation d'une grille régulière (choix de la taille et de la forme des carreaux) créée par l'application
 - utilisation d'une couche de polygones (fond administratif par exemple) fourni par l'utilisateur
 
 Plusieurs options d'analyse sont proposées et visent à calculer :
@@ -43,5 +43,5 @@ Plusieurs options d'analyse sont proposées et visent à calculer :
 - Type d'analyse : **Densité**
 - Couche de masquage/découpe : **Quartiers de Paris**
 - Carreaux en forme d'**hexagone**
-- Taille de référence : **0.8km**
+- Taille de référence : **1.2km**
 - Palette de couleur : **Blues**
