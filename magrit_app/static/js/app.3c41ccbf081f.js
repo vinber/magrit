@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.484947acdd0f.json'
+      loadPath: 'static/locales/{{lng}}/translation.3c41ccbf081f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -17457,16 +17457,17 @@ function createLegend_symbol(layer, field, title, subtitle) {
       });
 
       last_pos = y_pos2;last_size = 0;
-      var x_text_pos = xpos + space_elem + max_size * 0.67;
+      var x_text_pos = xpos + space_elem + boxgap + max_size / 2 + 5;
       legend_elems.append('text').attrs(function (d, i) {
         last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
         last_size = d.size;
-        return { x: x_text_pos, y: last_pos + d.size * 0.6 };
+        return { x: x_text_pos, y: last_pos + d.size * 0.51 };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
     }
   } else if (nested === 'true') {
+    var dist_to_title = 30;
     if (symbol_type === 'circle') {
       if (join_line === 'true') {
         var render_line = d3.line().x(function (d) {
@@ -17478,14 +17479,14 @@ function createLegend_symbol(layer, field, title, subtitle) {
           return {
             x1: xpos + space_elem + boxgap + max_size / 4 - d.size,
             x2: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-            y1: ypos + 30 + max_size - d.size,
-            y2: ypos + 30 + max_size - d.size
+            y1: ypos + dist_to_title + max_size - d.size,
+            y2: ypos + dist_to_title + max_size - d.size
           };
         }).attr('stroke', 'black');
         legend_elems.append('circle').attrs(function (d) {
           return {
             cx: xpos + space_elem + boxgap + max_size / 4,
-            cy: ypos + 30 + max_size - d.size,
+            cy: ypos + dist_to_title + max_size - d.size,
             r: d.size
           };
         }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
@@ -17493,7 +17494,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         legend_elems.append('text').attrs(function (d) {
           return {
             x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-            y: ypos + 30 + max_size - d.size
+            y: ypos + dist_to_title + 3 + max_size - d.size
           };
         }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
           return round_value(d.value, rounding_precision).toLocaleString();
@@ -17502,7 +17503,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         legend_elems.append('circle').attrs(function (d) {
           return {
             cx: xpos + space_elem + boxgap + max_size / 4,
-            cy: ypos + 30 + max_size - d.size,
+            cy: ypos + dist_to_title + max_size - d.size,
             r: d.size
           };
         }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
@@ -17510,7 +17511,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         legend_elems.append('text').attrs(function (d) {
           return {
             x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-            y: ypos + 30 + max_size - d.size * 2
+            y: ypos + dist_to_title + 1 + max_size - d.size * 2
           };
         }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
           return round_value(d.value, rounding_precision).toLocaleString();
@@ -17521,7 +17522,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
       legend_elems.append('rect').attrs(function (d) {
         return {
           x: xpos + space_elem + boxgap,
-          y: ypos + 30 + max_size / 2 - d.size,
+          y: ypos + dist_to_title + max_size / 2 - d.size,
           width: d.size,
           height: d.size
         };
@@ -17530,7 +17531,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
       legend_elems.append('text').attrs(function (d) {
         return {
           x: xpos + space_elem + boxgap + max_size / 2 + 5,
-          y: ypos + 31 + max_size / 2 - d.size
+          y: ypos + dist_to_title + 1 + max_size / 2 - d.size
         };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
@@ -18096,6 +18097,7 @@ function createlegendEditBox_symbol() {
     legend_boxes = legend_node_d3.selectAll(['#', legend_id, ' .lg'].join('')).select('text');
   }
   var layer_id = _app.layer_to_id.get(layer_name);
+  var type_symbol = current_layers[layer_name].symbol;
   var box_class = void 0,
       legend_node = void 0,
       title_content = void 0,
@@ -18196,13 +18198,18 @@ function createlegendEditBox_symbol() {
     });
   });
 
-  var current_state = legend_node.getAttribute('nested') === 'true';
+  var current_state_nested = legend_node.getAttribute('nested') === 'true';
   var gap_section = box_body.insert('p');
-  gap_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).property('checked', current_state).on('change', function () {
+  gap_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).property('checked', current_state_nested).on('change', function () {
+    if (this.checked) {
+      join_line_section.style('display', null);
+    } else {
+      join_line_section.style('display', 'none');
+    }
     legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
     var rendered_field = current_layers[layer_name].rendered_field;
-    var nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
-    var join_line = legend_node.getAttribute('join_line');
+    var nested = this.checked ? 'true' : 'false';
+    var join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
     var rounding_precision = legend_node.getAttribute('rounding_precision');
     var transform_param = legend_node.getAttribute('transform'),
         lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -18219,12 +18226,12 @@ function createlegendEditBox_symbol() {
   gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
 
   var current_state_line = legend_node.getAttribute('join_line') === 'true';
-  var join_line_section = box_body.insert('p');
+  var join_line_section = box_body.insert('p').style('display', current_state_nested && type_symbol === 'circle' ? null : 'none');
   join_line_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd_join_line', type: 'checkbox' }).property('checked', current_state_line).on('change', function () {
     legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
     var rendered_field = current_layers[layer_name].rendered_field;
     var nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
-    var join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+    var join_line = this.checked ? 'true' : 'false';
     var rounding_precision = legend_node.getAttribute('rounding_precision');
     var transform_param = legend_node.getAttribute('transform'),
         lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -18752,13 +18759,19 @@ function createlegendEditBox(legend_id, layer_name) {
     gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' }).html(i18next.t('app_page.legend_style_box.gap_boxes'));
     // document.getElementById('style_lgd').checked = current_state;
   } else if (legend_id === 'legend_root_symbol') {
-    var _current_state = legend_node.getAttribute('nested') === 'true';
+    var type_symbol = current_layers[layer_name].symbol;
+    var current_state_nested = legend_node.getAttribute('nested') === 'true';
     var _gap_section = box_body.insert('p');
-    _gap_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).property('checked', _current_state).on('change', function () {
+    _gap_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).property('checked', current_state_nested).on('change', function () {
+      if (this.checked) {
+        join_line_section.style('display', null);
+      } else {
+        join_line_section.style('display', 'none');
+      }
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       var rendered_field = current_layers[layer_name].rendered_field;
-      var nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
-      var join_line = legend_node.getAttribute('nested');
+      var nested = this.checked ? 'true' : 'false';
+      var join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
       var rounding_precision = legend_node.getAttribute('rounding_precision');
       var transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -18775,12 +18788,12 @@ function createlegendEditBox(legend_id, layer_name) {
     _gap_section.append('label').attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' }).html(i18next.t('app_page.legend_style_box.nested_symbols'));
 
     var current_state_line = legend_node.getAttribute('join_line') === 'true';
-    var join_line_section = box_body.insert('p');
+    var join_line_section = box_body.insert('p').style('display', current_state_nested && type_symbol === 'circle' ? null : 'none');
     join_line_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd_join_line', type: 'checkbox' }).property('checked', current_state_line).on('change', function () {
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       var rendered_field = current_layers[layer_name].rendered_field;
       var nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
-      var join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+      var join_line = this.checked ? 'true' : 'false';
       var rounding_precision = legend_node.getAttribute('rounding_precision');
       var transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,

@@ -769,17 +769,18 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
         });
 
       last_pos = y_pos2; last_size = 0;
-      const x_text_pos = xpos + space_elem + max_size * 0.67;
+      const x_text_pos = xpos + space_elem + boxgap + max_size / 2 + 5;
       legend_elems.append('text')
         .attrs((d, i) => {
           last_pos = (i * boxgap) + (d.size / 2) + last_pos + last_size;
           last_size = d.size;
-          return { x: x_text_pos, y: last_pos + (d.size * 0.6) };
+          return { x: x_text_pos, y: last_pos + (d.size * 0.51) };
         })
         .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
         .text(d => round_value(d.value, rounding_precision).toLocaleString());
     }
   } else if (nested === 'true') {
+    const dist_to_title = 30;
     if (symbol_type === 'circle') {
       if (join_line === 'true') {
         let render_line = d3.line().x(d => d[0]).y(d => d[1]);
@@ -787,15 +788,15 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
          .attrs(d => ({
            x1: xpos + space_elem + boxgap + max_size / 4 - d.size,
            x2: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-           y1: ypos + 30 + max_size - d.size,
-           y2: ypos + 30 + max_size - d.size,
+           y1: ypos + dist_to_title + max_size - d.size,
+           y2: ypos + dist_to_title + max_size - d.size,
          }))
         .attr('stroke', 'black');
         legend_elems
           .append('circle')
           .attrs(d => ({
             cx: xpos + space_elem + boxgap + max_size / 4,
-            cy: ypos + 30 + max_size - d.size,
+            cy: ypos + dist_to_title + max_size - d.size,
             r: d.size,
           }))
           .styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
@@ -803,7 +804,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
         legend_elems.append('text')
           .attrs(d => ({
             x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-            y: ypos + 30 + max_size - d.size,
+            y: ypos + dist_to_title + 3 + max_size - d.size,
           }))
           .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
           .text(d => round_value(d.value, rounding_precision).toLocaleString());
@@ -812,7 +813,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
           .append('circle')
           .attrs(d => ({
             cx: xpos + space_elem + boxgap + max_size / 4,
-            cy: ypos + 30 + max_size - d.size,
+            cy: ypos + dist_to_title + max_size - d.size,
             r: d.size,
           }))
           .styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
@@ -820,7 +821,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
         legend_elems.append('text')
           .attrs(d => ({
             x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
-            y: ypos + 30 + max_size - d.size * 2,
+            y: ypos + dist_to_title + 1 + max_size - d.size * 2,
           }))
           .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
           .text(d => round_value(d.value, rounding_precision).toLocaleString());
@@ -831,7 +832,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
         .append('rect')
         .attrs(d => ({
           x: xpos + space_elem + boxgap,
-          y: ypos + 30 + max_size / 2 - d.size,
+          y: ypos + dist_to_title + max_size / 2 - d.size,
           width: d.size,
           height: d.size
         }))
@@ -840,7 +841,7 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
       legend_elems.append('text')
         .attrs(d => ({
           x: xpos + space_elem + boxgap + max_size / 2 + 5,
-          y: ypos + 31 + max_size / 2 - d.size,
+          y: ypos + dist_to_title + 1 + max_size / 2 - d.size,
         }))
         .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
         .text(d => round_value(d.value, rounding_precision).toLocaleString());
@@ -1507,6 +1508,7 @@ function createlegendEditBox_symbol() {
     legend_boxes = legend_node_d3.selectAll(['#', legend_id, ' .lg'].join('')).select('text');
   }
   const layer_id = _app.layer_to_id.get(layer_name);
+  const type_symbol = current_layers[layer_name].symbol;
   let box_class,
     legend_node,
     title_content,
@@ -1636,17 +1638,22 @@ function createlegendEditBox_symbol() {
       });
     });
 
-  const current_state = legend_node.getAttribute('nested') === 'true';
+  const current_state_nested = legend_node.getAttribute('nested') === 'true';
   const gap_section = box_body.insert('p');
   gap_section.append('input')
     .style('margin-left', '0px')
     .attrs({ id: 'style_lgd', type: 'checkbox' })
-    .property('checked', current_state)
-    .on('change', () => {
+    .property('checked', current_state_nested)
+    .on('change', function () {
+      if (this.checked) {
+        join_line_section.style('display', null);
+      } else {
+        join_line_section.style('display', 'none');
+      }
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       const rendered_field = current_layers[layer_name].rendered_field;
-      const nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
-      const join_line = legend_node.getAttribute('join_line');
+      const nested = this.checked ? 'true' : 'false';
+      const join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
       const rounding_precision = legend_node.getAttribute('rounding_precision');
       const transform_param = legend_node.getAttribute('transform'),
         lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -1665,16 +1672,16 @@ function createlegendEditBox_symbol() {
     .html(i18next.t('app_page.legend_style_box.nested_symbols'));
 
   const current_state_line = legend_node.getAttribute('join_line') === 'true';
-  const join_line_section = box_body.insert('p');
+  const join_line_section = box_body.insert('p').style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
   join_line_section.append('input')
     .style('margin-left', '0px')
     .attrs({ id: 'style_lgd_join_line', type: 'checkbox' })
     .property('checked', current_state_line)
-    .on('change', () => {
+    .on('change', function () {
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       const rendered_field = current_layers[layer_name].rendered_field;
       const nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
-      const join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+      const join_line = this.checked ? 'true' : 'false';
       const rounding_precision = legend_node.getAttribute('rounding_precision');
       const transform_param = legend_node.getAttribute('transform'),
         lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -1691,6 +1698,7 @@ function createlegendEditBox_symbol() {
   join_line_section.append('label')
     .attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' })
     .html(i18next.t('app_page.legend_style_box.join_line'));
+
 
   const rectangle_options1 = box_body.insert('p');
   rectangle_options1.insert('input')
@@ -2310,17 +2318,23 @@ function createlegendEditBox(legend_id, layer_name) {
         .html(i18next.t('app_page.legend_style_box.gap_boxes'));
     // document.getElementById('style_lgd').checked = current_state;
   } else if (legend_id === 'legend_root_symbol') {
-    const current_state = legend_node.getAttribute('nested') === 'true';
+    const type_symbol = current_layers[layer_name].symbol;
+    const current_state_nested = legend_node.getAttribute('nested') === 'true';
     const gap_section = box_body.insert('p');
     gap_section.append('input')
       .style('margin-left', '0px')
       .attrs({ id: 'style_lgd', type: 'checkbox' })
-      .property('checked', current_state)
-      .on('change', () => {
+      .property('checked', current_state_nested)
+      .on('change', function () {
+        if (this.checked) {
+          join_line_section.style('display', null);
+        } else {
+          join_line_section.style('display', 'none');
+        }
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
         const rendered_field = current_layers[layer_name].rendered_field;
-        const nested = legend_node.getAttribute('nested') === 'true' ? 'false' : 'true';
-        const join_line = legend_node.getAttribute('nested');
+        const nested = this.checked ? 'true' : 'false';
+        const join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
         const rounding_precision = legend_node.getAttribute('rounding_precision');
         const transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
@@ -2339,16 +2353,16 @@ function createlegendEditBox(legend_id, layer_name) {
       .html(i18next.t('app_page.legend_style_box.nested_symbols'));
 
     const current_state_line = legend_node.getAttribute('join_line') === 'true';
-    const join_line_section = box_body.insert('p');
+    const join_line_section = box_body.insert('p').style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
     join_line_section.append('input')
       .style('margin-left', '0px')
       .attrs({ id: 'style_lgd_join_line', type: 'checkbox' })
       .property('checked', current_state_line)
-      .on('change', () => {
+      .on('change', function () {
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
         const rendered_field = current_layers[layer_name].rendered_field;
         const nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
-        const join_line = legend_node.getAttribute('join_line') === 'true' ? 'false' : 'true';
+        const join_line = this.checked ? 'true' : 'false';
         const rounding_precision = legend_node.getAttribute('rounding_precision');
         const transform_param = legend_node.getAttribute('transform'),
           lgd_title = legend_node.querySelector('#legendtitle').innerHTML,
