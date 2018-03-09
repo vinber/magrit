@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.2f40fba40588.json'
+      loadPath: 'static/locales/{{lng}}/translation.484947acdd0f.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -17412,11 +17412,11 @@ function createLegend_symbol(layer, field, title, subtitle) {
     return 'lg legend_' + i;
   });
 
-  var max_size = ref_symbols_params[0].size;
+  var max_size = ref_symbols_params[0].size * 2;
   var last_size = 0;
 
   if (symbol_type === 'rect') {
-    y_pos2 -= max_size / 2;
+    y_pos2 -= max_size / 4;
   }
 
   var last_pos = y_pos2;
@@ -17427,7 +17427,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         last_pos = i * boxgap + d.size + last_pos + last_size;
         last_size = d.size;
         return {
-          cx: xpos + space_elem + boxgap + max_size / 2,
+          cx: xpos + space_elem + boxgap + max_size / 4,
           cy: last_pos,
           r: d.size
         };
@@ -17438,7 +17438,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         last_pos = i * boxgap + d.size + last_pos + last_size;
         last_size = d.size;
         return {
-          x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
+          x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
           y: last_pos + i * 2 / 3
         };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
@@ -17449,7 +17449,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
         last_size = d.size;
         return {
-          x: xpos + space_elem + boxgap + max_size / 2 - last_size / 2,
+          x: xpos + space_elem + boxgap + max_size / 4 - last_size / 2,
           y: last_pos,
           width: last_size,
           height: last_size
@@ -17457,7 +17457,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
       });
 
       last_pos = y_pos2;last_size = 0;
-      var x_text_pos = xpos + space_elem + max_size * 1.25;
+      var x_text_pos = xpos + space_elem + max_size * 0.67;
       legend_elems.append('text').attrs(function (d, i) {
         last_pos = i * boxgap + d.size / 2 + last_pos + last_size;
         last_size = d.size;
@@ -17466,7 +17466,7 @@ function createLegend_symbol(layer, field, title, subtitle) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
     }
-  } else if (nested !== 'false') {
+  } else if (nested === 'true') {
     if (symbol_type === 'circle') {
       if (join_line === 'true') {
         var render_line = d3.line().x(function (d) {
@@ -17476,24 +17476,24 @@ function createLegend_symbol(layer, field, title, subtitle) {
         });
         legend_elems.append('line').attrs(function (d) {
           return {
-            x1: xpos + space_elem + boxgap + d.size,
-            x2: xpos + space_elem + boxgap + max_size * 1.5 + 3,
-            y1: ypos + 45 + max_size * 2 - max_size / 2 - d.size,
-            y2: ypos + 45 + max_size * 2 - max_size / 2 - d.size
+            x1: xpos + space_elem + boxgap + max_size / 4 - d.size,
+            x2: xpos + space_elem + boxgap + max_size * 0.75 + 5,
+            y1: ypos + 30 + max_size - d.size,
+            y2: ypos + 30 + max_size - d.size
           };
         }).attr('stroke', 'black');
         legend_elems.append('circle').attrs(function (d) {
           return {
-            cx: xpos + space_elem + boxgap + max_size / 2,
-            cy: ypos + 45 + max_size + max_size / 2 - d.size,
+            cx: xpos + space_elem + boxgap + max_size / 4,
+            cy: ypos + 30 + max_size - d.size,
             r: d.size
           };
         }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
         last_pos = y_pos2;last_size = 0;
         legend_elems.append('text').attrs(function (d) {
           return {
-            x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
-            y: ypos + 48 + max_size * 2 - max_size / 2 - d.size
+            x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
+            y: ypos + 30 + max_size - d.size
           };
         }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
           return round_value(d.value, rounding_precision).toLocaleString();
@@ -17501,27 +17501,27 @@ function createLegend_symbol(layer, field, title, subtitle) {
       } else {
         legend_elems.append('circle').attrs(function (d) {
           return {
-            cx: xpos + space_elem + boxgap + max_size / 2,
-            cy: ypos + 45 + max_size + max_size / 2 - d.size,
+            cx: xpos + space_elem + boxgap + max_size / 4,
+            cy: ypos + 30 + max_size - d.size,
             r: d.size
           };
         }).styles({ fill: color_symb_lgd, stroke: stroke_color, 'fill-opacity': 1 });
         last_pos = y_pos2;last_size = 0;
         legend_elems.append('text').attrs(function (d) {
           return {
-            x: xpos + space_elem + boxgap + max_size * 1.5 + 5,
-            y: ypos + 45 + max_size * 2 - max_size / 2 - d.size * 2
+            x: xpos + space_elem + boxgap + max_size * 0.75 + 5,
+            y: ypos + 30 + max_size - d.size * 2
           };
         }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
           return round_value(d.value, rounding_precision).toLocaleString();
         });
       }
-      last_pos = ypos + 30 + max_size + max_size / 2;
+      last_pos = ypos + 20 + max_size;
     } else if (symbol_type === 'rect') {
       legend_elems.append('rect').attrs(function (d) {
         return {
           x: xpos + space_elem + boxgap,
-          y: ypos + 45 + max_size - d.size,
+          y: ypos + 30 + max_size / 2 - d.size,
           width: d.size,
           height: d.size
         };
@@ -17529,13 +17529,13 @@ function createLegend_symbol(layer, field, title, subtitle) {
       last_pos = y_pos2;last_size = 0;
       legend_elems.append('text').attrs(function (d) {
         return {
-          x: xpos + space_elem + max_size * 1.25,
-          y: ypos + 46 + max_size - d.size
+          x: xpos + space_elem + boxgap + max_size / 2 + 5,
+          y: ypos + 31 + max_size / 2 - d.size
         };
       }).styles({ 'alignment-baseline': 'middle', 'font-size': '10px' }).text(function (d) {
         return round_value(d.value, rounding_precision).toLocaleString();
       });
-      last_pos = ypos + 30 + max_size;
+      last_pos = ypos + 20 + max_size / 2;
     }
   }
 
