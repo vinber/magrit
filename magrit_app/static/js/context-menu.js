@@ -56,7 +56,7 @@ function ContextMenu() {
     }
 
     this.initMenu(parent);
-    this.DOMObj.style.top = `${event.clientY + document.body.scrollTop}px`;
+    this.DOMObj.style.top = `${event.clientY + window.scrollY}px`;
     this.DOMObj.style.left = `${event.clientX}px`;
     const self = this;
     const hideMenu = function () {

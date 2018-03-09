@@ -1357,7 +1357,7 @@ function add_layout_feature(selected_feature, options = {}) {
     if (existing_annotation) {
       existing_id = Array.prototype.map.call(
         existing_annotation,
-        elem => +elem.childNodes[0].id.split('text_annotation_')[1]);
+        elem => +elem.id.split('text_annotation_')[1]);
     }
     for (let i = 0; i < 50; i++) {
       if (existing_id.indexOf(i) === -1) {

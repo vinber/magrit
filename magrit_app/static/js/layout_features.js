@@ -280,13 +280,13 @@ class UserArrow {
     make_confirm_dialog2('styleBoxArrow', i18next.t('app_page.arrow_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
-              // Store shorcut of useful values :
+          // Store shorcut of useful values :
           self.stroke_width = line.style.strokeWidth;
           self.color = line.style.stroke;
           self.pt1 = [line.x1.baseVal.value, line.y1.baseVal.value];
           self.pt2 = [line.x2.baseVal.value, line.y2.baseVal.value];
         } else {
-              // Rollback on initials parameters :
+          // Rollback on initials parameters :
           line.x1.baseVal.value = current_options.pt1[0];
           line.y1.baseVal.value = current_options.pt1[1];
           line.x2.baseVal.value = current_options.pt2[0];
@@ -400,7 +400,8 @@ class Textbox {
       })
       .on('end', function () {
         if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
-        pos_lgds_elem.set(this.id, this.getBoundingClientRect());
+        pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
+        console.log(this.querySelector('rect'));
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
@@ -413,12 +414,11 @@ class Textbox {
         elem.selectAll('tspan').attr('x', +d3.event.x);
 
         if (_app.autoalign_features) {
-          const t = elem.node();
-          const bbox = t.getBoundingClientRect(),
-            xmin = t.x.baseVal.value,
-            xmax = xmin + bbox.width,
-            ymin = t.y.baseVal.value,
-            ymax = ymin + bbox.height,
+          const bbox = elem.node().getBBox(),
+            xmin = bbox.x - 10,
+            xmax = xmin + bbox.width + 20,
+            ymin = bbox.y - 10,
+            ymax = ymin + bbox.height + 20,
             snap_lines_x = d3.event.subject.snap_lines.x,
             snap_lines_y = d3.event.subject.snap_lines.y;
           for (let i = 0; i < snap_lines_x.length; i++) {
@@ -426,29 +426,27 @@ class Textbox {
               const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
-                el.x.baseVal.value = snap_lines_x[i][0];
-              });
+              elem.selectAll('tspan').attr('x', snap_lines_x[i][0] + 10);
+              elem.attr('x', snap_lines_x[i][0] + 10);
             }
             if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
               const _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
               const _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
               make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(t.querySelectorAll('tspan'), (el) => {
-                el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
-              });
+              elem.selectAll('tspan').attr('x', snap_lines_x[i][0] - bbox.width - 10);
+              elem.attr('x', snap_lines_x[i][0] - bbox.width - 10);
             }
             if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
               const x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               const x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              t.y.baseVal.value = snap_lines_y[i][0];
+              elem.attr('y', snap_lines_y[i][0] + bbox.height + 7.5);
             }
             if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
               const x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
               const x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
               make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
+              elem.attr('y', snap_lines_y[i][0] - 17.5);
             }
           }
         }

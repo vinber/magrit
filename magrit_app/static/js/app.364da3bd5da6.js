@@ -1150,7 +1150,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.ee4fec8e8cf9.json'
+      loadPath: 'static/locales/{{lng}}/translation.364da3bd5da6.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -2847,7 +2847,7 @@ function ContextMenu() {
     }
 
     this.initMenu(parent);
-    this.DOMObj.style.top = event.clientY + document.body.scrollTop + 'px';
+    this.DOMObj.style.top = event.clientY + window.scrollY + 'px';
     this.DOMObj.style.left = event.clientX + 'px';
     var self = this;
     var hideMenu = function hideMenu() {
@@ -4899,7 +4899,7 @@ function make_discretization_icons(discr_section) {
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/jenks.png', id: 'ico_jenks' });
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/equal_intervals.png', id: 'ico_equal_interval' });
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/quantiles.png', id: 'ico_quantiles' });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/others.png', id: 'ico_others' });
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/others3.png', id: 'ico_others' });
   subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });
   subsection2.append('img').styles({ width: '15px', position: 'absolute', right: '5px' }).attrs({ id: 'img_choice_disc', src: '/static/img/Red_x.png' });
 }
@@ -11790,7 +11790,7 @@ function add_layout_feature(selected_feature) {
     var new_id = void 0;
     if (existing_annotation) {
       existing_id = Array.prototype.map.call(existing_annotation, function (elem) {
-        return +elem.childNodes[0].id.split('text_annotation_')[1];
+        return +elem.id.split('text_annotation_')[1];
       });
     }
     for (var i = 0; i < 50; i++) {
@@ -15332,7 +15332,8 @@ var Textbox = function () {
       if (d3.event.subject && !d3.event.subject.map_locked) {
         handle_click_hand('unlock');
       }
-      pos_lgds_elem.set(this.id, this.getBoundingClientRect());
+      pos_lgds_elem.set(this.id, this.querySelector('rect').getBoundingClientRect());
+      console.log(this.querySelector('rect'));
     }).on('drag', function () {
       d3.event.sourceEvent.preventDefault();
       var elem = d3.select(this).select('text').attrs({ x: +d3.event.x, y: +d3.event.y });
@@ -15344,51 +15345,41 @@ var Textbox = function () {
       elem.selectAll('tspan').attr('x', +d3.event.x);
 
       if (_app.autoalign_features) {
-        (function () {
-          var t = elem.node();
-          var bbox = t.getBoundingClientRect(),
-              xmin = t.x.baseVal.value,
-              xmax = xmin + bbox.width,
-              ymin = t.y.baseVal.value,
-              ymax = ymin + bbox.height,
-              snap_lines_x = d3.event.subject.snap_lines.x,
-              snap_lines_y = d3.event.subject.snap_lines.y;
-
-          var _loop = function _loop(i) {
-            if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
-              var _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              var _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-              make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
-              Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
-                el.x.baseVal.value = snap_lines_x[i][0];
-              });
-            }
-            if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
-              var _y = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
-              var _y3 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
-              make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
-              Array.prototype.forEach.call(t.querySelectorAll('tspan'), function (el) {
-                el.x.baseVal.value = snap_lines_x[i][0] - bbox.width;
-              });
-            }
-            if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
-              var x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              var x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-              make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
-              t.y.baseVal.value = snap_lines_y[i][0];
-            }
-            if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
-              var _x5 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
-              var _x6 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
-              make_red_line_snap(_x5, _x6, snap_lines_y[i][0], snap_lines_y[i][0]);
-              t.y.baseVal.value = snap_lines_y[i][0] - bbox.height;
-            }
-          };
-
-          for (var i = 0; i < snap_lines_x.length; i++) {
-            _loop(i);
+        var bbox = elem.node().getBBox(),
+            xmin = bbox.x - 10,
+            xmax = xmin + bbox.width + 20,
+            ymin = bbox.y - 10,
+            ymax = ymin + bbox.height + 20,
+            snap_lines_x = d3.event.subject.snap_lines.x,
+            snap_lines_y = d3.event.subject.snap_lines.y;
+        for (var i = 0; i < snap_lines_x.length; i++) {
+          if (Mabs(snap_lines_x[i][0] - xmin) < 10) {
+            var _y1 = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            var _y2 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y1, _y2);
+            elem.selectAll('tspan').attr('x', snap_lines_x[i][0] + 10);
+            elem.attr('x', snap_lines_x[i][0] + 10);
           }
-        })();
+          if (Mabs(snap_lines_x[i][0] - xmax) < 10) {
+            var _y = Mmin(Mmin(snap_lines_y[i][0], snap_lines_y[i][1]), ymin);
+            var _y3 = Mmax(Mmax(snap_lines_y[i][0], snap_lines_y[i][1]), ymax);
+            make_red_line_snap(snap_lines_x[i][0], snap_lines_x[i][0], _y, _y3);
+            elem.selectAll('tspan').attr('x', snap_lines_x[i][0] - bbox.width - 10);
+            elem.attr('x', snap_lines_x[i][0] - bbox.width - 10);
+          }
+          if (Mabs(snap_lines_y[i][0] - ymin) < 10) {
+            var x1 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            var x2 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(x1, x2, snap_lines_y[i][0], snap_lines_y[i][0]);
+            elem.attr('y', snap_lines_y[i][0] + bbox.height + 7.5);
+          }
+          if (Mabs(snap_lines_y[i][0] - ymax) < 10) {
+            var _x5 = Mmin(Mmin(snap_lines_x[i][0], snap_lines_x[i][1]), xmin);
+            var _x6 = Mmax(Mmax(snap_lines_x[i][0], snap_lines_x[i][1]), xmax);
+            make_red_line_snap(_x5, _x6, snap_lines_y[i][0], snap_lines_y[i][0]);
+            elem.attr('y', snap_lines_y[i][0] - 17.5);
+          }
+        }
       }
       elem.attr('x', elem.select('tspan').attr('x'));
       self.x = elem.attr('x');
@@ -18765,11 +18756,7 @@ function createlegendEditBox(legend_id, layer_name) {
     var current_state_nested = legend_node.getAttribute('nested') === 'true';
     var _gap_section = box_body.insert('p');
     _gap_section.append('input').style('margin-left', '0px').attrs({ id: 'style_lgd', type: 'checkbox' }).property('checked', current_state_nested).on('change', function () {
-      if (this.checked) {
-        join_line_section.style('display', null);
-      } else {
-        join_line_section.style('display', 'none');
-      }
+      join_line_section.style('display', this.checked && type_symbol === 'circle' ? null : 'none');
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
       var rendered_field = current_layers[layer_name].rendered_field;
       var nested = this.checked ? 'true' : 'false';

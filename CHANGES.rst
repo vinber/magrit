@@ -8,6 +8,8 @@ Changes
 
 - Add a new option for proportionnal symbols legends, allowing to display a line between the symbol and the value.
 
+- Enable the (still experimental) auto-alignment feature for text annotation.
+
 
 0.7.0 (2018-03-05)
 ------------------

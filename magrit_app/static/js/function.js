@@ -281,7 +281,7 @@ function make_discretization_icons(discr_section) {
     .attrs({ src: '/static/img/discr_icons/quantiles.png', id: 'ico_quantiles' });
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/others.png', id: 'ico_others' });
+    .attrs({ src: '/static/img/discr_icons/others3.png', id: 'ico_others' });
   subsection2.append('span')
     .attrs({ id: 'choro_mini_choice_disc' })
     .styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });

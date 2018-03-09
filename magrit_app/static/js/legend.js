@@ -2327,11 +2327,7 @@ function createlegendEditBox(legend_id, layer_name) {
       .attrs({ id: 'style_lgd', type: 'checkbox' })
       .property('checked', current_state_nested)
       .on('change', function () {
-        if (this.checked) {
-          join_line_section.style('display', null);
-        } else {
-          join_line_section.style('display', 'none');
-        }
+        join_line_section.style('display', this.checked && (type_symbol === 'circle') ? null : 'none');
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
         const rendered_field = current_layers[layer_name].rendered_field;
         const nested = this.checked ? 'true' : 'false';
