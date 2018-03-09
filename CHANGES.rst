@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.7.1 (2018-03-09)
+------------------
+
+- Fix typos in documentation.
+
+- Add a new option for proportionnal symbols legends, allowing to display a line between the symbol and the value.
+
+
 0.7.0 (2018-03-05)
 ------------------
 
