@@ -520,7 +520,6 @@ function setUpInterface(reload_project) {
       } else {
         canvas_mod_size([new_width, null]);
       }
-      document.getElementById('input-height').value = h;
     });
   a1.append('p')
     .attrs({
@@ -548,7 +547,6 @@ function setUpInterface(reload_project) {
       } else {
         canvas_mod_size([null, new_height]);
       }
-      document.getElementById('input-width').value = w;
     });
   a2.append('p')
     .attrs({
@@ -593,8 +591,6 @@ function setUpInterface(reload_project) {
       }
     }
     canvas_mod_size([w, h]);
-    document.getElementById('input-width').value = w;
-    document.getElementById('input-height').value = h;
     fill_export_png_options(this.value);
   });
   const zoom_prop = svg_map.__zoom;
@@ -620,8 +616,10 @@ function setUpInterface(reload_project) {
 
   const c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
   c.append('p')
-    .attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_center_menu')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_center_menu',
+    })
     .style('cursor', 'pointer');
   c.append('span')
     .attr('id', 'map_center_menu_ico')
@@ -644,8 +642,10 @@ function setUpInterface(reload_project) {
 
   const c1 = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
   c1.append('p')
-    .attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_center_x');
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_center_x',
+    });
   c1.append('input')
     .style('width', '80px')
     .attrs({
@@ -661,9 +661,11 @@ function setUpInterface(reload_project) {
     });
 
   const c2 = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
-  c2.append('p').attr('class', 'list_elem_section4 i18n')
-    .attr('data-i18n', '[html]app_page.section4.map_center_y');
-
+  c2.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_center_y',
+    });
   c2.append('input')
     .attrs({
       id: 'input-center-y',
@@ -679,8 +681,11 @@ function setUpInterface(reload_project) {
     });
 
   const d = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
-  d.append('p').attr('class', 'list_elem_section4 i18n')
-          .attr('data-i18n', '[html]app_page.section4.map_scale_k');
+  d.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.map_scale_k',
+    });
   d.append('input')
     .attrs({
       id: 'input-scale-k',
@@ -688,7 +693,10 @@ function setUpInterface(reload_project) {
       type: 'number',
       step: 'any',
     })
-    .property('value', round_value(zoom_prop.k * proj.scale(), 2))
+    .property('value', () => {
+      const _k = zoom_prop.k * proj.scale();
+      return _k > 2 || _k < -2 ? round_value(_k, 2) : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
+    })
     .style('width', '80px')
     .on('change', function () {
       svg_map.__zoom.k = +this.value / proj.scale();
@@ -696,8 +704,11 @@ function setUpInterface(reload_project) {
     });
 
   const g = dv4.append('li').style('display', 'none').attr('class', 'to_hide');
-  g.append('p').attr('class', 'list_elem_section4 i18n')
-          .attr('data-i18n', '[html]app_page.section4.canvas_rotation');
+  g.append('p')
+    .attrs({
+      class: 'list_elem_section4 i18n',
+      'data-i18n': '[html]app_page.section4.canvas_rotation',
+    });
 
   g.append('span')
       .style('float', 'right')
@@ -1982,10 +1993,11 @@ function zoom_without_redraw() {
   }
   window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
   const zoom_params = svg_map.__zoom;
+  const _k = proj.scale() * zoom_params.k;
   // let zoom_k_scale = proj.scale() * zoom_params.k;
   document.getElementById('input-center-x').value = round_value(zoom_params.x, 2);
   document.getElementById('input-center-y').value = round_value(zoom_params.y, 2);
-  document.getElementById('input-scale-k').value = round_value(proj.scale() * zoom_params.k, 2);
+  document.getElementById('input-scale-k').value = (_k > 2 || _k < -2) ? round_value(_k, 2) : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
   // let a = document.getElementById('form_projection'),
   //   disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
   // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
@@ -2601,8 +2613,11 @@ function canvas_mod_size(shape) {
   } else {
     return;
   }
+  const zoom_params = svg_map.__zoom;
   document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
   document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
+  document.getElementById('input-width').value = w;
+  document.getElementById('input-height').value = h;
 }
 
 function patchSvgForFonts() {
