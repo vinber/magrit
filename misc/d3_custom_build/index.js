@@ -98,8 +98,11 @@ export {
   scaleQuantile,
   scaleQuantize,
   scaleThreshold,
-  schemeCategory20
 } from "d3-scale";
+
+export {
+  schemeSet3,
+} from "d3-scale-chromatic";
 
 export {
   active,
@@ -156,6 +159,9 @@ export {
   geoBounds,
   geoCentroid,
   geoCircle,
+  geoClipAntimeridian,
+  geoClipCircle,
+  geoClipRectangle,
   geoConicConformal,
   geoConicConformalRaw,
   geoConicEqualArea,

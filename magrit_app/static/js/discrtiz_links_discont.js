@@ -268,7 +268,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     bins = [],
     last_min = min_fast(sizes),
     last_max = max_fast(sizes),
-    array_color = d3.schemeCategory20.slice();
+    array_color = d3.schemeSet3.slice();
 
   breaks_info.forEach((elem) => { breaks.push(elem[0][1]); });
 
