@@ -1366,7 +1366,6 @@ const discretiz_geostats_switch = new Map([
   ['equal_interval', 'getEqInterval'],
   // ['std_dev', 'getStdDeviation'],
   ['quantiles', 'getQuantile'],
-  ['arithmetic_progression', 'getArithmeticProgression'],
   ['Q6', 'getBreaksQ6'],
   ['geometric_progression', 'getGeometricProgression'],
 ]);

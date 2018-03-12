@@ -1104,7 +1104,7 @@ var sys_run_button_t2 = '<img src="static/img/High-contrast-system-run.png" clas
 // Shortcut to the name of the methods offered by geostats library:
 var discretiz_geostats_switch = new Map([['jenks', 'getJenks'], ['equal_interval', 'getEqInterval'],
 // ['std_dev', 'getStdDeviation'],
-['quantiles', 'getQuantile'], ['arithmetic_progression', 'getArithmeticProgression'], ['Q6', 'getBreaksQ6'], ['geometric_progression', 'getGeometricProgression']]);
+['quantiles', 'getQuantile'], ['Q6', 'getBreaksQ6'], ['geometric_progression', 'getGeometricProgression']]);
 
 // Reference to the available fonts that the user could select :
 var available_fonts = [['Arial', 'Arial,sans-serif'], ['Arial Black', 'Arial Black,sans-serif'], ['Arimo', 'Arimo,sans-serif'], ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'], ['Bitter', 'Bitter,sans-serif'], ['Dosis', 'Dosis,sans-serif'], ['Impact', 'Impact,Charcoal,sans-serif'], ['Inconsolata', 'Inconsolata,sans-serif'], ['Georgia', 'Georgia,serif'], ['Lobster', 'Lobster,serif'], ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'], ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'], ['Roboto', 'Roboto'], ['Scope One', 'Scope One'], ['Tahoma', 'Tahoma,Geneva,sans-serif'], ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'], ['Verdana', 'verdana']];
@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.964667ba5444.json'
+      loadPath: 'static/locales/{{lng}}/translation.c74558adbf8e.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -3531,7 +3531,7 @@ var display_discretization = function display_discretization(layer_name, field_n
 
   values = serie.sorted();
 
-  var available_functions = [[i18next.t('app_page.common.equal_interval'), 'equal_interval'], [i18next.t('app_page.common.quantiles'), 'quantiles'], [i18next.t('app_page.common.stddev_f'), 'stddev_f'], [i18next.t('app_page.common.Q6'), 'Q6'], [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'], [i18next.t('app_page.common.jenks'), 'jenks']];
+  var available_functions = [[i18next.t('app_page.common.equal_interval'), 'equal_interval'], [i18next.t('app_page.common.quantiles'), 'quantiles'], [i18next.t('app_page.common.stddev_f'), 'stddev_f'], [i18next.t('app_page.common.Q6'), 'Q6'], [i18next.t('app_page.common.jenks'), 'jenks']];
 
   if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
     available_functions.push([i18next.t('app_page.common.geometric_progression'), 'geometric_progression']);
@@ -4485,7 +4485,7 @@ var display_discretization_links_discont = function display_discretization_links
   //    serie.setPrecision(6);
   var available_functions = [[i18next.t('app_page.common.equal_interval'), 'equal_interval'], [i18next.t('app_page.common.quantiles'), 'quantiles'], [i18next.t('app_page.common.user_defined'), 'user_defined'],
   //     [i18next.t("app_page.common.std_dev"), "std_dev"],
-  [i18next.t('app_page.common.Q6'), 'Q6'], [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'], [i18next.t('app_page.common.jenks'), 'jenks']];
+  [i18next.t('app_page.common.Q6'), 'Q6'], [i18next.t('app_page.common.jenks'), 'jenks']];
 
   if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
     available_functions.push([i18next.t('app_page.common.geometric_progression'), 'geometric_progression']);
@@ -4909,14 +4909,44 @@ function make_layer_name_button(parent, id, margin_top) {
 }
 
 function make_discretization_icons(discr_section) {
-  var subsection1 = discr_section.append('p');
+  var subsection1 = discr_section.append('div');
   subsection1.insert('span').attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' }).html(i18next.t('app_page.func_options.common.discretization_choice'));
-  var subsection2 = discr_section.append('p');
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/q6.png', id: 'ico_q6' });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/jenks.png', id: 'ico_jenks' });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/equal_intervals.png', id: 'ico_equal_interval' });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/quantiles.png', id: 'ico_quantiles' });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({ src: '/static/img/discr_icons/others3.png', id: 'ico_others' });
+  var subsection2 = discr_section.append('div');
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+    title: i18next.t('app_page.common.q6'),
+    src: '/static/img/discr_icons/q6.png',
+    id: 'ico_q6',
+    class: 'i18n',
+    'data-i18n': '[title]app_page.common.q6'
+  });
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+    title: i18next.t('app_page.common.jenks'),
+    src: '/static/img/discr_icons/jenks.png',
+    id: 'ico_jenks',
+    class: 'i18n',
+    'data-i18n': '[title]app_page.common.jenks'
+  });
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+    title: i18next.t('app_page.common.equal_interval'),
+    src: '/static/img/discr_icons/equal_intervals.png',
+    id: 'ico_equal_interval',
+    class: 'i18n',
+    'data-i18n': '[title]app_page.common.equal_interval'
+  });
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+    title: i18next.t('app_page.common.quantiles'),
+    src: '/static/img/discr_icons/quantiles.png',
+    id: 'ico_quantiles',
+    class: 'i18n',
+    'data-i18n': '[title]app_page.common.quantiles'
+  });
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+    title: i18next.t('app_page.common.user_defined'),
+    src: '/static/img/discr_icons/others3.png',
+    id: 'ico_others',
+    class: 'i18n',
+    'data-i18n': '[title]app_page.common.user_defined'
+  });
   subsection2.append('span').attrs({ id: 'choro_mini_choice_disc' }).styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });
   subsection2.append('img').styles({ width: '15px', position: 'absolute', right: '5px' }).attrs({ id: 'img_choice_disc', src: '/static/img/Red_x.png' });
 }
@@ -7434,7 +7464,7 @@ function fillMenu_Discont() {
   e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization' }).html(i18next.t('app_page.func_options.discont.discretization'));
   var disc_type = e.insert('select').attrs({ class: 'params i18n', id: 'Discont_discKind' });
 
-  [['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
+  [['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
   });
 
@@ -8004,8 +8034,8 @@ function fillMenu_griddedMap(layer) {
     mesh_type.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
   });
 
-  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean'], ['app_page.func_options.grid.stddev', 'stddev']].forEach(function (_f) {
-    grid_func.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
+  [['app_page.func_options.grid.density_count', 'density_count', false], ['app_page.func_options.grid.density', 'density', false], ['app_page.func_options.grid.mean', 'mean', false], ['app_page.func_options.grid.stddev', 'stddev', false], ['app_page.func_options.grid.stock', 'stock', true]].forEach(function (_f) {
+    grid_func.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
   });
 
   var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').styles({ clear: 'both', 'margin-top': '2px' });
@@ -8072,18 +8102,21 @@ var fields_griddedMap = {
       var current_func_type = document.getElementById('Gridded_func').value;
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
       section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
-      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' ? 'none' : null);
+      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' && current_func_type.value !== 'stock' ? 'none' : null);
       section2.select('#Gridded_mesh_type').on('change', function () {
         if (this.value === 'regular_grid') {
           section2.selectAll('.opt_point.opt_grid').style('display', null);
           section2.selectAll('.opt_point.opt_user_layer').style('display', 'none');
+          section2.select('option[value="stock"]').property('disabled', true);
         } else if (this.value === 'user_polygons') {
           section2.selectAll('.opt_point.opt_grid').style('display', 'none');
           section2.selectAll('.opt_point.opt_user_layer').style('display', null);
+          section2.select('option[value="stock"]').property('disabled', false);
         }
       });
       section2.select('#Gridded_func').on('change', function () {
-        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' ? 'none' : null);
+        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' || this.value === 'stock' ? 'none' : null);
+        output_name_field.attr('value', this.value === 'stock' ? ['PropSymbol', layer].join('_') : ['Gridded', layer].join('_'));
       });
     }
 
@@ -8096,7 +8129,9 @@ var fields_griddedMap = {
       field_selecs.append('option').text(field).attr('value', field);
     });
     field_selecs.on('change', function () {
-      output_name_field.attr('value', ['Gridded', this.value, layer].join('_'));
+      if (type_layer !== 'Point') {
+        output_name_field.attr('value', ['Gridded', this.value, layer].join('_'));
+      }
     });
     ok_button.on('click', function () {
       var output_name = output_name_field.node().value;
@@ -8172,51 +8207,84 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     grid_shape: params.cell_shape,
     polygon_layer: params.mesh_type !== 'regular_grid' ? current_layers[params.polygon_layer].key_name : null,
     mask_layer: params.mask_layer !== 'None' ? current_layers[params.mask_layer].key_name : null,
-    func_type: params.func_type
+    func_type: params.func_type !== 'stock' ? params.func_type : 'density_count'
   }));
 
   xhrequest('POST', 'compute/gridded_point', formToSend, true).then(function (data) {
-    var _options = { result_layer_on_add: true, func_name: 'grid' };
-    if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-      _options.choosed_name = new_user_layer_name;
-    }
-    var rendered_field = params.func_type;
-    var n_layer_name = add_layer_topojson(data, _options);
-    if (!n_layer_name) return;
-    var res_data = result_data[n_layer_name],
-        nb_ft = res_data.length,
-        d_values = [];
-    var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-    opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
-    for (var i = 0; i < nb_ft; i++) {
-      d_values.push(res_data[i][rendered_field]);
-    }
-    var disc_method = 'jenks';
-    current_layers[n_layer_name].renderer = 'Gridded';
+    if (params.func_type === 'stock') {
+      data = JSON.parse(data);
+      var _data = data.file.objects[Object.keys(data.file.objects)].geometries;
+      var nb_features = 0;
+      var maxval = -Infinity;
+      d3.select('#' + _app.layer_to_id.get(params.polygon_layer)).selectAll('path').each(function (d, i) {
+        var v = _data[i].properties.count;
+        d.properties.count = v;
+        nb_features += 1;
+        if (v > maxval) {
+          maxval = v;
+        }
+      });
 
-    var _discretize_to_colors21 = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette),
-        _discretize_to_colors22 = _slicedToArray(_discretize_to_colors21, 6),
-        nb_class = _discretize_to_colors22[0],
-        type = _discretize_to_colors22[1],
-        breaks = _discretize_to_colors22[2],
-        color_array = _discretize_to_colors22[3],
-        colors_map = _discretize_to_colors22[4],
-        no_data_color = _discretize_to_colors22[5];
+      var field_to_render = 'count',
+          symbol_to_use = 'circle',
+          new_layer_name = check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['PropSymbols', field_to_render, params.polygon_layer].join('_'));
+      var rendering_params = {
+        field: field_to_render,
+        nb_features: nb_features,
+        new_name: new_layer_name,
+        ref_layer_name: params.polygon_layer,
+        symbol: symbol_to_use,
+        ref_size: 40,
+        ref_value: maxval,
+        fill_color: 'pink'
+      };
+      make_prop_symbols(rendering_params);
+      zoom_without_redraw();
+      switch_accordion_section();
+      handle_legend(new_layer_name);
+    } else {
+      var _options = { result_layer_on_add: true, func_name: 'grid' };
+      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+        _options.choosed_name = new_user_layer_name;
+      }
+      var rendered_field = params.func_type;
+      var n_layer_name = add_layer_topojson(data, _options);
+      if (!n_layer_name) return;
+      var res_data = result_data[n_layer_name],
+          nb_ft = res_data.length,
+          d_values = [];
+      var opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+      opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
+      for (var i = 0; i < nb_ft; i++) {
+        d_values.push(res_data[i][rendered_field]);
+      }
+      var disc_method = 'jenks';
+      current_layers[n_layer_name].renderer = 'Gridded';
 
-    var rendering_params = {
-      nb_class: nb_class,
-      type: type,
-      schema: [params.color_palette],
-      breaks: breaks,
-      no_data: no_data_color,
-      colors: color_array,
-      colorsByFeature: colors_map,
-      renderer: 'Gridded',
-      rendered_field: rendered_field
-    };
-    render_choro(n_layer_name, rendering_params);
-    handle_legend(n_layer_name);
-    switch_accordion_section();
+      var _discretize_to_colors21 = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette),
+          _discretize_to_colors22 = _slicedToArray(_discretize_to_colors21, 6),
+          nb_class = _discretize_to_colors22[0],
+          type = _discretize_to_colors22[1],
+          breaks = _discretize_to_colors22[2],
+          color_array = _discretize_to_colors22[3],
+          colors_map = _discretize_to_colors22[4],
+          no_data_color = _discretize_to_colors22[5];
+
+      var _rendering_params = {
+        nb_class: nb_class,
+        type: type,
+        schema: [params.color_palette],
+        breaks: breaks,
+        no_data: no_data_color,
+        colors: color_array,
+        colorsByFeature: colors_map,
+        renderer: 'Gridded',
+        rendered_field: rendered_field
+      };
+      render_choro(n_layer_name, _rendering_params);
+      handle_legend(n_layer_name);
+      switch_accordion_section();
+    }
   }, function (error) {
     display_error_during_computation();
     console.log(error);
@@ -8309,7 +8377,7 @@ function fillMenu_FlowMap() {
   discretization_section.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
   var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' }).styles({ position: 'relative', float: 'right' });
 
-  [['app_page.common.no_classification', 'no_classification'], ['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.arithmetic_progression', 'arithmetic_progression'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
+  [['app_page.common.no_classification', 'no_classification'], ['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
   });
 
@@ -9379,6 +9447,7 @@ var type_col2 = function type_col2(table, _field) {
 var getFieldsType = function getFieldsType(type, layerName, ref) {
   if (!layerName && !ref) return null;
   var refField = ref || current_layers[layerName].fields_type;
+  if (!refField) return [];
   return refField.filter(function (d) {
     return d.type === type;
   }).map(function (d) {
@@ -17487,8 +17556,8 @@ function createLegend_symbol(layer, field, title, subtitle) {
           return {
             x1: xpos + space_elem + boxgap + max_size / 4 - d.size,
             x2: xpos + space_elem + boxgap + max_size * 0.75 + 6.5,
-            y1: ypos + dist_to_title + max_size - d.size,
-            y2: ypos + dist_to_title + max_size - d.size,
+            y1: ypos + dist_to_title + max_size - d.size + 0.5,
+            y2: ypos + dist_to_title + max_size - d.size + 0.5,
             stroke: '#3f3f3f',
             'stroke-width': 0.8
           };

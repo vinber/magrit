@@ -703,6 +703,7 @@
                 "stddev": "Écart-type des valeurs",
                 "density_count": "Densité (comptage simple)",
                 "density": "Densité (utilisation d'un champ numérique)",
+                "stock": "Carte de stock - Comptage simple",
                 "mesh_type": "Type de maillage",
                 "regular_grid": "Grille régulière",
                 "user_polygons": "Maillage fourni par l'utilisateur",

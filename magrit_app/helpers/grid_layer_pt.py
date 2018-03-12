@@ -52,7 +52,8 @@ def get_grid_layer_pt(input_file, height, field_name,
         polygon_layer = GeoDataFrame.from_file(polygon_layer).to_crs(crs=proj_robinson)
         gdf.to_crs(crs=proj_robinson, inplace=True)
         result_values = get_dens_from_pt(gdf, field_name, polygon_layer, func)
-        polygon_layer[func] = result_values
+        polygon_layer[func] = [i[0] for i in result_values]
+        polygon_layer['count'] = [i[1] for i in result_values]
         return polygon_layer.to_crs({"init": "epsg:4326"}).to_json()
 
     else:
@@ -83,7 +84,8 @@ def get_grid_layer_pt(input_file, height, field_name,
         result = GeoDataFrame(
             index=range(len(res_geoms)),
             data={'id': [i for i in range(len(res_geoms))],
-                  func: [i[1] for i in res_geoms]},
+                  func: [i[1] for i in res_geoms],
+                  'count': [i[2] for i in res_geoms]},
             geometry=[i[0] for i in res_geoms],
             crs=gdf.crs
             ).to_crs({"init": "epsg:4326"})
@@ -113,7 +115,7 @@ def get_dens_from_pt(point_layer, field_name, polygon_layer, func):
             t = pts_geoms[idx_pts].intersects(geom)
             idx = t[t == True].index
             value = f((array_values[idx], geom.area))
-        res.append(value)
+        res.append((value, len(array_values[idx])))
     return res
 
 
@@ -147,6 +149,6 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
             t = geoms[idx_pts].intersects(cell)
             idx = t[t == True].index
             value = f((array_values[idx], cell.area))
-        res.append((cell, value))
+        res.append((cell, value, len(array_values[idx])))
 
     return res

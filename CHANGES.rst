@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.7.2 (2018-xx-xx)
+------------------
+
+- Removes arithmetic progression classificatio method.
+
+- Also allow to create proportionnal symbols map when analyzing a layer of points.
+
+
 0.7.1 (2018-03-09)
 ------------------
 

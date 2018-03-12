@@ -565,6 +565,7 @@ const type_col2 = function type_col2(table, _field, skip_if_empty_values = false
 const getFieldsType = function getFieldsType(type, layerName, ref) {
   if (!layerName && !ref) return null;
   const refField = ref || current_layers[layerName].fields_type;
+  if (!refField) return [];
   return refField.filter(d => d.type === type).map(d => d.name);
 };
 

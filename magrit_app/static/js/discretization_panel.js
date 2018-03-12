@@ -695,7 +695,6 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
     [i18next.t('app_page.common.quantiles'), 'quantiles'],
     [i18next.t('app_page.common.stddev_f'), 'stddev_f'],
     [i18next.t('app_page.common.Q6'), 'Q6'],
-    [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'],
     [i18next.t('app_page.common.jenks'), 'jenks'],
   ];
 

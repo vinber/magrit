@@ -262,26 +262,56 @@ function make_layer_name_button(parent, id, margin_top) {
 }
 
 function make_discretization_icons(discr_section) {
-  const subsection1 = discr_section.append('p');
+  const subsection1 = discr_section.append('div');
   subsection1.insert('span')
     .attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' })
     .html(i18next.t('app_page.func_options.common.discretization_choice'));
-  const subsection2 = discr_section.append('p');
+  const subsection2 = discr_section.append('div');
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/q6.png', id: 'ico_q6' });
+    .attrs({
+      title: i18next.t('app_page.common.q6'),
+      src: '/static/img/discr_icons/q6.png',
+      id: 'ico_q6',
+      class: 'i18n',
+      'data-i18n': '[title]app_page.common.q6',
+    });
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/jenks.png', id: 'ico_jenks' });
+    .attrs({
+      title: i18next.t('app_page.common.jenks'),
+      src: '/static/img/discr_icons/jenks.png',
+      id: 'ico_jenks',
+      class: 'i18n',
+      'data-i18n': '[title]app_page.common.jenks',
+    });
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/equal_intervals.png', id: 'ico_equal_interval' });
+    .attrs({
+      title: i18next.t('app_page.common.equal_interval'),
+      src: '/static/img/discr_icons/equal_intervals.png',
+      id: 'ico_equal_interval',
+      class: 'i18n',
+      'data-i18n': '[title]app_page.common.equal_interval',
+    });
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/quantiles.png', id: 'ico_quantiles' });
+    .attrs({
+      title: i18next.t('app_page.common.quantiles'),
+      src: '/static/img/discr_icons/quantiles.png',
+      id: 'ico_quantiles',
+      class: 'i18n',
+      'data-i18n': '[title]app_page.common.quantiles',
+    });
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
-    .attrs({ src: '/static/img/discr_icons/others3.png', id: 'ico_others' });
+    .attrs({
+      title: i18next.t('app_page.common.user_defined'),
+      src: '/static/img/discr_icons/others3.png',
+      id: 'ico_others',
+      class: 'i18n',
+      'data-i18n': '[title]app_page.common.user_defined',
+    });
   subsection2.append('span')
     .attrs({ id: 'choro_mini_choice_disc' })
     .styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });
@@ -2875,7 +2905,6 @@ function fillMenu_Discont() {
     ['app_page.common.equal_interval', 'equal_interval'],
     ['app_page.common.quantiles', 'quantiles'],
     ['app_page.common.Q6', 'Q6'],
-    ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
     ['app_page.common.jenks', 'jenks'],
   ].forEach((field) => {
     disc_type.append('option')
@@ -3551,14 +3580,16 @@ function fillMenu_griddedMap(layer) {
   });
 
   [
-    ['app_page.func_options.grid.density_count', 'density_count'],
-    ['app_page.func_options.grid.density', 'density'],
-    ['app_page.func_options.grid.mean', 'mean'],
-    ['app_page.func_options.grid.stddev', 'stddev'],
+    ['app_page.func_options.grid.density_count', 'density_count', false],
+    ['app_page.func_options.grid.density', 'density', false],
+    ['app_page.func_options.grid.mean', 'mean', false],
+    ['app_page.func_options.grid.stddev', 'stddev', false],
+    ['app_page.func_options.grid.stock', 'stock', true],
   ].forEach((_f) => {
     grid_func.append('option')
       .text(i18next.t(_f[0]))
-      .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` });
+      .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` })
+      .property('disabled', _f[2]);
   });
 
   const a = dialog_content.append('p')
@@ -3657,21 +3688,24 @@ const fields_griddedMap = {
       const current_func_type = document.getElementById('Gridded_func').value;
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
       section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
-      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' ? 'none' : null);
+      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' && current_func_type.value !== 'stock' ? 'none' : null);
       section2.select('#Gridded_mesh_type')
         .on('change', function () {
           if (this.value === 'regular_grid') {
             section2.selectAll('.opt_point.opt_grid').style('display', null);
             section2.selectAll('.opt_point.opt_user_layer').style('display', 'none');
+            section2.select('option[value="stock"]').property('disabled', true);
           } else if (this.value === 'user_polygons') {
             section2.selectAll('.opt_point.opt_grid').style('display', 'none');
             section2.selectAll('.opt_point.opt_user_layer').style('display', null);
+            section2.select('option[value="stock"]').property('disabled', false);
           }
         });
       section2.select('#Gridded_func')
         .on('change', function () {
           section2.select('.opt_point.opt_field')
-            .style('display', (this.value === 'density_count') ? 'none' : null);
+            .style('display', (this.value === 'density_count' || this.value === 'stock') ? 'none' : null);
+          output_name_field.attr('value', this.value === 'stock' ? ['PropSymbol', layer].join('_') :  ['Gridded', layer].join('_'));
         });
     }
 
@@ -3684,7 +3718,9 @@ const fields_griddedMap = {
       field_selecs.append('option').text(field).attr('value', field);
     });
     field_selecs.on('change', function () {
-      output_name_field.attr('value', ['Gridded', this.value, layer].join('_'));
+      if (type_layer !== 'Point') {
+        output_name_field.attr('value', ['Gridded', this.value, layer].join('_'));
+      }
     });
     ok_button.on('click', () => {
       const output_name = output_name_field.node().value;
@@ -3766,45 +3802,81 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     grid_shape: params.cell_shape,
     polygon_layer: params.mesh_type !== 'regular_grid' ? current_layers[params.polygon_layer].key_name : null,
     mask_layer: params.mask_layer !== 'None' ? current_layers[params.mask_layer].key_name : null,
-    func_type: params.func_type,
+    func_type: params.func_type !== 'stock' ? params.func_type : 'density_count',
   }));
 
   xhrequest('POST', 'compute/gridded_point', formToSend, true)
     .then((data) => {
-      const _options = { result_layer_on_add: true, func_name: 'grid' };
-      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-        _options.choosed_name = new_user_layer_name;
+      if (params.func_type === 'stock') {
+        data = JSON.parse(data);
+        const _data = data.file.objects[Object.keys(data.file.objects)].geometries;
+        let nb_features = 0;
+        let maxval = -Infinity;
+        d3.select(`#${_app.layer_to_id.get(params.polygon_layer)}`)
+          .selectAll('path')
+          .each(function (d, i) {
+            const v = _data[i].properties.count;
+            d.properties.count = v;
+            nb_features += 1;
+            if (v > maxval) {
+              maxval = v;
+            }
+          });
+
+        const field_to_render = 'count',
+          symbol_to_use = 'circle',
+          new_layer_name = check_layer_name(
+            new_user_layer_name.length > 0 ? new_user_layer_name : ['PropSymbols', field_to_render, params.polygon_layer].join('_'));
+        const rendering_params = {
+          field: field_to_render,
+          nb_features: nb_features,
+          new_name: new_layer_name,
+          ref_layer_name: params.polygon_layer,
+          symbol: symbol_to_use,
+          ref_size: 40,
+          ref_value: maxval,
+          fill_color: 'pink',
+        };
+        make_prop_symbols(rendering_params);
+        zoom_without_redraw();
+        switch_accordion_section();
+        handle_legend(new_layer_name);
+      } else {
+        const _options = { result_layer_on_add: true, func_name: 'grid' };
+        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
+          _options.choosed_name = new_user_layer_name;
+        }
+        const rendered_field = params.func_type;
+        const n_layer_name = add_layer_topojson(data, _options);
+        if (!n_layer_name) return;
+        const res_data = result_data[n_layer_name],
+          nb_ft = res_data.length,
+          d_values = [];
+        let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
+        opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
+        for (let i = 0; i < nb_ft; i++) {
+          d_values.push(res_data[i][rendered_field]);
+        }
+        const disc_method = 'jenks';
+        current_layers[n_layer_name].renderer = 'Gridded';
+        const [
+          nb_class, type, breaks, color_array, colors_map, no_data_color
+        ] = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
+        const rendering_params = {
+          nb_class: nb_class,
+          type: type,
+          schema: [params.color_palette],
+          breaks: breaks,
+          no_data: no_data_color,
+          colors: color_array,
+          colorsByFeature: colors_map,
+          renderer: 'Gridded',
+          rendered_field: rendered_field,
+        };
+        render_choro(n_layer_name, rendering_params);
+        handle_legend(n_layer_name);
+        switch_accordion_section();
       }
-      const rendered_field = params.func_type;
-      const n_layer_name = add_layer_topojson(data, _options);
-      if (!n_layer_name) return;
-      const res_data = result_data[n_layer_name],
-        nb_ft = res_data.length,
-        d_values = [];
-      let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-      opt_nb_class = opt_nb_class > 4 ? opt_nb_class - 1 : opt_nb_class;
-      for (let i = 0; i < nb_ft; i++) {
-        d_values.push(res_data[i][rendered_field]);
-      }
-      const disc_method = 'jenks';
-      current_layers[n_layer_name].renderer = 'Gridded';
-      const [
-        nb_class, type, breaks, color_array, colors_map, no_data_color
-      ] = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
-      const rendering_params = {
-        nb_class: nb_class,
-        type: type,
-        schema: [params.color_palette],
-        breaks: breaks,
-        no_data: no_data_color,
-        colors: color_array,
-        colorsByFeature: colors_map,
-        renderer: 'Gridded',
-        rendered_field: rendered_field,
-      };
-      render_choro(n_layer_name, rendering_params);
-      handle_legend(n_layer_name);
-      switch_accordion_section();
     }, (error) => {
       display_error_during_computation();
       console.log(error);
@@ -3921,7 +3993,6 @@ function fillMenu_FlowMap() {
     ['app_page.common.equal_interval', 'equal_interval'],
     ['app_page.common.quantiles', 'quantiles'],
     ['app_page.common.Q6', 'Q6'],
-    ['app_page.common.arithmetic_progression', 'arithmetic_progression'],
     ['app_page.common.jenks', 'jenks'],
   ].forEach((field) => {
     disc_type.append('option')

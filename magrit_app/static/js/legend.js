@@ -788,8 +788,8 @@ function createLegend_symbol(layer, field, title, subtitle, nested = 'false', jo
          .attrs(d => ({
            x1: xpos + space_elem + boxgap + max_size / 4 - d.size,
            x2: xpos + space_elem + boxgap + max_size * 0.75 + 6.5,
-           y1: ypos + dist_to_title + max_size - d.size,
-           y2: ypos + dist_to_title + max_size - d.size,
+           y1: ypos + dist_to_title + max_size - d.size + 0.5,
+           y2: ypos + dist_to_title + max_size - d.size + 0.5,
            stroke: '#3f3f3f',
            'stroke-width': 0.8,
          }));

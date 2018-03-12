@@ -284,7 +284,6 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     [i18next.t('app_page.common.user_defined'), 'user_defined'],
 //     [i18next.t("app_page.common.std_dev"), "std_dev"],
     [i18next.t('app_page.common.Q6'), 'Q6'],
-    [i18next.t('app_page.common.arithmetic_progression'), 'arithmetic_progression'],
     [i18next.t('app_page.common.jenks'), 'jenks'],
   ];
 
