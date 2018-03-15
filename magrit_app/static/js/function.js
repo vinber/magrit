@@ -3473,6 +3473,19 @@ function render_TypoSymbols(rendering_params, new_name) {
 function fillMenu_griddedMap(layer) {
   const dialog_content = make_template_functionnality(section2);
 
+  const sectiontypemap = dialog_content.append('p')
+    .attr('class', 'params_section2 opt_point')
+    .style('display', 'none');
+
+  sectiontypemap.append('p')
+    .style('margin', 'auto')
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.map_type' })
+    .html(i18next.t('app_page.func_options.grid.map_type'));
+
+  const map_type = sectiontypemap.insert('select')
+    .attrs({ class: 'params i18n', id: 'Gridded_map_type' })
+    .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
   const ee = dialog_content.append('p')
     .attr('class', 'params_section2 opt_point')
     .style('display', 'none');
@@ -3495,8 +3508,12 @@ function fillMenu_griddedMap(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' })
     .html(i18next.t('app_page.func_options.grid.func'));
 
-  const grid_func = e.insert('select')
-    .attrs({ class: 'params i18n', id: 'Gridded_func' })
+  const grid_func_ratio = e.insert('select')
+    .attrs({ class: 'params i18n', id: 'Gridded_func_ratio' })
+    .styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
+
+  const grid_func_stock = e.insert('select')
+    .attrs({ class: 'params i18n', id: 'Gridded_func_stock' })
     .styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
 
   const aa = dialog_content.append('p')
@@ -3571,22 +3588,40 @@ function fillMenu_griddedMap(layer) {
     .styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
   [
+    ['app_page.func_options.grid.type_stock', 'stock'],
+    ['app_page.func_options.grid.type_ratio', 'ratio'],
+  ].forEach((_t) => {
+    map_type.append('option')
+      .text(i18next.t(_t[0]))
+      .attrs({ value: _t[1], 'data-i18n': `[text]${_t[0]}` });
+  });
+
+  [
     ['app_page.func_options.grid.regular_grid', 'regular_grid'],
     ['app_page.func_options.grid.user_polygons', 'user_polygons'],
   ].forEach((_f) => {
     mesh_type.append('option')
       .text(i18next.t(_f[0]))
-      .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}`});
+      .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` });
   });
 
   [
-    ['app_page.func_options.grid.density_count', 'density_count', false],
-    ['app_page.func_options.grid.density', 'density', false],
-    ['app_page.func_options.grid.mean', 'mean', false],
-    ['app_page.func_options.grid.stddev', 'stddev', false],
-    ['app_page.func_options.grid.stock', 'stock', true],
+    ['app_page.func_options.grid.density_count', 'density_count'],
+    ['app_page.func_options.grid.density', 'density'],
+    ['app_page.func_options.grid.mean', 'mean'],
+    ['app_page.func_options.grid.stddev', 'stddev'],
   ].forEach((_f) => {
-    grid_func.append('option')
+    grid_func_ratio.append('option')
+      .text(i18next.t(_f[0]))
+      .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` })
+      .property('disabled', _f[2]);
+  });
+
+  [
+    ['app_page.func_options.grid.stock_count', 'count'],
+    ['app_page.func_options.grid.stock_weighted', 'weighted'],
+  ].forEach((_f) => {
+    grid_func_stock.append('option')
       .text(i18next.t(_f[0]))
       .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` })
       .property('disabled', _f[2]);
@@ -3684,21 +3719,31 @@ const fields_griddedMap = {
     section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
+      const current_map_type = document.getElementById('Gridded_map_type').value;
       const current_mesh_type = document.getElementById('Gridded_mesh_type').value;
-      const current_func_type = document.getElementById('Gridded_func').value;
+      const current_func_type = current_map_type === 'ratio'
+        ? document.getElementById('Gridded_func_ratio').value
+        : document.getElementById('Gridded_func_stock').value;
+      if (current_map_type === 'stock') {
+        document.getElementById('Gridded_func_stock').style.display = null;
+        document.getElementById('Gridded_func_ratio').style.display = 'none';
+        section2.select('option[value="regular_grid"]').property('disabled', true);
+      } else {
+        document.getElementById('Gridded_func_stock').style.display = 'none';
+        document.getElementById('Gridded_func_ratio').style.display = null;
+        section2.select('option[value="regular_grid"]').property('disabled', false);
+      }
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
       section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
-      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' && current_func_type.value !== 'stock' ? 'none' : null);
+      section2.select('.opt_point.opt_field').style('display', current_func_type !== 'density_count' && current_func_type !== 'count' ? 'none' : null);
       section2.select('#Gridded_mesh_type')
         .on('change', function () {
           if (this.value === 'regular_grid') {
             section2.selectAll('.opt_point.opt_grid').style('display', null);
             section2.selectAll('.opt_point.opt_user_layer').style('display', 'none');
-            section2.select('option[value="stock"]').property('disabled', true);
           } else if (this.value === 'user_polygons') {
             section2.selectAll('.opt_point.opt_grid').style('display', 'none');
             section2.selectAll('.opt_point.opt_user_layer').style('display', null);
-            section2.select('option[value="stock"]').property('disabled', false);
           }
         });
       section2.select('#Gridded_func')
@@ -3725,9 +3770,11 @@ const fields_griddedMap = {
     ok_button.on('click', () => {
       const output_name = output_name_field.node().value;
       if (type_layer === 'Point') {
+        const map_type = document.getElementById('Gridded_map_type').value;
+        const id_func_type = map_type === 'stock' ? 'Gridded_func_stock' : 'Gridded_func_ratio';
         const params = {
           mesh_type: document.getElementById('Gridded_mesh_type').value,
-          func_type: document.getElementById('Gridded_func').value,
+          func_type: document.getElementById(id_func_type).value,
           field: document.getElementById('Gridded_field_pt').value,
           resolution: document.getElementById('Gridded_cellsize_pt').value,
           cell_shape: document.getElementById('Gridded_shape_pt').value,

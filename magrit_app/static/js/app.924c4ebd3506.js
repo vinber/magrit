@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.9142c5b674b2.json'
+      loadPath: 'static/locales/{{lng}}/translation.924c4ebd3506.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -7978,6 +7978,12 @@ function render_TypoSymbols(rendering_params, new_name) {
 function fillMenu_griddedMap(layer) {
   var dialog_content = make_template_functionnality(section2);
 
+  var sectiontypemap = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
+
+  sectiontypemap.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.map_type' }).html(i18next.t('app_page.func_options.grid.map_type'));
+
+  var map_type = sectiontypemap.insert('select').attrs({ class: 'params i18n', id: 'Gridded_map_type' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+
   var ee = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
 
   ee.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.mesh_type' }).html(i18next.t('app_page.func_options.grid.mesh_type'));
@@ -7988,7 +7994,9 @@ function fillMenu_griddedMap(layer) {
 
   e.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  var grid_func = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
+  var grid_func_ratio = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_ratio' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
+
+  var grid_func_stock = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_stock' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
 
   var aa = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_field').styles({ clear: 'both', 'margin-top': '2px', display: 'none' });
 
@@ -8030,12 +8038,20 @@ function fillMenu_griddedMap(layer) {
 
   f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
 
+  [['app_page.func_options.grid.type_stock', 'stock'], ['app_page.func_options.grid.type_ratio', 'ratio']].forEach(function (_t) {
+    map_type.append('option').text(i18next.t(_t[0])).attrs({ value: _t[1], 'data-i18n': '[text]' + _t[0] });
+  });
+
   [['app_page.func_options.grid.regular_grid', 'regular_grid'], ['app_page.func_options.grid.user_polygons', 'user_polygons']].forEach(function (_f) {
     mesh_type.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
   });
 
-  [['app_page.func_options.grid.density_count', 'density_count', false], ['app_page.func_options.grid.density', 'density', false], ['app_page.func_options.grid.mean', 'mean', false], ['app_page.func_options.grid.stddev', 'stddev', false], ['app_page.func_options.grid.stock', 'stock', true]].forEach(function (_f) {
-    grid_func.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean'], ['app_page.func_options.grid.stddev', 'stddev']].forEach(function (_f) {
+    grid_func_ratio.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
+  });
+
+  [['app_page.func_options.grid.stock_count', 'count'], ['app_page.func_options.grid.stock_weighted', 'weighted']].forEach(function (_f) {
+    grid_func_stock.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
   });
 
   var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').styles({ clear: 'both', 'margin-top': '2px' });
@@ -8098,20 +8114,28 @@ var fields_griddedMap = {
     section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
+      var current_map_type = document.getElementById('Gridded_map_type').value;
       var current_mesh_type = document.getElementById('Gridded_mesh_type').value;
-      var current_func_type = document.getElementById('Gridded_func').value;
+      var current_func_type = current_map_type === 'ratio' ? document.getElementById('Gridded_func_ratio').value : document.getElementById('Gridded_func_stock').value;
+      if (current_map_type === 'stock') {
+        document.getElementById('Gridded_func_stock').style.display = null;
+        document.getElementById('Gridded_func_ratio').style.display = 'none';
+        section2.select('option[value="regular_grid"]').property('disabled', true);
+      } else {
+        document.getElementById('Gridded_func_stock').style.display = 'none';
+        document.getElementById('Gridded_func_ratio').style.display = null;
+        section2.select('option[value="regular_grid"]').property('disabled', false);
+      }
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
       section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
-      section2.select('.opt_point.opt_field').style('display', current_func_type.value !== 'density_count' && current_func_type.value !== 'stock' ? 'none' : null);
+      section2.select('.opt_point.opt_field').style('display', current_func_type !== 'density_count' && current_func_type !== 'count' ? 'none' : null);
       section2.select('#Gridded_mesh_type').on('change', function () {
         if (this.value === 'regular_grid') {
           section2.selectAll('.opt_point.opt_grid').style('display', null);
           section2.selectAll('.opt_point.opt_user_layer').style('display', 'none');
-          section2.select('option[value="stock"]').property('disabled', true);
         } else if (this.value === 'user_polygons') {
           section2.selectAll('.opt_point.opt_grid').style('display', 'none');
           section2.selectAll('.opt_point.opt_user_layer').style('display', null);
-          section2.select('option[value="stock"]').property('disabled', false);
         }
       });
       section2.select('#Gridded_func').on('change', function () {
@@ -8136,9 +8160,11 @@ var fields_griddedMap = {
     ok_button.on('click', function () {
       var output_name = output_name_field.node().value;
       if (type_layer === 'Point') {
+        var map_type = document.getElementById('Gridded_map_type').value;
+        var id_func_type = map_type === 'stock' ? 'Gridded_func_stock' : 'Gridded_func_ratio';
         var params = {
           mesh_type: document.getElementById('Gridded_mesh_type').value,
-          func_type: document.getElementById('Gridded_func').value,
+          func_type: document.getElementById(id_func_type).value,
           field: document.getElementById('Gridded_field_pt').value,
           resolution: document.getElementById('Gridded_cellsize_pt').value,
           cell_shape: document.getElementById('Gridded_shape_pt').value,

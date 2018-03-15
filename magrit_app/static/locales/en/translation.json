@@ -692,6 +692,8 @@
                 "join_field": "Join field"
             },
             "grid": {
+                "type_stock": "Proportionnal symbols map",
+                "type_ratio": "Choropleth map",
                 "field": "Field",
                 "cellsize": "Cell size <i>km</i> ",
                 "shape": "Grid shape ",
@@ -704,7 +706,8 @@
                 "stddev": "Standard deviation",
                 "density_count": "Density (single counting)",
                 "density": "Density (using a numeric field)",
-                "stock": "Proportionnal symbols - Single counting",
+                "stock_count": "Single counting",
+                "stock_weighted": "Weighted counting",
                 "mesh_type": "Type of mesh",
                 "regular_grid": "Regular grid",
                 "user_polygons": "Polygon layer",

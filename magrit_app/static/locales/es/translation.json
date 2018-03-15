@@ -686,6 +686,8 @@
                 "join_field": "Capa de unión"
             },
             "grid": {
+                "type_stock": "Mapa de valores absolutos",
+                "type_ratio": "Mapa de valores relatives",
                 "field": "Capa",
                 "cellsize": "Tamaño de cuadrícula <i>km</i> ",
                 "shape": "Forma de la cuadrícula ",
@@ -698,7 +700,8 @@
                 "stddev": "Desviación estándar",
                 "density_count": "Densidad (conteo simple)",
                 "density": "Densidad (usando un campo numérico)",
-                "stock": "Mapa de valores absolutos - Conteo simple",
+                "stock_count": "Conteo simple",
+                "stock_weighted": "Recuento ponderado",
                 "mesh_type": "El tipo de malla",
                 "regular_grid": "Cuadrícula regular",
                 "user_polygons": "capa de polígonos",
