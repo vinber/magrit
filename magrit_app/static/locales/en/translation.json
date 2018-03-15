@@ -509,7 +509,8 @@
             "stroke_width": "Stroke width",
             "stroke_color": "Stroke color",
             "fill_color": "Fill color",
-            "fill_opacity": "Fill opacity"
+            "fill_opacity": "Fill opacity",
+            "rounded_corner": "Rounded corners"
         },
         "scale_bar_edit_box": {
             "title": "Scale bar options",

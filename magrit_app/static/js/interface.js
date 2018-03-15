@@ -1137,9 +1137,10 @@ function add_layer_topojson(text, options = {}) {
     handle_click_hand('lock');
   } else if (result_layer_on_add) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
-    if (!skip_rescale) {
-      center_map(lyr_name_to_add);
-    }
+    // Don't fit the viewport on the added layer if it's a result layer (or uncomment following lines..)
+    // if (!skip_rescale) {
+    //   center_map(lyr_name_to_add);
+    // }
   } else {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
@@ -1274,7 +1275,7 @@ function get_bbox_layer_path(name) {
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
     const s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -35.0 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 175.0, 75.0 ], [ -175.0, 75.0 ] ] });
+    const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -35.0 ], [ -170, 10 ], [ -170, 85 ], [ 0, -70 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 170, 85 ], [ 170, 10 ] ] });
     const s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   }

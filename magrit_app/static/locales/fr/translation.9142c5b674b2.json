@@ -508,7 +508,8 @@
             "stroke_width": "Épaisseur de la bordure",
             "stroke_color": "Couleur de la bordure",
             "fill_color": "Couelur du remplissage",
-            "fill_opacity": "Opacité du remplissage"
+            "fill_opacity": "Opacité du remplissage",
+            "rounded_corner": "Coins arrondis"
         },
         "scale_bar_edit_box": {
             "title": "Options de l'échelle",

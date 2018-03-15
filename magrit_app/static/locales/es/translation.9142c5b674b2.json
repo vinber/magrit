@@ -502,7 +502,8 @@
             "stroke_width": "Ancho de borde",
             "stroke_color": "Color del borde",
             "fill_color": "Color de relleno",
-            "fill_opacity": "Opacidad del relleno"
+            "fill_opacity": "Opacidad del relleno",
+            "rounded_corner": "Esquinas redondeadas"
         },
         "scale_bar_edit_box": {
             "title": "Opciones de la escala gráfica",

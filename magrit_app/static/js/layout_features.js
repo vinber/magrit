@@ -1637,12 +1637,12 @@ class UserRectangle {
     const i1 = s1.append('input')
       .attrs({ type: 'range', id: 'rectangle_stroke_width', min: 0, max: 34, step: 0.1 })
       .styles({ width: '55px', float: 'right' })
+      .property('value', self.stroke_width)
       .on('change', function () {
         rectangle_elem.style.strokeWidth = this.value;
         txt_line_weight.html(`${this.value}px`);
       });
-    i1.node().value = self.stroke_width;
-    let txt_line_weight = s1.append('span')
+    const txt_line_weight = s1.append('span')
       .styles({ float: 'right', margin: '0 5px 0 5px' })
       .html(`${self.stroke_width} px`);
 
@@ -1672,13 +1672,39 @@ class UserRectangle {
     s4.append('span')
       .style('margin', 'auto')
       .html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
-    const i2 = s4.append('input')
+    s4.append('input')
       .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
       .styles({ width: '55px', float: 'right' })
+      .property('value', rectangle_elem.style.fillOpacity)
       .on('change', function () {
         rectangle_elem.style.fillOpacity = this.value;
       });
-    i2.node().value = rectangle_elem.style.fillOpacity;
+
+    // rx : Coordonnée sur l'axe X du centre de l'ellipse pour les angles arrondis
+    // ry : .................... Y
+    const s5 = box_content.append('p').attr('class', 'line_elem2');
+    s5.append('span')
+      .style('margin', 'auto')
+      .html(i18next.t('app_page.rectangle_edit_box.rounded_corner'));
+    s5.append('input')
+      .attrs({ type: 'range', min: 0, max: Math.round(self.width / 2), step: 1 })
+      .styles({ width: '55px', float: 'right' })
+      .property('value', rectangle_elem.rx.baseVal.value)
+      .on('change', function () {
+        rectangle_elem.rx.baseVal.value = this.value;
+        txt_rx_value.html(`${rectangle_elem.rx.baseVal.value}`);
+      });
+    const txt_rx_value = s5.append('span')
+      .styles({ float: 'right', margin: '0 5px 0 5px' })
+      .html(`${rectangle_elem.rx.baseVal.value}`);
+
+    // s5.append('input')
+    //   .attrs({ type: 'range', min: 0, max: Math.round(self.width / 2), step: 1 })
+    //   .styles({ width: '55px', float: 'right' })
+    //   .property('value', rectangle_elem.ry.baseVal.value)
+    //   .on('change', function () {
+    //     rectangle_elem.ry.baseVal.value = this.value;
+    //   });
   }
 }
 

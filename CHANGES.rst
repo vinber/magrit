@@ -4,9 +4,15 @@ Changes
 0.7.2 (2018-xx-xx)
 ------------------
 
-- Removes arithmetic progression classificatio method.
+- Removes arithmetic progression classification method.
 
 - Also allow to create proportionnal symbols map when analyzing a layer of points.
+
+- Allow to use rounded corners on rectangles available as layout features.
+
+- Slightly change the behavior when a result layer is added by not fitting anymore the viewport on it.
+
+- Fix the "fit-zoom" behavior when using Armadillo projection and a layer at world scale.
 
 
 0.7.1 (2018-03-09)

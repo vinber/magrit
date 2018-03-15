@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.c74558adbf8e.json'
+      loadPath: 'static/locales/{{lng}}/translation.9142c5b674b2.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11665,9 +11665,10 @@ function add_layer_topojson(text) {
     handle_click_hand('lock');
   } else if (result_layer_on_add) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
-    if (!skip_rescale) {
-      center_map(lyr_name_to_add);
-    }
+    // Don't fit the viewport on the added layer if it's a result layer (or uncomment following lines..)
+    // if (!skip_rescale) {
+    //   center_map(lyr_name_to_add);
+    // }
   } else {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
@@ -11800,7 +11801,7 @@ function get_bbox_layer_path(name) {
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
   } else if (current_proj_name === 'Armadillo') {
     var _s = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
-    var _bbox_layer_path = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -35.0], [20.9, -35.0], [147.2, -35.0], [175.0, 75.0], [-175.0, 75.0]] });
+    var _bbox_layer_path = path.bounds({ type: 'MultiPoint', coordinates: [[-69.3, -35.0], [-170, 10], [-170, 85], [0, -70], [20.9, -35.0], [147.2, -35.0], [170, 85], [170, 10]] });
     var _s2 = Mmax((_bbox_layer_path[1][0] - _bbox_layer_path[0][0]) / w, (_bbox_layer_path[1][1] - _bbox_layer_path[0][1]) / h);
     if (_s2 < _s) bbox_layer_path = _bbox_layer_path;
   }
@@ -16526,11 +16527,10 @@ var UserRectangle = function () {
       var box_content = d3.select('.styleBoxRectangle').select('.modal-body').style('width', '295px').insert('div').attr('id', 'styleBoxRectangle');
       var s1 = box_content.append('p').attr('class', 'line_elem2');
       s1.append('span').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.stroke_width'));
-      var i1 = s1.append('input').attrs({ type: 'range', id: 'rectangle_stroke_width', min: 0, max: 34, step: 0.1 }).styles({ width: '55px', float: 'right' }).on('change', function () {
+      var i1 = s1.append('input').attrs({ type: 'range', id: 'rectangle_stroke_width', min: 0, max: 34, step: 0.1 }).styles({ width: '55px', float: 'right' }).property('value', self.stroke_width).on('change', function () {
         rectangle_elem.style.strokeWidth = this.value;
         txt_line_weight.html(this.value + 'px');
       });
-      i1.node().value = self.stroke_width;
       var txt_line_weight = s1.append('span').styles({ float: 'right', margin: '0 5px 0 5px' }).html(self.stroke_width + ' px');
 
       var s2 = box_content.append('p').attr('class', 'line_elem2');
@@ -16547,10 +16547,27 @@ var UserRectangle = function () {
 
       var s4 = box_content.append('p').attr('class', 'line_elem2');
       s4.append('span').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
-      var i2 = s4.append('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '55px', float: 'right' }).on('change', function () {
+      s4.append('input').attrs({ type: 'range', min: 0, max: 1, step: 0.1 }).styles({ width: '55px', float: 'right' }).property('value', rectangle_elem.style.fillOpacity).on('change', function () {
         rectangle_elem.style.fillOpacity = this.value;
       });
-      i2.node().value = rectangle_elem.style.fillOpacity;
+
+      // rx : Coordonnée sur l'axe X du centre de l'ellipse pour les angles arrondis
+      // ry : .................... Y
+      var s5 = box_content.append('p').attr('class', 'line_elem2');
+      s5.append('span').style('margin', 'auto').html(i18next.t('app_page.rectangle_edit_box.rounded_corner'));
+      s5.append('input').attrs({ type: 'range', min: 0, max: Math.round(self.width / 2), step: 1 }).styles({ width: '55px', float: 'right' }).property('value', rectangle_elem.rx.baseVal.value).on('change', function () {
+        rectangle_elem.rx.baseVal.value = this.value;
+        txt_rx_value.html('' + rectangle_elem.rx.baseVal.value);
+      });
+      var txt_rx_value = s5.append('span').styles({ float: 'right', margin: '0 5px 0 5px' }).html('' + rectangle_elem.rx.baseVal.value);
+
+      // s5.append('input')
+      //   .attrs({ type: 'range', min: 0, max: Math.round(self.width / 2), step: 1 })
+      //   .styles({ width: '55px', float: 'right' })
+      //   .property('value', rectangle_elem.ry.baseVal.value)
+      //   .on('change', function () {
+      //     rectangle_elem.ry.baseVal.value = this.value;
+      //   });
     }
   }]);
 
@@ -19214,6 +19231,8 @@ function get_map_template() {
         map_config.layout_features.user_rectangle.push({
           x: rect.getAttribute('x'),
           y: rect.getAttribute('y'),
+          rx: rect.getAttribute('rx'),
+          ry: rect.getAttribute('ry'),
           width: rect.getAttribute('width'),
           height: rect.getAttribute('height'),
           style: rect.getAttribute('style'),
@@ -19760,6 +19779,8 @@ function apply_user_preferences(json_pref) {
           var _ft3 = map_config.layout_features.user_rectangle[_i7],
               rect = new UserRectangle(_ft3.id, [_ft3.x, _ft3.y], svg_map, true),
               rect_node = rect.rectangle.node().querySelector('rect');
+          rect_node.setAttribute('rx', _ft3.rx);
+          rect_node.setAttribute('ry', _ft3.ry);
           rect_node.setAttribute('height', _ft3.height);
           rect_node.setAttribute('width', _ft3.width);
           rect_node.setAttribute('style', _ft3.style);

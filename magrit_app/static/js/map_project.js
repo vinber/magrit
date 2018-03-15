@@ -153,6 +153,8 @@ function get_map_template() {
         map_config.layout_features.user_rectangle.push({
           x: rect.getAttribute('x'),
           y: rect.getAttribute('y'),
+          rx: rect.getAttribute('rx'),
+          ry: rect.getAttribute('ry'),
           width: rect.getAttribute('width'),
           height: rect.getAttribute('height'),
           style: rect.getAttribute('style'),
@@ -683,6 +685,8 @@ function apply_user_preferences(json_pref) {
           const ft = map_config.layout_features.user_rectangle[i],
             rect = new UserRectangle(ft.id, [ft.x, ft.y], svg_map, true),
             rect_node = rect.rectangle.node().querySelector('rect');
+          rect_node.setAttribute('rx', ft.rx);
+          rect_node.setAttribute('ry', ft.ry);
           rect_node.setAttribute('height', ft.height);
           rect_node.setAttribute('width', ft.width);
           rect_node.setAttribute('style', ft.style);
