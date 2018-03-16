@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.7.2 (2018-03-xx)
+0.7.2 (2018-03-19)
 ------------------
 
 - Removes arithmetic progression classification method.
