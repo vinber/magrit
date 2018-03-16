@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.7.2 (2018-xx-xx)
+0.7.2 (2018-03-xx)
 ------------------
 
 - Removes arithmetic progression classification method.
@@ -13,6 +13,8 @@ Changes
 - Slightly change the behavior when a result layer is added by not fitting anymore the viewport on it.
 
 - Fix the "fit-zoom" behavior when using Armadillo projection and a layer at world scale.
+
+- Change the stewart implementation to consume less memory (smoomapy package is dropped temporarily).
 
 
 0.7.1 (2018-03-09)

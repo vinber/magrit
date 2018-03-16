@@ -2,7 +2,7 @@
 import tempfile
 import ujson as json
 from os.path import join as path_join
-from smoomapy import SmoothStewart
+from .smoomacypy import SmoothStewart
 from geopandas import GeoDataFrame
 from .geo import repairCoordsPole
 
@@ -48,8 +48,8 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     """
     StePot = SmoothStewart(
         input_geojson_points, variable_name,
-        span, beta, typefct, resolution,
-        variable_name2, mask, distGeo=False,
+        span, beta, typefct, resolution=resolution,
+        variable_name2=variable_name2, mask=mask, distGeo=False,
         projDistance='+proj=natearth')
     result = StePot.render(nb_class,
                            disc_kind,

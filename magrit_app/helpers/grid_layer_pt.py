@@ -49,7 +49,8 @@ def get_grid_layer_pt(input_file, height, field_name,
         gdf.index = range(len(gdf))
 
     if polygon_layer:
-        polygon_layer = GeoDataFrame.from_file(polygon_layer).to_crs(crs=proj_robinson)
+        polygon_layer = GeoDataFrame.from_file(
+            polygon_layer).to_crs(crs=proj_robinson)
         gdf.to_crs(crs=proj_robinson, inplace=True)
         result_values = get_dens_from_pt(gdf, field_name, polygon_layer, func)
         polygon_layer[func] = [i[0] for i in result_values]
@@ -80,7 +81,8 @@ def get_grid_layer_pt(input_file, height, field_name,
             "hexagon": hex_grid_gen,
             }[grid_shape]
 
-        res_geoms = get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator)
+        res_geoms = get_dens_grid_pt(
+            gdf, height, field_name, mask, func, cell_generator)
         result = GeoDataFrame(
             index=range(len(res_geoms)),
             data={'id': [i for i in range(len(res_geoms))],
@@ -105,7 +107,8 @@ def get_dens_from_pt(point_layer, field_name, polygon_layer, func):
     pts_geoms = point_layer.geometry
     index = make_index([g.buffer(0.1).bounds for g in point_layer.geometry])
     idx_intersects = index.intersection
-    array_values = point_layer[field_name].values if field_name else np.array([1 for i in range(len(point_layer))])
+    array_values = point_layer[field_name].values if field_name \
+        else np.array([1 for i in range(len(point_layer))])
 
     res = []
     for geom in polygon_layer.geometry:
@@ -115,7 +118,7 @@ def get_dens_from_pt(point_layer, field_name, polygon_layer, func):
             t = pts_geoms[idx_pts].intersects(geom)
             idx = t[t == True].index
             value = f((array_values[idx], geom.area))
-        res.append((value, len(array_values[idx])))
+            res.append((value, len(array_values[idx])))
     return res
 
 
@@ -136,7 +139,8 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
     geoms = gdf.geometry
     index = make_index([g.buffer(0.1).bounds for g in geoms])
     idx_intersects = index.intersection
-    array_values = gdf[field_name].values if field_name else np.array([1 for i in range(len(gdf))])
+    array_values = gdf[field_name].values if field_name \
+        else np.array([1 for i in range(len(gdf))])
 
     res = []
     for rect, _cell in cell_generator(total_bounds, height):
@@ -149,6 +153,6 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
             t = geoms[idx_pts].intersects(cell)
             idx = t[t == True].index
             value = f((array_values[idx], cell.area))
-        res.append((cell, value, len(array_values[idx])))
+            res.append((cell, value, len(array_values[idx])))
 
     return res

@@ -18,6 +18,9 @@ exts = [Extension("magrit_app.helpers.cy_misc",
                   extra_compile_args=["-O3"]),
         Extension("magrit_app.helpers.cartogram_doug",
                   ["magrit_app/helpers/cartogram_doug.pyx"], ["."],
+                  extra_compile_args=["-O3"]),
+        Extension("magrit_app.helpers.compute",
+                  ["magrit_app/helpers/compute.pyx"], ["."],
                   extra_compile_args=["-O3"])
         ]
 

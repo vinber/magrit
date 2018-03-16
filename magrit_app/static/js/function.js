@@ -3597,8 +3597,8 @@ function fillMenu_griddedMap(layer) {
   });
 
   [
-    ['app_page.func_options.grid.regular_grid', 'regular_grid'],
     ['app_page.func_options.grid.user_polygons', 'user_polygons'],
+    ['app_page.func_options.grid.regular_grid', 'regular_grid'],
   ].forEach((_f) => {
     mesh_type.append('option')
       .text(i18next.t(_f[0]))
@@ -3751,6 +3751,18 @@ const fields_griddedMap = {
           section2.select('.opt_point.opt_field')
             .style('display', (this.value === 'density_count' || this.value === 'stock') ? 'none' : null);
           output_name_field.attr('value', this.value === 'stock' ? ['PropSymbol', layer].join('_') :  ['Gridded', layer].join('_'));
+        });
+      section2.select('#Gridded_map_type')
+        .on('change', function () {
+          if (this.value === 'stock') {
+            document.getElementById('Gridded_func_stock').style.display = null;
+            document.getElementById('Gridded_func_ratio').style.display = 'none';
+            section2.select('option[value="regular_grid"]').property('disabled', true);
+          } else {
+            document.getElementById('Gridded_func_stock').style.display = 'none';
+            document.getElementById('Gridded_func_ratio').style.display = null;
+            section2.select('option[value="regular_grid"]').property('disabled', false);
+          }
         });
     }
 
