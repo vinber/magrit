@@ -211,8 +211,7 @@ a.menu {
     padding: 2px 8px;
 }
 
-#section2 input[type="text"], #section2 input[type="number"],
-#section2 input[type="color"], #section2 select {
+#section2 input[type="text"], #section2 input[type="number"], #section2 input[type="color"] {
     position: absolute;
     right: 20px;
     margin: auto;
@@ -232,10 +231,24 @@ a.menu {
 
 p.params_section2 {
   margin: 15px 0;
+  clear: both;
 }
 
 p.params_section2 > span {
   vertical-align: -moz-middle-with-baseline;
+}
+
+p.params_section2 > p {
+  margin: auto;
+}
+
+p.params_section2 > select {
+  position: relative;
+  float: right;
+  margin-bottom: 7.5px;
+  min-width: 40px;
+  font-size: 11.5px;
+  right: 20px;
 }
 
 #section3 {

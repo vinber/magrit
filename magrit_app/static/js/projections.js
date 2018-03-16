@@ -243,7 +243,8 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     display_select_proj.remove();
     display_select_proj = p.append('select')
       .attr('id', 'select_proj')
-      .attr('size', 18);
+      .attr('size', 18)
+      .style('min-width', '195px');
     if (!filter_in && !filter_ex) {
       // for (const proj_name of available_projections.keys()) { .. }
       Array.from(available_projections.keys()).forEach((proj_name) => {
@@ -437,7 +438,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_lambda'));
   let lambda_input = lambda_section.append('input')
-    .styles({ width: '60px', float: 'right' })
+    .styles({ width: '60px', float: 'right', height: '2rem' })
     .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 })
     .on('input', function () {
       if (this.value > 180) this.value = 180;
@@ -451,7 +452,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_phi'));
   let phi_input = phi_section.append('input')
-    .styles({ width: '60px', float: 'right' })
+    .styles({ width: '60px', float: 'right', height: '2rem' })
     .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 })
     .on('input', function () {
       if (this.value > 180) { this.value = 180; } else if (this.value < -180) { this.value = -180; }
@@ -464,7 +465,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_gamma'));
   let gamma_input = gamma_section.append('input')
-    .styles({ width: '60px', float: 'right' })
+    .styles({ width: '60px', float: 'right', height: '2rem' })
     .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 })
     .on('input', function () {
       if (this.value > 90) { this.value = 90; } else if (this.value < -90) { this.value = -90; }

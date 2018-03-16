@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f34554b145e4.json'
+      loadPath: 'static/locales/{{lng}}/translation.2c49a7a15878.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4955,11 +4955,13 @@ function make_discretization_icons(discr_section) {
 function make_ok_button(parent, id) {
   var disabled = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
 
-  var a = parent.append('p').styles({ 'text-align': 'right', margin: 'auto' });
-  a.append('button').attrs({ id: id,
+  var a = parent.append('p').styles({ clear: 'both', 'text-align': 'right', margin: 'auto' });
+  a.append('button').attrs({
+    id: id,
     class: 'params button_st3 i18n',
     'data-i18n': '[html]app_page.func_options.common.render',
-    disabled: disabled ? true : null }).html(i18next.t('app_page.func_options.common.render'));
+    disabled: disabled ? true : null
+  }).html(i18next.t('app_page.func_options.common.render'));
 }
 
 function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback) {
@@ -5405,10 +5407,10 @@ function fillMenu_PropSymbolChoro(layer) {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' }).html(i18next.t('app_page.func_options.choroprop.field1'));
-  a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' });
+  a.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' }).html(i18next.t('app_page.func_options.choroprop.field1'));
+  a.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_1' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
-  var b = dv2.append('p').attr('class', 'params_section2');
+  var b = dv2.append('p').attr('class', 'params_section2').styles({ margin: 'auto' });
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' }).html(i18next.t('app_page.func_options.choroprop.fixed_size'));
   b.insert('input').attrs({
     id: 'PropSymbolChoro_ref_size',
@@ -5430,11 +5432,11 @@ function fillMenu_PropSymbolChoro(layer) {
   d.insert('select').attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
   var e = dv2.append('p').attr('class', 'params_section2');
-  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' }).html(i18next.t('app_page.func_options.choroprop.field2'));
+  e.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' }).html(i18next.t('app_page.func_options.choroprop.field2'));
 
-  e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' });
+  e.insert('select').attrs({ class: 'params', id: 'PropSymbolChoro_field_2' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
-  var discr_section = dv2.insert('p').style('margin', 'auto');
+  var discr_section = dv2.insert('p').styles({ clear: 'both', margin: 'auto' });
   discr_section.insert('span').attr('id', 'container_sparkline_propsymbolchoro').styles({ margin: '16px 50px 0px 4px', float: 'right' });
   make_discretization_icons(discr_section);
   // let f = dv2.insert('p').attr('class', 'params_section2');
@@ -5827,10 +5829,10 @@ var fillMenu_Typo = function fillMenu_Typo() {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' }).html(i18next.t('app_page.func_options.typo.field'));
-  a.insert('select').attrs({ id: 'Typo_field_1', class: 'params' });
+  a.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' }).html(i18next.t('app_page.func_options.typo.field'));
+  a.insert('select').attrs({ id: 'Typo_field_1', class: 'params' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
-  var b = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
+  var b = dv2.insert('p').attr('class', 'params_section2').styles({ margin: 'auto', 'text-align': 'center', clear: 'both' });
   b.append('button').attrs({
     id: 'Typo_class',
     class: 'button_disc params i18n',
@@ -5989,11 +5991,11 @@ function fillMenu_Choropleth() {
   var dv2 = make_template_functionnality(section2);
 
   var field_selec_section = dv2.append('p').attr('class', 'params_section2');
-  field_selec_section.insert('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+  field_selec_section.insert('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
 
-  field_selec_section.insert('select').attrs({ id: 'choro_field1', class: 'params' });
+  field_selec_section.insert('select').attrs({ id: 'choro_field1', class: 'params' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
-  var discr_section = dv2.insert('p').style('margin', 'auto');
+  var discr_section = dv2.insert('p').attr('class', 'params_section2').styles({ margin: 'auto' });
   discr_section.insert('span').attr('id', 'container_sparkline_choro').styles({ margin: '16px 50px 0px 4px', float: 'right' });
   make_discretization_icons(discr_section);
 
@@ -6465,11 +6467,11 @@ function fillMenu_Stewart() {
   var dialog_content = make_template_functionnality(section2);
 
   var a = dialog_content.append('p').attr('class', 'params_section2');
-  a.append('span').style('margin', '10px 0px 0px').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field' }).html(i18next.t('app_page.func_options.smooth.field'));
-  a.append('span').insert('select').attrs({ class: 'params marg_auto', id: 'stewart_field' });
+  a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field' }).html(i18next.t('app_page.func_options.smooth.field'));
+  a.append('select').attrs({ class: 'params marg_auto', id: 'stewart_field' });
 
   var b = dialog_content.append('p').attr('class', 'params_section2');
-  b.append('span').style('margin', '10px 0px 0px').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field' }).html(i18next.t('app_page.func_options.smooth.divide_field'));
+  b.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field' }).html(i18next.t('app_page.func_options.smooth.divide_field'));
   b.insert('select').attrs({ class: 'params marg_auto', id: 'stewart_field2' });
 
   var p_span = dialog_content.append('p').attr('class', 'params_section2');
@@ -6502,10 +6504,10 @@ function fillMenu_Stewart() {
     'data-i18n': '[placeholder]app_page.common.expected_class',
     placeholder: i18next.t('app_page.common.expected_class')
   });
-  var m = dialog_content.append('div').attr('class', 'params_section2').style('margin', 'auto');
+  var m = dialog_content.append('p').attr('class', 'params_section2');
   m.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
 
-  m.insert('select').attrs({ class: 'params mask_field', id: 'stewart_mask' }).styles({ position: 'relative', float: 'right' });
+  m.insert('select').attrs({ class: 'params mask_field', id: 'stewart_mask' });
 
   [['exponential', 'app_page.func_options.smooth.func_exponential'], ['pareto', 'app_page.func_options.smooth.func_pareto']].forEach(function (fun_name) {
     func_selec.append('option').text(i18next.t(fun_name[1])).attrs({ value: fun_name[0], 'data-i18n': '[text]' + fun_name[1] });
@@ -6685,15 +6687,13 @@ function fillMenu_Anamorphose() {
   var algo_selec = algo_choice.insert('select').attrs({ id: 'Anamorph_algo', class: 'params i18n' });
 
   var field_choice = dialog_content.append('p').attr('class', 'params_section2');
-  field_choice.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.field' }).html(i18next.t('app_page.func_options.cartogram.field'));
+  field_choice.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.field' }).html(i18next.t('app_page.func_options.cartogram.field'));
   field_choice.insert('select').attrs({ class: 'params', id: 'Anamorph_field' });
 
   // Options for Dougenik mode :
   var doug1 = dialog_content.append('p').attr('class', 'params_section2 opt_dougenik');
   doug1.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations' }).html(i18next.t('app_page.func_options.cartogram.dougenik_iterations'));
   doug1.insert('input').attrs({ type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: 'Anamorph_dougenik_iterations' });
-
-  // let o2 = dialog_content.append('p').attr('class', 'params_section2 opt_olson');
 
   [['Dougenik & al. (1985)', 'dougenik'], ['Olson (2005)', 'olson']].forEach(function (fun_name) {
     algo_selec.append('option').text(fun_name[0]).attr('value', fun_name[1]);
@@ -7156,8 +7156,8 @@ function fillMenu_PropSymbolTypo(layer) {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1' }).html(i18next.t('app_page.func_options.proptypo.field1'));
-  a.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_1' });
+  a.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1' }).html(i18next.t('app_page.func_options.proptypo.field1'));
+  a.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_1' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
   var b = dv2.append('p').attr('class', 'params_section2');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size' }).html(i18next.t('app_page.func_options.proptypo.fixed_size'));
@@ -7180,13 +7180,15 @@ function fillMenu_PropSymbolTypo(layer) {
   d.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_symbol_type' });
 
   var e = dv2.append('p').attr('class', 'params_section2');
-  e.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2' }).html(i18next.t('app_page.func_options.proptypo.field2'));
+  e.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2' }).html(i18next.t('app_page.func_options.proptypo.field2'));
   e.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_2' });
 
-  var f = dv2.insert('p').styles({ margin: 'auto', 'text-align': 'center' });
-  f.append('button').attrs({ id: 'Typo_class',
+  var f = dv2.insert('p').attr('class', 'params_section2').styles({ margin: 'auto', 'text-align': 'center' });
+  f.append('button').attrs({
+    id: 'Typo_class',
     class: 'button_disc params i18n',
-    'data-i18n': '[html]app_page.func_options.typo.color_choice' }).styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.func_options.typo.color_choice'));
+    'data-i18n': '[html]app_page.func_options.typo.color_choice'
+  }).styles({ 'font-size': '0.8em', 'text-align': 'center' }).html(i18next.t('app_page.func_options.typo.color_choice'));
 
   make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
   make_ok_button(dv2, 'propTypo_yes');
@@ -7435,7 +7437,7 @@ function fillMenu_Discont() {
   var dv2 = make_template_functionnality(section2);
 
   var a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' }).html(i18next.t('app_page.func_options.discont.field'));
+  a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' }).html(i18next.t('app_page.func_options.discont.field'));
   a.insert('select').attrs({ class: 'params', id: 'field_Discont' });
 
   // let b = dv2.append('p').attr('class', 'params_section2');
@@ -7653,7 +7655,7 @@ function fillMenu_PropSymbol(layer) {
       max_allowed_size = Mround(h / 2 - h / 10);
 
   var a = dialog_content.append('p').attr('class', 'params_section2').style('margin-top', '2px');
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+  a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
   a.insert('select').attrs({ class: 'params', id: 'PropSymbol_field_1' });
 
   var b = dialog_content.append('p').attr('class', 'params_section2');
@@ -7981,37 +7983,37 @@ function fillMenu_griddedMap(layer) {
 
   var sectiontypemap = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
 
-  sectiontypemap.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.map_type' }).html(i18next.t('app_page.func_options.grid.map_type'));
+  sectiontypemap.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.map_type' }).html(i18next.t('app_page.func_options.grid.map_type'));
 
-  var map_type = sectiontypemap.insert('select').attrs({ class: 'params i18n', id: 'Gridded_map_type' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  var map_type = sectiontypemap.insert('select').attrs({ class: 'params i18n', id: 'Gridded_map_type' });
 
   var ee = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
 
-  ee.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.mesh_type' }).html(i18next.t('app_page.func_options.grid.mesh_type'));
+  ee.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.mesh_type' }).html(i18next.t('app_page.func_options.grid.mesh_type'));
 
-  var mesh_type = ee.insert('select').attrs({ class: 'params i18n', id: 'Gridded_mesh_type' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  var mesh_type = ee.insert('select').attrs({ class: 'params i18n', id: 'Gridded_mesh_type' });
 
-  var e = dialog_content.append('p').attr('class', 'params_section2 opt_point').styles({ display: 'none', clear: 'both' });
+  var e = dialog_content.append('p').attr('class', 'params_section2 opt_point').style('display', 'none');
 
-  e.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
+  e.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' }).html(i18next.t('app_page.func_options.grid.func'));
 
-  var grid_func_ratio = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_ratio' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
+  var grid_func_ratio = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_ratio' });
 
-  var grid_func_stock = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_stock' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px', 'margin-bottom': '10px' });
+  var grid_func_stock = e.insert('select').attrs({ class: 'params i18n', id: 'Gridded_func_stock' });
 
-  var aa = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_field').styles({ clear: 'both', 'margin-top': '2px', display: 'none' });
+  var aa = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_field').styles({ 'margin-top': '2px', display: 'none' });
 
-  aa.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+  aa.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
 
   aa.insert('select').attrs({ class: 'params field_to_use', id: 'Gridded_field_pt' });
 
-  var gg = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_user_layer').styles({ display: 'none', clear: 'both' });
+  var gg = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_user_layer').style('display', 'none');
 
-  gg.append('span').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.user_polygon_layer' }).html(i18next.t('app_page.func_options.grid.user_polygon_layer'));
+  gg.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.user_polygon_layer' }).html(i18next.t('app_page.func_options.grid.user_polygon_layer'));
 
-  gg.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_polygon_layer' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  gg.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_polygon_layer' });
 
-  var bb = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({ display: 'none', clear: 'both' });
+  var bb = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({ display: 'none', margin: '35px 0 0 0' });
 
   bb.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' }).html(i18next.t('app_page.func_options.grid.cellsize'));
 
@@ -8024,20 +8026,19 @@ function fillMenu_griddedMap(layer) {
     step: 'any'
   });
 
-  var cc = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({ display: 'none', clear: 'both' });
+  var cc = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').style('display', 'none');
   cc.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' }).html(i18next.t('app_page.func_options.grid.shape'));
 
   var grid_shape_pt = cc.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape_pt' });
 
   var f = dialog_content.append('p').attr('class', 'params_section2 opt_point opt_grid').styles({
-    clear: 'both',
     display: 'none',
     'padding-top': '10px'
   });
 
-  f.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
+  f.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' }).html(i18next.t('app_page.func_options.common.mask'));
 
-  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' }).styles({ position: 'relative', float: 'right', 'margin-top': '5px' });
+  f.insert('select').attrs({ class: 'params mask_field', id: 'Gridded_mask' });
 
   [['app_page.func_options.grid.type_stock', 'stock'], ['app_page.func_options.grid.type_ratio', 'ratio']].forEach(function (_t) {
     map_type.append('option').text(i18next.t(_t[0])).attrs({ value: _t[1], 'data-i18n': '[text]' + _t[0] });
@@ -8055,13 +8056,13 @@ function fillMenu_griddedMap(layer) {
     grid_func_stock.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
   });
 
-  var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').styles({ clear: 'both', 'margin-top': '2px' });
+  var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('margin-top', '2px');
 
-  a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
+  a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
 
   a.insert('select').attrs({ class: 'params field_to_use', id: 'Gridded_field' });
 
-  var b = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('clear', 'both');
+  var b = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('margin', '35px 0 0 0');
   b.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' }).html(i18next.t('app_page.func_options.grid.cellsize'));
   b.insert('input').style('width', '100px').property('value', 10.0).attrs({
     type: 'number',
@@ -8077,9 +8078,9 @@ function fillMenu_griddedMap(layer) {
 
   var grid_shape = c.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape' });
 
-  var d = dialog_content.append('p').attr('class', 'params_section2 opt_polygon opt_point opt_grid').styles({ clear: 'both', 'padding-top': '2px' });
+  var d = dialog_content.append('p').attr('class', 'params_section2 opt_polygon opt_point opt_grid').style('padding-top', '2px');
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
-  var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' }).styles({ position: 'relative', float: 'right' });
+  var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' });
 
   ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn', 'Greens', 'Greys', 'Oranges', 'Purples', 'Reds'].forEach(function (color) {
     col_pal.append('option').text(color).attr('value', color);
@@ -8148,6 +8149,7 @@ var fields_griddedMap = {
         output_name_field.attr('value', ['PropSymbol', layer].join('_'));
       });
       section2.select('#Gridded_map_type').on('change', function () {
+        section2.select('#Gridded_mesh_type').property('value', 'user_polygons').dispatch('change');
         if (this.value === 'stock') {
           document.getElementById('Gridded_func_stock').style.display = null;
           document.getElementById('Gridded_func_ratio').style.display = 'none';
@@ -8404,20 +8406,20 @@ function fillMenu_FlowMap() {
   subtitle.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1' }).html(i18next.t('app_page.func_options.flow.subtitle1'));
 
   var origin_section = dv2.append('p').attr('class', 'params_section2');
-  origin_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.origin_field' }).html(i18next.t('app_page.func_options.flow.origin_field'));
-  origin_section.insert('select').attrs({ id: 'FlowMap_field_i', class: 'params' });
+  origin_section.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.origin_field' }).html(i18next.t('app_page.func_options.flow.origin_field'));
+  origin_section.insert('select').attrs({ id: 'FlowMap_field_i', class: 'params' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
   var destination_section = dv2.append('p').attr('class', 'params_section2');
-  destination_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
-  destination_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_j' });
+  destination_section.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' }).html(i18next.t('app_page.func_options.flow.destination_field'));
+  destination_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_j' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
   var intensity_section = dv2.append('p').attr('class', 'params_section2');
-  intensity_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.intensity_field'));
-  intensity_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_fij' });
+  intensity_section.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' }).html(i18next.t('app_page.func_options.flow.intensity_field'));
+  intensity_section.append('select').attrs({ class: 'params', id: 'FlowMap_field_fij' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
-  var discretization_section = dv2.append('div').attr('class', 'params_section2');
-  discretization_section.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
-  var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' }).styles({ position: 'relative', float: 'right' });
+  var discretization_section = dv2.append('p').attr('class', 'params_section2');
+  discretization_section.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' }).html(i18next.t('app_page.func_options.flow.discretization'));
+  var disc_type = discretization_section.insert('select').attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
   [['app_page.common.no_classification', 'no_classification'], ['app_page.common.equal_interval', 'equal_interval'], ['app_page.common.quantiles', 'quantiles'], ['app_page.common.Q6', 'Q6'], ['app_page.common.jenks', 'jenks']].forEach(function (field) {
     disc_type.append('option').text(i18next.t(field[0])).attrs({ value: field[1], 'data-i18n': '[text]' + field[0] });
@@ -8451,7 +8453,7 @@ function fillMenu_FlowMap() {
   with_discretisation.append('p').attr('class', 'params_section2').insert('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' }).html(i18next.t('app_page.func_options.flow.ref_layer_field'));
 
   var join_field_section = dv2.append('p').attr('class', 'params_section2');
-  join_field_section.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' }).html(i18next.t('app_page.func_options.flow.join_field'));
+  join_field_section.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' }).html(i18next.t('app_page.func_options.flow.join_field'));
   join_field_section.insert('select').attrs({ class: 'params', id: 'FlowMap_field_join' });
 
   make_layer_name_button(dv2, 'FlowMap_output_name');
@@ -8806,13 +8808,15 @@ var render_label = function render_label(layer, rendering_params, options) {
         x: pt_position[i][0],
         y: pt_position[i][1],
         'alignment-baseline': 'middle',
-        'text-anchor': 'middle' };
+        'text-anchor': 'middle'
+      };
     }).styles(function (d, i) {
       return {
         display: pt_position[i][2],
         'font-size': pt_position[i][3],
         'font-family': pt_position[i][4],
-        fill: pt_position[i][5] };
+        fill: pt_position[i][5]
+      };
     }).text(function (_, i) {
       return pt_position[i][6];
     });
@@ -20796,7 +20800,7 @@ function addLastProjectionSelect(proj_name, proj4string, custom_name) {
 var createBoxCustomProjection = function createBoxCustomProjection() {
   function updateSelect(filter_in, filter_ex) {
     display_select_proj.remove();
-    display_select_proj = p.append('select').attr('id', 'select_proj').attr('size', 18);
+    display_select_proj = p.append('select').attr('id', 'select_proj').attr('size', 18).style('min-width', '195px');
     if (!filter_in && !filter_ex) {
       // for (const proj_name of available_projections.keys()) { .. }
       Array.from(available_projections.keys()).forEach(function (proj_name) {
@@ -20939,14 +20943,14 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
   var rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
   var lambda_section = rotate_section.append('p');
   lambda_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_lambda'));
-  var lambda_input = lambda_section.append('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 }).on('input', function () {
+  var lambda_input = lambda_section.append('input').styles({ width: '60px', float: 'right', height: '2rem' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 }).on('input', function () {
     if (this.value > 180) this.value = 180;else if (this.value < -180) this.value = -180;
     handle_proj_center_button([-this.value, null, null]);
   });
 
   var phi_section = rotate_section.append('p').style('clear', 'both');
   phi_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_phi'));
-  var phi_input = phi_section.append('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 }).on('input', function () {
+  var phi_input = phi_section.append('input').styles({ width: '60px', float: 'right', height: '2rem' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 }).on('input', function () {
     if (this.value > 180) {
       this.value = 180;
     } else if (this.value < -180) {
@@ -20957,7 +20961,7 @@ var createBoxCustomProjection = function createBoxCustomProjection() {
 
   var gamma_section = rotate_section.append('p').style('clear', 'both');
   gamma_section.append('span').style('float', 'left').html(i18next.t('app_page.section5.projection_center_gamma'));
-  var gamma_input = gamma_section.append('input').styles({ width: '60px', float: 'right' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 }).on('input', function () {
+  var gamma_input = gamma_section.append('input').styles({ width: '60px', float: 'right', height: '2rem' }).attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 }).on('input', function () {
     if (this.value > 90) {
       this.value = 90;
     } else if (this.value < -90) {

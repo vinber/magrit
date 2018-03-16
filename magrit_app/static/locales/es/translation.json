@@ -832,7 +832,7 @@
         "message": "Mensaje",
         "contact": "Contacto",
         "index": "Inicio",
-        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)? ¡Gracias de antemano por señalarlo en este formulario y compartirnos su experiencia!<br><span class=\"link_email\">matthieu.viry [at] cnrs [punto] fr</span>"
+        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)? ¡Gracias de antemano por señalarlo en este formulario y compartirnos su experiencia!<br><span class=\"link_email\">riate [at] cnrs [punto] fr</span>"
     },
     "page404": {
         "message1": "Error 404 - Página inválida",

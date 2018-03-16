@@ -838,7 +838,7 @@
         "message": "Message",
         "contact": "Contact",
         "index": "Index page",
-        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">matthieu.viry [at] cnrs [dot] fr</span>"
+        "intro_text": "An observation ? A suggestion ? A bug to report? Please use this form to contact us and give your feedback!<br><span class=\"link_email\">riate [at] cnrs [dot] fr</span>"
     },
     "page404": {
         "message1": "Error 404 - Page not found",
