@@ -2,7 +2,7 @@
 import tempfile
 import ujson as json
 from os.path import join as path_join
-from .smoomacypy import SmoothStewart
+from smoomacypy import SmoothStewart
 from geopandas import GeoDataFrame
 from .geo import repairCoordsPole
 
@@ -31,8 +31,9 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     nb_class: int, default None
         The number of class, if unset will most likely be 8.
     resolution: int, default None
-        The resolution to use (in unit of the input file), if not set a resolution
-        will be used in order to make a grid containing around 10000 pts.
+        The resolution to use (in unit of the input file), if not set a
+        resolution will be used in order to make a grid containing around
+        12000 pts.
     mask: str, default None
         Path to the file (Polygons only) to use as clipping mask.
     user_defined_breaks: list or tuple, default None
@@ -59,8 +60,8 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
     result.to_crs({'init': 'epsg:4326'}, inplace=True)
     if not mask:
         # In some weird cases, when not using a clipping mask, some resulting
-        # geometries seems to be malformed, but hopefully saving it to shapefile
-        # then reopening it seems to fix that:
+        # geometries seems to be malformed, but hopefully saving it
+        # to shapefile then reopening it seems to fix that:
         res = save_reload(result)
     else:
         res = json.loads(result[::-1].to_json())
@@ -72,15 +73,16 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
 
 def save_reload(result_layer):
     """
-    Saves the 'result_layer' geodataframe as a ShapeFile (with the hope of taking advantage
-    of the reparation of some geometries offered by one of the intermediate libraries
-    used for saving it), then reload it and return it as a GeoJSON FeatureCollection,
-    loaded in a python 'dict'.
+    Saves the 'result_layer' geodataframe as a ShapeFile (with the hope of
+    taking advantage of the reparation of some geometries offered by one of the
+    intermediate libraries used for saving it), then reload it and return it
+    as a GeoJSON FeatureCollection, loaded in a python 'dict'.
 
     Parameters
     ----------
     result_layer: GeoDataFrame
-        The GeoDataFrame containing the contour computed from smoomapy functionnality.
+        The GeoDataFrame containing the contour computed
+        from smoomapy functionnality.
 
     Returns
     -------
