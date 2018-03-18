@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.234a0e879c9e.json'
+      loadPath: 'static/locales/{{lng}}/translation.f640b6b34a92.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4911,7 +4911,8 @@ function make_layer_name_button(parent, id, margin_top) {
 function make_discretization_icons(discr_section) {
   var subsection1 = discr_section.append('div');
   subsection1.insert('span').attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' }).html(i18next.t('app_page.func_options.common.discretization_choice'));
-  var subsection2 = discr_section.append('div');
+
+  var subsection2 = discr_section.append('p');
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
     title: i18next.t('app_page.common.q6'),
     src: '/static/img/discr_icons/q6.png',
@@ -4940,9 +4941,9 @@ function make_discretization_icons(discr_section) {
     class: 'i18n',
     'data-i18n': '[title]app_page.common.quantiles'
   });
-  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
+  subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer', width: '20px' }).attrs({
     title: i18next.t('app_page.common.user_defined'),
-    src: '/static/img/discr_icons/others3.png',
+    src: '/static/img/High-contrast-system-run.png',
     id: 'ico_others',
     class: 'i18n',
     'data-i18n': '[title]app_page.common.user_defined'
