@@ -9,7 +9,7 @@ Les données de rapports (de taux, d’intensités ou de ratios) sont des donné
 > * Choix d'une discrétisation adaptée pour la série de valeurs
 
 
-Un clic sur le bouton <img src="img/discr.png" alt="choro_map" style="width: 26px;"/> ouvre une boite dialogue permettant d'affiner la discrétisation et de choisir la palette de couleur.
+Un clic sur le bouton <img src="img/discr_new.png" alt="choro_map" style="width: 26px;"/> ouvre une boite dialogue permettant d'affiner la discrétisation et de choisir la palette de couleur.
 <p style="text-align: center;">
 <img src="img/discr3.png" alt="choro_map" style="width: 480px;"/>
 </p>
