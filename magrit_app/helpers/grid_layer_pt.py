@@ -26,7 +26,10 @@ def get_func(func):
     elif func == 'stddev':
         return lambda a: np.std(a[0])
         # value = np.mean(array_values[idx])
-
+    elif func == 'count':
+        return lambda a: len(a[0])
+    elif func == 'weighted':
+        return lambda a: np.sum(a[0])
 
 def get_grid_layer_pt(input_file, height, field_name,
                       grid_shape="square", mask_layer=None,
@@ -113,12 +116,14 @@ def get_dens_from_pt(point_layer, field_name, polygon_layer, func):
     res = []
     for geom in polygon_layer.geometry:
         value = None
+        count = None
         idx_pts = list(idx_intersects(geom.bounds, objects='raw'))
         if idx_pts:
             t = pts_geoms[idx_pts].intersects(geom)
             idx = t[t == True].index
             value = f((array_values[idx], geom.area))
-            res.append((value, len(array_values[idx])))
+            count = len(array_values[idx])
+        res.append((value, count))
     return res
 
 
@@ -145,6 +150,7 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
     res = []
     for rect, _cell in cell_generator(total_bounds, height):
         value = None
+        count = None
         cell = mask.intersection(Polygon(_cell)) if mask else Polygon(_cell)
         if not cell:
             continue
@@ -153,6 +159,7 @@ def get_dens_grid_pt(gdf, height, field_name, mask, func, cell_generator):
             t = geoms[idx_pts].intersects(cell)
             idx = t[t == True].index
             value = f((array_values[idx], cell.area))
-            res.append((cell, value, len(array_values[idx])))
+            count = len(array_values[idx])
+        res.append((cell, value, count))
 
     return res

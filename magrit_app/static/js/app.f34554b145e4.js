@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f640b6b34a92.json'
+      loadPath: 'static/locales/{{lng}}/translation.f34554b145e4.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8047,7 +8047,7 @@ function fillMenu_griddedMap(layer) {
     mesh_type.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] });
   });
 
-  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density', 'density'], ['app_page.func_options.grid.mean', 'mean'], ['app_page.func_options.grid.stddev', 'stddev']].forEach(function (_f) {
+  [['app_page.func_options.grid.density_count', 'density_count'], ['app_page.func_options.grid.density_weighted', 'density_weighted'], ['app_page.func_options.grid.mean', 'mean'], ['app_page.func_options.grid.stddev', 'stddev']].forEach(function (_f) {
     grid_func_ratio.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
   });
 
@@ -8077,7 +8077,7 @@ function fillMenu_griddedMap(layer) {
 
   var grid_shape = c.insert('select').attrs({ class: 'params i18n', id: 'Gridded_shape' });
 
-  var d = dialog_content.append('p').attr('class', 'params_section2').styles({ clear: 'both', 'padding-top': '2px' });
+  var d = dialog_content.append('p').attr('class', 'params_section2 opt_polygon opt_point opt_grid').styles({ clear: 'both', 'padding-top': '2px' });
   d.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' }).html(i18next.t('app_page.func_options.grid.coloramp'));
   var col_pal = d.insert('select').attrs({ class: 'params', id: 'Gridded_color_pal' }).styles({ position: 'relative', float: 'right' });
 
@@ -8129,7 +8129,7 @@ var fields_griddedMap = {
       }
       section2.selectAll('.opt_point.opt_grid').style('display', current_mesh_type === 'regular_grid' ? null : 'none');
       section2.selectAll('.opt_point.opt_user_layer').style('display', current_mesh_type !== 'regular_grid' ? null : 'none');
-      section2.select('.opt_point.opt_field').style('display', current_func_type !== 'density_count' && current_func_type !== 'count' ? 'none' : null);
+      section2.select('.opt_point.opt_field').style('display', current_func_type !== 'density_count' && current_func_type !== 'count' ? null : 'none');
       section2.select('#Gridded_mesh_type').on('change', function () {
         if (this.value === 'regular_grid') {
           section2.selectAll('.opt_point.opt_grid').style('display', null);
@@ -8139,9 +8139,13 @@ var fields_griddedMap = {
           section2.selectAll('.opt_point.opt_user_layer').style('display', null);
         }
       });
-      section2.select('#Gridded_func').on('change', function () {
-        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' || this.value === 'stock' ? 'none' : null);
-        output_name_field.attr('value', this.value === 'stock' ? ['PropSymbol', layer].join('_') : ['Gridded', layer].join('_'));
+      section2.select('#Gridded_func_ratio').on('change', function () {
+        section2.select('.opt_point.opt_field').style('display', this.value === 'density_count' ? 'none' : null);
+        output_name_field.attr('value', ['Gridded', layer].join('_'));
+      });
+      section2.select('#Gridded_func_stock').on('change', function () {
+        section2.select('.opt_point.opt_field').style('display', this.value === 'count' ? 'none' : null);
+        output_name_field.attr('value', ['PropSymbol', layer].join('_'));
       });
       section2.select('#Gridded_map_type').on('change', function () {
         if (this.value === 'stock') {
@@ -8245,26 +8249,26 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     grid_shape: params.cell_shape,
     polygon_layer: params.mesh_type !== 'regular_grid' ? current_layers[params.polygon_layer].key_name : null,
     mask_layer: params.mask_layer !== 'None' ? current_layers[params.mask_layer].key_name : null,
-    func_type: params.func_type !== 'stock' ? params.func_type : 'density_count'
+    func_type: params.func_type
   }));
 
   xhrequest('POST', 'compute/gridded_point', formToSend, true).then(function (data) {
-    if (params.func_type === 'stock') {
+    if (params.func_type === 'count' || params.func_type === 'weighted') {
       data = JSON.parse(data);
       var _data = data.file.objects[Object.keys(data.file.objects)].geometries;
+      var field_to_render = params.func_type;
       var nb_features = 0;
       var maxval = -Infinity;
       d3.select('#' + _app.layer_to_id.get(params.polygon_layer)).selectAll('path').each(function (d, i) {
-        var v = _data[i].properties.count;
-        d.properties.count = v;
+        var v = _data[i].properties[field_to_render];
+        d.properties[field_to_render] = v;
         nb_features += 1;
         if (v > maxval) {
           maxval = v;
         }
       });
 
-      var field_to_render = 'count',
-          symbol_to_use = 'circle',
+      var symbol_to_use = 'circle',
           new_layer_name = check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['PropSymbols', field_to_render, params.polygon_layer].join('_'));
       var rendering_params = {
         field: field_to_render,

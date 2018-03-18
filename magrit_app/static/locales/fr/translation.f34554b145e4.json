@@ -705,13 +705,14 @@
                 "mean": "Moyenne des valeurs",
                 "stddev": "Écart-type des valeurs",
                 "density_count": "Densité (comptage simple)",
-                "density": "Densité (utilisation d'un champ numérique)",
+                "density_weighted": "Densité (utilisation d'un champ numérique)",
                 "stock_count": "Comptage simple",
                 "stock_weighted": "Comptage pondéré",
                 "mesh_type": "Type de maillage",
                 "regular_grid": "Grille régulière",
                 "user_polygons": "Maillage fourni par l'utilisateur",
-                "user_polygon_layer": "Couche à utiliser"
+                "user_polygon_layer": "Couche à utiliser",
+                "map_type": "Type de carte"
             },
             "cartogram": {
                 "algo": " Algorithme à utiliser ",

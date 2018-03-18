@@ -705,13 +705,14 @@
                 "mean": "Average values",
                 "stddev": "Standard deviation",
                 "density_count": "Density (single counting)",
-                "density": "Density (using a numeric field)",
+                "density_weighted": "Density (using a numeric field)",
                 "stock_count": "Single counting",
                 "stock_weighted": "Weighted counting",
                 "mesh_type": "Type of mesh",
                 "regular_grid": "Regular grid",
                 "user_polygons": "Polygon layer",
-                "user_polygon_layer": "Layer to use"
+                "user_polygon_layer": "Layer to use",
+                "map_type": "Type of map"
             },
             "cartogram": {
                 "algo": "Algorithm to use ",
