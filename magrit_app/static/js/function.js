@@ -3820,7 +3820,7 @@ const fields_griddedMap = {
           color_palette: document.getElementById('Gridded_color_pal').value,
         };
         if (params.mesh_type === 'user_polygons' && !params.polygon_layer) {
-          display_error_during_computation('A background layer is needed for this functionnality');
+          display_error_during_computation(i18next.t('app_page.common.error_background_needed'));
           return;
         }
         render_GriddedFromPts(params, output_name);

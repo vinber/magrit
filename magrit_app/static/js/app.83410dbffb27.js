@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.2c49a7a15878.json'
+      loadPath: 'static/locales/{{lng}}/translation.83410dbffb27.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -8191,7 +8191,7 @@ var fields_griddedMap = {
           color_palette: document.getElementById('Gridded_color_pal').value
         };
         if (params.mesh_type === 'user_polygons' && !params.polygon_layer) {
-          display_error_during_computation('A background layer is needed for this functionnality');
+          display_error_during_computation(i18next.t('app_page.common.error_background_needed'));
           return;
         }
         render_GriddedFromPts(params, output_name);

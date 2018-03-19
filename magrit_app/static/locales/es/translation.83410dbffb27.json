@@ -37,6 +37,7 @@
             "error_invalid_empty": "La capa seleccionada no contiene datos.",
             "error_waffle_too_many": "El número de símbolos para dibujar es demasiado alto. Por favor, seleccione una mayor proporción.",
             "error_multiple_fields": "Por favor elija al menos dos campos.",
+            "error_background_needed": "Se requiere un mapa de fondo (capa de polígonos) para esta funcionalidad.",
             "warning_multiple_layers": "Las capas de tipo TopoJSON deben ser añadidas una por una. Sólo se agregará la primera.",
             "warning_not_adapted_classification": "¡La discretización escogida no parece estar adaptada al modo de distribución!",
             "warning_empty_geom": "Tenga en cuenta que la capa contiene una entidad sin geometría!",
@@ -832,7 +833,7 @@
         "message": "Mensaje",
         "contact": "Contacto",
         "index": "Inicio",
-        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)? ¡Gracias de antemano por señalarlo en este formulario y compartirnos su experiencia!<br><span class=\"link_email\">matthieu.viry [at] cnrs [punto] fr</span>"
+        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)? ¡Gracias de antemano por señalarlo en este formulario y compartirnos su experiencia!<br><span class=\"link_email\">riate [at] cnrs [punto] fr</span>"
     },
     "page404": {
         "message1": "Error 404 - Página inválida",
