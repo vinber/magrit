@@ -2317,3 +2317,40 @@ function accordionize2(css_selector = '.accordion', parent = document) {
     };
   }
 }
+
+function changeTargetLayer(new_target) {
+  const old_target = Object.keys(user_data)[0];
+  delete current_layers[old_target].targeted;
+  current_layers[new_target].targeted = true;
+  field_join_map = [];
+  user_data = {};
+  user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
+  const fields = Object.keys(user_data[new_target][0]);
+  resetSection1();
+  update_section1(current_layers[new_target].type, fields.length, current_layers[new_target].n_features, new_target);
+  current_layers[new_target].original_fields = new Set(fields);
+  current_layers[new_target].fields_type = [];
+  scale_to_lyr(new_target);
+  center_map(new_target);
+  zoom_without_redraw();
+  getAvailablesFunctionnalities(new_target);
+}
+
+function resetSection1() {
+  document.getElementById('table_layer_s1').remove();
+  document.getElementById('remove_target').remove();
+  d3.select('#img_in_geom')
+    .attrs({
+      id: 'img_in_geom',
+      class: 'user_panel',
+      src: 'static/img/b/addgeom.png',
+      width: '24',
+      height: '24',
+      alt: 'Geometry layer',
+    })
+    .on('click', click_button_add_layer);
+  d3.select('#input_geom')
+    .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
+    .html(i18next.t('app_page.section1.add_geom'))
+    .on('click', click_button_add_layer);
+}

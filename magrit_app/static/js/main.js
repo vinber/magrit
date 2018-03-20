@@ -1963,23 +1963,6 @@ function remove_layer_cleanup(name) {
 
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
   if (current_layers[name].targeted) {
-    // Updating the top of the menu (section 1) :
-    document.getElementById('table_layer_s1').remove();
-    document.getElementById('remove_target').remove();
-    d3.select('#img_in_geom')
-      .attrs({
-        id: 'img_in_geom',
-        class: 'user_panel',
-        src: 'static/img/b/addgeom.png',
-        width: '24',
-        height: '24',
-        alt: 'Geometry layer',
-      })
-      .on('click', click_button_add_layer);
-    d3.select('#input_geom')
-      .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
-      .html(i18next.t('app_page.section1.add_geom'))
-      .on('click', click_button_add_layer);
     // Unfiling the fields related to the targeted functionnality:
     if (_app.current_functionnality) {
       clean_menu_function();
@@ -1989,6 +1972,9 @@ function remove_layer_cleanup(name) {
     field_join_map = [];
     user_data = {};
     _app.targeted_layer_added = false;
+
+    // Updating the top of the menu (section 1) :
+    resetSection1();
 
     // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
     document.getElementById('sample_zone').style.display = null;
