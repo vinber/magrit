@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.83410dbffb27.json'
+      loadPath: 'static/locales/{{lng}}/translation.9947d2a94d70.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4912,13 +4912,13 @@ function make_discretization_icons(discr_section) {
   var subsection1 = discr_section.append('div');
   subsection1.insert('span').attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' }).html(i18next.t('app_page.func_options.common.discretization_choice'));
 
-  var subsection2 = discr_section.append('p');
+  var subsection2 = discr_section.append('p').style('margin', '10px 0 0');
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
-    title: i18next.t('app_page.common.q6'),
+    title: i18next.t('app_page.common.Q6'),
     src: '/static/img/discr_icons/q6.png',
     id: 'ico_q6',
     class: 'i18n',
-    'data-i18n': '[title]app_page.common.q6'
+    'data-i18n': '[title]app_page.common.Q6'
   });
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer' }).attrs({
     title: i18next.t('app_page.common.jenks'),
@@ -4943,7 +4943,7 @@ function make_discretization_icons(discr_section) {
   });
   subsection2.append('img').styles({ margin: '0 7.5px', cursor: 'pointer', width: '20px' }).attrs({
     title: i18next.t('app_page.common.user_defined'),
-    src: '/static/img/High-contrast-system-run.png',
+    src: '/static/img/High-contrast-system-run24.png',
     id: 'ico_others',
     class: 'i18n',
     'data-i18n': '[title]app_page.common.user_defined'
