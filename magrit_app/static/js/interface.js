@@ -1135,6 +1135,14 @@ function add_layer_topojson(text, options = {}) {
       fields_handler.fill(lyr_name_to_add);
     }
     handle_click_hand('lock');
+
+    // If the target layer is a point layer, slightly change the tooltip for the "grid"
+    // functionnality:
+    document.getElementById('button_grid')
+      .setAttribute('data-i18n', type === 'Point'
+        ? '[title]app_page.func_description.grid_point'
+        : '[title]app_page.func_description.grid');
+    localize('#button_grid');
   } else if (result_layer_on_add) {
     li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
     // Don't fit the viewport on the added layer if it's a result layer (or uncomment following lines..)

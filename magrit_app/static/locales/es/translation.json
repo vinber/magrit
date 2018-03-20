@@ -280,6 +280,7 @@
             "choro": "Generar un mapa de valores relativos",
             "cartogram": "Generar un mapa anamórfico",
             "grid": "Generar una cuadrícula de densidades",
+            "grid_point": "Generar un mapa a partir del análisis de un conjunto de puntos",
             "flow": "Generar un mapa de relaciones",
             "discont": "Generar un mapa de discontinuidades",
             "typo": "Generar un mapa cualitativo",

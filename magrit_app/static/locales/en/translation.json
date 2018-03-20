@@ -285,6 +285,7 @@
             "choro": "Display a choropleth map using a numerical field in the attribute table and a proper discretization method",
             "cartogram": "Display a cartogram (distorting the shape of spatial units based on a numerical data)",
             "grid": "Display a gridded density map on a numerical data",
+            "grid_point": "Display a map based on the analysis of a set of points",
             "flow": "Display sized links between features.",
             "discont": "Display discontinuities between polygons features",
             "typo": "Display a map sorting a field by category",
