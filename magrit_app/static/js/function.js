@@ -349,7 +349,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 
   parent_nd.style.marginTop = '3px';
   parent_nd.style.marginBottom = '3px';
-  // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
 
   const title = document.createElement('p');
   // title.style = "margin: 1px; word-spacing: 1.8em;";
@@ -2564,8 +2563,7 @@ function fillMenu_PropSymbolTypo(layer) {
   const dv2 = make_template_functionnality(section2);
 
   const a = dv2.append('p')
-    .attr('class', 'params_section2')
-    .style('margin-top', '2px');
+    .attr('class', 'params_section2');
   a.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1' })
@@ -2883,8 +2881,7 @@ function fillMenu_Discont() {
   const dv2 = make_template_functionnality(section2);
 
   const a = dv2.append('p')
-    .attr('class', 'params_section2')
-    .style('margin-top', '2px');
+    .attr('class', 'params_section2');
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' })
     .html(i18next.t('app_page.func_options.discont.field'));
@@ -3118,8 +3115,7 @@ function fillMenu_PropSymbol(layer) {
     max_allowed_size = Mround(h / 2 - h / 10);
 
   const a = dialog_content.append('p')
-    .attr('class', 'params_section2')
-    .style('margin-top', '2px');
+    .attr('class', 'params_section2');
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
     .html(i18next.t('app_page.func_options.common.field'));
@@ -3309,7 +3305,7 @@ const fields_PropSymbol = {
 
 function fillMenu_TypoSymbol() {
   const dv2 = make_template_functionnality(section2);
-  const a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  const a = dv2.append('p').attr('class', 'params_section2');
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typosymbol.field' })
     .html(i18next.t('app_page.func_options.typosymbol.field'));
@@ -3647,7 +3643,7 @@ function fillMenu_griddedMap(layer) {
 
   const a = dialog_content.append('p')
     .attr('class', 'params_section2 opt_polygon')
-    .style('margin-top', '2px');
+    .style('margin-top', '9px');
 
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
@@ -4038,8 +4034,7 @@ function fillMenu_FlowMap() {
   const dv2 = make_template_functionnality(section2);
 
   const subtitle = dv2.append('p')
-    .attr('class', 'params_section2')
-    .style('margin-top', '2px');
+    .attr('class', 'params_section2');
   subtitle.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1' })
     .html(i18next.t('app_page.func_options.flow.subtitle1'));

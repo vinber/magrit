@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.214ff8bf4d0d.json'
+      loadPath: 'static/locales/{{lng}}/translation.dc45eb85ca48.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -4976,7 +4976,6 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
 
   parent_nd.style.marginTop = '3px';
   parent_nd.style.marginBottom = '3px';
-  // parent_nd.style = "margin-top: 3px; margin-bottom: 3px;"
 
   var title = document.createElement('p');
   // title.style = "margin: 1px; word-spacing: 1.8em;";
@@ -7155,7 +7154,7 @@ function make_mini_summary(summary) {
 function fillMenu_PropSymbolTypo(layer) {
   var dv2 = make_template_functionnality(section2);
 
-  var a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  var a = dv2.append('p').attr('class', 'params_section2');
   a.append('p').style('margin', 'auto').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1' }).html(i18next.t('app_page.func_options.proptypo.field1'));
   a.insert('select').attrs({ class: 'params', id: 'PropSymbolTypo_field_1' }).styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
 
@@ -7436,7 +7435,7 @@ function render_PropSymbolTypo(field1, color_field, n_layer_name, ref_value, ref
 function fillMenu_Discont() {
   var dv2 = make_template_functionnality(section2);
 
-  var a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  var a = dv2.append('p').attr('class', 'params_section2');
   a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' }).html(i18next.t('app_page.func_options.discont.field'));
   a.insert('select').attrs({ class: 'params', id: 'field_Discont' });
 
@@ -7654,7 +7653,7 @@ function fillMenu_PropSymbol(layer) {
   var dialog_content = make_template_functionnality(section2),
       max_allowed_size = Mround(h / 2 - h / 10);
 
-  var a = dialog_content.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  var a = dialog_content.append('p').attr('class', 'params_section2');
   a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
   a.insert('select').attrs({ class: 'params', id: 'PropSymbol_field_1' });
 
@@ -7800,7 +7799,7 @@ var fields_PropSymbol = {
 
 function fillMenu_TypoSymbol() {
   var dv2 = make_template_functionnality(section2);
-  var a = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  var a = dv2.append('p').attr('class', 'params_section2');
   a.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typosymbol.field' }).html(i18next.t('app_page.func_options.typosymbol.field'));
   a.insert('select').attrs({ class: 'params', id: 'field_Symbol' });
 
@@ -8056,7 +8055,7 @@ function fillMenu_griddedMap(layer) {
     grid_func_stock.append('option').text(i18next.t(_f[0])).attrs({ value: _f[1], 'data-i18n': '[text]' + _f[0] }).property('disabled', _f[2]);
   });
 
-  var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('margin-top', '2px');
+  var a = dialog_content.append('p').attr('class', 'params_section2 opt_polygon').style('margin-top', '9px');
 
   a.append('p').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' }).html(i18next.t('app_page.func_options.common.field'));
 
@@ -8402,7 +8401,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
 function fillMenu_FlowMap() {
   var dv2 = make_template_functionnality(section2);
 
-  var subtitle = dv2.append('p').attr('class', 'params_section2').style('margin-top', '2px');
+  var subtitle = dv2.append('p').attr('class', 'params_section2');
   subtitle.append('span').attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1' }).html(i18next.t('app_page.func_options.flow.subtitle1'));
 
   var origin_section = dv2.append('p').attr('class', 'params_section2');

@@ -234,6 +234,10 @@ p.params_section2 {
   clear: both;
 }
 
+p.params_section2:first-of-type {
+  margin-top: 9px;
+}
+
 p.params_section2 > span {
   vertical-align: -moz-middle-with-baseline;
 }
