@@ -289,19 +289,19 @@ function setUpInterface(reload_project) {
   var dv1 = section1.append('div');
   var dv11 = dv1.append('div').style('width', 'auto');
 
-  dv11.append('img').attrs({ id: 'img_in_geom', class: 'user_panel', src: 'static/img/b/addgeom.png', width: '26', height: '26', alt: 'Geometry layer' }).style('cursor', 'pointer').on('click', click_button_add_layer);
+  dv11.append('img').attrs({ id: 'img_in_geom', class: 'user_panel', src: 'static/img/b/addgeom.png', width: '25', height: '25', alt: 'Geometry layer' }).style('cursor', 'pointer').on('click', click_button_add_layer);
 
-  dv11.append('p').attrs({ id: 'input_geom', class: 'user_panel i18n' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' }).attr('data-i18n', '[html]app_page.section1.add_geom').on('click', click_button_add_layer);
+  dv11.append('p').attrs({ id: 'input_geom', class: 'user_panel i18n' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' }).attr('data-i18n', '[html]app_page.section1.add_geom').on('click', click_button_add_layer);
 
   var dv12 = dv1.append('div');
-  dv12.append('img').attrs({ id: 'img_data_ext', class: 'user_panel', src: 'static/img/b/addtabular.png', width: '26', height: '26', alt: 'Additional dataset' }).style('cursor', 'pointer').on('click', click_button_add_layer);
+  dv12.append('img').attrs({ id: 'img_data_ext', class: 'user_panel', src: 'static/img/b/addtabular.png', width: '25', height: '25', alt: 'Additional dataset' }).style('cursor', 'pointer').on('click', click_button_add_layer);
 
-  dv12.append('p').attrs({ id: 'data_ext', class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_ext_dataset' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' }).on('click', click_button_add_layer);
+  dv12.append('p').attrs({ id: 'data_ext', class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_ext_dataset' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' }).on('click', click_button_add_layer);
 
   var div_sample = dv1.append('div').attr('id', 'sample_zone');
-  div_sample.append('img').attrs({ id: 'sample_button', class: 'user_panel', src: 'static/img/b/addsample.png', width: '26', height: '26', alt: 'Sample layers' }).style('cursor', 'pointer').on('click', add_sample_layer);
+  div_sample.append('img').attrs({ id: 'sample_button', class: 'user_panel', src: 'static/img/b/addsample.png', width: '25', height: '25', alt: 'Sample layers' }).style('cursor', 'pointer').on('click', add_sample_layer);
 
-  div_sample.append('span').attrs({ id: 'sample_link', class: 'user_panel i18n' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' }).attr('data-i18n', '[html]app_page.section1.add_sample_data').on('click', add_sample_layer);
+  div_sample.append('span').attrs({ id: 'sample_link', class: 'user_panel i18n' }).styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' }).attr('data-i18n', '[html]app_page.section1.add_sample_data').on('click', add_sample_layer);
 
   dv1.append('p').attr('id', 'join_section').styles({ 'text-align': 'center', 'margin-top': '2px' }).html('');
 
@@ -1163,7 +1163,7 @@ function parseQuery(search) {
     lng: lang,
     fallbackLng: _app.existing_lang[0],
     backend: {
-      loadPath: 'static/locales/{{lng}}/translation.f54f9ebfe1eb.json'
+      loadPath: 'static/locales/{{lng}}/translation.5e4b0c8eac36.json'
     }
   }, function (err, tr) {
     if (err) {
@@ -11314,14 +11314,14 @@ function update_menu_dataset() {
     id: 'img_data_ext',
     class: 'user_panel',
     src: 'static/img/b/tabular.png',
-    width: '26',
-    height: '26',
+    width: '25',
+    height: '25',
     alt: 'Additional dataset' });
 
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
-  d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">', nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>'].join('')).on('click', null);
-  parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
+  d3.select(data_ext).html([' <b>', d_name, '</b> - <i><span style="font-size:9px;font-weight:normal;">', nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ', field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>'].join('')).on('click', null);
+  parent_elem.innerHTML += '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 4px 0 0;opacity:1">';
 
   document.getElementById('remove_dataset').onclick = function () {
     remove_ext_dataset();
@@ -11439,7 +11439,7 @@ function handle_single_file(file, target_layer_on_add) {
 
 function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   var nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
-  var _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
+  var _lyr_name_display = +nb_char_display > 22 ? [lyr_name_to_add.substring(0, 17), '(...)'].join('') : lyr_name_to_add;
   var _input_geom = document.getElementById('input_geom');
   var parent = _input_geom.parentElement;
 
@@ -11455,8 +11455,8 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   _input_geom.classList.remove('i18n');
   _input_geom.removeAttribute('data-i18n');
   // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
-  d3.select(_input_geom).attrs({ src: _button, width: '26', height: '26' }).html('<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>').on('click', null);
-  parent.innerHTML = parent.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">';
+  d3.select(_input_geom).attrs({ src: _button, width: '25', height: '25' }).html('<b>' + _lyr_name_display + '</b> - <i><span style="font-size:9px;font-weight:normal;">' + nb_ft + ' ' + i18next.t('app_page.common.feature', { count: +nb_ft }) + ' - ' + nb_fields + ' ' + i18next.t('app_page.common.field', { count: +nb_fields }) + '</i></span>').on('click', null);
+  parent.innerHTML = parent.innerHTML + '\n<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">\n<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 4px 0 0;opacity:1">';
   var remove_target = document.getElementById('remove_target');
   remove_target.onclick = function () {
     remove_layer(Object.getOwnPropertyNames(user_data)[0]);

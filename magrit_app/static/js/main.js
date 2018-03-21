@@ -332,36 +332,36 @@ function setUpInterface(reload_project) {
   const dv11 = dv1.append('div').style('width', 'auto');
 
   dv11.append('img')
-    .attrs({ id: 'img_in_geom', class: 'user_panel', src: 'static/img/b/addgeom.png', width: '26', height: '26', alt: 'Geometry layer' })
+    .attrs({ id: 'img_in_geom', class: 'user_panel', src: 'static/img/b/addgeom.png', width: '25', height: '25', alt: 'Geometry layer' })
     .style('cursor', 'pointer')
     .on('click', click_button_add_layer);
 
   dv11.append('p')
     .attrs({ id: 'input_geom', class: 'user_panel i18n' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' })
+    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
     .attr('data-i18n', '[html]app_page.section1.add_geom')
     .on('click', click_button_add_layer);
 
   const dv12 = dv1.append('div');
   dv12.append('img')
-    .attrs({ id: 'img_data_ext', class: 'user_panel', src: 'static/img/b/addtabular.png', width: '26', height: '26', alt: 'Additional dataset' })
+    .attrs({ id: 'img_data_ext', class: 'user_panel', src: 'static/img/b/addtabular.png', width: '25', height: '25', alt: 'Additional dataset' })
     .style('cursor', 'pointer')
     .on('click', click_button_add_layer);
 
   dv12.append('p')
     .attrs({ id: 'data_ext', class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_ext_dataset' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' })
+    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
     .on('click', click_button_add_layer);
 
   const div_sample = dv1.append('div').attr('id', 'sample_zone');
   div_sample.append('img')
-    .attrs({ id: 'sample_button', class: 'user_panel', src: 'static/img/b/addsample.png', width: '26', height: '26', alt: 'Sample layers' })
+    .attrs({ id: 'sample_button', class: 'user_panel', src: 'static/img/b/addsample.png', width: '25', height: '25', alt: 'Sample layers' })
     .style('cursor', 'pointer')
     .on('click', add_sample_layer);
 
   div_sample.append('span')
     .attrs({ id: 'sample_link', class: 'user_panel i18n' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '5px', 'vertical-align': 'super', 'font-weight': 'bold' })
+    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
     .attr('data-i18n', '[html]app_page.section1.add_sample_data')
     .on('click', add_sample_layer);
 

@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.7.3 (2018-03-21)
+------------------
+
+- Multiple small bug fixes related to styles.
+
+- Fix badly set value on some input range elements.
+
+
 0.7.2 (2018-03-19)
 ------------------
 

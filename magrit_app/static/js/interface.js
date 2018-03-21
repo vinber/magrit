@@ -730,20 +730,20 @@ function update_menu_dataset() {
       id: 'img_data_ext',
       class: 'user_panel',
       src: 'static/img/b/tabular.png',
-      width: '26',
-      height: '26',
+      width: '25',
+      height: '25',
       alt: 'Additional dataset' });
 
   data_ext.classList.remove('i18n');
   data_ext.removeAttribute('data-i18n');
   d3.select(data_ext)
-    .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
+    .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;font-weight:normal;">',
       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
       '</i></span>'].join(''))
     .on('click', null);
   parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
+<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 4px 0 0;opacity:1">`;
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();
@@ -862,7 +862,7 @@ function handle_single_file(file, target_layer_on_add) {
 
 function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
-  const _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
+  const _lyr_name_display = +nb_char_display > 22 ? [lyr_name_to_add.substring(0, 17), '(...)'].join('') : lyr_name_to_add;
   const _input_geom = document.getElementById('input_geom');
   const parent = _input_geom.parentElement;
 
@@ -879,12 +879,12 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   _input_geom.removeAttribute('data-i18n');
   // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
   d3.select(_input_geom)
-    .attrs({ src: _button, width: '26', height: '26' })
-    .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
+    .attrs({ src: _button, width: '25', height: '25' })
+    .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;font-weight:normal;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
     .on('click', null);
   parent.innerHTML = `${parent.innerHTML}
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
+<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 4px 0 0;opacity:1">`;
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };
