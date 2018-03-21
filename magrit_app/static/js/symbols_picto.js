@@ -92,9 +92,9 @@ const display_box_symbol_typo = function (layer, field, categories) {
 
   newbox.selectAll('.typo_class')
     .insert('input')
-    .property('value', 50)
     .attrs({ type: 'number', id: 'symbol_size' })
-    .styles({ width: '50px', display: 'inline-block' });
+    .styles({ width: '50px', display: 'inline-block' })
+    .property('value', 50);
 
   newbox.selectAll('.typo_class')
     .insert('span')
@@ -287,9 +287,9 @@ function make_style_box_indiv_symbol(symbol_node) {
   a.append('span')
     .html(i18next.t('app_page.single_symbol_edit_box.image_size'));
   a.append('input')
-    .property('value', current_options.size)
     .style('float', 'right')
     .attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any' })
+    .property('value', current_options.size)
     .on('change', function () {
       const val = +this.value;
       symbol_node.setAttribute('width', `${val}px`);

@@ -1437,8 +1437,8 @@ function display_box_value_symbol(layer_name) {
   let original_values = [].concat(values_to_use);
   let val1 = a.insert('input')
     .style('width', '80px')
-    .property('value', values_to_use[0].value)
     .attrs({ class: 'without_spinner', type: 'number', max: val_max })
+    .property('value', values_to_use[0].value)
     .on('change', function () {
       const val = +this.value;
       if (isNaN(val)) return;
@@ -1448,8 +1448,8 @@ function display_box_value_symbol(layer_name) {
     });
   let val2 = b.insert('input')
     .style('width', '80px')
-    .property('value', values_to_use[1].value)
     .attrs({ class: 'without_spinner', type: 'number', max: values_to_use[0].value, min: values_to_use[2] })
+    .property('value', values_to_use[1].value)
     .on('change', function () {
       const val = +this.value;
       if (isNaN(val)) return;
@@ -1460,8 +1460,8 @@ function display_box_value_symbol(layer_name) {
     });
   let val3 = c.insert('input')
     .style('width', '80px')
-    .property('value', values_to_use[2].value)
     .attrs({ class: 'without_spinner', type: 'number', max: values_to_use[1].value, min: values_to_use[3].value })
+    .property('value', values_to_use[2].value)
     .on('change', function () {
       const val = +this.value;
       if (isNaN(val)) return;
@@ -1472,8 +1472,8 @@ function display_box_value_symbol(layer_name) {
     });
   let val4 = d.insert('input')
     .style('width', '80px')
-    .property('value', values_to_use[3].value)
     .attrs({ class: 'without_spinner', type: 'number', min: 0, max: values_to_use[2].value })
+    .property('value', values_to_use[3].value)
     .on('change', function () {
       const val = +this.value;
       if (isNaN(val)) return;
@@ -1584,8 +1584,8 @@ function createlegendEditBox_symbol() {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .property('value', subtitle_content.textContent)
     .style('float', 'right')
+    .property('value', subtitle_content.textContent)
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -1604,8 +1604,8 @@ function createlegendEditBox_symbol() {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+    .property('value', note_content.textContent)
     .on('keyup', function () {
       note_content.textContent = this.value;
     });
@@ -1615,8 +1615,8 @@ function createlegendEditBox_symbol() {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
-      .property('value', ratio_waffle_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+      .property('value', ratio_waffle_txt.textContent)
       .on('keyup', function () {
         ratio_waffle_txt.textContent = this.value;
       });
@@ -1830,8 +1830,8 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .property('value', subtitle_content.textContent)
     .style('float', 'right')
+    .property('value', subtitle_content.textContent)
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -1850,8 +1850,8 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+    .property('value', note_content.textContent)
     .on('keyup', function () {
       note_content.textContent = this.value;
     });
@@ -1861,8 +1861,8 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.no_data'));
     d.insert('input')
-      .property('value', no_data_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+      .property('value', no_data_txt.textContent)
       .on('keyup', function () {
         no_data_txt.textContent = this.value;
       });
@@ -2138,8 +2138,8 @@ function createlegendEditBox(legend_id, layer_name) {
   b.insert('span')
     .html(i18next.t('app_page.legend_style_box.var_name'));
   b.insert('input')
-    .property('value', subtitle_content.textContent)
     .style('float', 'right')
+    .property('value', subtitle_content.textContent)
     .on('keyup', function () {
       const empty = subtitle_content.textContent == '';
       // Move up the title to its original position if the subtitle isn't empty :
@@ -2158,8 +2158,8 @@ function createlegendEditBox(legend_id, layer_name) {
   c.insert('span')
     .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
-    .property('value', note_content.textContent)
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+    .property('value', note_content.textContent)
     .on('keyup', function () {
       note_content.textContent = this.value;
     });
@@ -2169,8 +2169,8 @@ function createlegendEditBox(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.no_data'));
     d.insert('input')
-      .property('value', no_data_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+      .property('value', no_data_txt.textContent)
       .on('keyup', function () {
         no_data_txt.textContent = this.value;
       });
@@ -2179,8 +2179,8 @@ function createlegendEditBox(legend_id, layer_name) {
     d.insert('span')
       .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
-      .property('value', ratio_waffle_txt.textContent)
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+      .property('value', ratio_waffle_txt.textContent)
       .on('keyup', function () {
         ratio_waffle_txt.textContent = this.value;
       });

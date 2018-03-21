@@ -41,8 +41,8 @@ function make_single_color_menu(layer, fill_prev, symbol = 'path') {
     .html(i18next.t('app_page.layer_style_popup.fill_color'));
   block.insert('input')
     .attr('type', 'color')
-    .property('value', last_color)
     .style('float', 'right')
+    .property('value', last_color)
     .on('change', function () {
       map.select(g_lyr_name)
         .selectAll(symbol)
@@ -219,9 +219,9 @@ function createStyleBoxTypoSymbols(layer_name) {
   size_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.symbols_size'));
   size_section.append('input')
-    .property('value', 32)
     .attrs({ min: 0, max: 200, step: 'any', type: 'number' })
     .styles({ width: '60px', margin: 'auto' })
+    .property('value', 32)
     .on('change', function () {
       const value = this.value;
       selection.transition()
@@ -435,8 +435,8 @@ function createStyleBoxGraticule(layer_name) {
   color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
   color_choice.append('input')
     .attr('type', 'color')
-    .property('value', current_params.fill_color.single)
     .style('float', 'right')
+    .property('value', current_params.fill_color.single)
     .on('change', function () {
       selection.style('stroke', this.value);
       current_layers.Graticule.fill_color.single = this.value;
@@ -445,9 +445,9 @@ function createStyleBoxGraticule(layer_name) {
   const opacity_choice = popup.append('p').attr('class', 'line_elem');
   opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
   opacity_choice.append('input')
-    .property('value', current_params.opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', current_params.opacity)
     .on('change', function () {
       selection.style('stroke-opacity', this.value);
       current_layers.Graticule.opacity = +this.value;
@@ -462,8 +462,8 @@ function createStyleBoxGraticule(layer_name) {
   stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
   stroke_width_choice.append('input')
     .attr('type', 'number')
-    .property('value', current_params['stroke-width-const'])
     .styles({ width: '60px', float: 'right' })
+    .property('value', current_params['stroke-width-const'])
     .on('change', function () {
       selection_strokeW.style('stroke-width', this.value);
       current_layers.Graticule['stroke-width-const'] = +this.value;
@@ -472,9 +472,9 @@ function createStyleBoxGraticule(layer_name) {
   const steps_choice = popup.append('p').attr('class', 'line_elem');
   steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
   steps_choice.append('input')
-    .property('value', current_params.step)
     .attrs({ id: 'graticule_range_steps', type: 'range', min: 0, max: 100, step: 1 })
     .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
+    .property('value', current_params.step)
     .on('change', function () {
       const next_layer = selection_strokeW.node().nextSibling;
       const step_val = +this.value;
@@ -494,9 +494,9 @@ function createStyleBoxGraticule(layer_name) {
       popup.select('#graticule_step_txt').property('value', step_val);
     });
   steps_choice.append('input')
-    .property('value', current_params.step)
     .attrs({ type: 'number', min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_step_txt' })
     .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+    .property('value', current_params.step)
     .on('change', function () {
       const grat_range = document.getElementById('graticule_range_steps');
       grat_range.value = +this.value;
@@ -506,18 +506,18 @@ function createStyleBoxGraticule(layer_name) {
   const dasharray_choice = popup.append('p').attr('class', 'line_elem');
   dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
   dasharray_choice.append('input')
-    .property('value', current_params.dasharray)
     .attrs({ type: 'range', min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' })
     .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
+    .property('value', current_params.dasharray)
     .on('change', function () {
       selection.style('stroke-dasharray', this.value);
       current_layers.Graticule.dasharray = +this.value;
       popup.select('#graticule_dasharray_txt').property('value', this.value);
     });
   dasharray_choice.append('input')
-    .property('value', current_params.dasharray, )
     .attrs({ type: 'number', min: 0, max: 100, step: 'any', class: 'without_spinner', id: 'graticule_dasharray_txt' })
     .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
+    .property('value', current_params.dasharray)
     .on('change', function () {
       const grat_range = document.getElementById('graticule_range_dasharray');
       grat_range.value = +this.value;
@@ -868,8 +868,8 @@ function createStyleBox_Line(layer_name) {
       .html(i18next.t('app_page.layer_style_popup.color'));
     c_section.insert('input')
       .attr('type', 'color')
-      .property('value', stroke_prev)
       .style('float', 'right')
+      .property('value', stroke_prev)
       .on('change', function () {
         selection.style('stroke', this.value);
         current_layers[layer_name].fill_color = { single: this.value };
@@ -890,9 +890,9 @@ function createStyleBox_Line(layer_name) {
     // The legend will be updated in order to start on the minimum value displayed instead of
     //   using the minimum value of the serie (skipping unused class if necessary)
     threshold_section.insert('input')
-      .property('value', prev_min_display)
       .attrs({ type: 'range', min: 0, max: max_val, step: 0.5 })
       .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+      .property('value', prev_min_display)
       .on('change', function () {
         const val = +this.value;
         popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
@@ -928,16 +928,16 @@ function createStyleBox_Line(layer_name) {
           });
       });
   } else if (renderer === 'DiscLayer') {
-    prev_min_display = current_layers[layer_name].min_display || 0;
+    prev_min_display = +current_layers[layer_name].min_display || 0;
     prev_size = current_layers[layer_name].size.slice();
     prev_breaks = current_layers[layer_name].breaks.slice();
     const max_val = Math.max.apply(null, result_data[layer_name].map(i => i.disc_value));
     const disc_part = popup.append('p').attr('class', 'line_elem');
     disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
     disc_part.insert('input')
-      .property('value', prev_min_display)
       .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
       .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+      .property('value', prev_min_display)
       .on('change', function () {
         const val = +this.value;
         const lim = val !== 0 ? val * current_layers[layer_name].n_features : -1;
@@ -980,9 +980,9 @@ function createStyleBox_Line(layer_name) {
   opacity_section.insert('span')
     .html(i18next.t('app_page.layer_style_popup.opacity'));
   opacity_section.insert('input')
-    .property('value', border_opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', border_opacity)
     .on('change', function () {
       opacity_section.select('#opacity_val_txt').html(` ${this.value}`);
       selection.style('stroke-opacity', this.value);
@@ -998,9 +998,9 @@ function createStyleBox_Line(layer_name) {
     width_section.append('span')
       .html(i18next.t('app_page.layer_style_popup.width'));
     width_section.insert('input')
-      .property('value', stroke_width)
       .attrs({ type: 'number', min: 0, step: 0.1 })
       .styles({ width: '60px', float: 'right' })
+      .property('value', stroke_width)
       .on('change', function () {
         const val = +this.value;
         const zoom_scale = +d3.zoomTransform(map.node()).k;
@@ -1014,9 +1014,9 @@ function createStyleBox_Line(layer_name) {
     prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
     prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
     prop_val_content.insert('input')
-      .property('value', current_layers[layer_name].size[1])
       .styles({ width: '60px', float: 'right' })
       .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' })
+      .property('value', current_layers[layer_name].size[1])
       .on('change', function () {
         const f_size = +this.value;
         const prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
@@ -1030,9 +1030,9 @@ function createStyleBox_Line(layer_name) {
     const prop_val_content2 = popup.append('p').attr('class', 'line_elem');
     prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
     prop_val_content2.insert('input')
-      .property('value', +current_layers[layer_name].size[0])
       .styles({ width: '100px', float: 'right' })
       .attrs({ type: 'number', min: 0.1, step: 0.1 })
+      .property('value', +current_layers[layer_name].size[0])
       .on('change', function () {
         const f_val = +this.value;
         const prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
@@ -1181,9 +1181,9 @@ function createStyleBox(layer_name) {
     const pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
     pt_size.append('input')
-      .property('value', current_pt_size)
       .attrs({ type: 'range', min: 0, max: 80, id: 'point_radius_size' })
       .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+      .property('value', current_pt_size)
       .on('change', function () {
         current_pt_size = +this.value;
         document.getElementById('point_radius_size_txt').value = current_pt_size;
@@ -1340,9 +1340,9 @@ function createStyleBox(layer_name) {
   fill_opacity_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
-    .property('value', opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+    .property('value', opacity)
     .on('change', function () {
       selection.style('fill-opacity', this.value);
       fill_opacity_section.select('#fill_opacity_txt')
@@ -1358,8 +1358,8 @@ function createStyleBox(layer_name) {
     .html(i18next.t('app_page.layer_style_popup.border_color'));
   c_section.insert('input')
     .attr('type', 'color')
-    .property('value', stroke_prev)
     .style('float', 'right')
+    .property('value', stroke_prev)
     .on('change', function () {
       selection.style('stroke', this.value);
     });
@@ -1368,9 +1368,9 @@ function createStyleBox(layer_name) {
   opacity_section.insert('span')
     .html(i18next.t('app_page.layer_style_popup.border_opacity'));
   opacity_section.insert('input')
-    .property('value', border_opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', border_opacity)
     .on('change', function () {
       opacity_section.select('#opacity_val_txt').html(` ${this.value}`);
       selection.style('stroke-opacity', this.value);
@@ -1385,9 +1385,9 @@ function createStyleBox(layer_name) {
   width_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.border_width'));
   width_section.insert('input')
-    .property('value', stroke_width)
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
+    .property('value', stroke_width)
     .on('change', function () {
       const val = +this.value;
       const zoom_scale = +d3.zoomTransform(map.node()).k;
@@ -1531,9 +1531,9 @@ function createStyleBoxStewart(layer_name) {
   fill_opacity_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
-    .property('value', opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+    .property('value', opacity)
     .on('change', function () {
       selection.style('fill-opacity', this.value);
       fill_opacity_section.select('#fill_opacity_txt')
@@ -1549,8 +1549,8 @@ function createStyleBoxStewart(layer_name) {
     .html(i18next.t('app_page.layer_style_popup.border_color'));
   c_section.insert('input')
     .attr('type', 'color')
-    .property('value', stroke_prev)
     .style('float', 'right')
+    .property('value', stroke_prev)
     .on('change', function () {
       selection.style('stroke', this.value);
     });
@@ -1559,9 +1559,9 @@ function createStyleBoxStewart(layer_name) {
   opacity_section.insert('span')
     .html(i18next.t('app_page.layer_style_popup.border_opacity'));
   opacity_section.insert('input')
-    .property('value', 'border_opacity')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', 'border_opacity')
     .on('change', function () {
       opacity_section.select('#opacity_val_txt').html(` ${this.value}`);
       selection.style('stroke-opacity', this.value);
@@ -1576,9 +1576,9 @@ function createStyleBoxStewart(layer_name) {
   width_section.append('span')
     .html(i18next.t('app_page.layer_style_popup.border_width'));
   width_section.insert('input')
-    .property('value', stroke_width)
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
+    .property('value', stroke_width)
     .on('change', function () {
       const val = +this.value;
       const zoom_scale = +d3.zoomTransform(map.node()).k;
@@ -1821,9 +1821,9 @@ function createStyleBoxWaffle(layer_name) {
 
   fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
-    .property('value', previous_params.fill_opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', previous_params.fill_opacity)
     .on('change', function () {
       selection.selectAll(symbol).style('fill-opacity', +this.value);
       fill_opacity_section.select('#fill_opacity_txt').html(`${+this.value * 100}%`);
@@ -1844,8 +1844,8 @@ function createStyleBoxWaffle(layer_name) {
     p.append('span').html(current_layers[layer_name].rendered_field[i]);
     p.insert('input')
       .attrs({ id: i, type: 'color' })
-      .property('value', current_layers[layer_name].fill_color[i])
       .style('float', 'right')
+      .property('value', current_layers[layer_name].fill_color[i])
       .on('change', function () { // eslint-disable-line no-loop-func
         const col = rgb2hex(this.value);
         const to_replace = current_layers[layer_name].fill_color[i];
@@ -1865,9 +1865,9 @@ function createStyleBoxWaffle(layer_name) {
 
   size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
   size_section.insert('input')
-    .property('value', previous_params.size)
     .attrs({ type: 'range', min: 1, max: 40, step: 1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', previous_params.size)
     .on('change', function () {
       const val = +this.value;
       const nCol = current_layers[layer_name].nCol;
@@ -1903,9 +1903,9 @@ function createStyleBoxWaffle(layer_name) {
 
   width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
   width_row_section.insert('input')
-    .property('value', previous_params.nCol)
     .attrs({ type: 'range', min: 1, max: 10, step: 1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', previous_params.nCol)
     .on('change', function () {
       const val = +this.value;
       const size = current_layers[layer_name].size;
@@ -2199,8 +2199,8 @@ function createStyleBox_ProbSymbol(layer_name) {
     fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.break_value'));
     const b_val = fill_color_section.insert('input')
       .attr('type', 'number')
-      .property('value', current_layers[layer_name].break_val)
       .style('width', '75px')
+      .property('value', current_layers[layer_name].break_val)
       .on('change', function () {
         const new_break_val = +this.value;
         current_layers[layer_name].break_val = new_break_val;
@@ -2268,9 +2268,9 @@ function createStyleBox_ProbSymbol(layer_name) {
   fill_opct_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
 
   fill_opct_section.insert('input')
-    .property('value', opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', opacity)
     .on('change', function () {
       selection.style('fill-opacity', this.value);
       fill_opct_section.select('#fill_opacity_txt')
@@ -2286,8 +2286,8 @@ function createStyleBox_ProbSymbol(layer_name) {
   border_color_section.append('span').html(i18next.t('app_page.layer_style_popup.border_color'));
   border_color_section.insert('input')
     .attr('type', 'color')
-    .property('value', stroke_prev)
     .style('float', 'right')
+    .property('value', stroke_prev)
     .on('change', function () {
       selection.transition().style('stroke', this.value);
     });
@@ -2296,9 +2296,9 @@ function createStyleBox_ProbSymbol(layer_name) {
   border_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
 
   border_opacity_section.insert('input')
-    .property('value', border_opacity)
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
+    .property('value', border_opacity)
     .on('change', function () {
       selection.style('stroke-opacity', this.value);
       border_opacity_section.select('#border_opacity_txt').html( `${this.value}`);
@@ -2312,9 +2312,9 @@ function createStyleBox_ProbSymbol(layer_name) {
   const border_width_section = popup.append('p').attr('class', 'line_elem');
   border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
   border_width_section.insert('input')
-    .property('value', stroke_width)
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
+    .property('value', stroke_width)
     .on('change', function () {
       selection.style('stroke-width', `${this.value}px`);
       current_layers[layer_name]['stroke-width-const'] = +this.value;
@@ -2324,9 +2324,9 @@ function createStyleBox_ProbSymbol(layer_name) {
   prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: field_used }));
   prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
   prop_val_content.insert('input')
-    .property('value', current_layers[layer_name].size[1])
     .styles({ width: '60px', float: 'right' })
     .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' })
+    .property('value', current_layers[layer_name].size[1])
     .on('change', function () {
       const f_size = +this.value;
       const prop_values = prop_sizer3_e(
@@ -2341,9 +2341,9 @@ function createStyleBox_ProbSymbol(layer_name) {
   const prop_val_content2 = popup.append('p').attr('class', 'line_elem');
   prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
   prop_val_content2.insert('input')
-    .property('value', +current_layers[layer_name].size[0])
     .styles({ width: '100px', float: 'right' })
     .attrs({ type: 'number', min: 0.1, step: 0.1 })
+    .property('value', +current_layers[layer_name].size[0])
     .on('change', function () {
       const f_val = +this.value;
       const prop_values = prop_sizer3_e(
@@ -2431,9 +2431,9 @@ function make_style_box_indiv_label(label_node) {
   const a = box_content.append('p').attr('class', 'line_elem');
   a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
   a.append('input')
-    .property('value', +label_node.style.fontSize.slice(0, -2))
     .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any' })
     .styles({ width: '70px', float: 'right' })
+    .property('value', +label_node.style.fontSize.slice(0, -2))
     .on('change', function () {
       label_node.style.fontSize = `${this.value}px`; // eslint-disable-line no-param-reassign
     });
@@ -2441,17 +2441,17 @@ function make_style_box_indiv_label(label_node) {
   b.insert('span').html(i18next.t('app_page.func_options.label.content'));
   b.append('input')
     .attr('id', 'label_content')
-    .property('value', label_node.textContent)
     .styles({ width: '70px', float: 'right' })
+    .property('value', label_node.textContent)
     .on('keyup', function () {
       label_node.textContent = this.value; // eslint-disable-line no-param-reassign
     });
   const c = box_content.append('p').attr('class', 'line_elem');
   c.insert('span').html(i18next.t('app_page.func_options.common.color'));
   c.append('input')
-    .property('value', rgb2hex(label_node.style.fill))
     .attrs({ type: 'color', id: 'label_color' })
     .styles({ width: '70px', float: 'right' })
+    .property('value', rgb2hex(label_node.style.fill))
     .on('change', function () {
       label_node.style.fill = this.value; // eslint-disable-line no-param-reassign
     });

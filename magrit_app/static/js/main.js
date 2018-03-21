@@ -723,8 +723,8 @@ function setUpInterface(reload_project) {
       max: 360,
       step: 'any',
     })
-    .property('value', 0)
     .styles({ width: '30px', 'margin-left': '10px', float: 'right', 'font-size': '11.5px' })
+    .property('value', 0)
     .on('change', function () {
       const val = +this.value,
         old_value = document.getElementById('form_rotate').value;

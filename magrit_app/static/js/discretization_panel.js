@@ -738,9 +738,9 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   input_section_stddev.insert('span')
     .html(i18next.t('disc_box.stddev_share_txt1'));
   input_section_stddev.insert('input')
-    .property('value', std_dev_params.share)
     .attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share' })
     .styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' })
+    .property('value', std_dev_params.share)
     .on('change', function () {
       const val = this.value;
       if (val === 0 || (val * stddev_serie) > (max_serie - min_serie)
@@ -781,9 +781,9 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
   });
   document.getElementById(`button_stddev_${std_dev_params.role_mean}`).checked = true;
   let txt_nb_class = discretization_panel.append('input')
-    .property('value', nb_class)
     .attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, step: 1 })
     .styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' })
+    .property('value', nb_class)
     .on('change', function () {
       const a = disc_nb_class.node();
       a.value = this.value;
@@ -796,14 +796,15 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
 
   let disc_nb_class = discretization_panel
     .insert('input')
-    .property('value', nb_class)
-    .styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' })
     .attrs({
       id: 'nb_class_range',
       type: 'range',
       min: 2,
       max: max_nb_class,
-      step: 1 })
+      step: 1,
+    })
+    .styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' })
+    .property('value', nb_class)
     .on('change', function () {
       type = discretization.node().value;
       const old_nb_class = nb_class;
@@ -1532,8 +1533,8 @@ function make_box_custom_palette(nb_class, existing_colors) {
       g.append('input')
         .attr('id', (d, i) => i)
         .attr('type', 'color')
-        .property('value', d => d)
         .style('width', '60px')
+        .property('value', d => d)
         .on('change', function (d, i) {
           ref_colors[i] = this.value;
           this.nextSibling.value = this.value;
@@ -1541,8 +1542,8 @@ function make_box_custom_palette(nb_class, existing_colors) {
 
       g.append('input')
         .attr('id', (d, i) => i)
-        .property('value', d => d)
         .style('width', '60px')
+        .property('value', d => d)
         .on('keyup', function (d, i) {
           if (is_hex_color.test(this.value)) {
             ref_colors[i] = this.value;

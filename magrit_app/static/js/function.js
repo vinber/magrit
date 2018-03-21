@@ -3567,7 +3567,6 @@ function fillMenu_griddedMap(layer) {
 
   bb.insert('input')
     .style('width', '100px')
-    .property('value', 10.0)
     .attrs({
       type: 'number',
       class: 'params',
@@ -3575,7 +3574,8 @@ function fillMenu_griddedMap(layer) {
       min: 1.000,
       max: 7000,
       step: 'any'
-    });
+    })
+    .property('value', 10.0);
 
   const cc = dialog_content.append('p')
     .attr('class', 'params_section2 opt_point opt_grid')
@@ -3660,7 +3660,6 @@ function fillMenu_griddedMap(layer) {
     .html(i18next.t('app_page.func_options.grid.cellsize'));
   b.insert('input')
     .style('width', '100px')
-    .property('value', 10.0)
     .attrs({
       type: 'number',
       class: 'params',
@@ -3668,7 +3667,8 @@ function fillMenu_griddedMap(layer) {
       min: 1.000,
       max: 7000,
       step: 'any',
-    });
+    })
+    .property('value', 10.0);
 
   const c = dialog_content.append('p')
     .attr('class', 'params_section2 opt_polygon');
@@ -4126,8 +4126,8 @@ function fillMenu_FlowMap() {
     .html(i18next.t('app_page.func_options.flow.nb_class'));
   nb_class_section.insert('input')
     .attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33 })
-    .property('value', 8)
-    .style('width', '50px');
+    .style('width', '50px')
+    .property('value', 8);
 
   with_discretisation.append('p')
     .attrs({ class: 'params', id: 'FlowMap_discTable' });
