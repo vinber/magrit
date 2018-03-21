@@ -866,7 +866,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   const _input_geom = document.getElementById('input_geom');
   const parent = _input_geom.parentElement;
 
-  // Removes previous icon if any (user when uploading geometries after a partial join):
+  // Removes previous icon if any (used when uploading geometries after a partial join):
   Array.prototype.forEach.call(
     parent.querySelectorAll('#remove_target,#table_layer_s1'),
     (el) => { el.remove(); });
@@ -884,13 +884,16 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
     .on('click', null);
   parent.innerHTML = `${parent.innerHTML}
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 4px 0 0;opacity:1">`;
+<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">
+<img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target" style="float: right;margin:10px 5px 0 0;opacity: 1;">`;
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };
   remove_target.onmouseout = function () { this.style.opacity = 0.5; };
   const table_target = document.getElementById('table_layer_s1');
   table_target.onclick = display_table_target_layer;
+  const downgrade_target = document.getElementById('downgrade_target');
+  downgrade_target.onclick = downgradeTargetLayer;
 }
 
 function get_display_name_on_layer_list(layer_name_to_add) {
@@ -1123,7 +1126,7 @@ function add_layer_topojson(text, options = {}) {
 
     update_section1(type, nb_fields, nb_ft, lyr_name_to_add);
     _app.targeted_layer_added = true;
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
 
     window._target_layer_file = topoObj;
     if (!skip_rescale) {
@@ -1144,13 +1147,13 @@ function add_layer_topojson(text, options = {}) {
         : '[title]app_page.func_description.grid');
     localize('#button_grid');
   } else if (result_layer_on_add) {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
     // Don't fit the viewport on the added layer if it's a result layer (or uncomment following lines..)
     // if (!skip_rescale) {
     //   center_map(lyr_name_to_add);
     // }
   } else {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
+    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
   }
 
   if (!target_layer_on_add && _app.current_functionnality !== undefined
@@ -2318,18 +2321,28 @@ function accordionize2(css_selector = '.accordion', parent = document) {
   }
 }
 
-function changeTargetLayer(new_target) {
+function downgradeTargetLayer() {
   const old_target = Object.keys(user_data)[0];
+  if (!old_target) return;
   delete current_layers[old_target].targeted;
-  current_layers[new_target].targeted = true;
   field_join_map = [];
   user_data = {};
+  _app.targeted_layer_added = false;
+  _target_layer_file = null;
+  resetSection1();
+  getAvailablesFunctionnalities();
+  return old_target;
+}
+
+function changeTargetLayer(new_target) {
+  const old_target = downgradeTargetLayer();
+  current_layers[new_target].targeted = true;
+  _app.targeted_layer_added = true;
   user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
   const fields = Object.keys(user_data[new_target][0]);
-  resetSection1();
   update_section1(current_layers[new_target].type, fields.length, current_layers[new_target].n_features, new_target);
   current_layers[new_target].original_fields = new Set(fields);
-  current_layers[new_target].fields_type = [];
+  current_layers[new_target].fields_type =  type_col2(user_data[new_target]);
   scale_to_lyr(new_target);
   center_map(new_target);
   zoom_without_redraw();
@@ -2337,8 +2350,12 @@ function changeTargetLayer(new_target) {
 }
 
 function resetSection1() {
+  // Remove the buttons on the top of the section 1:
+  document.getElementById('downgrade_target').remove();
   document.getElementById('table_layer_s1').remove();
   document.getElementById('remove_target').remove();
+
+  // Reactivate the buttons allowing to add a layer by browsing local files:
   d3.select('#img_in_geom')
     .attrs({
       id: 'img_in_geom',
@@ -2353,4 +2370,19 @@ function resetSection1() {
     .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
     .html(i18next.t('app_page.section1.add_geom'))
     .on('click', click_button_add_layer);
+
+  // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
+  document.getElementById('sample_zone').style.display = null;
+
+  // Restore the state of the bottom of the section 1 :
+  document.getElementById('join_section').innerHTML = '';
+
+  // Disabled the button allowing the user to choose type for its layer :
+  document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
+
+  // Set all the representation modes to "unavailable":
+  getAvailablesFunctionnalities();
+
+  // Reset some values stored in the functionnality panel:
+  reset_user_values();
 }

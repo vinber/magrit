@@ -1431,7 +1431,8 @@ const _app = {
 
 // A bunch of references to the buttons used in the layer manager
 // and some mapping to theses reference according to the type of geometry :
-const button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
+const button_replace = ' <img src="static/img/replace_target_layer.png" id="replace_button" width="16" height="16" alt="replace_button"/>',
+  button_trash = ' <img src="static/img/Trash_font_awesome.png" id="trash_button" width="15" height="15" alt="trash_button"/>',
   button_legend = ' <img src="static/img/qgis_legend.png" id="legend_button" width="17" height="17" alt="legend_button"/>',
   button_zoom_fit = ' <img src="static/img/Inkscape_icons_zoom_fit_page.png" id="zoom_fit_button" width="16" height="16" alt="zoom_button"/></button>',
   button_table = ' <img src="static/img/dataset.png" id="browse_data_button" width="16" height="16" alt="dataset_button"/></button>',
@@ -1586,6 +1587,7 @@ function binds_layers_buttons(layer_name) {
   sortable_elem.select('.style_target_layer').on('click', () => { handle_click_layer(layer_name); });
   sortable_elem.select('#legend_button').on('click', () => { handle_legend(layer_name); });
   sortable_elem.select('#browse_data_button').on('click', () => { boxExplore2.create(layer_name); });
+  sortable_elem.select('#replace_button').on('click', () => { changeTargetLayer(layer_name); });
   sortable_elem.select('#zoom_fit_button').on('click', () => {
     center_map(layer_name);
     zoom_without_redraw();
@@ -1975,20 +1977,6 @@ function remove_layer_cleanup(name) {
 
     // Updating the top of the menu (section 1) :
     resetSection1();
-
-    // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
-    document.getElementById('sample_zone').style.display = null;
-
-    // Restore the state of the bottom of the section 1 :
-    document.getElementById('join_section').innerHTML = '';
-
-    // Disabled the button allowing the user to choose type for its layer :
-    document.getElementById('btn_type_fields').setAttribute('disabled', 'true');
-
-    // Set all the representation modes to "unavailable":
-    getAvailablesFunctionnalities();
-
-    reset_user_values();
 
     // Reset the projection (if the projection was defined via proj4):
     if (current_proj_name === 'def_proj4') {

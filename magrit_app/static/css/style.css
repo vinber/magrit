@@ -344,8 +344,8 @@ p.params_section2 > select {
     border-color:transparent;
 }
 
-#trash_button,#zoom_fit_button,.style_button,
-.style_target_layer,#legend_button,.active_button, #browse_data_button {
+#trash_button,#zoom_fit_button,.style_button,#replace_button,
+.style_target_layer,#legend_button,.active_button,#browse_data_button {
     margin-left: 1.5px;
     float: right;
 }
