@@ -166,7 +166,7 @@ function setUpInterface(reload_project) {
     .style('display', 'inline');
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n', id: 'new_project', 'data-i18n': '[tooltip-title]app_page.tooltips.new_project', 'data-placement': 'bottom' })
+    .attrs({ class: 'const_buttons i18n tt', id: 'new_project', 'data-i18n': '[title]app_page.tooltips.new_project', 'data-tippy-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', () => {
@@ -176,19 +176,19 @@ function setUpInterface(reload_project) {
     });
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n', id: 'load_project', 'data-i18n': '[tooltip-title]app_page.tooltips.load_project_file', 'data-placement': 'bottom' })
+    .attrs({ class: 'const_buttons i18n tt', id: 'load_project', 'data-i18n': '[title]app_page.tooltips.load_project_file', 'data-tippy-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/Folder_open_alt_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', load_map_template);
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n', id: 'save_file_button', 'data-i18n': '[tooltip-title]app_page.tooltips.save_file', 'data-placement': 'bottom' })
+    .attrs({ class: 'const_buttons i18n tt', id: 'save_file_button', 'data-i18n': '[title]app_page.tooltips.save_file', 'data-tippy-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', margin: 'auto' })
     .html('<img src="static/img/header/Breezeicons-actions-22-document-save-white.png" width="25" height="auto" alt="Save project to disk"/>')
     .on('click', save_map_template);
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n', id: 'documentation_link', 'data-i18n': '[tooltip-title]app_page.tooltips.documentation', 'data-placement': 'bottom' })
+    .attrs({ class: 'const_buttons i18n tt', id: 'documentation_link', 'data-i18n': '[title]app_page.tooltips.documentation', 'data-tippy-placement': 'bottom' })
     .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
     .on('click', () => {
@@ -196,10 +196,12 @@ function setUpInterface(reload_project) {
     });
 
   const_options.append('button')
-    .attrs({ id: 'help_btn',
-      class: 'const_buttons i18n',
-      'data-i18n': '[tooltip-title]app_page.help_box.tooltip_btn',
-      'data-placement': 'bottom' })
+    .attrs({
+      id: 'help_btn',
+      class: 'const_buttons i18n tt',
+      'data-i18n': '[title]app_page.help_box.tooltip_btn',
+      'data-tippy-placement': 'bottom',
+    })
     .styles({ cursor: 'pointer', background: 'transparent' })
     .html('<img src="static/img/header/High-contrast-help-browser_white.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
     .on('click', () => {
@@ -318,9 +320,9 @@ function setUpInterface(reload_project) {
   const section1 = accordion1.append('div')
     .attrs({
       id: 'section1',
-      class: 'i18n',
-      'data-i18n': '[tooltip-title]app_page.tooltips.section1',
-      'data-placement': 'right',
+      class: 'i18n tt_menuleft',
+      'data-i18n': '[title]app_page.tooltips.section1',
+      'data-tippy-placement': 'right',
     });
   window.section2_pre = accordion2_pre.append('div').attr('id', 'section2_pre');
   window.section2 = accordion2.append('div').attr('id', 'section2');
@@ -393,16 +395,26 @@ function setUpInterface(reload_project) {
 
   make_ico_choice();
 
-  const section3 = d3.select('#section3');
+  const section3 = d3.select('#section3')
+    .attrs({
+      class: 'i18n tt_menuleft',
+      'data-i18n': '[title]app_page.tooltips.section3',
+      'data-tippy-placement': 'right',
+    });
 
   window.layer_list = section3.append('div')
-    .attrs({
-      class: 'i18n',
-      'data-i18n': '[tooltip-title]app_page.tooltips.section3',
-      'data-placement': 'right',
-    })
     .append('ul')
-    .attrs({ id: 'sortable', class: 'layer_list' });
+    .attrs({ id: 'sortable', class: 'layer_list' })
+    .on('mouseover', function () {
+      Array.prototype.slice.call(document.querySelectorAll('.tippy-popper')).forEach(popper => {
+        const instance = popper._tippy
+
+        if (instance.state.visible) {
+          instance.popperInstance.disableEventListeners()
+          instance.hide()
+        }
+      });
+    });
 
   new Sortable(document.getElementById('sortable'), {
     animation: 100,
@@ -444,9 +456,9 @@ function setUpInterface(reload_project) {
   dv3.append('img')
     .attrs({
       src: 'static/img/b/addsample_t.png',
-      class: 'i18n',
-      'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout_sample',
-      'data-placement': 'right',
+      class: 'i18n tt_menuleft',
+      'data-i18n': '[title]app_page.tooltips.section3_add_layout_sample',
+      'data-tippy-placement': 'right',
     })
     .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
     .on('click', add_layout_layers);
@@ -454,9 +466,9 @@ function setUpInterface(reload_project) {
     .attrs({
       src: 'static/img/b/addgeom_t.png',
       id: 'input_layout_geom',
-      class: 'i18n',
-      'data-i18n': '[tooltip-title]app_page.tooltips.section3_add_layout',
-      'data-placement': 'right',
+      class: 'i18n tt_menuleft',
+      'data-i18n': '[title]app_page.tooltips.section3_add_layout',
+      'data-tippy-placement': 'right',
     })
     .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
     .on('click', click_button_add_layer);
@@ -769,43 +781,43 @@ function setUpInterface(reload_project) {
   const p1 = _i.insert('p').style('display', 'inline-block');
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.arrow' })
+    .attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.arrow' })
     .on('click', () => add_layout_feature('arrow'));
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.text_annot' })
+    .attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.text_annot' })
     .on('click', () => add_layout_feature('text_annot'));
   if (!window.isIE) {
     p1.insert('span')
       .insert('img')
-      .attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.symbol' })
+      .attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.symbol' })
       .on('click', () => add_layout_feature('symbol'));
   }
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.rectangle' })
+    .attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.rectangle' })
     .on('click', () => add_layout_feature('rectangle'));
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.ellipse' })
+    .attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.ellipse' })
     .on('click', () => add_layout_feature('ellipse'));
 
   const p2 = _i.insert('p').style('display', 'inline-block');
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.graticule' })
+    .attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.graticule' })
     .on('click', () => add_layout_feature('graticule'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' })
+    .attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' })
     .on('click', () => add_layout_feature('north_arrow'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.scale' })
+    .attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.scale' })
     .on('click', () => add_layout_feature('scale'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n', 'data-i18n': '[title]app_page.layout_features_box.sphere' })
+    .attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.sphere' })
     .on('click', () => add_layout_feature('sphere'));
 
   add_simplified_land_layer();
@@ -1053,11 +1065,11 @@ function setUpInterface(reload_project) {
     .styles({ position: 'absolute', right: '0px', bottom: '0px' });
 
   const lm_buttons = [
-    { id: 'zoom_out', i18n: '[tooltip-title]app_page.lm_buttons.zoom-', tooltip_position: 'left', class: 'zoom_button i18n', html: '-' },
-    { id: 'zoom_in', i18n: '[tooltip-title]app_page.lm_buttons.zoom+', tooltip_position: 'left', class: 'zoom_button i18n', html: '+' },
-    { id: 'info_button', i18n: '[tooltip-title]app_page.lm_buttons.i', tooltip_position: 'left', class: 'info_button i18n', html: 'i' },
-    { id: 'brush_zoom_button', i18n: '[tooltip-title]app_page.lm_buttons.zoom_rect', tooltip_position: 'left', class: 'brush_zoom_button i18n', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' },
-    { id: 'hand_button', i18n: '[tooltip-title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button i18n', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
+    { id: 'zoom_out', i18n: '[title]app_page.lm_buttons.zoom-', tooltip_position: 'left', class: 'zoom_button i18n tt', html: '-' },
+    { id: 'zoom_in', i18n: '[title]app_page.lm_buttons.zoom+', tooltip_position: 'left', class: 'zoom_button i18n tt', html: '+' },
+    { id: 'info_button', i18n: '[title]app_page.lm_buttons.i', tooltip_position: 'left', class: 'info_button i18n tt', html: 'i' },
+    { id: 'brush_zoom_button', i18n: '[title]app_page.lm_buttons.zoom_rect', tooltip_position: 'left', class: 'brush_zoom_button i18n tt', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' },
+    { id: 'hand_button', i18n: '[title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button i18n tt', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
   ];
 
   const selec = lm.selectAll('input')
@@ -1068,7 +1080,7 @@ function setUpInterface(reload_project) {
     .style('margin', 'auto')
     .insert('button')
     .attrs(elem => ({
-      'data-placement': elem.tooltip_position,
+      'data-tippy-placement': elem.tooltip_position,
       class: elem.class,
       'data-i18n': elem.i18n,
       id: elem.id }))
@@ -1140,19 +1152,109 @@ function encodeId(s) {
   return `L_${s.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`;
 }
 
-function bindTooltips(dataAttr = 'tooltip-title') {
-    // bind the mains tooltips
-  const tooltips_elem = document.querySelectorAll(`[${dataAttr}]`);
-  for (let i = tooltips_elem.length - 1; i > -1; i--) {
-    new Tooltip(tooltips_elem[i], {
-      dataAttr: dataAttr,
-      animation: 'slideNfade',
-      duration: 50,
-      delay: 100,
-      container: document.getElementById('twbs'),
-    });
-  }
+function bindTooltips() {
+  tippy('.tt_menuleft', {
+    appendTo: document.querySelector('.twbs'),
+    arrow: true,
+    duration: [1, 50],
+    flip: false,
+    onShow: function () {
+      Array.prototype.slice.call(document.querySelectorAll('.tippy-popper')).forEach(popper => {
+        const instance = popper._tippy
+
+        if (instance.state.visible) {
+          instance.popperInstance.disableEventListeners()
+          instance.hide()
+        }
+      });
+    },
+    onShown: function () {
+      const tr = getTransform(this);
+      this.style.transform = `translate3d(${tr.translate.x + 360}px, ${tr.translate.y}px, 0)`;
+    },
+    placement: 'right',
+  });
+
+  tippy('.tt', {
+    appendTo: document.querySelector('.twbs'),
+    arrow: true,
+    duration: [50, 50],
+    flip: false,
+  });
+
+  tippy('.tt_func', {
+    appendTo: document.querySelector('.twbs'),
+    arrow: false,
+    distance: 15,
+    duration: [50, 50],
+    flip: false,
+    placement: 'top',
+  });
 }
+
+function parseMatrix (matrixString) {
+  var c = matrixString.split(/\s*[(),]\s*/).slice(1,-1),
+      matrix;
+
+  if (c.length === 6) {
+    matrix = {
+      m11: +c[0], m21: +c[2], m31: 0, m41: +c[4],
+      m12: +c[1], m22: +c[3], m32: 0, m42: +c[5],
+      m13: 0,     m23: 0,     m33: 1, m43: 0,
+      m14: 0,     m24: 0,     m34: 0, m44: 1,
+    };
+  } else if (c.length === 16) {
+    matrix = {
+      m11: +c[0], m21: +c[4], m31: +c[8], m41: +c[12],
+      m12: +c[1], m22: +c[5], m32: +c[9], m42: +c[13],
+      m13: +c[2], m23: +c[6], m33: +c[10], m43: +c[14],
+      m14: +c[3], m24: +c[7], m34: +c[11], m44: +c[15],
+    };
+  } else {
+    // handle 'none' or invalid values.
+    matrix = {
+      m11: 1, m21: 0, m31: 0, m41: 0,
+      m12: 0, m22: 1, m32: 0, m42: 0,
+      m13: 0, m23: 0, m33: 1, m43: 0,
+      m14: 0, m24: 0, m34: 0, m44: 1,
+    };
+  }
+  return matrix;
+}
+
+function getTransform (elem) {
+  var matrix = parseMatrix(getComputedStyle(elem, null).transform),
+    rotateY = Math.asin(-matrix.m13),
+    rotateX,
+    rotateZ;
+
+  if (Math.cos(rotateY) !== 0) {
+    rotateX = Math.atan2(matrix.m23, matrix.m33);
+    rotateZ = Math.atan2(matrix.m12, matrix.m11);
+  } else {
+    rotateX = Math.atan2(-matrix.m31, matrix.m22);
+    rotateZ = 0;
+  }
+  return {
+    rotate: { x: rotateX, y: rotateY, z: rotateZ },
+    translate: { x: matrix.m41, y: matrix.m42, z: matrix.m43 },
+  };
+}
+
+
+// function bindTooltips(dataAttr = 'tooltip-title') {
+//     // bind the mains tooltips
+//   const tooltips_elem = document.querySelectorAll(`[${dataAttr}]`);
+//   for (let i = tooltips_elem.length - 1; i > -1; i--) {
+//     new Tooltip(tooltips_elem[i], {
+//       dataAttr: dataAttr,
+//       animation: 'slideNfade',
+//       duration: 25,
+//       delay: 50,
+//       container: document.getElementById('twbs'),
+//     });
+//   }
+// }
 
 function make_eye_button(state) {
   if (state === 'open') {
@@ -1219,7 +1321,7 @@ function make_ico_choice() {
       .insert('img')
       .styles({ margin: margin_value, cursor: 'pointer', width: '50px', float: 'left', 'list-style': 'none' })
       .attrs({
-        class: 'i18n',
+        class: 'i18n tt_func',
         'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
         src: ['static/img/func_icons2/', ico_name].join(''),
         id: `button_${func_name}`,

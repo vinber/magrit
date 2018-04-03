@@ -1055,6 +1055,11 @@ img.layout_ft_ico:hover {
   overflow-wrap: break-word;
 }
 
+.tippy-popper {
+  font-family: Verdana,Arial,sans-serif;
+  font-size: 11px;
+}
+
 /*
 Spinner adapted from https://github.com/tobiasahlin/SpinKit
 Copyright (c) 2015 Tobias Ahlin (license MIT)

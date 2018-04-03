@@ -433,7 +433,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
       if (values.length > 7500 && type === 'jenks') {
         const jenks_worker = new Worker('static/js/webworker_jenks.js');
         _app.webworker_to_cancel = jenks_worker;
-        waitingOverlay.display({ zIndex: 5000 });
+        _app.waitingOverlay.display({ zIndex: 5000 });
         jenks_worker.postMessage(
           [values, nb_class]);
         jenks_worker.onmessage = function (e) {
@@ -441,7 +441,7 @@ const display_discretization = (layer_name, field_name, nb_class, options) => {
           serie.setClassManually(breaks);
           serie.doCount();
           stock_class = Array.prototype.slice.call(serie.counter);
-          waitingOverlay.hide();
+         _app.waitingOverlay.hide();
           _app.webworker_to_cancel = undefined;
           bins = [];
           for (let i = 0, len = stock_class.length, offset = 0; i < len; i++) {
