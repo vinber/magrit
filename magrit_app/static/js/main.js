@@ -331,6 +331,30 @@ function setUpInterface(reload_project) {
   accordion5.append('div').attr('id', 'section5');
 
   const dv1 = section1.append('div');
+  const section_current_target_layer = dv1.append('div')
+    .attr('id', 'target_layer_zone')
+    .styles({
+      'text-align': 'center',
+      'margin-bottom': '3px',
+      border: '3px dashed #ccc',
+      padding: '3px',
+      color: '#ccc'
+    })
+    .html('Pas de couche cible');
+
+  const section_current_dataset = dv1.append('div')
+    .attr('id', 'ext_dataset_zone')
+    .styles({
+      'text-align': 'center',
+      'margin-bottom': '3px',
+      border: '3px dashed #ccc',
+      padding: '3px',
+      color: '#ccc',
+    })
+    .html('Pas de jeu de donnée externe');
+
+  dv1.append('hr').style('border-top', '2px #ccc');
+
   const dv11 = dv1.append('div').style('width', 'auto');
 
   dv11.append('img')
@@ -449,29 +473,6 @@ function setUpInterface(reload_project) {
       document.body.classList.remove('no-drop');
     },
   });
-
-  const dv3 = section3.append('div')
-    .style('padding-top', '10px').html('');
-
-  dv3.append('img')
-    .attrs({
-      src: 'static/img/b/addsample_t.png',
-      class: 'i18n tt_menuleft',
-      'data-i18n': '[title]app_page.tooltips.section3_add_layout_sample',
-      'data-tippy-placement': 'right',
-    })
-    .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
-    .on('click', add_layout_layers);
-  dv3.append('img')
-    .attrs({
-      src: 'static/img/b/addgeom_t.png',
-      id: 'input_layout_geom',
-      class: 'i18n tt_menuleft',
-      'data-i18n': '[title]app_page.tooltips.section3_add_layout',
-      'data-tippy-placement': 'right',
-    })
-    .styles({ cursor: 'pointer', margin: '2.5px', float: 'right', 'border-radius': '10%' })
-    .on('click', click_button_add_layer);
 
   const section4 = d3.select('#section4');
   const dv4 = section4.append('div')
@@ -777,8 +778,10 @@ function setUpInterface(reload_project) {
     .attr('data-i18n', '[html]app_page.section4.autoalign_features');
 
   const _i = dv4.append('li').styles({ 'text-align': 'center' });
-  _i.insert('p').styles({ clear: 'both', display: 'block', margin: 0 }).attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features' });
-  const p1 = _i.insert('p').style('display', 'inline-block');
+  _i.insert('p')
+    .styles({ clear: 'both', display: 'block', margin: 0 })
+    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features' });
+  const p1 = _i.insert('p').styles({ display: 'inline-block', margin: 'auto' });
   p1.insert('span')
     .insert('img')
     .attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.arrow' })
@@ -802,7 +805,7 @@ function setUpInterface(reload_project) {
     .attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.ellipse' })
     .on('click', () => add_layout_feature('ellipse'));
 
-  const p2 = _i.insert('p').style('display', 'inline-block');
+  const p2 = _i.insert('p').styles({ display: 'inline-block', margin: 'auto' });
   p2.insert('span')
     .insert('img')
     .attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.graticule' })
@@ -943,8 +946,8 @@ function setUpInterface(reload_project) {
     });
 
   exp_b.append('span')
-          .attr('id', 'export_png_height_txt')
-          .html(' (px)');
+    .attr('id', 'export_png_height_txt')
+    .html(' (px)');
 
   const export_name = dv5b.append('p');
   export_name.append('span')
@@ -1906,18 +1909,26 @@ function remove_ext_dataset_cleanup() {
   field_join_map = [];
   joined_dataset = [];
   dataset_name = undefined;
-  const ext_dataset_img = document.getElementById('img_data_ext');
-  ext_dataset_img.setAttribute('src', 'static/img/b/addtabular.png');
-  ext_dataset_img.setAttribute('alt', 'Additional dataset');
-  ext_dataset_img.style.cursor = 'pointer';
-  ext_dataset_img.onclick = click_button_add_layer;
-  const data_ext_txt = document.getElementById('data_ext');
-  data_ext_txt.innerHTML = i18next.t('app_page.section1.add_ext_dataset');
-  data_ext_txt.onclick = click_button_add_layer;
-  data_ext_txt.classList.add('i18n');
-  data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
-  document.getElementById('remove_dataset').remove();
-  document.getElementById('table_dataset_s1').remove();
+  d3.select('#ext_dataset_zone')
+    .styles({
+      'text-align': 'center',
+      border: '3px dashed #ccc',
+      padding: '3px',
+      color: 'black',
+    })
+    .html('Pas de jeu de donnée externe');
+  // const ext_dataset_img = document.getElementById('img_data_ext');
+  // ext_dataset_img.setAttribute('src', 'static/img/b/addtabular.png');
+  // ext_dataset_img.setAttribute('alt', 'Additional dataset');
+  // ext_dataset_img.style.cursor = 'pointer';
+  // ext_dataset_img.onclick = click_button_add_layer;
+  // const data_ext_txt = document.getElementById('data_ext');
+  // data_ext_txt.innerHTML = i18next.t('app_page.section1.add_ext_dataset');
+  // data_ext_txt.onclick = click_button_add_layer;
+  // data_ext_txt.classList.add('i18n');
+  // data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
+  // document.getElementById('remove_dataset').remove();
+  // document.getElementById('table_dataset_s1').remove();
   document.getElementById('join_section').innerHTML = '';
 }
 
@@ -2219,9 +2230,7 @@ function rotate_global(angle) {
     .transition()
     .duration(10)
     .attr('transform', `${canvas_rotation_value},translate(${[zoom_transform.x, zoom_transform.y]}),scale(${zoom_transform.k})`);
-      // [canvas_rotation_value,
-      //                   ',translate(', [zoom_transform.x, zoom_transform.y], '),',
-      //                   'scale(', zoom_transform.k, ')'].join(''));
+
   if (northArrow.displayed) {
     const current_rotate = !isNaN(+northArrow.svg_node.attr('rotate')) ? +northArrow.svg_node.attr('rotate') : 0;
     northArrow.svg_node.attr('transform', `rotate(${+angle + current_rotate},${northArrow.x_center}, ${northArrow.y_center})`);

@@ -203,12 +203,16 @@ function handleOneByOneShp(files) {
       return false;
     }
   }
+  let name = '';
+  let shp_slots = new Map();
+  populate_shp_slot(shp_slots, files[0]);
 
   swal({
     title: '',
     html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
-          '<strong>Shapefile detected - Missing files to upload</strong><br>' +
-          '<p><i>Drop missing files in this area</i></p><br>' +
+          `<strong>${i18next.t('app_page.common.shp_one_by_one_msg1')}</strong><br>` +
+          `<p style="margin:auto;">${i18next.t('app_page.common.shp_one_by_one_msg2', { name: name })}</p>` +
+          `<p><i>${i18next.t('app_page.common.shp_one_by_one_msg3')}</i></p><br>` +
           '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' +
           '<p id="f_shp" class="mini_button_none">.shp</p><p id="f_shx" class="mini_button_none">.shx</p>' +
           '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p>' +
@@ -223,7 +227,7 @@ function handleOneByOneShp(files) {
     preConfirm: () => new Promise((resolve, reject) => {
       setTimeout(() => {
         if (!((shp_slots.size === 4 && !shp_slots.has('.cpg')) || shp_slots.size === 5)) {
-          reject('Missing files');
+          reject(i18next.t('app_page.common.shp_one_by_one_missing_files'));
         } else {
           resolve();
         }
@@ -246,49 +250,11 @@ function handleOneByOneShp(files) {
         });
       }
     }
-
-    // if (target_layer_on_add) {
-      handle_shapefile(file_list);
-    // } else {
-    //   const opts = _app.targeted_layer_added
-    //     ? { layout: i18next.t('app_page.common.layout_l') }
-    //     : { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
-    //   swal({
-    //     title: '',
-    //     text: i18next.t('app_page.common.layer_type_selection'),
-    //     type: 'info',
-    //     showCancelButton: true,
-    //     showCloseButton: false,
-    //     allowEscapeKey: true,
-    //     allowOutsideClick: false,
-    //     confirmButtonColor: '#DD6B55',
-    //     confirmButtonText: i18next.t('app_page.common.confirm'),
-    //     input: 'select',
-    //     inputPlaceholder: i18next.t('app_page.common.layer_type_selection'),
-    //     inputOptions: opts,
-    //     inputValidator: (value) => {
-    //       return new Promise(function (resolve, reject) {
-    //         if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
-    //           reject(i18next.t('app_page.common.no_value'));
-    //         } else {
-    //           resolve();
-    //           handle_shapefile(file_list, value === 'target');
-    //         }
-    //       });
-    //     },
-    //   }).then((val) => {
-    //     overlay_drop.style.display = 'none';
-    //   }, (dismiss) => {
-    //     overlay_drop.style.display = 'none';
-    //     console.log(dismiss);
-    //   });
-    // }
+    handle_shapefile(file_list);
   }, (dismiss) => {
     overlay_drop.style.display = 'none';
     console.log(dismiss);
   });
-  let shp_slots = new Map();
-  populate_shp_slot(shp_slots, files[0]);
   document.getElementById('dv_drop_shp').addEventListener('drop', function (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -692,28 +658,41 @@ function update_menu_dataset() {
   const d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
     nb_features = joined_dataset[0].length,
     field_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
-    data_ext = document.getElementById('data_ext'),
+    data_ext = document.getElementById('ext_dataset_zone'),
     parent_elem = data_ext.parentElement;
 
-  d3.select(parent_elem.firstChild)
-    .attrs({
-      id: 'img_data_ext',
-      class: 'user_panel',
-      src: 'static/img/b/tabular.png',
-      width: '25',
-      height: '25',
-      alt: 'Additional dataset' });
-
-  data_ext.classList.remove('i18n');
-  data_ext.removeAttribute('data-i18n');
-  d3.select(data_ext)
-    .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;font-weight:normal;">',
+  d3.select('#ext_dataset_zone')
+    .styles({
+      'text-align': 'center',
+      border: null,
+      padding: null,
+      color: 'black',
+    })
+    .html([
+      '<img id="img_data_ext" class="user_panel" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img>',
+      ' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
-      field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
-      '</i></span>'].join(''))
-    .on('click', null);
-  parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 4px 0 0;opacity:1">`;
+      field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>',
+      '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">',
+      '<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">'].join(''))
+  //   .attrs({
+  //     id: 'img_data_ext',
+  //     class: 'user_panel',
+  //     src: 'static/img/b/tabular.png',
+  //     width: '26',
+  //     height: '26',
+  //     alt: 'Additional dataset' });
+  //
+  // data_ext.classList.remove('i18n');
+  // data_ext.removeAttribute('data-i18n');
+//   d3.select(data_ext)
+//     .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
+//       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
+//       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
+//       '</i></span>'].join(''))
+//     .on('click', null);
+//   parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
+// <img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();
@@ -844,30 +823,27 @@ function handle_single_file(file, target_layer_on_add) {
 
 function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
-  const _lyr_name_display = +nb_char_display > 22 ? [lyr_name_to_add.substring(0, 17), '(...)'].join('') : lyr_name_to_add;
-  const _input_geom = document.getElementById('input_geom');
-  const parent = _input_geom.parentElement;
-
-  // Removes previous icon if any (used when uploading geometries after a partial join):
-  Array.prototype.forEach.call(
-    parent.querySelectorAll('#remove_target,#table_layer_s1'),
-    (el) => { el.remove(); });
+  const _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
 
   // Prepare an icon according to the type of geometry:
   let _button = button_type.get(type);
   _button = _button.substring(10, _button.indexOf('class') - 2);
 
-  _input_geom.classList.remove('i18n');
-  _input_geom.removeAttribute('data-i18n');
-  // _input_geom.innerHTML = `<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`;
-  d3.select(_input_geom)
-    .attrs({ src: _button, width: '25', height: '25' })
-    .html(`<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;font-weight:normal;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>`)
-    .on('click', null);
-  parent.innerHTML = `${parent.innerHTML}
+  // Upate the zone allowed for displaying info on the target layer:
+  d3.select('#target_layer_zone')
+    .styles({
+      'text-align': 'initial',
+      padding: null,
+      border: null,
+      color: 'black',
+    })
+    .html(`
+<img src="${_button}" width="26" height="26"></img>
+<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
 <img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">
-<img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target" style="float: right;margin:10px 5px 0 0;opacity: 1;">`;
+<img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target" style="float: right;margin:10px 5px 0 0;opacity: 1;">`)
+
   const remove_target = document.getElementById('remove_target');
   remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
   remove_target.onmouseover = function () { this.style.opacity = 1; };
@@ -882,6 +858,20 @@ function get_display_name_on_layer_list(layer_name_to_add) {
   return +layer_name_to_add.length > 40
       ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
       : layer_name_to_add;
+}
+
+function ask_replace_target_layer() {
+  return swal({
+      title: '',
+      text: i18next.t('app_page.join_box.before_join_ask'),
+      allowOutsideClick: false,
+      allowEscapeKey: true,
+      type: 'question',
+      showConfirmButton: true,
+      showCancelButton: true,
+      confirmButtonText: i18next.t('app_page.common.yes'),
+      cancelButtonText: i18next.t('app_page.common.no'),
+    });
 }
 
 function ask_join_now(layer_name, on_add = 'layer') {
@@ -1104,7 +1094,7 @@ function add_layer_topojson(text, options = {}) {
       valid_join_check_display(false);
     }
 
-    document.getElementById('sample_zone').style.display = 'none';
+    // document.getElementById('sample_zone').style.display = 'none';
 
     update_section1(type, nb_fields, nb_ft, lyr_name_to_add);
     _app.targeted_layer_added = true;
@@ -1115,7 +1105,6 @@ function add_layer_topojson(text, options = {}) {
       scale_to_lyr(lyr_name_to_add);
       center_map(lyr_name_to_add);
     }
-    handle_click_hand('lock');
     if (_app.current_functionnality !== undefined) {
       fields_handler.fill(lyr_name_to_add);
     }
@@ -2332,29 +2321,38 @@ function changeTargetLayer(new_target) {
 }
 
 function resetSection1() {
-  // Remove the buttons on the top of the section 1:
-  document.getElementById('downgrade_target').remove();
-  document.getElementById('table_layer_s1').remove();
-  document.getElementById('remove_target').remove();
-
-  // Reactivate the buttons allowing to add a layer by browsing local files:
-  d3.select('#img_in_geom')
-    .attrs({
-      id: 'img_in_geom',
-      class: 'user_panel',
-      src: 'static/img/b/addgeom.png',
-      width: '24',
-      height: '24',
-      alt: 'Geometry layer',
+  // Remove infos and buttons about the target layer:
+  d3.select('#target_layer_zone')
+    .styles({
+      'text-align': 'center',
+      border: '3px dashed #ccc',
+      padding: '3px',
+      color: '#ccc',
     })
-    .on('click', click_button_add_layer);
-  d3.select('#input_geom')
-    .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
-    .html(i18next.t('app_page.section1.add_geom'))
-    .on('click', click_button_add_layer);
+    .html('Pas de couche cible');
 
-  // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
-  document.getElementById('sample_zone').style.display = null;
+  // document.getElementById('downgrade_target').remove();
+  // document.getElementById('table_layer_s1').remove();
+  // document.getElementById('remove_target').remove();
+
+  // // Reactivate the buttons allowing to add a layer by browsing local files:
+  // d3.select('#img_in_geom')
+  //   .attrs({
+  //     id: 'img_in_geom',
+  //     class: 'user_panel',
+  //     src: 'static/img/b/addgeom.png',
+  //     width: '24',
+  //     height: '24',
+  //     alt: 'Geometry layer',
+  //   })
+  //   .on('click', click_button_add_layer);
+  // d3.select('#input_geom')
+  //   .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
+  //   .html(i18next.t('app_page.section1.add_geom'))
+  //   .on('click', click_button_add_layer);
+
+  // // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
+  // document.getElementById('sample_zone').style.display = null;
 
   // Restore the state of the bottom of the section 1 :
   document.getElementById('join_section').innerHTML = '';

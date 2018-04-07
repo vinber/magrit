@@ -656,7 +656,7 @@ button.accordion, button.accordion_disc, button.accordion_proj  {
     background-color: #595959;
     color: #fff;
     cursor: pointer;
-    padding: 7px;
+    padding: 5px;
     width: 100%;
     border: none;
     text-align: left;
@@ -720,7 +720,7 @@ div.panel.show {
     max-height: 775px;
     width: 335px;
     margin: auto;
-    margin-bottom: 7px;
+    margin-bottom: 5px;
     overflow: auto;
     visibility: visible;
     transform: scaleY(1);

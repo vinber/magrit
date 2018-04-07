@@ -12,6 +12,7 @@
             "layer_success": "¡Capa correctamente cargada!",
             "layer_success_and_proj": "¡Resultado añadido al mapa! ¿Desea utilizar las informaciones de proyección contenidas en el archivo?",
             "ask_replace_dataset": "Un conjunto de datos ya fue proporcionado. ¿Desea remplazarlo?",
+            "ask_replace_target_layer": "Un capa base ya está presente. Reemplazarlo con esta nueva información? (El capa antigua seguirá disponible como capa de diseño)",
             "error_message": "Se produjo un error, la operación en curso fue detenida.",
             "error_discretization": "Un error se produjo en la discretización (intente con {{arg}} número de clases u otro método)",
             "error_only_layout": "¡Aquí sólo se pueden agregar capas de diseño!",
@@ -102,7 +103,11 @@
             "download_link": "Enlace para descargar",
             "missing_epsg": "No hay coincidencias",
             "drop_msg": "Suelta los archivos en la ventana ...",
-            "incorrect_value": "Valor incorrecto"
+            "incorrect_value": "Valor incorrecto",
+            "shp_one_by_one_msg1": "Shapefile detectado - Falta archivos para cargar",
+            "shp_one_by_one_msg2": "(Nombre de archivo : {name})",
+            "shp_one_by_one_msg3": "Arrastra los archivos faltantes a esta área",
+            "shp_one_by_one_missing_files": "Falta archivos"
         },
         "notification":{
           "brush_map_cancelled": "No se detectó rectángulo. Se canceló la operación.",

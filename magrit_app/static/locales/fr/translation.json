@@ -12,6 +12,7 @@
             "layer_success": "Résultat ajouté à la carte!",
             "layer_success_and_proj": "Résultat ajouté à la carte! Souhaitez-vous utiliser les informations de projection contenues dans le fichier ?",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
+            "ask_replace_target_layer": "Un fond de carte principal est déjà présent. Le remplacer par ces nouvelles données ? (L'ancien fond restera disponible comme fond de carte d'habillage)",
             "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
             "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
@@ -102,7 +103,11 @@
             "download_link": "Lien de téléchargement",
             "missing_epsg": "Pas de correspondance trouvée pour ce code EPSG",
             "drop_msg": "Déposez vos fichiers dans la fenêtre...",
-            "incorrect_value": "Valeur incorrecte"
+            "incorrect_value": "Valeur incorrecte",
+            "shp_one_by_one_msg1": "Shapefile détecté - Fichiers manquants à téléverser",
+            "shp_one_by_one_msg2": "(nom du fichier : {name})",
+            "shp_one_by_one_msg3": "Faire glisser les fichiers manquants dans cette zone",
+            "shp_one_by_one_missing_files": "Fichiers manquants"
         },
         "table": {
             "search": "Recherche...",
