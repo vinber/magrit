@@ -5,6 +5,7 @@ import numpy as np
 import ujson as json
 import cchardet as chardet
 import tempfile
+from fiona import _err as fiona_err
 from osgeo.ogr import GetDriverByName, Feature as OgrFeature
 from osgeo.osr import SpatialReference, CoordinateTransformation
 from osgeo.gdal import VectorTranslate, OpenEx, UseExceptions as gdal_UseExceptions
@@ -351,7 +352,9 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
 
 
 def make_carto_doug(file_path, field_name, iterations):
-    gdf = GeoDataFrame.from_file(file_path)
+    gdf, replaced_id_field = try_open_geojson(file_path)
+    if replaced_id_field and field_name == 'id':
+        field_name = '_id'
     if not gdf[field_name].dtype in (int, float):
         gdf.loc[:, field_name] = gdf[field_name].replace('', np.NaN)
         gdf.loc[:, field_name] = gdf[field_name].astype(float)
@@ -572,3 +575,31 @@ def multi_to_single(gdf, columns=None):
         geometry=geoms,
         columns=columns or [i for i in gdf.columns if i != 'geometry']
         )
+
+
+def replace_geojson_id_field(input_file, fb=False):
+    with open(input_file, 'rb') as f:
+        data = f.read()
+    nb_ft = data.count(b'"Feature"')
+    _nb_ft = data.count(b'"geometry"')
+    if not fb and data.count(b'"id"') == nb_ft and nb_ft == _nb_ft:
+        data = data.replace(b'"id"', b'"_id"')
+        with open(input_file, 'wb') as f:
+            f.write(data)
+    else:
+        data = json.loads(data)
+        for ix, ft in enumerate(data['features']):
+            ft['properties']['_id'] = ft['properties']['id']
+            del ft['properties']['id']
+        with open(input_file, 'wb') as f:
+            f.write(json.dumps(data).encode())
+
+def try_open_geojson(file_path):
+    replaced = False
+    try:
+        gdf = GeoDataFrame.from_file(file_path)
+    except fiona_err.CPLE_AppDefinedError as err:
+        replace_geojson_id_field(file_path)
+        replaced = True
+        gdf = GeoDataFrame.from_file(file_path)
+    return gdf, replaced

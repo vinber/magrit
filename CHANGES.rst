@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.7.4 (2018-04-18)
+------------------
+
+- Prevent some error when opening layer with non unique entries in field named 'id' (internally caused by the fact we use geojson and fiona is failing on opening geojson with duplicates in that field).
+
+
 0.7.3 (2018-03-21)
 ------------------
 

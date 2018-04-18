@@ -8,7 +8,9 @@ from shapely.ops import cascaded_union
 from shapely import speedups
 import numpy as np
 import ujson as json
-from .geo import repairCoordsPole, TopologicalError, multi_to_single
+from .geo import (
+    repairCoordsPole, TopologicalError,
+    multi_to_single, try_open_geojson)
 from .grid_helpers import (
     square_grid_gen, diams_grid_gen, hex_grid_gen, to_float, make_index)
 
@@ -39,7 +41,10 @@ def get_grid_layer_pt(input_file, height, field_name,
     proj_robinson = (
             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
-    gdf = GeoDataFrame.from_file(input_file)
+
+    gdf, replaced_id_field = try_open_geojson(input_file)
+    if replaced_id_field and field_name == 'id':
+        field_name = '_id'
 
     if field_name:
         if not gdf[field_name].dtype in (int, float):
