@@ -574,7 +574,7 @@ function make_box_type_fields(layerName) {
       'box_type_fields',
       i18next.t('app_page.box_type_fields.title'),
       'dialog');
-  d3.select('#box_type_fields').select('modal-dialog').style('width', '400px');
+  d3.select('#box_type_fields').select('.modal-dialog').style('width', '500px');
   const newbox = d3.select('#box_type_fields').select('.modal-body');
   const tmp = type_col2(user_data[layerName]);
   let fields_type = current_layers[layerName].fields_type;
@@ -629,10 +629,9 @@ function make_box_type_fields(layerName) {
   container.querySelector('.btn_ok').onclick = function () {
     const r = [];
     Array.prototype.forEach.call(
-          document.getElementById('fields_select').getElementsByTagName('p'),
-          (elem) => {
-            r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
-          });
+      document.querySelectorAll('#fields_select > li'), (elem) => {
+        r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
+      });
     deferred.resolve(true);
     current_layers[layerName].fields_type = r.slice();
     getAvailablesFunctionnalities(layerName);
@@ -658,20 +657,23 @@ function make_box_type_fields(layerName) {
 
   newbox.append('h3').html(i18next.t('app_page.box_type_fields.message_invite'));
 
-  const box_select = newbox.append('div')
-    .attr('id', 'fields_select');
+  const box_select = newbox.append('ul')
+    .attr('id', 'fields_select')
+    .styles({
+      padding: '0',
+      'list-style': 'none',
+    });
 
-  box_select.selectAll('p')
+  box_select.selectAll('li')
       .data(fields_type)
       .enter()
-      .append('p')
-      .style('margin', '15px');
+      .append('li');
 
-  box_select.selectAll('p')
+  box_select.selectAll('li')
     .insert('span')
     .html(d => d.name);
 
-  box_select.selectAll('p')
+  box_select.selectAll('li')
     .insert('select')
     .style('float', 'right')
     .selectAll('option')

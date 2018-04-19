@@ -56,19 +56,27 @@ function ContextMenu() {
     }
 
     this.initMenu(parent);
-    this.DOMObj.style.top = `${event.clientY + window.scrollY}px`;
-    this.DOMObj.style.left = `${event.clientX}px`;
-    const self = this;
-    const hideMenu = function () {
-      if (self.DOMObj && self.DOMObj.parentNode && self.DOMObj.parentNode.removeChild) {
-        self.DOMObj.parentNode.removeChild(self.DOMObj);
+    const bbox = this.DOMObj.getBoundingClientRect();
+    if ((event.clientY + window.scrollY + bbox.height) < window.innerHeight || (event.clientX + bbox.width) < window.innerWidth) {
+      this.DOMObj.style.top = `${event.clientY + window.scrollY}px`;
+      this.DOMObj.style.left = `${event.clientX}px`;
+    } else {
+      this.DOMObj.style.top = `${event.clientY + window.scrollY - bbox.height}px`;
+      this.DOMObj.style.left = `${event.clientX - bbox.width}px`;
+    }
+
+    const hideMenu = () => {
+      if (this.DOMObj && this.DOMObj.parentNode && this.DOMObj.parentNode.removeChild) {
+        this.DOMObj.parentNode.removeChild(this.DOMObj);
       }
-      self.onclick = undefined;
+      this.onclick = undefined;
       document.removeEventListener('click', hideMenu);
+      document.removeEventListener('drag', hideMenu);
     };
     setTimeout(() => {
       document.addEventListener('click', hideMenu);
-    }, 150);
+      document.removeEventListener('drag', hideMenu);
+    }, 225);
   };
 
   this.initMenu = function (parent) {

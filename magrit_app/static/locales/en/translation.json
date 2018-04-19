@@ -12,7 +12,7 @@
             "layer_success": "Layer successfully added to the map",
             "layer_success_and_proj": "Layer successfully added to the map! Use projection informations provided with the layer ?",
             "ask_replace_dataset": "An additional dataset has already been provided. Replace by this one ?",
-            "ask_replace_target_layer": "A target layer is already present. Replace it with this new data? (The old target layer will remain available as a layout layer)",
+            "ask_replace_target_layer": "A target layer is already present. Replace it with this new data?<br>(The old target layer will remain available as a layout layer)",
             "error_message": "Something wrong happened - Current operation has been aborted.",
             "error_discretization": "Something went wrong with choosen discretization (try with a {{arg}} number of class and/or another method)",
             "error_only_layout": "Only layout layers can be added here",

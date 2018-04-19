@@ -50,6 +50,7 @@ function click_button_add_layer() {
 */
 function askTypeLayer () {
   const opts = { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
+  let first_reject = false;
   return swal({
     title: '',
     text: i18next.t('app_page.common.layer_type_selection'),
@@ -67,7 +68,13 @@ function askTypeLayer () {
       return new Promise(function (resolve, reject) {
         if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
           reject(i18next.t('app_page.common.no_value'));
+        } else if (value.indexOf('target') > -1 && _app.targeted_layer_added && !first_reject) {
+          first_reject = true;
+          reject(i18next.t('app_page.common.ask_replace_target_layer'));
         } else {
+          if (value.indexOf('target') > -1 && first_reject) {
+            downgradeTargetLayer();
+          }
           resolve(value);
         }
       });
@@ -1546,59 +1553,59 @@ function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', sy
 *
 * @return {void}
 */
-function add_layout_layers() {
-  check_remove_existing_box('.sampleLayoutDialogBox');
-  const layout_layers = [
-    [i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'],
-    [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
-    [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
-    [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
-    [i18next.t('app_page.layout_layer_box.quartier_paris'), 'quartier_paris'],
-    [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
-    [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
-    [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
-    [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
-    [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
-    [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
-    [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
-    [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
-  ];
-  const selec = { layout: null };
-
-  make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'), { widthFitContent: true })
-    .then((confirmed) => {
-      if (confirmed) {
-        if (selec.layout && selec.layout.length > 0) {
-          for (let i = 0; i < selec.layout.length; ++i) {
-            add_sample_geojson(selec.layout[i]);
-          }
-        }
-      }
-    });
-
-  const box_body = d3.select('.sampleLayoutDialogBox').select('.modal-body').style('text-align', 'center');
-  box_body.node().parentElement.style.width = 'auto';
-  box_body.append('h3')
-    .html(i18next.t('app_page.layout_layer_box.msg_select_layer'));
-  box_body.append('p')
-    .style('color', 'grey')
-    .html(i18next.t('app_page.layout_layer_box.msg_select_multi'));
-
-  const layout_layer_selec = box_body.append('p')
-    .html('')
-    .insert('select')
-    .attrs({ class: 'sample_layout', multiple: 'multiple', size: layout_layers.length });
-  layout_layers.forEach((layer_info) => {
-    layout_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]);
-  });
-  layout_layer_selec.on('change', function () {
-    const selected_asArray = Array.prototype.slice.call(this.selectedOptions);
-    selec.layout = selected_asArray.map(elem => elem.value);
-  });
-  box_body.append('span')
-    .style('font-size', '0.65rem')
-    .html(i18next.t('app_page.layout_layer_box.disclamer_nuts'));
-}
+// function add_layout_layers() {
+//   check_remove_existing_box('.sampleLayoutDialogBox');
+//   const layout_layers = [
+//     [i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'],
+//     [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
+//     [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
+//     [i18next.t('app_page.layout_layer_box.brazil'), 'brazil'],
+//     [i18next.t('app_page.layout_layer_box.quartier_paris'), 'quartier_paris'],
+//     [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
+//     [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+//     [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
+//     [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
+//     [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+//     [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
+//     [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
+//     [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
+//   ];
+//   const selec = { layout: null };
+//
+//   make_confirm_dialog2('sampleLayoutDialogBox', i18next.t('app_page.layout_layer_box.title'), { widthFitContent: true })
+//     .then((confirmed) => {
+//       if (confirmed) {
+//         if (selec.layout && selec.layout.length > 0) {
+//           for (let i = 0; i < selec.layout.length; ++i) {
+//             add_sample_geojson(selec.layout[i]);
+//           }
+//         }
+//       }
+//     });
+//
+//   const box_body = d3.select('.sampleLayoutDialogBox').select('.modal-body').style('text-align', 'center');
+//   box_body.node().parentElement.style.width = 'auto';
+//   box_body.append('h3')
+//     .html(i18next.t('app_page.layout_layer_box.msg_select_layer'));
+//   box_body.append('p')
+//     .style('color', 'grey')
+//     .html(i18next.t('app_page.layout_layer_box.msg_select_multi'));
+//
+//   const layout_layer_selec = box_body.append('p')
+//     .html('')
+//     .insert('select')
+//     .attrs({ class: 'sample_layout', multiple: 'multiple', size: layout_layers.length });
+//   layout_layers.forEach((layer_info) => {
+//     layout_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]);
+//   });
+//   layout_layer_selec.on('change', function () {
+//     const selected_asArray = Array.prototype.slice.call(this.selectedOptions);
+//     selec.layout = selected_asArray.map(elem => elem.value);
+//   });
+//   box_body.append('span')
+//     .style('font-size', '0.65rem')
+//     .html(i18next.t('app_page.layout_layer_box.disclamer_nuts'));
+// }
 
 /**
 * Function to display the dialog allowing the choose and add a sample target layer.
@@ -1712,7 +1719,9 @@ function add_sample_layer() {
    [i18next.t('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
    [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'],
    [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+   [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
    [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
+   [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
    [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
    [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'],
    [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
@@ -1735,6 +1744,13 @@ function add_sample_layer() {
    [i18next.t('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
    [i18next.t('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
    [i18next.t('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
+   [i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'],
+   [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
+   [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
+   [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+   [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
+   [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
+   [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
   ];
   const dialog_res = [];
   let selec,
@@ -1744,31 +1760,35 @@ function add_sample_layer() {
   make_confirm_dialog2('sampleDialogBox', i18next.t('app_page.sample_layer_box.title'))
     .then((confirmed) => {
       if (confirmed) {
-        if (content.attr('id') === 'panel1') {
-          if (selec) {
-            const sugg_proj = selec.indexOf('communes_reg') > -1
-              ? ['proj4', 'EPSG:2154']
-              : suggested_projection.get(selec);
-            const _fields_type = (selec.indexOf('communes_reg') > -1 || selec.indexOf('commune_dep') > 1)
-              ? fields_type_sample.get('FR_communes')
-              : fields_type_sample.get(selec);
-            add_sample_geojson(selec, {
-              target_layer_on_add: true,
-              fields_type: _fields_type,
-              default_projection: sugg_proj,
-            });
-          }
-        } else if (content.attr('id') === 'panel2') {
-          const formToSend = new FormData();
-          formToSend.append('url', selec_url[1]);
-          formToSend.append('layer_name', selec_url[0]);
-          xhrequest('POST', '/convert_extrabasemap', formToSend, true)
-            .then((data) => {
-              add_layer_topojson(data, { target_layer_on_add: true });
-            }, (error) => {
-              display_error_during_computation();
-            });
-        }
+        askTypeLayer()
+          .then((_type_layer) => {
+            const target_layer = _type_layer.indexOf('target') > -1;
+            if (content.attr('id') === 'panel1') {
+              if (selec) {
+                const sugg_proj = selec.indexOf('communes_reg') > -1
+                  ? ['proj4', 'EPSG:2154']
+                  : suggested_projection.get(selec);
+                const _fields_type = (selec.indexOf('communes_reg') > -1 || selec.indexOf('commune_dep') > 1)
+                  ? fields_type_sample.get('FR_communes')
+                  : fields_type_sample.get(selec);
+                add_sample_geojson(selec, {
+                  target_layer_on_add: target_layer,
+                  fields_type: _fields_type,
+                  default_projection: sugg_proj,
+                });
+              }
+            } else if (content.attr('id') === 'panel2') {
+              const formToSend = new FormData();
+              formToSend.append('url', selec_url[1]);
+              formToSend.append('layer_name', selec_url[0]);
+              xhrequest('POST', '/convert_extrabasemap', formToSend, true)
+                .then((data) => {
+                  add_layer_topojson(data, { target_layer_on_add: target_layer });
+                }, (error) => {
+                  display_error_during_computation();
+                });
+            }
+          }, dismiss => { console.log(dismiss); });
       }
     });
 
@@ -2302,6 +2322,8 @@ function downgradeTargetLayer() {
   _target_layer_file = null;
   resetSection1();
   getAvailablesFunctionnalities();
+  const id_lyr = _app.layer_to_id.get(old_target);
+  document.querySelector(`.${id_lyr}.sortable_target`).classList.remove('sortable_target');
   return old_target;
 }
 
@@ -2318,6 +2340,8 @@ function changeTargetLayer(new_target) {
   center_map(new_target);
   zoom_without_redraw();
   getAvailablesFunctionnalities(new_target);
+  const id_new_target_lyr = _app.layer_to_id.get(new_target);
+  document.querySelector(`.${id_new_target_lyr}`).classList.add('sortable_target');
 }
 
 function resetSection1() {

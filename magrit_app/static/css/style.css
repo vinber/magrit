@@ -418,6 +418,14 @@ p.params_section2 > select {
     overflow-y: auto;
 }
 
+#sortable li.sortable_target {
+  background: #fff8ac;
+}
+
+#sortable li.sortable_target:hover {
+  background: #f3ec9e;
+}
+
 #sortable li:hover{
     background: #e8e8e8;
 }
@@ -1136,4 +1144,29 @@ p.breaks_vals > input[type="number"] {
 
 p.breaks_vals > input[type="number"].size_class {
   width: 60px !important;
+}
+
+#fields_select {
+  display: grid;
+}
+
+#fields_select > li {
+  background: transparent;
+  /* background: aliceblue; */
+  padding: 5px;
+  line-height: 2em;
+}
+
+#fields_select > li:nth-child(odd) {
+  background: lightgray;
+}
+
+#fields_select > li:first-child {
+  border-top-left-radius: 3px 3px;
+  border-top-right-radius: 3px 3px;
+}
+
+#fields_select > li:last-child {
+  border-bottom-left-radius: 3px 3px;
+  border-bottom-right-radius: 3px 3px;
 }

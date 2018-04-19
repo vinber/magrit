@@ -1,6 +1,18 @@
 Changes
 =======
 
+0.8.0 (2018-xx-xx)
+------------------
+
+- New: Allow to promote any layout layer (or result layer) to be a target layer. This functionality makes it possible to combine some representations more efficiently and more quickly (for example, making a chroropleth map on the result of an anamorphosis, etc.).
+
+- Change how are imported target/layout layers: a message asking whether the newly imported layer is a target layer or a layout layer ?
+
+- Fix position of context menu when opened on layout features located on near the right/bottom of the window.
+
+- Try to improve the style of the box asking to type the various fields of the layer.
+
+
 0.7.4 (2018-04-18)
 ------------------
 
