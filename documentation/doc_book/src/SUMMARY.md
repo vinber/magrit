@@ -28,6 +28,7 @@
 - [Jeux de données](./datasets_fr.md)
 	- [Source des jeux de données d'exemple](./dataset_source_fr.md)
 - [Questions fréquemment posées](./FAQ_fr.md)
+- [Historique des changements](./changelog_fr.md)
 - [Respect de la vie privée](./privacy.md)
 - [Licences](./licenses_fr.md)
 
