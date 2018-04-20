@@ -1176,3 +1176,20 @@ p.breaks_vals > input[type="number"].size_class {
   border-bottom-left-radius: 3px 3px;
   border-bottom-right-radius: 3px 3px;
 }
+
+/* Style for left menu section 1 */
+img#remove_target, img#downgrade_target, img#table_layer_s1 {
+  margin: 10px 5px 0 0;
+  float: right;
+  opacity: 1;
+}
+
+img#remove_target {
+  opacity: 0.5;
+}
+
+img#remove_target:hover {
+  opacity: 1;
+}
+
+/* End of style for left menu section 1 */

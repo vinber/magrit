@@ -830,7 +830,7 @@ function handle_single_file(file, target_layer_on_add) {
 
 function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
-  const _lyr_name_display = +nb_char_display > 23 ? [lyr_name_to_add.substring(0, 18), '(...)'].join('') : lyr_name_to_add;
+  const _lyr_name_display = +nb_char_display > 40 ? [lyr_name_to_add.substring(0, 35), '(...)'].join('') : lyr_name_to_add;
 
   // Prepare an icon according to the type of geometry:
   let _button = button_type.get(type);
@@ -845,20 +845,26 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
       color: 'black',
     })
     .html(`
-<img src="${_button}" width="26" height="26"></img>
-<b>${_lyr_name_display}</b> - <i><span style="font-size:9px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
-<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target" style="float:right;margin-top:10px;opacity:0.5">
-<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1" style="float:right;margin:10px 5px 0 0;opacity:1">
-<img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target" style="float: right;margin:10px 5px 0 0;opacity: 1;">`)
+<div style="display: inline-block;">
+  <img src="${_button}" width="26" height="26"></img>
+</div>
+<div style="display: inline-block;">
+  <b>${_lyr_name_display}</b>
+  <br>
+  <i><span style="font-size:10px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
+</div>
+<div style="float:right;">
+  <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target">
+  <img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1">
+  <img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target">
+</div>`)
 
-  const remove_target = document.getElementById('remove_target');
-  remove_target.onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
-  remove_target.onmouseover = function () { this.style.opacity = 1; };
-  remove_target.onmouseout = function () { this.style.opacity = 0.5; };
-  const table_target = document.getElementById('table_layer_s1');
-  table_target.onclick = display_table_target_layer;
-  const downgrade_target = document.getElementById('downgrade_target');
-  downgrade_target.onclick = downgradeTargetLayer;
+  // const remove_target = document.getElementById('remove_target');
+  document.getElementById('remove_target').onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
+  // const table_target = document.getElementById('table_layer_s1');
+  document.getElementById('table_layer_s1').onclick = display_table_target_layer;
+  // const downgrade_target = document.getElementById('downgrade_target');
+  document.getElementById('downgrade_target').onclick = downgradeTargetLayer;
 }
 
 function get_display_name_on_layer_list(layer_name_to_add) {
