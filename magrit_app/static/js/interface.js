@@ -1105,7 +1105,17 @@ function add_layer_topojson(text, options = {}) {
 
     update_section1(type, nb_fields, nb_ft, lyr_name_to_add);
     _app.targeted_layer_added = true;
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
+    li.innerHTML = [_lyr_name_display_menu,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_type.get(type),
+      button_replace,
+      '</div>',
+    ].join('');
 
     window._target_layer_file = topoObj;
     if (!skip_rescale) {
@@ -1125,22 +1135,40 @@ function add_layer_topojson(text, options = {}) {
         : '[title]app_page.func_description.grid');
     localize('#button_grid');
   } else if (result_layer_on_add) {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_legend, button_result_type.get(options.func_name), '</div>'].join('');
+    li.innerHTML = [
+      _lyr_name_display_menu,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_legend,
+      button_result_type.get(options.func_name),
+      button_replace,
+      '</div>'].join('');
     // Don't fit the viewport on the added layer if it's a result layer (or uncomment following lines..)
     // if (!skip_rescale) {
     //   center_map(lyr_name_to_add);
     // }
   } else {
-    li.innerHTML = [_lyr_name_display_menu, '<div class="layer_buttons">', button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_type.get(type), '</div>'].join('');
+    li.innerHTML = [
+      _lyr_name_display_menu,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_type.get(type),
+      button_replace,
+      '</div>'].join('');
   }
 
   if (!target_layer_on_add && _app.current_functionnality !== undefined
       && (_app.current_functionnality.name === 'smooth' || _app.current_functionnality.name === 'grid')) {
     fields_handler.fill();
   }
-  // if (!target_layer_on_add && _app.current_functionnality !== undefined && _app.current_functionnality.name === 'smooth') {
-  //   fields_handler.fill();
-  // }
 
   if (type === 'Point') {
     current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
@@ -2334,14 +2362,31 @@ function changeTargetLayer(new_target) {
   user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
   const fields = Object.keys(user_data[new_target][0]);
   update_section1(current_layers[new_target].type, fields.length, current_layers[new_target].n_features, new_target);
-  current_layers[new_target].original_fields = new Set(fields);
-  current_layers[new_target].fields_type =  type_col2(user_data[new_target]);
+  if (!current_layers[new_target].fields_type) {
+    current_layers[new_target].original_fields = new Set(fields);
+  }
+  if (!current_layers[new_target].fields_type) {
+      current_layers[new_target].fields_type =  type_col2(user_data[new_target]);
+  }
+  document.getElementById('btn_type_fields').removeAttribute('disabled');
+  getAvailablesFunctionnalities(new_target);
   scale_to_lyr(new_target);
   center_map(new_target);
   zoom_without_redraw();
-  getAvailablesFunctionnalities(new_target);
+
   const id_new_target_lyr = _app.layer_to_id.get(new_target);
-  document.querySelector(`.${id_new_target_lyr}`).classList.add('sortable_target');
+  document.querySelector(`#sortable > .${id_new_target_lyr}`).classList.add('sortable_target');
+
+  const d = {};
+  d[new_target] = {
+    type: 'FeatureCollection',
+    features: Array.prototype.slice.call(document.querySelectorAll(`#${id_new_target_lyr} > path`)).map(d => d.__data__),
+  };
+  window._target_layer_file = topojson.topology(d);
+
+  if (!current_layers[new_target].key_name) {
+    send_layer_server(new_target, '/layers/add');
+  }
 }
 
 function resetSection1() {

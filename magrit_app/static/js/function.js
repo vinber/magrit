@@ -3480,8 +3480,6 @@ function render_TypoSymbols(rendering_params, new_name) {
     })
     .call(drag_elem_geo);
 
-  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'symbol'], 'result');
-
   current_layers[layer_to_add] = {
     n_features: current_layers[layer_name].n_features,
     renderer: 'TypoSymbols',
@@ -3491,6 +3489,7 @@ function render_TypoSymbols(rendering_params, new_name) {
     symbol: 'image',
     ref_layer_name: layer_name,
   };
+  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'symbol'], 'result');
   handle_legend(layer_to_add);
   zoom_without_redraw();
   switch_accordion_section();
@@ -4533,7 +4532,6 @@ const render_label = function render_label(layer, rendering_params, options) {
     })
     .call(drag_elem_geo);
 
-  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'label'], 'result');
   current_layers[layer_to_add] = {
     n_features: new_layer_data.length,
     renderer: 'Label',
@@ -4545,6 +4543,7 @@ const render_label = function render_label(layer, rendering_params, options) {
     default_size: font_size,
     default_font: selected_font,
   };
+  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'label'], 'result');
   if (warn_empty_features.length > 0) {
     setTimeout(() => { display_warning_empty_geom(warn_empty_features); }, 50);
   }
@@ -4629,7 +4628,6 @@ const render_label_graticule = function render_label_graticule(layer, rendering_
       );
     })
     .call(drag_elem_geo);
-  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'label'], 'result');
   current_layers[layer_to_add] = {
     n_features: new_layer_data.length,
     renderer: 'Label',
@@ -4640,6 +4638,7 @@ const render_label_graticule = function render_label_graticule(layer, rendering_
     default_size: font_size,
     default_font: selected_font,
   };
+  create_li_layer_elem(layer_to_add, nb_ft, ['Point', 'label'], 'result');
   zoom_without_redraw();
   return layer_to_add;
 };

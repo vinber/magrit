@@ -339,30 +339,36 @@ p.params_section2 > select {
 }
 
 .const_buttons {
-    border-radius: 10%;
-    height: 30px;
-    border-color:transparent;
+  border-radius: 10%;
+  height: 30px;
+  border-color:transparent;
 }
 
-#trash_button,#zoom_fit_button,.style_button,#replace_button,
+#trash_button,#zoom_fit_button,.style_button,
 .style_target_layer,#legend_button,.active_button,#browse_data_button {
-    margin-left: 1.5px;
-    float: right;
+  margin-left: 1.5px;
+  float: right;
+}
+
+#replace_button {
+  float: left;
+  margin-left: 1.5px;
+  margin-top: 2px;
 }
 
 .ico_type {
-    margin-top: 2px;
-    margin-right: 3px;
-    float: left;
+  margin-top: 2px;
+  margin-right: 3px;
+  float: left;
 }
 
 .popup.active {
-    background: rgba(220, 220, 220, 0.94) none repeat scroll 0% 0%;
-    border: 3px;
-    padding: 20px;
-    color: black;
-    border-radius: 2%;
-    font: 12px "Enriqueta", arial, sans-serif;
+  background: rgba(220, 220, 220, 0.94) none repeat scroll 0% 0%;
+  border: 3px;
+  padding: 20px;
+  color: black;
+  border-radius: 2%;
+  font: 12px "Enriqueta", arial, sans-serif;
 }
 
 .header_options_right {

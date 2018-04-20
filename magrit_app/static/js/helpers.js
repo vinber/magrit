@@ -414,18 +414,22 @@ function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
   li.setAttribute('layer_name', layerName);
   if (typeLayer === 'result') {
     li.setAttribute('class', ['sortable_result ', layerId].join(''));
+    let replace_but;
+    if (!current_layers[layerName].symbol || current_layers[layerName].symbol === 'path') {
+      replace_but = button_replace;
+    }
     // li.setAttribute("layer-tooltip",
     //         ["<b>", layerName, "</b> - ", typeGeom[0] ," - ", nbFt, " features"].join(''));
     li.innerHTML = [listDisplayName, '<div class="layer_buttons">',
-      button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0, button_legend,
-      button_result_type.get(typeGeom[1]), '</div> '].join('');
+      button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
+      button_result_type.get(typeGeom[1]), result_but, '</div> '].join('');
   } else if (typeLayer === 'sample') {
     li.setAttribute('class', ['sortable ', layerId].join(''));
     // li.setAttribute("layer-tooltip",
     //         ["<b>", layerName, "</b> - Sample layout layer"].join(''));
     li.innerHTML = [listDisplayName, '<div class="layer_buttons">',
-      button_trash, sys_run_button_t2, button_replace, button_zoom_fit, button_table, eye_open0,
-      button_type.get(typeGeom), '</div> '].join('');
+      button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
+      button_type.get(typeGeom), button_replace, '</div> '].join('');
   }
   layersListed.insertBefore(li, layersListed.childNodes[0]);
   binds_layers_buttons(layerName);
