@@ -1,4 +1,4 @@
-function ContextMenu() {
+export default function ContextMenu() {
   this.items = [];
 
   this.addItem = function (item) {

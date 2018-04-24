@@ -652,8 +652,8 @@ function apply_user_preferences(json_pref) {
         northArrow.arrow_img._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
         northArrow.arrow_img._groups[0][0].setAttribute('width', map_config.layout_features.north_arrow.size);
         northArrow.arrow_img._groups[0][0].setAttribute('height', map_config.layout_features.north_arrow.size);
-        northArrow.under_rect._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img);
-        northArrow.under_rect._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img);
+        northArrow.under_rect._groups[0][0].setAttribute('x', map_config.layout_features.north_arrow.x_img - 7.5);
+        northArrow.under_rect._groups[0][0].setAttribute('y', map_config.layout_features.north_arrow.y_img - 7.5);
         northArrow.x_center = map_config.layout_features.north_arrow.x_center;
         northArrow.y_center = map_config.layout_features.north_arrow.y_center;
         northArrow.displayed = map_config.layout_features.north_arrow.displayed;

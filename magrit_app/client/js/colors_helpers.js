@@ -9,7 +9,7 @@
 * @param {integer} name - The name of the colorBrewer palette to use
 * @return {array} - An array of color with the desired length
 */
-const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
+export const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
   if (nbClass < 10 && nbClass >= 3) {
     const colors = colorbrewer[name][nbClass];
     return colors;
@@ -39,7 +39,7 @@ const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
 * @param {number} k - The length of the targeted color palette
 * @return {array} - An array of k colors.
 */
-const interp_n = function interp_n(colors, diff, k) {
+export const interp_n = function interp_n(colors, diff, k) {
   const tmp = [];
   const new_colors = [];
   for (let i = 0; i < diff; ++i) {
@@ -59,7 +59,7 @@ const interp_n = function interp_n(colors, diff, k) {
 * @return {string} - The color as an hexcode.
 *
 */
-function rgb2hex(rgb) {
+export function rgb2hex(rgb) {
 // Originally from  http://jsfiddle.net/mushigh/myoskaos/
   if (typeof rgb === 'string') {
     if (rgb.indexOf('#') > -1 || rgb.indexOf('rgb') < 0) {
@@ -85,7 +85,7 @@ function rgb2hex(rgb) {
 * @return {string|array} - the rgb color as a string or as an array.
 *
 */
-function hexToRgb(hex, out) {
+export function hexToRgb(hex, out) {
     // Originally from http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
   const res = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (out === 'string') {
@@ -100,7 +100,7 @@ function hexToRgb(hex, out) {
 // Args :
 //    - color1 : array of 3 integer for rgb color as [R, G, B]
 //    - color2 : array of 3 integer for rgb color as [R, G, B]
-const interpolateColor = (color1, color2, factor = 0.5) => {
+export const interpolateColor = (color1, color2, factor = 0.5) => {
   const result = color1.slice();
   for (let i = 0; i < 3; i++) {
     result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
@@ -110,7 +110,7 @@ const interpolateColor = (color1, color2, factor = 0.5) => {
 
 // Just a "Colors" object with a convenience "random" method
 // ... when a random color is needed (they aren't specialy pretty colors though!)
-const Colors = {
+export const Colors = {
   names: {
     aqua: '#00ffff',
     azure: '#f0ffff',
@@ -172,7 +172,7 @@ const Colors = {
   },
 };
 
-const ColorsSelected = {
+export const ColorsSelected = {
     // These colors came from "Pastel1" and "Pastel2" coloramps from ColorBrewer
   colorCodes: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc',
     '#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
@@ -201,7 +201,7 @@ const ColorsSelected = {
 
 // Copy-paste from https://gist.github.com/jdarling/06019d16cb5fd6795edf
 //   itself adapted from http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-const randomColor = (function () {
+export const randomColor = (function () {
   const golden_ratio_conjugate = 0.618033988749895;
   let _h = Math.random();
 
@@ -239,6 +239,6 @@ const randomColor = (function () {
   };
 }());
 
-const addNewCustomPalette = function addNewCustomPalette(palette_name, colors) {
+export const addNewCustomPalette = function addNewCustomPalette(palette_name, colors) {
   _app.custom_palettes.set(palette_name, colors);
 }

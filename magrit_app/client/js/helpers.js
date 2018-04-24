@@ -422,7 +422,7 @@ function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
     //         ["<b>", layerName, "</b> - ", typeGeom[0] ," - ", nbFt, " features"].join(''));
     li.innerHTML = [listDisplayName, '<div class="layer_buttons">',
       button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
-      button_result_type.get(typeGeom[1]), result_but, '</div> '].join('');
+      button_result_type.get(typeGeom[1]), replace_but, '</div> '].join('');
   } else if (typeLayer === 'sample') {
     li.setAttribute('class', ['sortable ', layerId].join(''));
     // li.setAttribute("layer-tooltip",

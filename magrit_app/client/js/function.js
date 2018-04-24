@@ -1,3 +1,5 @@
+import { getColorBrewerArray } from './colors_helpers';
+
 const get_menu_option = (function () {
   const menu_option = {
     smooth: {

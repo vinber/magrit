@@ -307,7 +307,7 @@ function prepare_drop_section() {
           if (timeout) {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-              e.preventDefault(); e.stopPropagation();
+              // e.preventDefault(); e.stopPropagation();
               document.getElementById('overlay_drop').style.display = 'none';
               timeout = null;
             }, 2500);
@@ -335,61 +335,24 @@ function prepare_drop_section() {
             document.getElementById('overlay_drop').style.display = 'none';
             return;
           }
-          const overlay_drop = document.getElementById('overlay_drop');
-          overlay_drop.style.display = '';
+          timeout = setTimeout(() => {
+            document.getElementById('overlay_drop').style.display = 'none';
+            timeout = null;
+          }, 750);
+
           const files = prepareFileExt(e.dataTransfer.files);
           if (files.length === 1
               && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
-            Array.prototype.forEach.call(document.querySelectorAll('#map,.overlay_drop'), (_elem) => {
-              _elem.removeEventListener('drop', _drop_func);
-            });
+            Array.prototype.slice.call(document.querySelectorAll('#map,.overlay_drop'))
+              .forEach((_elem) => {
+                _elem.removeEventListener('drop', _drop_func);
+              });
             handleOneByOneShp(files);
           } else {
             handle_upload_files(files, null);
           }
         });
     });
-
-  // Array.prototype.forEach.call(
-  //   document.querySelectorAll('#section1,#section3'),
-  //   (elem) => {
-  //     elem.addEventListener('dragenter', (e) => {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //       if (document.body.classList.contains('no-drop')) return;
-  //       elem.style.border = '3px dashed green';
-  //     });
-  //     elem.addEventListener('dragover', (e) => {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //       if (document.body.classList.contains('no-drop')) return;
-  //       elem.style.border = '3px dashed green';
-  //     });
-  //     elem.addEventListener('dragleave', (e) => {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //       elem.style.border = '';
-  //       if (document.body.classList.contains('no-drop')) {
-  //         document.body.classList.remove('no-drop');
-  //       }
-  //     });
-  //     elem.addEventListener('drop', (e) => {
-  //       e.preventDefault();
-  //       e.stopPropagation();
-  //       if (!e.dataTransfer.files.length) {
-  //         elem.style.border = '';
-  //         return;
-  //       }
-  //       const files = prepareFileExt(e.dataTransfer.files),
-  //         target_layer_on_add = (elem.id === 'section1');
-  //       if (files.length === 1
-  //             && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
-  //         handleOneByOneShp(files, target_layer_on_add);
-  //       } else {
-  //         handle_upload_files(files, target_layer_on_add, elem);
-  //       }
-  //     }, true);
-  //   });
 }
 
 function ask_replace_dataset() {
@@ -670,45 +633,27 @@ function update_menu_dataset() {
 
   d3.select('#ext_dataset_zone')
     .styles({
-      'text-align': 'center',
       border: null,
-      padding: null,
       color: 'black',
+      'margin-bottom': '3px',
+      padding: null,
+      'text-align': 'initial',
     })
     .html([
-      '<img id="img_data_ext" class="user_panel" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img>',
-      ' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
+      '<div style="display:inline-block;"><img id="img_data_ext" class="user_panel" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img></div>',
+      '<div style="display:inline-block;margin-left: 4px;">',
+      ' <b>', d_name, '</b><br><i><span style="font-size:9px;">',
       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>',
-      '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">',
-      '<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">'].join(''))
-  //   .attrs({
-  //     id: 'img_data_ext',
-  //     class: 'user_panel',
-  //     src: 'static/img/b/tabular.png',
-  //     width: '26',
-  //     height: '26',
-  //     alt: 'Additional dataset' });
-  //
-  // data_ext.classList.remove('i18n');
-  // data_ext.removeAttribute('data-i18n');
-//   d3.select(data_ext)
-//     .html([' <b>', d_name, '</b> - <i><span style="font-size:9px;">',
-//       nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
-//       field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }),
-//       '</i></span>'].join(''))
-//     .on('click', null);
-//   parent_elem.innerHTML += `<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset" style="float:right;margin-top:10px;opacity:0.5">
-// <img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1" style="float:right;margin:10px 5px 0 0;opacity:1">`;
+      '</div>',
+      '<div style="float:right;">',
+      '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset">',
+      '<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1">',
+      '</div>',
+    ].join(''))
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();
-  };
-  document.getElementById('remove_dataset').onmouseover = function () {
-    this.style.opacity = 1;
-  };
-  document.getElementById('remove_dataset').onmouseout = function () {
-    this.style.opacity = 0.5;
   };
   if (_app.targeted_layer_added) {
     valid_join_check_display(false);
@@ -844,19 +789,18 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
       border: null,
       color: 'black',
     })
-    .html(`
-<div style="display: inline-block;">
-  <img src="${_button}" width="26" height="26"></img>
+    .html(`<div style="display:inline-block;">
+<img src="${_button}" width="26" height="26"></img>
 </div>
-<div style="display: inline-block;">
-  <b>${_lyr_name_display}</b>
-  <br>
-  <i><span style="font-size:10px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
+<div style="display:inline-block;margin-left: 4px;">
+<b>${_lyr_name_display}</b>
+<br>
+<i><span style="font-size:10px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
 </div>
 <div style="float:right;">
-  <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target">
-  <img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1">
-  <img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target">
+<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target">
+<img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1">
+<img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target">
 </div>`)
 
   // const remove_target = document.getElementById('remove_target');

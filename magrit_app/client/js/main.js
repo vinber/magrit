@@ -353,6 +353,11 @@ function setUpInterface(reload_project) {
     })
     .html('Pas de jeu de donnée externe');
 
+  dv1.append('p')
+    .attr('id', 'join_section')
+    .styles({ 'text-align': 'center', 'margin-top': '2px' })
+    .html('');
+
   dv1.append('hr').style('border-top', '2px #ccc');
 
   const dv11 = dv1.append('div').style('width', 'auto');
@@ -392,11 +397,6 @@ function setUpInterface(reload_project) {
     .on('click', add_sample_layer);
 
   dv1.append('p')
-    .attr('id', 'join_section')
-    .styles({ 'text-align': 'center', 'margin-top': '2px' })
-    .html('');
-
-  dv1.append('p')
     .styles({ 'text-align': 'center', margin: '5px' })
     .insert('button')
     .attrs({
@@ -420,25 +420,15 @@ function setUpInterface(reload_project) {
   make_ico_choice();
 
   const section3 = d3.select('#section3')
-    .attrs({
-      class: 'i18n tt_menuleft',
-      'data-i18n': '[title]app_page.tooltips.section3',
-      'data-tippy-placement': 'right',
-    });
-
+    .attr('class', 'tt_menuleft');
+    // .attrs({
+    //   class: 'i18n tt_menuleft',
+    //   'data-i18n': '[title]app_page.tooltips.section3',
+    //   'data-tippy-placement': 'right',
+    // });
   window.layer_list = section3.append('div')
     .append('ul')
-    .attrs({ id: 'sortable', class: 'layer_list' })
-    .on('mouseover', function () {
-      Array.prototype.slice.call(document.querySelectorAll('.tippy-popper')).forEach(popper => {
-        const instance = popper._tippy
-
-        if (instance.state.visible) {
-          instance.popperInstance.disableEventListeners()
-          instance.hide()
-        }
-      });
-    });
+    .attrs({ id: 'sortable', class: 'layer_list' });
 
   new Sortable(document.getElementById('sortable'), {
     animation: 100,
@@ -479,14 +469,20 @@ function setUpInterface(reload_project) {
     .style('margin', 'auto')
     .append('ul')
     .styles({
-      'list-style': 'outside none none',
       display: 'inline-block',
+      'list-style': 'outside none none',
+      'margin-top': '0px',
       padding: '0px',
       width: '100%',
-      'margin-top': '0px',
     });
 
-  const e = dv4.append('li').styles({ margin: '1px', padding: '4px', 'text-align': 'center' });
+  const e = dv4.append('li')
+    .styles({
+      margin: '1px',
+      padding: '4px',
+      'text-align': 'center',
+    });
+
   e.append('input')
     .attrs({
       id: 'title',
@@ -496,6 +492,7 @@ function setUpInterface(reload_project) {
     })
     .styles({ margin: '0px 0px 0px 3px', width: '160px' })
     .on('keyup', function () { handle_title(this.value); });
+
   e.append('span')
     .styles({ display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub' })
     .html(sys_run_button.replace('submit', 'Title properties'))
@@ -736,7 +733,7 @@ function setUpInterface(reload_project) {
       max: 360,
       step: 'any',
     })
-    .styles({ width: '30px', 'margin-left': '10px', float: 'right', 'font-size': '11.5px' })
+    .styles({ width: '30px', 'margin-left': '10px', float: 'right'})
     .property('value', 0)
     .on('change', function () {
       const val = +this.value,
@@ -756,8 +753,19 @@ function setUpInterface(reload_project) {
     });
 
   g.append('input')
-    .attrs({ type: 'range', id: 'form_rotate', min: 0, max: 360, step: 1 })
-    .styles({ width: '80px', margin: '0px 10px 5px 15px', float: 'right' })
+    .attrs({
+      type: 'range',
+      id: 'form_rotate',
+      min: 0,
+      max: 360,
+      step: 1,
+    })
+    .styles({
+      width: '80px',
+      margin: '0px 10px 5px 15px',
+      float: 'right',
+    })
+    .property('value', 0)
     .on('input', function () {
       rotate_global(this.value);
       document.getElementById('canvas_rotation_value_txt').value = this.value;
@@ -1911,24 +1919,12 @@ function remove_ext_dataset_cleanup() {
   dataset_name = undefined;
   d3.select('#ext_dataset_zone')
     .styles({
-      'text-align': 'center',
       border: '3px dashed #ccc',
+      color: 'rgb(204, 204, 204)',
       padding: '3px',
-      color: 'black',
+      'text-align': 'center',
     })
     .html('Pas de jeu de donnée externe');
-  // const ext_dataset_img = document.getElementById('img_data_ext');
-  // ext_dataset_img.setAttribute('src', 'static/img/b/addtabular.png');
-  // ext_dataset_img.setAttribute('alt', 'Additional dataset');
-  // ext_dataset_img.style.cursor = 'pointer';
-  // ext_dataset_img.onclick = click_button_add_layer;
-  // const data_ext_txt = document.getElementById('data_ext');
-  // data_ext_txt.innerHTML = i18next.t('app_page.section1.add_ext_dataset');
-  // data_ext_txt.onclick = click_button_add_layer;
-  // data_ext_txt.classList.add('i18n');
-  // data_ext_txt.setAttribute('data-i18n', '[html]app_page.section1.add_ext_dataset');
-  // document.getElementById('remove_dataset').remove();
-  // document.getElementById('table_dataset_s1').remove();
   document.getElementById('join_section').innerHTML = '';
 }
 

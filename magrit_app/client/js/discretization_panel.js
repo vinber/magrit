@@ -1,4 +1,4 @@
-'use strict';
+import { getColorBrewerArray, hexToRgb, rgb2hex } from './colors_helpers';
 
 function getBreaks(values, type, n_class) {
   // const _values = values.filter(v => v === 0 || (v && !Number.isNaN(+v))),
