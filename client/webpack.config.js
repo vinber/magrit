@@ -4,9 +4,10 @@ const exec = require('child_process').exec;
 module.exports = {
   entry: {
     app: './js/main.js',
+    d3: './js/d3_custom.js'
   },
   output: {
-    filename: 'app.js'
+    filename: '[name].js'
   },
   mode: 'development',
   module: {
@@ -29,6 +30,17 @@ module.exports = {
        use:['style-loader','css-loader']
      }
     ]
+  },
+  optimization: {
+      splitChunks: {
+          cacheGroups: {
+              commons: {
+                  test: /[\\/]node_modules[\\/]/,
+                  name: 'd3',
+                  chunks: 'all'
+              }
+          }
+      }
   },
   plugins: [
     new webpack.ProvidePlugin({
