@@ -58,6 +58,7 @@ global.current_proj_name = 'NaturalEarth2';
 global.zoom = d3.zoom().on('zoom', zoom_without_redraw);
 global.w = Mround(window.innerWidth - 361);
 global.h = window.innerHeight - 55;
+
 /*
 A bunch of global variable, storing oftently reused informations :
     - user_data[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
@@ -160,6 +161,27 @@ function parseQuery(search) {
   return argsParsed;
 }
 
+function loadI18next(lang) {
+  return new Promise((resolve, reject) => {
+    i18next.use(i18nextXHRBackend)
+      .init({
+        debug: true,
+        lng: lang,
+        fallbackLng: _app.existing_lang[0],
+        backend: {
+          loadPath: 'static/locales/{{lng}}/translation.json',
+        },
+      }, (err, tr) => {
+        if (err) reject(err);
+        resolve(tr);
+      })
+  });
+}
+
+function getEpsgProjection() {
+  return xhrequest('GET', 'static/json/epsg.json', undefined, false);
+}
+
 (function () {
   let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
   const params = {};
@@ -182,34 +204,19 @@ function parseQuery(search) {
     }
   }
 
-  lang = global._app.existing_lang.indexOf(lang) > -1 ? lang : 'en';
-  i18next.use(i18nextXHRBackend)
-    .init({
-      debug: true,
-      lng: lang,
-      fallbackLng: global._app.existing_lang[0],
-      backend: {
-        loadPath: 'static/locales/{{lng}}/translation.json',
-      },
-    }, (err, tr) => {
-      if (err) {
-        throw err;
-      } else {
-        window.localize = locI18next.init(i18next);
-        getEpsgProjection().then((data) => {
-          global._app.epsg_projections = JSON.parse(data);
-          setUpInterface(params.reload);
-          localize('.i18n');
-          bindTooltips();
-        });
-      }
-    });
+  lang = _app.existing_lang.indexOf(lang) > -1 ? lang : 'en';
+  Promise.all([
+    loadI18next(lang),
+    getEpsgProjection(),
+  ]).then((results) => {
+    const [tr, epsg_proj] = results;
+    window.localize = locI18next.init(i18next);
+    _app.epsg_projections = JSON.parse(epsg_proj);
+    setUpInterface(params.reload);
+    localize('.i18n');
+    bindTooltips();
+  });
 })();
-
-
-function getEpsgProjection() {
-  return xhrequest('GET', 'static/json/epsg.json', undefined, false);
-}
 
 /**
 * Return the x and y position where the svg element is located

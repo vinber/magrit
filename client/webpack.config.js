@@ -1,10 +1,10 @@
-var webpack = require('webpack');
+const webpack = require('webpack');
 const exec = require('child_process').exec;
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
-module.exports = {
+module.exports = [{
   entry: {
-    app: './js/main.js',
-    d3: './js/d3_custom.js'
+    app: './js/main.js'
   },
   output: {
     filename: '[name].js'
@@ -12,12 +12,12 @@ module.exports = {
   mode: 'development',
   module: {
     rules: [
-      {
-        enforce: "pre",
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: "eslint-loader",
-      },
+      // {
+      //   enforce: "pre",
+      //   test: /\.js$/,
+      //   exclude: /node_modules/,
+      //   loader: "eslint-loader",
+      // },
       {
         test: /\.js$/,
         use: 'babel-loader',
@@ -31,17 +31,17 @@ module.exports = {
      }
     ]
   },
-  optimization: {
-      splitChunks: {
-          cacheGroups: {
-              commons: {
-                  test: /[\\/]node_modules[\\/]/,
-                  name: 'd3',
-                  chunks: 'all'
-              }
-          }
-      }
-  },
+  // optimization: {
+  //     splitChunks: {
+  //         cacheGroups: {
+  //             commons: {
+  //                 test: /[\\/]node_modules[\\/]/,
+  //                 name: 'd3',
+  //                 chunks: 'all'
+  //             }
+  //         }
+  //     }
+  // },
   plugins: [
     new webpack.ProvidePlugin({
         'Promise': 'bluebird'
@@ -60,4 +60,35 @@ module.exports = {
   watchOptions: {
     poll: true
   }
-};
+},{
+  entry: "./js/d3_custom.js",
+  output: {
+    filename: "d3.custom.min.js",
+    library: "d3"
+  },
+  mode: 'production',
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: 'babel-loader',
+        exclude: [
+          /node_modules/
+        ]
+      },
+    ]
+  },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          compress: false,
+          ecma: 6,
+          mangle: false
+        }
+      })
+    ]
+  }
+}];

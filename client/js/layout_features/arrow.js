@@ -28,7 +28,7 @@ export default class UserArrow {
     const self = this;
     this.drag_behavior = d3.drag()
        .subject(function () {
-              // let snap_lines = get_coords_snap_lines(this.id + this.className);
+        // let snap_lines = get_coords_snap_lines(this.id + this.className);
          const t = d3.select(this.querySelector('line'));
          return {
            x: +t.attr('x2') - +t.attr('x1'),
