@@ -1,11 +1,13 @@
-import { rgb2hex } from './colors_helpers';
+import { Colors, randomColor, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
-import { display_discretization } from './discretization_panel';
-import { display_discretization_links_discont } from './discrtiz_links_discont';
-import { cloneObj, type_col2 } from './helpers';
+import { display_discretization } from './classification/discretization_panel';
+import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
+import { render_label, render_label_graticule, reset_user_values } from './function';
+import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
-import { zoom_without_redraw } from './map_ctrl';
 import { binds_layers_buttons } from './interface';
+import { redraw_legends_symbols, zoom_without_redraw } from './map_ctrl';
+import { make_table } from './tables';
 /**
 * Function to dispatch the click on the "open style box" icon
 * to the actual appropriate function according to the type of the layer.

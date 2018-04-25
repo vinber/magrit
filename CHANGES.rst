@@ -12,6 +12,8 @@ Changes
 
 - Try to improve the style of the box asking to type the various fields of the layer.
 
+- Change the workflow to prepare JS code (now using *webpack*) / split JS code in more files.
+
 
 0.7.4 (2018-04-18)
 ------------------

@@ -1,7 +1,11 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
+import { rgb2hex } from './../colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { cloneObj } from './../helpers';
 import { handle_click_hand } from './../interface';
+import { get_coords_snap_lines, make_red_line_snap } from './helpers';
+import { Mabs, Mmax, Mmin } from './../helpers_math';
 
 const round = Math.round;
 

@@ -1,7 +1,9 @@
 import { make_dialog_container, overlay_under_modal } from './dialogs';
+import { accordionize2 } from './helpers';
+import { scale_to_lyr, remove_layer_cleanup, fitLayer, center_map } from './interface';
+import { reproj_symbol_layer, zoom_without_redraw } from './map_ctrl';
 import { hatanoRaw, winkel1Raw } from './projection_others';
-import { zoom_without_redraw } from './map_ctrl';
-import { scale_to_lyr, remove_layer_cleanup, center_map } from './interface';
+import { add_layout_feature } from './layout_features/helpers';
 
 (d3.geoWinkel1 = (() => d3.geoProjection(winkel1Raw(45)).scale(200)));
 (d3.geoHatano = (() => d3.geoProjection(hatanoRaw).scale(200)));
@@ -19,6 +21,7 @@ export const shortListContent = [
   'proj4',
 ];
 
+/* eslint-disable object-curly-newline,max-len */
 export const available_projections = new Map([
   ['Armadillo', { name: 'geoArmadillo', scale: '400', param_in: 'other', param_ex: 'aphylactic' }],
   ['AzimuthalEquidistant', { name: 'geoAzimuthalEquidistant', scale: '700', param_in: 'plan', param_ex: 'equidistant' }],
@@ -82,12 +85,14 @@ export const available_projections = new Map([
   ['Winkel1', { name: 'geoWinkel1', scale: '200', param_in: 'pseudocylindre', param_ex: 'aphylactic' }],
   ['WinkelTriple', { name: 'geoWinkel3', scale: '400', param_in: 'pseudoplan', param_ex: 'aphylactic' }],
 ]);
+/* eslint-enable object-curly-newline,max-len */
 
 const createBoxProj4 = function createBoxProj4() {
   make_dialog_container(
     'box_projection_input',
     i18next.t('app_page.section5.title'),
-    'dialog');
+    'dialog',
+  );
   const container = document.getElementById('box_projection_input');
   const dialog = container.querySelector('.modal-dialog');
 
@@ -213,7 +218,41 @@ const makeTooltipProj4 = (proj_select, proj4string) => {
   proj_select.addEventListener('mouseout', removeTooltipProj4);
 };
 
-function addLastProjectionSelect(proj_name, proj4string, custom_name) {
+export function handle_projection_select() {
+  const tmp = this.querySelector('[value="last_projection"]');
+  let val = this.value;
+  if (val === 'more') {
+    this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
+    createBoxCustomProjection();
+    return;
+  } else if (val === 'proj4') {
+    this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
+    createBoxProj4();
+    return;
+  } else if (val === 'last_projection') {
+    val = tmp.name;
+    if (tmp.projValue) {
+      _app.last_projection = tmp.projValue;
+    }
+  } else if (val === 'ConicConformalFrance') {
+    val = 'def_proj4';
+    _app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
+  } else if (val === 'AzimuthalEqualAreaEurope') {
+    val = 'def_proj4';
+    _app.last_projection = '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
+  }
+
+  if (val === 'def_proj4') {
+    current_proj_name = val;
+    change_projection_4(proj4(_app.last_projection));
+    makeTooltipProj4(this, _app.last_projection);
+  } else {
+    current_proj_name = val;
+    change_projection(current_proj_name);
+  }
+}
+
+export function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   const proj_select = document.getElementById('form_projection2');
   if (shortListContent.indexOf(proj_name) > -1) {
     proj_select.value = proj_name;
@@ -347,9 +386,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     prev_parallel = proj.parallel ? proj.parallel() : undefined;
 
   const modal_box = make_dialog_container(
-      'box_projection_customization',
-      i18next.t('app_page.section5.title'),
-      'dialog');
+    'box_projection_customization',
+    i18next.t('app_page.section5.title'),
+    'dialog',
+  );
   const container = document.getElementById('box_projection_customization'),
     dialog = container.querySelector('.modal-dialog');
 
@@ -387,7 +427,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   ['any', 'other', 'cone', 'cylindrical', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
     const _id = `switch_proj1_elem_${i}`;
     filtersection1.append('input')
-      .attrs({ type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v });
+      .attrs({
+        type: 'radio', id: _id, class: 'filter1', name: 'switch_proj1', value: v,
+      });
     filtersection1.append('label')
       .attr('for', _id)
       .html(i18next.t(`app_page.projection_box.${v}`));
@@ -400,7 +442,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   ['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach((v, i) => {
     const _id = `switch_proj2_elem_${i}`;
     filtersection2.append('input')
-      .attrs({ type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v });
+      .attrs({
+        type: 'radio', id: _id, class: 'filter2', name: 'switch_proj2', value: v,
+      });
     filtersection2.append('label')
       .attr('for', _id)
       .html(i18next.t(`app_page.projection_box.${v}`));
@@ -408,7 +452,8 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   Array.prototype.forEach.call(
     document.querySelectorAll('.filter1,.filter2'),
-    (el) => { el.onclick = onClickFilter; }); // eslint-disable-line no-param-reassign
+    (el) => { el.onclick = onClickFilter; }, // eslint-disable-line no-param-reassign
+  );
 
   const p = column3.append('p').style('margin', 'auto');
   let display_select_proj = p.append('select')
@@ -446,8 +491,12 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_lambda'));
   let lambda_input = lambda_section.append('input')
-    .styles({ width: '60px', float: 'right', height: '2rem' })
-    .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50 })
+    .styles({
+      width: '60px', float: 'right', height: '2rem',
+    })
+    .attrs({
+      type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50,
+    })
     .on('input', function () {
       if (this.value > 180) this.value = 180;
       else if (this.value < -180) this.value = -180;
@@ -460,8 +509,12 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_phi'));
   let phi_input = phi_section.append('input')
-    .styles({ width: '60px', float: 'right', height: '2rem' })
-    .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5 })
+    .styles({
+      width: '60px', float: 'right', height: '2rem',
+    })
+    .attrs({
+      type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5,
+    })
     .on('input', function () {
       if (this.value > 180) { this.value = 180; } else if (this.value < -180) { this.value = -180; }
       handle_proj_center_button([null, -this.value, null]);
@@ -473,8 +526,12 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('float', 'left')
     .html(i18next.t('app_page.section5.projection_center_gamma'));
   let gamma_input = gamma_section.append('input')
-    .styles({ width: '60px', float: 'right', height: '2rem' })
-    .attrs({ type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5 })
+    .styles({
+      width: '60px', float: 'right', height: '2rem',
+    })
+    .attrs({
+      type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5,
+    })
     .on('input', function () {
       if (this.value > 90) { this.value = 90; } else if (this.value < -90) { this.value = -90; }
       handle_proj_center_button([null, null, -this.value]);
@@ -641,7 +698,7 @@ const tryFindNameProj = (proj_str) => {
       || proj[1].proj4.replace('+towgs84=0,0,0,0,0,0,0 ', '').indexOf(proj_str) > -1);
   if (o.length > 0) return o[0][1].name;
   else return undefined;
-}
+};
 
 export function isInterrupted(proj_name) {
   return (proj_name.indexOf('interrupted') > -1
@@ -730,8 +787,9 @@ export function change_projection(new_proj_name) {
   path = d3.geoPath().projection(proj).pointRadius(4);
 
   // According to the availability of the invert method (as they both need it):
-  //  - Enable or disable the 'brush zoom' button allowing to zoom according to a rectangle selection:
-  //  - Enable or disable the "scale bar" feature
+  //  - Enable or disable the 'brush zoom' button
+  //       allowing to zoom according to a rectangle selection.
+  //  - Enable or disable the "scale bar" feature.
   if (proj.invert !== undefined) {
     document.getElementById('brush_zoom_button').style.display = '';
     d3.select('img#btn_scale').style('opacity', '1').on('click', () => add_layout_feature('scale'));
@@ -777,8 +835,8 @@ export function change_projection_4(_proj) {
   remove_layer_cleanup('Sphere');
 
   // Disable the "sphere" and the "graticule" layers only if the projection is a conic one:
-  if (global._app.last_projection && (
-      global._app.last_projection.indexOf('=lcc') > -1 || global._app.last_projection.indexOf('Lambert_Conformal_Conic') > -1)) {
+  if (global._app.last_projection &&
+      (global._app.last_projection.indexOf('=lcc') > -1 || global._app.last_projection.indexOf('Lambert_Conformal_Conic') > -1)) {
     d3.select('img#btn_graticule').style('opacity', '0.3').on('click', null);
     d3.select('img#btn_sphere').style('opacity', '0.3').on('click', null);
   } else {
@@ -795,8 +853,9 @@ export function change_projection_4(_proj) {
   path = d3.geoPath().projection(proj).pointRadius(4);
 
   // According to the availability of the invert method (as they both need it):
-  //  - Enable or disable the 'brush zoom' button allowing to zoom according to a rectangle selection:
-  //  - Enable or disable the "scale bar" feature
+  //  - Enable or disable the 'brush zoom' button
+  //      allowing to zoom according to a rectangle selection.
+  //  - Enable or disable the "scale bar" feature.
   if (proj.invert !== undefined) {
     document.getElementById('brush_zoom_button').style.display = '';
     d3.select('img#btn_scale').style('opacity', '1').on('click', () => add_layout_feature('scale'));

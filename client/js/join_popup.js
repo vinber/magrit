@@ -32,7 +32,7 @@ function handleJoin() {
 * @param {Array} prop - The proportion of joined features
 * @return {void}
 */
-function valid_join_check_display(val, prop) {
+export function valid_join_check_display(val, prop) {
   if (!val) {
     const extDatasetImg = document.getElementById('img_data_ext');
     extDatasetImg.setAttribute('src', '/static/img/b/joinfalse.png');

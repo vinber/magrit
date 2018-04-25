@@ -1,0 +1,55 @@
+{
+  "extends": "airbnb",
+  "parser": "babel-eslint",
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true
+  },
+  "globals": {
+    "d3": true,
+    "_app": true,
+    "current_layers": true,
+    "current_proj_name": true,
+    "defs": true,
+    "i18next": true,
+    "map": true,
+    "map_div": true,
+    "path": true,
+    "proj": true,
+    "result_data": true,
+    "svg_map": true,
+    "user_data": true,
+    "zoom": true,
+    "t": true,
+    "s": true,
+    "h": true,
+    "w": true,
+  },
+  "rules": {
+    "camelcase": 0,
+    "consistent-return": 1,
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "no-underscore-dangle": 0,
+    "object-shorthand": 1,
+    "one-var": ["warn", "never"],
+    "no-mixed-operators": 0,
+    "no-prototype-builtins": 0,
+    "no-undef": 1,
+    "no-unused-vars": 0,
+    "no-use-before-define": 1,
+    # "valid-jsdoc": ["warn", {
+    #   "requireReturn": true,
+    #   "requireReturnType": true,
+    #   "requireParamDescription": true,
+    #   "requireReturnDescription": true
+    # }],
+    # "require-jsdoc": ["warn", {
+    #     "require": {
+    #         "FunctionDeclaration": true,
+    #         "MethodDefinition": true,
+    #         "ClassDeclaration": true
+    #     }
+    # }]
+  }
+}

@@ -1,12 +1,14 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
-
+import { coslaw_dist } from './../helpers_calc';
+import { Mround } from './../helpers_math';
+import { drag_legend_func } from './../legend';
 /**
 * Handler for the scale bar (only designed for one scale bar)
 *
 */
-const scaleBar = {
+export const scaleBar = {
   create(x, y) {
     // if (!proj.invert) {
     //   swal({ title: '',

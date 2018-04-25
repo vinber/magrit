@@ -1,27 +1,29 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './context-menu';
-import { ColorsSelected } from './colors_helpers';
+import { ColorsSelected, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
-import { check_layer_name, clean_menu_function, get_menu_option } from './function';
+import { check_layer_name, clean_menu_function, get_menu_option, reset_user_values } from './function';
 import {
   create_li_layer_elem, createWaitingOverlay, display_error_during_computation,
   drag_elem_geo, getAvailablesFunctionnalities, get_display_name_on_layer_list,
   isValidJSON, make_box_type_fields,
-  prepareFileExt, request_data, setSelected, xhrequest
+  prepareFileExt, request_data, setSelected, type_col2, xhrequest
 } from './helpers';
 import { get_nb_decimals, round_value } from './helpers_calc';
 import { Mmax, Mround } from './helpers_math';
+import { valid_join_check_display } from './join_popup';
 import { handle_click_layer } from './layers_style_popup';
 import { handle_legend, move_legends } from './legend';
 import { reproj_symbol_layer, rotate_global, zoomClick, zoom_without_redraw } from './map_ctrl';
 import { export_compo_png, export_compo_svg, export_layer_geo } from './map_export';
 import { apply_user_preferences, get_map_template, load_map_template, save_map_template } from './map_project';
-import { change_projection, change_projection_4, handleClipPath, isInterrupted, shortListContent } from './projections';
+import { addLastProjectionSelect, change_projection, change_projection_4, handleClipPath, handle_projection_select, shortListContent } from './projections';
 import { world_topology } from './sample_topo';
 import { boxExplore2 } from './tables';
+import { bindTooltips } from './tooltips';
 import { handleZoomRect } from './zoom_rect';
 import { add_layout_feature } from './layout_features/helpers';
-
+import { button_legend, button_replace, button_result_type, button_table, button_trash, button_type, button_zoom_fit, eye_open0, sys_run_button, sys_run_button_t2 } from './ui/buttons';
 
 /**
 * Maxium allowed input size in bytes. If the input file is larger than
@@ -115,39 +117,7 @@ export function setUpInterface(reload_project) {
     .insert('select')
     .attrs({ class: 'i18n', id: 'form_projection2' })
     .styles({ width: 'calc(100% + 20px)' })
-    .on('change', function () {
-      const tmp = this.querySelector('[value="last_projection"]');
-      let val = this.value;
-      if (val === 'more') {
-        this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
-        createBoxCustomProjection();
-        return;
-      } else if (val === 'proj4') {
-        this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
-        createBoxProj4();
-        return;
-      } else if (val === 'last_projection') {
-        val = tmp.name;
-        if (tmp.projValue) {
-          global._app.last_projection = tmp.projValue;
-        }
-      } else if (val === 'ConicConformalFrance') {
-        val = 'def_proj4';
-        global._app.last_projection = '+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
-      } else if (val === 'AzimuthalEqualAreaEurope') {
-        val = 'def_proj4';
-        global._app.last_projection = '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ';
-      }
-
-      if (val === 'def_proj4') {
-        current_proj_name = val;
-        change_projection_4(proj4(global._app.last_projection));
-        makeTooltipProj4(this, global._app.last_projection);
-      } else {
-        current_proj_name = val;
-        change_projection(current_proj_name);
-      }
-    });
+    .on('change', handle_projection_select);
 
   for (let i = 0; i < shortListContent.length; i++) {
     const option = shortListContent[i];
@@ -416,13 +386,8 @@ export function setUpInterface(reload_project) {
 
   make_ico_choice();
 
-  const section3 = d3.select('#section3')
-    .attr('class', 'tt_menuleft');
-    // .attrs({
-    //   class: 'i18n tt_menuleft',
-    //   'data-i18n': '[title]app_page.tooltips.section3',
-    //   'data-tippy-placement': 'right',
-    // });
+  const section3 = d3.select('#section3');
+
   window.layer_list = section3.append('div')
     .append('ul')
     .attrs({ id: 'sortable', class: 'layer_list' });
@@ -777,7 +742,7 @@ export function setUpInterface(reload_project) {
       class: 'm_elem_right list_elem_section4 i18n',
     })
     .on('change', function () {
-      global._app.autoalign_features = this.checked;
+      _app.autoalign_features = this.checked;
     });
   g2.append('p').attr('class', 'list_elem_section4 i18n')
     .attr('data-i18n', '[html]app_page.section4.autoalign_features');
@@ -1154,6 +1119,13 @@ export function setUpInterface(reload_project) {
   // Set the properties for the notification zone :
   alertify.set('notifier', 'position', 'bottom-left');
 }
+
+// Change color of the background
+// (ie the parent "svg" element on the top of which group of elements have been added)
+function handle_bg_color(color) {
+  map.style('background-color', color);
+}
+
 
 /**
 * Function triggered when some images of the interface are clicked
@@ -2031,7 +2003,7 @@ function updateLayer(layer_name) {
 * @return {String} The actual name of the layer once added, or `undefined` if
 *     something went wrong.
 */
-function add_layer_topojson(text, options = {}) {
+export function add_layer_topojson(text, options = {}) {
   const [valid, parsedJSON] = isValidJSON(text);
   // If JSON.parse failed:
   if (!valid){
@@ -2450,7 +2422,7 @@ export function center_map(name) {
   _zoom.y = zoom_translate[1];
 }
 
-function fitLayer(layer_name) {
+export function fitLayer(layer_name) {
   proj.scale(1).translate([0, 0]);
   const b = get_bbox_layer_path(layer_name);
   const s = 0.95 / Mmax((b[1][0] - b[0][0]) / w, (b[1][1] - b[0][1]) / h);
@@ -2798,7 +2770,7 @@ function send_remove_server(layer_name) {
     });
 }
 
-function prepare_available_symbols() {
+export function prepare_available_symbols() {
   return xhrequest('GET', 'static/json/list_symbols.json', null)
     .then((result) => {
       const list_res = JSON.parse(result);
@@ -2827,16 +2799,6 @@ export function accordionize(css_selector = '.accordion', parent) {
         this.classList.toggle('active');
         this.nextElementSibling.classList.toggle('show');
       }
-    };
-  }
-}
-
-function accordionize2(css_selector = '.accordion', parent = document) {
-  const acc = parent.querySelectorAll(css_selector);
-  for (let i = 0; i < acc.length; i++) {
-    acc[i].onclick = function () {
-      this.classList.toggle('active');
-      this.nextElementSibling.classList.toggle('show');
     };
   }
 }
@@ -3235,7 +3197,7 @@ function handle_title_properties() {
 *                are like [null, 750] or [800, null]
 *                but also works with the 2 params together like [800, 750])
 */
-function canvas_mod_size(shape) {
+export function canvas_mod_size(shape) {
   if (shape[0]) {
     w = +shape[0];
     map.attr('width', w)
@@ -3300,7 +3262,7 @@ function fill_export_png_options(displayed_ratio) {
 }
 
 // Function to display information on the top layer (in the layer manager)
-function displayInfoOnMove() {
+export function displayInfoOnMove() {
   const info_features = d3.select('#info_features');
   if (info_features.classed('active')) {
     map.selectAll('.layer').selectAll('path').on('mouseover', null);
@@ -3395,6 +3357,27 @@ function handle_active_layer(name) {
   }
 }
 
+function make_eye_button(state) {
+  if (state === 'open') {
+    const eye_open = document.createElement('img');
+    eye_open.setAttribute('src', 'static/img/b/eye_open.png');
+    eye_open.setAttribute('class', 'active_button i18n');
+    eye_open.setAttribute('id', 'eye_open');
+    eye_open.setAttribute('width', 17);
+    eye_open.setAttribute('height', 17);
+    eye_open.setAttribute('alt', 'Visible');
+    return eye_open;
+  } else if (state === 'closed') {
+    const eye_closed = document.createElement('img');
+    eye_closed.setAttribute('src', 'static/img/b/eye_closed.png');
+    eye_closed.setAttribute('class', 'active_button i18n');
+    eye_closed.setAttribute('id', 'eye_closed');
+    eye_closed.setAttribute('width', 17);
+    eye_closed.setAttribute('height', 17);
+    eye_closed.setAttribute('alt', 'Not visible');
+    return eye_closed;
+  }
+}
 
 
 // Wrapper to obtain confirmation before actually removing a layer :
@@ -3539,4 +3522,18 @@ export function binds_layers_buttons(layer_name) {
     zoom_without_redraw();
   });
   // TODO : re-add a tooltip when the mouse is over that sortable element ?
+}
+
+function change_lang() {
+  const new_lang = this.name;
+  if (new_lang !== i18next.language) {
+    docCookies.setItem('user_lang', new_lang, 31536e3, '/');
+    i18next.changeLanguage(new_lang, () => {
+      localize('.i18n');
+      bindTooltips();
+    });
+    document.getElementById('current_app_lang').innerHTML = new_lang;
+    const menu = document.getElementById('menu_lang');
+    if (menu) menu.remove();
+  }
 }

@@ -195,72 +195,72 @@
 
 #### 0.4.1 (2017-08-14)
 
-- Fix background color when exporting to svg.
+- Corrige bug de la couleur du fond de l'export SVG.
 
-- Fix property box not opening on pictograms layer.
+- Corrige bug de la boite de dialogue ne s'ouvrant pas correctement pour le choix des pictogrammes.
 
-- Don't apply clipping path to pictograms layers nor symbols layers.
+- Changement de comportement avec le découpage SVG (*clipping path*) : n'est plus appliqué aux couches de symboles proportionnels ni aux couches de pictogrammes.
 
-- Change the overlay displayed when a layer is loading.
+- Modification du message apparaissant lors du chargement d'une couche ou de la réalisation de certains calculs.
 
 
 #### 0.4.0 (2017-07-24)
 ------------------
 
-- Fix error occuring on some representations when using a target layer with empty geometries and warn the user if it's the case.
+- Corrige une erreur apparaissant sur certaines représentations lors du l'utilisation d'une couche cible dont la géomtrie de certaines entités est nulle (et prévient l'utilisateur si c'est le cas).
 
-- Introduce a new representation, waffle map, for mapping two (or more) comparable stocks together.
+- Nouveauté: Ajout d'un nouveau type de représentation, les cartes en gaufres (*waffle map*) permettant de représenter conjointement deux (ou plus) stocks comparables.
 
 
 #### 0.3.7 (2017-07-17)
 ------------------
 
-- Fix error on jointure.
+- Corrige une erreur sur les jointures.
 
-- Fix location of red square when moving proportionnal symbols.
+- Corrige la position du carré rouge qui apparaît lors du déplacement des symboles proportionnels.
 
-- Fix legend size on links and discontinuities when zooming.
+- Corrige la taille des symboles en légendes pour les cartes de lien et de discontinuités (lorsque la carte est zoomée).
 
 
 #### 0.3.6 (2017-06-30)
 ------------------
 
-- Fix selection on links map (was only working with specific field name).
+- Corrige l'option de sélection sur les cartes de liens (elle ne fonctionnait qu'avec certains noms de champs).
 
 
 #### 0.3.5 (2017-06-28)
 ------------------
 
-- Allow to edit the location of proportionnal symbols
+- Autorise le déplacement des symboles proportionnels (générés sur les centroides des polygones).
 
-- Slightly change the behavior with proj4 projections when layers are added/removed
+- Change légérement le comportement de la carte avec les projections utilisant proj4 lorsque des couches sont ajoutées/supprimées.
 
 
 #### 0.3.4 (2017-06-22)
 
-- Fix the "auto-align" feature behavior for the new text annotation.
+- Corrige le bug de la fonctionnalité "d'alignement automatique" pour les nouvelles annotations de texte.
 
-- Fix graticule not showing correctly when opening result svg file with Adobe Illustrator.
+- Corrige le bug du graticule ne s'affichant pas correctement lors de l'ouverture d'un fichier SVG dans Adobe illustrator.
 
-- Fix the jointure failing since 0.3.3.
+- Corrige le but des jointures qui échouaient depuis la version 0.3.3.
 
-- New: Allow to change the name of the layers at any time.
+- Nouveau: Autorise le changement de nom des couches à tout moment.
 
 
 #### 0.3.3 (2017-06-15)
 
-- Allow to add more than one sphere background (#26).
+- Autorise l'ajout de plusieurs sphères (<a href="https://github.com/riatelab/magrit/issues/26">issue Github #26</a>)
 
-- Add default projection for sample basemaps.
+- Ajout de projections adaptées par défaut pour les couches d'exemple (Lambert 93 pour le Grand Paris, etc.)
 
 
 #### 0.3.2 (2017-06-09)
 
-- Fix text annotation behavior when clicking on "cancel".
+- Corrige le comportement des annotations de texte lorsque le bouton "annulation/cancel" est cliqué.
 
-- Fix legend displaying "false" after reloading (when size was not fixed).
+- Corrige le bug de la légende qui affiche "false" après le rechargement d'un projet.
 
-- Switch color between "OK" and "Cancel" buttons on modal box.
+- Échange des couleurs entre les boutons "OK" et "Annulation" dans les boites de dialogue.
 
 
 #### 0.3.1 (2017-06-08)

@@ -1,58 +1,10 @@
-import { getColorBrewerArray, hexToRgb, rgb2hex } from './colors_helpers';
-import { make_dialog_container } from './dialogs';
-import { isNumber } from './helpers';
-import { round_value } from './helpers_calc';
-
-function getBreaks(values, type, n_class) {
-  // const _values = values.filter(v => v === 0 || (v && !Number.isNaN(+v))),
-  const _values = values.filter(v => isNumber(v)),
-    no_data = values.length - _values.length,
-    nb_class = +n_class || getOptNbClass(_values.length);
-  const serie = new geostats(_values);
-  let breaks;
-  if (type === 'Q6') {
-    const tmp = getBreaksQ6(serie.sorted(), serie.precision);
-    breaks = tmp.breaks;
-    breaks[0] = serie.min();
-    breaks[nb_class] = serie.max();
-    serie.setClassManually(breaks);
-  } else {
-    const _func = discretiz_geostats_switch.get(type);
-    breaks = serie[_func](nb_class);
-    if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
-  }
-  return [serie, breaks, nb_class, no_data];
-}
-
-export function discretize_to_size(values, type, nb_class, min_size, max_size) {
-  const [serie, breaks, n_class] = getBreaks(values, type, nb_class);
-  const step = (max_size - min_size) / (n_class - 1),
-    class_size = Array(n_class).fill(0).map((d, i) => min_size + (i * step)),
-    breaks_prop = [];
-
-  for (let i = 0; i < breaks.length - 1; ++i) {
-    breaks_prop.push([[breaks[i], breaks[i + 1]], class_size[i]]);
-  }
-  return [n_class, type, breaks_prop, serie];
-}
-
-export const discretize_to_colors = function discretize_to_colors(values, type, nb_class, col_ramp_name) {
-  const name_col_ramp = col_ramp_name || 'Reds';
-  const [serie, breaks, n_class, nb_no_data] = getBreaks(values, type, nb_class),
-    color_array = getColorBrewerArray(n_class, name_col_ramp),
-    no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
-    colors_map = [];
-  for (let j = 0; j < values.length; ++j) {
-    // if (values[j] === 0 || (values[j] !== null && values[j] !== '' && !Number.isNaN(+values[j]))) {
-    if (isNumber(values[j])) {
-      const idx = serie.getClass(values[j]);
-      colors_map.push(color_array[idx]);
-    } else {
-      colors_map.push(no_data_color);
-    }
-  }
-  return [n_class, type, breaks, color_array, colors_map, no_data_color];
-};
+import { getColorBrewerArray, hexToRgb, randomColor, rgb2hex } from './../colors_helpers';
+import { make_dialog_container, overlay_under_modal } from './../dialogs';
+import { isNumber, make_content_summary } from './../helpers';
+import { accordionize } from './../interface';
+import { get_nb_left_separator, get_precision_axis, round_value } from './../helpers_calc';
+import { Mabs, Mceil, Mmax, Mmin, Mround, Msqrt } from './../helpers_math';
+import { discretize_to_colors, getBreaksQ6, getBreaks, getBreaksStdDev, getBreaks_userDefined } from './common';
 
 export const display_discretization = (layer_name, field_name, nb_class, options) => {
   const make_no_data_section = () => {
@@ -1131,7 +1083,7 @@ function fetch_categorical_colors() {
   return color_map;
 }
 
-function display_categorical_box(data_layer, layer_name, field, cats) {
+export function display_categorical_box(data_layer, layer_name, field, cats) {
   const is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
   const nb_features = current_layers[layer_name].n_features;
   const nb_class = cats.length;

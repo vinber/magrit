@@ -1,7 +1,7 @@
-const display_box_symbol_typo = function (layer, field, categories) {
+export const display_box_symbol_typo = function (layer, field, categories) {
   const fetch_symbol_categories = function () {
-    let categ = document.getElementsByClassName('typo_class'),
-      symbol_map = new Map();
+    const categ = document.getElementsByClassName('typo_class');
+    const symbol_map = new Map();
     for (let i = 0; i < categ.length; i++) {
       let selec = categ[i].querySelector('.symbol_section'),
         new_name = categ[i].querySelector('.typo_name').value;
@@ -247,7 +247,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
 }
 
 
-function make_style_box_indiv_symbol(symbol_node) {
+export function make_style_box_indiv_symbol(symbol_node) {
   const parent = symbol_node.parentElement;
   const type_obj = parent.classList.contains('layer') ? 'layer' : 'layout';
   const current_options = {

@@ -1,13 +1,16 @@
+import ContextMenu from './context-menu';
 import { getColorBrewerArray, ColorsSelected, randomColor } from './colors_helpers';
-import { discretize_to_colors, discretize_to_size, display_discretization } from './discretization_panel';
+import { display_categorical_box, display_discretization } from './classification/discretization_panel';
+import { getOptNbClass, discretize_to_colors, discretize_to_size } from './classification/common';
 import {
-  copy_layer, create_li_layer_elem, display_error_during_computation, drag_elem_geo2, getFieldsType, get_other_layer_names, isNumber, setSelected,
+  copy_layer, create_li_layer_elem, display_error_during_computation, drag_elem_geo2, getFieldsType, get_other_layer_names, isNumber, setSelected, xhrequest,
 } from './helpers';
-import { getBinsCount, get_nb_decimals, getOptNbClass, has_negative, max_fast, PropSizer } from './helpers_calc';
-import { switch_accordion_section } from './interface';
-import { Mmax, Mmin, Mround } from './helpers_math';
+import { contains_empty_val, getBinsCount, get_nb_decimals, has_negative, haversine_dist, max_fast, PropSizer } from './helpers_calc';
+import { Mabs, Mmax, Mmin, Mround } from './helpers_math';
+import { add_layer_topojson, prepare_available_symbols, switch_accordion_section } from './interface';
 import { handle_legend } from './legend';
 import { zoom_without_redraw } from './map_ctrl';
+import { display_box_symbol_typo, make_style_box_indiv_symbol } from './symbols_picto';
 
 export const get_menu_option = (function () {
   const menu_option = {
@@ -108,7 +111,7 @@ export function clean_menu_function() {
 *   were selected by the user)
 *
 */
-function reset_user_values() {
+export function reset_user_values() {
   fields_TypoSymbol.box_typo = undefined;
   fields_TypoSymbol.rendering_params = {};
   fields_TypoSymbol.cats = {};
@@ -200,12 +203,11 @@ function display_warning_empty_geom(features) {
 const get_first_guess_span = function (func_name) {
   const bbox = _target_layer_file.bbox,
     layer_name = Object.getOwnPropertyNames(_target_layer_file.objects),
-    abs = Math.abs,
     const_mult = func_name === 'grid' ? 0.09 : 0.05;
   const width_km = haversine_dist(
-    [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+    [bbox[0], Mabs(bbox[3]) - Mabs(bbox[1])], [bbox[2], Mabs(bbox[3]) - Mabs(bbox[1])]);
   const height_km = haversine_dist(
-    [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    [Mabs(bbox[2]) - Mabs(bbox[0]), bbox[1]], [Mabs(bbox[2]) - Mabs(bbox[0]), bbox[3]]);
   const val = Mmax(width_km, height_km) * const_mult;
   return val > 10 ? Mround(val / 10) * 10 : Mround(val);
 };
@@ -219,11 +221,10 @@ const get_first_guess_span = function (func_name) {
 */
 function test_maxmin_resolution(cell_value) {
   const bbox = _target_layer_file.bbox;
-  const abs = Math.abs;
   const width_km = haversine_dist(
-    [bbox[0], abs(bbox[3]) - abs(bbox[1])], [bbox[2], abs(bbox[3]) - abs(bbox[1])]);
+    [bbox[0], Mabs(bbox[3]) - Mabs(bbox[1])], [bbox[2], Mabs(bbox[3]) - Mabs(bbox[1])]);
   const height_km = haversine_dist(
-    [abs(bbox[2]) - abs(bbox[0]), bbox[1]], [abs(bbox[2]) - abs(bbox[0]), bbox[3]]);
+    [Mabs(bbox[2]) - Mabs(bbox[0]), bbox[1]], [Mabs(bbox[2]) - Mabs(bbox[0]), bbox[3]]);
   // const area = width_km * height_km;
   const bigger_side = Mmax(height_km, width_km);
   if ((width_km * height_km) / (cell_value * cell_value) > 15000) {
@@ -1096,7 +1097,7 @@ const fields_PropSymbolChoro = {
 
     ico_disc.on('click', () => {
       const selected_field = field_color.node().value;
-      const opt_nb_class = Math.floor(1 + 3.3 * Math.log10(user_data[layer].length));
+      const opt_nb_class = getOptNbClass(user_data[layer].length);
       let conf_disc_box;
 
       if (self.rendering_params[selected_field]) {
@@ -4427,7 +4428,7 @@ function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, d
     });
 }
 
-const render_label = function render_label(layer, rendering_params, options) {
+export const render_label = function render_label(layer, rendering_params, options) {
   const label_field = rendering_params.label_field;
   const txt_color = rendering_params.color;
   const selected_font = rendering_params.font;
@@ -4562,7 +4563,7 @@ const render_label = function render_label(layer, rendering_params, options) {
   return layer_to_add;
 };
 
-const render_label_graticule = function render_label_graticule(layer, rendering_params, options) {
+export const render_label_graticule = function render_label_graticule(layer, rendering_params, options) {
   const txt_color = rendering_params.color;
   const selected_font = rendering_params.font;
   const font_size = `${rendering_params.ref_font_size}px`;

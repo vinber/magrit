@@ -1,5 +1,10 @@
 import { rgb2hex } from './colors_helpers';
+import { reset_user_values } from './function';
+import { canvas_mod_size, remove_layer_cleanup } from './interface';
 import { clickLinkFromDataUrl, isValidJSON } from './helpers';
+import { available_projections } from './projections';
+import { northArrow } from './layout_features/north_arrow';
+import { scaleBar } from './layout_features/scalebar';
 
 /* eslint-disable no-loop-func */
 export function get_map_template() {

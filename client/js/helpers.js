@@ -1,6 +1,8 @@
 import { make_confirm_dialog2, make_dialog_container, overlay_under_modal } from './dialogs';
 import { round_value } from './helpers_calc';
 import { binds_layers_buttons, handle_click_hand } from './interface';
+import { button_legend, button_replace, button_result_type, button_table, button_trash, button_type, button_zoom_fit, eye_open0, sys_run_button, sys_run_button_t2 } from './ui/buttons';
+
 
 export const isNumber = (value) => {
  return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
@@ -889,3 +891,13 @@ export const isValidJSON = txt => {
     return [false, e];
   }
 };
+
+export function accordionize2(css_selector = '.accordion', parent = document) {
+  const acc = parent.querySelectorAll(css_selector);
+  for (let i = 0; i < acc.length; i++) {
+    acc[i].onclick = function () {
+      this.classList.toggle('active');
+      this.nextElementSibling.classList.toggle('show');
+    };
+  }
+}

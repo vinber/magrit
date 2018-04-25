@@ -1,4 +1,9 @@
 import { Mmax, Mminx, Mpow, Msqrt, Mabs, Mround, Mceil } from './helpers_math';
+
+const sin = Math.sin;
+const cos = Math.cos;
+const atan2 = Math.atan2;
+
 /**
 * Function computing the min of an array of values (tking care of empty/null/undefined slot)
 *  - no fancy functionnalities here (it doesn't add anything comparing to Math.min.apply()
@@ -7,7 +12,7 @@ import { Mmax, Mminx, Mpow, Msqrt, Mabs, Mround, Mceil } from './helpers_math';
 * @param {Array} arr - The serie of values.
 * @return {Number} - The minimum value.
 */
-function min_fast(arr) {
+export function min_fast(arr) {
   let min = arr[0];
   for (let i = 1, len_i = arr.length; i < len_i; ++i) {
     const val = +arr[i];
@@ -48,7 +53,7 @@ export function has_negative(arr) {
 * @param {Array} arr - The array to test
 * @return {Boolean} result - True or False, according to whether it contains empty values or not
 */
-const contains_empty_val = function contains_empty_val(arr) {
+export const contains_empty_val = function contains_empty_val(arr) {
   for (let i = arr.length - 1; i > -1; --i) {
     if (arr[i] == null) return true;
     else if (isNaN(+arr[i])) return true;
@@ -105,7 +110,7 @@ export function getDecimalSeparator() {
   return 1.1.toLocaleString().substr(1, 1);
 }
 
-const get_precision_axis = (serie_min, serie_max, precision) => {
+export const get_precision_axis = (serie_min, serie_max, precision) => {
   const range_serie = serie_max - serie_min;
   if (serie_max > 1 && range_serie > 100) {
     return '.0f';
@@ -180,112 +185,6 @@ export function prop_sizer3_e(arr, fixed_value, fixed_size, type_symbol) {
 }
 
 /**
-* Compute the "optimal" (cf. xxx) number of class according to the number
-* of features in serie of values.
-*
-* @param {Integer} len_serie - The length of the serie of values.
-* @return {Integer} - The "optimal" number of classes to be used to discretize the serie.
-*/
-export function getOptNbClass(len_serie) {
-  return Math.floor(1 + 3.3 * Math.log10(len_serie));
-}
-
-/**
-* Compute breaks according to "Q6" method
-* and compute the number of item in each bin.
-*
-* @param {Array} serie - An array of ordered values.
-* @param {Number} precision - An integer value decribing the precision of the serie.
-* @return {Object} - Object containing the breaks and the stock in each class.
-*/
-function getBreaksQ6(serie, precision = null) {
-  const len_serie = serie.length;
-  const q6_class = [
-    1,
-    0.05 * len_serie,
-    0.275 * len_serie,
-    0.5 * len_serie,
-    0.725 * len_serie,
-    0.95 * len_serie,
-    len_serie,
-  ];
-  let breaks = [];
-  let tmp = 0;
-  let j;
-  const stock_class = [];
-  for (let i = 0; i < 7; ++i) {
-    j = Mround(q6_class[i]) - 1;
-    breaks.push(+serie[j]);
-    stock_class.push(j - tmp);
-    tmp = j;
-  }
-  stock_class.shift();
-  if (breaks[0] === breaks[1]) {
-      // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
-    breaks[1] = (+serie[1] + breaks[0]) / 2;
-  }
-  if (breaks[6] === breaks[5]) {
-    breaks[5] = serie[len_serie - 2];
-      // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
-  }
-  if (precision != null) {
-    breaks = breaks.map(val => round_value(val, precision));
-  }
-  return {
-    breaks,
-    stock_class,
-  };
-}
-
-/**
-* Compute breaks according to our "mean and standard deviation" method
-* and compute the number of item in each bin.
-*
-* @param {Array} serie - An array of ordered values.
-* @param {Number} share - The ratio of stddev to be used a size for each class.
-* @param {String} mean_position - The position of the mean value.
-* @param {Number} precision - An integer value decribing the precision of the serie.
-* @return {Object} - Object containing the breaks and the stock in each class.
-*/
-function getBreaksStdDev(serie, share, mean_position = 'center', precision) {
-  const min = serie.min(),
-    max = serie.max(),
-    mean = serie.mean(),
-    std_dev = serie.stddev(),
-    class_size = std_dev * share;
-  const breaks = mean_position === 'center'
-    ? [mean - (class_size / 2), mean + (class_size / 2)]
-    : [mean - class_size, mean, mean + class_size];
-
-  const _precision = precision || serie.precision;
-
-  while (breaks[0] > min) {
-    breaks.unshift(breaks[0] - class_size);
-  }
-  while (breaks[breaks.length - 1] < max) {
-    breaks.push(breaks[breaks.length - 1] + class_size);
-  }
-  const nb_class = breaks.length - 1;
-  if (breaks[0] < min) {
-    if (breaks[1] < min) {
-      console.log('This shouldn\'t happen (min)');
-    }
-    breaks[0] = min;
-  }
-
-  if (breaks[nb_class] > max) {
-    if (breaks[nb_class - 1] > max) {
-      console.log('This shouldn\'t happen (max)');
-    }
-    breaks[nb_class] = max;
-  }
-  return {
-    nb_class,
-    breaks: breaks.map(v => round_value(v, _precision)),
-  };
-}
-
-/**
 * Compute a summary about the given serie of values.
 *
 * @param {Array} _values - The serie of values.
@@ -334,60 +233,13 @@ export function getBinsCount(_values, bins = 16) {
 }
 
 /**
-* Parse a string of comma separated break values
-* to an actual Array of break values.
-* The serie is used to defined if there may be negative values
-* in the defined break values.
-*
-* @param {Array} serie - The serie of values to be discretised with `breaks_list`.
-* @param {String} breaks_list - The user_defined break values as String.
-* @return {Array} - The actual Array of break values.
-*/
-function parseUserDefinedBreaks(serie, breaks_list) {
-  const separator = has_negative(serie) ? '- ' : '-';
-  return breaks_list.split(separator).map(el => +el.trim());
-}
-
-/**
-* Returns the break values and the stock of each class given
-* a list of breaks defined by the user.
-*
-* @param {Array} serie - The serie of values to be discretised
-* @param {Array} breaks - The list of breaks, whether as a String (a typed by the user)
-*                    or as an Array.
-* @return {Object} - An Object with the stock (number of feature) in each class
-*                    and the break values (should be unchanged if provided as an Array)
-*/
-function getBreaks_userDefined(serie, breaks) {
-  const break_values = (typeof breaks === 'string')
-    ? parseUserDefinedBreaks(serie, breaks)
-    : breaks;
-  const len_serie = serie.length,
-    len_break_val = break_values.length,
-    stock_class = new Array(len_break_val - 1);
-  let j = 0;
-  for (let i = 1; i < len_break_val; ++i) {
-    const class_max = break_values[i];
-    stock_class[i - 1] = 0;
-    while (serie[j] <= class_max) {
-      stock_class[i - 1] += 1;
-      j += 1;
-    }
-  }
-  return {
-    breaks: break_values,
-    stock_class,
-  };
-}
-
-/**
 * Return the haversine distance in kilometers between two points (lat/long coordinates)
 *
 * @param {Array} A - Coordinates of the 1st point as [latitude, longitude]
 * @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
 * @return {Number} distance - The distance in km between A and B
 */
-function haversine_dist(A, B) {
+export function haversine_dist(A, B) {
   const pi_dr = Math.PI / 180;
 
   const lat1 = +A[0],
@@ -400,10 +252,10 @@ function haversine_dist(A, B) {
     x2 = lon2 - lon1,
     dLon = x2 * pi_dr;
 
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * pi_dr) * Math.cos(lat2 * pi_dr) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(lat1 * pi_dr) * cos(lat2 * pi_dr) *
+                sin(dLon / 2) * sin(dLon / 2);
+  return 6371 * 2 * atan2(Msqrt(a), Msqrt(1 - a));
 }
 
 /**
@@ -414,7 +266,7 @@ function haversine_dist(A, B) {
 * @param {Array} B - Coordinates of the 2nd point as [latitude, longitude]
 * @return {Number} distance - The distance in km between A and B
 */
-function coslaw_dist(A, B) {
+export function coslaw_dist(A, B) {
   const pi_dr = Math.PI / 180;
 
   const lat1 = +A[0],
@@ -429,18 +281,18 @@ function coslaw_dist(A, B) {
                 ) * 6371;
 }
 
-/**
-* Compute the euclidian distance between pt1 and pt2, in the unit provided.
-*
-* @param {Array} pt1 - Coordinates of the 1st point as [x, y].
-* @param {Array} pt2 - Coordinates of the 2nd point as [x, y].
-* @return {Number} - The euclidian distance between pt1 and pt2.
-*/
-function get_distance(pt1, pt2) {
-  const xs = pt2[0] - pt1[1];
-  const ys = pt2[1] - pt1[1];
-  return Msqrt((xs * xs) + (ys * ys));
-}
+// /**
+// * Compute the euclidian distance between pt1 and pt2, in the unit provided.
+// *
+// * @param {Array} pt1 - Coordinates of the 1st point as [x, y].
+// * @param {Array} pt2 - Coordinates of the 2nd point as [x, y].
+// * @return {Number} - The euclidian distance between pt1 and pt2.
+// */
+// export function get_distance(pt1, pt2) {
+//   const xs = pt2[0] - pt1[1];
+//   const ys = pt2[1] - pt1[1];
+//   return Msqrt((xs * xs) + (ys * ys));
+// }
 
 /**
 * Compute the standard deviation of a serie of values.

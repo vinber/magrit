@@ -1,10 +1,11 @@
 import ContextMenu from './context-menu';
 import { rgb2hex } from './colors_helpers';
 import { make_confirm_dialog2 } from './dialogs';
-import { getTranslateNewLegend, PropSizer, round_value } from './helpers_calc';
+import { cloneObj } from './helpers';
+import { get_nb_decimals, get_nb_left_separator, getTranslateNewLegend, max_fast, min_fast, PropSizer, round_value } from './helpers_calc';
 import { Mmax, Mmin, Mpow, Msqrt, Mabs, Mround } from './helpers_math';
 import { handle_click_hand } from './interface';
-import { get_coords_snap_lines } from './layout_features/helpers';
+import { get_coords_snap_lines, make_red_line_snap } from './layout_features/helpers';
 
 /**
 * Function called on clicking on the legend button of each layer
@@ -109,9 +110,9 @@ function createLegend(layer, title) {
   if (el && lgd_pos && lgd_pos.x) {
     el.attr('transform', `translate(${lgd_pos.x},${lgd_pos.y})`);
   }
-  pos_lgds_elem.set(`${el.attr('id')} ${el.attr('class')}`, el.node().getBoundingClientRect());
+  pos_lgds_elem.set(`${el.attr('id')} ${el.attr('class')}`, el.node().getBBox());
   if (el2) {
-    const prev_bbox = el.node().getBoundingClientRect(),
+    const prev_bbox = el.node().getBBox(),
       dim_h = lgd_pos.y + prev_bbox.height,
       dim_w = lgd_pos.x + prev_bbox.width;
     const lgd_pos2 = getTranslateNewLegend();
@@ -122,7 +123,7 @@ function createLegend(layer, title) {
     } else if (dim_w < w) {
       el2.attr('transform', `translate(${dim_w},${lgd_pos.y})`);
     }
-    pos_lgds_elem.set(`${el2.attr('id')} ${el2.attr('class')}`, el2.node().getBoundingClientRect());
+    pos_lgds_elem.set(`${el2.attr('id')} ${el2.attr('class')}`, el2.node().getBBox());
   }
 }
 
@@ -188,21 +189,7 @@ function make_legend_context_menu(legend_node, layer) {
   });
 }
 
-const make_red_line_snap = function (x1, x2, y1, y2, timeout = 750) {
-  let current_timeout;
-  return (function () {
-    if (current_timeout) {
-      clearTimeout(current_timeout);
-    }
-    map.select('.snap_line').remove();
-    const line = map.append('line')
-      .attrs({ x1, x2, y1, y2, class: 'snap_line' })
-      .styles({ stroke: 'red', 'stroke-width': 0.7 });
-    current_timeout = setTimeout((_) => { line.remove(); }, timeout);
-  }());
-};
-
-const drag_legend_func = function (legend_group) {
+export const drag_legend_func = function drag_legend_func(legend_group) {
   return d3.drag()
     .subject(function () {
       let t = d3.select(this),
@@ -213,10 +200,9 @@ const drag_legend_func = function (legend_group) {
       if (prev_translate.length === 1) prev_translate = [prev_translate[0], 0];
 
       return {
-        x: t.attr('x') + prev_translate[0],
-        y: t.attr('y') + prev_translate[1],
+        x: +t.attr('x') + prev_translate[0],
+        y: +t.attr('y') + prev_translate[1],
         map_locked: !!map_div.select('#hand_button').classed('locked'),
-        map_offset: get_map_xy0(),
         snap_lines,
         offset: [+legend_group.select('#under_rect').attr('x'), +legend_group.select('#under_rect').attr('y')],
       };
@@ -229,7 +215,7 @@ const drag_legend_func = function (legend_group) {
     .on('end', () => {
       if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
       legend_group.style('cursor', 'grab');
-      pos_lgds_elem.set(`${legend_group.attr('id')} ${legend_group.attr('class')}`, legend_group.node().getBoundingClientRect());
+      pos_lgds_elem.set(`${legend_group.attr('id')} ${legend_group.attr('class')}`, legend_group.node().getBBox());
     })
     .on('drag', () => {
       const Min = Mmin;
@@ -241,18 +227,16 @@ const drag_legend_func = function (legend_group) {
       legend_group.attr('transform', `translate(${new_value})`)
           .style('cursor', 'grabbing');
 
-      const bbox_elem = legend_group.node().getBoundingClientRect(),
-        map_offset = d3.event.subject.map_offset;
+      const bbox_elem = legend_group.node().getBBox();
       let val_x = d3.event.x,
         val_y = d3.event.y,
         change;
 
       if (_app.autoalign_features) {
-        const xy0 = get_map_xy0(),
-          xmin = bbox_elem.left - xy0.x,
-          xmax = bbox_elem.right - xy0.x,
-          ymin = bbox_elem.top - xy0.y,
-          ymax = bbox_elem.bottom - xy0.y;
+        const xmin = bbox_elem.x,
+          xmax = bbox_elem.x + bbox_elem.width,
+          ymin = bbox_elem.y,
+          ymax = bbox_elem.y + bbox_elem.height;
 
         const snap_lines_x = d3.event.subject.snap_lines.x,
           snap_lines_y = d3.event.subject.snap_lines.y;
@@ -288,11 +272,11 @@ const drag_legend_func = function (legend_group) {
         }
       }
 
-      if (bbox_elem.width < w && (bbox_elem.left < (map_offset.x - 10) || bbox_elem.left + bbox_elem.width > (map_offset.x + +w + 10))) {
+      if ((bbox_elem.width < w && (bbox_elem.x < - 10)) || (bbox_elem.x + bbox_elem.width > (+w + 10))) {
         val_x = prev_value[0];
         change = true;
       }
-      if (bbox_elem.height < h && (bbox_elem.top < (map_offset.y - 10) || bbox_elem.top + bbox_elem.height > (map_offset.y + +h + 10))) {
+      if ((bbox_elem.height < h && bbox_elem.y < - 10) || (bbox_elem.y + bbox_elem.height > (+h + 10))) {
         val_y = prev_value[1];
         change = true;
       }
@@ -572,19 +556,18 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 */
 function make_underlying_rect(legend_root, under_rect, fill) {
   under_rect.attrs({ width: 0, height: 0 });
-  const bboxLegend = legend_root.node().getBoundingClientRect();
+  const bboxLegend = legend_root.node().getBBox();
   let translate = legend_root.attr('transform');
-  const { x: x0, y: y0 } = get_map_xy0();
 
   translate = translate
           ? translate.split('translate(')[1].split(')')[0].split(/[ ,]+/).map(d => +d)
           : [0, 0];
   if (translate.length === 1) translate = [translate[0], 0];
 
-  const x_top_left = bboxLegend.left - x0 - 12.5 - translate[0];
-  const y_top_left = bboxLegend.top - y0 - 12.5 - translate[1];
-  const x_top_right = bboxLegend.right - x0 + 12.5 - translate[0];
-  const y_bottom_left = bboxLegend.bottom - y0 + 12.5 - translate[1];
+  const x_top_left = bboxLegend.x - 12.5 - translate[0];
+  const y_top_left = bboxLegend.y - 12.5 - translate[1];
+  const x_top_right = bboxLegend.x + bboxLegend.width + 12.5 - translate[0];
+  const y_bottom_left = bboxLegend.y + bboxLegend.height + 12.5 - translate[1];
   const rect_height = y_bottom_left - y_top_left;
   const rect_width = x_top_right - x_top_left;
 
@@ -611,7 +594,7 @@ function make_underlying_rect(legend_root, under_rect, fill) {
   }
 }
 
-function createLegend_symbol(layer, field, title, subtitle, nested = 'false', join_line = 'false', rect_fill_value, rounding_precision, note_bottom, options = {}) {
+export function createLegend_symbol(layer, field, title, subtitle, nested = 'false', join_line = 'false', rect_fill_value, rounding_precision, note_bottom, options = {}) {
   const parent = options.parent || window.map;
   const space_elem = 18;
   const boxgap = 4;
@@ -1370,9 +1353,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     });
 
   // Center the title and the subtitle:
-  const bb = legend_root.node().getBoundingClientRect();
-  const { x: x0, y: y0 } = get_map_xy0();
-  const x_middle = (bb.left + bb.width / 2) - x0;
+  const bb = legend_root.node().getBBox();
+  const x_middle = (bb.x + bb.width / 2);
   lgd_title.attr('x', x_middle).text(title || '');
   lgd_subtitle.attr('x', x_middle).text(subtitle);
   bottom_note.attr('x', x_middle).text(note_bottom != null ? note_bottom : '');

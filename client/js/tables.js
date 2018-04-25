@@ -330,7 +330,7 @@ function createTableDOM(data, opts) {
   return myTable;
 }
 
-function make_table(layer_name) {
+export function make_table(layer_name) {
   const features = svg_map.querySelector(`#${_app.layer_to_id.get(layer_name)}`).childNodes;
   const table = [];
   if (!features[0].__data__.properties

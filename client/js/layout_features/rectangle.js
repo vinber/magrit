@@ -1,5 +1,7 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
+import { rgb2hex } from './../colors_helpers';
+import { Mabs } from './../helpers_math';
 import { handle_click_hand } from './../interface';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
 

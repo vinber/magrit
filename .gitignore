@@ -11,7 +11,7 @@ __pycache__/
 env/
 build/
 develop-eggs/
-dist/
+/dist/
 downloads/
 eggs/
 .eggs/
@@ -81,3 +81,6 @@ tmp/
 .node_repl_history
 node_modules/
 jspm_packages/
+
+# Exception for the builded js file of Magrit:
+!magrit_app/static/dist

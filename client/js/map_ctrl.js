@@ -1,4 +1,6 @@
-import { round_value } from './helpers_calc';
+import { get_nb_decimals, round_value } from './helpers_calc';
+import { createLegend_symbol } from './legend';
+import { scaleBar } from './layout_features/scalebar';
 
 export function zoom_without_redraw() {
   const rot_val = canvas_rotation_value || '';
@@ -42,14 +44,14 @@ export function zoom_without_redraw() {
   // FIXME !!!
   // FIXME !!!
   // TODO : To Reactivate
-  // if (scaleBar.displayed) {
-  //   scaleBar.update();
-  // }
-
-  if (window.legendRedrawTimeout) {
-    clearTimeout(legendRedrawTimeout);
+  if (scaleBar.displayed) {
+    scaleBar.update();
   }
-  window.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
+
+  if (_app.legendRedrawTimeout) {
+    clearTimeout(_app.legendRedrawTimeout);
+  }
+  _app.legendRedrawTimeout = setTimeout(redraw_legends_symbols, 650);
   const zoom_params = svg_map.__zoom;
   const _k = proj.scale() * zoom_params.k;
   // let zoom_k_scale = proj.scale() * zoom_params.k;
@@ -177,7 +179,7 @@ export function rotate_global(angle) {
   zoom_without_redraw();
 }
 
-function redraw_legends_symbols(targeted_node) {
+export function redraw_legends_symbols(targeted_node) {
   const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol');
   const hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
   const hidden = [];

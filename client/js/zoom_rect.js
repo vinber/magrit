@@ -1,4 +1,7 @@
 import { Mmax } from './helpers_math';
+import { displayInfoOnMove } from './interface';
+import { zoom_without_redraw } from './map_ctrl';
+
 
 /**
 * Function triggered when the user click on the "zoom by tracing a rectangle"
@@ -31,6 +34,9 @@ export const handleZoomRect = function () {
 */
 const makeZoomRect = function () {
   if (!proj.invert) return;
+  const brush = d3.brush().on('end', brushended);
+  const idleDelay = 350;
+  let idleTimeout;
   function idled() { idleTimeout = null; }
   function brushended() {
     const s = d3.event.selection;
@@ -40,37 +46,34 @@ const makeZoomRect = function () {
         return idleTimeout;
       }
     } else {
-      const x_min = s[0][0],
-        x_max = s[1][0];
-      const y_min = s[1][1],
-        y_max = s[0][1];
-      const transform = d3.zoomTransform(svg_map),
-        z_trans = [transform.x, transform.y],
-        z_scale = transform.k;
+      const x_min = s[0][0];
+      const x_max = s[1][0];
+      const y_min = s[1][1];
+      const y_max = s[0][1];
+      const transform = d3.zoomTransform(svg_map);
+      const z_trans = [transform.x, transform.y];
+      const z_scale = transform.k;
 
-      const pt1 = proj.invert([(x_min - z_trans[0]) / z_scale, (y_min - z_trans[1]) / z_scale]),
-        pt2 = proj.invert([(x_max - z_trans[0]) / z_scale, (y_max - z_trans[1]) / z_scale]);
+      const pt1 = proj.invert([(x_min - z_trans[0]) / z_scale, (y_min - z_trans[1]) / z_scale]);
+      const pt2 = proj.invert([(x_max - z_trans[0]) / z_scale, (y_max - z_trans[1]) / z_scale]);
       const path_bounds = path.bounds({ type: 'MultiPoint', coordinates: [pt1, pt2] });
-        // Todo : use these two points to make zoom on them
+      // Todo : use these two points to make zoom on them
       map.select('.brush').call(brush.move, null);
 
-      const zoom_scale = 0.95 / Mmax(
-        (path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
-      const zoom_translate = [
-        (w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2,
-        (h - zoom_scale * (path_bounds[1][1] + path_bounds[0][1])) / 2,
-      ];
+      const zoom_scale = 0.95 / Mmax((
+        path_bounds[1][0] - path_bounds[0][0]) / w, (path_bounds[1][1] - path_bounds[0][1]) / h);
+      // const zoom_translate = [
+      //   (w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2,
+      //   (h - zoom_scale * (path_bounds[1][1] + path_bounds[0][1])) / 2,
+      // ];
       svg_map.__zoom.k = zoom_scale;
-      svg_map.__zoom.x = zoom_translate[0];
-      svg_map.__zoom.y = zoom_translate[1];
+      svg_map.__zoom.x = (w - zoom_scale * (path_bounds[1][0] + path_bounds[0][0])) / 2;
+      svg_map.__zoom.y = (h - zoom_scale * (path_bounds[1][1] + path_bounds[0][1])) / 2;
       zoom_without_redraw();
     }
   }
 
-  const brush = d3.brush().on('end', brushended);
-  let idleTimeout,
-    idleDelay = 350;
   map.append('g')
-        .attr('class', 'brush')
-        .call(brush);
+    .attr('class', 'brush')
+    .call(brush);
 };

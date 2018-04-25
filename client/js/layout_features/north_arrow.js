@@ -1,9 +1,11 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { Mabs, Mmax, Mmin } from './../helpers_math';
 import { handle_click_hand } from './../interface';
+import { get_coords_snap_lines, make_red_line_snap } from './helpers';
 
-const northArrow = {
+export const northArrow = {
   display(x, y) {
     let x_pos = x || w - 100,
       y_pos = y || h - 100,

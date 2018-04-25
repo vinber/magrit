@@ -1,4 +1,5 @@
-import { make_dialog_container } from './dialogs';
+import { make_dialog_container } from './../dialogs';
+import { make_content_summary } from './../helpers';
 
 const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
   const make_box_histo_option = function () {
