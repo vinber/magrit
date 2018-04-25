@@ -57,7 +57,6 @@ from aiohttp_session import get_session, session_middleware, redis_storage
 from multidict import MultiDict
 
 try:
-    from helpers.watch_change import JsFileWatcher
     from helpers.misc import (
         run_calc, savefile, get_key, zip_layer_folder,
         extractShpZip, guess_separator, clean_name)
@@ -72,7 +71,6 @@ try:
     from helpers.grid_layer_pt import get_grid_layer_pt
     from helpers.error_middleware404 import error_middleware
 except:
-   from .helpers.watch_change import JsFileWatcher
    from .helpers.misc import (
        run_calc, savefile, get_key, zip_layer_folder,
        extractShpZip, guess_separator, clean_name)
@@ -1523,7 +1521,9 @@ async def init(loop, port=None, watch_change=False):
         "olson": compute_olson
         }
     if watch_change:
-        app['FileWatcher'] = JsFileWatcher()
+        webpack_logger = logging.getLogger("webpack")
+        asyncio.ensure_future(execute(webpack_logger, 'cd ../client && ./node_modules/webpack/bin/webpack.js --watch'))
+
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
     # If port is None the application is started for unittests or by Gunicorn:
@@ -1536,6 +1536,22 @@ async def init(loop, port=None, watch_change=False):
         srv = await loop.create_server(
             handler, '0.0.0.0', port)
         return srv, app, handler
+
+async def log_stream(log, stream):
+    while not stream.at_eof():
+        data = await stream.readline()
+        line = data.decode().rstrip()
+        log(line)
+
+async def execute(logger, command):
+    proc = await asyncio.create_subprocess_shell(command,
+                                                stdout=PIPE,
+                                                stderr=PIPE)
+    await asyncio.wait([
+        asyncio.ensure_future(log_stream(logger.info, proc.stdout)),
+        asyncio.ensure_future(log_stream(logger.error, proc.stderr)),
+        asyncio.ensure_future(proc.wait())
+        ])
 
 def _init(loop):
     """

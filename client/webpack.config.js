@@ -4,12 +4,13 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 module.exports = [{
   entry: {
-    app: './js/main.js'
+    app: './js/main.js',
+    vendor: ['alertifyjs', 'i18next', 'i18next-xhr-backend', 'loc-i18next', 'tippy.js']
   },
   output: {
     filename: '[name].js'
   },
-  mode: 'development',
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   module: {
     rules: [
       // {
@@ -31,17 +32,29 @@ module.exports = [{
      }
     ]
   },
-  // optimization: {
-  //     splitChunks: {
-  //         cacheGroups: {
-  //             commons: {
-  //                 test: /[\\/]node_modules[\\/]/,
-  //                 name: 'd3',
-  //                 chunks: 'all'
-  //             }
-  //         }
-  //     }
-  // },
+  optimization: {
+    splitChunks: {
+        cacheGroups: {
+          commons: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendor',
+            chunks: 'all'
+          }
+        }
+      },
+      minimizer: [
+        new UglifyJsPlugin({
+          // cache: true,
+          // parallel: true,
+          // uglifyOptions: {
+          //   compress: false,
+          //   ecma: 6,
+          //   mangle: false
+          // }
+          // sourceMap: true
+        })
+      ]
+  },
   plugins: [
     new webpack.ProvidePlugin({
         'Promise': 'bluebird'

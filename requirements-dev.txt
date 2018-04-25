@@ -4,7 +4,6 @@ aiohttp-session == 2.3.0
 aionotify == 0.2.0
 aioredis == 1.1.0
 cchardet == 2.1.1
-csscompressor == 0.9.4
 Cython >= 0.25
 docopt >= 0.6.2
 Fiona == 1.7.11
