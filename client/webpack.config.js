@@ -5,7 +5,11 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 module.exports = [{
   entry: {
     app: './js/main.js',
-    vendor: ['alertifyjs', 'i18next', 'i18next-xhr-backend', 'loc-i18next', 'tippy.js']
+    vendor: [
+      'alertifyjs', 'colorbrewer',
+      'i18next', 'i18next-xhr-backend',
+      'jschardet', 'loc-i18next', 'tippy.js',
+    ]
   },
   output: {
     filename: '[name].js'

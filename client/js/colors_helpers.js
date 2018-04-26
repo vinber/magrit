@@ -1,3 +1,4 @@
+import colorbrewer from 'colorbrewer';
 /**
 * Helper function in order to have a colorbrewer color ramp with
 * non-supported number of value using interpolation between the colorbrewer color

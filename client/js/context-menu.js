@@ -1,3 +1,5 @@
+import './../css/context-menu.css';
+
 export default function () {
   this.items = [];
 

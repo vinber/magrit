@@ -1,4 +1,8 @@
 import './../css/style.css';
+import './../css/discretization.css';
+import './../node_modules/alertifyjs/build/css/alertify.min.css';
+import './../node_modules/alertifyjs/build/css/themes/semantic.min.css';
+
 import i18next from 'i18next';
 import i18nextXHRBackend from 'i18next-xhr-backend';
 import locI18next from 'loc-i18next';

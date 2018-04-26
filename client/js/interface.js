@@ -1,4 +1,5 @@
 import alertify from 'alertifyjs';
+import jschardet from 'jschardet';
 import ContextMenu from './context-menu';
 import { ColorsSelected, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
