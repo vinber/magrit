@@ -3,6 +3,7 @@ import jschardet from 'jschardet';
 import ContextMenu from './context-menu';
 import { ColorsSelected, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
+import { available_fonts } from './fonts';
 import { check_layer_name, clean_menu_function, get_menu_option, reset_user_values } from './function';
 import {
   create_li_layer_elem, createWaitingOverlay, display_error_during_computation,
@@ -15,10 +16,13 @@ import { Mmax, Mround } from './helpers_math';
 import { valid_join_check_display } from './join_popup';
 import { handle_click_layer } from './layers_style_popup';
 import { handle_legend, move_legends } from './legend';
-import { reproj_symbol_layer, rotate_global, zoomClick, zoom_without_redraw } from './map_ctrl';
+import { reproj_symbol_layer, rotate_global, zoom, zoomClick, zoom_without_redraw } from './map_ctrl';
 import { export_compo_png, export_compo_svg, export_layer_geo } from './map_export';
 import { apply_user_preferences, get_map_template, load_map_template, save_map_template } from './map_project';
-import { addLastProjectionSelect, change_projection, change_projection_4, handleClipPath, handle_projection_select, shortListContent } from './projections';
+import {
+  addLastProjectionSelect, change_projection, change_projection_4,
+  handleClipPath, handle_projection_select, shortListContent,
+  tryFindNameProj } from './projections';
 import { world_topology } from './sample_topo';
 import { boxExplore2 } from './tables';
 import { bindTooltips } from './tooltips';
@@ -53,16 +57,16 @@ export function setUpInterface(reload_project) {
   // (ie. result layers are removed but targeted layer and layout layers stay
   // in cache as they have more chance to be added again)
   window.addEventListener('unload', () => {
-    const layer_names = Object.getOwnPropertyNames(current_layers).filter((name) => {
-      if (!(current_layers[name].hasOwnProperty('key_name'))) {
+    const layer_names = Object.getOwnPropertyNames(data_manager.current_layers).filter((name) => {
+      if (!(data_manager.current_layers[name].hasOwnProperty('key_name'))) {
         return 0;
-      } else if (current_layers[name].targeted) {
+      } else if (data_manager.current_layers[name].targeted) {
         return 0;
-      } else if (current_layers[name].renderer
-            && (current_layers[name].renderer.indexOf('PropSymbols') > -1
-              || current_layers[name].renderer.indexOf('Dorling') > -1
-              || current_layers[name].renderer.indexOf('Choropleth') > -1
-              || current_layers[name].renderer.indexOf('Categorical') > -1)) {
+      } else if (data_manager.current_layers[name].renderer
+            && (data_manager.current_layers[name].renderer.indexOf('PropSymbols') > -1
+              || data_manager.current_layers[name].renderer.indexOf('Dorling') > -1
+              || data_manager.current_layers[name].renderer.indexOf('Choropleth') > -1
+              || data_manager.current_layers[name].renderer.indexOf('Categorical') > -1)) {
         return 0;
       }
       return 1;
@@ -70,7 +74,7 @@ export function setUpInterface(reload_project) {
     if (layer_names.length) {
       const formToSend = new FormData();
       layer_names.forEach((name) => {
-        formToSend.append('layer_name', current_layers[name].key_name);
+        formToSend.append('layer_name', data_manager.current_layers[name].key_name);
       });
       navigator.sendBeacon('/layers/delete', formToSend);
     }
@@ -103,7 +107,7 @@ export function setUpInterface(reload_project) {
   inner_p.style.color = 'white';
   inner_p.style.padding = '0.5em';
   inner_p.setAttribute('data-i18n', '[html]app_page.common.drop_msg');
-  inner_p.innerHTML = i18next.t('app_page.common.drop_msg');
+  inner_p.innerHTML = _tr('app_page.common.drop_msg');
   inner_div.appendChild(inner_p);
   bg_drop.appendChild(inner_div);
   document.body.appendChild(bg_drop);
@@ -124,7 +128,7 @@ export function setUpInterface(reload_project) {
     const option = shortListContent[i];
     proj_select2.append('option')
       .attrs({ class: 'i18n', value: option, 'data-i18n': `app_page.projection_name.${option}` })
-      .text(i18next.t(`app_page.projection_name.${option}`));
+      .text(_tr(`app_page.projection_name.${option}`));
   }
   proj_select2.node().value = 'NaturalEarth2';
 
@@ -179,22 +183,22 @@ export function setUpInterface(reload_project) {
       };
       const box_content = '<div class="about_content">' +
         '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' +
-        i18next.t('app_page.help_box.version', { version: global._app.version }) + '</span></p>' +
-        '<p><b>' + i18next.t('app_page.help_box.useful_links') + '</b></p>' +
+        _tr('app_page.help_box.version', { version: global._app.version }) + '</span></p>' +
+        '<p><b>' + _tr('app_page.help_box.useful_links') + '</b></p>' +
         '<p><button class="swal2-styled swal2_blue btn_doc">' +
-        i18next.t('app_page.help_box.carnet_hypotheses') + '</button></p>' +
+        _tr('app_page.help_box.carnet_hypotheses') + '</button></p>' +
         '<p><button class="swal2-styled swal2_blue btn_contact">' +
-        i18next.t('app_page.help_box.contact') + '</button></p>' +
+        _tr('app_page.help_box.contact') + '</button></p>' +
         '<p><button class="swal2-styled swal2_blue btn_gh">' +
-        i18next.t('app_page.help_box.gh_link') + '</button></p>' +
+        _tr('app_page.help_box.gh_link') + '</button></p>' +
         '<p style="font-size: 0.8em; margin:auto;"><span>' +
-        i18next.t('app_page.help_box.credits') + '</span></p></div>';
+        _tr('app_page.help_box.credits') + '</span></p></div>';
       swal({
-        title: i18next.t('app_page.help_box.title'),
+        title: _tr('app_page.help_box.title'),
         html: box_content,
         showCancelButton: true,
         showConfirmButton: false,
-        cancelButtonText: i18next.t('app_page.common.close'),
+        cancelButtonText: _tr('app_page.common.close'),
         animation: 'slide-from-top',
         onOpen: () => {
           const content = document.getElementsByClassName('about_content')[0];
@@ -379,9 +383,9 @@ export function setUpInterface(reload_project) {
       border: '1px solid lightgrey',
       padding: '3.5px',
     })
-    .html(i18next.t('app_page.box_type_fields.title'))
+    .html(_tr('app_page.box_type_fields.title'))
     .on('click', () => {
-      const layer_name = Object.getOwnPropertyNames(user_data)[0];
+      const layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
       make_box_type_fields(layer_name);
     });
 
@@ -981,7 +985,7 @@ export function setUpInterface(reload_project) {
   ].forEach((projection) => {
     selec_projection.append('option')
       .attrs({ class: 'i18n', value: projection[1], 'data-i18n': projection[0] })
-      .text(i18next.t(projection[0]));
+      .text(_tr(projection[0]));
   });
 
   selec_type.on('change', function () {
@@ -1095,14 +1099,14 @@ export function setUpInterface(reload_project) {
     const last_project = window.localStorage.getItem('magrit_project');
     if (last_project && last_project.length && last_project.length > 0) {
       swal({ title: '',
-            // text: i18next.t('app_page.common.resume_last_project'),
+            // text: _tr('app_page.common.resume_last_project'),
         allowOutsideClick: false,
         allowEscapeKey: false,
         type: 'question',
         showConfirmButton: true,
         showCancelButton: true,
-        confirmButtonText: i18next.t('app_page.common.new_project'),
-        cancelButtonText: i18next.t('app_page.common.resume_last'),
+        confirmButtonText: _tr('app_page.common.new_project'),
+        cancelButtonText: _tr('app_page.common.resume_last'),
       }).then(() => {
         // If we don't want to resume from the last project, we can
         // remove it :
@@ -1166,28 +1170,28 @@ export function click_button_add_layer() {
 *
 */
 function askTypeLayer () {
-  const opts = { target: i18next.t('app_page.common.target_l'), layout: i18next.t('app_page.common.layout_l') };
+  const opts = { target: _tr('app_page.common.target_l'), layout: _tr('app_page.common.layout_l') };
   let first_reject = false;
   return swal({
     title: '',
-    text: i18next.t('app_page.common.layer_type_selection'),
+    text: _tr('app_page.common.layer_type_selection'),
     type: 'info',
     showCancelButton: true,
     showCloseButton: false,
     allowEscapeKey: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.confirm'),
+    confirmButtonText: _tr('app_page.common.confirm'),
     input: 'select',
-    inputPlaceholder: i18next.t('app_page.common.layer_type_selection'),
+    inputPlaceholder: _tr('app_page.common.layer_type_selection'),
     inputOptions: opts,
     inputValidator: (value) => {
       return new Promise(function (resolve, reject) {
         if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
-          reject(i18next.t('app_page.common.no_value'));
+          reject(_tr('app_page.common.no_value'));
         } else if (value.indexOf('target') > -1 && _app.targeted_layer_added && !first_reject) {
           first_reject = true;
-          reject(i18next.t('app_page.common.ask_replace_target_layer'));
+          reject(_tr('app_page.common.ask_replace_target_layer'));
         } else {
           if (value.indexOf('target') > -1 && first_reject) {
             downgradeTargetLayer();
@@ -1213,8 +1217,8 @@ function handle_upload_files(files, elem) {
   }
   if (tot_size > MAX_INPUT_SIZE) {
     return swal({
-      title: `${i18next.t('app_page.common.error')}!`,
-      text: i18next.t('app_page.common.too_large_input'),
+      title: `${_tr('app_page.common.error')}!`,
+      text: _tr('app_page.common.too_large_input'),
       type: 'error',
       customClass: 'swal2_custom',
       allowEscapeKey: false,
@@ -1229,8 +1233,8 @@ function handle_upload_files(files, elem) {
       handle_shapefile(files_to_send);
     } else {
       return swal({
-        title: `${i18next.t('app_page.common.error')}!`,
-        text: i18next.t('app_page.common.alert_upload1'),
+        title: `${_tr('app_page.common.error')}!`,
+        text: _tr('app_page.common.alert_upload1'),
         customClass: 'swal2_custom',
         type: 'error',
         allowEscapeKey: false,
@@ -1247,8 +1251,8 @@ function handle_upload_files(files, elem) {
         if (!valid) {
           console.log(tmp);
           return swal({
-            title: `${i18next.t('app_page.common.error')}!`,
-            text: i18next.t('app_page.common.alert_upload_invalid'),
+            title: `${_tr('app_page.common.error')}!`,
+            text: _tr('app_page.common.alert_upload_invalid'),
             type: 'error',
             customClass: 'swal2_custom',
             allowOutsideClick: false,
@@ -1263,8 +1267,8 @@ function handle_upload_files(files, elem) {
           apply_user_preferences(rd.result);
         } else {
           return swal({
-            title: `${i18next.t('app_page.common.error')}!`,
-            text: i18next.t('app_page.common.alert_upload_invalid'),
+            title: `${_tr('app_page.common.error')}!`,
+            text: _tr('app_page.common.alert_upload_invalid'),
             type: 'error',
             customClass: 'swal2_custom',
             allowOutsideClick: false,
@@ -1285,8 +1289,8 @@ function handle_upload_files(files, elem) {
     });
     if (shp_part) {
       return swal({
-        title: `${i18next.t('app_page.common.error')}!`,
-        text: i18next.t('app_page.common.alert_upload_shp'),
+        title: `${_tr('app_page.common.error')}!`,
+        text: _tr('app_page.common.alert_upload_shp'),
         type: 'error',
         customClass: 'swal2_custom',
         allowOutsideClick: false,
@@ -1295,8 +1299,8 @@ function handle_upload_files(files, elem) {
       .then(valid => null, dismiss => null);
     } else {
       return swal({
-        title: `${i18next.t('app_page.common.error')}!`,
-        text: i18next.t('app_page.common.alert_upload_invalid'),
+        title: `${_tr('app_page.common.error')}!`,
+        text: _tr('app_page.common.alert_upload_invalid'),
         type: 'error',
         customClass: 'swal2_custom',
         allowOutsideClick: false,
@@ -1334,9 +1338,9 @@ function handleOneByOneShp(files) {
   swal({
     title: '',
     html: '<div style="border: dashed 1px green;border-radius: 1%;" id="dv_drop_shp">' +
-          `<strong>${i18next.t('app_page.common.shp_one_by_one_msg1')}</strong><br>` +
-          `<p style="margin:auto;">${i18next.t('app_page.common.shp_one_by_one_msg2', { name: name })}</p>` +
-          `<p><i>${i18next.t('app_page.common.shp_one_by_one_msg3')}</i></p><br>` +
+          `<strong>${_tr('app_page.common.shp_one_by_one_msg1')}</strong><br>` +
+          `<p style="margin:auto;">${_tr('app_page.common.shp_one_by_one_msg2', { name: name })}</p>` +
+          `<p><i>${_tr('app_page.common.shp_one_by_one_msg3')}</i></p><br>` +
           '<image id="img_drop" src="static/img/Ic_file_download_48px.svg"><br>' +
           '<p id="f_shp" class="mini_button_none">.shp</p><p id="f_shx" class="mini_button_none">.shx</p>' +
           '<p id="f_dbf" class="mini_button_none">.dbf</p><p id="f_prj" class="mini_button_none">.prj</p>' +
@@ -1347,11 +1351,11 @@ function handleOneByOneShp(files) {
     allowEscapeKey: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.confirm'),
+    confirmButtonText: _tr('app_page.common.confirm'),
     preConfirm: () => new Promise((resolve, reject) => {
       setTimeout(() => {
         if (!((shp_slots.size === 4 && !shp_slots.has('.cpg')) || shp_slots.size === 5)) {
-          reject(i18next.t('app_page.common.shp_one_by_one_missing_files'));
+          reject(_tr('app_page.common.shp_one_by_one_missing_files'));
         } else {
           resolve();
         }
@@ -1366,8 +1370,8 @@ function handleOneByOneShp(files) {
       if (file_list[i].size > MAX_INPUT_SIZE) {
         overlay_drop.style.display = 'none';
         return swal({
-          title: `${i18next.t('app_page.common.error')}!`,
-          text: i18next.t('app_page.common.too_large_input'),
+          title: `${_tr('app_page.common.error')}!`,
+          text: _tr('app_page.common.too_large_input'),
           type: 'error',
           allowEscapeKey: false,
           allowOutsideClick: false,
@@ -1475,13 +1479,13 @@ export function prepare_drop_section() {
 function ask_replace_dataset() {
   return swal({
     title: '',
-    text: i18next.t('app_page.common.ask_replace_dataset'),
+    text: _tr('app_page.common.ask_replace_dataset'),
     type: 'warning',
     showCancelButton: true,
     allowOutsideClick: false,
     allowEscapeKey: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: i18next.t('app_page.common.confirm'),
+    confirmButtonText: _tr('app_page.common.confirm'),
   });
 }
 
@@ -1495,7 +1499,7 @@ function convert_dataset(file) {
         const data = JSON.parse(raw_data);
         swal({
           title: '',
-          text: i18next.t('app_page.common.warn_xls_sheet') + (data.message ? '\n' + i18next.t(data.message[0], { sheet_name: data.message[1][0] }) : ''),
+          text: _tr('app_page.common.warn_xls_sheet') + (data.message ? '\n' + _tr(data.message[0], { sheet_name: data.message[1][0] }) : ''),
           type: 'info',
           allowOutsideClick: false,
           allowEscapeKey: false,
@@ -1508,7 +1512,7 @@ function convert_dataset(file) {
               return;
             }
           }
-          dataset_name = data.name;
+          data_manager.dataset_name = data.name;
           add_dataset(tmp_dataset);
         }, dismiss => null);
       }, (error) => {
@@ -1516,7 +1520,7 @@ function convert_dataset(file) {
       });
   };
 
-  if (joined_dataset.length !== 0) {
+  if (data_manager.joined_dataset.length !== 0) {
     ask_replace_dataset().then(() => {
       remove_ext_dataset_cleanup();
       do_convert();
@@ -1615,7 +1619,7 @@ function handle_reload_TopoJSON(text, param_add_func) {
   xhrequest('POST', 'convert_topojson', ajaxData, false)
     .then((response) => {
       const key = JSON.parse(response).key;
-      current_layers[layer_name].key_name = key;
+      data_manager.current_layers[layer_name].key_name = key;
     });
   return layer_name;
 }
@@ -1666,8 +1670,8 @@ function handle_dataset(f, target_layer_on_add) {
           if (field_names.indexOf('y') > -1 || field_names.indexOf('lon') > -1 || field_names.indexOf('longitude') > -1 || field_names.indexOf('long') > -1 || field_names.indexOf('lng') > -1) {
             if (target_layer_on_add && _app.targeted_layer_added) {
               swal({
-                title: `${i18next.t('app_page.common.error')}!`,
-                text: i18next.t('app_page.common.error_only_one'),
+                title: `${_tr('app_page.common.error')}!`,
+                text: _tr('app_page.common.error_only_one'),
                 customClass: 'swal2_custom',
                 type: 'error',
                 allowEscapeKey: false,
@@ -1678,7 +1682,7 @@ function handle_dataset(f, target_layer_on_add) {
             return;
           }
         }
-        dataset_name = name.substring(0, name.indexOf('.csv'));
+        data_manager.dataset_name = name.substring(0, name.indexOf('.csv'));
         add_dataset(tmp_dataset);
       };
       new_reader.readAsText(f, encoding);
@@ -1686,7 +1690,7 @@ function handle_dataset(f, target_layer_on_add) {
     reader.readAsBinaryString(f);
   };
 
-  if (joined_dataset.length !== 0) {
+  if (data_manager.joined_dataset.length !== 0) {
     ask_replace_dataset().then(() => {
       remove_ext_dataset_cleanup();
       check_dataset();
@@ -1706,8 +1710,8 @@ function handle_dataset(f, target_layer_on_add) {
 //                 if(field_name.indexOf("x") > -1 || field_name.indexOf("X") > -1 || field_name.indexOf("lat") > -1 || field_name.indexOf("latitude") > -1){
 //                     if(field_name.indexOf("y") > -1 || field_name.indexOf("Y") > -1 || field_name.indexOf("lon") > -1 || field_name.indexOf("longitude") > -1 || field_name.indexOf("long") > -1){
 //                         if(target_layer_on_add && _app.targeted_layer_added){
-//                             swal({title: i18next.t("app_page.common.error") + "!",
-//                                   text: i18next.t('app_page.common.error_only_one'),
+//                             swal({title: _tr("app_page.common.error") + "!",
+//                                   text: _tr('app_page.common.error_only_one'),
 //                                   customClass: 'swal2_custom',
 //                                   type: "error",
 //                                   allowEscapeKey: false,
@@ -1725,13 +1729,13 @@ function handle_dataset(f, target_layer_on_add) {
 //                         return;
 //                     }
 //                 }
-//                 dataset_name = f.name.substring(0, f.name.indexOf('.csv'));
+//                 data_manager.dataset_name = f.name.substring(0, f.name.indexOf('.csv'));
 //                 add_dataset(tmp_dataset);
 //             }
 //         });
 //     }
 //
-//     if(joined_dataset.length !== 0){
+//     if(data_manager.joined_dataset.length !== 0){
 //         ask_replace_dataset().then(() => {
 //             remove_ext_dataset_cleanup();
 //             box_dataset();
@@ -1742,9 +1746,9 @@ function handle_dataset(f, target_layer_on_add) {
 // }
 
 function update_menu_dataset() {
-  const d_name = dataset_name.length > 20 ? [dataset_name.substring(0, 17), '(...)'].join('') : dataset_name,
-    nb_features = joined_dataset[0].length,
-    field_names = Object.getOwnPropertyNames(joined_dataset[0][0]),
+  const d_name = data_manager.dataset_name.length > 20 ? [data_manager.dataset_name.substring(0, 17), '(...)'].join('') : data_manager.dataset_name,
+    nb_features = data_manager.joined_dataset[0].length,
+    field_names = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]),
     data_ext = document.getElementById('ext_dataset_zone'),
     parent_elem = data_ext.parentElement;
 
@@ -1760,8 +1764,8 @@ function update_menu_dataset() {
       '<div style="display:inline-block;"><img id="img_data_ext" class="user_panel" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img></div>',
       '<div style="display:inline-block;margin-left: 4px;">',
       ' <b>', d_name, '</b><br><i><span style="font-size:9px;">',
-      nb_features, ' ', i18next.t('app_page.common.feature', { count: +nb_features }), ' - ',
-      field_names.length, ' ', i18next.t('app_page.common.field', { count: +field_names.length }), '</i></span>',
+      nb_features, ' ', _tr('app_page.common.feature', { count: +nb_features }), ' - ',
+      field_names.length, ' ', _tr('app_page.common.field', { count: +field_names.length }), '</i></span>',
       '</div>',
       '<div style="float:right;">',
       '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset">',
@@ -1776,7 +1780,7 @@ function update_menu_dataset() {
     valid_join_check_display(false);
   }
   document.getElementById('table_dataset_s1').onclick = () => {
-    boxExplore2.create(dataset_name);
+    boxExplore2.create(data_manager.dataset_name);
   };
 }
 
@@ -1825,7 +1829,7 @@ function add_dataset(readed_dataset) {
       }
     }
   }
-  joined_dataset.push(readed_dataset);
+  data_manager.joined_dataset.push(readed_dataset);
 
   update_menu_dataset();
 
@@ -1834,7 +1838,7 @@ function add_dataset(readed_dataset) {
   }
 
   if (_app.targeted_layer_added) {
-    const layer_name = Object.getOwnPropertyNames(user_data)[0];
+    const layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
     ask_join_now(layer_name, 'dataset');
   }
 }
@@ -1854,7 +1858,7 @@ function add_csv_geom(file, name) {
   ajaxData.append('csv_file', file);
   xhrequest('POST', 'convert_csv_geo', ajaxData, true)
     .then((data) => {
-      dataset_name = undefined;
+      data_manager.dataset_name = undefined;
       add_layer_topojson(data, { target_layer_on_add: true });
     }, (error) => {
       display_error_during_computation();
@@ -1912,7 +1916,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 <div style="display:inline-block;margin-left: 4px;">
 <b>${_lyr_name_display}</b>
 <br>
-<i><span style="font-size:10px;">${nb_ft} ${i18next.t('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${i18next.t('app_page.common.field', { count: +nb_fields })}</i></span>
+<i><span style="font-size:10px;">${nb_ft} ${_tr('app_page.common.feature', { count: +nb_ft })} - ${nb_fields} ${_tr('app_page.common.field', { count: +nb_fields })}</i></span>
 </div>
 <div style="float:right;">
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target">
@@ -1921,7 +1925,7 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 </div>`)
 
   // const remove_target = document.getElementById('remove_target');
-  document.getElementById('remove_target').onclick = () => { remove_layer(Object.getOwnPropertyNames(user_data)[0]); };
+  document.getElementById('remove_target').onclick = () => { remove_layer(Object.getOwnPropertyNames(data_manager.user_data)[0]); };
   // const table_target = document.getElementById('table_layer_s1');
   document.getElementById('table_layer_s1').onclick = display_table_target_layer;
   // const downgrade_target = document.getElementById('downgrade_target');
@@ -1931,28 +1935,28 @@ function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 function ask_replace_target_layer() {
   return swal({
       title: '',
-      text: i18next.t('app_page.join_box.before_join_ask'),
+      text: _tr('app_page.join_box.before_join_ask'),
       allowOutsideClick: false,
       allowEscapeKey: true,
       type: 'question',
       showConfirmButton: true,
       showCancelButton: true,
-      confirmButtonText: i18next.t('app_page.common.yes'),
-      cancelButtonText: i18next.t('app_page.common.no'),
+      confirmButtonText: _tr('app_page.common.yes'),
+      cancelButtonText: _tr('app_page.common.no'),
     });
 }
 
 function ask_join_now(layer_name, on_add = 'layer') {
   swal({
     title: '',
-    text: i18next.t('app_page.join_box.before_join_ask'),
+    text: _tr('app_page.join_box.before_join_ask'),
     allowOutsideClick: false,
     allowEscapeKey: true,
     type: 'question',
     showConfirmButton: true,
     showCancelButton: true,
-    confirmButtonText: i18next.t('app_page.common.yes'),
-    cancelButtonText: i18next.t('app_page.common.no'),
+    confirmButtonText: _tr('app_page.common.yes'),
+    cancelButtonText: _tr('app_page.common.no'),
   }).then(() => {
     createJoinBox(layer_name);
   }, (dismiss) => {
@@ -1960,29 +1964,15 @@ function ask_join_now(layer_name, on_add = 'layer') {
   });
 }
 
-function ask_existing_feature(feature_name) {
-  return swal({
-    title: '',
-    text: i18next.t(`app_page.common.error_existing_${feature_name}`),
-    allowOutsideClick: false,
-    allowEscapeKey: false,
-    type: 'question',
-    showConfirmButton: true,
-    showCancelButton: true,
-    confirmButtonText: i18next.t('app_page.common.yes'),
-    cancelButtonText: i18next.t('app_page.common.no'),
-  });
-}
-
 const display_table_target_layer = () => {
-  const layer_name = Object.keys(user_data)[0];
+  const layer_name = Object.keys(data_manager.user_data)[0];
   boxExplore2.create(layer_name);
 };
 
 function updateLayer(layer_name) {
-  const fields = Object.keys(user_data[layer_name][0]);
-  current_layers[layer_name].n_features = user_data[layer_name].length;
-  current_layers[layer_name].original_fields = new Set(fields);
+  const fields = Object.keys(data_manager.user_data[layer_name][0]);
+  data_manager.current_layers[layer_name].n_features = data_manager.user_data[layer_name].length;
+  data_manager.current_layers[layer_name].original_fields = new Set(fields);
   const lyr_id = _app.layer_to_id.get(layer_name);
   const k = Object.keys(_target_layer_file.objects)[0];
   const selection = map.select(`#${lyr_id}`)
@@ -1992,7 +1982,7 @@ function updateLayer(layer_name) {
   scale_to_lyr(layer_name);
   center_map(layer_name);
   zoom_without_redraw();
-  update_section1(current_layers[layer_name].type, fields.length, current_layers[layer_name].n_features, layer_name);
+  update_section1(data_manager.current_layers[layer_name].type, fields.length, data_manager.current_layers[layer_name].n_features, layer_name);
 }
 
 /**
@@ -2038,12 +2028,12 @@ export function add_layer_topojson(text, options = {}) {
   // file we are handling is supposed to only contains one layer. If it's not
   // the case, a warning is displayed and only the first layer is added to the svg.
   if (layers_names.length > 1) {
-    swal('', i18next.t('app_page.common.warning_multiple_layers'), 'warning');
+    swal('', _tr('app_page.common.warning_multiple_layers'), 'warning');
   }
 
   // Abort if the layer is empty (doesn't contains any feature)
   if (!topoObj_objects.geometries || topoObj_objects.geometries.length === 0) {
-    display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+    display_error_during_computation(_tr('app_page.common.error_invalid_empty'));
     return;
   }
 
@@ -2063,7 +2053,7 @@ export function add_layer_topojson(text, options = {}) {
   // Abort if the layer doesn't contains any feature with a geometry type within
   // "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon"
   if (!type) {
-    display_error_during_computation(i18next.t('app_page.common.error_invalid_empty'));
+    display_error_during_computation(_tr('app_page.common.error_invalid_empty'));
     return;
   }
 
@@ -2087,7 +2077,7 @@ export function add_layer_topojson(text, options = {}) {
     // delete _app.first_layer;
   }
 
-  current_layers[lyr_name_to_add] = {
+  data_manager.current_layers[lyr_name_to_add] = {
     type: type,
     n_features: nb_ft,
     'stroke-width-const': type === 'Line' ? 1.5 : 0.4,
@@ -2096,13 +2086,13 @@ export function add_layer_topojson(text, options = {}) {
   };
 
   if (target_layer_on_add) {
-    current_layers[lyr_name_to_add].targeted = true;
-    user_data[lyr_name_to_add] = [];
+    data_manager.current_layers[lyr_name_to_add].targeted = true;
+    data_manager.user_data[lyr_name_to_add] = [];
     data_to_load = true;
-    current_layers[lyr_name_to_add].fields_type = [];
+    data_manager.current_layers[lyr_name_to_add].fields_type = [];
   } else if (result_layer_on_add) {
-    result_data[lyr_name_to_add] = [];
-    current_layers[lyr_name_to_add].is_result = true;
+    data_manager.result_data[lyr_name_to_add] = [];
+    data_manager.current_layers[lyr_name_to_add].is_result = true;
   }
 
   const field_names = topoObj_objects.geometries[0].properties
@@ -2118,12 +2108,12 @@ export function add_layer_topojson(text, options = {}) {
       } else if (!d.id) {
         d.id = +ix; // eslint-disable-line no-param-reassign
       }
-      user_data[lyr_name_to_add].push(d.properties);
+      data_manager.user_data[lyr_name_to_add].push(d.properties);
     } else if (data_to_load) {
       d.properties.id = d.id = ix; // eslint-disable-line no-param-reassign, no-multi-assign
-      user_data[lyr_name_to_add].push({ id: d.properties.id });
+      data_manager.user_data[lyr_name_to_add].push({ id: d.properties.id });
     } else if (result_layer_on_add) {
-      result_data[lyr_name_to_add].push(d.properties);
+      data_manager.result_data[lyr_name_to_add].push(d.properties);
     }
   });
 
@@ -2157,8 +2147,8 @@ export function add_layer_topojson(text, options = {}) {
   li.setAttribute('layer_name', lyr_name_to_add);
   d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
   if (target_layer_on_add) {
-    current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(user_data[lyr_name_to_add][0]));
-    if (joined_dataset.length !== 0) {
+    data_manager.current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(data_manager.user_data[lyr_name_to_add][0]));
+    if (data_manager.joined_dataset.length !== 0) {
       valid_join_check_display(false);
     }
 
@@ -2232,11 +2222,11 @@ export function add_layer_topojson(text, options = {}) {
   }
 
   if (type === 'Point') {
-    current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
+    data_manager.current_layers[lyr_name_to_add].pointRadius = options.pointRadius || path.pointRadius();
   }
 
   layers_listed.insertBefore(li, layers_listed.childNodes[0]);
-  handleClipPath(current_proj_name);
+  handleClipPath(_app.current_proj_name);
   binds_layers_buttons(lyr_name_to_add);
   if (!skip_rescale) {
     zoom_without_redraw();
@@ -2250,24 +2240,24 @@ export function add_layer_topojson(text, options = {}) {
   // to allow him to use the projection originally provided with the layer.
   if (!skip_alert) {
     if (fields_type) {
-      current_layers[lyr_name_to_add].fields_type = fields_type;
+      data_manager.current_layers[lyr_name_to_add].fields_type = fields_type;
     }
     // No projection was provided was the layer :
     if (_proj === undefined) {
       swal({
         title: '',
-        text: i18next.t('app_page.common.layer_success'),
+        text: _tr('app_page.common.layer_success'),
         allowOutsideClick: true,
         allowEscapeKey: true,
         type: 'success',
       }).then(() => {
-        if (target_layer_on_add && joined_dataset.length > 0) {
+        if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
         }
       }, (dismiss) => {
-        if (target_layer_on_add && joined_dataset.length > 0) {
+        if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
@@ -2276,7 +2266,7 @@ export function add_layer_topojson(text, options = {}) {
     } else {
       swal({
         title: '',
-        text: i18next.t('app_page.common.layer_success_and_proj'),
+        text: _tr('app_page.common.layer_success_and_proj'),
         showCancelButton: true,
         showCloseButton: false,
         allowEscapeKey: true,
@@ -2284,17 +2274,17 @@ export function add_layer_topojson(text, options = {}) {
         type: 'success',
       }).then(() => {
         _app.last_projection = parsedJSON.proj;
-        current_proj_name = 'def_proj4';
+        _app.current_proj_name = 'def_proj4';
         change_projection_4(_proj);
         const custom_name = tryFindNameProj(_app.last_projection);
         addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
-        if (target_layer_on_add && joined_dataset.length > 0) {
+        if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
         }
       }, (dismiss) => {
-        if (target_layer_on_add && joined_dataset.length > 0) {
+        if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
@@ -2316,14 +2306,14 @@ export function add_layer_topojson(text, options = {}) {
         proj_str = rv.proj4;
         custom_name = rv.name;
       }
-      current_proj_name = 'def_proj4';
+      _app.current_proj_name = 'def_proj4';
       _app.last_projection = proj_str;
       change_projection_4(proj4(proj_str));
       addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
     } else if (options.default_projection[0] === 'd3') {
-      current_proj_name = options.default_projection[1];
+      _app.current_proj_name = options.default_projection[1];
       change_projection(options.default_projection[1]);
-      addLastProjectionSelect(current_proj_name);
+      addLastProjectionSelect(_app.current_proj_name);
     }
   }
   return lyr_name_to_add;
@@ -2368,12 +2358,12 @@ function get_bbox_layer_path(name) {
     bbox_layer_path[1][0] = bbox_path[1][0] > bbox_layer_path[1][0] ? bbox_path[1][0] : bbox_layer_path[1][0];
     bbox_layer_path[1][1] = bbox_path[1][1] > bbox_layer_path[1][1] ? bbox_path[1][1] : bbox_layer_path[1][1];
   }
-  if (current_proj_name === 'ConicConformal') {
+  if (_app.current_proj_name === 'ConicConformal') {
     const s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -55.1 ], [ 20.9, -36.7 ], [ 147.2, -42.2 ], [ 162.1, 67.0 ], [ -160.2, 65.7 ] ] });
     const s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
     if (s2 < s1) bbox_layer_path = bbox_layer_path2;
-  } else if (current_proj_name === 'Armadillo') {
+  } else if (_app.current_proj_name === 'Armadillo') {
     const s1 = Mmax((bbox_layer_path[1][0] - bbox_layer_path[0][0]) / w, (bbox_layer_path[1][1] - bbox_layer_path[0][1]) / h);
     const bbox_layer_path2 = path.bounds({ type: 'MultiPoint', coordinates: [ [ -69.3, -35.0 ], [ -170, 10 ], [ -170, 85 ], [ 0, -70 ], [ 20.9, -35.0 ], [ 147.2, -35.0 ], [ 170, 85 ], [ 170, 10 ] ] });
     const s2 = Mmax((bbox_layer_path2[1][0] - bbox_layer_path2[0][0]) / w, (bbox_layer_path2[1][1] - bbox_layer_path2[0][1]) / h);
@@ -2553,50 +2543,50 @@ export function add_sample_layer() {
     ['commune_dep_976', ['proj4', 'EPSG:7075']],
   ]);
   const target_layers = [
-   [i18next.t('app_page.sample_layer_box.target_layer'), ''],
-   [i18next.t('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
-   [i18next.t('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
-   [i18next.t('app_page.sample_layer_box.martinique'), 'martinique'],
-   [i18next.t('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
-   [i18next.t('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
-   [i18next.t('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
-   [i18next.t('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
-   [i18next.t('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
-   [i18next.t('app_page.sample_layer_box.brazil'), 'brazil'],
-   [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'],
-   [i18next.t('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'],
-   [i18next.t('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'],
-   [i18next.t('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'],
-   [i18next.t('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'],
-   [i18next.t('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
-   [i18next.t('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
-   [i18next.t('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
-   [i18next.t('app_page.layout_layer_box.nuts0'), 'nuts0'],
-   [i18next.t('app_page.layout_layer_box.nuts1'), 'nuts1'],
-   [i18next.t('app_page.layout_layer_box.nuts2'), 'nuts2'],
-   [i18next.t('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
-   [i18next.t('app_page.layout_layer_box.world_countries'), 'world_country'],
-   [i18next.t('app_page.layout_layer_box.world_capitals'), 'world_cities'],
-   [i18next.t('app_page.layout_layer_box.tissot'), 'tissot'],
+   [_tr('app_page.sample_layer_box.target_layer'), ''],
+   [_tr('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
+   [_tr('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
+   [_tr('app_page.sample_layer_box.martinique'), 'martinique'],
+   [_tr('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+   [_tr('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
+   [_tr('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
+   [_tr('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
+   [_tr('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
+   [_tr('app_page.sample_layer_box.brazil'), 'brazil'],
+   [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+   [_tr('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'],
+   [_tr('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'],
+   [_tr('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'],
+   [_tr('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'],
+   [_tr('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'],
+   [_tr('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'],
+   [_tr('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'],
+   [_tr('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'],
+   [_tr('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'],
+   [_tr('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'],
+   [_tr('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'],
+   [_tr('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'],
+   [_tr('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'],
+   [_tr('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'],
+   [_tr('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'],
+   [_tr('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'],
+   [_tr('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
+   [_tr('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
+   [_tr('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
+   [_tr('app_page.layout_layer_box.nuts0'), 'nuts0'],
+   [_tr('app_page.layout_layer_box.nuts1'), 'nuts1'],
+   [_tr('app_page.layout_layer_box.nuts2'), 'nuts2'],
+   [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+   [_tr('app_page.layout_layer_box.world_countries'), 'world_country'],
+   [_tr('app_page.layout_layer_box.world_capitals'), 'world_cities'],
+   [_tr('app_page.layout_layer_box.tissot'), 'tissot'],
   ];
   const dialog_res = [];
   let selec,
     selec_url,
     content;
 
-  make_confirm_dialog2('sampleDialogBox', i18next.t('app_page.sample_layer_box.title'))
+  make_confirm_dialog2('sampleDialogBox', _tr('app_page.sample_layer_box.title'))
     .then((confirmed) => {
       if (confirmed) {
         askTypeLayer()
@@ -2634,10 +2624,10 @@ export function add_sample_layer() {
   function make_panel2() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel2');
-    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(_tr('app_page.sample_layer_box.subtitle1'));
     content.append('p')
       .append('span')
-      .html(i18next.t('app_page.sample_layer_box.extra_basemaps_info'));
+      .html(_tr('app_page.sample_layer_box.extra_basemaps_info'));
     const select_extrabasemap = content.append('p')
       .insert('select')
       .on('change', function () {
@@ -2654,7 +2644,7 @@ export function add_sample_layer() {
     content.append('p')
       .styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' })
       .append('span')
-      .html(i18next.t('app_page.sample_layer_box.back_sample'))
+      .html(_tr('app_page.sample_layer_box.back_sample'))
       .on('click', () => {
         make_panel1();
       });
@@ -2674,7 +2664,7 @@ export function add_sample_layer() {
   function make_panel1() {
     box_body.selectAll('div').remove();
     content = box_body.append('div').attr('id', 'panel1');
-    content.append('h3').html(i18next.t('app_page.sample_layer_box.subtitle1'));
+    content.append('h3').html(_tr('app_page.sample_layer_box.subtitle1'));
 
     const t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
     target_layers.forEach((layer_info) => { t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]); });
@@ -2682,7 +2672,7 @@ export function add_sample_layer() {
     content.append('p')
       .styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' })
       .append('span')
-      .html(i18next.t('app_page.sample_layer_box.more_basemaps'))
+      .html(_tr('app_page.sample_layer_box.more_basemaps'))
       .on('click', () => {
         make_panel2();
       });
@@ -2713,7 +2703,7 @@ export function add_simplified_land_layer(options = {}) {
   const world_id = encodeId('World');
   _app.layer_to_id.set('World', world_id);
   _app.id_to_layer.set(world_id, 'World');
-  current_layers.World = {
+  data_manager.current_layers.World = {
     type: 'Polygon',
     n_features: 125,
     'stroke-width-const': +stroke_width.slice(0, -2),
@@ -2761,7 +2751,7 @@ function add_sample_geojson(name, options) {
 
 function send_remove_server(layer_name) {
   const formToSend = new FormData();
-  formToSend.append('layer_name', current_layers[layer_name].key_name);
+  formToSend.append('layer_name', data_manager.current_layers[layer_name].key_name);
   xhrequest('POST', 'layers/delete', formToSend, true)
     .then((data) => {
       const parsed = JSON.parse(data);
@@ -2805,11 +2795,11 @@ export function accordionize(css_selector = '.accordion', parent) {
 }
 
 function downgradeTargetLayer() {
-  const old_target = Object.keys(user_data)[0];
+  const old_target = Object.keys(data_manager.user_data)[0];
   if (!old_target) return;
-  delete current_layers[old_target].targeted;
-  field_join_map = [];
-  user_data = {};
+  delete data_manager.current_layers[old_target].targeted;
+  data_manager.field_join_map = [];
+  data_manager.user_data = {};
   _app.targeted_layer_added = false;
   _target_layer_file = null;
   resetSection1();
@@ -2821,16 +2811,16 @@ function downgradeTargetLayer() {
 
 function changeTargetLayer(new_target) {
   const old_target = downgradeTargetLayer();
-  current_layers[new_target].targeted = true;
+  data_manager.current_layers[new_target].targeted = true;
   _app.targeted_layer_added = true;
-  user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
-  const fields = Object.keys(user_data[new_target][0]);
-  update_section1(current_layers[new_target].type, fields.length, current_layers[new_target].n_features, new_target);
-  if (!current_layers[new_target].fields_type) {
-    current_layers[new_target].original_fields = new Set(fields);
+  data_manager.user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
+  const fields = Object.keys(data_manager.user_data[new_target][0]);
+  update_section1(data_manager.current_layers[new_target].type, fields.length, data_manager.current_layers[new_target].n_features, new_target);
+  if (!data_manager.current_layers[new_target].fields_type) {
+    data_manager.current_layers[new_target].original_fields = new Set(fields);
   }
-  if (!current_layers[new_target].fields_type) {
-      current_layers[new_target].fields_type =  type_col2(user_data[new_target]);
+  if (!data_manager.current_layers[new_target].fields_type) {
+      data_manager.current_layers[new_target].fields_type =  type_col2(data_manager.user_data[new_target]);
   }
   document.getElementById('btn_type_fields').removeAttribute('disabled');
   getAvailablesFunctionnalities(new_target);
@@ -2848,7 +2838,7 @@ function changeTargetLayer(new_target) {
   };
   window._target_layer_file = topojson.topology(d);
 
-  if (!current_layers[new_target].key_name) {
+  if (!data_manager.current_layers[new_target].key_name) {
     send_layer_server(new_target, '/layers/add');
   }
 }
@@ -2881,7 +2871,7 @@ function resetSection1() {
   //   .on('click', click_button_add_layer);
   // d3.select('#input_geom')
   //   .attrs({ class: 'user_panel i18n', 'data-i18n': '[html]app_page.section1.add_geom' })
-  //   .html(i18next.t('app_page.section1.add_geom'))
+  //   .html(_tr('app_page.section1.add_geom'))
   //   .on('click', click_button_add_layer);
 
   // // Redisplay the bottom of the section 1 in the menu allowing user to select a sample layer :
@@ -2909,7 +2899,7 @@ const beforeUnloadWindow = (event) => {
   });
   // eslint-disable-next-line no-param-reassign
   event.returnValue = (global._app.targeted_layer_added
-                          || Object.getOwnPropertyNames(result_data).length > 0)
+                          || Object.getOwnPropertyNames(data_manager.result_data).length > 0)
                       ? 'Confirm exit' : undefined;
 };
 
@@ -2968,11 +2958,11 @@ function make_ico_choice() {
         // Replace the title of the section:
         const selec_title = document.getElementById('btn_s2b');
         selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
-                                i18next.t('app_page.common.representation') +
+                                _tr('app_page.common.representation') +
                                 '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
                                 global._app.current_functionnality.name +
                                 '">' +
-                                i18next.t('app_page.func_title.' + global._app.current_functionnality.name) +
+                                _tr('app_page.func_title.' + global._app.current_functionnality.name) +
                                 '</span>';
         selec_title.style.display = '';
 
@@ -2985,13 +2975,13 @@ function make_ico_choice() {
           // Fill the field of the functionnality with the field
           // of the targeted layer if already uploaded by the user :
           if (global._app.targeted_layer_added) {
-            const target_layer = Object.getOwnPropertyNames(user_data)[0];
+            const target_layer = Object.getOwnPropertyNames(data_manager.user_data)[0];
             fields_handler.fill(target_layer);
           }
 
           // Specific case for flow/link functionnality as we are also
           // filling the fields with data from the uploaded tabular file if any :
-          if (func_name === 'flow' && joined_dataset) {
+          if (func_name === 'flow' && data_manager.joined_dataset) {
             fields_handler.fill();
           }
         }
@@ -3034,7 +3024,7 @@ function handle_title_properties() {
   if (!title.node() || title.text() === '') {
     swal({
       title: '',
-      text: i18next.t('app_page.common.error_no_title'),
+      text: _tr('app_page.common.error_no_title'),
       type: 'error',
       allowOutsideClick: true,
       allowEscapeKey: true,
@@ -3062,7 +3052,7 @@ function handle_title_properties() {
 
   // Properties on the title are changed in real-time by the user
   // then it will be rollbacked to original properties if Cancel is clicked
-  make_confirm_dialog2('mapTitleitleDialogBox', i18next.t('app_page.title_box.title'), { widthFitContent: true })
+  make_confirm_dialog2('mapTitleitleDialogBox', _tr('app_page.title_box.title'), { widthFitContent: true })
     .then((confirmed) => {
       if (!confirmed) {
         title.attrs({ x: title_props.position_x, y: title_props.position_y })
@@ -3080,34 +3070,34 @@ function handle_title_properties() {
     });
   const box_content = d3.select('.mapTitleitleDialogBox').select('.modal-body').append('div').style('margin', '15x');
   box_content.append('p')
-    .html(i18next.t('app_page.title_box.font_size'))
+    .html(_tr('app_page.title_box.font_size'))
     .insert('input')
     .attrs({ type: 'number', min: 2, max: 40, step: 1 })
     .property('value', +title_props.size.split('px')[0])
     .style('width', '65px')
     .on('change', function () { title.style('font-size', `${this.value}px`); });
   box_content.append('p')
-    .html(i18next.t('app_page.title_box.xpos'))
+    .html(_tr('app_page.title_box.xpos'))
     .insert('input')
     .attrs({ type: 'number', min: 0, max: 100, step: 1 })
     .property('value', title_props.position_x_pct)
     .style('width', '65px')
     .on('change', function () { title.attr('x', w * +this.value / 100); });
   box_content.append('p')
-    .html(i18next.t('app_page.title_box.ypos'))
+    .html(_tr('app_page.title_box.ypos'))
     .insert('input')
     .attrs({ type: 'number', min: 0, max: 100, step: 1  })
     .property('value', title_props.position_y_pct)
     .style('width', '65px')
     .on('change', function () { title.attr('y', h * +this.value / 100); });
-  box_content.append('p').html(i18next.t('app_page.title_box.font_color'))
+  box_content.append('p').html(_tr('app_page.title_box.font_color'))
     .insert('input')
     .attr('type', 'color')
     .property('value', rgb2hex(title_props.color))
     .on('change', function () { title.style('fill', this.value); });
 
   const font_select = box_content.append('p')
-    .html(i18next.t('app_page.title_box.font_family'))
+    .html(_tr('app_page.title_box.font_family'))
     .insert('select').attr('class', 'params')
     .on('change', function () { title.style('font-family', this.value); });
   available_fonts.forEach((font) => {
@@ -3169,7 +3159,7 @@ function handle_title_properties() {
 
   buffer_section1.append('label')
     .attrs({ for: 'title_buffer_chkbox' })
-    .text(i18next.t('app_page.title_box.buffer'));
+    .text(_tr('app_page.title_box.buffer'));
 
   let buffer_color = buffer_section2.insert('input')
     .style('float', 'left')
@@ -3288,18 +3278,18 @@ export function displayInfoOnMove() {
     }
 
     if (!top_visible_layer) {
-      swal('', i18next.t('app_page.common.error_no_visible'), 'error');
+      swal('', _tr('app_page.common.error_no_visible'), 'error');
       return;
     }
 
     const id_top_layer = `#${global._app.layer_to_id.get(top_visible_layer)}`;
-    const symbol = current_layers[top_visible_layer].symbol || 'path';
+    const symbol = data_manager.current_layers[top_visible_layer].symbol || 'path';
 
     map.select(id_top_layer).selectAll(symbol).on('mouseover', (d, i) => {
       const txt_info = [
         '<h3>', top_visible_layer, '</h3><i>Feature ',
-        i + 1, '/', current_layers[top_visible_layer].n_features, '</i><p>'];
-      const properties = result_data[top_visible_layer] ? result_data[top_visible_layer][i] : d.properties;
+        i + 1, '/', data_manager.current_layers[top_visible_layer].n_features, '</i><p>'];
+      const properties = data_manager.result_data[top_visible_layer] ? data_manager.result_data[top_visible_layer][i] : d.properties;
       Object.getOwnPropertyNames(properties).forEach((el) => {
         txt_info.push(`<br><b>${el}</b> : ${properties[el]}`);
       });
@@ -3387,14 +3377,14 @@ function remove_layer(name) {
   name = name || this.parentElement.parentElement.getAttribute('layer_name');
   swal({
     title: '',
-    text: i18next.t('app_page.common.remove_layer', { layer: name }),
+    text: _tr('app_page.common.remove_layer', { layer: name }),
     type: 'warning',
     customClass: 'swal2_custom',
     showCancelButton: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: `${i18next.t('app_page.common.delete')}!`,
-    cancelButtonText: i18next.t('app_page.common.cancel'),
+    confirmButtonText: `${_tr('app_page.common.delete')}!`,
+    cancelButtonText: _tr('app_page.common.cancel'),
   }).then(() => { remove_layer_cleanup(name); },
           () => null);
   // ^^^^^^^^^^^^ Do nothing on cancel, but this avoid having an "uncaught exeption (cancel)" comming in the console if nothing is set here
@@ -3404,22 +3394,22 @@ function remove_layer(name) {
 function remove_ext_dataset() {
   swal({
     title: '',
-    text: i18next.t('app_page.common.remove_tabular'),
+    text: _tr('app_page.common.remove_tabular'),
     type: 'warning',
     showCancelButton: true,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: `${i18next.t('app_page.common.delete')}!`,
-    cancelButtonText: i18next.t('app_page.common.cancel'),
+    confirmButtonText: `${_tr('app_page.common.delete')}!`,
+    cancelButtonText: _tr('app_page.common.cancel'),
   }).then(() => {
     remove_ext_dataset_cleanup();
   }, () => null);
 }
 
 function remove_ext_dataset_cleanup() {
-  field_join_map = [];
-  joined_dataset = [];
-  dataset_name = undefined;
+  data_manager.field_join_map = [];
+  data_manager.joined_dataset = [];
+  data_manager.dataset_name = undefined;
   d3.select('#ext_dataset_zone')
     .styles({
       border: '3px dashed #ccc',
@@ -3435,17 +3425,17 @@ function remove_ext_dataset_cleanup() {
 // Most of the job is to do when it's the targeted layer which is removed in
 // order to restore functionnalities to their initial states
 export function remove_layer_cleanup(name) {
-  if (!current_layers[name]) return;
+  if (!data_manager.current_layers[name]) return;
   const layer_id = global._app.layer_to_id.get(name);
   // Making some clean-up regarding the result layer :
-  if (current_layers[name].is_result) {
+  if (data_manager.current_layers[name].is_result) {
     map.selectAll(['.lgdf_', layer_id].join('')).remove();
-    if (result_data.hasOwnProperty(name)) {
-      delete result_data[name];
+    if (data_manager.result_data.hasOwnProperty(name)) {
+      delete data_manager.result_data[name];
     }
-    if (current_layers[name].hasOwnProperty('key_name')
-         && current_layers[name].renderer.indexOf('Choropleth') < 0
-         && current_layers[name].renderer.indexOf('Categorical') < 0) {
+    if (data_manager.current_layers[name].hasOwnProperty('key_name')
+         && data_manager.current_layers[name].renderer.indexOf('Choropleth') < 0
+         && data_manager.current_layers[name].renderer.indexOf('Categorical') < 0) {
       send_remove_server(name);
     }
   }
@@ -3474,31 +3464,31 @@ export function remove_layer_cleanup(name) {
   }
 
   // Reset the panel displaying info on the targeted layer if she"s the one to be removed :
-  if (current_layers[name].targeted) {
+  if (data_manager.current_layers[name].targeted) {
     // Unfiling the fields related to the targeted functionnality:
     if (global._app.current_functionnality) {
       clean_menu_function();
     }
 
     // Update some global variables :
-    field_join_map = [];
-    user_data = {};
+    data_manager.field_join_map = [];
+    data_manager.user_data = {};
     global._app.targeted_layer_added = false;
 
     // Updating the top of the menu (section 1) :
     resetSection1();
 
     // Reset the projection (if the projection was defined via proj4):
-    if (current_proj_name === 'def_proj4') {
-      current_proj_name = 'NaturalEarth2';
-      change_projection(current_proj_name);
-      addLastProjectionSelect(current_proj_name);
+    if (_app.current_proj_name === 'def_proj4') {
+      _app.current_proj_name = 'NaturalEarth2';
+      change_projection(_app.current_proj_name);
+      addLastProjectionSelect(_app.current_proj_name);
     }
   }
 
   // There is probably better ways in JS to delete the object,
   // but in order to make it explicit that we are removing it :
-  delete current_layers[name];
+  delete data_manager.current_layers[name];
 }
 
 

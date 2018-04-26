@@ -8,30 +8,20 @@ import Textbox from './text_annotation';
 import { check_layer_name } from './../function';
 import { prepare_available_symbols } from './../interface';
 
-export const get_coords_snap_lines = function (uid) {
-  const snap_lines = { x: [], y: [] };
-  pos_lgds_elem.forEach((v, k) => {
-    if (k != uid) {
-      snap_lines.y.push([v.bottom, v.top], [v.top, v.bottom]);
-      snap_lines.x.push([v.left, v.right], [v.right, v.left]);
-    }
-  });
-  return snap_lines;
-};
 
-export const make_red_line_snap = function (x1, x2, y1, y2, timeout = 750) {
-  let current_timeout;
-  return (function () {
-    if (current_timeout) {
-      clearTimeout(current_timeout);
-    }
-    map.select('.snap_line').remove();
-    const line = map.append('line')
-      .attrs({ x1, x2, y1, y2, class: 'snap_line' })
-      .styles({ stroke: 'red', 'stroke-width': 0.7 });
-    current_timeout = setTimeout((_) => { line.remove(); }, timeout);
-  }());
-};
+function ask_existing_feature(feature_name) {
+  return swal({
+    title: '',
+    text: _tr(`app_page.common.error_existing_${feature_name}`),
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    type: 'question',
+    showConfirmButton: true,
+    showCancelButton: true,
+    confirmButtonText: _tr('app_page.common.yes'),
+    cancelButtonText: _tr('app_page.common.no'),
+  });
+}
 
 const getIdLayoutFeature = (type) => {
   let class_name,
@@ -58,7 +48,7 @@ const getIdLayoutFeature = (type) => {
   if (!features) {
     return 0;
   } else if (features.length > 30) {
-    swal(i18next.t('app_page.common.error'), i18next.t(`app_page.common.${error_name}`), 'error').catch(swal.noop);
+    swal(_tr('app_page.common.error'), _tr(`app_page.common.${error_name}`), 'error').catch(swal.noop);
     return null;
   }
   const ids = [];
@@ -95,7 +85,7 @@ function handleClickAddRectangle() {
       document.body.style.cursor = '';
       msg.dismiss();
       document.removeEventListener('keydown', esc_cancel);
-      alertify.notify(i18next.t('app_page.notification.brush_map_cancelled'), 'warning', 5);
+      alertify.notify(_tr('app_page.notification.brush_map_cancelled'), 'warning', 5);
       return;
     }
     msg.dismiss();
@@ -111,7 +101,7 @@ function handleClickAddRectangle() {
   if (rectangle_id === null) {
     return;
   }
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_brush_map'), 'warning', 0);
+  const msg = alertify.notify(_tr('app_page.notification.instruction_brush_map'), 'warning', 0);
   document.addEventListener('keydown', esc_cancel);
   document.body.style.cursor = 'not-allowed';
   const _brush = d3.brush().on('end', rectbrushended);
@@ -132,7 +122,7 @@ function handleClickAddOther(type) {
     map.style('cursor', '').on('click', null);
     document.removeEventListener('keydown', esc_cancel);
   };
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  const msg = alertify.notify(_tr('app_page.notification.instruction_click_map'), 'warning', 0);
   document.addEventListener('keydown', esc_cancel);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
@@ -168,7 +158,7 @@ function handleClickAddEllipse() {
   document.body.style.cursor = 'not-allowed';
   let start_point,
     tmp_start_point;
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  const msg = alertify.notify(_tr('app_page.notification.instruction_click_map'), 'warning', 0);
   document.addEventListener('keydown', esc_cancel);
   map.style('cursor', 'crosshair')
     .on('click', () => {
@@ -197,7 +187,7 @@ function handleClickTextBox(text_box_id) {
     map.style('cursor', '').on('click', null);
     document.removeEventListener('keydown', esc_cancel);
   };
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  const msg = alertify.notify(_tr('app_page.notification.instruction_click_map'), 'warning', 0);
   document.body.style.cursor = 'not-allowed';
   map.style('cursor', 'crosshair')
     .on('click', () => {
@@ -227,7 +217,7 @@ function handleClickAddPicto() {
   if (symbol_id === null) {
     return;
   }
-  const msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map'), 'warning', 0);
+  const msg = alertify.notify(_tr('app_page.notification.instruction_click_map'), 'warning', 0);
   document.addEventListener('keydown', esc_cancel);
   let map_point,
     click_pt,
@@ -329,7 +319,7 @@ function handleClickAddArrow() {
     end_point,
     tmp_end_point;
   document.body.style.cursor = 'not-allowed';
-  let msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
+  let msg = alertify.notify(_tr('app_page.notification.instruction_click_map_arrow1'), 'warning', 0);
   document.addEventListener('keydown', esc_cancel);
   map.style('cursor', 'crosshair')
     .on('click', () => {
@@ -339,7 +329,7 @@ function handleClickAddArrow() {
           .attrs({ x: start_point[0] - 2, y: start_point[1] - 2, height: 4, width: 4 })
           .style('fill', 'red');
         msg.dismiss();
-        msg = alertify.notify(i18next.t('app_page.notification.instruction_click_map_arrow2'), 'warning', 0);
+        msg = alertify.notify(_tr('app_page.notification.instruction_click_map_arrow2'), 'warning', 0);
       } else {
         end_point = [d3.event.layerX, d3.event.layerY];
         tmp_end_point = map.append('rect')
@@ -381,12 +371,12 @@ export function add_layout_feature(selected_feature, options = {}) {
       }
     }
     if (!(new_id)) {
-      swal(`${i18next.t('app_page.common.error')}!`, i18next.t('app_page.common.error_max_text_annot'), 'error');
+      swal(`${_tr('app_page.common.error')}!`, _tr('app_page.common.error_max_text_annot'), 'error');
       return;
     }
     handleClickTextBox(new_id);
   } else if (selected_feature === 'sphere') {
-    // if(current_layers.Sphere) return;
+    // if(data_manager.current_layers.Sphere) return;
     const layer_to_add = check_layer_name(options.layer_name || 'Sphere');
     const layer_id = encodeId(layer_to_add);
     const fill = options.fill || '#add8e6';
@@ -396,7 +386,7 @@ export function add_layout_feature(selected_feature, options = {}) {
     const stroke = options.stroke || '#ffffff';
     _app.layer_to_id.set(layer_to_add, layer_id);
     _app.id_to_layer.set(layer_id, layer_to_add);
-    current_layers[layer_to_add] = {
+    data_manager.current_layers[layer_to_add] = {
       sphere: true,
       type: 'Polygon',
       n_features: 1,
@@ -414,11 +404,11 @@ export function add_layout_feature(selected_feature, options = {}) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
-    alertify.notify(i18next.t('app_page.notification.success_sphere_added'), 'success', 5);
+    alertify.notify(_tr('app_page.notification.success_sphere_added'), 'success', 5);
     zoom_without_redraw();
     setSphereBottom(layer_id);
   } else if (selected_feature === 'graticule') {
-    if (current_layers.Graticule !== undefined) return;
+    if (data_manager.current_layers.Graticule !== undefined) return;
     const stroke = options.stroke || '#808080';
     const stroke_width = options.stroke_width || '1px';
     const stroke_opacity = options.stroke_opacity || 1;
@@ -431,7 +421,7 @@ export function add_layout_feature(selected_feature, options = {}) {
         [Mround((bbox_layer[0] - 10) / 10) * 10, Mround((bbox_layer[1] - 10) / 10) * 10],
         [Mround((bbox_layer[2] + 10) / 10) * 10, Mround((bbox_layer[3] + 10) / 10) * 10]];
       graticule = graticule.extent(extent);
-      current_layers.Graticule.extent = extent;
+      data_manager.current_layers.Graticule.extent = extent;
     }
     const layer_to_add = 'Graticule';
     const layer_id = encodeId(layer_to_add);
@@ -444,7 +434,7 @@ export function add_layout_feature(selected_feature, options = {}) {
       .datum(graticule)
       .attrs({ d: path, class: 'graticule' })
       .styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: stroke });
-    current_layers.Graticule = {
+    data_manager.current_layers.Graticule = {
       graticule: true,
       type: 'Line',
       n_features: 1,
@@ -458,7 +448,7 @@ export function add_layout_feature(selected_feature, options = {}) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');
-    alertify.notify(i18next.t('app_page.notification.success_graticule_added'), 'success', 5);
+    alertify.notify(_tr('app_page.notification.success_graticule_added'), 'success', 5);
     up_legends();
     zoom_without_redraw();
   } else if (selected_feature === 'scale') {
@@ -490,7 +480,7 @@ export function add_layout_feature(selected_feature, options = {}) {
   } else if (selected_feature === 'symbol') {
     handleClickAddPicto();
   } else {
-    swal(`${i18next.t('app_page.common.error')}!`, i18next.t('app_page.common.error'), 'error');
+    swal(`${_tr('app_page.common.error')}!`, _tr('app_page.common.error'), 'error');
   }
 }
 
@@ -548,10 +538,10 @@ export function add_layout_feature(selected_feature, options = {}) {
 function add_single_symbol(symbol_dataurl, x, y, width = '30', height = '30', symbol_id = null) {
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
-    { name: i18next.t('app_page.common.options'), action: () => { make_style_box_indiv_symbol(self_parent); } },
-    { name: i18next.t('app_page.common.up_element'), action: () => { up_legend(self_parent.parentElement); } },
-    { name: i18next.t('app_page.common.down_element'), action: () => { down_legend(self_parent.parentElement); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.parentElement.remove(); } },
+    { name: _tr('app_page.common.options'), action: () => { make_style_box_indiv_symbol(self_parent); } },
+    { name: _tr('app_page.common.up_element'), action: () => { up_legend(self_parent.parentElement); } },
+    { name: _tr('app_page.common.down_element'), action: () => { down_legend(self_parent.parentElement); } },
+    { name: _tr('app_page.common.delete'), action: () => { self_parent.parentElement.remove(); } },
   ];
 
   return map.append('g')

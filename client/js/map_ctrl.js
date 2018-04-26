@@ -2,6 +2,31 @@ import { get_nb_decimals, round_value } from './helpers_calc';
 import { createLegend_symbol } from './legend';
 import { scaleBar } from './layout_features/scalebar';
 
+export const zoom = d3.zoom().on('zoom', zoom_without_redraw);
+export let canvas_rotation_value = null;
+
+export function makeSvgMap() {
+  // The div containing the svg map:
+  const map_div = d3.select('#map');
+  map_div.selectAll('*').remove();
+
+  // The 'map':
+  // (so actually the `map` variable is a reference to the d3 selection
+  //  of the main `svg` element on which we are drawing)
+  const map = map_div.styles({ width: `${w}px`, height: `${h}px` })
+    .append('svg')
+    .attrs({ id: 'svg_map', width: w, height: h })
+    .styles({ position: 'absolute', 'background-color': 'rgba(255, 255, 255, 0)' })
+    .on('contextmenu', (event) => { d3.event.preventDefault(); })
+    .call(zoom);
+
+  const svg_map = map.node();
+  const defs = map.append('defs');
+  return {
+    map_div, map, svg_map, defs,
+  };
+}
+
 export function zoom_without_redraw() {
   const rot_val = canvas_rotation_value || '';
   let transform;
@@ -14,9 +39,9 @@ export function zoom_without_redraw() {
       .duration(50)
       .style('stroke-width', function () {
         const lyr_name = global._app.id_to_layer.get(this.id);
-        return current_layers[lyr_name].fixed_stroke
+        return data_manager.current_layers[lyr_name].fixed_stroke
           ? this.style.strokeWidth
-          : `${current_layers[lyr_name]['stroke-width-const'] / transform.k}px`;
+          : `${data_manager.current_layers[lyr_name]['stroke-width-const'] / transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -30,9 +55,9 @@ export function zoom_without_redraw() {
       .duration(50)
       .style('stroke-width', function () {
         const lyr_name = global._app.id_to_layer.get(this.id);
-        return current_layers[lyr_name].fixed_stroke
+        return data_manager.current_layers[lyr_name].fixed_stroke
           ? this.style.strokeWidth
-          : `${current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k}px`;
+          : `${data_manager.current_layers[lyr_name]['stroke-width-const'] / d3.event.transform.k}px`;
       })
       .attr('transform', t_val);
     map.selectAll('.scalable-legend')
@@ -41,9 +66,6 @@ export function zoom_without_redraw() {
       .attr('transform', t_val);
   }
 
-  // FIXME !!!
-  // FIXME !!!
-  // TODO : To Reactivate
   if (scaleBar.displayed) {
     scaleBar.update();
   }
@@ -59,7 +81,7 @@ export function zoom_without_redraw() {
   document.getElementById('input-center-y').value = round_value(zoom_params.y, 2);
   document.getElementById('input-scale-k').value = (_k > 2 || _k < -2) ? round_value(_k, 2) : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
   // let a = document.getElementById('form_projection'),
-  //   disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || result_data.length > 1)? '' : 'disabled';
+  //   disabled_val = (zoom_k_scale > 200) && (window._target_layer_file != undefined || data_manager.result_data.length > 1)? '' : 'disabled';
   // a.querySelector('option[value="ConicConformalSec"]').disabled = disabled_val;
   // a.querySelector('option[value="ConicConformalTangent"]').disabled = disabled_val;
 }
@@ -73,16 +95,16 @@ export function zoom_without_redraw() {
 */
 export function reproj_symbol_layer() {
   /* eslint-disable no-loop-func */
-  const layers = Object.keys(current_layers);
+  const layers = Object.keys(data_manager.current_layers);
   const n_layers = layers.length;
   let lyr_name;
   for (let ix = 0; ix < n_layers; ix++) {
     lyr_name = layers[ix];
-    if (current_layers[lyr_name].renderer
-        && (current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
-            || current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1
-            || current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
-      const symbol = current_layers[lyr_name].symbol;
+    if (data_manager.current_layers[lyr_name].renderer
+        && (data_manager.current_layers[lyr_name].renderer.indexOf('PropSymbol') > -1
+            || data_manager.current_layers[lyr_name].renderer.indexOf('TypoSymbols') > -1
+            || data_manager.current_layers[lyr_name].renderer.indexOf('Label') > -1)) {
+      const symbol = data_manager.current_layers[lyr_name].symbol;
 
       if (symbol === 'text') { // Reproject the labels :
         map.select(`#${global._app.layer_to_id.get(lyr_name)}`)
@@ -126,14 +148,14 @@ export function reproj_symbol_layer() {
             };
           });
       }
-    } else if (current_layers[lyr_name].pointRadius !== undefined) {
+    } else if (data_manager.current_layers[lyr_name].pointRadius !== undefined) {
       map.select(`#${global._app.layer_to_id.get(lyr_name)}`)
         .selectAll('path')
-        .attr('d', path.pointRadius(current_layers[lyr_name].pointRadius));
-    } else if (current_layers[lyr_name].renderer === 'TwoStocksWaffle') {
+        .attr('d', path.pointRadius(data_manager.current_layers[lyr_name].pointRadius));
+    } else if (data_manager.current_layers[lyr_name].renderer === 'TwoStocksWaffle') {
       const selection = svg_map.querySelector(`#${global._app.layer_to_id.get(lyr_name)}`).querySelectorAll('g');
       const nbFt = selection.length;
-      if (current_layers[lyr_name].symbol === 'circle') {
+      if (data_manager.current_layers[lyr_name].symbol === 'circle') {
         for (let i = 0; i < nbFt; i++) {
           const centroid = path.centroid({
             type: 'Point',
@@ -187,7 +209,7 @@ export function redraw_legends_symbols(targeted_node) {
   for (let i = 0; i < legend_nodes.length; ++i) {
     const layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
       layer_name = global._app.id_to_layer.get(layer_id),
-      rendered_field = current_layers[layer_name].rendered_field,
+      rendered_field = data_manager.current_layers[layer_name].rendered_field,
       nested = legend_nodes[i].getAttribute('nested'),
       join_line = legend_nodes[i].getAttribute('join_line'),
       display_value = legend_nodes[i].getAttribute('display'),
@@ -226,7 +248,7 @@ export function redraw_legends_symbols(targeted_node) {
     }
   }
   if (hide && !(hidden.length === legend_nodes.length)) {
-    alertify.notify(i18next.t('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
+    alertify.notify(_tr('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
   }
 
   if (!targeted_node) {
@@ -234,7 +256,7 @@ export function redraw_legends_symbols(targeted_node) {
     for (let i = 0; i < legend_nodes_links_discont.length; ++i) {
       const layer_id = legend_nodes_links_discont[i].classList[2].split('lgdf_')[1],
         layer_name = global._app.id_to_layer.get(layer_id),
-        rendered_field = current_layers[layer_name].rendered_field,
+        rendered_field = data_manager.current_layers[layer_name].rendered_field,
         display_value = legend_nodes_links_discont[i].getAttribute('display'),
         visible = legend_nodes_links_discont[i].style.visibility;
 

@@ -2,7 +2,8 @@ import { rgb2hex } from './colors_helpers';
 import { reset_user_values } from './function';
 import { canvas_mod_size, remove_layer_cleanup } from './interface';
 import { clickLinkFromDataUrl, isValidJSON } from './helpers';
-import { available_projections } from './projections';
+import { canvas_rotation_value } from './map_ctrl';
+import { available_projections, getD3ProjFromProj4 } from './projections';
 import { northArrow } from './layout_features/north_arrow';
 import { scaleBar } from './layout_features/scalebar';
 
@@ -62,7 +63,7 @@ export function get_map_template() {
       result.join_line = lgd_node.getAttribute('join_line');
     } else if (type_lgd === 'legend_root_waffle') {
       const lyr_name = lgd_node.getAttribute('layer_name');
-      result.field = current_layers[lyr_name].rendered_field;
+      result.field = data_manager.current_layers[lyr_name].rendered_field;
       result.ratio_txt = lgd_node.querySelector('#ratio_txt').innerHTML;
     }
     return result;
@@ -75,8 +76,8 @@ export function get_map_template() {
     layout_features = document.querySelectorAll('.legend:not(.title):not(.legend_feature)'),
     zoom_transform = d3.zoomTransform(svg_map);
 
-  map_config.projection = current_proj_name;
-  if (current_proj_name === 'def_proj4') {
+  map_config.projection = _app.current_proj_name;
+  if (_app.current_proj_name === 'def_proj4') {
     map_config.custom_projection = _app.last_projection;
   }
   map_config.projection_scale = proj.scale();
@@ -104,9 +105,9 @@ export function get_map_template() {
   }
 
   // Save the provided dataset if it wasn't joined to the geo layer :
-  if (joined_dataset.length > 0 && field_join_map.length === 0) {
-    map_config.joined_dataset = joined_dataset[0];
-    map_config.dataset_name = dataset_name;
+  if (data_manager.joined_dataset.length > 0 && data_manager.field_join_map.length === 0) {
+    map_config.data_manager.joined_dataset = data_manager.joined_dataset[0];
+    map_config.data_manager.dataset_name = data_manager.dataset_name;
   }
 
   map_config.global_order = Array.from(svg_map.querySelectorAll('.legend,.layer')).map(ft => ['#', ft.id, '.', ft.className.baseVal.split(' ').join('.')].join(''));
@@ -210,7 +211,7 @@ export function get_map_template() {
     const layer_style_i = layers_style[i],
       layer_id = layers._groups[0][i].id,
       layer_name = _app.id_to_layer.get(layer_id),
-      current_layer_prop = current_layers[layer_name],
+      current_layer_prop = data_manager.current_layers[layer_name],
       layer_type = (current_layer_prop.sphere
         ? 'sphere' : false) || (current_layer_prop.graticule ? 'graticule' : 'layer'),
       nb_ft = current_layer_prop.n_features;
@@ -262,8 +263,8 @@ export function get_map_template() {
       layer_style_i.fill_color = rgb2hex(selection.style('fill'));
       layer_style_i.stroke_color = rgb2hex(selection.style('stroke'));
       if (layer_type === 'graticule') {
-        layer_style_i.stroke_dasharray = current_layers.Graticule.dasharray;
-        layer_style_i.step = current_layers.Graticule.step;
+        layer_style_i.stroke_dasharray = data_manager.current_layers.Graticule.dasharray;
+        layer_style_i.step = data_manager.current_layers.Graticule.step;
       }
     } else if (!current_layer_prop.renderer) {
       selection = map.select(`#${layer_id}`).selectAll('path');
@@ -420,7 +421,7 @@ export function get_map_template() {
       layer_style_i.ratio = current_layer_prop.ratio;
       layer_style_i.nCol = current_layer_prop.nCol;
       layer_style_i.ref_layer_name = current_layer_prop.ref_layer_name;
-      layer_style_i.result_data = JSON.stringify(result_data[layer_name]);
+      layer_style_i.result_data = JSON.stringify(data_manager.result_data[layer_name]);
       layer_style_i.current_position = getWaffleCurrentPos(svg_map.querySelectorAll(`#${layer_id} > g`));
     } else {
       selection = map.select(`#${layer_id}`).selectAll('path');
@@ -475,8 +476,8 @@ export function load_map_template() {
 
 function display_error_loading_project(error) {
   swal({
-    title: `${i18next.t('app_page.common.error')}!`,
-    text: `${i18next.t('app_page.common.error_map_project')}${error || 'Unknown'}`,
+    title: `${_tr('app_page.common.error')}!`,
+    text: `${_tr('app_page.common.error_map_project')}${error || 'Unknown'}`,
     type: 'error',
     allowOutsideClick: false,
   });
@@ -497,7 +498,7 @@ const getAppVersion = (info) => {
 };
 
 const remove_all_layers = () => {
-  const layer_names = Object.getOwnPropertyNames(current_layers);
+  const layer_names = Object.getOwnPropertyNames(data_manager.current_layers);
   for (let i = 0, nb_layers = layer_names.length; i < nb_layers; i++) {
     remove_layer_cleanup(layer_names[i]);
   }
@@ -514,20 +515,20 @@ const remove_all_layers = () => {
     _l[i].remove();
   }
   // Get a new object for where we are storing the main properties :
-  current_layers = {};
+  data_manager.current_layers = {};
 };
 
 export function apply_user_preferences(json_pref) {
   // Try to read the project-file provided by the user:
   const [valid, preferences] = isValidJSON(json_pref);
   if (!valid) {
-    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project') + preferences);
+    display_error_loading_project(_tr('app_page.common.error_invalid_map_project') + preferences);
     return;
   }
   const map_config = preferences.map_config;
   const layers = preferences.layers;
   if (!layers || !map_config) {
-    display_error_loading_project(i18next.t('app_page.common.error_invalid_map_project'));
+    display_error_loading_project(_tr('app_page.common.error_invalid_map_project'));
     return;
   }
   const { app_version, p_version } = getAppVersion(preferences.info);
@@ -581,7 +582,7 @@ export function apply_user_preferences(json_pref) {
       if (map_config.projection_rotation) proj = proj.rotate(map_config.projection_rotation);
       path = d3.geoPath().projection(proj).pointRadius(4);
       map.selectAll('.layer').selectAll('path').attr('d', path);
-      handleClipPath(current_proj_name);
+      handleClipPath(_app.current_proj_name);
       reproj_symbol_layer();
       apply_layout_lgd_elem();
       if (!map_config.global_order) { // Old method to reorder layers :
@@ -612,7 +613,7 @@ export function apply_user_preferences(json_pref) {
         rotate_global(map_config.canvas_rotation);
       }
       _app.waitingOverlay.hide();
-      const targeted_layer = Object.getOwnPropertyNames(user_data)[0];
+      const targeted_layer = Object.getOwnPropertyNames(data_manager.user_data)[0];
       if (targeted_layer) getAvailablesFunctionnalities(targeted_layer);
       for (let ii = 0; ii < at_end.length; ii++) {
         at_end[ii][0](at_end[ii][1], at_end[ii][2], at_end[ii][3]);
@@ -754,16 +755,16 @@ export function apply_user_preferences(json_pref) {
 
   // Set the variables/fields related to the projection
   // (names were slightly changed in a last version, thus the replacing of whitespace)
-  current_proj_name = map_config.projection.replace(/ /g, '');
+  _app.current_proj_name = map_config.projection.replace(/ /g, '');
   if (map_config.custom_projection) {
     proj = getD3ProjFromProj4(proj4(map_config.custom_projection));
     _app.last_projection = map_config.custom_projection;
     let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
     custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
-    addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
+    addLastProjectionSelect(_app.current_proj_name, _app.last_projection, custom_name);
   } else {
-    proj = d3[available_projections.get(current_proj_name).name]();
-    addLastProjectionSelect(current_proj_name);
+    proj = d3[available_projections.get(_app.current_proj_name).name]();
+    addLastProjectionSelect(_app.current_proj_name);
   }
   if (map_config.projection_parallels) proj = proj.parallels(map_config.projection_parallels);
   if (map_config.projection_parallel) proj = proj.parallel(map_config.projection_parallel);
@@ -781,10 +782,10 @@ export function apply_user_preferences(json_pref) {
   document.querySelector('input#bg_color').value = rgb2hex(map_config.background_color);
 
   // Reload the external (not-joined) dataset if there is one :
-  if (map_config.joined_dataset) {
-    field_join_map = [];
-    joined_dataset = [map_config.joined_dataset.slice()];
-    dataset_name = map_config.dataset_name;
+  if (map_config.data_manager.joined_dataset) {
+    data_manager.field_join_map = [];
+    data_manager.joined_dataset = [map_config.data_manager.joined_dataset.slice()];
+    data_manager.dataset_name = map_config.data_manager.dataset_name;
     update_menu_dataset();
   }
 
@@ -827,7 +828,7 @@ export function apply_user_preferences(json_pref) {
       }
       // handle_reload_TopoJSON(_layer.topo_geom, tmp).then(function(n_layer_name){
       layer_name = handle_reload_TopoJSON(_layer.topo_geom, tmp);
-      const current_layer_prop = current_layers[layer_name];
+      const current_layer_prop = data_manager.current_layers[layer_name];
       if (_layer.renderer) {
         current_layer_prop.renderer = _layer.renderer;
       }
@@ -864,7 +865,7 @@ export function apply_user_preferences(json_pref) {
           current_layer_prop.min_display = _layer.min_display || 0;
           current_layer_prop.breaks = _layer.breaks;
           const lim = current_layer_prop.min_display !== 0
-            ? current_layer_prop.min_display * current_layers[layer_name].n_features
+            ? current_layer_prop.min_display * data_manager.current_layers[layer_name].n_features
             : -1;
           layer_selec.selectAll('path')
             .styles((d, j) => ({
@@ -984,24 +985,24 @@ export function apply_user_preferences(json_pref) {
           }
         }
         if (_layer.renderer === 'PropSymbolsTypo') {
-          current_layers[layer_name].color_map = new Map(_layer.color_map);
+          data_manager.current_layers[layer_name].color_map = new Map(_layer.color_map);
         }
         if (_layer.options_disc) {
-          current_layers[layer_name].options_disc = _layer.options_disc;
+          data_manager.current_layers[layer_name].options_disc = _layer.options_disc;
         }
         if (_layer.rendered_field2) {
-          current_layers[layer_name].rendered_field2 = _layer.rendered_field2;
+          data_manager.current_layers[layer_name].rendered_field2 = _layer.rendered_field2;
         }
         if (_layer.colors_breaks) {
-          current_layers[layer_name].colors_breaks = _layer.colors_breaks;
+          data_manager.current_layers[layer_name].colors_breaks = _layer.colors_breaks;
         }
         if (_layer.size_legend_symbol) {
-          current_layers[layer_name].size_legend_symbol = _layer.size_legend_symbol;
+          data_manager.current_layers[layer_name].size_legend_symbol = _layer.size_legend_symbol;
         }
         if (_layer.legend) {
           rehandle_legend(layer_name, _layer.legend);
         }
-        current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
+        data_manager.current_layers[layer_name]['stroke-width-const'] = _layer['stroke-width-const'];
         layer_id = _app.layer_to_id.get(layer_name);
         const layer_selec = map.select(`#${layer_id}`)
           .selectAll(_layer.symbol);
@@ -1063,8 +1064,8 @@ export function apply_user_preferences(json_pref) {
         const nb_features = new_layer_data.features.length;
         const context_menu = new ContextMenu();
         const getItems = self_parent => [
-          { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
-          { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
+          { name: _tr('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
+          { name: _tr('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
         ];
         layer_id = encodeId(layer_name);
         _app.layer_to_id.set(layer_name, layer_id);
@@ -1096,7 +1097,7 @@ export function apply_user_preferences(json_pref) {
           .call(drag_elem_geo);
 
         create_li_layer_elem(layer_name, nb_features, ['Point', 'symbol'], 'result');
-        current_layers[layer_name] = {
+        data_manager.current_layers[layer_name] = {
           n_features: nb_features,
           renderer: 'TypoSymbols',
           symbols_map: symbols_map,

@@ -4,14 +4,17 @@ import { isNumber, make_content_summary } from './../helpers';
 import { accordionize } from './../interface';
 import { get_nb_left_separator, get_precision_axis, round_value } from './../helpers_calc';
 import { Mabs, Mceil, Mmax, Mmin, Mround, Msqrt } from './../helpers_math';
-import { discretize_to_colors, getBreaksQ6, getBreaks, getBreaksStdDev, getBreaks_userDefined } from './common';
+import {
+  discretiz_geostats_switch, discretize_to_colors,
+  getBreaksQ6, getBreaks, getBreaksStdDev, getBreaks_userDefined,
+} from './common';
 
 export const display_discretization = (layer_name, field_name, nb_class, options) => {
   const make_no_data_section = () => {
     const section = d3.select('#color_div')
       .append('div').attr('id', 'no_data_section')
       .append('p')
-      .html(i18next.t('disc_box.withnodata', { count: +no_data }));
+      .html(_tr('disc_box.withnodata', { count: +no_data }));
 
     section.append('input')
       .attrs({ type: 'color', value: '#ebebcd', id: 'no_data_color' })
@@ -30,12 +33,13 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     const sequential_color_select = col_div.insert('p')
       .attr('class', 'color_txt')
       .style('margin-left', '10px')
-      .html(i18next.t('disc_box.color_palette'))
+      .html(_tr('disc_box.color_palette'))
       .insert('select')
       .attr('class', 'color_params')
       .styles({
         width: '116px',
-        'background-image': 'url(/static/img/palettes/Blues.png)' })
+        'background-image': 'url(/static/img/palettes/Blues.png)',
+      })
       .on('change', function () {
         this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
         redisplay.draw();
@@ -66,7 +70,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .insert('button')
       .styles({ 'margin-top': '10px' })
       .attrs({ class: 'button_st3', id: 'reverse_pal_btn' })
-      .html(i18next.t('disc_box.reverse_palette'))
+      .html(_tr('disc_box.reverse_palette'))
       .on('click', () => {
         to_reverse = true;
         redisplay.draw();
@@ -82,7 +86,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     document.getElementById('button_palette_box').style.display = 'none';
     col_div.insert('p')
       .attr('class', 'central_class')
-      .html(i18next.t('disc_box.break_on'))
+      .html(_tr('disc_box.break_on'))
       .insert('input')
       .style('width', '50px')
       .attrs({
@@ -92,7 +96,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
         min: 1,
         max: nb_class - 1,
         step: 1,
-        value: Mround(nb_class / 2) })
+        value: Mround(nb_class / 2),
+      })
       .on('change', () => { redisplay.draw(); });
 
     const pal_names = ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
@@ -101,7 +106,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     const left_color_select = col_div.insert('p')
       .attr('class', 'color_txt')
       .style('display', 'inline')
-      .html(i18next.t('disc_box.left_colramp'))
+      .html(_tr('disc_box.left_colramp'))
       .insert('select')
       .style('width', '116px')
       .attr('class', 'color_params_left')
@@ -112,7 +117,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     const right_color_select = col_div.insert('p')
       .styles({ display: 'inline', 'margin-left': '70px' })
       .attr('class', 'color_txt2')
-      .html(i18next.t('disc_box.right_colramp'))
+      .html(_tr('disc_box.right_colramp'))
       .insert('select')
       .style('width', '116px')
       .attr('class', 'color_params_right')
@@ -162,7 +167,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     central_color.select('input').node().checked = true;
     central_color.insert('label')
       .attr('for', 'central_color_chkbx')
-      .html(i18next.t('disc_box.colored_central_class'));
+      .html(_tr('disc_box.colored_central_class'));
     central_color.insert('input')
       .attrs({ type: 'color', id: 'central_color_val', value: '#e5e5e5' })
       .style('margin', '0px 10px')
@@ -180,7 +185,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     a.insert('button')
       .attrs({ class: 'btn_population' })
-      .html(i18next.t('disc_box.disp_rug_pop'))
+      .html(_tr('disc_box.disp_rug_pop'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -195,7 +200,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     b.insert('button')
       .attrs({ class: 'btn_mean' })
-      .html(i18next.t('disc_box.disp_mean'))
+      .html(_tr('disc_box.disp_mean'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -212,7 +217,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     c.insert('button')
       .attrs({ class: 'btn_median' })
-      .html(i18next.t('disc_box.disp_median'))
+      .html(_tr('disc_box.disp_median'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -229,7 +234,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     d.insert('button')
       .attrs({ class: 'btn_stddev' })
-      .html(i18next.t('disc_box.disp_sd'))
+      .html(_tr('disc_box.disp_sd'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -314,7 +319,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
         'text-anchor': 'middle',
       })
       .style('fill', 'none')
-      .text(i18next.t('disc_box.mean'));
+      .text(_tr('disc_box.mean'));
 
     line_median = overlay_svg.append('line')
       .attrs({
@@ -335,7 +340,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
         'text-anchor': 'middle',
       })
       .style('fill', 'none')
-      .text(i18next.t('disc_box.median'));
+      .text(_tr('disc_box.median'));
 
     line_std_left = overlay_svg.append('line')
       .attrs({
@@ -374,7 +379,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     newBox.append('div').attr('id', 'summary')
       .styles({ 'font-size': '11px', float: 'right', margin: '10px 10px 0px 10px' })
       .insert('p')
-      .html(['<b>', i18next.t('disc_box.summary'), '</b><br>', content_summary].join(''));
+      .html(['<b>', _tr('disc_box.summary'), '</b><br>', content_summary].join(''));
   };
 
   const redisplay = {
@@ -555,11 +560,13 @@ export const display_discretization = (layer_name, field_name, nb_class, options
           x: xx(d.offset),
           y: y(d.height) - margin.bottom,
           width: xx(d.width),
-          height: svg_h - y(d.height) }))
+          height: svg_h - y(d.height),
+        }))
         .styles(d => ({
           fill: d.color,
           opacity: 0.95,
-          'stroke-opacity': 1 }))
+          'stroke-opacity': 1,
+        }))
         .on('mouseover', function () {
           this.parentElement.querySelector(`#text_bar_${this.id.split('_')[1]}`).style.display = null;
         })
@@ -576,7 +583,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
           'text-anchor': 'middle',
           dy: '.75em',
           x: xx(d.offset + d.width / 2),
-          y: y(d.height) - margin.top * 2 - margin.bottom - 1.5 }))
+          y: y(d.height) - margin.top * 2 - margin.bottom - 1.5,
+        }))
         .styles({ color: 'black', cursor: 'default', display: 'none' })
         .text(d => formatCount(d.val));
 
@@ -587,16 +595,16 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
   const modal_box = make_dialog_container(
     'discretiz_charts',
-    [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join(''),
+    [_tr('disc_box.title'), ' - ', layer_name, ' - ', field_name].join(''),
     'discretiz_charts_dialog',
   );
   const container = document.getElementById('discretiz_charts');
   const newBox = d3.select(container).select('.modal-body');
   let db_data;
-  if (result_data.hasOwnProperty(layer_name)) {
-    db_data = result_data[layer_name];
-  } else if (user_data.hasOwnProperty(layer_name)) {
-    db_data = user_data[layer_name];
+  if (data_manager.result_data.hasOwnProperty(layer_name)) {
+    db_data = data_manager.result_data[layer_name];
+  } else if (data_manager.user_data.hasOwnProperty(layer_name)) {
+    db_data = data_manager.user_data[layer_name];
   } else {
     const layer = svg_map.querySelector(`#${_app.idLayer.get(layer_name)}`);
     db_data = Array.prototype.map.call(layer.children, d => d.__data__.properties);
@@ -645,15 +653,15 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   values = serie.sorted();
 
   const available_functions = [
-    [i18next.t('app_page.common.equal_interval'), 'equal_interval'],
-    [i18next.t('app_page.common.quantiles'), 'quantiles'],
-    [i18next.t('app_page.common.stddev_f'), 'stddev_f'],
-    [i18next.t('app_page.common.Q6'), 'Q6'],
-    [i18next.t('app_page.common.jenks'), 'jenks'],
+    [_tr('app_page.common.equal_interval'), 'equal_interval'],
+    [_tr('app_page.common.quantiles'), 'quantiles'],
+    [_tr('app_page.common.stddev_f'), 'stddev_f'],
+    [_tr('app_page.common.Q6'), 'Q6'],
+    [_tr('app_page.common.jenks'), 'jenks'],
   ];
 
   if (!serie._hasZeroValue() && !serie._hasNegativeValue()) {
-    available_functions.push([i18next.t('app_page.common.geometric_progression'), 'geometric_progression']);
+    available_functions.push([_tr('app_page.common.geometric_progression'), 'geometric_progression']);
   }
   const precision_axis = get_precision_axis(min_serie, max_serie, serie.precision);
   const formatCount = d3.format(precision_axis);
@@ -690,7 +698,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   let input_section_stddev = discretization_panel.insert('p')
     .styles({ margin: 'auto', display: type === 'stddev_f' ? '' : 'none' });
   input_section_stddev.insert('span')
-    .html(i18next.t('disc_box.stddev_share_txt1'));
+    .html(_tr('disc_box.stddev_share_txt1'));
   input_section_stddev.insert('input')
     .attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share' })
     .styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' })
@@ -710,17 +718,18 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     });
   input_section_stddev.insert('span')
-    .html(i18next.t('disc_box.stddev_share_txt2'));
+    .html(_tr('disc_box.stddev_share_txt2'));
   const std_dev_mean_choice = input_section_stddev.insert('p').style('margin', 'auto');
   std_dev_mean_choice.insert('p')
     .style('margin', 'auto')
-    .html(i18next.t('disc_box.stddev_role_mean'));
-  [[i18next.t('disc_box.stddev_center_mean'), 'center'],
-   [i18next.t('disc_box.stddev_break_mean'), 'bound'],
+    .html(_tr('disc_box.stddev_role_mean'));
+  [[_tr('disc_box.stddev_center_mean'), 'center'],
+   [_tr('disc_box.stddev_break_mean'), 'bound'],
   ].forEach((el) => {
     std_dev_mean_choice
       .insert('input')
-      .attrs({ type: 'radio', name: 'role_mean', value: el[1], id: `button_stddev_${el[1]}` })
+      .attrs({ type: 'radio', name: 'role_mean', id: `button_stddev_${el[1]}` })
+      .property('value', el[1])
       .on('change', function () {
         std_dev_params.role_mean = this.value;
         redisplay.compute().then((v) => {
@@ -730,7 +739,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     std_dev_mean_choice
       .insert('label')
       .style('font-weight', '400')
-      .attrs({ for: `button_stddev_${el[1]}` })
+      .attr('for', `button_stddev_${el[1]}`)
       .html(el[0]);
   });
   document.getElementById(`button_stddev_${std_dev_params.role_mean}`).checked = true;
@@ -746,7 +755,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
   discretization_panel
     .append('span')
-    .html(i18next.t('disc_box.class'));
+    .html(_tr('disc_box.class'));
 
   let disc_nb_class = discretization_panel
     .insert('input')
@@ -803,7 +812,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     .select('.modal-dialog')
     .styles({
       width: `${svg_w + margin.top + margin.bottom + 90}px`,
-      height: `${window.innerHeight - 60}px`
+      height: `${window.innerHeight - 60}px`,
     });
 
   if (values.length < 500) { // Only allow for beeswarm plot if there isn't too many values
@@ -813,7 +822,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     choice_histo.insert('button')
       .attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' })
       .styles({ padding: '3px', 'font-size': '10px' })
-      .html(i18next.t('disc_box.switch_ref_histo'))
+      .html(_tr('disc_box.switch_ref_histo'))
       .on('click', () => {
         let str_tr;
         if (current_histo === 'histogram') {
@@ -829,7 +838,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
           current_histo = 'histogram';
           str_tr = '';
         }
-        document.getElementById('ref_histo_title').innerHTML = `<b>${i18next.t('disc_box.hist_ref_title' + str_tr)}</b>`;
+        document.getElementById('ref_histo_title').innerHTML = `<b>${_tr('disc_box.hist_ref_title' + str_tr)}</b>`;
       });
   }
   const div_svg = newBox.append('div')
@@ -872,7 +881,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   const b_accordion_colors = newBox.append('button')
     .attrs({ class: 'accordion_disc active', id: 'btn_acc_disc_color' })
     .style('padding', '0 6px')
-    .html(i18next.t('disc_box.title_color_scheme'));
+    .html(_tr('disc_box.title_color_scheme'));
   const accordion_colors = newBox.append('div')
     .attrs({ class: 'panel show', id: 'accordion_colors' })
     .style('width', '98%');
@@ -881,8 +890,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     .attr('id', 'color_div')
     .style('text-align', 'center');
 
-  [[i18next.t('disc_box.sequential'), 'sequential'],
-   [i18next.t('disc_box.diverging'), 'diverging'],
+  [[_tr('disc_box.sequential'), 'sequential'],
+   [_tr('disc_box.diverging'), 'diverging'],
   ].forEach((el) => {
     color_scheme.insert('label').style('margin', '20px').html(el[0])
       .insert('input')
@@ -907,7 +916,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       cursor: 'pointer',
       'font-style': 'italic',
     })
-    .html(i18next.t('app_page.palette_box.button'))
+    .html(_tr('app_page.palette_box.button'))
     .on('click', () => {
       make_box_custom_palette(nb_class)
         .then((result) => {
@@ -939,7 +948,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   const b_accordion_breaks = newBox.append('button')
     .attrs({ class: 'accordion_disc', id: 'btn_acc_disc_break' })
     .style('padding', '0 6px')
-    .html(i18next.t('disc_box.title_break_values'));
+    .html(_tr('disc_box.title_break_values'));
   const accordion_breaks = newBox.append('div')
     .attrs({ class: 'panel', id: 'accordion_breaks_vals' })
     .style('width', '98%');
@@ -948,20 +957,20 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   user_defined_breaks.insert('textarea')
     .attrs({
       id: 'user_breaks_area',
-      placeholder: i18next.t('app_page.common.expected_class'),
+      placeholder: _tr('app_page.common.expected_class'),
     })
     .style('width', '600px');
 
   user_defined_breaks
     .insert('button')
-    .text(i18next.t('app_page.common.valid'))
+    .text(_tr('app_page.common.valid'))
     .on('click', () => {
       const old_nb_class = nb_class;
       user_break_list = document.getElementById('user_breaks_area').value;
       type = 'user_defined';
       // nb_class = user_break_list.split('-').length - 1;
       // txt_nb_class.node().value = +nb_class;
-      // txt_nb_class.html(i18next.t("disc_box.class", {count: +nb_class}));
+      // txt_nb_class.html(_tr("disc_box.class", {count: +nb_class}));
       // document.getElementById("nb_class_range").value = nb_class;
       redisplay.compute().then((v) => {
         if (v) redisplay.draw();
@@ -1085,13 +1094,13 @@ function fetch_categorical_colors() {
 
 export function display_categorical_box(data_layer, layer_name, field, cats) {
   const is_hex_color = new RegExp(/^#([0-9a-f]{6}|[0-9a-f]{3})$/i);
-  const nb_features = current_layers[layer_name].n_features;
+  const nb_features = data_manager.current_layers[layer_name].n_features;
   const nb_class = cats.length;
-  const existing_typo_layer = Object.keys(current_layers)
-    .filter(lyr => current_layers[lyr].renderer === 'Categorical' || current_layers[lyr].renderer === 'PropSymbolsTypo');
+  const existing_typo_layer = Object.keys(data_manager.current_layers)
+    .filter(lyr => data_manager.current_layers[lyr].renderer === 'Categorical' || data_manager.current_layers[lyr].renderer === 'PropSymbolsTypo');
   const modal_box = make_dialog_container(
     'categorical_box',
-    i18next.t('app_page.categorical_box.title', { layer: layer_name, nb_features: nb_features }),
+    _tr('app_page.categorical_box.title', { layer: layer_name, nb_features: nb_features }),
     'dialog');
 
   const newbox = d3.select('#categorical_box').select('.modal-body')
@@ -1099,7 +1108,7 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
 
   newbox.append('h3').html('');
   newbox.append('p')
-      .html(i18next.t('app_page.symbol_typo_box.field_categ', { field: field, nb_class: +nb_class, nb_features: +nb_features }));
+      .html(_tr('app_page.symbol_typo_box.field_categ', { field: field, nb_class: +nb_class, nb_features: +nb_features }));
 
   newbox.append('ul')
     .style('padding', 'unset')
@@ -1110,23 +1119,32 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
     .append('li')
     .styles({ margin: 'auto', 'list-style': 'none' })
     .attr('class', 'typo_class')
-    .attr('id', (d, i) => ['line', i].join('_'));
+    .attr('id', (_, i) => ['line', i].join('_'));
 
   newbox.selectAll('.typo_class')
     .append('input')
-    .styles({ width: '140px', height: 'auto', display: 'inline-block', 'vertical-align': 'middle', 'margin-right': '20px' })
-    .attrs(d => ({ class: 'typo_name', value: d.display_name, id: d.name }));
+    .styles({
+      width: '140px',
+      height: 'auto',
+      display: 'inline-block',
+      'vertical-align': 'middle',
+      'margin-right': '20px',
+    })
+    .attrs(d => ({ class: 'typo_name', id: d.name }))
+    .property('value', d => d.display_name);
 
   newbox.selectAll('.typo_class')
     .insert('p')
     .attr('class', 'color_square')
     .style('background-color', d => d.color)
-    .styles({ width: '22px',
+    .styles({
+      width: '22px',
       height: '22px',
       margin: 'auto',
       display: 'inline-block',
       'vertical-align': 'middle',
-      'border-radius': '10%' })
+      'border-radius': '10%',
+    })
     .on('click', function () {
       const self = this;
       const this_color = self.style.backgroundColor;
@@ -1156,12 +1174,12 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
   newbox.selectAll('.typo_class')
     .insert('span')
     .attrs(d => ({ class: 'typo_count_ft', 'data-count': d.nb_elem }))
-    .html(d => i18next.t('app_page.symbol_typo_box.count_feature', { count: +d.nb_elem }));
+    .html(d => _tr('app_page.symbol_typo_box.count_feature', { count: +d.nb_elem }));
 
   newbox.insert('p')
     .insert('button')
     .attr('class', 'button_st3')
-    .html(i18next.t('app_page.categorical_box.new_random_colors'))
+    .html(_tr('app_page.categorical_box.new_random_colors'))
     .on('click', () => {
       const lines = document.getElementsByClassName('typo_class');
       for (let i = 0; i < lines.length; ++i) {
@@ -1181,12 +1199,12 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
         cursor: 'pointer',
         'font-style': 'italic',
       })
-      .html(i18next.t('app_page.categorical_box.copy_style'))
+      .html(_tr('app_page.categorical_box.copy_style'))
       .on('click', () => {
         make_box_copy_style_categorical(existing_typo_layer)
           .then((result) => {
             if (result) { // Apply the selected style:
-              const ref_map = current_layers[result].color_map;
+              const ref_map = data_manager.current_layers[result].color_map;
               const selection = newbox.select('#sortable_typo_name').selectAll('li');
               // Change the displayed name of the elements:
               selection.selectAll('input.typo_name').each(function (d) {
@@ -1273,7 +1291,7 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
   ref_histo.append('p')
     .attrs({ id: 'ref_histo_title' })
     .styles({ margin: 'auto', 'text-align': 'center' })
-    .html(`<b>${i18next.t('disc_box.hist_ref_title')}</b>`);
+    .html(`<b>${_tr('disc_box.hist_ref_title')}</b>`);
 
   const c = ref_histo.append('svg')
     .attrs({
@@ -1453,7 +1471,7 @@ function make_box_custom_palette(nb_class, existing_colors) {
     if (name !== '' && is_ok_name.test(name)) {
       if (existing_palette.indexOf(name) > -1) {
         d3.select('#palette_box_error_zone')
-          .html(i18next.t('app_page.palette_box.error_name_existing'));
+          .html(_tr('app_page.palette_box.error_name_existing'));
         document.querySelector('.swal2-confirm').disabled = true;
         return null;
       }
@@ -1463,18 +1481,18 @@ function make_box_custom_palette(nb_class, existing_colors) {
       return name;
     } else {
       d3.select('#palette_box_error_zone')
-        .html(i18next.t('app_page.palette_box.error_name_invalid'));
+        .html(_tr('app_page.palette_box.error_name_invalid'));
       document.querySelector('.swal2-confirm').disabled = true;
       return null;
     }
   };
 
   return swal({
-    title: i18next.t('app_page.palette_box.title'),
+    title: _tr('app_page.palette_box.title'),
     html: '<div id="palette_box_content" style="display: inline-flex;"></div><div id="palette_box_name"></div>',
     showCancelButton: true,
     showConfirmButton: true,
-    cancelButtonText: i18next.t('app_page.common.close'),
+    cancelButtonText: _tr('app_page.common.close'),
     animation: 'slide-from-top',
     onOpen: () => {
       document.querySelector('.swal2-modal').style.width = `${nb_class * 85}px`;
@@ -1485,20 +1503,20 @@ function make_box_custom_palette(nb_class, existing_colors) {
         .append('p');
 
       g.append('input')
-        .attr('id', (d, i) => i)
+        .attr('id', (_, i) => i)
         .attr('type', 'color')
         .style('width', '60px')
         .property('value', d => d)
-        .on('change', function (d, i) {
+        .on('change', function (_, i) {
           ref_colors[i] = this.value;
           this.nextSibling.value = this.value;
         });
 
       g.append('input')
-        .attr('id', (d, i) => i)
+        .attr('id', (_, i) => i)
         .style('width', '60px')
         .property('value', d => d)
-        .on('keyup', function (d, i) {
+        .on('keyup', function (_, i) {
           if (is_hex_color.test(this.value)) {
             ref_colors[i] = this.value;
             this.previousSibling.value = this.value;
@@ -1510,7 +1528,7 @@ function make_box_custom_palette(nb_class, existing_colors) {
         .style('background', '#e3e3e3');
       bottom
         .append('span')
-        .html(i18next.t('app_page.palette_box.new_name'));
+        .html(_tr('app_page.palette_box.new_name'));
       bottom
         .append('input')
         .style('width', '70px')
@@ -1536,11 +1554,11 @@ function make_box_custom_palette(nb_class, existing_colors) {
 function make_box_copy_style_categorical(existing_typo_layer) {
   let selected_layer = existing_typo_layer[0];
   return swal({
-    title: i18next.t('app_page.categorical_box.title_copy_style_box'),
+    title: _tr('app_page.categorical_box.title_copy_style_box'),
     html: '<div id="copy_style_box_content" style="margin: 35px;"></div>',
     showCancelButton: true,
     showConfirmButton: true,
-    cancelButtonText: i18next.t('app_page.common.close'),
+    cancelButtonText: _tr('app_page.common.close'),
     animation: 'slide-from-top',
     onOpen: () => {
       document.querySelector('.swal2-modal').style.width = '400px';

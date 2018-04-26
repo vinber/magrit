@@ -15,8 +15,8 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     }
     return symbol_map;
   };
-  var nb_features = current_layers[layer].n_features,
-    data_layer = user_data[layer],
+  var nb_features = data_manager.current_layers[layer].n_features,
+    data_layer = data_manager.user_data[layer],
     cats = [],
     res_symbols = window.default_symbols,
     default_d_url = 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAADVwAAA1cBPbpBvAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAATySURBVHic7dxNiFVlHIDxZ5z8yvKjMgOTFLI0IrQMSg2jIFpESYSbyCGICqKINu6Kdm1KihZtomgRURRI9EH0YQXWLqJFqG1KIsiKQog+MFu8M1R3mo//nXPO+75znh+czVy55/+eeZy59753LkiSJEmSpCGN5B6gQRuAbQNfOwkcAc4GPux8IhXtLuDUwPErsAP4Dbg132jzx4LcA3RgFFgMvAzcmXmW6vUhmIk1jgLPAg9lnKV6fQoG0mO2x4HHMs1Svb4FM2Ef8PQUt2kafbhgU63xPuAFYGGHs1Svz8EA3A68BiztaJbq9SGY0Rluvwl4C1jewSzV60Mws1njLuB9YHXLs1TPYP5xBfARsK7FWapnMP+1CfgYuKilWapnMJNdQIpmawuzVM9g/t+5wAfAzoZnqV4fgpnpWdJUVgDvArsbnKV6fQhmLmtcDLwCjDU0S/UMZmanAc8BDzYwS/UMZnZGgP24aWkwQfuApxq+z6r0YeFNr/F+4HnSr6re6UMwwz5Lms4dwKvAkhbuu2h9CKatNd5M2rQ8s6X7L5LBzM21pE3Lc1o8R1EMZu62kTYtz2/5PEUwmGZsJu0/bezgXFkZTHPWk6LZ0tH5sjCYZq0hbVru6PCcnepDMG08rZ7OSuAd4MaOz9uJPgSTY42nAweAPRnO3SqDac8i4EXg7kznb4XBtGsUeIa0BzUvGEz7Rki73E8yDz5eJffF7EIpa3yAebBpWcrFbFNJa9xLegdftZuWJV3MtpS2xt3AG1S6aVnaxWxDiWu8DniP9FFqVSnxYjat1DVeSdq0XJt7kIhSL2aTSl7jJaT9pwtzDzJbJV/MpnS9NRC1gRTNZbkHmY0+BFPDGs8DDgLbM88xoxou5lzVssZVpE3LG3IPMp1aLuZc1LTGZcDrwG25B5lKTRdzWLWtcRHwEumDqotT9cvUs/Qo6a8WJ6wauH2UyR9XthA4Y+BrS5j8WXjLSN/gf1vO5Afag+dcQPpj/+nOuQc4THpAXIw+BPPD+KEG1PbjWpkZjEIMRiEGoxCDUYjBKMRgFGIwCjEYhRiMQgxGIQajEINRiMEoxGAUYjAKMRiFGIxCDEYhBqMQg1GIwSjEYBRiMAoxGIUYjEIMRiEGoxCDUYjBKMRgFGIwCjEYhRiMQgxGIQajEINRiMEoxGAUYjAKMRiFGIxCDEYhBqMQg1GIwSjEYBRiMAoxGIUYjEIMRiEGoxCDUYjBKMRgFGIwCjEYhRiMQgxGIQajEINRiMEoZCT3AENaDewErgEuBtYDG4ClA//uFHAUOAIcBj4BDgI/djSnMloJ3AscAv4ixTDMcRL4FLgHWN7pCtSJZcDDwAmGj2Sq4wTwyPg5NA9sB47RfCiDxzFgR0drUkvGgD9oP5aJ43dgbycrU+N2kb6BXcUycfwJXN/B+tSgRcDXdB/LxPHN+AyqxBj5Ypk4xlpfZaVKfOHuqtwDAFfnHqBUJQazLvcAlDFDkUoM5rvcAwDf5h6gVCUG82buAShjBs3SKPA5+R7wfjY+gyqyGThO97F8D2zqYH1qweV0G81xYGsnK1Nr1gAHaD+Wt4G1Ha1JLRsBbiG9raHpUA6N33et7wvSDLYD+4GvGD6Sr4An8MW5odT8P2sjsAW4lPQg+SzSm6xWjN/+C/Az8BPwJfAF6dnX0c4nlSRJkiRJgr8BhBGnmRww0QYAAAAASUVORK5CYII=")';
@@ -36,14 +36,14 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   const modal_box = make_dialog_container(
         'symbol_box',
-        i18next.t('app_page.symbol_typo_box.title', { layer, nb_features }),
+        _tr('app_page.symbol_typo_box.title', { layer, nb_features }),
         'dialog');
   const newbox = d3.select('#symbol_box').select('.modal-body')
                     .styles({ 'overflow-y': 'scroll', 'max-height': `${window.innerHeight - 145}px` });
 
   newbox.append('h3').html('');
   newbox.append('p')
-    .html(i18next.t('app_page.symbol_typo_box.field_categ', { field, nb_class, nb_features }));
+    .html(_tr('app_page.symbol_typo_box.field_categ', { field, nb_class, nb_features }));
   newbox.append('ul').style('padding', 'unset').attr('id', 'typo_categories')
     .selectAll('li')
     .data(cats).enter()
@@ -65,7 +65,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   newbox.selectAll('.typo_class')
     .insert('p')
-    .attrs({ class: 'symbol_section', title: i18next.t('app_page.symbol_typo_box.title_click') })
+    .attrs({ class: 'symbol_section', title: _tr('app_page.symbol_typo_box.title_click') })
     .style('background-image', d => d.img)
     .styles({ width: '32px',
       height: '32px',
@@ -88,7 +88,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   newbox.selectAll('.typo_class')
     .insert('span')
-    .html(d => i18next.t('app_page.symbol_typo_box.count_feature', { nb_features: d.nb_elem }));
+    .html(d => _tr('app_page.symbol_typo_box.count_feature', { nb_features: d.nb_elem }));
 
   newbox.selectAll('.typo_class')
     .insert('input')
@@ -133,7 +133,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 function box_choice_symbol(sample_symbols, parent_css_selector) {
   const modal_box = make_dialog_container(
         'box_choice_symbol',
-        i18next.t('app_page.box_choice_symbol.title'),
+        _tr('app_page.box_choice_symbol.title'),
         'dialog');
   overlay_under_modal.display();
   const container = document.getElementById('box_choice_symbol');
@@ -142,7 +142,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
   btn_ok.disabled = 'disabled';
   const newbox = d3.select(container).select('.modal-body').style('width', '220px');
   newbox.append('p')
-        .html(`<b>${i18next.t('app_page.box_choice_symbol.select_symbol')}</b>`);
+        .html(`<b>${_tr('app_page.box_choice_symbol.select_symbol')}</b>`);
 
   const box_select = newbox.append('div')
         .styles({ width: '190px', height: '100px', overflow: 'auto', border: '1.5px solid #1d588b' })
@@ -177,11 +177,11 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
 
   newbox.append('p')
     .attr('display', 'inline')
-    .html(`<b>${i18next.t('app_page.box_choice_symbol.upload_symbol')}</b>`);
+    .html(`<b>${_tr('app_page.box_choice_symbol.upload_symbol')}</b>`);
   newbox.append('p')
     .styles({ margin: 'auto', 'text-align': 'center' })
     .append('button')
-    .html(i18next.t('app_page.box_choice_symbol.browse'))
+    .html(_tr('app_page.box_choice_symbol.browse'))
     .on('click', () => {
       const input = document.createElement('input');
       input.setAttribute('type', 'file');
@@ -202,7 +202,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
 
   newbox.insert('p')
     .style('text-align', 'center')
-    .html(i18next.t('app_page.box_choice_symbol.selected_symbol'));
+    .html(_tr('app_page.box_choice_symbol.selected_symbol'));
   newbox.insert('div')
     .style('text-align', 'center')
     .append('p')
@@ -261,7 +261,7 @@ export function make_style_box_indiv_symbol(symbol_node) {
   const ref_coords2 = cloneObj(ref_coords);
   const new_params = {};
   const self = this;
-  make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.single_symbol_edit_box.title'))
+  make_confirm_dialog2('styleTextAnnotation', _tr('app_page.single_symbol_edit_box.title'))
     .then((confirmed) => {
       if (!confirmed) {
         symbol_node.setAttribute('width', `${current_options.size}px`);
@@ -285,7 +285,7 @@ export function make_style_box_indiv_symbol(symbol_node) {
   const box_content = d3.select('.styleTextAnnotation').select('.modal-body').insert('div');
   const a = box_content.append('p').attr('class', 'line_elem');
   a.append('span')
-    .html(i18next.t('app_page.single_symbol_edit_box.image_size'));
+    .html(_tr('app_page.single_symbol_edit_box.image_size'));
   a.append('input')
     .style('float', 'right')
     .attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any' })
@@ -303,7 +303,7 @@ export function make_style_box_indiv_symbol(symbol_node) {
     const b = box_content.append('p').attr('class', 'line_elem');
     b.append('label')
       .attrs({ for: 'checkbox_symbol_zoom_scale', class: 'i18n', 'data-i18n': '[html]app_page.single_symbol_edit_box.scale_on_zoom' })
-      .html(i18next.t('app_page.single_symbol_edit_box.scale_on_zoom'));
+      .html(_tr('app_page.single_symbol_edit_box.scale_on_zoom'));
     b.append('input')
       .style('float', 'right')
       .attrs({ type: 'checkbox', id: 'checkbox_symbol_zoom_scale' })

@@ -3,7 +3,7 @@ import ContextMenu from './../context-menu';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
 import { Mabs, Mmax, Mmin } from './../helpers_math';
 import { handle_click_hand } from './../interface';
-import { get_coords_snap_lines, make_red_line_snap } from './helpers';
+import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './snap_lines';
 
 export const northArrow = {
   display(x, y) {
@@ -35,11 +35,13 @@ export const northArrow = {
       })
       .on('start', () => {
         d3.event.sourceEvent.stopPropagation();
-        handle_click_hand('lock'); // zoom.on("zoom", null);
+        handle_click_hand('lock');
       })
       .on('end', function () {
-        if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }  // zoom.on("zoom", zoom_without_redraw);
-        pos_lgds_elem.set(this.id, this.getBBox());
+        if (d3.event.subject && !d3.event.subject.map_locked) {
+          handle_click_hand('unlock');
+        }
+        pos_lgds_elem.set(this.id, get_bounding_rect(this));
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
@@ -58,7 +60,7 @@ export const northArrow = {
         self.x_center = tx - 7.5 + dim;
         self.y_center = ty - 7.5 + dim;
         if (_app.autoalign_features) {
-          const bbox = t2.getBBox(),
+          const bbox = get_bounding_rect(t2),
             xmin = t2.x.baseVal.value,
             xmax = xmin + bbox.width,
             ymin = t2.y.baseVal.value,
@@ -101,10 +103,10 @@ export const northArrow = {
       });
 
     const getItems = () => [
-      { name: i18next.t('app_page.common.options'), action: () => { this.editStyle(); } },
-      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+      { name: _tr('app_page.common.options'), action: () => { this.editStyle(); } },
+      { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
     ];
 
     const arrow_context_menu = new ContextMenu();
@@ -157,7 +159,7 @@ export const northArrow = {
       x_pos = +self.x_center - old_dim / 2,
       y_pos = +self.y_center - old_dim / 2;
 
-    make_confirm_dialog2('arrowEditBox', i18next.t('app_page.north_arrow_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('arrowEditBox', _tr('app_page.north_arrow_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
           null;
@@ -166,9 +168,9 @@ export const northArrow = {
 
     const box_body = d3.select('.arrowEditBox').select('.modal-body').style('width', '295px');
     box_body.append('h3')
-      .html(i18next.t('app_page.north_arrow_edit_box.title'));
+      .html(_tr('app_page.north_arrow_edit_box.title'));
     const a = box_body.append('p').attr('class', 'line_elem2');
-    a.append('span').html(i18next.t('app_page.north_arrow_edit_box.size'));
+    a.append('span').html(_tr('app_page.north_arrow_edit_box.size'));
     a.append('span')
       .style('float', 'right')
       .html(' px');
@@ -225,7 +227,7 @@ export const northArrow = {
       });
 
     const b = box_body.append('p').attr('class', 'line_elem2');
-    b.append('span').html(i18next.t('app_page.north_arrow_edit_box.rotation'));
+    b.append('span').html(_tr('app_page.north_arrow_edit_box.rotation'));
     b.append('span')
       .style('float', 'right')
       .html(' °');

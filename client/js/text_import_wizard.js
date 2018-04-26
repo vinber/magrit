@@ -1,7 +1,7 @@
 function createBoxTextImportWizard(file) {
   const modal_box = make_dialog_container(
         'box_text_import_wizard',
-        i18next.t('app_page.box_text_import.title'),
+        _tr('app_page.box_text_import.title'),
         'dialog');
 
   if (!file) {

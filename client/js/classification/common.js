@@ -5,6 +5,16 @@ import { round_value } from './../helpers_calc';
 const floor = Math.floor;
 const log10 = Math.log10;
 
+// Shortcut to the name of the methods offered by geostats library:
+export const discretiz_geostats_switch = new Map([
+  ['jenks', 'getJenks'],
+  ['equal_interval', 'getEqInterval'],
+  // ['std_dev', 'getStdDeviation'],
+  ['quantiles', 'getQuantile'],
+  ['Q6', 'getBreaksQ6'],
+  ['geometric_progression', 'getGeometricProgression'],
+]);
+
 /**
 * Compute the "optimal" (cf. xxx) number of class according to the number
 * of features in serie of values.

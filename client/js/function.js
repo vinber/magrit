@@ -100,7 +100,7 @@ export function clean_menu_function() {
   section2.select('.form-rendering').remove();
   document.getElementById('accordion2b').style.display = 'none';
   const btn_s2b = document.getElementById('btn_s2b');
-  btn_s2b.innerHTML = i18next.t('app_page.section2_.title_no_choice');
+  btn_s2b.innerHTML = _tr('app_page.section2_.title_no_choice');
   btn_s2b.setAttribute('data-i18n', 'app_page.section2_.title_no_choice');
   btn_s2b.style.display = 'none';
 }
@@ -146,7 +146,7 @@ export function check_layer_name(name) {
   if (clean_name.match(/^\d+/)) {
     clean_name = `_${clean_name}`;
   }
-  if (!current_layers.hasOwnProperty(clean_name) && ['Graticule', 'World'].indexOf(clean_name) < 0) {
+  if (!data_manager.current_layers.hasOwnProperty(clean_name) && ['Graticule', 'World'].indexOf(clean_name) < 0) {
     return clean_name;
   }
   //  else {
@@ -167,7 +167,7 @@ export function check_layer_name(name) {
 function display_error_num_field() {
   swal({
     title: '',
-    text: i18next.t('app_page.common.error_type_fields'),
+    text: _tr('app_page.common.error_type_fields'),
     type: 'error',
   });
 }
@@ -182,12 +182,12 @@ function display_error_num_field() {
 */
 function display_warning_empty_geom(features) {
   swal({ title: '',
-    text: i18next.t('app_page.common.warning_empty_geom', { count: features.length }),
+    text: _tr('app_page.common.warning_empty_geom', { count: features.length }),
     type: 'warning',
     showCancelButton: false,
     allowOutsideClick: false,
     confirmButtonColor: '#DD6B55',
-    confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
+    confirmButtonText: `${_tr('app_page.common.valid')}!`,
   });
 }
 
@@ -267,7 +267,7 @@ function make_layer_name_button(parent, id, margin_top) {
   const a = parent.append('p').style('clear', 'both');
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output' })
-    .html(i18next.t('app_page.func_options.common.output'));
+    .html(_tr('app_page.func_options.common.output'));
   a.insert('input')
     .styles({ width: '240px', 'font-size': '11.5px', 'margin-top': margin_top })
     .attrs({ class: 'params', id: id });
@@ -277,14 +277,14 @@ function make_discretization_icons(discr_section) {
   const subsection1 = discr_section.append('div');
   subsection1.insert('span')
     .attrs({ 'data-i18n': '[html]app_page.func_options.common.discretization_choice', class: 'i18n' })
-    .html(i18next.t('app_page.func_options.common.discretization_choice'));
+    .html(_tr('app_page.func_options.common.discretization_choice'));
 
   const subsection2 = discr_section.append('p')
     .style('margin', '10px 0 0');
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
-      title: i18next.t('app_page.common.Q6'),
+      title: _tr('app_page.common.Q6'),
       src: '/static/img/discr_icons/q6.png',
       id: 'ico_q6',
       class: 'i18n',
@@ -293,7 +293,7 @@ function make_discretization_icons(discr_section) {
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
-      title: i18next.t('app_page.common.jenks'),
+      title: _tr('app_page.common.jenks'),
       src: '/static/img/discr_icons/jenks.png',
       id: 'ico_jenks',
       class: 'i18n',
@@ -302,7 +302,7 @@ function make_discretization_icons(discr_section) {
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
-      title: i18next.t('app_page.common.equal_interval'),
+      title: _tr('app_page.common.equal_interval'),
       src: '/static/img/discr_icons/equal_intervals.png',
       id: 'ico_equal_interval',
       class: 'i18n',
@@ -311,7 +311,7 @@ function make_discretization_icons(discr_section) {
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
-      title: i18next.t('app_page.common.quantiles'),
+      title: _tr('app_page.common.quantiles'),
       src: '/static/img/discr_icons/quantiles.png',
       id: 'ico_quantiles',
       class: 'i18n',
@@ -320,7 +320,7 @@ function make_discretization_icons(discr_section) {
   subsection2.append('img')
     .styles({ margin: '0 7.5px', cursor: 'pointer', width: '20px' })
     .attrs({
-      title: i18next.t('app_page.common.user_defined'),
+      title: _tr('app_page.common.user_defined'),
       src: '/static/img/High-contrast-system-run24.png',
       id: 'ico_others',
       class: 'i18n',
@@ -345,7 +345,7 @@ function make_ok_button(parent, id, disabled = true) {
       'data-i18n': '[html]app_page.func_options.common.render',
       disabled: disabled ? true : null,
     })
-    .html(i18next.t('app_page.func_options.common.render'));
+    .html(_tr('app_page.func_options.common.render'));
 }
 
 function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback) {
@@ -460,7 +460,7 @@ function fetch_min_max_table_value(parent_id) {
   if (!(r_mins.every((d, i) => sorted_min[i] === d)
       && r_maxs.every((d, i) => sorted_max[i] === d)
       && r_sizes.every((d, i) => sorted_sizes[i] === d))) {
-    swal('', i18next.t('app_page.common.error_values_order'), 'error');
+    swal('', _tr('app_page.common.error_values_order'), 'error');
     return false;
   }
 
@@ -473,21 +473,21 @@ function fillMenu_TwoStocks(layer) {
   const f1 = dv2.append('p').attr('class', 'params_section2');
   f1.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.fields' })
-    .html(i18next.t('app_page.func_options.twostocks.fields'));
+    .html(_tr('app_page.func_options.twostocks.fields'));
   f1.insert('select')
     .attrs({ class: 'params', id: 'TwoStocks_fields', multiple: 'multiple', size: 2 });
 
   // const f2 = dv2.append('p').attr('class', 'params_section2');
   // f2.append('span')
   //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.field2' })
-  //   .html(i18next.t('app_page.func_options.twostocks.field2'));
+  //   .html(_tr('app_page.func_options.twostocks.field2'));
   // f2.insert('select')
   //   .attrs({ class: 'params', id: 'TwoStocks_field2' });
 
   // const a = dv2.append('p').attr('class', 'params_section2');
   // a.append('span')
   //   .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.type' })
-  //   .html(i18next.t('app_page.func_options.twostocks.type'));
+  //   .html(_tr('app_page.func_options.twostocks.type'));
   // const type_select = a.insert('select')
   //   .attrs({ class: 'params', id: 'TwoStocks_type' });
 
@@ -497,7 +497,7 @@ function fillMenu_TwoStocks(layer) {
     .attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.symbol_choice' })
-    .html(i18next.t('app_page.func_options.twostocks.symbol_choice'));
+    .html(_tr('app_page.func_options.twostocks.symbol_choice'));
   b.insert('select')
     .attrs({ class: 'params', id: 'TwoStocks_waffle_symbol' });
 
@@ -505,7 +505,7 @@ function fillMenu_TwoStocks(layer) {
     .attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_size_circle', id: 'TwoStocks_waffle_size_txt' })
-    .html(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+    .html(_tr('app_page.func_options.twostocks.waffle_size_circle'));
   c.insert('input')
     .attrs({
       id: 'TwoStocks_waffle_size',
@@ -523,7 +523,7 @@ function fillMenu_TwoStocks(layer) {
     .attr('class', 'params_section2');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_width_rows' })
-    .html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
+    .html(_tr('app_page.func_options.twostocks.waffle_width_rows'));
   d.insert('input')
     .attrs({
       id: 'TwoStocks_waffle_WidthRow',
@@ -540,7 +540,7 @@ function fillMenu_TwoStocks(layer) {
     .attr('class', 'params_section2');
   e.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio' })
-    .html(i18next.t('app_page.func_options.twostocks.waffle_ratio'));
+    .html(_tr('app_page.func_options.twostocks.waffle_ratio'));
   e.insert('input')
     .attrs({
       id: 'TwoStocks_waffle_ratio',
@@ -554,7 +554,7 @@ function fillMenu_TwoStocks(layer) {
     .style('width', '50px');
   e.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio_units' })
-    .html(i18next.t('app_page.func_options.twostocks.waffle_ratio_units'));
+    .html(_tr('app_page.func_options.twostocks.waffle_ratio_units'));
 
   make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
   make_ok_button(dv2, 'twoStocks_yes');
@@ -575,7 +575,7 @@ const fields_TwoStocks = {
       ['app_page.func_options.common.symbol_circle', 'circle'],
       ['app_page.func_options.common.symbol_square', 'rect'],
     ].forEach((symb) => {
-      symbol_choice.append('option').text(i18next.t(symb[0])).attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
+      symbol_choice.append('option').text(_tr(symb[0])).attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
     });
     const nb_display_fields = fields_stock.length <= 4 ? fields_stock.length : 4;
     fields_stock.forEach((f) => {
@@ -587,11 +587,11 @@ const fields_TwoStocks = {
       if (this.value === 'circle') {
         section2.select('#TwoStocks_waffle_size_txt')
           .attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_circle')
-          .text(i18next.t('app_page.func_options.twostocks.waffle_size_circle'));
+          .text(_tr('app_page.func_options.twostocks.waffle_size_circle'));
       } else {
         section2.select('#TwoStocks_waffle_size_txt')
           .attr('data-i18n', '[html]app_page.func_options.twostocks.waffle_size_square')
-          .text(i18next.t('app_page.func_options.twostocks.waffle_size_square'));
+          .text(_tr('app_page.func_options.twostocks.waffle_size_square'));
       }
     });
     input_name.node().value = `${layer}_Waffle`;
@@ -606,8 +606,8 @@ const fields_TwoStocks = {
       // Verify that there is 2 or more fields selected :
       if (rendering_params.fields.length < 2) {
         swal({
-          title: `${i18next.t('app_page.common.error')}!`,
-          text: `${i18next.t('app_page.common.error_multiple_fields')}`,
+          title: `${_tr('app_page.common.error')}!`,
+          text: `${_tr('app_page.common.error_multiple_fields')}`,
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false,
@@ -619,13 +619,13 @@ const fields_TwoStocks = {
       let t_max = 0;
       for (let i = 0; i < rendering_params.fields.length; i++) {
         const field = rendering_params.fields[i];
-        t_max += max_fast(user_data[layer].map(obj => +obj[field])) / rendering_params.ratio;
+        t_max += max_fast(data_manager.user_data[layer].map(obj => +obj[field])) / rendering_params.ratio;
       }
 
       if (t_max > 900) {
         swal({
-          title: `${i18next.t('app_page.common.error')}!`,
-          text: `${i18next.t('app_page.common.error_waffle_too_many')}`,
+          title: `${_tr('app_page.common.error')}!`,
+          text: `${_tr('app_page.common.error_waffle_too_many')}`,
           customClass: 'swal2_custom',
           type: 'error',
           allowOutsideClick: false,
@@ -677,7 +677,7 @@ function render_twostocks_waffle(layer, rendering_params) {
 
   if (!rendering_params.result_data) {
     ref_colors = get_colors(nbVar);
-    result_data[layer_to_add] = [];
+    data_manager.result_data[layer_to_add] = [];
     const ref_layer_selection = map.select(`#${_app.layer_to_id.get(layer)}`).selectAll('path');
     const centroids = getCentroids(ref_layer_selection._groups[0]);
     const empty_geoms = [];
@@ -689,9 +689,9 @@ function render_twostocks_waffle(layer, rendering_params) {
         const r = { id: d.id, centroid: centroids[i] };
         for (let j = 0; j < nbVar; j++) {
           const field = fields[j];
-          r[field] = +user_data[layer][i][field];
+          r[field] = +data_manager.user_data[layer][i][field];
         }
-        result_data[layer_to_add].push(r);
+        data_manager.result_data[layer_to_add].push(r);
       }
     });
     if (empty_geoms.length > 0) {
@@ -699,15 +699,15 @@ function render_twostocks_waffle(layer, rendering_params) {
     }
   } else {
     ref_colors = rendering_params.ref_colors;
-    result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
+    data_manager.result_data[layer_to_add] = JSON.parse(rendering_params.result_data);
   }
 
-  for (let i = 0, _length = result_data[layer_to_add].length; i < _length; i++) {
+  for (let i = 0, _length = data_manager.result_data[layer_to_add].length; i < _length; i++) {
     const c = [];
     let sum = 0;
     let color;
     for (let j = 0; j < nbVar; j++) {
-      const val = result_data[layer_to_add][i][fields[j]] / ratio;
+      const val = data_manager.result_data[layer_to_add][i][fields[j]] / ratio;
       sum += val;
       color = ref_colors[j];
       for (let ix = 0; ix < val; ix++) {
@@ -718,16 +718,16 @@ function render_twostocks_waffle(layer, rendering_params) {
     sums.push(sum);
   }
 
-  const nb_features = result_data[layer_to_add].length;
+  const nb_features = data_manager.result_data[layer_to_add].length;
   const new_layer = map.insert('g', '.legend')
     .attrs({ id: layer_id, class: 'layer no_clip' });
 
   if (symbol_type === 'circle') {
     const r = rendering_params.size;
-    for (let j = 0; j < result_data[layer_to_add].length; j++) {
+    for (let j = 0; j < data_manager.result_data[layer_to_add].length; j++) {
       const centroid = path.centroid({
         type: 'Point',
-        coordinates: result_data[layer_to_add][j].centroid,
+        coordinates: data_manager.result_data[layer_to_add][j].centroid,
       });
       const group = new_layer.append('g');
       const sum = sums[j];
@@ -741,20 +741,20 @@ function render_twostocks_waffle(layer, rendering_params) {
             cx: centroid[0],
             cy: centroid[1],
             r: r,
-            id: ['waffle_', i, ' feature_', result_data[layer_to_add][j].id].join(''),
+            id: ['waffle_', i, ' feature_', data_manager.result_data[layer_to_add][j].id].join(''),
             fill: _colors[i],
           });
       }
-      group.node().__data__ = { properties: result_data[layer_to_add][j] };
+      group.node().__data__ = { properties: data_manager.result_data[layer_to_add][j] };
       group.call(drag_waffle);
     }
   } else if (symbol_type === 'rect') {
     const width = rendering_params.size;
     const offset = width / 5;
-    for (let j = 0; j < result_data[layer_to_add].length; j++) {
+    for (let j = 0; j < data_manager.result_data[layer_to_add].length; j++) {
       const centroid = path.centroid({
         type: 'Point',
-        coordinates: result_data[layer_to_add][j].centroid,
+        coordinates: data_manager.result_data[layer_to_add][j].centroid,
       });
       const group = new_layer.append('g');
       const sum = sums[j];
@@ -769,16 +769,16 @@ function render_twostocks_waffle(layer, rendering_params) {
             y: centroid[1],
             width: width,
             height: width,
-            id: ['waffle_', i, ' feature_', result_data[layer_to_add][j].id].join(''),
+            id: ['waffle_', i, ' feature_', data_manager.result_data[layer_to_add][j].id].join(''),
             fill: _colors[i],
           });
       }
-      group.node().__data__ = { properties: result_data[layer_to_add][j] };
+      group.node().__data__ = { properties: data_manager.result_data[layer_to_add][j] };
       group.call(drag_waffle);
     }
   }
 
-  current_layers[layer_to_add] = {
+  data_manager.current_layers[layer_to_add] = {
     fill_color: ref_colors,
     n_features: nb_features,
     renderer: 'TwoStocksWaffle',
@@ -802,7 +802,7 @@ function fillMenu_PropSymbolChoro(layer) {
   a.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field1' })
-    .html(i18next.t('app_page.func_options.choroprop.field1'));
+    .html(_tr('app_page.func_options.choroprop.field1'));
   a.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_1' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -812,7 +812,7 @@ function fillMenu_PropSymbolChoro(layer) {
     .styles({ margin: 'auto' });
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' })
-    .html(i18next.t('app_page.func_options.choroprop.fixed_size'));
+    .html(_tr('app_page.func_options.choroprop.fixed_size'));
   b.insert('input')
     .attrs({
       id: 'PropSymbolChoro_ref_size',
@@ -828,7 +828,7 @@ function fillMenu_PropSymbolChoro(layer) {
   const c = dv2.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' })
-    .html(i18next.t('app_page.func_options.choroprop.on_value'));
+    .html(_tr('app_page.func_options.choroprop.on_value'));
   c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ type: 'number', class: 'params', id: 'PropSymbolChoro_ref_value' })
@@ -838,7 +838,7 @@ function fillMenu_PropSymbolChoro(layer) {
   const d = dv2.append('p').attr('class', 'params_section2');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.symbol_type' })
-    .html(i18next.t('app_page.func_options.choroprop.symbol_type'));
+    .html(_tr('app_page.func_options.choroprop.symbol_type'));
   d.insert('select')
     .attrs({ class: 'params i18n', id: 'PropSymbolChoro_symbol_type' });
 
@@ -847,7 +847,7 @@ function fillMenu_PropSymbolChoro(layer) {
   e.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.field2' })
-    .html(i18next.t('app_page.func_options.choroprop.field2'));
+    .html(_tr('app_page.func_options.choroprop.field2'));
 
   e.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolChoro_field_2' })
@@ -864,7 +864,7 @@ function fillMenu_PropSymbolChoro(layer) {
   //     .attrs({id: 'PropSymbolChoro_btn_disc', class: 'params button_disc i18n',
   //             'data-i18n': '[html]app_page.func_options.common.discretization_choice'})
   //     .styles({"font-size": "0.8em", "text-align": "center"})
-  //     .html(i18next.t("app_page.func_options.common.discretization_choice"));
+  //     .html(_tr("app_page.func_options.common.discretization_choice"));
 
   make_layer_name_button(dv2, 'PropSymbolChoro_output_name', '15px');
   make_ok_button(dv2, 'propChoro_yes');
@@ -878,7 +878,7 @@ const fields_PropSymbolChoro = {
     const self = this,
       fields_stock = getFieldsType('stock', layer),
       fields_ratio = getFieldsType('ratio', layer),
-      nb_features = user_data[layer].length,
+      nb_features = data_manager.user_data[layer].length,
       field_size = section2.select('#PropSymbolChoro_field_1'),
       field_color = section2.select('#PropSymbolChoro_field_2'),
       ico_disc = section2.select('#ico_others'),
@@ -901,14 +901,14 @@ const fields_PropSymbolChoro = {
       ico_equal_interval.style('border', null);
     };
 
-    if (current_layers[layer].type === 'Line') {
+    if (data_manager.current_layers[layer].type === 'Line') {
       ref_size.attr('value', 10.0);
       [['app_page.func_options.common.symbol_line', 'line'],
        ['app_page.func_options.common.symbol_circle', 'circle'],
        ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     } else {
@@ -917,13 +917,13 @@ const fields_PropSymbolChoro = {
        ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     }
 
     const prepare_disc_quantiles = (field) => {
-      const _values = user_data[layer].map(v => v[field]);
+      const _values = data_manager.user_data[layer].map(v => v[field]);
       const n_class = getOptNbClass(_values.length);
       render_mini_chart_serie(_values.map(v => +v), document.getElementById('container_sparkline_propsymbolchoro'));
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class);
@@ -939,7 +939,7 @@ const fields_PropSymbolChoro = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
@@ -971,7 +971,7 @@ const fields_PropSymbolChoro = {
     });
     field_size.on('change', function () {
       const field_name = this.value,
-        max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+        max_val_field = max_fast(data_manager.user_data[layer].map(obj => +obj[field_name]));
 
       ref_value_field.attrs({ max: max_val_field, value: max_val_field });
       uo_layer_name.attr('value', ['PropSymbols', field_name, field_color.node().value, layer].join('_'));
@@ -979,16 +979,16 @@ const fields_PropSymbolChoro = {
 
     field_color.on('change', function () {
       const field_name = this.value;
-      const vals = user_data[layer].map(a => +a[field_name]);
+      const vals = data_manager.user_data[layer].map(a => +a[field_name]);
       render_mini_chart_serie(vals, document.getElementById('container_sparkline_propsymbolchoro'));
       uo_layer_name.attr('value', ['PropSymbols', field_size.node().value, field_name, layer].join('_'));
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         choro_mini_choice_disc.html([
-          i18next.t(`app_page.common.${self.rendering_params[field_name].type}`),
+          _tr(`app_page.common.${self.rendering_params[field_name].type}`),
           ', ',
-          i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class })].join(''));
+          _tr('app_page.common.class', { count: self.rendering_params[field_name].nb_class })].join(''));
         uncolor_icons();
         color_disc_icons(self.rendering_params[field_name].type);
         // console.log(section2); console.log(self.rendering_params[field_name].type);
@@ -1004,7 +1004,7 @@ const fields_PropSymbolChoro = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_color.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'jenks', n_class, 'BuGn');
       self.rendering_params[selected_field] = {
@@ -1019,7 +1019,7 @@ const fields_PropSymbolChoro = {
         schema: ['BuGn'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.jenks')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.jenks')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1028,7 +1028,7 @@ const fields_PropSymbolChoro = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_color.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class, 'BuGn');
       self.rendering_params[selected_field] = {
@@ -1043,7 +1043,7 @@ const fields_PropSymbolChoro = {
         schema: ['BuGn'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1052,7 +1052,7 @@ const fields_PropSymbolChoro = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_color.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'equal_interval', n_class, 'BuGn');
       self.rendering_params[selected_field] = {
@@ -1067,7 +1067,7 @@ const fields_PropSymbolChoro = {
         schema: ['BuGn'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.equal_interval')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.equal_interval')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1076,7 +1076,7 @@ const fields_PropSymbolChoro = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_color.node().value,
-        _values = user_data[layer].map(v => v[selected_field]);
+        _values = data_manager.user_data[layer].map(v => v[selected_field]);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'Q6', 6, 'BuGn');
       self.rendering_params[selected_field] = {
         nb_class: nb_class,
@@ -1090,14 +1090,14 @@ const fields_PropSymbolChoro = {
         schema: ['BuGn'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.Q6')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.Q6')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     ico_disc.on('click', () => {
       const selected_field = field_color.node().value;
-      const opt_nb_class = getOptNbClass(user_data[layer].length);
+      const opt_nb_class = getOptNbClass(data_manager.user_data[layer].length);
       let conf_disc_box;
 
       if (self.rendering_params[selected_field]) {
@@ -1120,8 +1120,8 @@ const fields_PropSymbolChoro = {
         if (confirmed) {
           img_valid_disc.attr('src', '/static/img/Light_green_check.png');
           choro_mini_choice_disc.html([
-            i18next.t(`app_page.common.${confirmed[1]}`), ', ',
-            i18next.t('app_page.common.class', { count: confirmed[0] })].join(''));
+            _tr(`app_page.common.${confirmed[1]}`), ', ',
+            _tr('app_page.common.class', { count: confirmed[0] })].join(''));
           uncolor_icons();
           color_disc_icons(confirmed[1]);
           self.rendering_params[selected_field] = {
@@ -1142,9 +1142,9 @@ const fields_PropSymbolChoro = {
       if (!ref_value_field.node().value) return;
       const rendering_params = self.rendering_params;
       if (rendering_params[field_color.node().value]) {
-        // const layer = Object.getOwnPropertyNames(user_data)[0];
+        // const layer = Object.getOwnPropertyNames(data_manager.user_data)[0];
         const symbol_to_use = symb_selec.node().value,
-          // nb_features = user_data[layer].length,
+          // nb_features = data_manager.user_data[layer].length,
           rd_params = {},
           color_field = field_color.node().value;
         let new_layer_name = uo_layer_name.node().value;
@@ -1182,7 +1182,7 @@ const fields_PropSymbolChoro = {
           extra_options: rendering_params[color_field].extra_options,
         };
 
-        Object.assign(current_layers[new_layer_name], {
+        Object.assign(data_manager.current_layers[new_layer_name], {
           renderer: 'PropSymbolsChoro',
           options_disc: options_disc,
           rendered_field: field_size.node().value,
@@ -1215,7 +1215,7 @@ const fillMenu_Typo = function fillMenu_Typo() {
   a.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typo.field' })
-    .html(i18next.t('app_page.func_options.typo.field'));
+    .html(_tr('app_page.func_options.typo.field'));
   a.insert('select')
     .attrs({ id: 'Typo_field_1', class: 'params' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -1230,7 +1230,7 @@ const fillMenu_Typo = function fillMenu_Typo() {
       'data-i18n': '[html]app_page.func_options.typo.color_choice',
     })
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-    .html(i18next.t('app_page.func_options.typo.color_choice'));
+    .html(_tr('app_page.func_options.typo.color_choice'));
 
   make_layer_name_button(dv2, 'Typo_output_name');
   make_ok_button(dv2, 'Typo_yes');
@@ -1251,7 +1251,7 @@ const fields_Typo = {
     const prepare_colors = (field) => {
       const [cats, col_map] = prepare_categories_array(layer, field, null);
       const nb_class = col_map.size;
-      const colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+      const colorByFeature = data_manager.user_data[layer].map(ft => col_map.get(ft[field])[0]);
       self.rendering_params[field] = {
         nb_class: nb_class,
         color_map: col_map,
@@ -1281,7 +1281,7 @@ const fields_Typo = {
 
     btn_typo_class.on('click', () => {
       const selected_field = field_selec.node().value,
-        nb_features = current_layers[layer].n_features;
+        nb_features = data_manager.current_layers[layer].n_features;
       const col_map = self.rendering_params[selected_field]
         ? self.rendering_params[selected_field].color_map
         : undefined;
@@ -1289,15 +1289,15 @@ const fields_Typo = {
       if (cats.length > 15) {
         swal({
           title: '',
-          text: i18next.t('app_page.common.error_too_many_features_color'),
+          text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
           allowOutsideClick: false,
           confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
-          cancelButtonText: i18next.t('app_page.common.cancel'),
+          confirmButtonText: `${_tr('app_page.common.valid')}!`,
+          cancelButtonText: _tr('app_page.common.cancel'),
         }).then(() => {
-          display_categorical_box(user_data[layer], layer, selected_field, cats)
+          display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
             .then((confirmed) => {
               if (confirmed) {
                 self.rendering_params[selected_field] = {
@@ -1312,7 +1312,7 @@ const fields_Typo = {
             });
         }, dismiss => null);
       } else {
-        display_categorical_box(user_data[layer], layer, selected_field, cats)
+        display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
           .then((confirmed) => {
             if (confirmed) {
               self.rendering_params[selected_field] = {
@@ -1333,7 +1333,7 @@ const fields_Typo = {
       const params = self.rendering_params[selected_field];
       const render = () => {
         if (params) {
-          const _layer = Object.getOwnPropertyNames(user_data)[0];
+          const _layer = Object.getOwnPropertyNames(data_manager.user_data)[0];
           const output_name = uo_layer_name.node().value;
           params.new_name = check_layer_name(output_name.length > 0 ? output_name : ['Typo', selected_field, _layer].join('_'));
           render_categorical(_layer, params);
@@ -1344,13 +1344,13 @@ const fields_Typo = {
       if (params.color_map.size > 15 && !params.skip_alert) {
         swal({
           title: '',
-          text: i18next.t('app_page.common.error_too_many_features_color'),
+          text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
           allowOutsideClick: false,
           confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
-          cancelButtonText: i18next.t('app_page.common.cancel'),
+          confirmButtonText: `${_tr('app_page.common.valid')}!`,
+          cancelButtonText: _tr('app_page.common.cancel'),
         }).then(() => {
           render();
         }, dismiss => null);
@@ -1376,7 +1376,7 @@ function fillMenu_Choropleth() {
   field_selec_section.insert('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
-    .html(i18next.t('app_page.func_options.common.field'));
+    .html(_tr('app_page.func_options.common.field'));
 
   field_selec_section.insert('select')
     .attrs({ id: 'choro_field1', class: 'params' })
@@ -1421,7 +1421,7 @@ const fields_Choropleth = {
     };
 
     const prepare_disc_quantiles = (field) => {
-      const _values = user_data[layer].map(v => v[field]),
+      const _values = data_manager.user_data[layer].map(v => v[field]),
         n_class = getOptNbClass(_values.length);
       render_mini_chart_serie(_values.map(v => +v), document.getElementById('container_sparkline_choro'));
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class);
@@ -1437,7 +1437,7 @@ const fields_Choropleth = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
       uncolor_icons();
@@ -1467,7 +1467,7 @@ const fields_Choropleth = {
 
     field_selec.on('change', function () {
       const field_name = this.value,
-        vals = user_data[layer].map(a => +a[field_name]);
+        vals = data_manager.user_data[layer].map(a => +a[field_name]);
       render_mini_chart_serie(vals, document.getElementById('container_sparkline_choro'));
       uo_layer_name.attr('value', ['Choro', field_name, layer].join('_'));
       if (self.rendering_params[field_name] !== undefined) {
@@ -1475,7 +1475,7 @@ const fields_Choropleth = {
         img_valid_disc.attr('src', '/static/img/Light_green_check.png');
         const keyi18n = `app_page.common.${self.rendering_params[field_name].type}`;
         choro_mini_choice_disc.html(
-            `${i18next.t(keyi18n)}, ${i18next.t('app_page.common.class', { count: self.rendering_params[field_name].nb_class })}`);
+            `${_tr(keyi18n)}, ${_tr('app_page.common.class', { count: self.rendering_params[field_name].nb_class })}`);
         uncolor_icons();
         color_disc_icons(self.rendering_params[field_name].type);
       } else {
@@ -1487,7 +1487,7 @@ const fields_Choropleth = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_selec.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'jenks', n_class);
       self.rendering_params[selected_field] = {
@@ -1502,7 +1502,7 @@ const fields_Choropleth = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.jenks')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.jenks')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr('disabled', null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1511,7 +1511,7 @@ const fields_Choropleth = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_selec.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'quantiles', n_class);
       self.rendering_params[selected_field] = {
@@ -1526,7 +1526,7 @@ const fields_Choropleth = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.quantiles')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1535,7 +1535,7 @@ const fields_Choropleth = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_selec.node().value,
-        _values = user_data[layer].map(v => v[selected_field]),
+        _values = data_manager.user_data[layer].map(v => v[selected_field]),
         n_class = getOptNbClass(_values.length);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'equal_interval', n_class);
       self.rendering_params[selected_field] = {
@@ -1550,7 +1550,7 @@ const fields_Choropleth = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.equal_interval')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.equal_interval')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
@@ -1559,7 +1559,7 @@ const fields_Choropleth = {
       uncolor_icons();
       this.style.border = 'solid 1px green';
       const selected_field = field_selec.node().value;
-      const _values = user_data[layer].map(v => v[selected_field]);
+      const _values = data_manager.user_data[layer].map(v => v[selected_field]);
       const [nb_class, type, breaks, color_array, colors_map, no_data_color] = discretize_to_colors(_values, 'Q6', 6);
       self.rendering_params[selected_field] = {
         nb_class: nb_class,
@@ -1573,14 +1573,14 @@ const fields_Choropleth = {
         schema: ['Reds'],
       };
       choro_mini_choice_disc.html(
-        `${i18next.t('app_page.common.Q6')}, ${i18next.t('app_page.common.class', { count: nb_class })}`);
+        `${_tr('app_page.common.Q6')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
       img_valid_disc.attr('src', '/static/img/Light_green_check.png');
     });
 
     btn_class.on('click', () => {
       const selected_field = field_selec.node().value,
-        opt_nb_class = getOptNbClass(user_data[layer].length);
+        opt_nb_class = getOptNbClass(data_manager.user_data[layer].length);
       let conf_disc_box;
 
       if (self.rendering_params[selected_field]) {
@@ -1609,7 +1609,7 @@ const fields_Choropleth = {
           img_valid_disc.attr('src', '/static/img/Light_green_check.png');
           const keyi18n = `app_page.common.${confirmed[1]}`;
           choro_mini_choice_disc.html(
-              `${i18next.t(keyi18n)}, ${i18next.t('app_page.common.class', { count: confirmed[0] })}`);
+              `${_tr(keyi18n)}, ${_tr('app_page.common.class', { count: confirmed[0] })}`);
           uncolor_icons();
           color_disc_icons(confirmed[1]);
           self.rendering_params[selected_field] = {
@@ -1667,9 +1667,9 @@ const fields_Stewart = {
     mask_selec.append('option').text('None').attr('value', 'None');
     for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
       lyr_name = other_layers[i];
-      if (current_layers[lyr_name].type === 'Polygon') {
+      if (data_manager.current_layers[lyr_name].type === 'Polygon') {
         mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
-        if (current_layers[lyr_name].targeted) {
+        if (data_manager.current_layers[lyr_name].targeted) {
           default_selected_mask = lyr_name;
         }
       }
@@ -1720,7 +1720,7 @@ function render_stewart() {
     field2_n = doc.getElementById('stewart_field2').value,
     var1_to_send = {},
     var2_to_send = {},
-    layer = Object.getOwnPropertyNames(user_data)[0],
+    layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     span = +doc.getElementById('stewart_span').value,
     beta = +doc.getElementById('stewart_beta').value,
     func_selec = doc.getElementById('stewart_func').value,
@@ -1740,8 +1740,8 @@ function render_stewart() {
     const res_test = test_maxmin_resolution(reso);
     if (res_test) {
       const message = res_test === 'low'
-        ? i18next.t('app_page.common.error_too_low_resolution')
-        : i18next.t('app_page.common.error_too_high_resolution');
+        ? _tr('app_page.common.error_too_low_resolution')
+        : _tr('app_page.common.error_too_high_resolution');
       display_error_during_computation(message);
       return;
     }
@@ -1751,15 +1751,15 @@ function render_stewart() {
   }
   bval = bval.length > 0 ? bval.split('-').map(val => +val.trim()) : null;
 
-  var1_to_send[field1_n] = current_layers[layer].original_fields.has(field1_n) ? []
-    : user_data[layer].map(i => +i[field1_n]);
+  var1_to_send[field1_n] = data_manager.current_layers[layer].original_fields.has(field1_n) ? []
+    : data_manager.user_data[layer].map(i => +i[field1_n]);
   if (field2_n !== 'None') {
-    var2_to_send[field2_n] = current_layers[layer].original_fields.has(field2_n) ? []
-      : user_data[layer].map(i => +i[field2_n]);
+    var2_to_send[field2_n] = data_manager.current_layers[layer].original_fields.has(field2_n) ? []
+      : data_manager.user_data[layer].map(i => +i[field2_n]);
   }
 
   formToSend.append('json', JSON.stringify({
-    topojson: current_layers[layer].key_name,
+    topojson: data_manager.current_layers[layer].key_name,
     variable1: var1_to_send,
     variable2: var2_to_send,
     span: span * 1000,
@@ -1768,7 +1768,7 @@ function render_stewart() {
     resolution: reso,
     nb_class: nb_class,
     user_breaks: bval,
-    mask_layer: mask_name !== 'None' ? current_layers[mask_name].key_name : '',
+    mask_layer: mask_name !== 'None' ? data_manager.current_layers[mask_name].key_name : '',
   }));
 
   xhrequest('POST', 'compute/stewart', formToSend, true)
@@ -1789,12 +1789,12 @@ function render_stewart() {
         colors_breaks.push([`${class_lim.min[i]} - ${class_lim.max[i]}`, col_pal[n_class - 1 - i]]);
       }
 
-      current_layers[n_layer_name].fill_color = { class: [] };
-      current_layers[n_layer_name].renderer = 'Stewart';
-      current_layers[n_layer_name].colors_breaks = colors_breaks;
-      current_layers[n_layer_name].rendered_field = field1_n;
-      current_layers[n_layer_name].color_palette = { name: 'Oranges', reversed: true };
-      current_layers[n_layer_name].options_disc = {
+      data_manager.current_layers[n_layer_name].fill_color = { class: [] };
+      data_manager.current_layers[n_layer_name].renderer = 'Stewart';
+      data_manager.current_layers[n_layer_name].colors_breaks = colors_breaks;
+      data_manager.current_layers[n_layer_name].rendered_field = field1_n;
+      data_manager.current_layers[n_layer_name].color_palette = { name: 'Oranges', reversed: true };
+      data_manager.current_layers[n_layer_name].options_disc = {
         breaks: [].concat(class_lim.max[0], class_lim.min).reverse(),
       };
       map.select(`#${_app.layer_to_id.get(n_layer_name)}`)
@@ -1819,7 +1819,7 @@ function fillMenu_Stewart() {
   const a = dialog_content.append('p').attr('class', 'params_section2');
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.field' })
-    .html(i18next.t('app_page.func_options.smooth.field'));
+    .html(_tr('app_page.func_options.smooth.field'));
   a.append('select')
     .attrs({ class: 'params marg_auto', id: 'stewart_field' });
 
@@ -1827,7 +1827,7 @@ function fillMenu_Stewart() {
     .attr('class', 'params_section2');
   b.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.divide_field' })
-    .html(i18next.t('app_page.func_options.smooth.divide_field'));
+    .html(_tr('app_page.func_options.smooth.divide_field'));
   b.insert('select')
     .attrs({ class: 'params marg_auto', id: 'stewart_field2' });
 
@@ -1835,7 +1835,7 @@ function fillMenu_Stewart() {
     .attr('class', 'params_section2');
   p_span.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.span' })
-    .text(i18next.t('app_page.func_options.smooth.span'));
+    .text(_tr('app_page.func_options.smooth.span'));
   p_span.append('input')
     .style('width', '60px')
     .attrs({ type: 'number', class: 'params', id: 'stewart_span', value: 5, min: 0, max: 100000, step: 'any' });
@@ -1847,7 +1847,7 @@ function fillMenu_Stewart() {
   d.append('span')
     .styles({ 'margin-right': '35px' })
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.beta' })
-    .html(i18next.t('app_page.func_options.smooth.beta'));
+    .html(_tr('app_page.func_options.smooth.beta'));
   d.insert('input')
     .style('width', '60px')
     .attrs({ type: 'number', class: 'params', id: 'stewart_beta', value: 2, min: 0, max: 11, step: 'any' });
@@ -1855,7 +1855,7 @@ function fillMenu_Stewart() {
   const p_reso = dialog_content.append('p').attr('class', 'params_section2');
   p_reso.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.resolution' })
-    .text(i18next.t('app_page.func_options.smooth.resolution'));
+    .text(_tr('app_page.func_options.smooth.resolution'));
   p_reso.insert('input')
     .style('width', '60px')
     .attrs({ type: 'number', class: 'params', id: 'stewart_resolution', min: 1, max: 1000000, step: 'any' });
@@ -1865,14 +1865,14 @@ function fillMenu_Stewart() {
   const f = dialog_content.append('p').attr('class', 'params_section2');
   f.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.func_options' })
-    .html(i18next.t('app_page.func_options.smooth.function'));
+    .html(_tr('app_page.func_options.smooth.function'));
   const func_selec = f.insert('select')
     .attrs({ class: 'params i18n', id: 'stewart_func' });
 
   const g = dialog_content.append('p').attr('class', 'params_section2');
   g.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.nb_class' })
-    .html(i18next.t('app_page.func_options.smooth.nb_class'));
+    .html(_tr('app_page.func_options.smooth.nb_class'));
   g.insert('input')
     .style('width', '50px')
     .attrs({ type: 'number', class: 'params', id: 'stewart_nb_class', value: 8, min: 1, max: 22, step: 1 });
@@ -1880,20 +1880,20 @@ function fillMenu_Stewart() {
   const bvs = dialog_content.append('p').attr('class', 'params_section2');
   bvs.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.smooth.break_values' })
-    .html(i18next.t('app_page.func_options.smooth.break_values'));
+    .html(_tr('app_page.func_options.smooth.break_values'));
   bvs.insert('textarea')
     .styles({ width: '100%', height: '2.2em', 'font-size': '0.9em' })
     .attrs({
       class: 'params i18n',
       id: 'stewart_breaks',
       'data-i18n': '[placeholder]app_page.common.expected_class',
-      placeholder: i18next.t('app_page.common.expected_class'),
+      placeholder: _tr('app_page.common.expected_class'),
     });
   const m = dialog_content.append('p')
     .attr('class', 'params_section2');
   m.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
-    .html(i18next.t('app_page.func_options.common.mask'));
+    .html(_tr('app_page.func_options.common.mask'));
 
   m.insert('select')
     .attrs({ class: 'params mask_field', id: 'stewart_mask' });
@@ -1903,7 +1903,7 @@ function fillMenu_Stewart() {
     ['pareto', 'app_page.func_options.smooth.func_pareto'],
   ].forEach((fun_name) => {
     func_selec.append('option')
-      .text(i18next.t(fun_name[1]))
+      .text(_tr(fun_name[1]))
       .attrs({ value: fun_name[0], 'data-i18n': `[text]${fun_name[1]}` });
   });
 
@@ -1945,7 +1945,7 @@ const fields_Anamorphose = {
       document.getElementById('Anamorph_output_name').value = ['Cartogram', this.value, layer].join('_');
 
       if (ref_value_field) {
-        const max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+        const max_val_field = max_fast(data_manager.user_data[layer].map(obj => +obj[field_name]));
         ref_value_field.setAttribute('max', max_val_field);
         ref_value_field.value = max_val_field;
       }
@@ -1953,13 +1953,13 @@ const fields_Anamorphose = {
 
     ok_button.on('click', () => {
       const algo = algo_selec.node().value,
-        nb_features = user_data[layer].length,
+        nb_features = data_manager.user_data[layer].length,
         field_name = field_selec.node().value,
         new_user_layer_name = document.getElementById('Anamorph_output_name').value;
 
       if (algo === 'olson') {
-        const nb_ft = current_layers[layer].n_features;
-        const dataset = user_data[layer];
+        const nb_ft = data_manager.current_layers[layer].n_features;
+        const dataset = data_manager.user_data[layer];
 
         // if (contains_empty_val(dataset.map(a => a[field_name]))) {
         //   discard_rendering_empty_val();
@@ -1990,7 +1990,7 @@ const fields_Anamorphose = {
         d_val.sort((a, b) => a[0] - b[0]);
         const formToSend = new FormData();
         formToSend.append('json', JSON.stringify({
-          topojson: current_layers[layer].key_name,
+          topojson: data_manager.current_layers[layer].key_name,
           scale_values: d_val.map(ft => ft[3]),
           field_name: field_name,
         }));
@@ -2001,11 +2001,11 @@ const fields_Anamorphose = {
               options.choosed_name = new_user_layer_name;
             }
             const n_layer_name = add_layer_topojson(result, options);
-            current_layers[n_layer_name].renderer = 'OlsonCarto';
-            current_layers[n_layer_name].rendered_field = field_name;
-            current_layers[n_layer_name].scale_max = 1;
-            current_layers[n_layer_name].ref_layer_name = layer;
-            current_layers[n_layer_name].scale_byFeature = transform;
+            data_manager.current_layers[n_layer_name].renderer = 'OlsonCarto';
+            data_manager.current_layers[n_layer_name].rendered_field = field_name;
+            data_manager.current_layers[n_layer_name].scale_max = 1;
+            data_manager.current_layers[n_layer_name].ref_layer_name = layer;
+            data_manager.current_layers[n_layer_name].scale_byFeature = transform;
             map.select(`#${_app.layer_to_id.get(n_layer_name)}`)
               .selectAll('path')
               .styles({
@@ -2024,15 +2024,15 @@ const fields_Anamorphose = {
           nb_iter = document.getElementById('Anamorph_dougenik_iterations').value;
 
         var_to_send[field_name] = [];
-        if (!current_layers[layer].original_fields.has(field_name)) {
-          const table = user_data[layer],
+        if (!data_manager.current_layers[layer].original_fields.has(field_name)) {
+          const table = data_manager.user_data[layer],
             to_send = var_to_send[field_name];
           for (let i = 0, i_len = table.length; i < i_len; ++i) {
             to_send.push(+table[i][field_name]);
           }
         }
         formToSend.append('json', JSON.stringify({
-          topojson: current_layers[layer].key_name,
+          topojson: data_manager.current_layers[layer].key_name,
           var_name: var_to_send,
           iterations: nb_iter,
         }));
@@ -2044,11 +2044,11 @@ const fields_Anamorphose = {
               options.choosed_name = new_user_layer_name;
             }
             const n_layer_name = add_layer_topojson(data, options);
-            current_layers[n_layer_name].fill_color = { random: true };
-            current_layers[n_layer_name].is_result = true;
-            current_layers[n_layer_name]['stroke-width-const'] = 0.8;
-            current_layers[n_layer_name].renderer = 'Carto_doug';
-            current_layers[n_layer_name].rendered_field = field_name;
+            data_manager.current_layers[n_layer_name].fill_color = { random: true };
+            data_manager.current_layers[n_layer_name].is_result = true;
+            data_manager.current_layers[n_layer_name]['stroke-width-const'] = 0.8;
+            data_manager.current_layers[n_layer_name].renderer = 'Carto_doug';
+            data_manager.current_layers[n_layer_name].rendered_field = field_name;
             map.select(`#${_app.layer_to_id.get(n_layer_name)}`)
               .selectAll('path')
               .style('fill', _ => randomColor())
@@ -2080,14 +2080,14 @@ function fillMenu_Anamorphose() {
     .attr('class', 'params_section2');
   algo_choice.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.algo' })
-    .html(i18next.t('app_page.func_options.cartogram.algo'));
+    .html(_tr('app_page.func_options.cartogram.algo'));
   const algo_selec = algo_choice.insert('select')
     .attrs({ id: 'Anamorph_algo', class: 'params i18n' });
 
   const field_choice = dialog_content.append('p').attr('class', 'params_section2');
   field_choice.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.field' })
-    .html(i18next.t('app_page.func_options.cartogram.field'));
+    .html(_tr('app_page.func_options.cartogram.field'));
   field_choice.insert('select')
     .attrs({ class: 'params', id: 'Anamorph_field' });
 
@@ -2096,7 +2096,7 @@ function fillMenu_Anamorphose() {
     .attr('class', 'params_section2 opt_dougenik');
   doug1.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.cartogram.dougenik_iterations' })
-    .html(i18next.t('app_page.func_options.cartogram.dougenik_iterations'));
+    .html(_tr('app_page.func_options.cartogram.dougenik_iterations'));
   doug1.insert('input')
     .attrs({ type: 'number', class: 'params', value: 5, min: 1, max: 12, step: 1, id: 'Anamorph_dougenik_iterations' });
 
@@ -2203,12 +2203,12 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 
     geojson_line_layer = make_geojson_line_layer();
   }
-  const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
-    || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
+  const require_clip_path = (isInterrupted(_app.current_proj_name.toLowerCase())
+    || _app.current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
   const layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
-  result_data[layer_to_add] = [];
+  data_manager.result_data[layer_to_add] = [];
   map.insert('g', '.legend')
     .attrs({ id: layer_id, class: 'layer', 'clip-path': require_clip_path })
     .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
@@ -2218,12 +2218,12 @@ function make_prop_line(rendering_params, geojson_line_layer) {
     .append('path')
     .attr('d', path)
     .styles((d) => {
-      result_data[layer_to_add].push(d.properties);
+      data_manager.result_data[layer_to_add].push(d.properties);
       return {
         fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] };
     });
 
-  current_layers[layer_to_add] = {
+  data_manager.current_layers[layer_to_add] = {
     n_features: nb_features,
     renderer: rendering_params.renderer || 'PropSymbols',
     // symbol: symbol_type,
@@ -2237,16 +2237,16 @@ function make_prop_line(rendering_params, geojson_line_layer) {
   };
 
   if (rendering_params.fill_color.two !== undefined) {
-    current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
+    data_manager.current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = {
+    data_manager.current_layers[layer_to_add].fill_color = {
       class: geojson_line_layer.features.map(v => v.properties.color),
     };
   } else {
-    current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
+    data_manager.current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
   if (rendering_params.break_val !== undefined) {
-    current_layers[layer_to_add].break_val = rendering_params.break_val;
+    data_manager.current_layers[layer_to_add].break_val = rendering_params.break_val;
   }
   create_li_layer_elem(layer_to_add, nb_features, ['Line', 'prop'], 'result');
 }
@@ -2349,7 +2349,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   const layer_id = encodeId(layer_to_add);
   _app.layer_to_id.set(layer_to_add, layer_id);
   _app.id_to_layer.set(layer_id, layer_to_add);
-  result_data[layer_to_add] = [];
+  data_manager.result_data[layer_to_add] = [];
   if (symbol_type === 'circle') {
     map.insert('g', '.legend')
       .attrs({ id: layer_id, class: 'layer no_clip' })
@@ -2358,7 +2358,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       .enter()
       .append('circle')
       .attrs((d, i) => {
-        result_data[layer_to_add].push(d.properties);
+        data_manager.result_data[layer_to_add].push(d.properties);
         return {
           id: ['PropSymbol_', i, ' feature_', d.id].join(''),
           r: d.properties[t_field_name],
@@ -2379,7 +2379,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       .append('rect')
       .attrs((d, i) => {
         const size = d.properties[t_field_name];
-        result_data[layer_to_add].push(d.properties);
+        data_manager.result_data[layer_to_add].push(d.properties);
         return {
           id: ['PropSymbol_', i, ' feature_', d.id].join(''),
           height: size,
@@ -2394,7 +2394,7 @@ function make_prop_symbols(rendering_params, _pt_layer) {
       .call(drag_elem_geo2);
   }
 
-  current_layers[layer_to_add] = {
+  data_manager.current_layers[layer_to_add] = {
     n_features: nb_features,
     renderer: rendering_params.renderer || 'PropSymbols',
     symbol: symbol_type,
@@ -2407,16 +2407,16 @@ function make_prop_symbols(rendering_params, _pt_layer) {
   };
 
   if (rendering_params.fill_color.two !== undefined) {
-    current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
+    data_manager.current_layers[layer_to_add].fill_color = cloneObj(rendering_params.fill_color);
   } else if (rendering_params.fill_color instanceof Array) {
-    current_layers[layer_to_add].fill_color = {
+    data_manager.current_layers[layer_to_add].fill_color = {
       class: geojson_pt_layer.features.map(v => v.properties.color),
     };
   } else {
-    current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
+    data_manager.current_layers[layer_to_add].fill_color = { single: rendering_params.fill_color };
   }
   if (rendering_params.break_val !== undefined) {
-    current_layers[layer_to_add].break_val = rendering_params.break_val;
+    data_manager.current_layers[layer_to_add].break_val = rendering_params.break_val;
   }
   create_li_layer_elem(layer_to_add, nb_features, ['Point', 'prop'], 'result');
 
@@ -2430,8 +2430,8 @@ function render_categorical(layer, rendering_params) {
   if (rendering_params.new_name) {
     const fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
     copy_layer(layer, rendering_params.new_name, 'typo', fields);
-    current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
-    current_layers[rendering_params.new_name].type = current_layers[layer].type;
+    data_manager.current_layers[rendering_params.new_name].key_name = data_manager.current_layers[layer].key_name;
+    data_manager.current_layers[rendering_params.new_name].type = data_manager.current_layers[layer].type;
     layer_name = rendering_params.new_name;
   } else {
     layer_name = layer;
@@ -2444,7 +2444,7 @@ function render_categorical(layer, rendering_params) {
   layer_to_render
     .style('opacity', 1)
     .style('stroke-width', `${0.75 / d3.zoomTransform(svg_map).k}px`);
-  if (current_layers[layer_name].type === 'Line') {
+  if (data_manager.current_layers[layer_name].type === 'Line') {
     layer_to_render.selectAll('path')
       .styles({ fill: 'transparent', 'stroke-opacity': 1 })
       .style('stroke', (_, i) => colorsByFeature[i]);
@@ -2453,12 +2453,12 @@ function render_categorical(layer, rendering_params) {
       .style('fill', (_, i) => colorsByFeature[i])
       .styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, stroke: '#000' });
   }
-  current_layers[layer_name].renderer = rendering_params.renderer;
-  current_layers[layer_name].rendered_field = field;
-  current_layers[layer_name].fill_color = { class: rendering_params.colorByFeature };
-  current_layers[layer_name]['stroke-width-const'] = 0.75;
-  current_layers[layer_name].is_result = true;
-  current_layers[layer_name].color_map = color_map;
+  data_manager.current_layers[layer_name].renderer = rendering_params.renderer;
+  data_manager.current_layers[layer_name].rendered_field = field;
+  data_manager.current_layers[layer_name].fill_color = { class: rendering_params.colorByFeature };
+  data_manager.current_layers[layer_name]['stroke-width-const'] = 0.75;
+  data_manager.current_layers[layer_name].is_result = true;
+  data_manager.current_layers[layer_name].color_map = color_map;
   zoom_without_redraw();
 }
 
@@ -2472,8 +2472,8 @@ function render_choro(layer, rendering_params) {
     copy_layer(layer, rendering_params.new_name, 'choro', fields);
     // Assign the same key to the cloned layer so it could be used transparently on server side
     // after deletion of the reference layer if needed :
-    current_layers[rendering_params.new_name].key_name = current_layers[layer].key_name;
-    current_layers[rendering_params.new_name].type = current_layers[layer].type;
+    data_manager.current_layers[rendering_params.new_name].key_name = data_manager.current_layers[layer].key_name;
+    data_manager.current_layers[rendering_params.new_name].type = data_manager.current_layers[layer].type;
     layer_name = rendering_params.new_name;
   } else {
     layer_name = layer;
@@ -2491,7 +2491,7 @@ function render_choro(layer, rendering_params) {
   layer_to_render
     .style('opacity', 1)
     .style('stroke-width', `${0.75 / d3.zoomTransform(svg_map).k}px`);
-  if (current_layers[layer_name].type === 'Line') {
+  if (data_manager.current_layers[layer_name].type === 'Line') {
     layer_to_render
       .selectAll('path')
       .styles({ fill: 'transparent', 'stroke-opacity': 1 })
@@ -2502,18 +2502,18 @@ function render_choro(layer, rendering_params) {
       .styles({ 'fill-opacity': 1, 'stroke-opacity': 1, stroke: '#000' })
       .style('fill', (d, i) => rendering_params.colorsByFeature[i]);
   }
-  current_layers[layer_name].renderer = rendering_params.renderer;
-  current_layers[layer_name].rendered_field = rendering_params.rendered_field;
-  current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
-  current_layers[layer_name]['stroke-width-const'] = 0.75;
-  current_layers[layer_name].is_result = true;
-  current_layers[layer_name].options_disc = options_disc;
+  data_manager.current_layers[layer_name].renderer = rendering_params.renderer;
+  data_manager.current_layers[layer_name].rendered_field = rendering_params.rendered_field;
+  data_manager.current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+  data_manager.current_layers[layer_name]['stroke-width-const'] = 0.75;
+  data_manager.current_layers[layer_name].is_result = true;
+  data_manager.current_layers[layer_name].options_disc = options_disc;
   const colors_breaks = [];
   for (let i = breaks.length - 1; i > 0; --i) {
     colors_breaks.push([
       [breaks[i - 1], ' - ', breaks[i]].join(''), rendering_params.colors[i - 1]]);
   }
-  current_layers[layer_name].colors_breaks = colors_breaks;
+  data_manager.current_layers[layer_name].colors_breaks = colors_breaks;
   zoom_without_redraw();
 }
 
@@ -2568,7 +2568,7 @@ function make_mini_summary(summary) {
     median: summary.median.toFixed(p),
     stddev: summary.stddev.toFixed(p),
   };
-  return i18next.t('app_page.stat_summary.mini_summary', props);
+  return _tr('app_page.stat_summary.mini_summary', props);
 }
 
 function fillMenu_PropSymbolTypo(layer) {
@@ -2579,7 +2579,7 @@ function fillMenu_PropSymbolTypo(layer) {
   a.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field1' })
-    .html(i18next.t('app_page.func_options.proptypo.field1'));
+    .html(_tr('app_page.func_options.proptypo.field1'));
   a.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolTypo_field_1' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -2587,7 +2587,7 @@ function fillMenu_PropSymbolTypo(layer) {
   const b = dv2.append('p').attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size' })
-    .html(i18next.t('app_page.func_options.proptypo.fixed_size'));
+    .html(_tr('app_page.func_options.proptypo.fixed_size'));
   b.insert('input')
     .attrs({ type: 'number',
       class: 'params',
@@ -2602,7 +2602,7 @@ function fillMenu_PropSymbolTypo(layer) {
   const c = dv2.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.on_value' })
-    .html(i18next.t('app_page.func_options.proptypo.on_value'));
+    .html(_tr('app_page.func_options.proptypo.on_value'));
   c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value' })
@@ -2612,7 +2612,7 @@ function fillMenu_PropSymbolTypo(layer) {
   const d = dv2.append('p').attr('class', 'params_section2');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.symbol_type' })
-    .html(i18next.t('app_page.func_options.proptypo.symbol_type'));
+    .html(_tr('app_page.func_options.proptypo.symbol_type'));
   d.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolTypo_symbol_type' });
 
@@ -2620,7 +2620,7 @@ function fillMenu_PropSymbolTypo(layer) {
     .attr('class', 'params_section2');
   e.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.field2' })
-    .html(i18next.t('app_page.func_options.proptypo.field2'));
+    .html(_tr('app_page.func_options.proptypo.field2'));
   e.insert('select')
     .attrs({ class: 'params', id: 'PropSymbolTypo_field_2' });
 
@@ -2634,7 +2634,7 @@ function fillMenu_PropSymbolTypo(layer) {
       'data-i18n': '[html]app_page.func_options.typo.color_choice',
     })
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-    .html(i18next.t('app_page.func_options.typo.color_choice'));
+    .html(_tr('app_page.func_options.typo.color_choice'));
 
   make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
   make_ok_button(dv2, 'propTypo_yes');
@@ -2645,7 +2645,7 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
   const cats = [];
   if (!col_map) {
     let _col_map = new Map();
-    for (let i = 0, data_layer = user_data[layer_name]; i < data_layer.length; ++i) {
+    for (let i = 0, data_layer = data_manager.user_data[layer_name]; i < data_layer.length; ++i) {
       const value = data_layer[i][selected_field],
         ret_val = _col_map.get(value);
       _col_map.set(value, ret_val ? [ret_val[0] + 1, [i].concat(ret_val[1])] : [1, [i]]);
@@ -2672,7 +2672,7 @@ const fields_PropSymbolTypo = {
     const self = this,
       fields_num = getFieldsType('stock', layer),
       fields_categ = getFieldsType('category', layer),
-      nb_features = user_data[layer].length,
+      nb_features = data_manager.user_data[layer].length,
       field1_selec = section2.select('#PropSymbolTypo_field_1'),
       field2_selec = section2.select('#PropSymbolTypo_field_2'),
       ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
@@ -2685,7 +2685,7 @@ const fields_PropSymbolTypo = {
     const prepare_colors = (field) => {
       const [cats, col_map] = prepare_categories_array(layer, field, null);
       const nb_class = col_map.size;
-      const colorByFeature = user_data[layer].map(ft => col_map.get(ft[field])[0]);
+      const colorByFeature = data_manager.user_data[layer].map(ft => col_map.get(ft[field])[0]);
       self.rendering_params[field] = {
         nb_class: nb_class,
         color_map: col_map,
@@ -2701,7 +2701,7 @@ const fields_PropSymbolTypo = {
       return;
     }
 
-    if (current_layers[layer].type === 'Line') {
+    if (data_manager.current_layers[layer].type === 'Line') {
       ref_size.attr('value', 10.0);
       [
         ['app_page.func_options.common.symbol_line', 'line'],
@@ -2709,7 +2709,7 @@ const fields_PropSymbolTypo = {
         ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     } else {
@@ -2719,7 +2719,7 @@ const fields_PropSymbolTypo = {
         ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     }
@@ -2741,7 +2741,7 @@ const fields_PropSymbolTypo = {
 
     field1_selec.on('change', function () {
       const field_name = this.value,
-        max_val_field = max_fast(user_data[layer].map(obj => +obj[field_name]));
+        max_val_field = max_fast(data_manager.user_data[layer].map(obj => +obj[field_name]));
       ref_value_field.attrs({ max: max_val_field, value: max_val_field });
       uo_layer_name.attr('value', ['Typo', field_name, field2_selec.node().value, layer].join('_'));
     });
@@ -2763,15 +2763,15 @@ const fields_PropSymbolTypo = {
 
       if (cats.length > 15) {
         swal({ title: '',
-          text: i18next.t('app_page.common.error_too_many_features_color'),
+          text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
           allowOutsideClick: false,
           confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
-          cancelButtonText: i18next.t('app_page.common.cancel'),
+          confirmButtonText: `${_tr('app_page.common.valid')}!`,
+          cancelButtonText: _tr('app_page.common.cancel'),
         }).then(() => {
-          display_categorical_box(user_data[layer], layer, selected_field, cats)
+          display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
             .then((confirmed) => {
               if (confirmed) {
                 // ok_button.attr("disabled", null);
@@ -2788,7 +2788,7 @@ const fields_PropSymbolTypo = {
             });
         }, dismiss => null);
       } else {
-        display_categorical_box(user_data[layer], layer, selected_field, cats)
+        display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
           .then((confirmed) => {
             if (confirmed) {
               // ok_button.attr("disabled", null);
@@ -2821,13 +2821,13 @@ const fields_PropSymbolTypo = {
       if (self.rendering_params[field_color].color_map.size > 15
               && !self.rendering_params[field_color].skip_alert) {
         swal({ title: '',
-          text: i18next.t('app_page.common.error_too_many_features_color'),
+          text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
           allowOutsideClick: false,
           confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
-          cancelButtonText: i18next.t('app_page.common.cancel'),
+          confirmButtonText: `${_tr('app_page.common.valid')}!`,
+          cancelButtonText: _tr('app_page.common.cancel'),
         }).then(() => {
           render();
         }, dismiss => null);
@@ -2853,8 +2853,8 @@ function render_PropSymbolTypo(field1, color_field, n_layer_name, ref_value, ref
   if (!ref_value || !color_field || !fields_PropSymbolTypo.rendering_params[color_field]) {
     return;
   }
-  const layer = Object.getOwnPropertyNames(user_data)[0],
-    nb_features = user_data[layer].length,
+  const layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
+    nb_features = data_manager.user_data[layer].length,
     rendering_params = fields_PropSymbolTypo.rendering_params[color_field],
     rd_params = {};
 
@@ -2878,7 +2878,7 @@ function render_PropSymbolTypo(field1, color_field, n_layer_name, ref_value, ref
     make_prop_symbols(rd_params);
   }
 
-  Object.assign(current_layers[new_layer_name], {
+  Object.assign(data_manager.current_layers[new_layer_name], {
     renderer: 'PropSymbolsTypo',
     rendered_field: field1,
     rendered_field2: color_field,
@@ -2896,21 +2896,21 @@ function fillMenu_Discont() {
     .attr('class', 'params_section2');
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.field' })
-    .html(i18next.t('app_page.func_options.discont.field'));
+    .html(_tr('app_page.func_options.discont.field'));
   a.insert('select')
     .attrs({ class: 'params', id: 'field_Discont' });
 
   // let b = dv2.append('p').attr('class', 'params_section2');
   // b.append('span')
   //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.id_field'})
-  //   .html(i18next.t('app_page.func_options.discont.id_field'));
+  //   .html(_tr('app_page.func_options.discont.id_field'));
   // b.insert('select')
   //   .attrs({class: 'params', id: 'field_id_Discont'});
 
   const c = dv2.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.type_discontinuity' })
-    .html(i18next.t('app_page.func_options.discont.type_discontinuity'));
+    .html(_tr('app_page.func_options.discont.type_discontinuity'));
   const discontinuity_type = c.insert('select')
     .attrs({ class: 'params i18n', id: 'kind_Discont' });
 
@@ -2919,14 +2919,14 @@ function fillMenu_Discont() {
     ['app_page.func_options.discont.type_absolute', 'abs'],
   ].forEach((k) => {
     discontinuity_type.append('option')
-      .text(i18next.t(k[0]))
+      .text(_tr(k[0]))
       .attrs({ value: k[1], 'data-i18n': `[text]${k[0]}` });
   });
 
   // let d = dv2.append('p').attr('class', 'params_section2');
   // d.append('span')
   //   .attrs({class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.nb_class'})
-  //   .html(i18next.t('app_page.func_options.discont.nb_class'));
+  //   .html(_tr('app_page.func_options.discont.nb_class'));
   // d.insert('input')
   //   .attrs({type: 'number', class: 'params', id: 'Discont_nbClass', min: 1, max: 33, value: 4})
   //   .style('width', '50px');
@@ -2934,7 +2934,7 @@ function fillMenu_Discont() {
   const e = dv2.append('p').attr('class', 'params_section2');
   e.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.discretization' })
-    .html(i18next.t('app_page.func_options.discont.discretization'));
+    .html(_tr('app_page.func_options.discont.discretization'));
   const disc_type = e.insert('select')
     .attrs({ class: 'params i18n', id: 'Discont_discKind' });
 
@@ -2945,14 +2945,14 @@ function fillMenu_Discont() {
     ['app_page.common.jenks', 'jenks'],
   ].forEach((field) => {
     disc_type.append('option')
-      .text(i18next.t(field[0]))
+      .text(_tr(field[0]))
       .attrs({ value: field[1], 'data-i18n': `[text]${field[0]}` });
   });
 
   const f = dv2.append('p').attr('class', 'params_section2');
   f.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.discont.color' })
-    .html(i18next.t('app_page.func_options.discont.color'));
+    .html(_tr('app_page.func_options.discont.color'));
   f.insert('input')
     .attrs({ class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random() });
 
@@ -2987,7 +2987,7 @@ const fields_Discont = {
     });
     // if (fields_id.length == 0) {
     //     field_id.append("option")
-    //        .text(i18next.t("app_page.common.default"))
+    //        .text(_tr("app_page.common.default"))
     //        .attrs({"value": "__default__", "class": "i18n",
     //                "data-i18n": "[text]app_page.common.default"});
     // } else {
@@ -3011,7 +3011,7 @@ const fields_Discont = {
 };
 
 const render_discont = function () {
-  const layer = Object.getOwnPropertyNames(user_data)[0],
+  const layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     field = document.getElementById('field_Discont').value,
     // field_id = document.getElementById("field_id_Discont").value,
     min_size = 1,
@@ -3061,18 +3061,18 @@ const render_discont = function () {
       arr_tmp, discretization_type, nb_class, min_size, max_size);
     if (!serie || !breaks) {
       const opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
-      const w = nb_class > opt_nb_class ? i18next.t('app_page.common.smaller') : i18next.t('app_page.common.larger');
-      swal('', i18next.t('app_page.common.error_discretization', { arg: w }), 'error');
+      const w = nb_class > opt_nb_class ? _tr('app_page.common.smaller') : _tr('app_page.common.larger');
+      swal('', _tr('app_page.common.error_discretization', { arg: w }), 'error');
       return;
     }
-    const require_clip_path = (isInterrupted(current_proj_name.toLowerCase())
-      || current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
+    const require_clip_path = (isInterrupted(_app.current_proj_name.toLowerCase())
+      || _app.current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
     breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
-    result_data[new_layer_name] = [];
+    data_manager.result_data[new_layer_name] = [];
     const result_layer = map.insert('g', '.legend')
       .attrs({ id: id_layer, class: 'layer', 'clip-path': require_clip_path })
       .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
-    const data_result = result_data[new_layer_name];
+    const data_result = data_manager.result_data[new_layer_name];
     const result_lyr_node = result_layer.node();
 
     for (let i = 0; i < nb_ft; i++) {
@@ -3089,7 +3089,7 @@ const render_discont = function () {
       elem_data.properties.prop_val = p_size;
     }
 
-    current_layers[new_layer_name] = {
+    data_manager.current_layers[new_layer_name] = {
       renderer: 'DiscLayer',
       breaks: breaks,
       min_display: 0, // FIXME
@@ -3108,9 +3108,9 @@ const render_discont = function () {
 
     { // Only display the 50% most important values :
       // TODO : reintegrate this upstream in the layer creation :
-      const lim = 0.5 * current_layers[new_layer_name].n_features;
+      const lim = 0.5 * data_manager.current_layers[new_layer_name].n_features;
       result_layer.selectAll('path').style('display', (_, i) => (i <= lim ? null : 'none'));
-      current_layers[new_layer_name].min_display = 0.5;
+      data_manager.current_layers[new_layer_name].min_display = 0.5;
     }
 
     d3.select('#layer_to_export').append('option').attr('value', new_layer_name).text(new_layer_name);
@@ -3130,14 +3130,14 @@ function fillMenu_PropSymbol(layer) {
     .attr('class', 'params_section2');
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
-    .html(i18next.t('app_page.func_options.common.field'));
+    .html(_tr('app_page.func_options.common.field'));
   a.insert('select')
     .attrs({ class: 'params', id: 'PropSymbol_field_1' });
 
   const b = dialog_content.append('p').attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size' })
-    .html(i18next.t('app_page.func_options.prop.fixed_size'));
+    .html(_tr('app_page.func_options.prop.fixed_size'));
   b.insert('input')
     .attrs({ id: 'PropSymbol_ref_size', type: 'number', class: 'params', min: 0.2, max: max_allowed_size, value: 60.0, step: 0.1 })
     .style('width', '50px');
@@ -3146,7 +3146,7 @@ function fillMenu_PropSymbol(layer) {
   const c = dialog_content.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.on_value' })
-    .html(i18next.t('app_page.func_options.prop.on_value'));
+    .html(_tr('app_page.func_options.prop.on_value'));
   c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ id: 'PropSymbol_ref_value', type: 'number', class: 'params', min: 0.1, step: 0.1 });
@@ -3154,7 +3154,7 @@ function fillMenu_PropSymbol(layer) {
   const d = dialog_content.append('p').attr('class', 'params_section2');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_type' })
-    .html(i18next.t('app_page.func_options.prop.symbol_type'));
+    .html(_tr('app_page.func_options.prop.symbol_type'));
   d.insert('select')
     .attrs({ class: 'params i18n', id: 'PropSymbol_symbol' });
 
@@ -3162,20 +3162,20 @@ function fillMenu_PropSymbol(layer) {
   //  ['app_page.func_options.common.symbol_square', 'rect']
   // ].forEach(function(symb) {
   //     symb_selec.append("option")
-  //       .text(i18next.t(symb[0])).attrs({"value": symb[1], 'data-i18n': `[text]${symb[0]}`});});
+  //       .text(_tr(symb[0])).attrs({"value": symb[1], 'data-i18n': `[text]${symb[0]}`});});
 
   const color_section = dialog_content.append('p').attr('class', 'params_section2');
   color_section.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.symbol_color' })
-    .html(i18next.t('app_page.func_options.prop.symbol_color'));
+    .html(_tr('app_page.func_options.prop.symbol_color'));
   const color_par = color_section.append('select')
     .attrs({ id: 'PropSymbol_nb_colors', class: 'params' });
   color_par.append('option')
     .attrs({ value: 1, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_one_color' })
-    .text(i18next.t('app_page.func_options.prop.options_one_color'));
+    .text(_tr('app_page.func_options.prop.options_one_color'));
   color_par.append('option')
     .attrs({ value: 2, class: 'i18n', 'data-i18n': '[text]app_page.func_options.prop.options_two_colors' })
-    .text(i18next.t('app_page.func_options.prop.options_two_colors'));
+    .text(_tr('app_page.func_options.prop.options_two_colors'));
 
   const col_p = dialog_content.append('p')
     .attr('class', 'params_section2')
@@ -3191,7 +3191,7 @@ function fillMenu_PropSymbol(layer) {
   col_b.insert('span')
     .style('display', 'none')
     .attrs({ id: 'PropSymbol_color_txt', class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.options_break_two_colors' })
-    .html(i18next.t('app_page.func_options.prop.options_break_two_colors'));
+    .html(_tr('app_page.func_options.prop.options_break_two_colors'));
   col_b.insert('input')
     .attrs({ id: 'PropSymbol_break_val', type: 'number', class: 'params' })
     .styles({ display: 'none', width: '75px' });
@@ -3206,7 +3206,7 @@ const fields_PropSymbol = {
     if (!layer) return;
     section2.selectAll('.params').attr('disabled', null);
     const fields = getFieldsType('stock', layer),
-      nb_features = user_data[layer].length,
+      nb_features = data_manager.user_data[layer].length,
       field_selec = section2.select('#PropSymbol_field_1'),
       nb_color = section2.select('#PropSymbol_nb_colors'),
       ok_button = section2.select('#PropSymbol_yes'),
@@ -3219,7 +3219,7 @@ const fields_PropSymbol = {
       fill_color_opt = section2.select('#PropSymbol_break_val'),
       fill_color_text = section2.select('#PropSymbol_color_txt');
 
-    if (current_layers[layer].type === 'Line') {
+    if (data_manager.current_layers[layer].type === 'Line') {
       ref_size.attr('value', 10.0);
       [
         ['app_page.func_options.common.symbol_line', 'line'],
@@ -3227,7 +3227,7 @@ const fields_PropSymbol = {
         ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     } else {
@@ -3237,7 +3237,7 @@ const fields_PropSymbol = {
         ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
-          .text(i18next.t(symb[0]))
+          .text(_tr(symb[0]))
           .attrs({ value: symb[1], 'data-i18n': `[text]${symb[0]}` });
       });
     }
@@ -3250,7 +3250,7 @@ const fields_PropSymbol = {
 
     field_selec.on('change', function () {
       const field_name = this.value,
-        field_values = user_data[layer].map(obj => +obj[field_name]),
+        field_values = data_manager.user_data[layer].map(obj => +obj[field_name]),
         max_val_field = max_fast(field_values);
       uo_layer_name.attr('value', ['PropSymbol', this.value, layer].join('_'));
       ref_value_field.attrs({ max: max_val_field, value: max_val_field });
@@ -3320,7 +3320,7 @@ function fillMenu_TypoSymbol() {
   const a = dv2.append('p').attr('class', 'params_section2');
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.typosymbol.field' })
-    .html(i18next.t('app_page.func_options.typosymbol.field'));
+    .html(_tr('app_page.func_options.typosymbol.field'));
   a.insert('select')
     .attrs({ class: 'params', id: 'field_Symbol' });
 
@@ -3332,7 +3332,7 @@ function fillMenu_TypoSymbol() {
       class: 'button_disc params i18n',
       'data-i18n': '[html]app_page.func_options.typosymbol.symbols_choice' })
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-    .html(i18next.t('app_page.func_options.typosymbol.symbols_choice'));
+    .html(_tr('app_page.func_options.typosymbol.symbols_choice'));
 
   make_layer_name_button(dv2, 'TypoSymbols_output_name');
   make_ok_button(dv2, 'yesTypoSymbols');
@@ -3347,14 +3347,14 @@ function discard_rendering_empty_val() {
   swal({
     title: '',
     type: 'error',
-    text: i18next.t('app_page.common.error_empty_vals'),
+    text: _tr('app_page.common.error_empty_vals'),
   });
 }
 
 const fields_TypoSymbol = {
   fill: function (layer) {
     if (!layer) return;
-    const fields_all = Object.getOwnPropertyNames(user_data[layer][0]),
+    const fields_all = Object.getOwnPropertyNames(data_manager.user_data[layer][0]),
       field_to_use = section2.select('#field_Symbol'),
       selec_symbol = section2.select('#selec_Symbol'),
       uo_layer_name = section2.select('#TypoSymbols_output_name'),
@@ -3373,13 +3373,13 @@ const fields_TypoSymbol = {
     });
     selec_symbol.on('click', () => {
       swal({ title: '',
-        text: i18next.t('app_page.common.error_too_many_features'),
+        text: _tr('app_page.common.error_too_many_features'),
         type: 'warning',
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonColor: '#DD6B55',
-        confirmButtonText: `${i18next.t('app_page.common.valid')}!`,
-        cancelButtonText: i18next.t('app_page.common.cancel'),
+        confirmButtonText: `${_tr('app_page.common.valid')}!`,
+        cancelButtonText: _tr('app_page.common.cancel'),
       }).then(() => {
         const field = document.getElementById('field_Symbol').value;
         const symbol_map = self.rendering_params[field]
@@ -3412,7 +3412,7 @@ const fields_TypoSymbol = {
 };
 
 function render_TypoSymbols(rendering_params, new_name) {
-  const layer_name = Object.getOwnPropertyNames(user_data)[0];
+  const layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
   const ref_layer_id = _app.layer_to_id.get(layer_name);
   const field = rendering_params.field;
   const layer_to_add = check_layer_name(new_name.length > 0 ? new_name : ['Symbols', field, layer_name].join('_'));
@@ -3461,8 +3461,8 @@ function render_TypoSymbols(rendering_params, new_name) {
   const layer_id = encodeId(layer_to_add);
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
-    { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
+    { name: _tr('app_page.common.edit_style'), action: () => { make_style_box_indiv_symbol(self_parent); } },
+    { name: _tr('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
 
   _app.layer_to_id.set(layer_to_add, layer_id);
@@ -3492,8 +3492,8 @@ function render_TypoSymbols(rendering_params, new_name) {
     })
     .call(drag_elem_geo);
 
-  current_layers[layer_to_add] = {
-    n_features: current_layers[layer_name].n_features,
+  data_manager.current_layers[layer_to_add] = {
+    n_features: data_manager.current_layers[layer_name].n_features,
     renderer: 'TypoSymbols',
     symbols_map: rendering_params.symbols_map,
     rendered_field: field,
@@ -3516,7 +3516,7 @@ function fillMenu_griddedMap(layer) {
 
   sectiontypemap.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.map_type' })
-    .html(i18next.t('app_page.func_options.grid.map_type'));
+    .html(_tr('app_page.func_options.grid.map_type'));
 
   const map_type = sectiontypemap.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_map_type' });
@@ -3527,7 +3527,7 @@ function fillMenu_griddedMap(layer) {
 
   ee.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.mesh_type' })
-    .html(i18next.t('app_page.func_options.grid.mesh_type'));
+    .html(_tr('app_page.func_options.grid.mesh_type'));
 
   const mesh_type = ee.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_mesh_type' });
@@ -3538,7 +3538,7 @@ function fillMenu_griddedMap(layer) {
 
   e.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.func' })
-    .html(i18next.t('app_page.func_options.grid.func'));
+    .html(_tr('app_page.func_options.grid.func'));
 
   const grid_func_ratio = e.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_func_ratio' });
@@ -3552,7 +3552,7 @@ function fillMenu_griddedMap(layer) {
 
   aa.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
-    .html(i18next.t('app_page.func_options.common.field'));
+    .html(_tr('app_page.func_options.common.field'));
 
   aa.insert('select')
     .attrs({ class: 'params field_to_use', id: 'Gridded_field_pt' });
@@ -3563,7 +3563,7 @@ function fillMenu_griddedMap(layer) {
 
   gg.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.user_polygon_layer' })
-    .html(i18next.t('app_page.func_options.grid.user_polygon_layer'));
+    .html(_tr('app_page.func_options.grid.user_polygon_layer'));
 
   gg.insert('select')
     .attrs({ class: 'params mask_field', id: 'Gridded_polygon_layer' });
@@ -3574,7 +3574,7 @@ function fillMenu_griddedMap(layer) {
 
   bb.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' })
-    .html(i18next.t('app_page.func_options.grid.cellsize'));
+    .html(_tr('app_page.func_options.grid.cellsize'));
 
   bb.insert('input')
     .style('width', '100px')
@@ -3593,7 +3593,7 @@ function fillMenu_griddedMap(layer) {
     .style('display', 'none');
   cc.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' })
-    .html(i18next.t('app_page.func_options.grid.shape'));
+    .html(_tr('app_page.func_options.grid.shape'));
 
   const grid_shape_pt = cc.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_shape_pt' });
@@ -3607,7 +3607,7 @@ function fillMenu_griddedMap(layer) {
 
   f.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.mask' })
-    .html(i18next.t('app_page.func_options.common.mask'));
+    .html(_tr('app_page.func_options.common.mask'));
 
   f.insert('select')
     .attrs({ class: 'params mask_field', id: 'Gridded_mask' });
@@ -3617,7 +3617,7 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.type_ratio', 'ratio'],
   ].forEach((_t) => {
     map_type.append('option')
-      .text(i18next.t(_t[0]))
+      .text(_tr(_t[0]))
       .attrs({ value: _t[1], 'data-i18n': `[text]${_t[0]}` });
   });
 
@@ -3626,7 +3626,7 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.regular_grid', 'regular_grid'],
   ].forEach((_f) => {
     mesh_type.append('option')
-      .text(i18next.t(_f[0]))
+      .text(_tr(_f[0]))
       .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` });
   });
 
@@ -3637,7 +3637,7 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.stddev', 'stddev'],
   ].forEach((_f) => {
     grid_func_ratio.append('option')
-      .text(i18next.t(_f[0]))
+      .text(_tr(_f[0]))
       .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` })
       .property('disabled', _f[2]);
   });
@@ -3647,7 +3647,7 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.stock_weighted', 'weighted'],
   ].forEach((_f) => {
     grid_func_stock.append('option')
-      .text(i18next.t(_f[0]))
+      .text(_tr(_f[0]))
       .attrs({ value: _f[1], 'data-i18n': `[text]${_f[0]}` })
       .property('disabled', _f[2]);
   });
@@ -3658,7 +3658,7 @@ function fillMenu_griddedMap(layer) {
 
   a.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.field' })
-    .html(i18next.t('app_page.func_options.common.field'));
+    .html(_tr('app_page.func_options.common.field'));
 
   a.insert('select')
     .attrs({ class: 'params field_to_use', id: 'Gridded_field' });
@@ -3668,7 +3668,7 @@ function fillMenu_griddedMap(layer) {
     .style('margin', '35px 0 0 0');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.cellsize' })
-    .html(i18next.t('app_page.func_options.grid.cellsize'));
+    .html(_tr('app_page.func_options.grid.cellsize'));
   b.insert('input')
     .style('width', '100px')
     .attrs({
@@ -3685,7 +3685,7 @@ function fillMenu_griddedMap(layer) {
     .attr('class', 'params_section2 opt_polygon');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.shape' })
-    .html(i18next.t('app_page.func_options.grid.shape'));
+    .html(_tr('app_page.func_options.grid.shape'));
 
   const grid_shape = c.insert('select')
     .attrs({ class: 'params i18n', id: 'Gridded_shape' });
@@ -3695,7 +3695,7 @@ function fillMenu_griddedMap(layer) {
     .style('padding-top', '2px');
   d.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.grid.coloramp' })
-    .html(i18next.t('app_page.func_options.grid.coloramp'));
+    .html(_tr('app_page.func_options.grid.coloramp'));
   const col_pal = d.insert('select')
     .attrs({ class: 'params', id: 'Gridded_color_pal' });
 
@@ -3710,10 +3710,10 @@ function fillMenu_griddedMap(layer) {
     ['app_page.func_options.grid.hexagon', 'Hexagon'],
   ].forEach((shape) => {
     grid_shape.append('option')
-      .text(i18next.t(shape[0]))
+      .text(_tr(shape[0]))
       .attrs({ value: shape[1], 'data-i18n': `[text]${shape[0]}` });
     grid_shape_pt.append('option')
-      .text(i18next.t(shape[0]))
+      .text(_tr(shape[0]))
       .attrs({ value: shape[1], 'data-i18n': `[text]${shape[0]}` });
   });
 
@@ -3733,13 +3733,13 @@ const fields_griddedMap = {
     mask_selec.append('option').text('None').attr('value', 'None');
     for (let i = 0, n_layer = other_layers.length, lyr_name; i < n_layer; i++) {
       lyr_name = other_layers[i];
-      if (current_layers[lyr_name].type === 'Polygon') {
+      if (data_manager.current_layers[lyr_name].type === 'Polygon') {
         mask_selec.append('option').text(lyr_name).attr('value', lyr_name);
         user_polygon_layer.append('option').text(lyr_name).attr('value', lyr_name);
       }
     }
     if (!layer) return;
-    const type_layer = current_layers[layer].type;
+    const type_layer = data_manager.current_layers[layer].type;
     section2.selectAll('.opt_polygon').style('display', type_layer === 'Polygon' ? null : 'none');
     section2.selectAll('.opt_point').style('display', type_layer === 'Point' ? null : 'none');
     if (type_layer === 'Point') {
@@ -3828,7 +3828,7 @@ const fields_griddedMap = {
           color_palette: document.getElementById('Gridded_color_pal').value,
         };
         if (params.mesh_type === 'user_polygons' && !params.polygon_layer) {
-          display_error_during_computation(i18next.t('app_page.common.error_background_needed'));
+          display_error_during_computation(_tr('app_page.common.error_background_needed'));
           return;
         }
         render_GriddedFromPts(params, output_name);
@@ -3855,7 +3855,7 @@ const fields_griddedMap = {
 };
 
 function render_GriddedFromPts(params, new_user_layer_name) {
-  const layer = Object.getOwnPropertyNames(user_data)[0],
+  const layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     formToSend = new FormData();
   let var_to_send = null;
 
@@ -3865,12 +3865,12 @@ function render_GriddedFromPts(params, new_user_layer_name) {
     const res_test = test_maxmin_resolution(params.resolution);
     if (res_test) {
       const message = res_test === 'low'
-        ? i18next.t('app_page.common.error_too_low_resolution')
-        : i18next.t('app_page.common.error_too_high_resolution');
+        ? _tr('app_page.common.error_too_low_resolution')
+        : _tr('app_page.common.error_too_high_resolution');
       display_error_during_computation(message);
       return;
     }
-  } else if (!params.polygon_layer in current_layers) {
+  } else if (!params.polygon_layer in data_manager.current_layers) {
     display_error_during_computation('Unable to find the layer');
     return;
   }
@@ -3879,21 +3879,21 @@ function render_GriddedFromPts(params, new_user_layer_name) {
   if (params.func_type !== 'density_count') {
     const field_name = params.field;
     var_to_send = {};
-    if (current_layers[layer].original_fields.has(field_name)) {
+    if (data_manager.current_layers[layer].original_fields.has(field_name)) {
       var_to_send[field_name] = [];
     } else {
-      var_to_send[field_name] = user_data[layer].map(i => i[field_name]);
+      var_to_send[field_name] = data_manager.user_data[layer].map(i => i[field_name]);
     }
   }
 
   formToSend.append('json', JSON.stringify({
-    topojson: current_layers[layer].key_name,
+    topojson: data_manager.current_layers[layer].key_name,
     mesh_type: params.mesh_type,
     var_name: var_to_send,
     cellsize: params.resolution * 1000,
     grid_shape: params.cell_shape,
-    polygon_layer: params.mesh_type !== 'regular_grid' ? current_layers[params.polygon_layer].key_name : null,
-    mask_layer: params.mask_layer !== 'None' ? current_layers[params.mask_layer].key_name : null,
+    polygon_layer: params.mesh_type !== 'regular_grid' ? data_manager.current_layers[params.polygon_layer].key_name : null,
+    mask_layer: params.mask_layer !== 'None' ? data_manager.current_layers[params.mask_layer].key_name : null,
     func_type: params.func_type,
   }));
 
@@ -3941,7 +3941,7 @@ function render_GriddedFromPts(params, new_user_layer_name) {
         const rendered_field = params.func_type;
         const n_layer_name = add_layer_topojson(data, _options);
         if (!n_layer_name) return;
-        const res_data = result_data[n_layer_name],
+        const res_data = data_manager.result_data[n_layer_name],
           nb_ft = res_data.length,
           d_values = [];
         let opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft));
@@ -3950,7 +3950,7 @@ function render_GriddedFromPts(params, new_user_layer_name) {
           d_values.push(res_data[i][rendered_field]);
         }
         const disc_method = 'jenks';
-        current_layers[n_layer_name].renderer = 'Gridded';
+        data_manager.current_layers[n_layer_name].renderer = 'Gridded';
         const [
           nb_class, type, breaks, color_array, colors_map, no_data_color
         ] = discretize_to_colors(d_values, disc_method, opt_nb_class, params.color_palette);
@@ -3976,27 +3976,27 @@ function render_GriddedFromPts(params, new_user_layer_name) {
 }
 
 function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user_layer_name) {
-  const layer = Object.getOwnPropertyNames(user_data)[0],
+  const layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     formToSend = new FormData(),
     var_to_send = {},
     res_test = test_maxmin_resolution(resolution);
 
   if (res_test) {
     const message = res_test === 'low'
-      ? i18next.t('app_page.common.error_too_low_resolution')
-      : i18next.t('app_page.common.error_too_high_resolution');
+      ? _tr('app_page.common.error_too_low_resolution')
+      : _tr('app_page.common.error_too_high_resolution');
     display_error_during_computation(message);
     return;
   }
 
-  if (current_layers[layer].original_fields.has(field_n)) {
+  if (data_manager.current_layers[layer].original_fields.has(field_n)) {
     var_to_send[field_n] = [];
   } else {
-    var_to_send[field_n] = user_data[layer].map(i => i[field_n]);
+    var_to_send[field_n] = data_manager.user_data[layer].map(i => i[field_n]);
   }
 
   formToSend.append('json', JSON.stringify({
-    topojson: current_layers[layer].key_name,
+    topojson: data_manager.current_layers[layer].key_name,
     var_name: var_to_send,
     cellsize: resolution * 1000,
     grid_shape: cell_shape,
@@ -4011,7 +4011,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
       const rendered_field = `${field_n}_densitykm`;
       const n_layer_name = add_layer_topojson(data, _options);
       if (!n_layer_name) return;
-      const res_data = result_data[n_layer_name],
+      const res_data = data_manager.result_data[n_layer_name],
         nb_ft = res_data.length,
         opt_nb_class = Math.floor(1 + 3.3 * Math.log10(nb_ft)),
         d_values = [];
@@ -4019,7 +4019,7 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
         d_values.push(+res_data[i][rendered_field]);
       }
       const disc_method = 'quantiles';
-      current_layers[n_layer_name].renderer = 'Gridded';
+      data_manager.current_layers[n_layer_name].renderer = 'Gridded';
       const disc_result = discretize_to_colors(d_values, disc_method, opt_nb_class, color_palette);
       const rendering_params = {
         nb_class: opt_nb_class,
@@ -4048,13 +4048,13 @@ function fillMenu_FlowMap() {
     .attr('class', 'params_section2');
   subtitle.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.subtitle1' })
-    .html(i18next.t('app_page.func_options.flow.subtitle1'));
+    .html(_tr('app_page.func_options.flow.subtitle1'));
 
   const origin_section = dv2.append('p')
     .attr('class', 'params_section2');
   origin_section.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.origin_field' })
-    .html(i18next.t('app_page.func_options.flow.origin_field'));
+    .html(_tr('app_page.func_options.flow.origin_field'));
   origin_section.insert('select')
     .attrs({ id: 'FlowMap_field_i', class: 'params' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -4063,7 +4063,7 @@ function fillMenu_FlowMap() {
     .attr('class', 'params_section2');
   destination_section.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.destination_field' })
-    .html(i18next.t('app_page.func_options.flow.destination_field'));
+    .html(_tr('app_page.func_options.flow.destination_field'));
   destination_section.append('select')
     .attrs({ class: 'params', id: 'FlowMap_field_j' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -4072,7 +4072,7 @@ function fillMenu_FlowMap() {
     .attr('class', 'params_section2');
   intensity_section.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.intensity_field' })
-    .html(i18next.t('app_page.func_options.flow.intensity_field'));
+    .html(_tr('app_page.func_options.flow.intensity_field'));
   intensity_section.append('select')
     .attrs({ class: 'params', id: 'FlowMap_field_fij' })
     .styles({ position: 'relative', float: 'right', 'margin-bottom': '7.5px' });
@@ -4081,7 +4081,7 @@ function fillMenu_FlowMap() {
     .attr('class', 'params_section2');
   discretization_section.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.discretization' })
-    .html(i18next.t('app_page.func_options.flow.discretization'));
+    .html(_tr('app_page.func_options.flow.discretization'));
   const disc_type = discretization_section.insert('select')
     .attrs({ class: 'params i18n', id: 'FlowMap_discKind' });
 
@@ -4093,7 +4093,7 @@ function fillMenu_FlowMap() {
     ['app_page.common.jenks', 'jenks'],
   ].forEach((field) => {
     disc_type.append('option')
-      .text(i18next.t(field[0]))
+      .text(_tr(field[0]))
       .attrs({ value: field[1], 'data-i18n': `[text]${field[0]}` });
   });
 
@@ -4109,7 +4109,7 @@ function fillMenu_FlowMap() {
     .attr('class', 'params_section2');
   b.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.fixed_size' })
-    .html(i18next.t('app_page.func_options.choroprop.fixed_size'));
+    .html(_tr('app_page.func_options.choroprop.fixed_size'));
   b.insert('input')
     .attrs({
       id: 'FlowMap_ref_size',
@@ -4125,7 +4125,7 @@ function fillMenu_FlowMap() {
   const c = without_discretisation.append('p').attr('class', 'params_section2');
   c.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.choroprop.on_value' })
-    .html(i18next.t('app_page.func_options.choroprop.on_value'));
+    .html(_tr('app_page.func_options.choroprop.on_value'));
   c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
     .attrs({ type: 'number', class: 'params', id: 'FlowMap_ref_value' })
@@ -4134,7 +4134,7 @@ function fillMenu_FlowMap() {
   const nb_class_section = with_discretisation.append('p').attr('class', 'params_section2');
   nb_class_section.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.nb_class' })
-    .html(i18next.t('app_page.func_options.flow.nb_class'));
+    .html(_tr('app_page.func_options.flow.nb_class'));
   nb_class_section.insert('input')
     .attrs({ type: 'number', class: 'params', id: 'FlowMap_nbClass', min: 1, max: 33 })
     .style('width', '50px')
@@ -4145,13 +4145,13 @@ function fillMenu_FlowMap() {
   with_discretisation.append('p').attr('class', 'params_section2')
     .insert('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.ref_layer_field' })
-    .html(i18next.t('app_page.func_options.flow.ref_layer_field'));
+    .html(_tr('app_page.func_options.flow.ref_layer_field'));
 
   const join_field_section = dv2.append('p')
     .attr('class', 'params_section2');
   join_field_section.append('p')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.flow.join_field' })
-    .html(i18next.t('app_page.func_options.flow.join_field'));
+    .html(_tr('app_page.func_options.flow.join_field'));
   join_field_section.insert('select')
     .attrs({ class: 'params', id: 'FlowMap_field_join' });
 
@@ -4175,9 +4175,9 @@ const fields_FlowMap = {
       ok_button = section2.select('#FlowMap_yes'),
       uo_layer_name = section2.select('#FlowMap_output_name');
 
-    if (joined_dataset.length > 0
+    if (data_manager.joined_dataset.length > 0
           && document.getElementById('FlowMap_field_i').options.length === 0) {
-      const fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      const fields = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]);
       fields.forEach((field) => {
         field_i.append('option').text(field).attr('value', field);
         field_j.append('option').text(field).attr('value', field);
@@ -4185,7 +4185,7 @@ const fields_FlowMap = {
       });
     }
     if (layer) {
-      const ref_fields = Object.getOwnPropertyNames(user_data[layer][0]);
+      const ref_fields = Object.getOwnPropertyNames(data_manager.user_data[layer][0]);
       ref_fields.forEach((field) => {
         join_field.append('option').text(field).attr('value', field);
       });
@@ -4196,7 +4196,7 @@ const fields_FlowMap = {
     join_field.on('change', function () {
       uo_layer_name.attr('value', ['Links', this.value].join('_'));
     });
-    // if (layer || joined_dataset.length > 0) {
+    // if (layer || data_manager.joined_dataset.length > 0) {
     //   section2.selectAll('.params').attr('disabled', null);
     //   uo_layer_name.attr('value', ['Links', layer].join('_'));
     // }
@@ -4205,7 +4205,7 @@ const fields_FlowMap = {
     field_fij.on('change', function () {
       const name = this.value;
       const disc = disc_type.node().value;
-      values_fij = joined_dataset[0].map(obj => +obj[name]);
+      values_fij = data_manager.joined_dataset[0].map(obj => +obj[name]);
       if (disc === 'no_classification') {
         ref_value.property('value', max_fast(values_fij));
       } else {
@@ -4219,7 +4219,7 @@ const fields_FlowMap = {
     disc_type.on('change', function () {
       const disc = this.value;
       const name = field_fij.node().value;
-      values_fij = joined_dataset[0].map(obj => +obj[name]);
+      values_fij = data_manager.joined_dataset[0].map(obj => +obj[name]);
       if (disc === 'no_classification') {
         section2.select('#FlowMap_noDiscSection').style('display', null);
         section2.select('#FlowMap_discSection').style('display', 'none');
@@ -4271,9 +4271,9 @@ const fields_FlowMap = {
       }
     });
 
-    if (layer && joined_dataset.length > 0) {
+    if (layer && data_manager.joined_dataset.length > 0) {
       section2.selectAll('.params').attr('disabled', null);
-      const fields = Object.getOwnPropertyNames(joined_dataset[0][0]);
+      const fields = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]);
       if (fields.length >= 3) {
         field_j.node().value = fields[1];
         field_fij.node().value = fields[2];
@@ -4295,15 +4295,15 @@ const fields_FlowMap = {
 };
 
 function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field, ref_size, ref_value, new_user_layer_name) {
-  const ref_layer = Object.getOwnPropertyNames(user_data)[0],
+  const ref_layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     formToSend = new FormData(),
     join_field_to_send = {};
 
-  join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
+  join_field_to_send[name_join_field] = data_manager.user_data[ref_layer].map(obj => obj[name_join_field]);
 
   formToSend.append('json', JSON.stringify({
-    topojson: current_layers[ref_layer].key_name,
-    csv_table: JSON.stringify(joined_dataset[0]),
+    topojson: data_manager.current_layers[ref_layer].key_name,
+    csv_table: JSON.stringify(data_manager.joined_dataset[0]),
     field_i: field_i,
     field_j: field_j,
     field_fij: field_fij,
@@ -4323,7 +4323,7 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
       if (!new_layer_name) return;
       const layer_to_render = map.select(`#${_app.layer_to_id.get(new_layer_name)}`).selectAll('path'),
         fij_field_name = field_fij,
-        fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
+        fij_values = data_manager.result_data[new_layer_name].map(obj => +obj[fij_field_name]),
         nb_ft = fij_values.length,
         t_field_name = 'prop_value';
 
@@ -4336,7 +4336,7 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
       layer_to_render
         .styles(d => ({ fill: 'transparent', stroke: d.properties.color, 'stroke-width': d.properties[t_field_name] }));
 
-      Object.assign(current_layers[new_layer_name], {
+      Object.assign(data_manager.current_layers[new_layer_name], {
         n_features: nb_ft,
         renderer: 'LinksProportional',
         symbol: 'path',
@@ -4354,7 +4354,7 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
 }
 
 function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, disc_type, new_user_layer_name) {
-  const ref_layer = Object.getOwnPropertyNames(user_data)[0],
+  const ref_layer = Object.getOwnPropertyNames(data_manager.user_data)[0],
     formToSend = new FormData(),
     join_field_to_send = {};
 
@@ -4367,11 +4367,11 @@ function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, d
     min_size = min_fast(sizes),
     max_size = max_fast(sizes);
 
-  join_field_to_send[name_join_field] = user_data[ref_layer].map(obj => obj[name_join_field]);
+  join_field_to_send[name_join_field] = data_manager.user_data[ref_layer].map(obj => obj[name_join_field]);
 
   formToSend.append('json', JSON.stringify({
-    topojson: current_layers[ref_layer].key_name,
-    csv_table: JSON.stringify(joined_dataset[0]),
+    topojson: data_manager.current_layers[ref_layer].key_name,
+    csv_table: JSON.stringify(data_manager.joined_dataset[0]),
     field_i: field_i,
     field_j: field_j,
     field_fij: field_fij,
@@ -4389,7 +4389,7 @@ function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, d
       if (!new_layer_name) return;
       const layer_to_render = map.select(`#${_app.layer_to_id.get(new_layer_name)}`).selectAll('path'),
         fij_field_name = field_fij,
-        fij_values = result_data[new_layer_name].map(obj => +obj[fij_field_name]),
+        fij_values = data_manager.result_data[new_layer_name].map(obj => +obj[fij_field_name]),
         nb_ft = fij_values.length,
         serie = new geostats(fij_values); // eslint-disable-line new-cap
 
@@ -4398,23 +4398,23 @@ function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, d
 
       serie.setClassManually(user_breaks);
 
-      current_layers[new_layer_name].fixed_stroke = true;
-      current_layers[new_layer_name].renderer = 'LinksGraduated';
-      current_layers[new_layer_name].breaks = [];
-      current_layers[new_layer_name].linksbyId = [];
-      current_layers[new_layer_name].size = [min_size, max_size];
-      current_layers[new_layer_name].rendered_field = fij_field_name;
-      current_layers[new_layer_name].ref_layer_name = ref_layer;
-      current_layers[new_layer_name].min_display = 0;
+      data_manager.current_layers[new_layer_name].fixed_stroke = true;
+      data_manager.current_layers[new_layer_name].renderer = 'LinksGraduated';
+      data_manager.current_layers[new_layer_name].breaks = [];
+      data_manager.current_layers[new_layer_name].linksbyId = [];
+      data_manager.current_layers[new_layer_name].size = [min_size, max_size];
+      data_manager.current_layers[new_layer_name].rendered_field = fij_field_name;
+      data_manager.current_layers[new_layer_name].ref_layer_name = ref_layer;
+      data_manager.current_layers[new_layer_name].min_display = 0;
 
-      const links_byId = current_layers[new_layer_name].linksbyId;
+      const links_byId = data_manager.current_layers[new_layer_name].linksbyId;
 
       for (let i = 0; i < nb_ft; ++i) {
         const val = +fij_values[i];
         links_byId.push([i, val, sizes[serie.getClass(val)]]);
       }
       for (let i = 0; i < nb_class; ++i) {
-        current_layers[new_layer_name].breaks.push(
+        data_manager.current_layers[new_layer_name].breaks.push(
           [[user_breaks[i], user_breaks[i + 1]], sizes[i]]);
       }
       layer_to_render.style('fill-opacity', 0)
@@ -4458,7 +4458,7 @@ export const render_label = function render_label(layer, rendering_params, optio
     new_layer_data = options.data;
     nb_ft = new_layer_data.length;
   } else if (layer) {
-    const type_ft_ref = current_layers[layer].symbol || 'path';
+    const type_ft_ref = data_manager.current_layers[layer].symbol || 'path';
     const ref_selection = document.getElementById(_app.layer_to_id.get(layer))
       .getElementsByTagName(type_ft_ref);
     let i_id = 0;
@@ -4495,8 +4495,8 @@ export const render_label = function render_label(layer, rendering_params, optio
   }
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
-    { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
+    { name: _tr('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
+    { name: _tr('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line no-param-reassign
   ];
   const selection = map.insert('g', '.legend')
     .attrs({ id: layer_id, class: 'layer no_clip' })
@@ -4544,7 +4544,7 @@ export const render_label = function render_label(layer, rendering_params, optio
     })
     .call(drag_elem_geo);
 
-  current_layers[layer_to_add] = {
+  data_manager.current_layers[layer_to_add] = {
     n_features: new_layer_data.length,
     renderer: 'Label',
     symbol: 'text',
@@ -4580,9 +4580,9 @@ export const render_label_graticule = function render_label_graticule(layer, ren
     nb_ft = new_layer_data.length;
   } else if (layer) {
     let grat = d3.geoGraticule()
-      .step([current_layers.Graticule.step, current_layers.Graticule.step]);
-    grat = current_layers.Graticule.extent
-      ? grat.extent(current_layers.Graticule.extent).lines()
+      .step([data_manager.current_layers.Graticule.step, data_manager.current_layers.Graticule.step]);
+    grat = data_manager.current_layers.Graticule.extent
+      ? grat.extent(data_manager.current_layers.Graticule.extent).lines()
       : grat.lines();
     nb_ft = grat.length;
     for (let i = 0; i < nb_ft; i++) {
@@ -4608,8 +4608,8 @@ export const render_label_graticule = function render_label_graticule(layer, ren
   }
   const context_menu = new ContextMenu();
   const getItems = self_parent => [
-    { name: i18next.t('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
-    { name: i18next.t('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line
+    { name: _tr('app_page.common.edit_style'), action: () => { make_style_box_indiv_label(self_parent); } },
+    { name: _tr('app_page.common.delete'), action: () => { self_parent.style.display = 'none'; } }, // eslint-disable-line
   ];
 
   map.insert('g', '.legend')
@@ -4640,7 +4640,7 @@ export const render_label_graticule = function render_label_graticule(layer, ren
       );
     })
     .call(drag_elem_geo);
-  current_layers[layer_to_add] = {
+  data_manager.current_layers[layer_to_add] = {
     n_features: new_layer_data.length,
     renderer: 'Label',
     symbol: 'text',

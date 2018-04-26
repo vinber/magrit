@@ -2,6 +2,7 @@ import { Colors, randomColor, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
 import { display_discretization } from './classification/discretization_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
+import { available_fonts } from './fonts';
 import { render_label, render_label_graticule, reset_user_values } from './function';
 import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
@@ -17,23 +18,23 @@ import { make_table } from './tables';
 *
 */
 export function handle_click_layer(layer_name) {
-  if (current_layers[layer_name].graticule) {
+  if (data_manager.current_layers[layer_name].graticule) {
     createStyleBoxGraticule();
-  } else if (current_layers[layer_name].type === 'Line') {
+  } else if (data_manager.current_layers[layer_name].type === 'Line') {
     createStyleBox_Line(layer_name);
-  } else if (current_layers[layer_name].renderer
-      && current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
+  } else if (data_manager.current_layers[layer_name].renderer
+      && data_manager.current_layers[layer_name].renderer.indexOf('PropSymbol') > -1) {
     createStyleBox_ProbSymbol(layer_name);
-  } else if (current_layers[layer_name].renderer
-      && current_layers[layer_name].renderer === 'Label') {
+  } else if (data_manager.current_layers[layer_name].renderer
+      && data_manager.current_layers[layer_name].renderer === 'Label') {
     createStyleBoxLabel(layer_name);
-  } else if (current_layers[layer_name].renderer
-      && current_layers[layer_name].renderer === 'TypoSymbols') {
+  } else if (data_manager.current_layers[layer_name].renderer
+      && data_manager.current_layers[layer_name].renderer === 'TypoSymbols') {
     createStyleBoxTypoSymbols(layer_name);
-  } else if (current_layers[layer_name].renderer
-      && current_layers[layer_name].renderer === 'TwoStocksWaffle') {
+  } else if (data_manager.current_layers[layer_name].renderer
+      && data_manager.current_layers[layer_name].renderer === 'TwoStocksWaffle') {
     createStyleBoxWaffle(layer_name);
-  } else if (current_layers[layer_name].renderer === 'Stewart') {
+  } else if (data_manager.current_layers[layer_name].renderer === 'Stewart') {
     createStyleBoxStewart(layer_name);
   } else {
     createStyleBox(layer_name);
@@ -46,7 +47,7 @@ function make_single_color_menu(layer, fill_prev, symbol = 'path') {
     last_color = (fill_prev && fill_prev.single) ? fill_prev.single : '#FFF';
   const block = fill_color_section.insert('p');
   block.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.fill_color'));
+    .html(_tr('app_page.layer_style_popup.fill_color'));
   block.insert('input')
     .attr('type', 'color')
     .style('float', 'right')
@@ -56,13 +57,13 @@ function make_single_color_menu(layer, fill_prev, symbol = 'path') {
         .selectAll(symbol)
         .transition()
         .style('fill', this.value);
-      current_layers[layer].fill_color = { single: this.value };
+      data_manager.current_layers[layer].fill_color = { single: this.value };
     });
   map.select(g_lyr_name)
     .selectAll(symbol)
     .transition()
     .style('fill', last_color);
-  current_layers[layer].fill_color = { single: last_color };
+  data_manager.current_layers[layer].fill_color = { single: last_color };
 }
 
 function make_random_color(layer, symbol = 'path') {
@@ -70,13 +71,13 @@ function make_random_color(layer, symbol = 'path') {
   block.insert('span')
     .attr('id', 'random_color_btn')
     .styles({ cursor: 'pointer', 'text-align': 'center' })
-    .html(i18next.t('app_page.layer_style_popup.toggle_colors'))
+    .html(_tr('app_page.layer_style_popup.toggle_colors'))
     .on('click', (d, i) => {
       map.select(`#${_app.layer_to_id.get(layer)}`)
         .selectAll(symbol)
         .transition()
         .style('fill', () => randomColor());// Colors.names[Colors.random()]);
-      current_layers[layer].fill_color = { random: true };
+      data_manager.current_layers[layer].fill_color = { random: true };
     });
 }
 
@@ -89,7 +90,7 @@ function fill_categorical(layer, field_name, symbol, color_cat_map) {
 
 function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') {
   const fill_color_section = d3.select('#fill_color_section').append('p');
-  fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.categorical_field'));
+  fill_color_section.insert('span').html(_tr('app_page.layer_style_popup.categorical_field'));
   const field_selec = fill_color_section.insert('select');
   fields.forEach((field) => {
     if (field !== 'id') field_selec.append('option').text(field).attr('value', field);
@@ -99,7 +100,7 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') 
   }
   field_selec.on('change', function () {
     const field_name = this.value,
-      data_layer = current_layers[layer].is_result ? result_data[layer] : user_data[layer],
+      data_layer = data_manager.current_layers[layer].is_result ? data_manager.result_data[layer] : data_manager.user_data[layer],
       values = data_layer.map(i => i[field_name]),
       cats = new Set(values),
       txt = [cats.size, ' cat.'].join('');
@@ -108,7 +109,7 @@ function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') 
     Array.from(cats.keys()).forEach((val) => {
       color_cat_map.set(val, Colors.names[Colors.random()]);
     });
-    current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
+    data_manager.current_layers[layer].fill_color = { categorical: [field_name, color_cat_map] };
     fill_categorical(layer, field_name, symbol, color_cat_map);
   });
 
@@ -130,7 +131,7 @@ function make_change_layer_name_section(parent, layer_name) {
   const section = parent.insert('p')
     .attr('class', 'inp_bottom');
   section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.layer_name'));
+    .html(_tr('app_page.layer_style_popup.layer_name'));
   const inpt = section.append('input')
     .attrs({ id: 'lyr_change_name', type: 'text' })
     .styles({ width: '200px', float: 'left' });
@@ -148,7 +149,7 @@ function createStyleBoxTypoSymbols(layer_name) {
         position: [features[i].getAttribute('x'), features[i].getAttribute('y')],
       });
     }
-    prev_settings_defaults.size = current_layers[layer_name].default_size;
+    prev_settings_defaults.size = data_manager.current_layers[layer_name].default_size;
   }
 
   const restore_prev_settings = () => {
@@ -160,15 +161,15 @@ function createStyleBoxTypoSymbols(layer_name) {
       features[i].setAttribute('y', prev_settings[i].position[1]);
       features[i].style.display = prev_settings[i].display;
     }
-    current_layers[layer_name].default_size = prev_settings_defaults.size;
+    data_manager.current_layers[layer_name].default_size = prev_settings_defaults.size;
   };
 
   check_remove_existing_box('.styleBox');
 
   const selection = map.select(`#${_app.layer_to_id.get(layer_name)}`).selectAll('image'),
-    ref_layer_name = current_layers[layer_name].ref_layer_name,
-    symbols_map = current_layers[layer_name].symbols_map,
-    rendered_field = current_layers[layer_name].rendered_field;
+    ref_layer_name = data_manager.current_layers[layer_name].ref_layer_name,
+    symbols_map = data_manager.current_layers[layer_name].symbols_map,
+    rendered_field = data_manager.current_layers[layer_name].rendered_field;
 
   const prev_settings = [],
     prev_settings_defaults = {},
@@ -193,8 +194,8 @@ function createStyleBoxTypoSymbols(layer_name) {
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
     .html([
-      i18next.t('app_page.layer_style_popup.rendered_field', { field: rendered_field }),
-      i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
+      _tr('app_page.layer_style_popup.rendered_field', { field: rendered_field }),
+      _tr('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
     ].join(''));
 
   let new_layer_name = layer_name;
@@ -205,7 +206,7 @@ function createStyleBoxTypoSymbols(layer_name) {
   popup.append('p').style('text-align', 'center')
     .insert('button')
     .attrs({ id: 'reset_symb_loc', class: 'button_st4' })
-    .text(i18next.t('app_page.layer_style_popup.reset_symbols_location'))
+    .text(_tr('app_page.layer_style_popup.reset_symbols_location'))
     .on('click', () => {
       selection.transition()
         .attrs((d) => {
@@ -218,14 +219,14 @@ function createStyleBoxTypoSymbols(layer_name) {
   popup.append('p').style('text-align', 'center')
     .insert('button')
     .attrs({ id: 'reset_symb_display', class: 'button_st4' })
-    .text(i18next.t('app_page.layer_style_popup.redraw_symbols'))
+    .text(_tr('app_page.layer_style_popup.redraw_symbols'))
     .on('click', () => {
       selection.style('display', undefined);
     });
 
   const size_section = popup.append('p');
   size_section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.symbols_size'));
+    .html(_tr('app_page.layer_style_popup.symbols_size'));
   size_section.append('input')
     .attrs({ min: 0, max: 200, step: 'any', type: 'number' })
     .styles({ width: '60px', margin: 'auto' })
@@ -248,7 +249,7 @@ function createStyleBoxTypoSymbols(layer_name) {
   //    .insert("button")
   //    .attr("id","modif_symb")
   //    .attr("class", "button_st4")
-  //    .text(i18next.t("app_page.layer_style_popup.modify_symbols"))
+  //    .text(_tr("app_page.layer_style_popup.modify_symbols"))
   //    .on("click", function(){
   //      display_box_symbol_typo(ref_layer_name, rendered_field)().then(function(confirmed){
   //        if(confirmed){
@@ -287,9 +288,9 @@ function createStyleBoxLabel(layer_name) {
       });
     }
     prev_settings_defaults = {
-      color: current_layers[layer_name].fill_color,
-      size: current_layers[layer_name].default_size,
-      font: current_layers[layer_name].default_font,
+      color: data_manager.current_layers[layer_name].fill_color,
+      size: data_manager.current_layers[layer_name].default_size,
+      font: data_manager.current_layers[layer_name].default_font,
     };
   }
 
@@ -304,15 +305,15 @@ function createStyleBoxLabel(layer_name) {
       features[i].style.fontFamily = prev_settings[i].font;
     }
 
-    current_layers[layer_name].fill_color = prev_settings_defaults.color;
-    current_layers[layer_name].default_size = prev_settings_defaults.size;
-    current_layers[layer_name].default_font = prev_settings_defaults.font;
+    data_manager.current_layers[layer_name].fill_color = prev_settings_defaults.color;
+    data_manager.current_layers[layer_name].default_size = prev_settings_defaults.size;
+    data_manager.current_layers[layer_name].default_font = prev_settings_defaults.font;
   }
 
   check_remove_existing_box('.styleBox');
 
   const selection = map.select(`#${_app.layer_to_id.get(layer_name)}`).selectAll('text'),
-    ref_layer_name = current_layers[layer_name].ref_layer_name;
+    ref_layer_name = data_manager.current_layers[layer_name].ref_layer_name;
   const rendering_params = {};
   let prev_settings_defaults = {};
   let prev_settings = [];
@@ -339,8 +340,8 @@ function createStyleBoxLabel(layer_name) {
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
     .html([
-      i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }),
-      i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
+      _tr('app_page.layer_style_popup.rendered_field', { field: data_manager.current_layers[layer_name].rendered_field }),
+      _tr('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
     ].join(''));
 
   let new_layer_name = layer_name;
@@ -351,7 +352,7 @@ function createStyleBoxLabel(layer_name) {
   popup.append('p').style('text-align', 'center')
     .insert('button')
     .attrs({ id: 'reset_labels_loc', class: 'button_st4' })
-    .text(i18next.t('app_page.layer_style_popup.reset_labels_location'))
+    .text(_tr('app_page.layer_style_popup.reset_labels_location'))
     .on('click', () => {
       selection.transition()
         .attrs((d) => {
@@ -363,60 +364,60 @@ function createStyleBoxLabel(layer_name) {
   popup.append('p').style('text-align', 'center')
     .insert('button')
     .attrs({ id: 'reset_labels_display', class: 'button_st4' })
-    .text(i18next.t('app_page.layer_style_popup.redraw_labels'))
+    .text(_tr('app_page.layer_style_popup.redraw_labels'))
     .on('click', () => {
       selection.style('display', undefined);
     });
 
   popup.insert('p')
     .styles({ 'text-align': 'center', 'font-size': '9px' })
-    .html(i18next.t('app_page.layer_style_popup.overrride_warning'));
+    .html(_tr('app_page.layer_style_popup.overrride_warning'));
   const label_sizes = popup.append('p').attr('class', 'line_elem');
   label_sizes.append('span')
-    .html(i18next.t('app_page.layer_style_popup.labels_default_size'));
+    .html(_tr('app_page.layer_style_popup.labels_default_size'));
   label_sizes.insert('span')
     .style('float', 'right')
     .html(' px');
   label_sizes.insert('input')
     .attr('type', 'number')
     .styles({ float: 'right', width: '70px' })
-    .property('value', +current_layers[layer_name].default_size.replace('px', ''))
+    .property('value', +data_manager.current_layers[layer_name].default_size.replace('px', ''))
     .on('change', function () {
       const size = `${this.value}px`;
-      current_layers[layer_name].default_size = size;
+      data_manager.current_layers[layer_name].default_size = size;
       selection.style('font-size', size);
     });
 
   const default_color = popup.insert('p').attr('class', 'line_elem');
   default_color.append('span')
-    .html(i18next.t('app_page.layer_style_popup.labels_default_color'));
+    .html(_tr('app_page.layer_style_popup.labels_default_color'));
   default_color.insert('input')
     .attr('type', 'color')
     .style('float', 'right')
-    .property('value', current_layers[layer_name].fill_color)
+    .property('value', data_manager.current_layers[layer_name].fill_color)
     .on('change', function () {
-      current_layers[layer_name].fill_color = this.value;
+      data_manager.current_layers[layer_name].fill_color = this.value;
       selection.transition().style('fill', this.value);
     });
 
   const font_section = popup.insert('p').attr('class', 'line_elem');
-  font_section.append('span').html(i18next.t('app_page.layer_style_popup.labels_default_font'));
+  font_section.append('span').html(_tr('app_page.layer_style_popup.labels_default_font'));
   const choice_font = font_section.insert('select')
     .style('float', 'right')
     .on('change', function () {
-      current_layers[layer_name].default_font = this.value;
+      data_manager.current_layers[layer_name].default_font = this.value;
       selection.transition().style('font-family', this.value);
     });
 
   available_fonts.forEach((name) => {
     choice_font.append('option').attr('value', name[1]).text(name[0]);
   });
-  choice_font.node().value = current_layers[layer_name].default_font;
+  choice_font.node().value = data_manager.current_layers[layer_name].default_font;
 }
 
 function createStyleBoxGraticule(layer_name) {
   check_remove_existing_box('.styleBox');
-  const current_params = cloneObj(current_layers.Graticule);
+  const current_params = cloneObj(data_manager.current_layers.Graticule);
   let selection = map.select('#L_Graticule > path');
   let selection_strokeW = map.select('#L_Graticule');
 
@@ -440,25 +441,25 @@ function createStyleBoxGraticule(layer_name) {
   // });
 
   const color_choice = popup.append('p').attr('class', 'line_elem');
-  color_choice.append('span').html(i18next.t('app_page.layer_style_popup.color'));
+  color_choice.append('span').html(_tr('app_page.layer_style_popup.color'));
   color_choice.append('input')
     .attr('type', 'color')
     .style('float', 'right')
     .property('value', current_params.fill_color.single)
     .on('change', function () {
       selection.style('stroke', this.value);
-      current_layers.Graticule.fill_color.single = this.value;
+      data_manager.current_layers.Graticule.fill_color.single = this.value;
     });
 
   const opacity_choice = popup.append('p').attr('class', 'line_elem');
-  opacity_choice.append('span').html(i18next.t('app_page.layer_style_popup.opacity'));
+  opacity_choice.append('span').html(_tr('app_page.layer_style_popup.opacity'));
   opacity_choice.append('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
     .property('value', current_params.opacity)
     .on('change', function () {
       selection.style('stroke-opacity', this.value);
-      current_layers.Graticule.opacity = +this.value;
+      data_manager.current_layers.Graticule.opacity = +this.value;
       popup.select('#graticule_opacity_txt').html(`${+this.value * 100}%`);
     });
   opacity_choice.append('span')
@@ -467,18 +468,18 @@ function createStyleBoxGraticule(layer_name) {
     .html(`${current_params.opacity * 100}%`);
 
   const stroke_width_choice = popup.append('p').attr('class', 'line_elem');
-  stroke_width_choice.append('span').html(i18next.t('app_page.layer_style_popup.width'));
+  stroke_width_choice.append('span').html(_tr('app_page.layer_style_popup.width'));
   stroke_width_choice.append('input')
     .attr('type', 'number')
     .styles({ width: '60px', float: 'right' })
     .property('value', current_params['stroke-width-const'])
     .on('change', function () {
       selection_strokeW.style('stroke-width', this.value);
-      current_layers.Graticule['stroke-width-const'] = +this.value;
+      data_manager.current_layers.Graticule['stroke-width-const'] = +this.value;
     });
 
   const steps_choice = popup.append('p').attr('class', 'line_elem');
-  steps_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_steps'));
+  steps_choice.append('span').html(_tr('app_page.layer_style_popup.graticule_steps'));
   steps_choice.append('input')
     .attrs({ id: 'graticule_range_steps', type: 'range', min: 0, max: 100, step: 1 })
     .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
@@ -487,14 +488,14 @@ function createStyleBoxGraticule(layer_name) {
       const next_layer = selection_strokeW.node().nextSibling;
       const step_val = +this.value;
       const dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
-      current_layers.Graticule.step = step_val;
+      data_manager.current_layers.Graticule.step = step_val;
       map.select('#L_Graticule').remove();
       map.append('g')
         .attrs({ id: 'L_Graticule', class: 'layer' })
         .append('path')
         .datum(d3.geoGraticule().step([step_val, step_val]))
         .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
-        .styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
+        .styles({ fill: 'none', stroke: data_manager.current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
       zoom_without_redraw();
       selection = map.select('#L_Graticule').selectAll('path');
       selection_strokeW = map.select('#L_Graticule');
@@ -512,14 +513,14 @@ function createStyleBoxGraticule(layer_name) {
     });
 
   const dasharray_choice = popup.append('p').attr('class', 'line_elem');
-  dasharray_choice.append('span').html(i18next.t('app_page.layer_style_popup.graticule_dasharray'));
+  dasharray_choice.append('span').html(_tr('app_page.layer_style_popup.graticule_dasharray'));
   dasharray_choice.append('input')
     .attrs({ type: 'range', min: 0, max: 50, step: 0.1, id: 'graticule_range_dasharray' })
     .styles({ 'vertical-align': 'middle', width: '58px', display: 'inline', float: 'right' })
     .property('value', current_params.dasharray)
     .on('change', function () {
       selection.style('stroke-dasharray', this.value);
-      current_layers.Graticule.dasharray = +this.value;
+      data_manager.current_layers.Graticule.dasharray = +this.value;
       popup.select('#graticule_dasharray_txt').property('value', this.value);
     });
   dasharray_choice.append('input')
@@ -554,16 +555,16 @@ function createStyleBoxGraticule(layer_name) {
         if (extent_grat[2] > 180) extent_grat[2] = 180;
         if (extent_grat[3] > 90) extent_grat[3] = 90;
         graticule = graticule.extent(extent_grat);
-        current_layers.Graticule.extent = extent_grat;
+        data_manager.current_layers.Graticule.extent = extent_grat;
       } else {
-        current_layers.Graticule.extent = undefined;
+        data_manager.current_layers.Graticule.extent = undefined;
       }
       map.append('g')
         .attrs({ id: 'L_Graticule', class: 'layer' })
         .append('path')
         .datum(graticule)
         .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
-        .styles({ fill: 'none', stroke: current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
+        .styles({ fill: 'none', stroke: data_manager.current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
       zoom_without_redraw();
       selection = map.select('#L_Graticule').selectAll('path');
       selection_strokeW = map.select('#L_Graticule');
@@ -571,7 +572,7 @@ function createStyleBoxGraticule(layer_name) {
     });
   clip_extent_section.append('label')
     .attrs({ for: 'clip_graticule' })
-    .html(i18next.t('app_page.layer_style_popup.graticule_clip'));
+    .html(_tr('app_page.layer_style_popup.graticule_clip'));
 
   make_generate_labels_graticule_section(popup);
 }
@@ -624,7 +625,7 @@ function redraw_legend(type_legend, layer_name, field) {
     } else {
       lgd.remove();
       legend_func(layer_name,
-                  current_layers[layer_name].rendered_field,
+                  data_manager.current_layers[layer_name].rendered_field,
                   lgd_title,
                   lgd_subtitle,
                   rect_fill_value,
@@ -640,19 +641,19 @@ function redraw_legend(type_legend, layer_name, field) {
 
 function createStyleBox_Line(layer_name) {
   check_remove_existing_box('.styleBox');
-  const renderer = current_layers[layer_name].renderer,
+  const renderer = data_manager.current_layers[layer_name].renderer,
     g_lyr_name = `#${_app.layer_to_id.get(layer_name)}`,
     selection = map.select(g_lyr_name).selectAll('path'),
     opacity = selection.style('fill-opacity');
 
-  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  const fill_prev = cloneObj(data_manager.current_layers[layer_name].fill_color);
   let prev_random_colors;
   let prev_col_breaks;
   let rendering_params;
 
-  if (current_layers[layer_name].colors_breaks
-      && current_layers[layer_name].colors_breaks instanceof Array) {
-    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (data_manager.current_layers[layer_name].colors_breaks
+      && data_manager.current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = data_manager.current_layers[layer_name].colors_breaks.concat([]);
   } else if (fill_prev.random) {
     prev_random_colors = [];
     selection.each(function (d) {
@@ -661,7 +662,7 @@ function createStyleBox_Line(layer_name) {
   }
 
   const border_opacity = selection.style('stroke-opacity'),
-    stroke_width = +current_layers[layer_name]['stroke-width-const'];
+    stroke_width = +data_manager.current_layers[layer_name]['stroke-width-const'];
   let stroke_prev = selection.style('stroke');
   let prev_min_display,
     prev_size,
@@ -689,16 +690,16 @@ function createStyleBox_Line(layer_name) {
         if (renderer !== undefined && rendering_params !== undefined
               && renderer !== 'Categorical' && renderer !== 'PropSymbolsTypo'
               && renderer !== 'LinksProportional') {
-          current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+          data_manager.current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
           const colors_breaks = [];
           for (let i = rendering_params.breaks.length - 1; i > 0; --i) {
             colors_breaks.push([
               [rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.breaks[i - 1],
             ]);
           }
-          current_layers[layer_name].colors_breaks = colors_breaks;
-          current_layers[layer_name].rendered_field = rendering_params.field;
-          current_layers[layer_name].options_disc = {
+          data_manager.current_layers[layer_name].colors_breaks = colors_breaks;
+          data_manager.current_layers[layer_name].rendered_field = rendering_params.field;
+          data_manager.current_layers[layer_name].options_disc = {
             schema: rendering_params.schema,
             colors: rendering_params.colors,
             no_data: rendering_params.no_data,
@@ -712,8 +713,8 @@ function createStyleBox_Line(layer_name) {
             redraw_legend('choro_horiz', layer_name, rendering_params.field);
           }
         } else if ((renderer === 'Categorical' || renderer === 'PropSymbolsTypo') && rendering_params !== undefined) {
-          current_layers[layer_name].color_map = rendering_params.color_map;
-          current_layers[layer_name].fill_color = {
+          data_manager.current_layers[layer_name].color_map = rendering_params.color_map;
+          data_manager.current_layers[layer_name].fill_color = {
             class: [].concat(rendering_params.colorsByFeature),
           };
           redraw_legend('choro', layer_name, rendering_params.field);
@@ -725,7 +726,7 @@ function createStyleBox_Line(layer_name) {
           redraw_legend('line_class', layer_name);
         } else if (renderer === 'LinksGraduated') {
           selection.each(function (d, i) {
-            current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
+            data_manager.current_layers[layer_name].linksbyId[i][2] = this.style.strokeWidth;
           });
           // Also change the legend if there is one displayed :
           redraw_legend('line_class', layer_name);
@@ -749,23 +750,23 @@ function createStyleBox_Line(layer_name) {
           .style('stroke-opacity', border_opacity);
         const zoom_scale = +d3.zoomTransform(map.node()).k;
         map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
-        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
 
-        if (current_layers[layer_name].renderer === 'LinksGraduated' && prev_min_display !== undefined) {
-          current_layers[layer_name].min_display = prev_min_display;
-          current_layers[layer_name].breaks = prev_breaks;
+        if (data_manager.current_layers[layer_name].renderer === 'LinksGraduated' && prev_min_display !== undefined) {
+          data_manager.current_layers[layer_name].min_display = prev_min_display;
+          data_manager.current_layers[layer_name].breaks = prev_breaks;
           selection.style('fill-opacity', 0)
             .style('stroke', fill_prev.single)
-            .style('display', d => ((+d.properties[current_layers[layer_name].rendered_field] > prev_min_display) ? null : 'none'))
+            .style('display', d => ((+d.properties[data_manager.current_layers[layer_name].rendered_field] > prev_min_display) ? null : 'none'))
             .style('stroke-opacity', border_opacity)
-            .style('stroke-width', (d, i) => current_layers[layer_name].linksbyId[i][2]);
-        } else if (current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display !== undefined) {
-          current_layers[layer_name].min_display = prev_min_display;
-          current_layers[layer_name].size = prev_size;
-          current_layers[layer_name].breaks = prev_breaks;
+            .style('stroke-width', (d, i) => data_manager.current_layers[layer_name].linksbyId[i][2]);
+        } else if (data_manager.current_layers[layer_name].renderer === 'DiscLayer' && prev_min_display !== undefined) {
+          data_manager.current_layers[layer_name].min_display = prev_min_display;
+          data_manager.current_layers[layer_name].size = prev_size;
+          data_manager.current_layers[layer_name].breaks = prev_breaks;
           const lim = prev_min_display !== 0
-            ? prev_min_display * current_layers[layer_name].n_features
+            ? prev_min_display * data_manager.current_layers[layer_name].n_features
             : -1;
           selection.style('fill-opacity', 0)
            .style('stroke', fill_prev.single)
@@ -780,14 +781,14 @@ function createStyleBox_Line(layer_name) {
             selection.style('stroke-opacity', border_opacity)
              .style('stroke', (d,i) => prev_random_colors[i] || Colors.names[Colors.random()]);
           } else if (fill_meth === 'class' && renderer === 'LinksGraduated') {
-            selection.style('stroke-opacity', (d, i) => current_layers[layer_name].linksbyId[i][0])
+            selection.style('stroke-opacity', (d, i) => data_manager.current_layers[layer_name].linksbyId[i][0])
              .style('stroke', stroke_prev);
           }
         }
-        if (current_layers[layer_name].colors_breaks) {
-          current_layers[layer_name].colors_breaks = prev_col_breaks;
+        if (data_manager.current_layers[layer_name].colors_breaks) {
+          data_manager.current_layers[layer_name].colors_breaks = prev_col_breaks;
         }
-        current_layers[layer_name].fill_color = fill_prev;
+        data_manager.current_layers[layer_name].fill_color = fill_prev;
         zoom_without_redraw();
       }
     });
@@ -805,20 +806,20 @@ function createStyleBox_Line(layer_name) {
 
   if (renderer === 'Categorical' || renderer === 'PropSymbolsTypo') {
     const color_field = renderer === 'Categorical'
-      ? current_layers[layer_name].rendered_field
-      : current_layers[layer_name].rendered_field2;
+      ? data_manager.current_layers[layer_name].rendered_field
+      : data_manager.current_layers[layer_name].rendered_field2;
 
     popup.insert('p')
       .styles({ margin: 'auto', 'text-align': 'center' })
       .append('button')
       .attr('class', 'button_disc')
       .styles({ 'font-size': '0.8em', 'text-align': 'center' })
-      .html(i18next.t('app_page.layer_style_popup.choose_colors'))
+      .html(_tr('app_page.layer_style_popup.choose_colors'))
       .on('click', () => {
         const [cats, _] = prepare_categories_array(
-          layer_name, color_field, current_layers[layer_name].color_map);
+          layer_name, color_field, data_manager.current_layers[layer_name].color_map);
         container.modal.hide();
-        display_categorical_box(result_data[layer_name], layer_name, color_field, cats)
+        display_categorical_box(data_manager.result_data[layer_name], layer_name, color_field, cats)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {
@@ -840,14 +841,14 @@ function createStyleBox_Line(layer_name) {
       .styles({ margin: 'auto', 'text-align': 'center' })
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
         const _opts = rendering_params
           ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
-          : current_layers[layer_name].options_disc;
+          : data_manager.current_layers[layer_name].options_disc;
         display_discretization(layer_name,
-                               current_layers[layer_name].rendered_field,
+                               data_manager.current_layers[layer_name].rendered_field,
                                _opts.breaks.length - 1,
                                _opts)
           .then((confirmed) => {
@@ -862,7 +863,7 @@ function createStyleBox_Line(layer_name) {
                 schema: confirmed[5],
                 no_data: confirmed[6],
                 // renderer:"Choropleth",
-                field: current_layers[layer_name].rendered_field,
+                field: data_manager.current_layers[layer_name].rendered_field,
                 extra_options: confirmed[7],
               };
               selection.transition()
@@ -873,28 +874,28 @@ function createStyleBox_Line(layer_name) {
   } else {
     const c_section = popup.append('p').attr('class', 'line_elem');
     c_section.insert('span')
-      .html(i18next.t('app_page.layer_style_popup.color'));
+      .html(_tr('app_page.layer_style_popup.color'));
     c_section.insert('input')
       .attr('type', 'color')
       .style('float', 'right')
       .property('value', stroke_prev)
       .on('change', function () {
         selection.style('stroke', this.value);
-        current_layers[layer_name].fill_color = { single: this.value };
-        // current_layers[layer_name].fill_color.single = this.value;
+        data_manager.current_layers[layer_name].fill_color = { single: this.value };
+        // data_manager.current_layers[layer_name].fill_color.single = this.value;
       });
   }
 
   if (renderer === 'LinksGraduated') {
-    prev_min_display = current_layers[layer_name].min_display || 0;
-    prev_breaks = current_layers[layer_name].breaks.slice();
-    const fij_field = current_layers[layer_name].rendered_field;
+    prev_min_display = data_manager.current_layers[layer_name].min_display || 0;
+    prev_breaks = data_manager.current_layers[layer_name].breaks.slice();
+    const fij_field = data_manager.current_layers[layer_name].rendered_field;
     let max_val = 0;
     selection.each((d) => {
       if (+d.properties[fij_field] > max_val) max_val = +d.properties[fij_field];
     });
     const threshold_section = popup.append('p').attr('class', 'line_elem');
-    threshold_section.append('span').html(i18next.t('app_page.layer_style_popup.display_flow_larger'));
+    threshold_section.append('span').html(_tr('app_page.layer_style_popup.display_flow_larger'));
     // The legend will be updated in order to start on the minimum value displayed instead of
     //   using the minimum value of the serie (skipping unused class if necessary)
     threshold_section.insert('input')
@@ -905,7 +906,7 @@ function createStyleBox_Line(layer_name) {
         const val = +this.value;
         popup.select('#larger_than').html(['<i> ', val, ' </i>'].join(''));
         selection.style('display', d => ((+d.properties[fij_field] > val) ? null : 'none'));
-        current_layers[layer_name].min_display = val;
+        data_manager.current_layers[layer_name].min_display = val;
       });
     threshold_section.insert('label')
       .attr('id', 'larger_than')
@@ -915,43 +916,43 @@ function createStyleBox_Line(layer_name) {
       .style('text-align', 'center')
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.modify_size_class'))
+      .html(_tr('app_page.layer_style_popup.modify_size_class'))
       .on('click', () => {
         container.modal.hide();
         display_discretization_links_discont(layer_name,
-                                             current_layers[layer_name].rendered_field,
-                                             current_layers[layer_name].breaks.length,
+                                             data_manager.current_layers[layer_name].rendered_field,
+                                             data_manager.current_layers[layer_name].breaks.length,
                                              'user_defined')
           .then((result) => {
             container.modal.show();
             if (result) {
               const serie = result[0],
                 sizes = result[1].map(ft => ft[1]),
-                links_byId = current_layers[layer_name].linksbyId;
+                links_byId = data_manager.current_layers[layer_name].linksbyId;
               serie.setClassManually(result[2]);
-              current_layers[layer_name].breaks = result[1];
+              data_manager.current_layers[layer_name].breaks = result[1];
               selection.style('fill-opacity', 0)
                 .style('stroke-width', (d, i) => sizes[serie.getClass(+links_byId[i][1])]);
             }
           });
       });
   } else if (renderer === 'DiscLayer') {
-    prev_min_display = +current_layers[layer_name].min_display || 0;
-    prev_size = current_layers[layer_name].size.slice();
-    prev_breaks = current_layers[layer_name].breaks.slice();
-    const max_val = Math.max.apply(null, result_data[layer_name].map(i => i.disc_value));
+    prev_min_display = +data_manager.current_layers[layer_name].min_display || 0;
+    prev_size = data_manager.current_layers[layer_name].size.slice();
+    prev_breaks = data_manager.current_layers[layer_name].breaks.slice();
+    const max_val = Math.max.apply(null, data_manager.result_data[layer_name].map(i => i.disc_value));
     const disc_part = popup.append('p').attr('class', 'line_elem');
-    disc_part.append('span').html(i18next.t('app_page.layer_style_popup.discont_threshold'));
+    disc_part.append('span').html(_tr('app_page.layer_style_popup.discont_threshold'));
     disc_part.insert('input')
       .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
       .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
       .property('value', prev_min_display)
       .on('change', function () {
         const val = +this.value;
-        const lim = val !== 0 ? val * current_layers[layer_name].n_features : -1;
+        const lim = val !== 0 ? val * data_manager.current_layers[layer_name].n_features : -1;
         popup.select('#larger_than').html(['<i> ', val * 100, ' % </i>'].join(''));
         selection.style('display', (d, i) => (i <= lim ? null : 'none'));
-        current_layers[layer_name].min_display = val;
+        data_manager.current_layers[layer_name].min_display = val;
       });
     disc_part.insert('label')
       .attr('id', 'larger_than')
@@ -961,12 +962,12 @@ function createStyleBox_Line(layer_name) {
       .style('text-align', 'center')
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
         display_discretization_links_discont(layer_name,
                                              'disc_value',
-                                             current_layers[layer_name].breaks.length,
+                                             data_manager.current_layers[layer_name].breaks.length,
                                              'user_defined')
           .then((result) => {
             container.modal.show();
@@ -975,8 +976,8 @@ function createStyleBox_Line(layer_name) {
                 sizes = result[1].map(ft => ft[1]);
 
               serie.setClassManually(result[2]);
-              current_layers[layer_name].breaks = result[1];
-              current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+              data_manager.current_layers[layer_name].breaks = result[1];
+              data_manager.current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
               selection.style('fill-opacity', 0)
                 .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
             }
@@ -986,7 +987,7 @@ function createStyleBox_Line(layer_name) {
 
   const opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.opacity'));
+    .html(_tr('app_page.layer_style_popup.opacity'));
   opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1004,7 +1005,7 @@ function createStyleBox_Line(layer_name) {
   if (!renderer || (!renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer')) {
     const width_section = popup.append('p');
     width_section.append('span')
-      .html(i18next.t('app_page.layer_style_popup.width'));
+      .html(_tr('app_page.layer_style_popup.width'));
     width_section.insert('input')
       .attrs({ type: 'number', min: 0, step: 0.1 })
       .styles({ width: '60px', float: 'right' })
@@ -1013,22 +1014,22 @@ function createStyleBox_Line(layer_name) {
         const val = +this.value;
         const zoom_scale = +d3.zoomTransform(map.node()).k;
         map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
-        current_layers[layer_name]['stroke-width-const'] = val;
+        data_manager.current_layers[layer_name]['stroke-width-const'] = val;
       });
   } else if (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional') {
-    const field_used = current_layers[layer_name].rendered_field;
-    const d_values = result_data[layer_name].map(f => +f[field_used]);
+    const field_used = data_manager.current_layers[layer_name].rendered_field;
+    const d_values = data_manager.result_data[layer_name].map(f => +f[field_used]);
     const prop_val_content = popup.append('p');
-    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: current_layers[layer_name].rendered_field }));
-    prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+    prop_val_content.append('span').html(_tr('app_page.layer_style_popup.field_symbol_size', { field: data_manager.current_layers[layer_name].rendered_field }));
+    prop_val_content.append('span').html(_tr('app_page.layer_style_popup.symbol_fixed_size'));
     prop_val_content.insert('input')
       .styles({ width: '60px', float: 'right' })
       .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' })
-      .property('value', current_layers[layer_name].size[1])
+      .property('value', data_manager.current_layers[layer_name].size[1])
       .on('change', function () {
         const f_size = +this.value;
-        const prop_values = prop_sizer3_e(d_values, current_layers[layer_name].size[0], f_size, 'line');
-        current_layers[layer_name].size[1] = f_size;
+        const prop_values = prop_sizer3_e(d_values, data_manager.current_layers[layer_name].size[0], f_size, 'line');
+        data_manager.current_layers[layer_name].size[1] = f_size;
         redraw_prop_val(prop_values);
       });
     prop_val_content.append('span')
@@ -1036,16 +1037,16 @@ function createStyleBox_Line(layer_name) {
         .html('(px)');
 
     const prop_val_content2 = popup.append('p').attr('class', 'line_elem');
-    prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+    prop_val_content2.append('span').html(_tr('app_page.layer_style_popup.on_value'));
     prop_val_content2.insert('input')
       .styles({ width: '100px', float: 'right' })
       .attrs({ type: 'number', min: 0.1, step: 0.1 })
-      .property('value', +current_layers[layer_name].size[0])
+      .property('value', +data_manager.current_layers[layer_name].size[0])
       .on('change', function () {
         const f_val = +this.value;
-        const prop_values = prop_sizer3_e(d_values, f_val, current_layers[layer_name].size[1], 'line');
+        const prop_values = prop_sizer3_e(d_values, f_val, data_manager.current_layers[layer_name].size[1], 'line');
         redraw_prop_val(prop_values);
-        current_layers[layer_name].size[0] = f_val;
+        data_manager.current_layers[layer_name].size[0] = f_val;
       });
   }
 
@@ -1054,19 +1055,19 @@ function createStyleBox_Line(layer_name) {
 
 function createStyleBox(layer_name) {
   check_remove_existing_box('.styleBox');
-  const type = current_layers[layer_name].type,
-    isSphere = current_layers[layer_name].sphere === true,
-    renderer = current_layers[layer_name].renderer,
+  const type = data_manager.current_layers[layer_name].type,
+    isSphere = data_manager.current_layers[layer_name].sphere === true,
+    renderer = data_manager.current_layers[layer_name].renderer,
     g_lyr_name = `#${_app.layer_to_id.get(layer_name)}`,
     selection = map.select(g_lyr_name).selectAll('path'),
     opacity = selection.style('fill-opacity');
-  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
+  const fill_prev = cloneObj(data_manager.current_layers[layer_name].fill_color);
   let prev_col_breaks;
   let rendering_params;
   let prev_random_colors;
-  if (current_layers[layer_name].colors_breaks
-      && current_layers[layer_name].colors_breaks instanceof Array) {
-    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (data_manager.current_layers[layer_name].colors_breaks
+      && data_manager.current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = data_manager.current_layers[layer_name].colors_breaks.concat([]);
   } else if (fill_prev.random) {
     prev_random_colors = [];
     selection.each(function (d) {
@@ -1074,7 +1075,7 @@ function createStyleBox(layer_name) {
     });
   }
   const border_opacity = selection.style('stroke-opacity'),
-    stroke_width = +current_layers[layer_name]['stroke-width-const'];
+    stroke_width = +data_manager.current_layers[layer_name]['stroke-width-const'];
   const table = [];
   let stroke_prev = selection.style('stroke');
   let prev_min_display,
@@ -1089,27 +1090,27 @@ function createStyleBox(layer_name) {
   Array.prototype.forEach.call(svg_map.querySelector(g_lyr_name).querySelectorAll('path'), (d) => {
     table.push(d.__data__.properties);
   });
-  const fields_layer = !isSphere ? current_layers[layer_name].fields_type || type_col2(table) : [];
+  const fields_layer = !isSphere ? data_manager.current_layers[layer_name].fields_type || type_col2(table) : [];
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
     .then((confirmed) => {
       if (confirmed) {
         // Update the object holding the properties of the layer if Yes is clicked
-        if (type === 'Point' && current_layers[layer_name].pointRadius) {
-          current_layers[layer_name].pointRadius = +current_pt_size;
+        if (type === 'Point' && data_manager.current_layers[layer_name].pointRadius) {
+          data_manager.current_layers[layer_name].pointRadius = +current_pt_size;
         }
         if (renderer !== undefined
              && rendering_params !== undefined && renderer !== 'Categorical') {
-          current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
+          data_manager.current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
           const colors_breaks = [];
           for (let i = rendering_params.breaks.length - 1; i > 0; --i) {
             colors_breaks.push([
               [rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.colors[i - 1],
             ]);
           }
-          current_layers[layer_name].colors_breaks = colors_breaks;
-          current_layers[layer_name].rendered_field = rendering_params.field;
-          current_layers[layer_name].options_disc = {
+          data_manager.current_layers[layer_name].colors_breaks = colors_breaks;
+          data_manager.current_layers[layer_name].rendered_field = rendering_params.field;
+          data_manager.current_layers[layer_name].options_disc = {
             schema: rendering_params.schema,
             colors: rendering_params.colors,
             no_data: rendering_params.no_data,
@@ -1118,17 +1119,17 @@ function createStyleBox(layer_name) {
             extra_options: rendering_params.extra_options,
           };
         } else if (renderer === 'Categorical' && rendering_params !== undefined) {
-          current_layers[layer_name].color_map = rendering_params.color_map;
-          current_layers[layer_name].fill_color = {
+          data_manager.current_layers[layer_name].color_map = rendering_params.color_map;
+          data_manager.current_layers[layer_name].fill_color = {
             class: [].concat(rendering_params.colorsByFeature),
           };
         }
 
         if ((rendering_params !== undefined && rendering_params.field !== undefined)) {
           if (document.querySelector(`.legend.legend_feature.lgdf_${_app.layer_to_id.get(layer_name)}`).id === 'legend_root') {
-            redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+            redraw_legend('choro', layer_name, data_manager.current_layers[layer_name].rendered_field);
           } else {
-            redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+            redraw_legend('choro_horiz', layer_name, data_manager.current_layers[layer_name].rendered_field);
           }
         }
         // Change the layer name if requested :
@@ -1142,10 +1143,10 @@ function createStyleBox(layer_name) {
           .style('stroke-opacity', border_opacity);
         const zoom_scale = +d3.zoomTransform(map.node()).k;
         map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
-        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
-        if (type === 'Point' && current_layers[layer_name].pointRadius) {
-          selection.attr('d', path.pointRadius(+current_layers[layer_name].pointRadius));
+        if (type === 'Point' && data_manager.current_layers[layer_name].pointRadius) {
+          selection.attr('d', path.pointRadius(+data_manager.current_layers[layer_name].pointRadius));
         } else {
           if (fill_meth === 'single') {
             selection.style('fill', fill_prev.single)
@@ -1162,10 +1163,10 @@ function createStyleBox(layer_name) {
             fill_categorical(layer_name, fill_prev.categorical[0], 'path', fill_prev.categorical[1]);
           }
         }
-        if (current_layers[layer_name].colors_breaks) {
-          current_layers[layer_name].colors_breaks = prev_col_breaks;
+        if (data_manager.current_layers[layer_name].colors_breaks) {
+          data_manager.current_layers[layer_name].colors_breaks = prev_col_breaks;
         }
-        current_layers[layer_name].fill_color = fill_prev;
+        data_manager.current_layers[layer_name].fill_color = fill_prev;
         zoom_without_redraw();
       }
     });
@@ -1185,9 +1186,9 @@ function createStyleBox(layer_name) {
   }
 
   if (type === 'Point') {
-    current_pt_size = current_layers[layer_name].pointRadius;
+    current_pt_size = data_manager.current_layers[layer_name].pointRadius;
     const pt_size = popup.append('p').attr('class', 'line_elem');
-    pt_size.append('span').html(i18next.t('app_page.layer_style_popup.point_radius'));
+    pt_size.append('span').html(_tr('app_page.layer_style_popup.point_radius'));
     pt_size.append('input')
       .attrs({ type: 'range', min: 0, max: 80, id: 'point_radius_size' })
       .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
@@ -1215,13 +1216,13 @@ function createStyleBox(layer_name) {
       });
   }
 
-  if (current_layers[layer_name].colors_breaks === undefined && renderer !== 'Categorical') {
-    if (current_layers[layer_name].targeted || current_layers[layer_name].is_result) {
+  if (data_manager.current_layers[layer_name].colors_breaks === undefined && renderer !== 'Categorical') {
+    if (data_manager.current_layers[layer_name].targeted || data_manager.current_layers[layer_name].is_result) {
       const fields = getFieldsType('category', null, fields_layer);
-      const fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
-      [[i18next.t('app_page.layer_style_popup.single_color'), 'single'],
-       [i18next.t('app_page.layer_style_popup.categorical_color'), 'categorical'],
-       [i18next.t('app_page.layer_style_popup.random_color'), 'random']].forEach((d, i) => {
+      const fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
+      [[_tr('app_page.layer_style_popup.single_color'), 'single'],
+       [_tr('app_page.layer_style_popup.categorical_color'), 'categorical'],
+       [_tr('app_page.layer_style_popup.random_color'), 'random']].forEach((d, i) => {
          fill_method.append('option').text(d[0]).attr('value', d[1]);
        });
       popup.append('div').attrs({ id: 'fill_color_section' });
@@ -1242,18 +1243,18 @@ function createStyleBox(layer_name) {
       make_single_color_menu(layer_name, fill_prev);
     }
   } else if (renderer === 'Categorical') {
-    const rendered_field = current_layers[layer_name].rendered_field;
+    const rendered_field = data_manager.current_layers[layer_name].rendered_field;
 
     popup.insert('p')
       .styles({ margin: 'auto', 'text-align': 'center' })
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_colors'))
+      .html(_tr('app_page.layer_style_popup.choose_colors'))
       .on('click', () => {
         container.modal.hide();
         const [cats, _] = prepare_categories_array(
-          layer_name, rendered_field, current_layers[layer_name].color_map);
-        display_categorical_box(result_data[layer_name], layer_name, rendered_field, cats)
+          layer_name, rendered_field, data_manager.current_layers[layer_name].color_map);
+        display_categorical_box(data_manager.result_data[layer_name], layer_name, rendered_field, cats)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {
@@ -1275,14 +1276,14 @@ function createStyleBox(layer_name) {
       .styles({ margin: 'auto', 'text-align': 'center' })
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
         const _opts = rendering_params
           ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
-          : current_layers[layer_name].options_disc;
+          : data_manager.current_layers[layer_name].options_disc;
         display_discretization(layer_name,
-                               current_layers[layer_name].rendered_field,
+                               data_manager.current_layers[layer_name].rendered_field,
                                _opts.breaks.length - 1,
                                _opts)
           .then((confirmed) => {
@@ -1297,7 +1298,7 @@ function createStyleBox(layer_name) {
                 schema: confirmed[5],
                 no_data: confirmed[6],
                 //  renderer:"Choropleth",
-                field: current_layers[layer_name].rendered_field,
+                field: data_manager.current_layers[layer_name].rendered_field,
                 extra_options: confirmed[7],
               };
               //  let opacity_val = fill_opacity_section ? +fill_opacity_section.node().value : 0.9
@@ -1307,16 +1308,16 @@ function createStyleBox(layer_name) {
           });
       });
   } else if (renderer === 'Gridded') {
-    const field_to_discretize = current_layers[layer_name].rendered_field;
+    const field_to_discretize = data_manager.current_layers[layer_name].rendered_field;
     popup.append('p').style('margin', 'auto').style('text-align', 'center')
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
         const _opts = rendering_params
           ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
-          : current_layers[layer_name].options_disc;
+          : data_manager.current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                field_to_discretize,
                                _opts.breaks.length - 1,
@@ -1346,7 +1347,7 @@ function createStyleBox(layer_name) {
 
   const fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+    .html(_tr('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
@@ -1363,7 +1364,7 @@ function createStyleBox(layer_name) {
 
   const c_section = popup.append('p').attr('class', 'line_elem');
   c_section.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.border_color'));
+    .html(_tr('app_page.layer_style_popup.border_color'));
   c_section.insert('input')
     .attr('type', 'color')
     .style('float', 'right')
@@ -1374,7 +1375,7 @@ function createStyleBox(layer_name) {
 
   const opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.border_opacity'));
+    .html(_tr('app_page.layer_style_popup.border_opacity'));
   opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1391,7 +1392,7 @@ function createStyleBox(layer_name) {
 
   const width_section = popup.append('p');
   width_section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.border_width'));
+    .html(_tr('app_page.layer_style_popup.border_width'));
   width_section.insert('input')
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
@@ -1400,7 +1401,7 @@ function createStyleBox(layer_name) {
       const val = +this.value;
       const zoom_scale = +d3.zoomTransform(map.node()).k;
       map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
-      current_layers[layer_name]['stroke-width-const'] = val;
+      data_manager.current_layers[layer_name]['stroke-width-const'] = val;
     });
 
   const shadow_section = popup.append('p');
@@ -1412,7 +1413,7 @@ function createStyleBox(layer_name) {
       id: 'checkbox_shadow_layer' });
   shadow_section.insert('label')
     .attr('for', 'checkbox_shadow_layer')
-    .html(i18next.t('app_page.layer_style_popup.layer_shadow'));
+    .html(_tr('app_page.layer_style_popup.layer_shadow'));
   chkbx.on('change', function () {
     if (this.checked) {
       createDropShadow(_app.layer_to_id.get(layer_name));
@@ -1431,8 +1432,8 @@ function createStyleBoxStewart(layer_name) {
     selection = map.select(g_lyr_name).selectAll('path'),
     opacity = selection.style('fill-opacity');
 
-  const nb_ft = current_layers[layer_name].n_features;
-  const prev_palette = cloneObj(current_layers[layer_name].color_palette);
+  const nb_ft = data_manager.current_layers[layer_name].n_features;
+  const prev_palette = cloneObj(data_manager.current_layers[layer_name].color_palette);
 
   const recolor_stewart = function (coloramp_name, reversed) {
     const new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
@@ -1441,17 +1442,17 @@ function createStyleBoxStewart(layer_name) {
       rendering_params.breaks[i][1] = new_coloramp[i];
     }
     selection.transition().style('fill', (d, i) => new_coloramp[i]);
-    current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
+    data_manager.current_layers[layer_name].color_palette = { name: coloramp_name, reversed: reversed };
   };
-  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
-  const rendering_params = { breaks: [].concat(current_layers[layer_name].colors_breaks) };
+  const fill_prev = cloneObj(data_manager.current_layers[layer_name].fill_color);
+  const rendering_params = { breaks: [].concat(data_manager.current_layers[layer_name].colors_breaks) };
   let prev_col_breaks;
-  if (current_layers[layer_name].colors_breaks
-      && current_layers[layer_name].colors_breaks instanceof Array) {
-    prev_col_breaks = current_layers[layer_name].colors_breaks.concat([]);
+  if (data_manager.current_layers[layer_name].colors_breaks
+      && data_manager.current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = data_manager.current_layers[layer_name].colors_breaks.concat([]);
   }
   const border_opacity = selection.style('stroke-opacity'),
-    stroke_width = +current_layers[layer_name]['stroke-width-const'];
+    stroke_width = +data_manager.current_layers[layer_name]['stroke-width-const'];
   let stroke_prev = selection.style('stroke');
 
   if (stroke_prev.startsWith('rgb')) {
@@ -1461,13 +1462,13 @@ function createStyleBoxStewart(layer_name) {
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
     .then((confirmed) => {
       if (confirmed) {
-        current_layers[layer_name].colors_breaks = rendering_params.breaks;
-        current_layers[layer_name].fill_color.class = rendering_params.breaks.map(obj => obj[1]);
+        data_manager.current_layers[layer_name].colors_breaks = rendering_params.breaks;
+        data_manager.current_layers[layer_name].fill_color.class = rendering_params.breaks.map(obj => obj[1]);
         // Redraw the legend if necessary:
         if (document.querySelector(`.legend.legend_feature.lgdf_${_app.layer_to_id.get(layer_name)}`).id === 'legend_root') {
-          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+          redraw_legend('choro', layer_name, data_manager.current_layers[layer_name].rendered_field);
         } else {
-          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+          redraw_legend('choro_horiz', layer_name, data_manager.current_layers[layer_name].rendered_field);
         }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
@@ -1480,16 +1481,16 @@ function createStyleBoxStewart(layer_name) {
           .style('stroke-opacity', border_opacity);
         const zoom_scale = +d3.zoomTransform(map.node()).k;
         map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
-        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
         recolor_stewart(prev_palette.name, prev_palette.reversed);
         if (document.querySelector(`.legend.legend_feature.lgdf_${_app.layer_to_id.get(layer_name)}`).id === 'legend_root') {
-          redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+          redraw_legend('choro', layer_name, data_manager.current_layers[layer_name].rendered_field);
         } else {
-          redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+          redraw_legend('choro_horiz', layer_name, data_manager.current_layers[layer_name].rendered_field);
         }
-        current_layers[layer_name].colors_breaks = prev_col_breaks;
-        current_layers[layer_name].fill_color = fill_prev;
+        data_manager.current_layers[layer_name].colors_breaks = prev_col_breaks;
+        data_manager.current_layers[layer_name].fill_color = fill_prev;
         zoom_without_redraw();
       }
     });
@@ -1507,7 +1508,7 @@ function createStyleBoxStewart(layer_name) {
   });
 
   const color_palette_section = popup.insert('p').attr('class', 'line_elem');
-  color_palette_section.append('span').html(i18next.t('app_page.layer_style_popup.color_palette'));
+  color_palette_section.append('span').html(_tr('app_page.layer_style_popup.color_palette'));
   const seq_color_select = color_palette_section.insert('select')
     .attr('id', 'coloramp_params')
     .style('float', 'right')
@@ -1529,7 +1530,7 @@ function createStyleBoxStewart(layer_name) {
     .styles({ 'text-align': 'center', margin: '0 !important' })
     .insert('button')
     .attrs({ class: 'button_st3', id: 'reverse_colramp' })
-    .html(i18next.t('app_page.layer_style_popup.reverse_palette'))
+    .html(_tr('app_page.layer_style_popup.reverse_palette'))
     .on('click', () => {
       const pal_name = document.getElementById('coloramp_params').value;
       recolor_stewart(pal_name, true);
@@ -1537,7 +1538,7 @@ function createStyleBoxStewart(layer_name) {
 
   const fill_opacity_section = popup.append('p').attr('class', 'line_elem');
   fill_opacity_section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+    .html(_tr('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
@@ -1554,7 +1555,7 @@ function createStyleBoxStewart(layer_name) {
 
   const c_section = popup.append('p').attr('class', 'line_elem');
   c_section.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.border_color'));
+    .html(_tr('app_page.layer_style_popup.border_color'));
   c_section.insert('input')
     .attr('type', 'color')
     .style('float', 'right')
@@ -1565,7 +1566,7 @@ function createStyleBoxStewart(layer_name) {
 
   const opacity_section = popup.append('p').attr('class', 'line_elem');
   opacity_section.insert('span')
-    .html(i18next.t('app_page.layer_style_popup.border_opacity'));
+    .html(_tr('app_page.layer_style_popup.border_opacity'));
   opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1582,7 +1583,7 @@ function createStyleBoxStewart(layer_name) {
 
   const width_section = popup.append('p');
   width_section.append('span')
-    .html(i18next.t('app_page.layer_style_popup.border_width'));
+    .html(_tr('app_page.layer_style_popup.border_width'));
   width_section.insert('input')
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
@@ -1591,7 +1592,7 @@ function createStyleBoxStewart(layer_name) {
       const val = +this.value;
       const zoom_scale = +d3.zoomTransform(map.node()).k;
       map.select(g_lyr_name).style('stroke-width', `${val / zoom_scale}px`);
-      current_layers[layer_name]['stroke-width-const'] = val;
+      data_manager.current_layers[layer_name]['stroke-width-const'] = val;
     });
 
   const shadow_section = popup.append('p');
@@ -1604,7 +1605,7 @@ function createStyleBoxStewart(layer_name) {
     });
   shadow_section.insert('label')
     .attr('for', 'checkbox_shadow_layer')
-    .html(i18next.t('app_page.layer_style_popup.layer_shadow'));
+    .html(_tr('app_page.layer_style_popup.layer_shadow'));
   chkbx.on('change', function () {
     if (this.checked) {
       createDropShadow(_app.layer_to_id.get(layer_name));
@@ -1623,7 +1624,7 @@ function make_generate_labels_graticule_section(parent_node) {
   labels_section.append('span')
     .attr('id', 'generate_labels')
     .styles({ cursor: 'pointer', 'margin-top': '15px' })
-    .html(i18next.t('app_page.layer_style_popup.generate_labels'))
+    .html(_tr('app_page.layer_style_popup.generate_labels'))
     .on('mouseover', function () {
       this.style.fontWeight = 'bold';
     })
@@ -1664,7 +1665,7 @@ function make_generate_labels_section(parent_node, layer_name) {
     labels_section.append('span')
       .attr('id', 'generate_labels')
       .styles({ cursor: 'pointer', 'margin-top': '15px' })
-      .html(i18next.t('app_page.layer_style_popup.generate_labels'))
+      .html(_tr('app_page.layer_style_popup.generate_labels'))
       .on('mouseover', function () {
         this.style.fontWeight = 'bold';
       })
@@ -1675,9 +1676,9 @@ function make_generate_labels_section(parent_node, layer_name) {
         swal({
           title: '',
           html: `<div id="content_label_box">
-<p style="margin: 2px 0 2px 0;">${i18next.t('app_page.layer_style_popup.field_label')}</p>
+<p style="margin: 2px 0 2px 0;">${_tr('app_page.layer_style_popup.field_label')}</p>
 <select id="label_box_field">
-<option value="___">${i18next.t('app_page.common.field')}</option>
+<option value="___">${_tr('app_page.common.field')}</option>
 </select>
 <div id="label_box_filter_section" style="margin: 10px 0 10px 0;font-size:0.9em;"></div>
 </div>`,
@@ -1688,7 +1689,7 @@ function make_generate_labels_section(parent_node, layer_name) {
           allowEscapeKey: false,
           allowOutsideClick: false,
           confirmButtonColor: '#DD6B55',
-          confirmButtonText: i18next.t('app_page.common.confirm'),
+          confirmButtonText: _tr('app_page.common.confirm'),
           inputOptions: input_fields,
           onOpen: () => {
             const sel = d3.select('#label_box_field')
@@ -1706,7 +1707,7 @@ function make_generate_labels_section(parent_node, layer_name) {
                 });
               section_filter.append('label')
                 .attr('for', 'label_box_filter_chk')
-                .html(i18next.t('app_page.layer_style_popup.filter_label'));
+                .html(_tr('app_page.layer_style_popup.filter_label'));
               const subsection_filter_label = section_filter.append('div').style('display', 'none');
               const sel2 = subsection_filter_label.append('select').attr('id', 'label_box_filter_field');
               fields_num.forEach(f_name => { sel2.append('option').property('value', f_name).text(f_name); });
@@ -1726,7 +1727,7 @@ function make_generate_labels_section(parent_node, layer_name) {
                 if (to_filter) {
                   const filter_value = document.getElementById('label_box_filter_value').value;
                   if (!filter_value || isNaN(filter_value)) {
-                    reject(i18next.t('app_page.common.incorrect_value'));
+                    reject(_tr('app_page.common.incorrect_value'));
                     return;
                   }
                   filter_options = {
@@ -1737,7 +1738,7 @@ function make_generate_labels_section(parent_node, layer_name) {
                 }
               }
               if (_fields.indexOf(selected_field) < 0) {
-                reject(i18next.t('app_page.common.no_value'));
+                reject(_tr('app_page.common.no_value'));
               } else {
                 resolve();
                 render_label(layer_name, {
@@ -1782,16 +1783,16 @@ function createStyleBoxWaffle(layer_name) {
   const floor = Math.floor;
   const layer_id = _app.layer_to_id.get(layer_name),
     g_lyr_name = `#${layer_id}`,
-    ref_layer_name = current_layers[layer_name].ref_layer_name,
-    symbol = current_layers[layer_name].symbol,
-    fields = current_layers[layer_name].rendered_field,
+    ref_layer_name = data_manager.current_layers[layer_name].ref_layer_name,
+    symbol = data_manager.current_layers[layer_name].symbol,
+    fields = data_manager.current_layers[layer_name].rendered_field,
     selection = map.select(g_lyr_name);
 
   const previous_params = {
     fill_opacity: selection.selectAll(symbol).style('fill-opacity'),
-    ref_colors: [].concat(current_layers[layer_name].fill_color),
-    size: current_layers[layer_name].size,
-    nCol: current_layers[layer_name].nCol,
+    ref_colors: [].concat(data_manager.current_layers[layer_name].fill_color),
+    size: data_manager.current_layers[layer_name].size,
+    nCol: data_manager.current_layers[layer_name].nCol,
   };
 
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
@@ -1803,8 +1804,8 @@ function createStyleBoxWaffle(layer_name) {
           change_layer_name(layer_name, check_layer_name(new_layer_name.trim()));
         }
       } else {
-        current_layers[layer_name].fill_color = previous_params.ref_colors;
-        current_layers[layer_name].size = previous_params.size;
+        data_manager.current_layers[layer_name].fill_color = previous_params.ref_colors;
+        data_manager.current_layers[layer_name].size = previous_params.size;
         selection.selectAll(symbol).style('fill-opacity', previous_params.fill_opacity);
       }
       zoom_without_redraw();
@@ -1819,15 +1820,15 @@ function createStyleBoxWaffle(layer_name) {
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
     .html([
-      i18next.t('app_page.layer_style_popup.rendered_field', { field: fields.join(' ,') }),
-      i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
+      _tr('app_page.layer_style_popup.rendered_field', { field: fields.join(' ,') }),
+      _tr('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
     ].join(''));
 
   const fill_opacity_section = popup.append('p')
     .attr('class', 'line_elem')
     .attr('id', 'fill_color_section');
 
-  fill_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+  fill_opacity_section.append('span').html(_tr('app_page.layer_style_popup.fill_opacity'));
   fill_opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
@@ -1846,18 +1847,18 @@ function createStyleBoxWaffle(layer_name) {
     .attr('id', 'ref_colors_section')
     .style('clear', 'both');
   ref_colors_section.append('p')
-    .html(i18next.t('app_page.layer_style_popup.ref_colors'));
-  for (let i = 0; i < current_layers[layer_name].fill_color.length; i++) {
+    .html(_tr('app_page.layer_style_popup.ref_colors'));
+  for (let i = 0; i < data_manager.current_layers[layer_name].fill_color.length; i++) {
     const p = ref_colors_section.append('p').style('margin', '15px 5px');
-    p.append('span').html(current_layers[layer_name].rendered_field[i]);
+    p.append('span').html(data_manager.current_layers[layer_name].rendered_field[i]);
     p.insert('input')
       .attrs({ id: i, type: 'color' })
       .style('float', 'right')
-      .property('value', current_layers[layer_name].fill_color[i])
+      .property('value', data_manager.current_layers[layer_name].fill_color[i])
       .on('change', function () { // eslint-disable-line no-loop-func
         const col = rgb2hex(this.value);
-        const to_replace = current_layers[layer_name].fill_color[i];
-        current_layers[layer_name].fill_color[i] = col;
+        const to_replace = data_manager.current_layers[layer_name].fill_color[i];
+        data_manager.current_layers[layer_name].fill_color[i] = col;
         selection.selectAll(symbol).each(function () {
           if (rgb2hex(this.getAttribute('fill')) === to_replace) {
             this.setAttribute('fill', col);
@@ -1871,15 +1872,15 @@ function createStyleBoxWaffle(layer_name) {
     .attr('id', 'size_section')
     .style('clear', 'both');
 
-  size_section.append('span').html(i18next.t('app_page.layer_style_popup.ref_size'));
+  size_section.append('span').html(_tr('app_page.layer_style_popup.ref_size'));
   size_section.insert('input')
     .attrs({ type: 'range', min: 1, max: 40, step: 1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
     .property('value', previous_params.size)
     .on('change', function () {
       const val = +this.value;
-      const nCol = current_layers[layer_name].nCol;
-      current_layers[layer_name].size = val;
+      const nCol = data_manager.current_layers[layer_name].nCol;
+      data_manager.current_layers[layer_name].size = val;
       selection
         .selectAll('g')
         .selectAll(symbol)
@@ -1909,15 +1910,15 @@ function createStyleBoxWaffle(layer_name) {
     .attr('class', 'line_elem')
     .attr('id', 'width_row_section');
 
-  width_row_section.append('span').html(i18next.t('app_page.func_options.twostocks.waffle_width_rows'));
+  width_row_section.append('span').html(_tr('app_page.func_options.twostocks.waffle_width_rows'));
   width_row_section.insert('input')
     .attrs({ type: 'range', min: 1, max: 10, step: 1 })
     .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right' })
     .property('value', previous_params.nCol)
     .on('change', function () {
       const val = +this.value;
-      const size = current_layers[layer_name].size;
-      current_layers[layer_name].nCol = val;
+      const size = data_manager.current_layers[layer_name].size;
+      data_manager.current_layers[layer_name].nCol = val;
       selection
         .selectAll('g')
         .selectAll(symbol)
@@ -1943,18 +1944,18 @@ function createStyleBoxWaffle(layer_name) {
   const allow_move_section = popup.append('p');
   const chkbx = allow_move_section.insert('input')
     .style('margin', '0')
-    .property('checked', current_layers[layer_name].draggable ? true : null)
+    .property('checked', data_manager.current_layers[layer_name].draggable ? true : null)
     .attrs({
       type: 'checkbox',
       id: 'checkbox_move_symbol' });
   allow_move_section.insert('label')
     .attr('for', 'checkbox_move_symbol')
-    .html(i18next.t('app_page.layer_style_popup.let_draggable'));
+    .html(_tr('app_page.layer_style_popup.let_draggable'));
   chkbx.on('change', function () {
     if (this.checked) {
-      current_layers[layer_name].draggable = true;
+      data_manager.current_layers[layer_name].draggable = true;
     } else {
-      current_layers[layer_name].draggable = false;
+      data_manager.current_layers[layer_name].draggable = false;
     }
   });
 
@@ -1969,14 +1970,14 @@ function createStyleBox_ProbSymbol(layer_name) {
   check_remove_existing_box('.styleBox');
   const layer_id = _app.layer_to_id.get(layer_name),
     g_lyr_name = `#${layer_id}`,
-    ref_layer_name = current_layers[layer_name].ref_layer_name,
-    type_method = current_layers[layer_name].renderer,
-    type_symbol = current_layers[layer_name].symbol,
-    field_used = current_layers[layer_name].rendered_field,
+    ref_layer_name = data_manager.current_layers[layer_name].ref_layer_name,
+    type_method = data_manager.current_layers[layer_name].renderer,
+    type_symbol = data_manager.current_layers[layer_name].symbol,
+    field_used = data_manager.current_layers[layer_name].rendered_field,
     selection = map.select(g_lyr_name).selectAll(type_symbol),
     old_size = [
-      current_layers[layer_name].size[0],
-      current_layers[layer_name].size[1],
+      data_manager.current_layers[layer_name].size[0],
+      data_manager.current_layers[layer_name].size[1],
     ];
   let rendering_params;
   let stroke_prev = selection.style('stroke');
@@ -1986,8 +1987,8 @@ function createStyleBox_ProbSymbol(layer_name) {
   const opacity = selection.style('fill-opacity'),
     border_opacity = selection.style('stroke-opacity');
 
-  const fill_prev = cloneObj(current_layers[layer_name].fill_color);
-  const d_values = result_data[layer_name].map(v => +v[field_used]);
+  const fill_prev = cloneObj(data_manager.current_layers[layer_name].fill_color);
+  const d_values = data_manager.result_data[layer_name].map(v => +v[field_used]);
   let prev_col_breaks;
   const redraw_prop_val = (prop_values) => {
     const selec = selection._groups[0];
@@ -2011,11 +2012,11 @@ function createStyleBox_ProbSymbol(layer_name) {
     }
   };
 
-  if (current_layers[layer_name].colors_breaks
-      && current_layers[layer_name].colors_breaks instanceof Array) {
-    prev_col_breaks = [].concat(current_layers[layer_name].colors_breaks);
-  } else if (current_layers[layer_name].break_val !== undefined) {
-    prev_col_breaks = current_layers[layer_name].break_val;
+  if (data_manager.current_layers[layer_name].colors_breaks
+      && data_manager.current_layers[layer_name].colors_breaks instanceof Array) {
+    prev_col_breaks = [].concat(data_manager.current_layers[layer_name].colors_breaks);
+  } else if (data_manager.current_layers[layer_name].break_val !== undefined) {
+    prev_col_breaks = data_manager.current_layers[layer_name].break_val;
   } else if (fill_prev.random) {
     prev_random_colors = [];
     selection.each(function (d) {
@@ -2028,7 +2029,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   make_confirm_dialog2('styleBox', layer_name, { top: true, widthFitContent: true, draggable: true })
     .then((confirmed) => {
       if (confirmed) {
-        // if(current_layers[layer_name].size != old_size){
+        // if(data_manager.current_layers[layer_name].size != old_size){
         const lgd_prop_symb = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
         if (lgd_prop_symb) { redraw_legends_symbols(lgd_prop_symb); }
         if (type_symbol === 'circle') {
@@ -2045,16 +2046,16 @@ function createStyleBox_ProbSymbol(layer_name) {
 
         if ((type_method === 'PropSymbolsChoro' || type_method === 'PropSymbolsTypo') && rendering_params !== undefined) {
           if (type_method === 'PropSymbolsChoro') {
-            current_layers[layer_name].fill_color = {
+            data_manager.current_layers[layer_name].fill_color = {
               class: [].concat(rendering_params.colorsByFeature),
             };
-            current_layers[layer_name].colors_breaks = [];
+            data_manager.current_layers[layer_name].colors_breaks = [];
             for (let i = rendering_params.breaks.length - 1; i > 0; --i) {
-              current_layers[layer_name].colors_breaks.push([
+              data_manager.current_layers[layer_name].colors_breaks.push([
                 [rendering_params.breaks[i - 1], ' - ', rendering_params.breaks[i]].join(''), rendering_params.colors[i - 1],
               ]);
             }
-            current_layers[layer_name].options_disc = {
+            data_manager.current_layers[layer_name].options_disc = {
               schema: rendering_params.schema,
               colors: rendering_params.colors,
               no_data: rendering_params.no_data,
@@ -2063,17 +2064,17 @@ function createStyleBox_ProbSymbol(layer_name) {
               extra_options: rendering_params.extra_options,
             };
           } else if (type_method === 'PropSymbolsTypo') {
-            current_layers[layer_name].fill_color = {
+            data_manager.current_layers[layer_name].fill_color = {
               class: [].concat(rendering_params.colorsByFeature),
             };
-            current_layers[layer_name].color_map = rendering_params.color_map;
+            data_manager.current_layers[layer_name].color_map = rendering_params.color_map;
           }
-          current_layers[layer_name].rendered_field2 = rendering_params.field;
+          data_manager.current_layers[layer_name].rendered_field2 = rendering_params.field;
           // Also change the legend if there is one displayed :
           if (document.querySelector(`.legend.legend_feature.lgdf_${_app.layer_to_id.get(layer_name)}`).id === 'legend_root') {
-            redraw_legend('choro', layer_name, current_layers[layer_name].rendered_field);
+            redraw_legend('choro', layer_name, data_manager.current_layers[layer_name].rendered_field);
           } else {
-            redraw_legend('choro_horiz', layer_name, current_layers[layer_name].rendered_field);
+            redraw_legend('choro_horiz', layer_name, data_manager.current_layers[layer_name].rendered_field);
           }
         }
         // if(selection._groups[0][0].__data__.properties.color && rendering_params !== undefined){
@@ -2088,24 +2089,24 @@ function createStyleBox_ProbSymbol(layer_name) {
       } else {
         selection.style('fill-opacity', opacity);
         map.select(g_lyr_name).style('stroke-width', stroke_width);
-        current_layers[layer_name]['stroke-width-const'] = stroke_width;
+        data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
         if (fill_meth === 'single') {
           selection.style('fill', fill_prev.single)
             .style('stroke-opacity', border_opacity)
             .style('stroke', stroke_prev);
         } else if (fill_meth === 'two') {
-          current_layers[layer_name].break_val = prev_col_breaks;
-          current_layers[layer_name].fill_color = { two: [fill_prev.two[0], fill_prev.two[1]] };
+          data_manager.current_layers[layer_name].break_val = prev_col_breaks;
+          data_manager.current_layers[layer_name].fill_color = { two: [fill_prev.two[0], fill_prev.two[1]] };
           selection.style('fill', (d, i) => (d_values[i] > prev_col_breaks ? fill_prev.two[1] : fill_prev.two[0]))
             .style('stroke-opacity', border_opacity)
             .style('stroke', stroke_prev);
         } else if (fill_meth === 'class') {
           selection.style('fill-opacity', opacity)
-            .style('fill', (d, i) => current_layers[layer_name].fill_color.class[i])
+            .style('fill', (d, i) => data_manager.current_layers[layer_name].fill_color.class[i])
             .style('stroke-opacity', border_opacity)
             .style('stroke', stroke_prev);
-          current_layers[layer_name].colors_breaks = prev_col_breaks;
+          data_manager.current_layers[layer_name].colors_breaks = prev_col_breaks;
         } else if (fill_meth === 'random') {
           selection.style('fill', (_, i) => prev_random_colors[i] || Colors.names[Colors.random()])
             .style('stroke-opacity', border_opacity)
@@ -2116,11 +2117,11 @@ function createStyleBox_ProbSymbol(layer_name) {
                            type_symbol,
                            fill_prev.categorical[1]);
         }
-        current_layers[layer_name].fill_color = fill_prev;
-        if (current_layers[layer_name].size[1] !== old_size[1]) {
+        data_manager.current_layers[layer_name].fill_color = fill_prev;
+        if (data_manager.current_layers[layer_name].size[1] !== old_size[1]) {
           const prop_values = prop_sizer3_e(d_values, old_size[0], old_size[1], type_symbol);
           redraw_prop_val(prop_values);
-          current_layers[layer_name].size = [old_size[0], old_size[1]];
+          data_manager.current_layers[layer_name].size = [old_size[0], old_size[1]];
         }
       }
       zoom_without_redraw();
@@ -2135,8 +2136,8 @@ function createStyleBox_ProbSymbol(layer_name) {
   popup.append('p')
     .styles({ 'text-align': 'center', color: 'grey' })
     .html([
-      i18next.t('app_page.layer_style_popup.rendered_field', { field: current_layers[layer_name].rendered_field }),
-      i18next.t('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
+      _tr('app_page.layer_style_popup.rendered_field', { field: data_manager.current_layers[layer_name].rendered_field }),
+      _tr('app_page.layer_style_popup.reference_layer', { layer: ref_layer_name }),
     ].join(''));
 
   let new_layer_name = layer_name;
@@ -2146,18 +2147,18 @@ function createStyleBox_ProbSymbol(layer_name) {
   });
 
   if (type_method === 'PropSymbolsChoro') {
-    const field_color = current_layers[layer_name].rendered_field2;
+    const field_color = data_manager.current_layers[layer_name].rendered_field2;
     popup.append('p')
       .styles({ margin: 'auto', 'text-align': 'center' })
-      .html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color }))
+      .html(_tr('app_page.layer_style_popup.field_symbol_color', { field: field_color }))
       .append('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_discretization'))
+      .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
         const _opts = rendering_params
           ? { schema: rendering_params.schema, colors: rendering_params.colors, no_data: rendering_params.no_data, type: rendering_params.type, breaks: rendering_params.breaks, extra_options: rendering_params.extra_options }
-          : current_layers[layer_name].options_disc;
+          : data_manager.current_layers[layer_name].options_disc;
         display_discretization(layer_name,
                                field_color,
                                _opts.breaks.length - 1,
@@ -2181,53 +2182,53 @@ function createStyleBox_ProbSymbol(layer_name) {
             }
           });
       });
-  } else if (current_layers[layer_name].break_val !== undefined) {
+  } else if (data_manager.current_layers[layer_name].break_val !== undefined) {
     const fill_color_section = popup.append('div').attr('id', 'fill_color_section');
     fill_color_section.append('p')
       .style('text-align', 'center')
-      .html(i18next.t('app_page.layer_style_popup.color_break'));
+      .html(_tr('app_page.layer_style_popup.color_break'));
     const p2 = fill_color_section.append('p').style('display', 'inline');
     const col1 = p2.insert('input')
       .attrs({ id: 'col1', type: 'color' })
-      .property('value', current_layers[layer_name].fill_color.two[0])
+      .property('value', data_manager.current_layers[layer_name].fill_color.two[0])
       .on('change', function () {
         const new_break_val = +b_val.node().value;
-        current_layers[layer_name].fill_color.two[0] = this.value;
+        data_manager.current_layers[layer_name].fill_color.two[0] = this.value;
         selection.transition().style('fill', (d, i) => ((d_values[i] > new_break_val) ? col2.node().value : this.value));
       });
     const col2 = p2.insert('input')
       .attrs({ id: 'col2', type: 'color' })
-      .property('value', current_layers[layer_name].fill_color.two[1])
+      .property('value', data_manager.current_layers[layer_name].fill_color.two[1])
       .on('change', function () {
         const new_break_val = +b_val.node().value;
-        current_layers[layer_name].fill_color.two[1] = this.value;
+        data_manager.current_layers[layer_name].fill_color.two[1] = this.value;
         selection.transition()
           .style('fill', (d, i) => ((d_values[i] > new_break_val) ? this.value : col1.node().value));
       });
-    fill_color_section.insert('span').html(i18next.t('app_page.layer_style_popup.break_value'));
+    fill_color_section.insert('span').html(_tr('app_page.layer_style_popup.break_value'));
     const b_val = fill_color_section.insert('input')
       .attr('type', 'number')
       .style('width', '75px')
-      .property('value', current_layers[layer_name].break_val)
+      .property('value', data_manager.current_layers[layer_name].break_val)
       .on('change', function () {
         const new_break_val = +this.value;
-        current_layers[layer_name].break_val = new_break_val;
+        data_manager.current_layers[layer_name].break_val = new_break_val;
         selection.transition().style('fill', (d, i) => ((d_values[i] > new_break_val) ? col2.node().value : col1.node().value));
       });
   } else if (type_method === 'PropSymbolsTypo') {
-    const field_color = current_layers[layer_name].rendered_field2;
+    const field_color = data_manager.current_layers[layer_name].rendered_field2;
     popup.append('p')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.layer_style_popup.field_symbol_color', { field: field_color }));
+      .html(_tr('app_page.layer_style_popup.field_symbol_color', { field: field_color }));
     popup.append('p').style('text-align', 'center')
       .insert('button')
       .attr('class', 'button_disc')
-      .html(i18next.t('app_page.layer_style_popup.choose_colors'))
+      .html(_tr('app_page.layer_style_popup.choose_colors'))
       .on('click', () => {
         const [cats, _] = prepare_categories_array(
-          layer_name, field_color, current_layers[layer_name].color_map);
+          layer_name, field_color, data_manager.current_layers[layer_name].color_map);
         container.modal.hide();
-        display_categorical_box(result_data[layer_name], layer_name, field_color, cats)
+        display_categorical_box(data_manager.result_data[layer_name], layer_name, field_color, cats)
           .then((confirmed) => {
             container.modal.show();
             if (confirmed) {
@@ -2244,13 +2245,13 @@ function createStyleBox_ProbSymbol(layer_name) {
           });
       });
   } else {
-    const fields_all = type_col2(result_data[layer_name]),
+    const fields_all = type_col2(data_manager.result_data[layer_name]),
       fields = getFieldsType('category', null, fields_all),
-      fill_method = popup.append('p').html(i18next.t('app_page.layer_style_popup.fill_color')).insert('select');
+      fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
 
     [
-      [i18next.t('app_page.layer_style_popup.single_color'), 'single'],
-      [i18next.t('app_page.layer_style_popup.random_color'), 'random'],
+      [_tr('app_page.layer_style_popup.single_color'), 'single'],
+      [_tr('app_page.layer_style_popup.random_color'), 'random'],
     ].forEach((d) => {
       fill_method.append('option').text(d[0]).attr('value', d[1]);
     });
@@ -2263,7 +2264,7 @@ function createStyleBox_ProbSymbol(layer_name) {
           .selectAll(type_symbol)
           .transition()
           .style('fill', fill_prev.single);
-        current_layers[layer_name].fill_color = cloneObj(fill_prev);
+        data_manager.current_layers[layer_name].fill_color = cloneObj(fill_prev);
       } else if (this.value === 'random') {
         make_random_color(layer_name, type_symbol);
         document.getElementById('random_color_btn').click();
@@ -2273,7 +2274,7 @@ function createStyleBox_ProbSymbol(layer_name) {
   }
 
   const fill_opct_section = popup.append('p').attr('class', 'line_elem');
-  fill_opct_section.append('span').html(i18next.t('app_page.layer_style_popup.fill_opacity'));
+  fill_opct_section.append('span').html(_tr('app_page.layer_style_popup.fill_opacity'));
 
   fill_opct_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
@@ -2291,7 +2292,7 @@ function createStyleBox_ProbSymbol(layer_name) {
     .html(`${+opacity * 100}%`);
 
   const border_color_section = popup.append('p').attr('class', 'line_elem');
-  border_color_section.append('span').html(i18next.t('app_page.layer_style_popup.border_color'));
+  border_color_section.append('span').html(_tr('app_page.layer_style_popup.border_color'));
   border_color_section.insert('input')
     .attr('type', 'color')
     .style('float', 'right')
@@ -2301,7 +2302,7 @@ function createStyleBox_ProbSymbol(layer_name) {
     });
 
   const border_opacity_section = popup.append('p');
-  border_opacity_section.append('span').html(i18next.t('app_page.layer_style_popup.border_opacity'));
+  border_opacity_section.append('span').html(_tr('app_page.layer_style_popup.border_opacity'));
 
   border_opacity_section.insert('input')
     .attrs({ type: 'range', min: 0, max: 1, step: 0.1 })
@@ -2318,28 +2319,28 @@ function createStyleBox_ProbSymbol(layer_name) {
     .html(` ${border_opacity}`);
 
   const border_width_section = popup.append('p').attr('class', 'line_elem');
-  border_width_section.append('span').html(i18next.t('app_page.layer_style_popup.border_width'));
+  border_width_section.append('span').html(_tr('app_page.layer_style_popup.border_width'));
   border_width_section.insert('input')
     .attrs({ type: 'number', min: 0, step: 0.1 })
     .styles({ width: '60px', float: 'right' })
     .property('value', stroke_width)
     .on('change', function () {
       selection.style('stroke-width', `${this.value}px`);
-      current_layers[layer_name]['stroke-width-const'] = +this.value;
+      data_manager.current_layers[layer_name]['stroke-width-const'] = +this.value;
     });
 
   const prop_val_content = popup.append('p');
-  prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.field_symbol_size', { field: field_used }));
-  prop_val_content.append('span').html(i18next.t('app_page.layer_style_popup.symbol_fixed_size'));
+  prop_val_content.append('span').html(_tr('app_page.layer_style_popup.field_symbol_size', { field: field_used }));
+  prop_val_content.append('span').html(_tr('app_page.layer_style_popup.symbol_fixed_size'));
   prop_val_content.insert('input')
     .styles({ width: '60px', float: 'right' })
     .attrs({ type: 'number', id: 'max_size_range', min: 0.1, step: 'any' })
-    .property('value', current_layers[layer_name].size[1])
+    .property('value', data_manager.current_layers[layer_name].size[1])
     .on('change', function () {
       const f_size = +this.value;
       const prop_values = prop_sizer3_e(
-        d_values, current_layers[layer_name].size[0], f_size, type_symbol);
-      current_layers[layer_name].size[1] = f_size;
+        d_values, data_manager.current_layers[layer_name].size[0], f_size, type_symbol);
+      data_manager.current_layers[layer_name].size[1] = f_size;
       redraw_prop_val(prop_values);
     });
   prop_val_content.append('span')
@@ -2347,42 +2348,42 @@ function createStyleBox_ProbSymbol(layer_name) {
     .html('(px)');
 
   const prop_val_content2 = popup.append('p').attr('class', 'line_elem');
-  prop_val_content2.append('span').html(i18next.t('app_page.layer_style_popup.on_value'));
+  prop_val_content2.append('span').html(_tr('app_page.layer_style_popup.on_value'));
   prop_val_content2.insert('input')
     .styles({ width: '100px', float: 'right' })
     .attrs({ type: 'number', min: 0.1, step: 0.1 })
-    .property('value', +current_layers[layer_name].size[0])
+    .property('value', +data_manager.current_layers[layer_name].size[0])
     .on('change', function () {
       const f_val = +this.value;
       const prop_values = prop_sizer3_e(
-        d_values, f_val, current_layers[layer_name].size[1], type_symbol);
+        d_values, f_val, data_manager.current_layers[layer_name].size[1], type_symbol);
       redraw_prop_val(prop_values);
-      current_layers[layer_name].size[0] = f_val;
+      data_manager.current_layers[layer_name].size[0] = f_val;
     });
 
   const allow_move_section = popup.append('p');
   const chkbx = allow_move_section.insert('input')
     .style('margin', '0')
-    .property('checked', current_layers[layer_name].draggable ? true : null)
+    .property('checked', data_manager.current_layers[layer_name].draggable ? true : null)
     .attrs({
       type: 'checkbox',
       id: 'checkbox_move_symbol'
     });
   allow_move_section.insert('label')
     .attr('for', 'checkbox_move_symbol')
-    .html(i18next.t('app_page.layer_style_popup.let_draggable'));
+    .html(_tr('app_page.layer_style_popup.let_draggable'));
   chkbx.on('change', function () {
     if (this.checked) {
-      current_layers[layer_name].draggable = true;
+      data_manager.current_layers[layer_name].draggable = true;
     } else {
-      current_layers[layer_name].draggable = false;
+      data_manager.current_layers[layer_name].draggable = false;
     }
   });
 
   popup.append('p').style('text-align', 'center')
     .insert('button')
     .attrs({ id: 'reset_symb_loc', class: 'button_st4' })
-    .text(i18next.t('app_page.layer_style_popup.reset_symbols_location'))
+    .text(_tr('app_page.layer_style_popup.reset_symbols_location'))
     .on('click', () => {
       selection.transition()
         .attrs((d) => {
@@ -2422,7 +2423,7 @@ function make_style_box_indiv_label(label_node) {
     current_options.color = rgb2hex(current_options.color);
   }
   check_remove_existing_box('.styleTextAnnotation');
-  make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.func_options.label.title_box_indiv'), { widthFitContent: true, draggable: true })
+  make_confirm_dialog2('styleTextAnnotation', _tr('app_page.func_options.label.title_box_indiv'), { widthFitContent: true, draggable: true })
     .then((confirmed) => {
       if (!confirmed) {
         label_node.style.fontsize = current_options.size; // eslint-disable-line no-param-reassign
@@ -2437,7 +2438,7 @@ function make_style_box_indiv_label(label_node) {
     .select('.modal-body')
     .insert('div');
   const a = box_content.append('p').attr('class', 'line_elem');
-  a.insert('span').html(i18next.t('app_page.func_options.label.font_size'));
+  a.insert('span').html(_tr('app_page.func_options.label.font_size'));
   a.append('input')
     .attrs({ type: 'number', id: 'font_size', min: 0, max: 34, step: 'any' })
     .styles({ width: '70px', float: 'right' })
@@ -2446,7 +2447,7 @@ function make_style_box_indiv_label(label_node) {
       label_node.style.fontSize = `${this.value}px`; // eslint-disable-line no-param-reassign
     });
   const b = box_content.append('p').attr('class', 'line_elem');
-  b.insert('span').html(i18next.t('app_page.func_options.label.content'));
+  b.insert('span').html(_tr('app_page.func_options.label.content'));
   b.append('input')
     .attr('id', 'label_content')
     .styles({ width: '70px', float: 'right' })
@@ -2455,7 +2456,7 @@ function make_style_box_indiv_label(label_node) {
       label_node.textContent = this.value; // eslint-disable-line no-param-reassign
     });
   const c = box_content.append('p').attr('class', 'line_elem');
-  c.insert('span').html(i18next.t('app_page.func_options.common.color'));
+  c.insert('span').html(_tr('app_page.func_options.common.color'));
   c.append('input')
     .attrs({ type: 'color', id: 'label_color' })
     .styles({ width: '70px', float: 'right' })
@@ -2464,7 +2465,7 @@ function make_style_box_indiv_label(label_node) {
       label_node.style.fill = this.value; // eslint-disable-line no-param-reassign
     });
   const d = box_content.append('p').attr('class', 'line_elem');
-  d.insert('span').html(i18next.t('app_page.func_options.label.font_type'));
+  d.insert('span').html(_tr('app_page.func_options.label.font_type'));
   const selec_fonts = d.append('select')
     .style('float', 'right')
     .on('change', function () {
@@ -2554,8 +2555,8 @@ function change_layer_name(old_name, new_name) {
   }
   const old_id = global._app.layer_to_id.get(old_name);
   const new_id = encodeId(new_name);
-  current_layers[new_name] = cloneObj(current_layers[old_name]);
-  delete current_layers[old_name];
+  data_manager.current_layers[new_name] = cloneObj(data_manager.current_layers[old_name]);
+  delete data_manager.current_layers[old_name];
   const list_elem = document.querySelector(`li.${old_id}`);
   list_elem.classList.remove(old_id);
   list_elem.classList.add(new_id);
@@ -2571,15 +2572,15 @@ function change_layer_name(old_name, new_name) {
     lgd_elem.classList.remove(`lgdf_${old_id}`);
     lgd_elem.classList.add(`lgdf_${new_id}`);
   });
-  if (Object.getOwnPropertyNames(result_data).indexOf(old_name) > -1) {
-    result_data[new_name] = [].concat(result_data[old_name]);
-    delete result_data[old_name];
+  if (Object.getOwnPropertyNames(data_manager.result_data).indexOf(old_name) > -1) {
+    data_manager.result_data[new_name] = [].concat(data_manager.result_data[old_name]);
+    delete data_manager.result_data[old_name];
   }
-  if (Object.getOwnPropertyNames(user_data).indexOf(old_name) > -1) {
-    user_data[new_name] = [].concat(user_data[old_name]);
-    delete user_data[old_name];
+  if (Object.getOwnPropertyNames(data_manager.user_data).indexOf(old_name) > -1) {
+    data_manager.user_data[new_name] = [].concat(data_manager.user_data[old_name]);
+    delete data_manager.user_data[old_name];
   }
-  if (current_layers[new_name].targeted) {
+  if (data_manager.current_layers[new_name].targeted) {
     const name_section1 = document.getElementById('section1').querySelector('#input_geom');
     name_section1.innerHTML = name_section1.innerHTML.replace(old_name, new_name);
     if (window.fields_handler) {
@@ -2596,10 +2597,10 @@ function change_layer_name(old_name, new_name) {
       }
     }
   }
-  const other_layers = Object.getOwnPropertyNames(current_layers);
+  const other_layers = Object.getOwnPropertyNames(data_manager.current_layers);
   for (let i = 0; i < other_layers.length; i++) {
-    if (current_layers[other_layers[i]].ref_layer_name === old_name) {
-      current_layers[other_layers[i]].ref_layer_name = new_name;
+    if (data_manager.current_layers[other_layers[i]].ref_layer_name === old_name) {
+      data_manager.current_layers[other_layers[i]].ref_layer_name = new_name;
     }
   }
   const select_export_lyr = document.getElementById('section5').querySelectorAll('#layer_to_export > option');

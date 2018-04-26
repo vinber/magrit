@@ -42,7 +42,7 @@ export default class UserEllipse {
       })
       .on('end', () => {
         if (d3.event.subject && !d3.event.subject.map_locked) {
-          handle_click_hand('unlock'); // zoom.on("zoom", zoom_without_redraw);
+          handle_click_hand('unlock');
         }
       })
       .on('drag', function () {
@@ -63,10 +63,10 @@ export default class UserEllipse {
   draw() {
     const context_menu = new ContextMenu();
     const getItems = () => [
-      { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+      { name: _tr('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+      { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
     ];
 
     this.ellipse = this.svg_elem.append('g')
@@ -137,7 +137,7 @@ export default class UserEllipse {
     const angle = (-this.calcAngle()).toFixed(0);
 
     if (!map_locked) handle_click_hand('lock');
-    make_confirm_dialog2('styleBoxEllipse', i18next.t('app_page.ellipse_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('styleBoxEllipse', _tr('app_page.ellipse_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         map.selectAll('.ctrl_pt').remove();
         if (confirmed) {
@@ -161,7 +161,7 @@ export default class UserEllipse {
     const s1 = box_content.append('p').attr('class', 'line_elem2');
     s1.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.ellipse_edit_box.stroke_width'));
+      .html(_tr('app_page.ellipse_edit_box.stroke_width'));
     s1.append('input')
       .attrs({
         min: 0,
@@ -183,7 +183,7 @@ export default class UserEllipse {
 
     s2.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.ellipse_edit_box.stroke_color'));
+      .html(_tr('app_page.ellipse_edit_box.stroke_color'));
 
     s2.append('input')
       .style('float', 'right')
@@ -193,7 +193,7 @@ export default class UserEllipse {
         ellipse_elem.style.stroke = this.value;
       });
       //  let s2b = box_content.append("p").attr('class', 'line_elem2')
-      //  s2b.append("span").html(i18next.t("app_page.ellipse_edit_box.ellispeAngle"))
+      //  s2b.append("span").html(_tr("app_page.ellipse_edit_box.ellispeAngle"))
       //  s2b.insert("span").styles({float: 'right', 'width': '12px'}).html("&nbsp;°");
       //  s2b.insert("input")
       //      .attrs({id: "ellipse_angle_text", class: "without_spinner", value: angle, min: 0, max: 1, step: 1})
@@ -225,7 +225,7 @@ export default class UserEllipse {
       ellipse_elem = self.ellipse.node().querySelector('ellipse'),
       zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
-      msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+      msg = alertify.notify(_tr('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
     const cleanup_edit_state = () => {
       edit_layer.remove();

@@ -33,8 +33,8 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       chooses_handler.new_name = this.value;
     } else { // Rollback to the last correct name  :
       this.value = chooses_handler.new_name;
-      swal({ title: `${i18next.t('Error')}!`,
-        text: i18next.t('Unauthorized character!'),
+      swal({ title: `${_tr('Error')}!`,
+        text: _tr('Unauthorized character!'),
         type: 'error',
         allowOutsideClick: false });
     }
@@ -50,7 +50,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
 
     if (!regexp_name.test(new_name_field)) {
       swal({ title: '',
-        text: i18next.t('app_page.explore_box.add_field_box.invalid_name'),
+        text: _tr('app_page.explore_box.add_field_box.invalid_name'),
         type: 'error',
         allowOutsideClick: false });
       return Promise.reject('Invalid name');
@@ -148,7 +148,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       }
       field2.append('option')
         .attr('value', 'user_const_value')
-        .text(i18next.t('app_page.explore_box.add_field_box.constant_value'));
+        .text(_tr('app_page.explore_box.add_field_box.constant_value'));
       val_opt.style('display', 'none');
       txt_op.text('');
       chooses_handler.operator = math_operation[0];
@@ -166,7 +166,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         }
       }
       val_opt.style('display', null);
-      txt_op.html(i18next.t('app_page.explore_box.add_field_box.join_char'));
+      txt_op.html(_tr('app_page.explore_box.add_field_box.join_char'));
       chooses_handler.operator = string_operation[0][1];
     }
     chooses_handler.field1 = field1.node().value;
@@ -178,10 +178,10 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       val_opt.style('display', 'none');
       txt_op.text('');
     } else if (subtype === 'truncate') {
-      txt_op.html(i18next.t('app_page.explore_box.add_field_box.keep_char'));
+      txt_op.html(_tr('app_page.explore_box.add_field_box.keep_char'));
       field2.attr('disabled', true);
     } else {
-      txt_op.html(i18next.t('app_page.explore_box.add_field_box.join_char'));
+      txt_op.html(_tr('app_page.explore_box.add_field_box.join_char'));
       field2.attr('disabled', null);
     }
   }
@@ -189,8 +189,8 @@ function add_field_table(table, layer_name, reOpenTableBox) {
   const math_operation = ['+', '-', '*', '/', '^'];
 
   const string_operation = [
-    [i18next.t('app_page.explore_box.add_field_box.concatenate'), 'concatenate'],
-    [i18next.t('app_page.explore_box.add_field_box.truncate'), 'truncate'],
+    [_tr('app_page.explore_box.add_field_box.concatenate'), 'concatenate'],
+    [_tr('app_page.explore_box.add_field_box.truncate'), 'truncate'],
   ];
 
   let chooses_handler = {
@@ -199,10 +199,10 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     operator: undefined,
     type_operation: undefined,
     opt_val: undefined,
-    new_name: i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'),
+    new_name: _tr('app_page.explore_box.add_field_box.new_name_placeholder'),
   };
 
-  make_confirm_dialog2('addFieldBox', i18next.t('app_page.explore_box.button_add_field'),
+  make_confirm_dialog2('addFieldBox', _tr('app_page.explore_box.button_add_field'),
                   { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined })
     .then((valid) => {
       // reOpenParent('#browse_data_box');
@@ -210,13 +210,13 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         document.querySelector('body').style.cursor = 'wait';
         compute_and_add(chooses_handler).then(
           (resolved) => {
-            if (current_layers[layer_name] && current_layers[layer_name].targeted) {
-              const type_field = type_col2(user_data[layer_name], chooses_handler.new_name)[0];
-              let existing = current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
+            if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
+              const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
+              let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
               if (existing < 0) {
-                current_layers[layer_name].fields_type.push(type_field);
+                data_manager.current_layers[layer_name].fields_type.push(type_field);
               } else {
-                current_layers[layer_name].fields_type[existing] = type_field;
+                data_manager.current_layers[layer_name].fields_type[existing] = type_field;
               }
               getAvailablesFunctionnalities(layer_name);
               if (window.fields_handler) {
@@ -246,13 +246,13 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     div2 = box_content.append('div').attr('id', 'field_div2');
 
   const new_name = div1.append('p')
-    .html(i18next.t('app_page.explore_box.add_field_box.new_name'))
+    .html(_tr('app_page.explore_box.add_field_box.new_name'))
     .insert('input')
-    .property('value', i18next.t('app_page.explore_box.add_field_box.new_name_placeholder'))
+    .property('value', _tr('app_page.explore_box.add_field_box.new_name_placeholder'))
     .on('keyup', check_name);
 
   const type_content = div1.append('p')
-    .html(i18next.t('app_page.explore_box.add_field_box.new_content'))
+    .html(_tr('app_page.explore_box.add_field_box.new_content'))
     .insert('select')
     .attr('id', 'type_content_select')
     .on('change', function () {
@@ -260,8 +260,8 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       refresh_type_content(this.value);
     });
 
-  [[i18next.t('app_page.explore_box.add_field_box.between_numerical'), 'math_compute'],
-   [i18next.t('app_page.explore_box.add_field_box.between_string'), 'string_field'],
+  [[_tr('app_page.explore_box.add_field_box.between_numerical'), 'math_compute'],
+   [_tr('app_page.explore_box.add_field_box.between_string'), 'string_field'],
   ].forEach((d, i) => {
     type_content.append('option').text(d[0]).attr('value', d[1]);
   });
@@ -373,13 +373,13 @@ export const boxExplore2 = {
       this.columns_headers.push({ data: col[i], title: col[i] });
     }
 
-    if (this.tables.get(table_name) && (table_name !== dataset_name
-          || (table_name === dataset_name && field_join_map.length === 0))) {
+    if (this.tables.get(table_name) && (table_name !== data_manager.dataset_name
+          || (table_name === data_manager.dataset_name && data_manager.field_join_map.length === 0))) {
       this.footer
         .insert('button')
         .attrs({ id: 'add_field_button', class: 'button_st4' })
         .styles({ position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em' })
-        .html(i18next.t('app_page.explore_box.button_add_field'))
+        .html(_tr('app_page.explore_box.button_add_field'))
         .on('click', () => {
           this.modal_box.hide();
           document.getElementById('browse_data_box').querySelector('#xclose').click();
@@ -388,8 +388,8 @@ export const boxExplore2 = {
     }
     const txt_intro = [
       '<b>', table_name, '</b><br>',
-      this.nb_features, ' ', i18next.t('app_page.common.feature', { count: this.nb_features }), ' - ',
-      this.columns_names.length, ' ', i18next.t('app_page.common.field', { count: this.columns_names.length }),
+      this.nb_features, ' ', _tr('app_page.common.feature', { count: this.nb_features }), ' - ',
+      this.columns_names.length, ' ', _tr('app_page.common.field', { count: this.columns_names.length }),
     ].join('');
     this.box_table.append('p')
       .attr('id', 'table_intro')
@@ -413,10 +413,10 @@ export const boxExplore2 = {
       perPage: per_page_value,
       perPageSelect: list_per_page_select,
       labels: {
-        placeholder: i18next.t('app_page.table.search'), // The search input placeholder
-        perPage: i18next.t('app_page.table.entries_page'), // per-page dropdown label
-        noRows: i18next.t('app_page.table.no_rows'), // Message shown when there are no search results
-        info: i18next.t('app_page.table.info'),  // "Showing {start} to {end} of {rows} entries"
+        placeholder: _tr('app_page.table.search'), // The search input placeholder
+        perPage: _tr('app_page.table.entries_page'), // per-page dropdown label
+        noRows: _tr('app_page.table.no_rows'), // Message shown when there are no search results
+        info: _tr('app_page.table.info'),  // "Showing {start} to {end} of {rows} entries"
       },
     });
     // Adjust the size of the box (on opening and after adding a new field)
@@ -445,20 +445,20 @@ export const boxExplore2 = {
   },
 
   get_available_tables() {
-    const target_layer = Object.getOwnPropertyNames(user_data),
-      ext_dataset = dataset_name,
-      result_layers = Object.getOwnPropertyNames(result_data),
+    const target_layer = Object.getOwnPropertyNames(data_manager.user_data),
+      ext_dataset = data_manager.dataset_name,
+      result_layers = Object.getOwnPropertyNames(data_manager.result_data),
       available = new Map();
     for (let i = 0, n = target_layer.length; i < n; i++) {
       const lyr_name = target_layer[i];
-      available.set(lyr_name, [i18next.t('app_page.common.target_layer'), user_data[lyr_name]]);
+      available.set(lyr_name, [_tr('app_page.common.target_layer'), data_manager.user_data[lyr_name]]);
     }
     if (ext_dataset) {
-      available.set(dataset_name, [i18next.t('app_page.common.ext_dataset'), joined_dataset[0]]);
+      available.set(data_manager.dataset_name, [_tr('app_page.common.ext_dataset'), data_manager.joined_dataset[0]]);
     }
     for (let i = 0, n = result_layers.length; i < n; i++) {
       const lyr_name = result_layers[i];
-      available.set(lyr_name, [i18next.t('app_page.common.result_layer'), result_data[lyr_name]]);
+      available.set(lyr_name, [_tr('app_page.common.result_layer'), data_manager.result_data[lyr_name]]);
     }
     return available;
   },
@@ -468,7 +468,7 @@ export const boxExplore2 = {
     this.nb_features = undefined;
     this.columns_names = undefined;
     this.tables = this.get_available_tables();
-    this.modal_box = make_dialog_container('browse_data_box', i18next.t('app_page.explore_box.title'), 'discretiz_charts_dialog');
+    this.modal_box = make_dialog_container('browse_data_box', _tr('app_page.explore_box.title'), 'discretiz_charts_dialog');
     const container = document.getElementById('browse_data_box');
     this.box_table = d3.select(container).select('.modal-body');
     this.footer = d3.select(container).select('.modal-footer');

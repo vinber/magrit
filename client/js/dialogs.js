@@ -22,8 +22,8 @@ export function make_dialog_container(id_box, title, class_box) {
     </div>
     <div class="modal-body"> </div>
     <div class="modal-footer">
-    <button type="button" class="btn btn-primary btn_ok" data-dismiss="modal">${i18next.t('app_page.common.confirm')}</button>
-    <button type="button" class="btn btn-default btn_cancel">${i18next.t('app_page.common.cancel')}</button>
+    <button type="button" class="btn btn-primary btn_ok" data-dismiss="modal">${_tr('app_page.common.confirm')}</button>
+    <button type="button" class="btn btn-default btn_cancel">${_tr('app_page.common.cancel')}</button>
     </div>`;
   const modal_box = new Modal(document.getElementById(_id_box), { content: html_content });
   modal_box.show();
@@ -61,7 +61,7 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
   let existing = new Set();
   return (class_box, title, options) => {
     class_box = class_box || 'dialog';
-    title = title || i18next.t('app_page.common.ask_confirm');
+    title = title || _tr('app_page.common.ask_confirm');
     options = options || {};
 
     let container = document.createElement('div');
@@ -79,8 +79,8 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
 
     container = document.getElementById(`myModal_${new_id}`);
     const deferred = Promise.pending();
-    const text_ok = options.text_ok || i18next.t('app_page.common.confirm');
-    const text_cancel = options.text_cancel || i18next.t('app_page.common.cancel');
+    const text_ok = options.text_ok || _tr('app_page.common.confirm');
+    const text_cancel = options.text_cancel || _tr('app_page.common.cancel');
     const html_content = `<div class="modal-header">
       <button type="button" id="xclose" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
       <h4 class="modal-title" id="gridModalLabel">${title}</h4>

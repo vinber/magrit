@@ -13,7 +13,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
     a.insert('button')
       .attrs({ class: 'btn_population' })
-      .html(i18next.t('disc_box.disp_rug_pop'))
+      .html(_tr('disc_box.disp_rug_pop'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -28,7 +28,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
     b.insert('button')
       .attrs({ class: 'btn_mean' })
-      .html(i18next.t('disc_box.disp_mean'))
+      .html(_tr('disc_box.disp_mean'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -45,7 +45,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
     c.insert('button')
       .attrs({ class: 'btn_median' })
-      .html(i18next.t('disc_box.disp_median'))
+      .html(_tr('disc_box.disp_median'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -62,7 +62,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
     d.insert('button')
       .attrs({ class: 'btn_stddev' })
-      .html(i18next.t('disc_box.disp_sd'))
+      .html(_tr('disc_box.disp_sd'))
       .on('click', function () {
         if (this.classList.contains('active')) {
           this.classList.remove('active');
@@ -99,7 +99,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       .attr('x', x(mean_val))
       .style('fill', 'none')
       .attr('text-anchor', 'middle')
-      .text(i18next.t('disc_box.mean'));
+      .text(_tr('disc_box.mean'));
 
     line_median = overlay_svg.append('line')
       .attr('class', 'line_med')
@@ -116,7 +116,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       .attr('x', x(serie.median()))
       .style('fill', 'none')
       .attr('text-anchor', 'middle')
-      .text(i18next.t('disc_box.median'));
+      .text(_tr('disc_box.median'));
 
     line_std_left = overlay_svg.append('line')
       .attr('class', 'lines_std')
@@ -156,7 +156,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
         'font-size': '10px',
         float: 'right' })
       .insert('p')
-      .html(['<b>', i18next.t('disc_box.summary'), '</b><br>', content_summary].join(''));
+      .html(['<b>', _tr('disc_box.summary'), '</b><br>', content_summary].join(''));
   };
 
   const update_breaks = function (user_defined) {
@@ -171,7 +171,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     if (+tmp_breaks.mins[0] > +serie.min()) {
       nb_class += 1;
       txt_nb_class.node().value = nb_class;
-            // txt_nb_class.html(i18next.t("disc_box.class", {count: nb_class}));
+            // txt_nb_class.html(_tr("disc_box.class", {count: nb_class}));
       breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
     }
 
@@ -233,14 +233,14 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     },
   };
 
-  const title_box = [i18next.t('disc_box.title'), ' - ', layer_name, ' - ', field_name].join('');
+  const title_box = [_tr('disc_box.title'), ' - ', layer_name, ' - ', field_name].join('');
   const modal_box = make_dialog_container('discretiz_charts', title_box, 'discretiz_charts_dialog');
   const newBox = d3.select('#discretiz_charts').select('.modal-body');
   let db_data;
-  if (result_data.hasOwnProperty(layer_name)) {
-    db_data = result_data[layer_name];
-  } else if (user_data.hasOwnProperty(layer_name)) {
-    db_data = user_data[layer_name];
+  if (data_manager.result_data.hasOwnProperty(layer_name)) {
+    db_data = data_manager.result_data[layer_name];
+  } else if (data_manager.user_data.hasOwnProperty(layer_name)) {
+    db_data = data_manager.user_data[layer_name];
   }
 
   const color_array = [];
@@ -263,10 +263,10 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     nb_values = values.length;
   }
   const max_nb_class = nb_values > 20 ? 20 : nb_values;
-  const sizes = current_layers[layer_name].breaks.map(el => el[1]);
+  const sizes = data_manager.current_layers[layer_name].breaks.map(el => el[1]);
   const stock_class = [];
   let serie = new geostats(values),
-    breaks_info = [].concat(current_layers[layer_name].breaks),
+    breaks_info = [].concat(data_manager.current_layers[layer_name].breaks),
     breaks = [+breaks_info[0][0][0]],
     bins = [],
     last_min = min_fast(sizes),
@@ -282,16 +282,16 @@ const display_discretization_links_discont = function (layer_name, field_name, n
   values = serie.sorted();
 //    serie.setPrecision(6);
   const available_functions = [
-    [i18next.t('app_page.common.equal_interval'), 'equal_interval'],
-    [i18next.t('app_page.common.quantiles'), 'quantiles'],
-    [i18next.t('app_page.common.user_defined'), 'user_defined'],
-//     [i18next.t("app_page.common.std_dev"), "std_dev"],
-    [i18next.t('app_page.common.Q6'), 'Q6'],
-    [i18next.t('app_page.common.jenks'), 'jenks'],
+    [_tr('app_page.common.equal_interval'), 'equal_interval'],
+    [_tr('app_page.common.quantiles'), 'quantiles'],
+    [_tr('app_page.common.user_defined'), 'user_defined'],
+//     [_tr("app_page.common.std_dev"), "std_dev"],
+    [_tr('app_page.common.Q6'), 'Q6'],
+    [_tr('app_page.common.jenks'), 'jenks'],
   ];
 
   if (!serie._hasZeroValue() && !serie._hasZeroValue()) {
-    available_functions.push([i18next.t('app_page.common.geometric_progression'), 'geometric_progression']);
+    available_functions.push([_tr('app_page.common.geometric_progression'), 'geometric_progression']);
   }
   const precisionAxis = get_precision_axis(serie.min(), serie.max(), serie.precision);
   const formatCount = d3.format(precisionAxis);
@@ -340,7 +340,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     choiceHisto.insert('button')
       .attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' })
       .styles({ padding: '3px', 'font-size': '10px' })
-      .html(i18next.t('disc_box.switch_ref_histo'))
+      .html(_tr('disc_box.switch_ref_histo'))
       .on('click', () => {
         if (currentHisto === 'histogram') {
           refDisplay('box_plot');
@@ -366,7 +366,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
   d3.select('#discretization_panel')
       .append('span')
-      .html(i18next.t('disc_box.class'));
+      .html(_tr('disc_box.class'));
 
   let disc_nb_class = d3.select('#discretization_panel')
     .insert('input')
@@ -438,7 +438,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
             .tickFormat(formatCount));
 
   const box_content = newBox.append('div').attr('id', 'box_content');
-  box_content.append('h3').style('margin', '0').html(i18next.t('disc_box.line_size'));
+  box_content.append('h3').style('margin', '0').html(_tr('disc_box.line_size'));
   const sizes_div = d3.select('#box_content')
                             .append('div').attr('id', 'sizes_div');
   const callback = function () {

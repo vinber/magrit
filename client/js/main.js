@@ -10,7 +10,7 @@ import { accordionize, add_sample_layer, add_simplified_land_layer, setUpInterfa
 import { xhrequest } from './helpers';
 import { Mceil, Mround } from './helpers_math';
 import { round_value } from './helpers_calc';
-import { reproj_symbol_layer, rotate_global, zoom_without_redraw } from './map_ctrl';
+import { makeSvgMap } from './map_ctrl';
 import { available_projections } from './projections';
 import { bindTooltips } from './tooltips';
 
@@ -18,7 +18,6 @@ Promise.config({
     warnings: true,
     longStackTraces: true,
 });
-
 
 // /*
 // * Memoization functions (naive LRU implementation)
@@ -48,56 +47,18 @@ Promise.config({
 //   };
 // };
 global.i18next = i18next;
-
-global.encodeId = function(s) {
-  if (s === '') return 'L_';
-  return `L_${s.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`;
-}
-
-global.proj = d3.geoNaturalEarth2().scale(1).translate([0, 0]);
-global.path = d3.geoPath().projection(proj).pointRadius(4);
-global.t = proj.translate();
-global.s = proj.scale();
-global.current_proj_name = 'NaturalEarth2';
-global.zoom = d3.zoom().on('zoom', zoom_without_redraw);
-global.w = Mround(window.innerWidth - 361);
-global.h = window.innerHeight - 55;
-
-/*
-A bunch of global variable, storing oftently reused informations :
-    - user_data[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
-            (+ the joined features if a join is done)
-    - result_data[layer_name] : the same but for any eventual result layers (like Stewart, gridded, etc.)
-    - joined_dataset : the joined dataset (read with d3.csv then pushed in the first slot of this array)
-    - field_join_map : an array containg mapping between index of geom layer and index of ext. dataset
-    - current_layers : the main object describing **all** the layers on the map (incunding detailed (ie. by features) styling properties if needed)
-*/
-
-global.user_data = {};
-global.result_data = {};
-global.joined_dataset = [];
-global.field_join_map = [];
-global.current_layers = {};
-global.dataset_name = null;
-global.canvas_rotation_value = null;
-global.map_div = d3.select('#map');
-
-global.pos_lgds_elem = new Map();
-
-// The 'map':
-// (so actually the `map` variable is a reference to the main `svg` element on which we are drawing)
-global.map = map_div.styles({ width: `${w}px`, height: `${h}px` })
-  .append('svg')
-  .attrs({ id: 'svg_map', width: w, height: h })
-  .styles({ position: 'absolute', 'background-color': 'rgba(255, 255, 255, 0)' })
-  .on('contextmenu', (event) => { d3.event.preventDefault(); })
-  .call(zoom);
-
-global.svg_map = map.node();
-global.defs = map.append('defs');
+global._tr = function(...args) { return i18next.t(...args); };
+global.encodeId = layer_name => (layer_name !== '')
+  ? `L_${layer_name.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`
+  : 'L_';
+// global.encodeId = function(s) {
+//   if (s === '') return 'L_';
+//   return `L_${s.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`;
+// }
 
 global._app = {
   current_functionnality: undefined,
+  current_proj_name: 'NaturalEarth2',
   custom_palettes: new Map(),
   existing_lang: ['en', 'es', 'fr'],
   layer_to_id: new Map([['World', encodeId('World')], ['Graticule', encodeId('Graticule')]]),
@@ -108,41 +69,30 @@ global._app = {
   version: document.querySelector('#header').getAttribute('v'),
 };
 
-// Shortcut to the name of the methods offered by geostats library:
-global.discretiz_geostats_switch = new Map([
-  ['jenks', 'getJenks'],
-  ['equal_interval', 'getEqInterval'],
-  // ['std_dev', 'getStdDeviation'],
-  ['quantiles', 'getQuantile'],
-  ['Q6', 'getBreaksQ6'],
-  ['geometric_progression', 'getGeometricProgression'],
-]);
+global.proj = d3.geoNaturalEarth2().scale(1).translate([0, 0]);
+global.path = d3.geoPath().projection(proj).pointRadius(4);
+global.t = proj.translate();
+global.s = proj.scale();
+global.w = Mround(window.innerWidth - 361);
+global.h = window.innerHeight - 55;
 
-// Reference to the available fonts that the user could select :
-global.available_fonts = [
-  ['Arial', 'Arial,sans-serif'],
-  ['Arial Black', 'Arial Black,sans-serif'],
-  ['Arimo', 'Arimo,sans-serif'],
-  ['Baloo Bhaina', 'Baloo Bhaina,sans-serif'],
-  ['Bitter', 'Bitter,sans-serif'],
-  ['Dosis', 'Dosis,sans-serif'],
-  ['Impact', 'Impact,Charcoal,sans-serif'],
-  ['Inconsolata', 'Inconsolata,sans-serif'],
-  ['Georgia', 'Georgia,serif'],
-  ['Lobster', 'Lobster,serif'],
-  ['Lucida', 'Lucida Sans Unicode,Lucida Grande,sans-serif'],
-  ['Palatino', 'Palatino Linotype,Book Antiqua,Palatino,serif'],
-  ['Roboto', 'Roboto'],
-  ['Scope One', 'Scope One'],
-  ['Tahoma', 'Tahoma,Geneva,sans-serif'],
-  ['Trebuchet MS', 'Trebuchet MS,elvetica,sans-serif'],
-  ['Verdana', 'verdana'],
-];
-
-// This variable have to be (well, we could easily do this in an other way!) up to date
-// with the style-fonts.css file as we are using their order to lookup for their definition
-// the .css file.
-global.customs_fonts = ['Arimo', 'Baloo Bhaina', 'Bitter', 'Dosis', 'Inconsolata', 'Lobster', 'Roboto', 'Scope One'];
+/*
+A bunch of global variable, storing oftently reused informations :
+    - data_manager.user_data[layer_name] : will be an Array of Objects containing data for each features of the targeted layer
+            (+ the joined features if a join is done)
+    - data_manager.result_data[layer_name] : the same but for any eventual result layers (like Stewart, gridded, etc.)
+    - data_manager.joined_dataset : the joined dataset (read with d3.csv then pushed in the first slot of this array)
+    - data_manager.field_join_map : an array containg mapping between index of geom layer and index of ext. dataset
+    - data_manager.current_layers : the main object describing **all** the layers on the map (incunding detailed (ie. by features) styling properties if needed)
+*/
+global.data_manager = {
+  current_layers: {},
+  dataset_name: null,
+  joined_dataset: [],
+  field_join_map: [],
+  result_data: {},
+  user_data: {},
+}
 
 function parseQuery(search) {
   const args = search.substring(1).split('&');
@@ -187,6 +137,11 @@ function getEpsgProjection() {
 }
 
 (function () {
+  const { map_div, map, svg_map, defs } = makeSvgMap();
+  global.map_div = map_div;
+  global.map = map;
+  global.svg_map = svg_map;
+  global.defs = defs;
   let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
   const params = {};
   document.querySelector('noscript').remove();
@@ -232,6 +187,20 @@ global.get_map_xy0 = () => {
   const bbox = svg_map.getBoundingClientRect();
   return { x: bbox.left, y: bbox.top };
 }
+
+global.get_bounding_rect = elem => {
+  const { x, y } = get_map_xy0();
+  const bbox = elem.getBoundingClientRect();
+  const a = {
+    x: bbox.left - x,
+    y: bbox.top - y,
+    width: bbox.width ? bbox.width : bbox.right - bbox.left,
+    height: bbox.height ? bbox.height : bbox.bottom - bbox.top,
+  };
+  a.left = a.x;
+  a.top = a.y;
+  return a;
+};
 
 global.helper_esc_key_twbs_cb = function helper_esc_key_twbs_cb(_event, callback) {
   const evt = _event || window.event;

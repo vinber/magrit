@@ -1,4 +1,5 @@
 import { clickLinkFromDataUrl, display_error_during_computation, xhrequest } from './helpers';
+import { custom_fonts } from './fonts';
 
 function patchSvgForFonts() {
   function getListUsedFonts() {
@@ -12,7 +13,7 @@ function patchSvgForFonts() {
     for (let j = 0; j < 2; j++) {
       for (let i = 0; i < elems[j].length; i++) {
         const font_elem = elems[j][i].style.fontFamily;
-        customs_fonts.forEach((font) => {
+        custom_fonts.forEach((font) => {
           if (font_elem.indexOf(font) > -1 && needed_definitions.indexOf(font) === -1) {
             needed_definitions.push(font);
           }
@@ -31,7 +32,7 @@ function patchSvgForFonts() {
     i => (i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null),
     )[0].cssRules;
   const fonts_to_add = needed_definitions.map(
-    name => String(fonts_definitions[customs_fonts.indexOf(name)].cssText));
+    name => String(fonts_definitions[custom_fonts.indexOf(name)].cssText));
   const style_elem = document.createElement('style');
   style_elem.innerHTML = fonts_to_add.join(' ');
   svg_map.querySelector('defs').appendChild(style_elem);
@@ -183,7 +184,7 @@ export function export_compo_png(type = 'web', scalefactor = 1, output_name) {
     } catch (err) {
       global._app.waitingOverlay.hide();
       targetCanvas.remove();
-      display_error_during_computation(`${i18next.t('app_page.common.error_too_high_resolution')} ${String(err)}`);
+      display_error_during_computation(`${_tr('app_page.common.error_too_high_resolution')} ${String(err)}`);
       return;
     }
   }
@@ -214,7 +215,7 @@ export function export_compo_png(type = 'web', scalefactor = 1, output_name) {
 export function export_layer_geo(layer, type, projec, proj4str) {
   const formToSend = new FormData();
   formToSend.append('layer', layer);
-  formToSend.append('layer_name', current_layers[layer].key_name);
+  formToSend.append('layer_name', data_manager.current_layers[layer].key_name);
   formToSend.append('format', type);
   if (projec === 'proj4string') {
     formToSend.append('projection', JSON.stringify({ proj4string: proj4str }));
@@ -233,9 +234,9 @@ export function export_layer_geo(layer, type, projec, proj4str) {
       if (data.indexOf('{"Error"') === 0 || data.length === 0) {
         let error_message;
         if (data.indexOf('{"Error"') < 5) {
-          error_message = i18next.t(JSON.parse(data).Error);
+          error_message = _tr(JSON.parse(data).Error);
         } else {
-          error_message = i18next.t('app_page.common.error_msg');
+          error_message = _tr('app_page.common.error_msg');
         }
         swal({
           title: 'Oops...',

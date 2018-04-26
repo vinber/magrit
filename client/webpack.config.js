@@ -61,7 +61,7 @@ module.exports = [{
   },
   plugins: [
     new webpack.ProvidePlugin({
-        'Promise': 'bluebird'
+        'Promise': 'bluebird',
     }),
     {
       apply: (compiler) => {

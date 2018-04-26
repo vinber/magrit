@@ -5,7 +5,7 @@ import { cloneObj } from './helpers';
 import { get_nb_decimals, get_nb_left_separator, getTranslateNewLegend, max_fast, min_fast, PropSizer, round_value } from './helpers_calc';
 import { Mmax, Mmin, Mpow, Msqrt, Mabs, Mround } from './helpers_math';
 import { handle_click_hand } from './interface';
-import { get_coords_snap_lines, make_red_line_snap } from './layout_features/helpers';
+import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './layout_features/snap_lines';
 
 /**
 * Function called on clicking on the legend button of each layer
@@ -15,7 +15,7 @@ import { get_coords_snap_lines, make_red_line_snap } from './layout_features/hel
 * @returns {void}
 */
 export function handle_legend(layer) {
-  const state = current_layers[layer].renderer;
+  const state = data_manager.current_layers[layer].renderer;
   if (state != undefined) {
     const class_name = ['.lgdf', _app.layer_to_id.get(layer)].join('_');
     const legends = svg_map.querySelectorAll(class_name);
@@ -67,10 +67,10 @@ function up_legends() {
 *
 */
 function createLegend(layer, title) {
-  const renderer = current_layers[layer].renderer,
-    field = current_layers[layer].rendered_field,
-    field2 = current_layers[layer].rendered_field2,
-    type_layer = current_layers[layer].type;
+  const renderer = data_manager.current_layers[layer].renderer,
+    field = data_manager.current_layers[layer].rendered_field,
+    field2 = data_manager.current_layers[layer].rendered_field2,
+    type_layer = data_manager.current_layers[layer].type;
   let el,
     el2;
 
@@ -101,8 +101,8 @@ function createLegend(layer, title) {
     el = createLegend_waffle(layer, field, title, '');
   } else {
     swal('Oops..',
-         `${i18next.t('No legend available for this representation')}.<br>${
-          i18next.t('Want to make a <a href="/">suggestion</a> ?')}`,
+         `${_tr('No legend available for this representation')}.<br>${
+          _tr('Want to make a <a href="/">suggestion</a> ?')}`,
          'warning');
     return;
   }
@@ -110,9 +110,9 @@ function createLegend(layer, title) {
   if (el && lgd_pos && lgd_pos.x) {
     el.attr('transform', `translate(${lgd_pos.x},${lgd_pos.y})`);
   }
-  pos_lgds_elem.set(`${el.attr('id')} ${el.attr('class')}`, el.node().getBBox());
+  pos_lgds_elem.set(`${el.attr('id')} ${el.attr('class')}`, get_bounding_rect(el.node()));
   if (el2) {
-    const prev_bbox = el.node().getBBox(),
+    const prev_bbox = get_bounding_rect(el.node()),
       dim_h = lgd_pos.y + prev_bbox.height,
       dim_w = lgd_pos.x + prev_bbox.width;
     const lgd_pos2 = getTranslateNewLegend();
@@ -123,7 +123,7 @@ function createLegend(layer, title) {
     } else if (dim_w < w) {
       el2.attr('transform', `translate(${dim_w},${lgd_pos.y})`);
     }
-    pos_lgds_elem.set(`${el2.attr('id')} ${el2.attr('class')}`, el2.node().getBBox());
+    pos_lgds_elem.set(`${el2.attr('id')} ${el2.attr('class')}`, get_bounding_rect(el2.node()));
   }
 }
 
@@ -167,10 +167,10 @@ function down_legend(legend_node) {
 function make_legend_context_menu(legend_node, layer) {
   const context_menu = new ContextMenu();
   const getItems = () => [
-    { name: i18next.t('app_page.common.edit_style'), action: () => { createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name')); } },
-    { name: i18next.t('app_page.common.up_element'), action: () => { up_legend(legend_node.node()); } },
-    { name: i18next.t('app_page.common.down_element'), action: () => { down_legend(legend_node.node()); } },
-    { name: i18next.t('app_page.common.hide'),
+    { name: _tr('app_page.common.edit_style'), action: () => { createlegendEditBox(legend_node.attr('id'), legend_node.attr('layer_name')); } },
+    { name: _tr('app_page.common.up_element'), action: () => { up_legend(legend_node.node()); } },
+    { name: _tr('app_page.common.down_element'), action: () => { down_legend(legend_node.node()); } },
+    { name: _tr('app_page.common.hide'),
       action: () => {
         if (!(legend_node.attr('display') === 'none')) legend_node.attr('display', 'none');
         else legend_node.attr('display', null);
@@ -215,7 +215,7 @@ export const drag_legend_func = function drag_legend_func(legend_group) {
     .on('end', () => {
       if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
       legend_group.style('cursor', 'grab');
-      pos_lgds_elem.set(`${legend_group.attr('id')} ${legend_group.attr('class')}`, legend_group.node().getBBox());
+      pos_lgds_elem.set(`${legend_group.attr('id')} ${legend_group.attr('class')}`, get_bounding_rect(legend_group.node()));
     })
     .on('drag', () => {
       const Min = Mmin;
@@ -227,7 +227,7 @@ export const drag_legend_func = function drag_legend_func(legend_group) {
       legend_group.attr('transform', `translate(${new_value})`)
           .style('cursor', 'grabbing');
 
-      const bbox_elem = legend_group.node().getBBox();
+      const bbox_elem = get_bounding_rect(legend_group.node());
       let val_x = d3.event.x,
         val_y = d3.event.y,
         change;
@@ -296,9 +296,9 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   const y_pos2 = ypos + space_elem;
   const tmp_class_name = `legend legend_feature lgdf_${_app.layer_to_id.get(layer)}`;
   const nbVar = fields.length;
-  const ref_colors = current_layers[layer].fill_color;
-  const symbol = current_layers[layer].symbol;
-  const size_symbol = current_layers[layer].size;
+  const ref_colors = data_manager.current_layers[layer].fill_color;
+  const symbol = data_manager.current_layers[layer].symbol;
+  const size_symbol = data_manager.current_layers[layer].size;
   let last_size;
   let last_pos;
 
@@ -377,7 +377,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
     legend_symbol_size
       .insert('text')
       .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 7, id: 'ratio_txt' })
-      .text(ratio_txt || ` = ${current_layers[layer].ratio}`);
+      .text(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol;
   } else {
     legend_symbol_size
@@ -387,7 +387,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
     legend_symbol_size
       .insert('text')
       .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 7, id: 'ratio_txt' })
-      .text(ratio_txt || ` = ${current_layers[layer].ratio}`);
+      .text(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol * 2;
   }
 
@@ -414,7 +414,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     ypos = 30,
     y_pos2 = ypos + space_elem,
     tmp_class_name = `legend legend_feature lgdf_${_app.layer_to_id.get(layer)}`,
-    breaks = current_layers[layer].breaks,
+    breaks = data_manager.current_layers[layer].breaks,
     nb_class = breaks.length;
 
   if (rounding_precision === undefined) {
@@ -461,15 +461,15 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 
   // Prepare symbols for the legend, taking care of not representing values
   // under the display threshold defined by the user (if any) :
-  let current_min_value = +current_layers[layer].min_display;
-  if (current_layers[layer].renderer === 'DiscLayer') {
+  let current_min_value = +data_manager.current_layers[layer].min_display;
+  if (data_manager.current_layers[layer].renderer === 'DiscLayer') {
   // Todo use the same way to store the threshold for links and disclayer
   // in order to avoid theses condition
     const values = Array.prototype.map.call(
       svg_map.querySelector(`#${_app.layer_to_id.get(layer)}`).querySelectorAll('path'),
       d => +d.__data__.properties.disc_value);
     current_min_value = current_min_value !== 1
-      ? values[Mround(current_min_value * current_layers[layer].n_features)]
+      ? values[Mround(current_min_value * data_manager.current_layers[layer].n_features)]
       : values[values.length - 1];
   }
 
@@ -493,8 +493,8 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
     .insert('g')
     .attr('class', (d, i) => `lg legend_${i}`);
 
-  const max_size = current_layers[layer].size[1],
-    color = current_layers[layer].fill_color.single,
+  const max_size = data_manager.current_layers[layer].size[1],
+    color = data_manager.current_layers[layer].fill_color.single,
     xrect = xpos + space_elem + max_size / 2;
   let last_size = 0,
     last_pos = y_pos2;
@@ -556,7 +556,7 @@ function createLegend_discont_links(layer, field, title, subtitle, rect_fill_val
 */
 function make_underlying_rect(legend_root, under_rect, fill) {
   under_rect.attrs({ width: 0, height: 0 });
-  const bboxLegend = legend_root.node().getBBox();
+  const bboxLegend = get_bounding_rect(legend_root.node());
   let translate = legend_root.attr('transform');
 
   translate = translate
@@ -601,30 +601,30 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
   const xpos = 30;
   const ypos = 30;
   let y_pos2 = ypos + space_elem * 1.5;
-  const nb_features = current_layers[layer].n_features;
+  const nb_features = data_manager.current_layers[layer].n_features;
   const tmp_class_name = `legend legend_feature lgdf_${_app.layer_to_id.get(layer)}`;
-  const symbol_type = current_layers[layer].symbol;
+  const symbol_type = data_manager.current_layers[layer].symbol;
 
   const color_symb_lgd = (
-    current_layers[layer].renderer === 'PropSymbolsChoro'
-      || current_layers[layer].renderer === 'PropSymbolsTypo'
-      || current_layers[layer].fill_color.two !== undefined
-      || current_layers[layer].fill_color.random !== undefined)
-    ? '#FFF' : current_layers[layer].fill_color.single;
+    data_manager.current_layers[layer].renderer === 'PropSymbolsChoro'
+      || data_manager.current_layers[layer].renderer === 'PropSymbolsTypo'
+      || data_manager.current_layers[layer].fill_color.two !== undefined
+      || data_manager.current_layers[layer].fill_color.random !== undefined)
+    ? '#FFF' : data_manager.current_layers[layer].fill_color.single;
 
-  const stroke_color = (current_layers[layer].renderer === 'PropSymbolsChoro'
-    || current_layers[layer].renderer === 'PropSymbolsTypo'
-    || current_layers[layer].fill_color.two !== undefined
-    || current_layers[layer].fill_color.random !== undefined)
+  const stroke_color = (data_manager.current_layers[layer].renderer === 'PropSymbolsChoro'
+    || data_manager.current_layers[layer].renderer === 'PropSymbolsTypo'
+    || data_manager.current_layers[layer].fill_color.two !== undefined
+    || data_manager.current_layers[layer].fill_color.random !== undefined)
   ? 'rgb(0, 0, 0)' : map.select(`#${_app.layer_to_id.get(layer)}`).select(symbol_type).style('stroke');
 
   const ref_symbols = document.getElementById(_app.layer_to_id.get(layer)).getElementsByTagName(symbol_type);
   const type_param = symbol_type === 'circle' ? 'r' : 'width';
   const z_scale = +d3.zoomTransform(map.node()).k;
-  const [ref_value, ref_size] = current_layers[layer].size;
+  const [ref_value, ref_size] = data_manager.current_layers[layer].size;
   const propSize = new PropSizer(ref_value, ref_size, symbol_type);
 
-  if (!current_layers[layer].size_legend_symbol) {
+  if (!data_manager.current_layers[layer].size_legend_symbol) {
     let non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
       size_max = +non_empty[0].getAttribute(type_param),
       size_min = +non_empty[non_empty.length - 1].getAttribute(type_param),
@@ -635,20 +635,20 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
       size_interm1 = Msqrt(size_min) + diff_size / 3,
       size_interm2 = Mpow(size_interm1 + diff_size / 3, 2);
     size_interm1 = Mpow(size_interm1, 2);
-    current_layers[layer].size_legend_symbol = [
+    data_manager.current_layers[layer].size_legend_symbol = [
       { value: val_max },
       { value: round_value(propSize.get_value(size_interm2), r) },
       { value: round_value(propSize.get_value(size_interm1), r) },
       { value: val_min },
     ];
-    if ((current_layers[layer].size_legend_symbol[0].value - current_layers[layer].size_legend_symbol[1].value) > 1) {
+    if ((data_manager.current_layers[layer].size_legend_symbol[0].value - data_manager.current_layers[layer].size_legend_symbol[1].value) > 1) {
       rounding_precision = 0;
     } else {
       rounding_precision = Mmax(get_nb_decimals(val_max), get_nb_decimals(val_min));
     }
   }
 
-  const t = current_layers[layer].size_legend_symbol;
+  const t = data_manager.current_layers[layer].size_legend_symbol;
   const ref_symbols_params = [
     { size: propSize.scale(t[0].value) * z_scale, value: t[0].value },
     { size: propSize.scale(t[1].value) * z_scale, value: t[1].value },
@@ -841,7 +841,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
     }
   }
 
-  if (current_layers[layer].break_val !== undefined) {
+  if (data_manager.current_layers[layer].break_val !== undefined) {
     const bottom_colors = legend_root.append('g');
     bottom_colors.insert('text')
       .attrs({
@@ -850,7 +850,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
         y: last_pos + 1.75 * space_elem,
       })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-      .html(`< ${current_layers[layer].break_val.toLocaleString()}`);
+      .html(`< ${data_manager.current_layers[layer].break_val.toLocaleString()}`);
     bottom_colors
       .insert('rect')
       .attrs({
@@ -860,7 +860,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
         width: space_elem,
         height: space_elem
       })
-      .style('fill', current_layers[layer].fill_color.two[0]);
+      .style('fill', data_manager.current_layers[layer].fill_color.two[0]);
     bottom_colors.insert('text')
       .attrs({
         id: 'col1_txt',
@@ -868,7 +868,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
         y: last_pos + 1.75 * space_elem,
       })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-      .html(`> ${current_layers[layer].break_val.toLocaleString()}`);
+      .html(`> ${data_manager.current_layers[layer].break_val.toLocaleString()}`);
     bottom_colors
       .insert('rect')
       .attrs({
@@ -878,7 +878,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
         width: space_elem,
         height: space_elem
       })
-      .style('fill', current_layers[layer].fill_color.two[1]);
+      .style('fill', data_manager.current_layers[layer].fill_color.two[1]);
     last_pos += 2.5 * space_elem;
   }
 
@@ -981,7 +981,7 @@ function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value
 
   let last_size = 0;
   let last_pos = y_pos2;
-  const color = current_layers[layer].fill_color.single;
+  const color = data_manager.current_layers[layer].fill_color.single;
   const xrect = xpos + space_elem;
 
   legend_elems
@@ -1069,23 +1069,23 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
     nb_class,
     data_colors_label;
 
-  if (current_layers[layer].renderer.indexOf('Categorical') > -1 || current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
+  if (data_manager.current_layers[layer].renderer.indexOf('Categorical') > -1 || data_manager.current_layers[layer].renderer.indexOf('PropSymbolsTypo') > -1) {
     data_colors_label = [];
-    current_layers[layer].color_map.forEach((v, k) => {
+    data_manager.current_layers[layer].color_map.forEach((v, k) => {
       data_colors_label.push({ value: v[1], color: v[0] });
     });
-    nb_class = current_layers[layer].color_map.size;
-  } else if (current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
+    nb_class = data_manager.current_layers[layer].color_map.size;
+  } else if (data_manager.current_layers[layer].renderer.indexOf('TypoSymbols') > -1) {
     data_colors_label = [];
-    current_layers[layer].symbols_map.forEach((v, _) => {
+    data_manager.current_layers[layer].symbols_map.forEach((v, _) => {
       data_colors_label.push({ value: v[2], image: v[0] });
     });
-    nb_class = current_layers[layer].symbols_map.size;
+    nb_class = data_manager.current_layers[layer].symbols_map.size;
   } else {
-    data_colors_label = current_layers[layer].colors_breaks.map(obj => ({ value: obj[0], color: obj[1] }));
-    nb_class = current_layers[layer].colors_breaks.length;
+    data_colors_label = data_manager.current_layers[layer].colors_breaks.map(obj => ({ value: obj[0], color: obj[1] }));
+    nb_class = data_manager.current_layers[layer].colors_breaks.length;
     if (rounding_precision === undefined) {
-      const breaks = current_layers[layer].options_disc.breaks;
+      const breaks = data_manager.current_layers[layer].options_disc.breaks;
       rounding_precision = get_lgd_display_precision(breaks);
     }
   }
@@ -1132,7 +1132,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
     .insert('g')
     .attr('class', (d, i) => `lg legend_${i}`);
 
-  if (current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
+  if (data_manager.current_layers[layer].renderer.indexOf('TypoSymbols') === -1) {
     legend_elems
       .append('rect')
       .attrs((d, i) => {
@@ -1157,10 +1157,10 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
       }));
   }
 
-  if (current_layers[layer].renderer.indexOf('Choropleth') > -1
-        || current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
-        || current_layers[layer].renderer.indexOf('Gridded') > -1
-        || current_layers[layer].renderer.indexOf('Stewart') > -1) {
+  if (data_manager.current_layers[layer].renderer.indexOf('Choropleth') > -1
+        || data_manager.current_layers[layer].renderer.indexOf('PropSymbolsChoro') > -1
+        || data_manager.current_layers[layer].renderer.indexOf('Gridded') > -1
+        || data_manager.current_layers[layer].renderer.indexOf('Stewart') > -1) {
     let tmp_pos;
     legend_elems
       .append('text')
@@ -1188,7 +1188,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(d => d.value);
   }
-  if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
+  if (data_manager.current_layers[layer].options_disc && data_manager.current_layers[layer].options_disc.no_data) {
     const gp_no_data = legend_root.append('g');
     gp_no_data
       .append('rect')
@@ -1199,8 +1199,8 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
         height: boxheight
       })
       .styles({
-        fill: current_layers[layer].options_disc.no_data,
-        stroke: current_layers[layer].options_disc.no_data,
+        fill: data_manager.current_layers[layer].options_disc.no_data,
+        stroke: data_manager.current_layers[layer].options_disc.no_data,
       });
 
     gp_no_data
@@ -1236,11 +1236,11 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
 
   const boxgap = +box_gap;
 
-  const data_colors_label = current_layers[layer].colors_breaks.map(obj => ({ value: obj[0], color: obj[1] })).reverse();
+  const data_colors_label = data_manager.current_layers[layer].colors_breaks.map(obj => ({ value: obj[0], color: obj[1] })).reverse();
   const nb_class = data_colors_label;
 
   if (rounding_precision === undefined) {
-    rounding_precision = get_lgd_display_precision(current_layers[layer].options_disc.breaks);
+    rounding_precision = get_lgd_display_precision(data_manager.current_layers[layer].options_disc.breaks);
   }
 
   const legend_root = map.insert('g')
@@ -1312,7 +1312,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     .styles({ 'font-size': '10px' })
     .text(d => round_value(data_colors_label[data_colors_label.length - 1].value.split(' - ')[1], rounding_precision).toLocaleString());
 
-  if (current_layers[layer].options_disc && current_layers[layer].options_disc.no_data) {
+  if (data_manager.current_layers[layer].options_disc && data_manager.current_layers[layer].options_disc.no_data) {
     const gp_no_data = legend_root.append('g');
     gp_no_data
       .append('rect')
@@ -1323,8 +1323,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
         height: boxheight
       })
       .styles({
-        fill: current_layers[layer].options_disc.no_data,
-        stroke: current_layers[layer].options_disc.no_data,
+        fill: data_manager.current_layers[layer].options_disc.no_data,
+        stroke: data_manager.current_layers[layer].options_disc.no_data,
       });
 
     gp_no_data
@@ -1353,7 +1353,7 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
     });
 
   // Center the title and the subtitle:
-  const bb = legend_root.node().getBBox();
+  const bb = get_bounding_rect(legend_root.node());
   const x_middle = (bb.x + bb.width / 2);
   lgd_title.attr('x', x_middle).text(title || '');
   lgd_subtitle.attr('x', x_middle).text(subtitle);
@@ -1366,8 +1366,8 @@ function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 
 
 
 function display_box_value_symbol(layer_name) {
-  const symbol_type = current_layers[layer_name].symbol,
-    field = current_layers[layer_name].rendered_field,
+  const symbol_type = data_manager.current_layers[layer_name].symbol,
+    field = data_manager.current_layers[layer_name].rendered_field,
     ref_symbols = document.getElementById(_app.layer_to_id.get(layer_name)).getElementsByTagName(symbol_type),
     type_param = symbol_type === 'circle' ? 'r' : 'width',
     non_empty = Array.prototype.filter.call(ref_symbols, (d, i) => { if (d[type_param].baseVal.value != 0) return d[type_param].baseVal.value; }),
@@ -1375,7 +1375,7 @@ function display_box_value_symbol(layer_name) {
 
   const redraw_sample_legend = (() => {
     const legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-    const rendered_field = current_layers[layer_name].rendered_field;
+    const rendered_field = data_manager.current_layers[layer_name].rendered_field;
     const nested = legend_node.getAttribute('nested');
     const join_line = legend_node.getAttribute('join_line');
     const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -1384,7 +1384,7 @@ function display_box_value_symbol(layer_name) {
       note = legend_node.querySelector('#legend_bottom_note').innerHTML;
     return (values) => {
       if (values) {
-        current_layers[layer_name].size_legend_symbol = values.sort((a, b) => b.value - a.value);
+        data_manager.current_layers[layer_name].size_legend_symbol = values.sort((a, b) => b.value - a.value);
         val1.property('value', values[0].value);
         val2.property('value', values[1].value);
         val3.property('value', values[2].value);
@@ -1397,9 +1397,9 @@ function display_box_value_symbol(layer_name) {
     };
   })();
 
-  const prom = make_confirm_dialog2('legend_symbol_values_box', `${layer_name} - ${i18next.t('app_page.legend_symbol_values_box.title')}`)
+  const prom = make_confirm_dialog2('legend_symbol_values_box', `${layer_name} - ${_tr('app_page.legend_symbol_values_box.title')}`)
     .then((confirmed) => {
-      current_layers[layer_name].size_legend_symbol = confirmed ? current_layers[layer_name].size_legend_symbol : original_values;
+      data_manager.current_layers[layer_name].size_legend_symbol = confirmed ? data_manager.current_layers[layer_name].size_legend_symbol : original_values;
       return Promise.resolve(confirmed);
     });
 
@@ -1408,15 +1408,15 @@ function display_box_value_symbol(layer_name) {
     .select('.modal-body');
   box_body.append('p').style('text-align', 'center')
     .insert('h3');
-    // .html(i18next.t("app_page.legend_symbol_values_box.subtitle"));
+    // .html(_tr("app_page.legend_symbol_values_box.subtitle"));
   let sample_svg = box_body.append('div')
     .attr('id', 'sample_svg')
     .style('float', 'left')
     .append('svg')
     .attrs({ width: 200, height: 300, id: 'svg_sample_legend' });
 
-  const values_to_use = [].concat(current_layers[layer_name].size_legend_symbol.map(f => cloneObj(f)));
-  const [ref_value, ref_size] = current_layers[layer_name].size;
+  const values_to_use = [].concat(data_manager.current_layers[layer_name].size_legend_symbol.map(f => cloneObj(f)));
+  const [ref_value, ref_size] = data_manager.current_layers[layer_name].size;
   const propSize = new PropSizer(ref_value, ref_size, symbol_type);
   const input_zone = box_body.append('div')
     .styles({ float: 'right', top: '100px', right: '20px', position: 'relative' });
@@ -1477,9 +1477,9 @@ function display_box_value_symbol(layer_name) {
     .styles({ 'text-align': 'center' })
     .insert('span')
     .attrs({ class: 'button_st3' })
-    .html(i18next.t('app_page.legend_symbol_values_box.reset'))
+    .html(_tr('app_page.legend_symbol_values_box.reset'))
     .on('click', () => {
-      current_layers[layer_name].size_legend_symbol = undefined;
+      data_manager.current_layers[layer_name].size_legend_symbol = undefined;
       redraw_sample_legend(original_values);
     });
 
@@ -1499,7 +1499,7 @@ function createlegendEditBox_symbol() {
     legend_boxes = legend_node_d3.selectAll(['#', legend_id, ' .lg'].join('')).select('text');
   }
   const layer_id = _app.layer_to_id.get(layer_name);
-  const type_symbol = current_layers[layer_name].symbol;
+  const type_symbol = data_manager.current_layers[layer_name].symbol;
   let box_class,
     legend_node,
     title_content,
@@ -1557,11 +1557,11 @@ function createlegendEditBox_symbol() {
 
   box_body.append('p').style('text-align', 'center')
     .insert('h3')
-    .html(i18next.t('app_page.legend_style_box.subtitle'));
+    .html(_tr('app_page.legend_style_box.subtitle'));
 
   const a = box_body.append('p');
   a.append('span')
-    .html(i18next.t('app_page.legend_style_box.lgd_title'));
+    .html(_tr('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
     .style('float', 'right')
@@ -1572,7 +1572,7 @@ function createlegendEditBox_symbol() {
 
   const b = box_body.append('p');
   b.insert('span')
-    .html(i18next.t('app_page.legend_style_box.var_name'));
+    .html(_tr('app_page.legend_style_box.var_name'));
   b.insert('input')
     .style('float', 'right')
     .property('value', subtitle_content.textContent)
@@ -1592,7 +1592,7 @@ function createlegendEditBox_symbol() {
 
   const c = box_body.insert('p');
   c.insert('span')
-    .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
+    .html(_tr('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .property('value', note_content.textContent)
@@ -1603,7 +1603,7 @@ function createlegendEditBox_symbol() {
   if (ratio_waffle_txt) {
     const d = box_body.insert('p');
     d.insert('span')
-      .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
+      .html(_tr('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .property('value', ratio_waffle_txt.textContent)
@@ -1617,7 +1617,7 @@ function createlegendEditBox_symbol() {
   choice_break_value_section1.append('span')
     .attr('class', 'button_disc')
     .styles({ cursor: 'pointer' })
-    .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+    .html(_tr('app_page.legend_style_box.choice_break_symbol'))
     .on('click', () => {
       container.modal.hide();
       display_box_value_symbol(layer_name).then((confirmed) => {
@@ -1642,7 +1642,7 @@ function createlegendEditBox_symbol() {
         join_line_section.style('display', 'none');
       }
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-      const rendered_field = current_layers[layer_name].rendered_field;
+      const rendered_field = data_manager.current_layers[layer_name].rendered_field;
       const nested = this.checked ? 'true' : 'false';
       const join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
       const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -1660,7 +1660,7 @@ function createlegendEditBox_symbol() {
     });
   gap_section.append('label')
     .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' })
-    .html(i18next.t('app_page.legend_style_box.nested_symbols'));
+    .html(_tr('app_page.legend_style_box.nested_symbols'));
 
   const current_state_line = legend_node.getAttribute('join_line') === 'true';
   const join_line_section = box_body.insert('p').style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
@@ -1670,7 +1670,7 @@ function createlegendEditBox_symbol() {
     .property('checked', current_state_line)
     .on('change', function () {
       legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-      const rendered_field = current_layers[layer_name].rendered_field;
+      const rendered_field = data_manager.current_layers[layer_name].rendered_field;
       const nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
       const join_line = this.checked ? 'true' : 'false';
       const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -1688,7 +1688,7 @@ function createlegendEditBox_symbol() {
     });
   join_line_section.append('label')
     .attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' })
-    .html(i18next.t('app_page.legend_style_box.join_line'));
+    .html(_tr('app_page.legend_style_box.join_line'));
 
 
   const rectangle_options1 = box_body.insert('p');
@@ -1716,7 +1716,7 @@ function createlegendEditBox_symbol() {
     });
   rectangle_options1.append('label')
     .attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' })
-    .html(i18next.t('app_page.legend_style_box.under_rectangle'));
+    .html(_tr('app_page.legend_style_box.under_rectangle'));
 
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
@@ -1803,11 +1803,11 @@ function createlegendEditBox_choro(legend_id, layer_name) {
 
   box_body.append('p').style('text-align', 'center')
     .insert('h3')
-    .html(i18next.t('app_page.legend_style_box.subtitle'));
+    .html(_tr('app_page.legend_style_box.subtitle'));
 
   const a = box_body.append('p');
   a.append('span')
-    .html(i18next.t('app_page.legend_style_box.lgd_title'));
+    .html(_tr('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
     .style('float', 'right')
@@ -1818,7 +1818,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
 
   const b = box_body.append('p');
   b.insert('span')
-    .html(i18next.t('app_page.legend_style_box.var_name'));
+    .html(_tr('app_page.legend_style_box.var_name'));
   b.insert('input')
     .style('float', 'right')
     .property('value', subtitle_content.textContent)
@@ -1838,7 +1838,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
 
   const c = box_body.insert('p');
   c.insert('span')
-    .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
+    .html(_tr('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .property('value', note_content.textContent)
@@ -1849,7 +1849,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
   if (no_data_txt) {
     const d = box_body.insert('p');
     d.insert('span')
-      .html(i18next.t('app_page.legend_style_box.no_data'));
+      .html(_tr('app_page.legend_style_box.no_data'));
     d.insert('input')
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .property('value', no_data_txt.textContent)
@@ -1889,7 +1889,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) { max_nb_decimals = 18; }
     const e = box_body.append('p');
     e.append('span')
-      .html(i18next.t('app_page.legend_style_box.float_rounding'));
+      .html(_tr('app_page.legend_style_box.float_rounding'));
 
     e.append('input')
       .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1 })
@@ -1933,7 +1933,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     .attrs({ type: 'checkbox', id: 'style_lgd' })
     .property('checked', current_state)
     .on('change', () => {
-      const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+      const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
       legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
       const boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
       const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -1956,7 +1956,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     });
   gap_section.append('label')
       .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' })
-      .html(i18next.t('app_page.legend_style_box.gap_boxes'));
+      .html(_tr('app_page.legend_style_box.gap_boxes'));
 
   const rectangle_options1 = box_body.insert('p');
   rectangle_options1.insert('input')
@@ -1981,7 +1981,7 @@ function createlegendEditBox_choro(legend_id, layer_name) {
     });
   rectangle_options1.append('label')
     .attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' })
-    .html(i18next.t('app_page.legend_style_box.under_rectangle'));
+    .html(_tr('app_page.legend_style_box.under_rectangle'));
 
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
@@ -1993,22 +1993,22 @@ function createlegendEditBox_choro(legend_id, layer_name) {
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 
-  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && current_layers[layer_name].options_disc)) {
+  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && data_manager.current_layers[layer_name].options_disc)) {
     const change_legend_type = box_body.insert('p');
     const vert_layout = change_legend_type.append('p')
       .attr('id', 'vert_layout')
       .attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
-      .text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
+      .text(_tr('app_page.legend_style_box.lgd_layout_vertical'));
     const horiz_layout = change_legend_type.append('p')
       .attr('id', 'horiz_layout')
       .attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
-      .text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));
+      .text(_tr('app_page.legend_style_box.lgd_layout_horizontal'));
     change_legend_type.selectAll('.opts_lgd_layout')
       .on('click', function () {
         if (this.classList.contains('selected')) { return; }
         change_legend_type.selectAll('.opts_lgd_layout').attr('class', 'opts_lgd_layout');
         this.classList.add('selected');
-        const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
         const boxgap = +legend_node.getAttribute('boxgap');
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2111,11 +2111,11 @@ function createlegendEditBox(legend_id, layer_name) {
   let current_nb_dec;
 
   box_body.append('p').style('text-align', 'center')
-    .insert('h3').html(i18next.t('app_page.legend_style_box.subtitle'));
+    .insert('h3').html(_tr('app_page.legend_style_box.subtitle'));
 
   const a = box_body.append('p');
   a.append('span')
-    .html(i18next.t('app_page.legend_style_box.lgd_title'));
+    .html(_tr('app_page.legend_style_box.lgd_title'));
 
   a.append('input')
     .style('float', 'right')
@@ -2126,7 +2126,7 @@ function createlegendEditBox(legend_id, layer_name) {
 
   const b = box_body.append('p');
   b.insert('span')
-    .html(i18next.t('app_page.legend_style_box.var_name'));
+    .html(_tr('app_page.legend_style_box.var_name'));
   b.insert('input')
     .style('float', 'right')
     .property('value', subtitle_content.textContent)
@@ -2146,7 +2146,7 @@ function createlegendEditBox(legend_id, layer_name) {
 
   const c = box_body.insert('p');
   c.insert('span')
-    .html(i18next.t('app_page.legend_style_box.additionnal_notes'));
+    .html(_tr('app_page.legend_style_box.additionnal_notes'));
   c.insert('input')
     .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
     .property('value', note_content.textContent)
@@ -2157,7 +2157,7 @@ function createlegendEditBox(legend_id, layer_name) {
   if (no_data_txt) {
     const d = box_body.insert('p');
     d.insert('span')
-      .html(i18next.t('app_page.legend_style_box.no_data'));
+      .html(_tr('app_page.legend_style_box.no_data'));
     d.insert('input')
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .property('value', no_data_txt.textContent)
@@ -2167,7 +2167,7 @@ function createlegendEditBox(legend_id, layer_name) {
   } else if (ratio_waffle_txt) {
     const d = box_body.insert('p');
     d.insert('span')
-      .html(i18next.t('app_page.legend_style_box.ratio_waffle_txt'));
+      .html(_tr('app_page.legend_style_box.ratio_waffle_txt'));
     d.insert('input')
       .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
       .property('value', ratio_waffle_txt.textContent)
@@ -2182,7 +2182,7 @@ function createlegendEditBox(legend_id, layer_name) {
     choice_break_value_section1.append('span')
       .attr('class', 'button_disc')
       .styles({ cursor: 'pointer' })
-      .html(i18next.t('app_page.legend_style_box.choice_break_symbol'))
+      .html(_tr('app_page.legend_style_box.choice_break_symbol'))
       .on('click', () => {
         container.modal.hide();
         display_box_value_symbol(layer_name).then((confirmed) => {
@@ -2194,8 +2194,8 @@ function createlegendEditBox(legend_id, layer_name) {
         });
       });
   }
-  if ((current_layers[layer_name].renderer !== 'TwoStocksWaffle' && current_layers[layer_name].renderer !== 'Categorical' && current_layers[layer_name].renderer !== 'TypoSymbols')
-      && !(current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('legend_root_symbol') < 0)) {
+  if ((data_manager.current_layers[layer_name].renderer !== 'TwoStocksWaffle' && data_manager.current_layers[layer_name].renderer !== 'Categorical' && data_manager.current_layers[layer_name].renderer !== 'TypoSymbols')
+      && !(data_manager.current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('legend_root_symbol') < 0)) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
@@ -2230,7 +2230,7 @@ function createlegendEditBox(legend_id, layer_name) {
       if (max_nb_decimals > +current_nb_dec && max_nb_decimals > 18) { max_nb_decimals = 18; }
       const e = box_body.append('p');
       e.append('span')
-        .html(i18next.t('app_page.legend_style_box.float_rounding'));
+        .html(_tr('app_page.legend_style_box.float_rounding'));
 
       e.append('input')
         .attrs({ id: 'precision_range', type: 'range', min: -(+max_nb_left), max: max_nb_decimals, step: 1 })
@@ -2283,7 +2283,7 @@ function createlegendEditBox(legend_id, layer_name) {
       .attrs({ type: 'checkbox', id: 'style_lgd' })
       .property('checked', current_state)
       .on('change', () => {
-        const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
         const boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2306,10 +2306,10 @@ function createlegendEditBox(legend_id, layer_name) {
       });
     gap_section.append('label')
         .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.gap_boxes' })
-        .html(i18next.t('app_page.legend_style_box.gap_boxes'));
+        .html(_tr('app_page.legend_style_box.gap_boxes'));
     // document.getElementById('style_lgd').checked = current_state;
   } else if (legend_id === 'legend_root_symbol') {
-    const type_symbol = current_layers[layer_name].symbol;
+    const type_symbol = data_manager.current_layers[layer_name].symbol;
     const current_state_nested = legend_node.getAttribute('nested') === 'true';
     const gap_section = box_body.insert('p');
     gap_section.append('input')
@@ -2319,7 +2319,7 @@ function createlegendEditBox(legend_id, layer_name) {
       .on('change', function () {
         join_line_section.style('display', this.checked && (type_symbol === 'circle') ? null : 'none');
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-        const rendered_field = current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field;
         const nested = this.checked ? 'true' : 'false';
         const join_line = join_line_section.select('input').property('checked') ? 'true' : 'false';
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2337,7 +2337,7 @@ function createlegendEditBox(legend_id, layer_name) {
       });
     gap_section.append('label')
       .attrs({ for: 'style_lgd', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.nested_symbols' })
-      .html(i18next.t('app_page.legend_style_box.nested_symbols'));
+      .html(_tr('app_page.legend_style_box.nested_symbols'));
 
     const current_state_line = legend_node.getAttribute('join_line') === 'true';
     const join_line_section = box_body.insert('p').style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
@@ -2347,7 +2347,7 @@ function createlegendEditBox(legend_id, layer_name) {
       .property('checked', current_state_line)
       .on('change', function () {
         legend_node = svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''));
-        const rendered_field = current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field;
         const nested = legend_node.getAttribute('nested') === 'true' ? 'true' : 'false';
         const join_line = this.checked ? 'true' : 'false';
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2365,7 +2365,7 @@ function createlegendEditBox(legend_id, layer_name) {
       });
     join_line_section.append('label')
       .attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' })
-      .html(i18next.t('app_page.legend_style_box.join_line'));
+      .html(_tr('app_page.legend_style_box.join_line'));
   }
 // Todo : Reactivate this functionnality :
 //    box_body.insert("p").html("Display features count ")
@@ -2394,7 +2394,7 @@ function createlegendEditBox(legend_id, layer_name) {
     });
   rectangle_options1.append('label')
     .attrs({ for: 'rect_lgd_checkbox', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.under_rectangle' })
-    .html(i18next.t('app_page.legend_style_box.under_rectangle'));
+    .html(_tr('app_page.legend_style_box.under_rectangle'));
 
   let rectangle_options2 = rectangle_options1.insert('span')
     .styles({ float: 'right', display: rect_fill_value.color === undefined ? 'none' : '' });
@@ -2406,22 +2406,22 @@ function createlegendEditBox(legend_id, layer_name) {
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 
-  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && current_layers[layer_name].options_disc)) {
+  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && data_manager.current_layers[layer_name].options_disc)) {
     const change_legend_type = box_body.insert('p');
     const vert_layout = change_legend_type.append('p')
       .attr('id', 'vert_layout')
       .attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
-      .text(i18next.t('app_page.legend_style_box.lgd_layout_vertical'));
+      .text(_tr('app_page.legend_style_box.lgd_layout_vertical'));
     const horiz_layout = change_legend_type.append('p')
       .attr('id', 'horiz_layout')
       .attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
-      .text(i18next.t('app_page.legend_style_box.lgd_layout_horizontal'));
+      .text(_tr('app_page.legend_style_box.lgd_layout_horizontal'));
     change_legend_type.selectAll('.opts_lgd_layout')
       .on('click', function () {
         if (this.classList.contains('selected')) { return; }
         change_legend_type.selectAll('.opts_lgd_layout').attr('class', 'opts_lgd_layout');
         this.classList.add('selected');
-        const rendered_field = current_layers[layer_name].rendered_field2 ? current_layers[layer_name].rendered_field2 : current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
         const boxgap = +legend_node.getAttribute('boxgap');
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2513,9 +2513,9 @@ export function move_legends() {
 }
 
 const get_max_nb_dec = function (layer_name) {
-  if (!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks)) { return; }
+  if (!(data_manager.current_layers[layer_name]) || !(data_manager.current_layers[layer_name].colors_breaks)) { return; }
   let max = 0;
-  current_layers[layer_name].colors_breaks.forEach((el) => {
+  data_manager.current_layers[layer_name].colors_breaks.forEach((el) => {
     const tmp = el[0].split(' - ');
     const p1 = tmp[0].indexOf('.');
     const p2 = tmp[1].indexOf('.');
@@ -2534,9 +2534,9 @@ function _get_max_nb_left_sep(values) {
 }
 
 const get_max_nb_left_sep = function (layer_name) {
-  if (!(current_layers[layer_name]) || !(current_layers[layer_name].colors_breaks)) { return; }
+  if (!(data_manager.current_layers[layer_name]) || !(data_manager.current_layers[layer_name].colors_breaks)) { return; }
   const nb_left = [];
-  current_layers[layer_name].colors_breaks.forEach((el) => {
+  data_manager.current_layers[layer_name].colors_breaks.forEach((el) => {
     const tmp = el[0].split(' - ');
     const p1 = tmp[0].indexOf('.'),
       p2 = tmp[1].indexOf('.');

@@ -90,7 +90,7 @@ export const available_projections = new Map([
 const createBoxProj4 = function createBoxProj4() {
   make_dialog_container(
     'box_projection_input',
-    i18next.t('app_page.section5.title'),
+    _tr('app_page.section5.title'),
     'dialog',
   );
   const container = document.getElementById('box_projection_input');
@@ -107,7 +107,7 @@ const createBoxProj4 = function createBoxProj4() {
   const input_section = content.append('p');
   input_section.append('span')
     .style('float', 'left')
-    .html(i18next.t('app_page.proj4_box.enter_string'));
+    .html(_tr('app_page.proj4_box.enter_string'));
   input_section.append('input')
     .styles({ width: '90%' })
     .attrs({
@@ -140,7 +140,7 @@ const createBoxProj4 = function createBoxProj4() {
       const code = +proj_str.toUpperCase().split('EPSG:')[1];
       const rv = _app.epsg_projections[code];
       if (!rv) {
-        error_msg = i18next.t('app_page.common.missing_epsg');
+        error_msg = _tr('app_page.common.missing_epsg');
         proj_str = undefined;
       } else {
         custom_name = rv.name;
@@ -155,7 +155,7 @@ const createBoxProj4 = function createBoxProj4() {
     } catch (e) {
       swal({
         title: 'Oops...',
-        text: i18next.t('app_page.proj4_box.error', { detail: error_msg || e }),
+        text: _tr('app_page.proj4_box.error', { detail: error_msg || e }),
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -166,11 +166,11 @@ const createBoxProj4 = function createBoxProj4() {
     if (rv) {
       _app.last_projection = proj_str;
       addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
-      current_proj_name = 'def_proj4';
+      _app.current_proj_name = 'def_proj4';
     } else {
       swal({
         title: 'Oops...',
-        text: i18next.t('app_page.proj4_box.error', { detail: '' }),
+        text: _tr('app_page.proj4_box.error', { detail: '' }),
         type: 'error',
         allowOutsideClick: false,
         allowEscapeKey: false,
@@ -222,11 +222,11 @@ export function handle_projection_select() {
   const tmp = this.querySelector('[value="last_projection"]');
   let val = this.value;
   if (val === 'more') {
-    this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
+    this.value = (tmp && _app.current_proj_name === tmp.name) ? 'last_projection' : _app.current_proj_name;
     createBoxCustomProjection();
     return;
   } else if (val === 'proj4') {
-    this.value = (tmp && current_proj_name === tmp.name) ? 'last_projection' : current_proj_name;
+    this.value = (tmp && _app.current_proj_name === tmp.name) ? 'last_projection' : _app.current_proj_name;
     createBoxProj4();
     return;
   } else if (val === 'last_projection') {
@@ -243,12 +243,12 @@ export function handle_projection_select() {
   }
 
   if (val === 'def_proj4') {
-    current_proj_name = val;
+    _app.current_proj_name = val;
     change_projection_4(proj4(_app.last_projection));
     makeTooltipProj4(this, _app.last_projection);
   } else {
-    current_proj_name = val;
-    change_projection(current_proj_name);
+    _app.current_proj_name = val;
+    change_projection(_app.current_proj_name);
   }
 }
 
@@ -267,7 +267,7 @@ export function addLastProjectionSelect(proj_name, proj4string, custom_name) {
     new_option.value = 'last_projection';
     new_option.name = proj_name;
     new_option.projValue = proj4string;
-    new_option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
+    new_option.innerHTML = custom_name || _tr(`app_page.projection_name.${proj_name}`);
     if (!custom_name) new_option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     proj_select.insertBefore(new_option, prev_elem);
     proj_select.value = 'last_projection';
@@ -275,7 +275,7 @@ export function addLastProjectionSelect(proj_name, proj4string, custom_name) {
     const option = proj_select.querySelector("[value='last_projection']");
     option.name = proj_name;
     option.projValue = proj4string;
-    option.innerHTML = custom_name || i18next.t(`app_page.projection_name.${proj_name}`);
+    option.innerHTML = custom_name || _tr(`app_page.projection_name.${proj_name}`);
     if (!custom_name) option.setAttribute('data-i18n', `[text]app_page.projection_name.${proj_name}`);
     else option.removeAttribute('data-i18n');
     proj_select.value = 'last_projection';
@@ -297,14 +297,14 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       Array.from(available_projections.keys()).forEach((proj_name) => {
         display_select_proj.append('option')
           .attrs({ class: 'i18n', value: proj_name, 'data-i18n': `app_page.projection_name.${proj_name}` })
-          .text(i18next.t(`app_page.projection_name.${proj_name}`));
+          .text(_tr(`app_page.projection_name.${proj_name}`));
       });
     } else if (!filter_ex) {
       available_projections.forEach((v, k) => {
         if (v.param_in === filter_in) {
           display_select_proj.insert('option')
             .attrs({ class: 'i18n', value: k })
-            .text(i18next.t(`app_page.projection_name.${k}`));
+            .text(_tr(`app_page.projection_name.${k}`));
         }
       });
     } else if (!filter_in) {
@@ -312,7 +312,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
         if (v.param_ex === filter_ex) {
           display_select_proj.append('option')
             .attrs({ class: 'i18n', value: k })
-            .text(i18next.t(`app_page.projection_name.${k}`));
+            .text(_tr(`app_page.projection_name.${k}`));
         }
       });
     } else {
@@ -322,13 +322,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
           empty = false;
           display_select_proj.append('option')
             .attrs({ class: 'i18n', value: k })
-            .text(i18next.t(`app_page.projection_name.${k}`));
+            .text(_tr(`app_page.projection_name.${k}`));
         }
       });
       if (empty) {
         display_select_proj.append('option')
           .attrs({ class: 'i18n', value: 'no_result' })
-          .html(i18next.t('app_page.projection_box.no_result_projection'));
+          .html(_tr('app_page.projection_box.no_result_projection'));
       }
     }
     display_select_proj.on('dblclick', function () {
@@ -372,13 +372,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   }
 
   function reproj(value) {
-    current_proj_name = value;
-    addLastProjectionSelect(current_proj_name);
-    change_projection(current_proj_name);
+    _app.current_proj_name = value;
+    addLastProjectionSelect(_app.current_proj_name);
+    change_projection(_app.current_proj_name);
     updateProjOptions();
   }
 
-  const prev_projection = current_proj_name,
+  const prev_projection = _app.current_proj_name,
     prev_translate = [].concat(t),
     prev_scale = s,
     prev_rotate = proj.rotate ? proj.rotate() : undefined,
@@ -387,7 +387,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   const modal_box = make_dialog_container(
     'box_projection_customization',
-    i18next.t('app_page.section5.title'),
+    _tr('app_page.section5.title'),
     'dialog',
   );
   const container = document.getElementById('box_projection_customization'),
@@ -402,7 +402,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   const choice_proj = content.append('button')
     .attrs({ class: 'accordion_proj active', id: 'btn_choice_proj' })
     .style('padding', '0 6px')
-    .html(i18next.t('app_page.projection_box.choice_projection'));
+    .html(_tr('app_page.projection_box.choice_projection'));
   const accordion_choice_projs = content.append('div')
     .attrs({ class: 'panel show', id: 'accordion_choice_projection' })
     .style('padding', '10px')
@@ -423,7 +423,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   const filtersection1 = column1.append('div').attr('class', 'switch-field f1');
   filtersection1.append('div')
     .attrs({ class: 'switch-title' })
-    .html(i18next.t('app_page.projection_box.filter_nature'));
+    .html(_tr('app_page.projection_box.filter_nature'));
   ['any', 'other', 'cone', 'cylindrical', 'plan', 'pseudocone', 'pseudocylindre', 'pseudoplan'].forEach((v, i) => {
     const _id = `switch_proj1_elem_${i}`;
     filtersection1.append('input')
@@ -432,13 +432,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       });
     filtersection1.append('label')
       .attr('for', _id)
-      .html(i18next.t(`app_page.projection_box.${v}`));
+      .html(_tr(`app_page.projection_box.${v}`));
   });
 
   const filtersection2 = column2.append('div').attr('class', 'switch-field f2');
   filtersection2.append('div')
     .attrs({ class: 'switch-title' })
-    .html(i18next.t('app_page.projection_box.filter_prop'));
+    .html(_tr('app_page.projection_box.filter_prop'));
   ['any', 'aphylactic', 'conformal', 'equalarea', 'equidistant'].forEach((v, i) => {
     const _id = `switch_proj2_elem_${i}`;
     filtersection2.append('input')
@@ -447,7 +447,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       });
     filtersection2.append('label')
       .attr('for', _id)
-      .html(i18next.t(`app_page.projection_box.${v}`));
+      .html(_tr(`app_page.projection_box.${v}`));
   });
 
   Array.prototype.forEach.call(
@@ -465,7 +465,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   column3.append('button')
     .style('margin', '5px 0 5px 0')
     .attrs({ id: 'btn_valid_reproj', class: 'button_st4 i18n' })
-    .html(i18next.t('app_page.projection_box.ok_reproject'))
+    .html(_tr('app_page.projection_box.ok_reproject'))
     .on('click', () => {
       const value = document.getElementById('select_proj').value;
       if (value === 'no_result') return;
@@ -475,7 +475,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   const choice_options = content.append('button')
     .attrs({ class: 'accordion_proj', id: 'btn_choice_proj' })
     .style('padding', '0 6px')
-    .html(i18next.t('app_page.projection_box.projection_options'));
+    .html(_tr('app_page.projection_box.projection_options'));
   const accordion_choice_options = content.append('div')
     .attrs({ class: 'panel', id: 'accordion_choice_projection' })
     .style('padding', '10px')
@@ -489,7 +489,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   const lambda_section = rotate_section.append('p');
   lambda_section.append('span')
     .style('float', 'left')
-    .html(i18next.t('app_page.section5.projection_center_lambda'));
+    .html(_tr('app_page.section5.projection_center_lambda'));
   let lambda_input = lambda_section.append('input')
     .styles({
       width: '60px', float: 'right', height: '2rem',
@@ -507,7 +507,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('clear', 'both');
   phi_section.append('span')
     .style('float', 'left')
-    .html(i18next.t('app_page.section5.projection_center_phi'));
+    .html(_tr('app_page.section5.projection_center_phi'));
   let phi_input = phi_section.append('input')
     .styles({
       width: '60px', float: 'right', height: '2rem',
@@ -524,7 +524,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .style('clear', 'both');
   gamma_section.append('span')
     .style('float', 'left')
-    .html(i18next.t('app_page.section5.projection_center_gamma'));
+    .html(_tr('app_page.section5.projection_center_gamma'));
   let gamma_input = gamma_section.append('input')
     .styles({
       width: '60px', float: 'right', height: '2rem',
@@ -541,7 +541,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .styles({ 'text-align': 'center', clear: 'both' })
     .style('display', prev_parallels ? '' : 'none');
   parallels_section.append('span')
-    .html(i18next.t('app_page.section5.parallels'));
+    .html(_tr('app_page.section5.parallels'));
   const inputs = parallels_section.append('p')
     .styles({ 'text-align': 'center', margin: 'auto' });
   let sp1_input = inputs.append('input')
@@ -565,7 +565,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .styles({ 'text-align': 'center', clear: 'both' })
     .style('display', prev_parallel ? '' : 'none');
   parallel_section.append('span')
-    .html(i18next.t('app_page.section5.parallel'));
+    .html(_tr('app_page.section5.parallel'));
 
   let sp_input = parallel_section.append('p')
     .styles({ 'text-align': 'center', margin: 'auto' })
@@ -596,16 +596,16 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     clean_up_box();
     s = prev_scale;
     t = prev_translate.slice();
-    current_proj_name = prev_projection;
+    _app.current_proj_name = prev_projection;
 
     if (prev_projection !== 'def_proj4') {
-      change_projection(current_proj_name);
-      addLastProjectionSelect(current_proj_name);
+      change_projection(_app.current_proj_name);
+      addLastProjectionSelect(_app.current_proj_name);
     } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
       let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
       custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
-      addLastProjectionSelect(current_proj_name, _app.last_projection, custom_name);
+      addLastProjectionSelect(_app.current_proj_name, _app.last_projection, custom_name);
     }
     if (prev_rotate) {
       handle_proj_center_button(prev_rotate);
@@ -680,7 +680,7 @@ function handle_parallel_change(parallel) {
 * @return {Object} - The projection as a d3.geoProjection.
 *
 */
-const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
+export const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
   // Create the custom d3 projection using proj 4 forward and inverse functions:
   const projRaw = function (lambda, phi) {
     return _proj.forward([lambda * 57.29577951308232, phi * 57.29577951308232]);
@@ -692,7 +692,7 @@ const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
   return d3.geoProjection(projRaw);
 };
 
-const tryFindNameProj = (proj_str) => {
+export const tryFindNameProj = (proj_str) => {
   let o = Object.entries(_app.epsg_projections)
     .filter(proj => proj[1].proj4.indexOf(proj_str) > -1
       || proj[1].proj4.replace('+towgs84=0,0,0,0,0,0,0 ', '').indexOf(proj_str) > -1);
@@ -799,7 +799,7 @@ export function change_projection(new_proj_name) {
   }
 
   // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-  let layer_name = Object.getOwnPropertyNames(user_data)[0];
+  let layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
   if (!layer_name && def_proj.bounds) {
     scale_to_bbox(def_proj.bounds);
   } else if (!layer_name) {
@@ -865,7 +865,7 @@ export function change_projection_4(_proj) {
   }
 
   // // Reset the zoom on the targeted layer (or on the top layer if no targeted layer):
-  let layer_name = Object.getOwnPropertyNames(user_data)[0];
+  let layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
   if (!layer_name) {
     const layers_active = Array.prototype.filter.call(
       svg_map.querySelectorAll('.layer'), f => f.style.visibility !== 'hidden');

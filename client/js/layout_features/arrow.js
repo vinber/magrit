@@ -128,10 +128,10 @@ export default class UserArrow {
   draw() {
     const context_menu = new ContextMenu(),
       getItems = () => [
-        { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-        { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-        { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-        { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+        { name: _tr('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+        { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+        { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+        { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
       ];
 
     this.arrow = this.svg_elem.append('g')
@@ -162,7 +162,7 @@ export default class UserArrow {
   }
 
   remove() {
-        // pos_lgds_elem.delete(this.arrow.attr('id'));
+    // pos_lgds_elem.delete(this.arrow.attr('id'));
     this.arrow.remove();
   }
 
@@ -179,7 +179,7 @@ export default class UserArrow {
       line = self.arrow.node().querySelector('line'),
       zoom_params = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
-      msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+      msg = alertify.notify(_tr('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
       // New behavior if the user click on the lock to move on the map :
     const cleanup_edit_state = () => {
@@ -281,7 +281,7 @@ export default class UserArrow {
 
     check_remove_existing_box('.styleBoxArrow');
 
-    make_confirm_dialog2('styleBoxArrow', i18next.t('app_page.arrow_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('styleBoxArrow', _tr('app_page.arrow_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
           // Store shorcut of useful values :
@@ -313,7 +313,7 @@ export default class UserArrow {
 
     const s1 = box_content.append('p').attr('class', 'line_elem2');
     s1.append('span')
-      .html(i18next.t('app_page.arrow_edit_box.arrowWeight'));
+      .html(_tr('app_page.arrow_edit_box.arrowWeight'));
     s1.insert('span')
       .styles({ float: 'right', width: '13px' })
       .html('&nbsp;px');
@@ -348,7 +348,7 @@ export default class UserArrow {
 
     const s2 = box_content.append('p').attr('class', 'line_elem2');
     s2.append('span')
-      .html(i18next.t('app_page.arrow_edit_box.arrowAngle'));
+      .html(_tr('app_page.arrow_edit_box.arrowAngle'));
     s2.insert('span')
       .styles({ float: 'right', width: '13px' })
       .html('&nbsp;°');
@@ -378,7 +378,7 @@ export default class UserArrow {
     const s3 = box_content.append('p').attr('class', 'line_elem2');
     s3.append('label')
       .attrs({ for: 'checkbox_head_arrow' })
-      .html(i18next.t('app_page.arrow_edit_box.arrowHead'));
+      .html(_tr('app_page.arrow_edit_box.arrowHead'));
     s3.append('input')
       .attrs({ type: 'checkbox', id: 'checkbox_head_arrow' })
       .styles({ 'margin-left': '45px', 'vertical-align': 'middle' })

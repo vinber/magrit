@@ -45,5 +45,5 @@ onmessage = function (e) {
       }
     }
   }
-  postMessage([field_join_map, hits]);
+  postMessage([data_manager.field_join_map, hits]);
 };

@@ -2,9 +2,10 @@ import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
 import { rgb2hex } from './../colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { available_fonts } from './../fonts';
 import { cloneObj } from './../helpers';
 import { handle_click_hand } from './../interface';
-import { get_coords_snap_lines, make_red_line_snap } from './helpers';
+import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './snap_lines';
 import { Mabs, Mmax, Mmin } from './../helpers_math';
 
 const round = Math.round;
@@ -17,10 +18,10 @@ export default class Textbox {
     this.fontSize = 14;
     const context_menu = new ContextMenu();
     const getItems = () => [
-      { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+      { name: _tr('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+      { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
     ];
     const drag_txt_annot = d3.drag()
       .subject(function () {
@@ -39,8 +40,7 @@ export default class Textbox {
       })
       .on('end', function () {
         if (d3.event.subject && !d3.event.subject.map_locked) { handle_click_hand('unlock'); }
-        pos_lgds_elem.set(this.id, this.querySelector('rect').getBBox());
-        console.log(this.querySelector('rect'));
+        pos_lgds_elem.set(this.id, get_bounding_rect(this.querySelector('rect')));
       })
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
@@ -53,7 +53,7 @@ export default class Textbox {
         elem.selectAll('tspan').attr('x', +d3.event.x);
 
         if (_app.autoalign_features) {
-          const bbox = elem.node().getBBox(),
+          const bbox = get_bounding_rect(elem.node()),
             xmin = bbox.x - 10,
             xmax = xmin + bbox.width + 20,
             ymin = bbox.y - 10,
@@ -118,7 +118,7 @@ export default class Textbox {
       });
     text_elem.append('tspan')
       .attr('x', this.x)
-      .text(i18next.t('app_page.text_box_edit_box.constructor_default'));
+      .text(_tr('app_page.text_box_edit_box.constructor_default'));
     group_elem.call(drag_txt_annot);
     group_elem.on('dblclick', () => {
       d3.event.preventDefault();
@@ -140,7 +140,7 @@ export default class Textbox {
     this.id = id_text_annot;
 
     this.update_bbox();
-    pos_lgds_elem.set(this.id, group_elem.node().getBBox());
+    pos_lgds_elem.set(this.id, get_bounding_rect(group_elem.node()));
   }
 
   remove() {
@@ -169,7 +169,7 @@ export default class Textbox {
   }
 
   update_bbox() {
-    const bbox = this.textAnnot.node().getBBox();
+    const bbox = get_bounding_rect(this.textAnnot.node());
     this.width = bbox.width;
     this.height = bbox.height;
     this.group.select('rect')
@@ -183,7 +183,7 @@ export default class Textbox {
 
   updateLineHeight() {
     const self = this;
-    self.lineHeight = round(self.fontSize * 1.4);
+    self.lineHeight = round(self.fontSize * 1.33);
     self.textAnnot.selectAll('tspan').each(function (d, i) {
       if (i !== 0) {
         d3.select(this).attr('dy', self.lineHeight);
@@ -211,7 +211,7 @@ export default class Textbox {
       font_family: self.fontFamily,
     };
     current_options.font_weight = (current_options.font_weight === '400' || current_options.font_weight === '') ? '' : 'bold';
-    make_confirm_dialog2('styleTextAnnotation', i18next.t('app_page.text_box_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('styleTextAnnotation', _tr('app_page.text_box_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (!confirmed) {
           text_elem
@@ -246,7 +246,7 @@ export default class Textbox {
       current_rotate = 0;
     }
 
-    const bbox = text_elem.node().getBBox(),
+    const bbox = get_bounding_rect(text_elem.node()),
       nx = bbox.x,
       ny = bbox.y,
       x_center = nx + bbox.width / 2,
@@ -256,7 +256,7 @@ export default class Textbox {
       .attr('class', 'line_elem2');
 
     option_rotation.append('span')
-      .html(i18next.t('app_page.text_box_edit_box.rotation'));
+      .html(_tr('app_page.text_box_edit_box.rotation'));
 
     option_rotation.append('span')
       .style('float', 'right')
@@ -350,7 +350,7 @@ export default class Textbox {
 
     const content_modif_zone = box_content.append('p');
     content_modif_zone.append('span')
-      .html(i18next.t('app_page.text_box_edit_box.content'));
+      .html(_tr('app_page.text_box_edit_box.content'));
     const right = content_modif_zone.append('span')
       .attr('class', 'align-option')
       .styles({ 'font-size': '11px', 'font-weight': '', 'margin-left': '10px', float: 'right' })
@@ -425,7 +425,7 @@ export default class Textbox {
 
     buffer_text_zone.append('label')
       .attrs({ for: 'buffer_txt_chk' })
-      .text(i18next.t('app_page.text_box_edit_box.buffer'));
+      .text(_tr('app_page.text_box_edit_box.buffer'));
 
     let buffer_color = buffer_text_zone.append('input')
       .styles({

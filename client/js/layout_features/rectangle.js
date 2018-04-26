@@ -99,10 +99,10 @@ export default class UserRectangle {
   draw() {
     const context_menu = new ContextMenu();
     const getItems = () => [
-        { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-        { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-        { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-        { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+        { name: _tr('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+        { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+        { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+        { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
     ];
 
     this.rectangle = this.svg_elem.append('g')
@@ -153,7 +153,7 @@ export default class UserRectangle {
       self.pt1[0] + rectangle_elem.width.baseVal.value,
       self.pt1[1] + rectangle_elem.height.baseVal.value,
     ];
-    const msg = alertify.notify(i18next.t('app_page.notification.instruction_modify_feature'), 'warning', 0);
+    const msg = alertify.notify(_tr('app_page.notification.instruction_modify_feature'), 'warning', 0);
 
     let topleft = self.pt1.slice();
 
@@ -290,7 +290,7 @@ export default class UserRectangle {
       map_locked = !!map_div.select('#hand_button').classed('locked'),
       current_options = { pt1: this.pt1.slice() };
     if (!map_locked) handle_click_hand('lock');
-    make_confirm_dialog2('styleBoxRectangle', i18next.t('app_page.rectangle_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('styleBoxRectangle', _tr('app_page.rectangle_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
           // Store shorcut of useful values :
@@ -318,7 +318,7 @@ export default class UserRectangle {
 
     s1.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.rectangle_edit_box.stroke_width'));
+      .html(_tr('app_page.rectangle_edit_box.stroke_width'));
 
     const i1 = s1.append('input')
       .attrs({
@@ -342,7 +342,7 @@ export default class UserRectangle {
 
     s2.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.rectangle_edit_box.stroke_color'));
+      .html(_tr('app_page.rectangle_edit_box.stroke_color'));
 
     s2.append('input')
       .style('float', 'right')
@@ -355,7 +355,7 @@ export default class UserRectangle {
     const s3 = box_content.append('p').attr('class', 'line_elem2');
     s3.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.rectangle_edit_box.fill_color'));
+      .html(_tr('app_page.rectangle_edit_box.fill_color'));
     s3.append('input')
       .style('float', 'right')
       .attr('type', 'color')
@@ -367,7 +367,7 @@ export default class UserRectangle {
     const s4 = box_content.append('p').attr('class', 'line_elem2');
     s4.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.rectangle_edit_box.fill_opacity'));
+      .html(_tr('app_page.rectangle_edit_box.fill_opacity'));
     s4.append('input')
       .attrs({
         min: 0,
@@ -390,7 +390,7 @@ export default class UserRectangle {
     const s5 = box_content.append('p').attr('class', 'line_elem2');
     s5.append('span')
       .style('margin', 'auto')
-      .html(i18next.t('app_page.rectangle_edit_box.rounded_corner'));
+      .html(_tr('app_page.rectangle_edit_box.rounded_corner'));
     s5.append('input')
       .attrs({
         min: 0,

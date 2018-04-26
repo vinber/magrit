@@ -4,6 +4,9 @@ import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
 import { coslaw_dist } from './../helpers_calc';
 import { Mround } from './../helpers_math';
 import { drag_legend_func } from './../legend';
+import { pos_lgds_elem } from './snap_lines';
+
+
 /**
 * Handler for the scale bar (only designed for one scale bar)
 *
@@ -12,7 +15,7 @@ export const scaleBar = {
   create(x, y) {
     // if (!proj.invert) {
     //   swal({ title: '',
-    //     text: i18next.t('app_page.common.error_interrupted_projection_scalebar'),
+    //     text: _tr('app_page.common.error_interrupted_projection_scalebar'),
     //     type: 'error',
     //     allowOutsideClick: false,
     //     allowEscapeKey: false,
@@ -36,10 +39,10 @@ export const scaleBar = {
     if (rv) return;
 
     const getItems = () => [
-      { name: i18next.t('app_page.common.edit_style'), action: () => { this.editStyle(); } },
-      { name: i18next.t('app_page.common.up_element'), action: () => { this.up_element(); } },
-      { name: i18next.t('app_page.common.down_element'), action: () => { this.down_element(); } },
-      { name: i18next.t('app_page.common.delete'), action: () => { this.remove(); } },
+      { name: _tr('app_page.common.edit_style'), action: () => { this.editStyle(); } },
+      { name: _tr('app_page.common.up_element'), action: () => { this.up_element(); } },
+      { name: _tr('app_page.common.down_element'), action: () => { this.down_element(); } },
+      { name: _tr('app_page.common.delete'), action: () => { this.remove(); } },
     ];
 
     const scale_context_menu = new ContextMenu();
@@ -92,7 +95,7 @@ export const scaleBar = {
       this.precision = (t && t.length > 1) ? t[1].length : (`${this.dist}`).length;
       this.resize(this.dist);
     }
-    pos_lgds_elem.set(`${scale_gp.attr('id')} ${scale_gp.attr('class')}`, scale_gp.node().getBBox());
+    pos_lgds_elem.set(`${scale_gp.attr('id')} ${scale_gp.attr('class')}`, get_bounding_rect(scale_gp.node()));
   },
   getDist() {
     const x_pos = w / 2,
@@ -183,7 +186,7 @@ export const scaleBar = {
           self.update();
         }
       };
-    make_confirm_dialog2('scaleBarEditBox', i18next.t('app_page.scale_bar_edit_box.title'), { widthFitContent: true })
+    make_confirm_dialog2('scaleBarEditBox', _tr('app_page.scale_bar_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
         if (confirmed) {
           redraw_now();
@@ -192,10 +195,10 @@ export const scaleBar = {
     const box_body = d3.select('.scaleBarEditBox').select('.modal-body').style('width', '295px');
         // box_body.node().parentElement.style.width = "auto";
     box_body.append('h3')
-            .html(i18next.t('app_page.scale_bar_edit_box.title'));
+            .html(_tr('app_page.scale_bar_edit_box.title'));
     const a = box_body.append('p').attr('class', 'line_elem2');
     a.append('span')
-      .html(i18next.t('app_page.scale_bar_edit_box.fixed_size'));
+      .html(_tr('app_page.scale_bar_edit_box.fixed_size'));
 
     a.append('input')
       .style('float', 'right')
@@ -226,7 +229,7 @@ export const scaleBar = {
 
     const b = box_body.append('p').attr('class', 'line_elem2');
     b.insert('span')
-      .html(i18next.t('app_page.scale_bar_edit_box.precision'));
+      .html(_tr('app_page.scale_bar_edit_box.precision'));
     b.insert('input')
       .attrs({
         id: 'scale_precision',
@@ -247,7 +250,7 @@ export const scaleBar = {
 
     const c = box_body.append('p').attr('class', 'line_elem2');
     c.insert('span')
-      .html(i18next.t('app_page.scale_bar_edit_box.unit'));
+      .html(_tr('app_page.scale_bar_edit_box.unit'));
     const unit_select = c.insert('select')
       .style('float', 'right')
       .attr('id', 'scale_unit')
@@ -262,7 +265,7 @@ export const scaleBar = {
 
     const e = box_body.append('p').attr('class', 'line_elem2');
     e.append('span')
-      .html(i18next.t('app_page.scale_bar_edit_box.start_end_bar'));
+      .html(_tr('app_page.scale_bar_edit_box.start_end_bar'));
     e.append('input')
       .style('float', 'right')
       .attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' })
