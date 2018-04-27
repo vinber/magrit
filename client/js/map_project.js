@@ -3,7 +3,7 @@ import { reset_user_values } from './function';
 import { canvas_mod_size, remove_layer_cleanup } from './interface';
 import { clickLinkFromDataUrl, isValidJSON } from './helpers';
 import { canvas_rotation_value } from './map_ctrl';
-import { available_projections, getD3ProjFromProj4 } from './projections';
+import { addLastProjectionSelect, available_projections, getD3ProjFromProj4 } from './projections';
 import { northArrow } from './layout_features/north_arrow';
 import { scaleBar } from './layout_features/scalebar';
 
@@ -106,8 +106,8 @@ export function get_map_template() {
 
   // Save the provided dataset if it wasn't joined to the geo layer :
   if (data_manager.joined_dataset.length > 0 && data_manager.field_join_map.length === 0) {
-    map_config.data_manager.joined_dataset = data_manager.joined_dataset[0];
-    map_config.data_manager.dataset_name = data_manager.dataset_name;
+    map_config.joined_dataset = data_manager.joined_dataset[0];
+    map_config.dataset_name = data_manager.dataset_name;
   }
 
   map_config.global_order = Array.from(svg_map.querySelectorAll('.legend,.layer')).map(ft => ['#', ft.id, '.', ft.className.baseVal.split(' ').join('.')].join(''));
@@ -782,10 +782,10 @@ export function apply_user_preferences(json_pref) {
   document.querySelector('input#bg_color').value = rgb2hex(map_config.background_color);
 
   // Reload the external (not-joined) dataset if there is one :
-  if (map_config.data_manager.joined_dataset) {
+  if (map_config.joined_dataset) {
     data_manager.field_join_map = [];
-    data_manager.joined_dataset = [map_config.data_manager.joined_dataset.slice()];
-    data_manager.dataset_name = map_config.data_manager.dataset_name;
+    data_manager.joined_dataset = [map_config.joined_dataset.slice()];
+    data_manager.dataset_name = map_config.dataset_name;
     update_menu_dataset();
   }
 

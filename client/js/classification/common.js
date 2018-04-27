@@ -1,6 +1,6 @@
 import { getColorBrewerArray } from './../colors_helpers';
 import { isNumber } from './../helpers';
-import { round_value } from './../helpers_calc';
+import { has_negative, round_value } from './../helpers_calc';
 
 const floor = Math.floor;
 const log10 = Math.log10;

@@ -411,7 +411,6 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
   const layerId = encodeId(layerName);
   const layersListed = layer_list.node();
   const li = document.createElement('li');
-
   li.setAttribute('layer_name', layerName);
   if (typeLayer === 'result') {
     li.setAttribute('class', ['sortable_result ', layerId].join(''));
@@ -419,18 +418,47 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
     if (!data_manager.current_layers[layerName].symbol || data_manager.current_layers[layerName].symbol === 'path') {
       replace_but = button_replace;
     }
-    // li.setAttribute("layer-tooltip",
-    //         ["<b>", layerName, "</b> - ", typeGeom[0] ," - ", nbFt, " features"].join(''));
-    li.innerHTML = [listDisplayName, '<div class="layer_buttons">',
-      button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0, button_legend,
-      button_result_type.get(typeGeom[1]), replace_but, '</div> '].join('');
-  } else if (typeLayer === 'sample') {
+    li.innerHTML = [
+      listDisplayName,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_legend,
+      button_result_type.get(typeGeom[1]),
+      replace_but,
+      '</div> ',
+    ].join('');
+  } else if (typeLayer === 'target') {
+    li.setAttribute('class', ['sortable_target ', layerId].join(''));
+    li.innerHTML = [
+      listDisplayName,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_type.get(typeGeom),
+      button_replace,
+      '</div>',
+    ].join('');
+  } else {
     li.setAttribute('class', ['sortable ', layerId].join(''));
-    // li.setAttribute("layer-tooltip",
-    //         ["<b>", layerName, "</b> - Sample layout layer"].join(''));
-    li.innerHTML = [listDisplayName, '<div class="layer_buttons">',
-      button_trash, sys_run_button_t2, button_zoom_fit, button_table, eye_open0,
-      button_type.get(typeGeom), button_replace, '</div> '].join('');
+    li.innerHTML = [
+      listDisplayName,
+      '<div class="layer_buttons">',
+      button_trash,
+      sys_run_button_t2,
+      button_zoom_fit,
+      button_table,
+      eye_open0,
+      button_type.get(typeGeom),
+      button_replace,
+      '</div> ',
+    ].join('');
   }
   layersListed.insertBefore(li, layersListed.childNodes[0]);
   binds_layers_buttons(layerName);
@@ -586,126 +614,127 @@ export function make_box_type_fields(layerName) {
   const f = fields_type.map(v => v.name);
   const refType = ['id', 'stock', 'ratio', 'category', 'unknown'];
 
-  const deferred = Promise.pending();
+  // const deferred = Promise.pending();
   const container = document.getElementById('box_type_fields');
-
-  const clean_up_box = () => {
-    container.remove();
-    overlay_under_modal.hide();
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-  };
-
-  if (f.length === 0) { // If the user dont have already selected the type :
-    fields_type = tmp.slice();
-    container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
-    const _onclose = () => {  // Or use the default values if he use the X  close button
-      data_manager.current_layers[layerName].fields_type = tmp.slice();
-      getAvailablesFunctionnalities(layerName);
-      deferred.resolve(false);
-      clean_up_box();
+  return new Promise((resolve, reject) => {
+    const clean_up_box = () => {
+      container.remove();
+      overlay_under_modal.hide();
+      document.removeEventListener('keydown', helper_esc_key_twbs);
     };
-    container.querySelector('#xclose').onclick = _onclose;
-  } else if (tmp.length > fields_type.length) {
-    // There is already types selected but new fields where added
-    tmp.forEach((d) => {
-      if (f.indexOf(d.name) === -1) { fields_type.push(d); }
-    });
-    container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
-    const _onclose = () => {  // Or use the default values if he use the X  close button
-      data_manager.current_layers[layerName].fields_type = tmp.slice();
-      getAvailablesFunctionnalities(layerName);
-      deferred.resolve(false);
-      clean_up_box();
-    };
-    container.querySelector('#xclose').onclick = _onclose;
-  } else { // There is already types selected and no new fields (so this is a modification) :
-    // Use the previous values if the user close
-    // the window without confirmation (cancel or X button)
-    const _onclose = () => {
-      data_manager.current_layers[layerName].fields_type = fields_type;
-      deferred.resolve(false);
-      clean_up_box();
-    };
-    container.querySelector('.btn_cancel').onclick = _onclose;
-    container.querySelector('#xclose').onclick = _onclose;
-  }
 
-  // Fetch and store the selected values when 'Ok' button is clicked :
-  container.querySelector('.btn_ok').onclick = function () {
-    const r = [];
-    Array.prototype.forEach.call(
-      document.querySelectorAll('#fields_select > li'), (elem) => {
-        r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
+    if (f.length === 0) { // If the user dont have already selected the type :
+      fields_type = tmp.slice();
+      container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+      const _onclose = () => {  // Or use the default values if he use the X  close button
+        data_manager.current_layers[layerName].fields_type = tmp.slice();
+        getAvailablesFunctionnalities(layerName);
+        resolve(false);
+        clean_up_box();
+      };
+      container.querySelector('#xclose').onclick = _onclose;
+    } else if (tmp.length > fields_type.length) {
+      // There is already types selected but new fields where added
+      tmp.forEach((d) => {
+        if (f.indexOf(d.name) === -1) { fields_type.push(d); }
       });
-    deferred.resolve(true);
-    data_manager.current_layers[layerName].fields_type = r.slice();
-    getAvailablesFunctionnalities(layerName);
-    if (window.fields_handler) {
-      fields_handler.unfill();
-      fields_handler.fill(layerName);
+      container.querySelector('.btn_cancel').remove(); // Disabled cancel button to force the user to choose
+      const _onclose = () => {  // Or use the default values if he use the X  close button
+        data_manager.current_layers[layerName].fields_type = tmp.slice();
+        getAvailablesFunctionnalities(layerName);
+        resolve(false);
+        clean_up_box();
+      };
+      container.querySelector('#xclose').onclick = _onclose;
+    } else { // There is already types selected and no new fields (so this is a modification) :
+      // Use the previous values if the user close
+      // the window without confirmation (cancel or X button)
+      const _onclose = () => {
+        data_manager.current_layers[layerName].fields_type = fields_type;
+        resolve(false);
+        clean_up_box();
+      };
+      container.querySelector('.btn_cancel').onclick = _onclose;
+      container.querySelector('#xclose').onclick = _onclose;
     }
-    clean_up_box();
-  };
-  function helper_esc_key_twbs(_evt) {
-    const evt = _evt || window.event;
-    const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
-    if (isEscape) {
-      evt.stopPropagation();
-      data_manager.current_layers[layerName].fields_type = tmp.slice();
+
+    // Fetch and store the selected values when 'Ok' button is clicked :
+    container.querySelector('.btn_ok').onclick = function () {
+      const r = [];
+      Array.prototype.forEach.call(
+        document.querySelectorAll('#fields_select > li'), (elem) => {
+          r.push({ name: elem.childNodes[0].innerHTML.trim(), type: elem.childNodes[1].value });
+        });
+      resolve(true);
+      data_manager.current_layers[layerName].fields_type = r.slice();
       getAvailablesFunctionnalities(layerName);
-      deferred.resolve(false);
+      if (window.fields_handler) {
+        fields_handler.unfill();
+        fields_handler.fill(layerName);
+      }
       clean_up_box();
+    };
+    function helper_esc_key_twbs(_evt) {
+      const evt = _evt || window.event;
+      const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
+      if (isEscape) {
+        evt.stopPropagation();
+        data_manager.current_layers[layerName].fields_type = tmp.slice();
+        getAvailablesFunctionnalities(layerName);
+        resolve(false);
+        clean_up_box();
+      }
     }
-  }
-  document.addEventListener('keydown', helper_esc_key_twbs);
-  document.getElementById('btn_type_fields').removeAttribute('disabled');
+    document.addEventListener('keydown', helper_esc_key_twbs);
+    document.getElementById('btn_type_fields').removeAttribute('disabled');
 
-  newbox.append('h3').html(_tr('app_page.box_type_fields.message_invite'));
+    newbox.append('h3').html(_tr('app_page.box_type_fields.message_invite'));
 
-  const box_select = newbox.append('ul')
-    .attr('id', 'fields_select')
-    .styles({
-      padding: '0',
-      'list-style': 'none',
-    });
+    const box_select = newbox.append('ul')
+      .attr('id', 'fields_select')
+      .styles({
+        padding: '0',
+        'list-style': 'none',
+      });
 
-  box_select.selectAll('li')
-      .data(fields_type)
+    box_select.selectAll('li')
+        .data(fields_type)
+        .enter()
+        .append('li');
+
+    box_select.selectAll('li')
+      .insert('span')
+      .html(d => d.name);
+
+    box_select.selectAll('li')
+      .insert('select')
+      .style('float', 'right')
+      .selectAll('option')
+      .data(refType)
       .enter()
-      .append('li');
+      .insert('option')
+      .attr('value', d => d)
+      .text(d => _tr(`app_page.box_type_fields.${d}`))
+      .exit();
 
-  box_select.selectAll('li')
-    .insert('span')
-    .html(d => d.name);
+    box_select.selectAll('select')
+      .each(function (d) {
+        this.value = d.type;
+      });
 
-  box_select.selectAll('li')
-    .insert('select')
-    .style('float', 'right')
-    .selectAll('option')
-    .data(refType)
-    .enter()
-    .insert('option')
-    .attr('value', d => d)
-    .text(d => _tr(`app_page.box_type_fields.${d}`))
-    .exit();
-
-  box_select.selectAll('select')
-    .each(function (d) {
-      this.value = d.type;
-    });
-
-  for (let i = 0; i < fields_type.length; i++) {
-    if (fields_type[i].type === 'category' || fields_type[i].not_number) {
-      box_select.node().childNodes[i].childNodes[1].options.remove(2);
-      box_select.node().childNodes[i].childNodes[1].options.remove(1);
+    for (let i = 0; i < fields_type.length; i++) {
+      if (fields_type[i].type === 'category' || fields_type[i].not_number) {
+        box_select.node().childNodes[i].childNodes[1].options.remove(2);
+        box_select.node().childNodes[i].childNodes[1].options.remove(1);
+      }
+      if (fields_type[i].has_duplicate) {
+        box_select.node().childNodes[i].childNodes[1].options.remove(0);
+      }
     }
-    if (fields_type[i].has_duplicate) {
-      box_select.node().childNodes[i].childNodes[1].options.remove(0);
-    }
-  }
-  overlay_under_modal.display();
-  setTimeout((_) => { container.querySelector('button.btn_ok').focus(); }, 400);
-  return deferred.promise;
+    overlay_under_modal.display();
+    setTimeout((_) => { container.querySelector('button.btn_ok').focus(); }, 400);
+    // return deferred.promise;
+  });
 }
 
 export function getAvailablesFunctionnalities(layerName) {

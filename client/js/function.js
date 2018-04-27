@@ -2140,7 +2140,7 @@ function getCentroids(ref_layer_selection) {
   return centroids;
 }
 
-function make_prop_line(rendering_params, geojson_line_layer) {
+export function make_prop_line(rendering_params, geojson_line_layer) {
   const layer = rendering_params.ref_layer_name,
     field = rendering_params.field,
     color_field = rendering_params.color_field,
@@ -2252,7 +2252,7 @@ function make_prop_line(rendering_params, geojson_line_layer) {
 }
 
 
-function make_prop_symbols(rendering_params, _pt_layer) {
+export function make_prop_symbols(rendering_params, _pt_layer) {
   const layer = rendering_params.ref_layer_name,
     field = rendering_params.field,
     color_field = rendering_params.color_field,

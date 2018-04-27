@@ -1,4 +1,4 @@
-import { Colors, randomColor, rgb2hex } from './colors_helpers';
+import { Colors, getColorBrewerArray, randomColor, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
 import { display_discretization } from './classification/discretization_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
@@ -7,6 +7,11 @@ import { render_label, render_label_graticule, reset_user_values } from './funct
 import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
 import { binds_layers_buttons } from './interface';
+import {
+  createLegend_choro, createLegend_choro_horizontal,
+  createLegend_discont_links, createLegend_line_symbol,
+  createLegend_symbol, createLegend_waffle,
+} from './legend';
 import { redraw_legends_symbols, zoom_without_redraw } from './map_ctrl';
 import { make_table } from './tables';
 /**

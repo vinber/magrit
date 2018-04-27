@@ -103,7 +103,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   new Sortable(document.getElementById('typo_categories'));
 
-  const deferred = Promise.pending();
+  // const deferred = Promise.pending();
   const container = document.getElementById('symbol_box');
   const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
 
@@ -113,21 +113,22 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     document.removeEventListener('keydown', fn_cb);
   };
 
-  let _onclose = () => {
-    deferred.resolve(false);
-    clean_up_box();
-  };
+  return new Promise((resolve, reject) => {
+    let _onclose = () => {
+      resolve(false);
+      clean_up_box();
+    };
 
-  container.querySelector('.btn_ok').onclick = function () {
-    const symbol_map = fetch_symbol_categories();
-    deferred.resolve([nb_class, symbol_map]);
-    clean_up_box();
-  };
-  container.querySelector('.btn_cancel').onclick = _onclose;
-  container.querySelector('#xclose').onclick = _onclose;
-  document.addEventListener('keydown', fn_cb);
-  overlay_under_modal.display();
-  return deferred.promise;
+    container.querySelector('.btn_ok').onclick = function () {
+      const symbol_map = fetch_symbol_categories();
+      resolve([nb_class, symbol_map]);
+      clean_up_box();
+    };
+    container.querySelector('.btn_cancel').onclick = _onclose;
+    container.querySelector('#xclose').onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
+    overlay_under_modal.display();
+  });
 };
 
 function box_choice_symbol(sample_symbols, parent_css_selector) {
@@ -218,7 +219,6 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       'background-image': "url('')",
     });
 
-  const deferred = Promise.pending();
   const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
   const clean_up_box = function () {
     container.remove();
@@ -229,21 +229,20 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
     }
     document.removeEventListener('keydown', fn_cb);
   };
-
-  container.querySelector('.btn_ok').onclick = function () {
-    const res_url = newbox.select('#current_symb').style('background-image');
-    deferred.resolve(res_url);
-    clean_up_box();
-  };
-
-  let _onclose = () => {
-    deferred.resolve(false);
-    clean_up_box();
-  };
-  container.querySelector('.btn_cancel').onclick = _onclose;
-  container.querySelector('#xclose').onclick = _onclose;
-  document.addEventListener('keydown', fn_cb);
-  return deferred.promise;
+  return new Promise((resolve, reject) => {
+    container.querySelector('.btn_ok').onclick = function () {
+      const res_url = newbox.select('#current_symb').style('background-image');
+      deferred.resolve(res_url);
+      clean_up_box();
+    };
+    let _onclose = () => {
+      deferred.resolve(false);
+      clean_up_box();
+    };
+    container.querySelector('.btn_cancel').onclick = _onclose;
+    container.querySelector('#xclose').onclick = _onclose;
+    document.addEventListener('keydown', fn_cb);
+  });
 }
 
 

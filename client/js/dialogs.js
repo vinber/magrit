@@ -78,7 +78,7 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
     document.getElementById('twbs').appendChild(container);
 
     container = document.getElementById(`myModal_${new_id}`);
-    const deferred = Promise.pending();
+    // const deferred = Promise.pending();
     const text_ok = options.text_ok || _tr('app_page.common.confirm');
     const text_cancel = options.text_cancel || _tr('app_page.common.cancel');
     const html_content = `<div class="modal-header">
@@ -90,32 +90,33 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
       <button type="button" class="btn btn-primary btn_ok" data-dismiss="modal">${text_ok}</button>
       <button type="button" class="btn btn-default btn_cancel">${text_cancel}</button>
       </div>`;
-    const modal_box = new Modal(container, {
-      backdrop: true,
-      keyboard: false,
-      content: html_content,
+    return new Promise((resolve, reject) => {
+      const modal_box = new Modal(container, {
+        backdrop: true,
+        keyboard: false,
+        content: html_content,
+      });
+      modal_box.show();
+      container.modal = modal_box;
+      overlay_under_modal.display();
+      const func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
+      const clean_up_box = () => {
+        document.removeEventListener('keydown', func_cb);
+        existing.delete(new_id);
+        overlay_under_modal.hide();
+        container.remove();
+      };
+      let _onclose_false = () => {
+        resolve(false);
+        clean_up_box();
+      };
+      container.querySelector('.btn_cancel').onclick = _onclose_false;
+      container.querySelector('#xclose').onclick = _onclose_false;
+      container.querySelector('.btn_ok').onclick = () => {
+        resolve(true);
+        clean_up_box();
+      };
+      document.addEventListener('keydown', func_cb);
     });
-    modal_box.show();
-    container.modal = modal_box;
-    overlay_under_modal.display();
-    const func_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose_false); };
-    const clean_up_box = () => {
-      document.removeEventListener('keydown', func_cb);
-      existing.delete(new_id);
-      overlay_under_modal.hide();
-      container.remove();
-    };
-    let _onclose_false = () => {
-      deferred.resolve(false);
-      clean_up_box();
-    };
-    container.querySelector('.btn_cancel').onclick = _onclose_false;
-    container.querySelector('#xclose').onclick = _onclose_false;
-    container.querySelector('.btn_ok').onclick = () => {
-      deferred.resolve(true);
-      clean_up_box();
-    };
-    document.addEventListener('keydown', func_cb);
-    return deferred.promise;
   };
 })();
