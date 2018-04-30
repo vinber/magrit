@@ -3,7 +3,7 @@ import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
 import { display_discretization } from './classification/discretization_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
 import { available_fonts } from './fonts';
-import { render_label, render_label_graticule, reset_user_values } from './function';
+import { render_label, render_label_graticule } from './function';
 import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
 import { binds_layers_buttons } from './interface';
@@ -970,23 +970,24 @@ function createStyleBox_Line(layer_name) {
       .html(_tr('app_page.layer_style_popup.choose_discretization'))
       .on('click', () => {
         container.modal.hide();
-        display_discretization_links_discont(layer_name,
-                                             'disc_value',
-                                             data_manager.current_layers[layer_name].breaks.length,
-                                             'user_defined')
-          .then((result) => {
-            container.modal.show();
-            if (result) {
-              const serie = result[0],
-                sizes = result[1].map(ft => ft[1]);
+        display_discretization_links_discont(
+          layer_name,
+          'disc_value',
+          data_manager.current_layers[layer_name].breaks.length,
+          'user_defined',
+        ).then((result) => {
+          container.modal.show();
+          if (result) {
+            const serie = result[0],
+              sizes = result[1].map(ft => ft[1]);
 
-              serie.setClassManually(result[2]);
-              data_manager.current_layers[layer_name].breaks = result[1];
-              data_manager.current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
-              selection.style('fill-opacity', 0)
-                .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
-            }
-          });
+            serie.setClassManually(result[2]);
+            data_manager.current_layers[layer_name].breaks = result[1];
+            data_manager.current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
+            selection.style('fill-opacity', 0)
+              .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
+          }
+        });
       });
   }
 

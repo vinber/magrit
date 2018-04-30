@@ -6,10 +6,10 @@ import UserRectangle from './rectangle';
 import { scaleBar } from './scalebar';
 import Textbox from './text_annotation';
 import { check_layer_name } from './../function';
+import { create_li_layer_elem } from './../helpers';
 import { prepare_available_symbols } from './../interface';
 import { isInterrupted } from './../projections';
-
-
+import { box_choice_symbol } from './../symbols_picto';
 function ask_existing_feature(feature_name) {
   return swal({
     title: '',

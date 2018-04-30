@@ -1,6 +1,7 @@
 import { getColorBrewerArray } from './../colors_helpers';
 import { isNumber } from './../helpers';
 import { has_negative, round_value } from './../helpers_calc';
+import { Mround } from './../helpers_math';
 
 const floor = Math.floor;
 const log10 = Math.log10;
@@ -58,12 +59,12 @@ export function getBreaksQ6(serie, precision = null) {
   }
   stock_class.shift();
   if (breaks[0] === breaks[1]) {
-      // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
+    // breaks[1] = breaks[0] + (breaks[2] - breaks[1]) / 2;
     breaks[1] = (+serie[1] + breaks[0]) / 2;
   }
   if (breaks[6] === breaks[5]) {
     breaks[5] = serie[len_serie - 2];
-      // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
+    // breaks[5] = breaks[4] + (breaks[5] - breaks[4]) / 2;
   }
   if (precision != null) {
     breaks = breaks.map(val => round_value(val, precision));
@@ -127,7 +128,7 @@ function getBreaks(values, type, n_class) {
   const _values = values.filter(v => isNumber(v)),
     no_data = values.length - _values.length,
     nb_class = +n_class || getOptNbClass(_values.length);
-  const serie = new geostats(_values);
+  const serie = new geostats(_values); // eslint-disable-line new-cap
   let breaks;
   if (type === 'Q6') {
     const tmp = getBreaksQ6(serie.sorted(), serie.precision);
@@ -155,14 +156,13 @@ export function discretize_to_size(values, type, nb_class, min_size, max_size) {
   return [n_class, type, breaks_prop, serie];
 }
 
-export const discretize_to_colors = function discretize_to_colors(values, type, nb_class, col_ramp_name) {
+export function discretize_to_colors(values, type, nb_class, col_ramp_name) {
   const name_col_ramp = col_ramp_name || 'Reds';
   const [serie, breaks, n_class, nb_no_data] = getBreaks(values, type, nb_class),
     color_array = getColorBrewerArray(n_class, name_col_ramp),
     no_data_color = nb_no_data > 0 ? '#e7e7e7' : null,
     colors_map = [];
   for (let j = 0; j < values.length; ++j) {
-    // if (values[j] === 0 || (values[j] !== null && values[j] !== '' && !Number.isNaN(+values[j]))) {
     if (isNumber(values[j])) {
       const idx = serie.getClass(values[j]);
       colors_map.push(color_array[idx]);
@@ -202,8 +202,7 @@ export function getBreaks_userDefined(serie, breaks) {
   const break_values = (typeof breaks === 'string')
     ? parseUserDefinedBreaks(serie, breaks)
     : breaks;
-  const len_serie = serie.length,
-    len_break_val = break_values.length,
+  const len_break_val = break_values.length,
     stock_class = new Array(len_break_val - 1);
   let j = 0;
   for (let i = 1; i < len_break_val; ++i) {

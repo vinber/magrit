@@ -3,7 +3,7 @@ import './../css/context-menu.css';
 export default function () {
   this.items = [];
 
-  this.addItem = function (item) {
+  this.addItem = function addItem(item) {
     this.items.push({
       isSimpleItem: true,
       name: item.name,
@@ -11,7 +11,7 @@ export default function () {
     });
   };
 
-  this.addSubMenu = function (item) {
+  this.addSubMenu = function addSubMenu(item) {
     this.items.push({
       isSimpleItem: false,
       name: item.name,
@@ -20,7 +20,7 @@ export default function () {
     this.items[this.items.length - 1].menu.setItems(item.items);
   };
 
-  this.removeItemByName = function (name) {
+  this.removeItemByName = function removeItemByName(name) {
     for (let i = this.items.length - 1; i > 0; i--) {
       if (this.items[i].name.valueOf() === name.valueOf()) {
         this.items.splice(i, 1);
@@ -29,7 +29,7 @@ export default function () {
     }
   };
 
-  this.setItems = function (items) {
+  this.setItems = function setItems(items) {
     this.items = [];
     for (let i = 0; i < items.length; i++) {
       if (items[i].name) {
@@ -42,7 +42,7 @@ export default function () {
     }
   };
 
-  this.showMenu = function (event, parent, items) {
+  this.showMenu = function showMenu(event, parent, items) {
     if (items) {
       this.setItems(items);
     }
@@ -50,7 +50,7 @@ export default function () {
     if (event.preventDefault) {
       event.preventDefault();
     } else {
-      event.returnValue = false;
+      event.returnValue = false; // eslint-disable-line no-param-reassign
     }
 
     if (event.stopPropagation) {
@@ -59,7 +59,8 @@ export default function () {
 
     this.initMenu(parent);
     const bbox = this.DOMObj.getBoundingClientRect();
-    if ((event.clientY + window.scrollY + bbox.height) < window.innerHeight || (event.clientX + bbox.width) < window.innerWidth) {
+    if ((event.clientY + window.scrollY + bbox.height) < window.innerHeight
+        || (event.clientX + bbox.width) < window.innerWidth) {
       this.DOMObj.style.top = `${event.clientY + window.scrollY}px`;
       this.DOMObj.style.left = `${event.clientX}px`;
     } else {
@@ -81,7 +82,7 @@ export default function () {
     }, 225);
   };
 
-  this.initMenu = function (parent) {
+  this.initMenu = function initMenu(parent) {
     if (this.DOMObj && this.DOMObj.parentNode && this.DOMObj.parentNode.removeChild) {
       this.DOMObj.parentNode.removeChild(this.DOMObj);
     }

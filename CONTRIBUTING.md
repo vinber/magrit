@@ -12,7 +12,7 @@ magrit
 │   ├── css
 │   ├── js
 ├── documentation
-│   └── doc_book          <--- Markdown files used for generating documentation
+│   └── src               <--- Markdown files used for generating documentation
 ├── magrit_app            <--- Python source files
 │   ├── helpers           <--- Python source files
 │   ├── static            <--- Static assets + compiled JS/CSS code
@@ -34,7 +34,7 @@ magrit
 
 #### Contributing documentation
 
-The documentation is entirely written in *markdown* and translated to a webpage/book thanks to [**mdBook**](https://github.com/rust-lang-nursery/mdBook). It is located in the [documentation/doc_book](https://github.com/riatelab/magrit/tree/master/documentation/doc_book) folder.  
+The documentation is entirely written in *markdown* and translated to a webpage/book thanks to [**mdBook**](https://github.com/rust-lang-nursery/mdBook). It is located in the [documentation](https://github.com/riatelab/magrit/tree/master/documentation/) folder.  
 
 After making a change on these `.md` files, you should run the mdbook binary from the aforesaid folder to build the new book:
 ```

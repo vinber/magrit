@@ -1,4 +1,5 @@
 import { make_confirm_dialog2 } from './dialogs';
+import { updateLayer } from './interface';
 
 function handleJoin() {
   const layer_name = Object.getOwnPropertyNames(global.data_manager.user_data);
@@ -117,10 +118,10 @@ function valid_join_on(layer_name, join_values1, join_values2, field1, field2, h
         for (let j = 0, leng = fields_name_to_add.length; j < leng; j++) {
           f_name = fields_name_to_add[j];
           if (f_name.length > 0) {
-            let t_val;
-            if (val == undefined) t_val = null;  // eslint-disable-line
-            else if (ext_dataset[val][f_name] === '') t_val = null;
-            else t_val = ext_dataset[val][f_name];
+            // let t_val;
+            // if (val == undefined) t_val = null;  // eslint-disable-line
+            // else if (ext_dataset[val][f_name] === '') t_val = null;
+            // else t_val = ext_dataset[val][f_name];
             layer_dataset[i][f_name] = val != undefined ? ext_dataset[val][f_name] : null; // eslint-disable-line
           }
         }
@@ -161,18 +162,20 @@ function valid_join_on(layer_name, join_values1, join_values2, field1, field2, h
           console.log(err);
         });
         return Promise.resolve(true);
-      }, (dismiss) => {
+      }, () => {
         valid_join_check_display(true, prop);
         return Promise.resolve(true);
       });
-    }, (dismiss) => {
+    }, () => {
       data_manager.field_join_map = [];
       return Promise.resolve(false);
     });
   }
-  swal('',
-       _tr('app_page.join_box.no_match', { field1, field2 }),
-       'error');
+  swal(
+    '',
+    _tr('app_page.join_box.no_match', { field1, field2 }),
+    'error',
+  );
   data_manager.field_join_map = [];
   return Promise.resolve(false);
 }

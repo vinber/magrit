@@ -3,81 +3,90 @@ import { getColorBrewerArray, ColorsSelected, randomColor } from './colors_helpe
 import { display_categorical_box, display_discretization } from './classification/discretization_panel';
 import { getOptNbClass, discretize_to_colors, discretize_to_size } from './classification/common';
 import {
-  copy_layer, create_li_layer_elem, display_error_during_computation, drag_elem_geo2, getFieldsType, get_other_layer_names, isNumber, setSelected, xhrequest,
+  copy_layer, create_li_layer_elem,
+  display_error_during_computation,
+  drag_elem_geo, drag_elem_geo2,
+  drag_waffle, getFieldsType,
+  get_other_layer_names, isNumber,
+  setSelected, xhrequest,
 } from './helpers';
-import { contains_empty_val, getBinsCount, get_nb_decimals, has_negative, haversine_dist, max_fast, PropSizer } from './helpers_calc';
+import {
+  getBinsCount, get_nb_decimals, has_negative,
+  haversine_dist, max_fast, PropSizer,
+} from './helpers_calc';
 import { Mabs, Mmax, Mmin, Mround } from './helpers_math';
 import { prepare_available_symbols, switch_accordion_section } from './interface';
 import { add_layer_topojson } from './layers';
 import { handle_legend } from './legend';
 import { zoom_without_redraw } from './map_ctrl';
+import { isInterrupted } from './projections';
 import { display_box_symbol_typo, make_style_box_indiv_symbol } from './symbols_picto';
 
 export const get_menu_option = (function () {
   const menu_option = {
     smooth: {
       name: 'smooth',
-      menu_factory: function () { return fillMenu_Stewart; },
-      fields_handler: function () { return fields_Stewart; },
+      menu_factory() { return fillMenu_Stewart; },
+      fields_handler() { return fields_Stewart; },
     },
     prop: {
       name: 'prop',
-      menu_factory: function () { return fillMenu_PropSymbol; },
-      fields_handler: function () { return fields_PropSymbol; },
+      menu_factory() { return fillMenu_PropSymbol; },
+      fields_handler() { return fields_PropSymbol; },
     },
     choroprop: {
       name: 'choroprop',
-      menu_factory: function () { return fillMenu_PropSymbolChoro; },
-      fields_handler: function () { return fields_PropSymbolChoro; },
+      menu_factory() { return fillMenu_PropSymbolChoro; },
+      fields_handler() { return fields_PropSymbolChoro; },
     },
     proptypo: {
       name: 'proptypo',
-      menu_factory: function () { return fillMenu_PropSymbolTypo; },
-      fields_handler: function () { return fields_PropSymbolTypo; },
+      menu_factory() { return fillMenu_PropSymbolTypo; },
+      fields_handler() { return fields_PropSymbolTypo; },
     },
     choro: {
       name: 'choro',
-      menu_factory: function () { return fillMenu_Choropleth; },
-      fields_handler: function () { return fields_Choropleth; },
+      menu_factory() { return fillMenu_Choropleth; },
+      fields_handler() { return fields_Choropleth; },
     },
     cartogram: {
       name: 'cartogram',
-      menu_factory: function () { return fillMenu_Anamorphose; },
-      fields_handler: function () { return fields_Anamorphose; },
+      menu_factory() { return fillMenu_Anamorphose; },
+      fields_handler() { return fields_Anamorphose; },
     },
     grid: {
       name: 'grid',
-      menu_factory: function () { return fillMenu_griddedMap; },
-      fields_handler: function () { return fields_griddedMap; },
+      menu_factory() { return fillMenu_griddedMap; },
+      fields_handler() { return fields_griddedMap; },
     },
     flow: {
       name: 'flow',
-      menu_factory: function () { return fillMenu_FlowMap; },
-      fields_handler: function () { return fields_FlowMap; },
+      menu_factory() { return fillMenu_FlowMap; },
+      fields_handler() { return fields_FlowMap; },
     },
     discont: {
       name: 'discont',
-      menu_factory: function () { return fillMenu_Discont; },
-      fields_handler: function () { return fields_Discont; },
+      menu_factory() { return fillMenu_Discont; },
+      fields_handler() { return fields_Discont; },
     },
     typo: {
       name: 'typo',
-      menu_factory: function () { return fillMenu_Typo; },
-      fields_handler: function () { return fields_Typo; },
+      menu_factory() { return fillMenu_Typo; },
+      fields_handler() { return fields_Typo; },
     },
     typosymbol: {
       name: 'typosymbol',
-      menu_factory: function () { return fillMenu_TypoSymbol; },
-      fields_handler: function () { return fields_TypoSymbol; },
+      menu_factory() { return fillMenu_TypoSymbol; },
+      fields_handler() { return fields_TypoSymbol; },
     },
     two_stocks: {
       name: 'two_stocks',
-      menu_factory: function () { return fillMenu_TwoStocks; },
-      fields_handler: function () { return fields_TwoStocks; },
+      menu_factory() { return fillMenu_TwoStocks; },
+      fields_handler() { return fields_TwoStocks; },
     },
   };
   return func => menu_option[func.toLowerCase()] || {};
-})();
+}());
 
 /**
 * Remove the div on which we are displaying the options related to each
@@ -182,7 +191,8 @@ function display_error_num_field() {
 * @return void
 */
 function display_warning_empty_geom(features) {
-  swal({ title: '',
+  swal({
+    title: '',
     text: _tr('app_page.common.warning_empty_geom', { count: features.length }),
     type: 'warning',
     showCancelButton: false,
@@ -249,7 +259,7 @@ const color_disc_icons = (function () {
       document.getElementById(`ico_${t_disc}`).style.border = 'solid 1px green';
     }
   };
-})();
+}());
 
 function make_template_functionnality(parent_node) {
   return parent_node.append('div').attr('class', 'form-rendering');
@@ -656,7 +666,7 @@ const fields_TwoStocks = {
   },
 };
 
-function render_twostocks_waffle(layer, rendering_params) {
+export function render_twostocks_waffle(layer, rendering_params) {
   const get_colors = (nb) => {
     const res = [];
     for (let i = 0; i < nb; i++) {
@@ -1199,7 +1209,7 @@ const fields_PropSymbolChoro = {
     setSelected(field_color.node(), fields_ratio[0]);
   },
 
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('PropSymbolChoro_field_1'));
     unfillSelectInput(document.getElementById('PropSymbolChoro_field_2'));
     unfillSelectInput(document.getElementById('PropSymbolChoro_symbol_type'));
@@ -1239,7 +1249,7 @@ const fillMenu_Typo = function fillMenu_Typo() {
 };
 
 const fields_Typo = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     const self = this,
       g_lyr_name = `#${layer}`,
@@ -1363,7 +1373,7 @@ const fields_Typo = {
     section2.selectAll('.params').attr('disabled', null);
     setSelected(field_selec.node(), fields_name[0]);
   },
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('Typo_field_1'));
     section2.selectAll('.params').attr('disabled', true);
   },
@@ -1397,7 +1407,7 @@ function fillMenu_Choropleth() {
 }
 
 const fields_Choropleth = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     const self = this,
       g_lyr_name = `#${layer}`,
@@ -1644,7 +1654,7 @@ const fields_Choropleth = {
     setSelected(field_selec.node(), fields[0]);
   },
 
-  unfill: function () {
+  unfill() {
     // const field_selec = document.getElementById('choro_field1'),
     //   nb_fields = field_selec.childElementCount;
     //
@@ -1659,7 +1669,7 @@ const fields_Choropleth = {
 };
 
 const fields_Stewart = {
-  fill: function (layer) {
+  fill (layer) {
     const other_layers = get_other_layer_names(),
       mask_selec = d3.select('#stewart_mask');
     let default_selected_mask;
@@ -1705,7 +1715,7 @@ const fields_Stewart = {
     section2.selectAll('.params').attr('disabled', null);
   },
 
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('stewart_field'));
     unfillSelectInput(document.getElementById('stewart_field2'));
     unfillSelectInput(document.getElementById('stewart_mask'));
@@ -1914,7 +1924,7 @@ function fillMenu_Stewart() {
 }
 
 const fields_Anamorphose = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     const fields = getFieldsType('stock', layer),
       field_selec = section2.select('#Anamorph_field'),
@@ -2066,7 +2076,7 @@ const fields_Anamorphose = {
     setSelected(field_selec.node(), field_selec.node().options[0].value);
   },
 
-  unfill: function () {
+  unfill() {
     const field_selec = document.getElementById('Anamorph_field');
     section2.selectAll('.params').attr('disabled', true);
     unfillSelectInput(field_selec);
@@ -2426,7 +2436,7 @@ export function make_prop_symbols(rendering_params, _pt_layer) {
   }
 }
 
-function render_categorical(layer, rendering_params) {
+export function render_categorical(layer, rendering_params) {
   let layer_name;
   if (rendering_params.new_name) {
     const fields = [].concat(getFieldsType('id', layer), rendering_params.rendered_field);
@@ -2590,14 +2600,16 @@ function fillMenu_PropSymbolTypo(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.proptypo.fixed_size' })
     .html(_tr('app_page.func_options.proptypo.fixed_size'));
   b.insert('input')
-    .attrs({ type: 'number',
+    .attrs({
+      type: 'number',
       class: 'params',
       id: 'PropSymbolTypo_ref_size',
       min: 0.1,
       max: 100.0,
-      value: 60.0,
-      step: 'any' })
-    .style('width', '50px');
+      step: 'any',
+    })
+    .style('width', '50px')
+    .property('value', 60.0);
   b.append('span').html(' (px)');
 
   const c = dv2.append('p').attr('class', 'params_section2');
@@ -2606,8 +2618,9 @@ function fillMenu_PropSymbolTypo(layer) {
     .html(_tr('app_page.func_options.proptypo.on_value'));
   c.insert('input')
     .styles({ width: '100px', 'margin-left': '10px' })
-    .attrs({ type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value' })
-    .attrs({ min: 0.1, step: 0.1 });
+    .attrs({
+      type: 'number', class: 'params', id: 'PropSymbolTypo_ref_value', min: 0.1, step: 0.1,
+     });
 
   // Other symbols could probably easily be proposed :
   const d = dv2.append('p').attr('class', 'params_section2');
@@ -2667,7 +2680,7 @@ function prepare_categories_array(layer_name, selected_field, col_map) {
 }
 
 const fields_PropSymbolTypo = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     section2.selectAll('.params').attr('disabled', null);
     const self = this,
@@ -2684,7 +2697,7 @@ const fields_PropSymbolTypo = {
       ok_button = section2.select('#propTypo_yes');
 
     const prepare_colors = (field) => {
-      const [cats, col_map] = prepare_categories_array(layer, field, null);
+      const [_, col_map] = prepare_categories_array(layer, field, null);
       const nb_class = col_map.size;
       const colorByFeature = data_manager.user_data[layer].map(ft => col_map.get(ft[field])[0]);
       self.rendering_params[field] = {
@@ -2763,7 +2776,8 @@ const fields_PropSymbolTypo = {
       const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
 
       if (cats.length > 15) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -2821,7 +2835,8 @@ const fields_PropSymbolTypo = {
       const field_color = field2_selec.node().value;
       if (self.rendering_params[field_color].color_map.size > 15
               && !self.rendering_params[field_color].skip_alert) {
-        swal({ title: '',
+        swal({
+          title: '',
           text: _tr('app_page.common.error_too_many_features_color'),
           type: 'warning',
           showCancelButton: true,
@@ -2840,7 +2855,7 @@ const fields_PropSymbolTypo = {
     setSelected(field2_selec.node(), fields_categ[0]);
   },
 
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('PropSymbolTypo_field_1'));
     unfillSelectInput(document.getElementById('PropSymbolTypo_field_2'));
     unfillSelectInput(document.getElementById('PropSymbolTypo_symbol_type'));
@@ -2964,7 +2979,7 @@ function fillMenu_Discont() {
 }
 
 const fields_Discont = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     const fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
       fields_id = getFieldsType('id', layer),
@@ -3004,7 +3019,7 @@ const fields_Discont = {
     section2.selectAll('.params').attr('disabled', null);
     document.getElementById('Discont_output_name').value = ['Disc', field_discont.node().value, select_type_discont.node().value, layer].join('_');
   },
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('field_Discont'));
     // unfillSelectInput(document.getElementById("field_id_Discont"));
     section2.selectAll('.params').attr('disabled', true);
@@ -3037,11 +3052,7 @@ const render_discont = function () {
   const field_id = undefined;
   // field_id = field_id == "__default__" ? undefined : field_id;
 
-  const result_value = new Map(),
-    result_geom = {},
-    topo_mesh = topojson.mesh,
-    math_max = Math.max,
-    topo_to_use = _target_layer_file;
+  const topo_to_use = _target_layer_file;
 
   _app.waitingOverlay.display();
 
@@ -3069,12 +3080,21 @@ const render_discont = function () {
     const require_clip_path = (isInterrupted(_app.current_proj_name.toLowerCase())
       || _app.current_proj_name.toLowerCase().indexOf('conicconformal') > -1) ? 'url(#clip)' : null;
     breaks = breaks.map(ft => [ft[0], ft[1]]).filter(d => d[1] !== undefined);
+
     data_manager.result_data[new_layer_name] = [];
+
     const result_layer = map.insert('g', '.legend')
-      .attrs({ id: id_layer, class: 'layer', 'clip-path': require_clip_path })
-      .styles({ 'stroke-linecap': 'round', 'stroke-linejoin': 'round' });
+      .attrs({
+        id: id_layer,
+        class: 'layer',
+        'clip-path': require_clip_path,
+      })
+      .styles({
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
+      });
+
     const data_result = data_manager.result_data[new_layer_name];
-    const result_lyr_node = result_layer.node();
 
     for (let i = 0; i < nb_ft; i++) {
       const val = d_res[i][0];
@@ -3140,8 +3160,16 @@ function fillMenu_PropSymbol(layer) {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.prop.fixed_size' })
     .html(_tr('app_page.func_options.prop.fixed_size'));
   b.insert('input')
-    .attrs({ id: 'PropSymbol_ref_size', type: 'number', class: 'params', min: 0.2, max: max_allowed_size, value: 60.0, step: 0.1 })
-    .style('width', '50px');
+    .attrs({
+      id: 'PropSymbol_ref_size',
+      type: 'number',
+      class: 'params',
+      min: 0.2,
+      max: max_allowed_size,
+      step: 0.1,
+    })
+    .style('width', '50px')
+    .property('value', 60.0);
   b.append('span').html(' px');
 
   const c = dialog_content.append('p').attr('class', 'params_section2');
@@ -3183,10 +3211,12 @@ function fillMenu_PropSymbol(layer) {
     .styles({ 'padding-top': '5px', 'margin-bottom': '-5px', 'text-align': 'center' });
   col_p.insert('input')
     .styles({ position: 'unset' })
-    .attrs({ type: 'color', class: 'params', id: 'PropSymbol_color1', value: ColorsSelected.random() });
+    .attrs({ type: 'color', class: 'params', id: 'PropSymbol_color1' })
+    .property('value', ColorsSelected.random());
   col_p.insert('input')
     .styles({ display: 'none', position: 'unset' })
-    .attrs({ type: 'color', class: 'params', id: 'PropSymbol_color2', value: ColorsSelected.random() });
+    .attrs({ type: 'color', class: 'params', id: 'PropSymbol_color2' })
+    .property('value', ColorsSelected.random());
 
   const col_b = dialog_content.insert('p').attr('class', 'params_section2');
   col_b.insert('span')
@@ -3203,7 +3233,7 @@ function fillMenu_PropSymbol(layer) {
 }
 
 const fields_PropSymbol = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     section2.selectAll('.params').attr('disabled', null);
     const fields = getFieldsType('stock', layer),
@@ -3309,7 +3339,7 @@ const fields_PropSymbol = {
     setSelected(field_selec.node(), fields[0]);
   },
 
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('PropSymbol_field_1'));
     unfillSelectInput(document.getElementById('PropSymbol_symbol'));
     section2.selectAll('.params').attr('disabled', true);
@@ -3329,9 +3359,11 @@ function fillMenu_TypoSymbol() {
     .attr('class', 'params_section2')
     .styles({ 'text-align': 'center', margin: 'auto' });
   b.append('button')
-    .attrs({ id: 'selec_Symbol',
+    .attrs({
+      id: 'selec_Symbol',
       class: 'button_disc params i18n',
-      'data-i18n': '[html]app_page.func_options.typosymbol.symbols_choice' })
+      'data-i18n': '[html]app_page.func_options.typosymbol.symbols_choice',
+    })
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
     .html(_tr('app_page.func_options.typosymbol.symbols_choice'));
 
@@ -3353,7 +3385,7 @@ function discard_rendering_empty_val() {
 }
 
 const fields_TypoSymbol = {
-  fill: function (layer) {
+  fill (layer) {
     if (!layer) return;
     const fields_all = Object.getOwnPropertyNames(data_manager.user_data[layer][0]),
       field_to_use = section2.select('#field_Symbol'),
@@ -3373,7 +3405,8 @@ const fields_TypoSymbol = {
       ok_button.attr('disabled', self.rendering_params[field] ? null : true);
     });
     selec_symbol.on('click', () => {
-      swal({ title: '',
+      swal({
+        title: '',
         text: _tr('app_page.common.error_too_many_features'),
         type: 'warning',
         showCancelButton: true,
@@ -3405,7 +3438,7 @@ const fields_TypoSymbol = {
     setSelected(field_to_use.node(), fields_all[0]);
     uo_layer_name.attr('value', ['Symbols', layer].join('_'));
   },
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('field_Symbol'));
     section2.selectAll('.params').attr('disabled', true);
   },
@@ -3725,7 +3758,7 @@ function fillMenu_griddedMap(layer) {
 
 
 const fields_griddedMap = {
-  fill: function (layer) {
+  fill (layer) {
     const user_polygon_layer = d3.select('#Gridded_polygon_layer');
     const mask_selec = d3.select('#Gridded_mask');
     const other_layers = get_other_layer_names();
@@ -3848,7 +3881,7 @@ const fields_griddedMap = {
     document.getElementById('Gridded_cellsize_pt').value = get_first_guess_span('grid');
     section2.selectAll('.params').attr('disabled', null);
   },
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('Gridded_field'));
     unfillSelectInput(document.getElementById('Gridded_field_pt'));
     section2.selectAll('.params').attr('disabled', true);
@@ -4163,7 +4196,7 @@ function fillMenu_FlowMap() {
 }
 
 const fields_FlowMap = {
-  fill: function (layer) {
+  fill (layer) {
     const self = this,
       field_i = section2.select('#FlowMap_field_i'),
       field_j = section2.select('#FlowMap_field_j'),
@@ -4284,7 +4317,7 @@ const fields_FlowMap = {
     }
   },
 
-  unfill: function () {
+  unfill() {
     unfillSelectInput(document.getElementById('FlowMap_field_i'));
     unfillSelectInput(document.getElementById('FlowMap_field_j'));
     unfillSelectInput(document.getElementById('FlowMap_field_fij'));

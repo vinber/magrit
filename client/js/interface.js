@@ -1,14 +1,16 @@
 import alertify from 'alertifyjs';
 import jschardet from 'jschardet';
-import ContextMenu from './context-menu';
-import { ColorsSelected, rgb2hex } from './colors_helpers';
-import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
+import { rgb2hex } from './colors_helpers';
+import { make_confirm_dialog2 } from './dialogs';
 import { available_fonts } from './fonts';
-import { check_layer_name, clean_menu_function, get_menu_option, reset_user_values } from './function';
+import { clean_menu_function, get_menu_option, reset_user_values } from './function';
 import {
-  create_li_layer_elem, createWaitingOverlay, display_error_during_computation,
-  drag_elem_geo, getAvailablesFunctionnalities, get_display_name_on_layer_list,
-  isValidJSON, make_box_type_fields, prepareFileExt, request_data, setSelected, type_col2, xhrequest
+  create_li_layer_elem, createWaitingOverlay,
+  display_error_during_computation,
+  drag_elem_geo, getAvailablesFunctionnalities,
+  getImgDataUrl, isValidJSON,
+  make_box_type_fields, prepareFileExt,
+  type_col2, xhrequest,
 } from './helpers';
 import { get_nb_decimals, round_value } from './helpers_calc';
 import { Mmax, Mround } from './helpers_math';
@@ -20,15 +22,14 @@ import { reproj_symbol_layer, rotate_global, zoom, zoomClick, zoom_without_redra
 import { export_compo_png, export_compo_svg, export_layer_geo } from './map_export';
 import { apply_user_preferences, get_map_project, load_map_project, save_map_project } from './map_project';
 import {
-  addLastProjectionSelect, change_projection, change_projection_4,
-  handleClipPath, handle_projection_select, shortListContent,
-  tryFindNameProj } from './projections';
+  addLastProjectionSelect, change_projection, handle_projection_select, shortListContent,
+} from './projections';
 import { world_topology } from './sample_topo';
 import { boxExplore2 } from './tables';
 import { bindTooltips } from './tooltips';
 import { handleZoomRect } from './zoom_rect';
 import { add_layout_feature } from './layout_features/helpers';
-import { button_legend, button_replace, button_result_type, button_table, button_trash, button_type, button_zoom_fit, eye_open0, sys_run_button, sys_run_button_t2 } from './ui/buttons';
+import { button_type, sys_run_button } from './ui/buttons';
 
 /**
 * Maxium allowed input size in bytes. If the input file is larger than
@@ -118,10 +119,10 @@ export function setUpInterface(reload_project) {
     .style('display', 'inline-flex');
 
   const proj_select2 = proj_options.append('div')
-    .attrs({ class: 'styled-select' })
+    .attr('class', 'styled-select')
     .insert('select')
     .attrs({ class: 'i18n', id: 'form_projection2' })
-    .styles({ width: 'calc(100% + 20px)' })
+    .style('width', 'calc(100% + 20px)')
     .on('change', handle_projection_select);
 
   for (let i = 0; i < shortListContent.length; i++) {
@@ -268,35 +269,57 @@ export function setUpInterface(reload_project) {
       }
     });
 
-  const menu = d3.select('#menu'),
-    b_accordion1 = menu.append('button').attr('id', 'btn_s1').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section1.title'),
-    accordion1 = menu.append('div').attr('class', 'panel').attr('id', 'accordion1'),
-    b_accordion2_pre = menu.append('button').attr('id', 'btn_s2').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section2.title'),
-    accordion2_pre = menu.append('div').attr('class', 'panel').attr('id', 'accordion2_pre'),
-    b_accordion2 = menu.append('button').attr('id', 'btn_s2b').attr('class', 'accordion i18n').style('display', 'none'),
-    accordion2 = menu.append('div').attr('class', 'panel').attr('id', 'accordion2b').style('display', 'none'),
-    b_accordion3 = menu.append('button').attr('id', 'btn_s3').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section3.title'),
-    accordion3 = menu.append('div').attr('class', 'panel').attr('id', 'accordion3'),
-    b_accordion4 = menu.append('button').attr('id', 'btn_s4').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section4.title'),
-    accordion4 = menu.append('div').attr('class', 'panel').attr('id', 'accordion4'),
-    b_accordion5 = menu.append('button').attr('id', 'btn_s5').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section5b.title'),
-    accordion5 = menu.append('div').attr('class', 'panel').attr('id', 'accordion5b');
+  const menu = d3.select('#menu')
+    .html(`
+<button id="btn_s1" class="accordion i18n" data-i18n="app_page.section1.title"></button>
+<div class="panel" id="accordion1">
+  <div id="section1" class="i18n tt_menuleft" data-i18n="[title]app_page.tooltips.section1" data-tippy-placement="right">
+  </div>
+</div>
+<button id="btn_s2" class="accordion i18n" data-i18n="app_page.section1.title"></button>
+<div class="panel" id="accordion2_pre">
+  <div id="section2_pre"></div>
+</div>
+<button id="btn_s2b" class="accordion i18n" style="display: none;"></button>
+<div class="panel" id="accordion2b" style="display: none;">
+  <div id="section2"></div>
+</div>
+<button id="btn_s3" class="accordion i18n" data-i18n="app_page.section3.title"></button>
+<div class="panel" id="accordion3">
+  <div id="section3"></div>
+</div>
+<button id="btn_s4" class="accordion i18n" data-i18n="app_page.section4.title"></button>
+<div class="panel" id="accordion14">
+  <div id="section4"></div>
+</div>
+<button id="btn_s1" class="accordion i18n" data-i18n="app_page.section5b.title"></button>
+<div class="panel" id="accordion5b">
+  <div id="section5"></div>
+</div>`);
 
-  const section1 = accordion1.append('div')
-    .attrs({
-      id: 'section1',
-      class: 'i18n tt_menuleft',
-      'data-i18n': '[title]app_page.tooltips.section1',
-      'data-tippy-placement': 'right',
-    });
-  accordion2_pre.append('div').attr('id', 'section2_pre');
-  window.section2 = accordion2.append('div').attr('id', 'section2');
-  accordion3.append('div').attr('id', 'section3');
-  accordion4.append('div').attr('id', 'section4');
-  accordion5.append('div').attr('id', 'section5');
+  // menu.append('button').attr('id', 'btn_s1').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section1.title'),
+  // const accordion1 = menu.append('div').attr('class', 'panel').attr('id', 'accordion1');
+  // menu.append('button').attr('id', 'btn_s2').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section2.title');
+  // const accordion2_pre = menu.append('div').attr('class', 'panel').attr('id', 'accordion2_pre');
+  // menu.append('button').attr('id', 'btn_s2b').attr('class', 'accordion i18n').style('display', 'none');
+  // const accordion2 = menu.append('div').attr('class', 'panel').attr('id', 'accordion2b').style('display', 'none');
+  // menu.append('button').attr('id', 'btn_s3').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section3.title');
+  // const accordion3 = menu.append('div').attr('class', 'panel').attr('id', 'accordion3');
+  // menu.append('button').attr('id', 'btn_s4').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section4.title');
+  // const accordion4 = menu.append('div').attr('class', 'panel').attr('id', 'accordion4');
+  // menu.append('button').attr('id', 'btn_s5').attr('class', 'accordion i18n').attr('data-i18n', 'app_page.section5b.title');
+  // const accordion5 = menu.append('div').attr('class', 'panel').attr('id', 'accordion5b');
+  // accordion2_pre.append('div').attr('id', 'section2_pre');
+  // window.section2 = accordion2.append('div').attr('id', 'section2');
+  // accordion3.append('div').attr('id', 'section3');
+  // accordion4.append('div').attr('id', 'section4');
+  // accordion5.append('div').attr('id', 'section5');
+  global.section2 = menu.select('#section2');
+  const section1 = menu.select('#section1');
 
   const dv1 = section1.append('div');
-  const section_current_target_layer = dv1.append('div')
+  // Section for current target layer:
+  dv1.append('div')
     .attr('id', 'target_layer_zone')
     .styles({
       'text-align': 'center',
@@ -307,7 +330,8 @@ export function setUpInterface(reload_project) {
     })
     .html('Pas de couche cible');
 
-  const section_current_dataset = dv1.append('div')
+  // Section for current dataset:
+  dv1.append('div')
     .attr('id', 'ext_dataset_zone')
     .styles({
       'text-align': 'center',
@@ -318,6 +342,7 @@ export function setUpInterface(reload_project) {
     })
     .html('Pas de jeu de donnée externe');
 
+  // Section about joining target layer and external dataset:
   dv1.append('p')
     .attr('id', 'join_section')
     .styles({ 'text-align': 'center', 'margin-top': '2px' })
@@ -334,7 +359,13 @@ export function setUpInterface(reload_project) {
 
   dv11.append('p')
     .attrs({ id: 'input_geom', class: 'user_panel i18n' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
+    .styles({
+      cursor: 'pointer',
+      display: 'inline',
+      'font-weight': 'bold',
+      'margin-left': '4px',
+      'vertical-align': 'super',
+    })
     .attr('data-i18n', '[html]app_page.section1.add_geom')
     .on('click', click_button_add_layer);
 
@@ -356,9 +387,18 @@ export function setUpInterface(reload_project) {
     .on('click', add_sample_layer);
 
   div_sample.append('span')
-    .attrs({ id: 'sample_link', class: 'user_panel i18n' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
-    .attr('data-i18n', '[html]app_page.section1.add_sample_data')
+    .attrs({
+      id: 'sample_link',
+      class: 'user_panel i18n',
+      'data-i18n': '[html]app_page.section1.add_sample_data',
+    })
+    .styles({
+      display: 'inline',
+      cursor: 'pointer',
+      'margin-left': '4px',
+      'vertical-align': 'super',
+      'font-weight': 'bold',
+    })
     .on('click', add_sample_layer);
 
   dv1.append('p')
@@ -392,7 +432,7 @@ export function setUpInterface(reload_project) {
 
   new Sortable(document.getElementById('sortable'), {
     animation: 100,
-    onUpdate: function (a) {
+    onUpdate(a) {
       // Set the layer order on the map in concordance with the user changes
       // in the layer manager with a pretty rusty 'sorting' algorythm :
       const desired_order = [],
@@ -416,10 +456,10 @@ export function setUpInterface(reload_project) {
       }
       if (at_end) displayInfoOnMove();
     },
-    onStart: (event) => {
+    onStart(event) {
       document.body.classList.add('no-drop');
     },
-    onEnd: (event) => {
+    onEnd(event) {
       document.body.classList.remove('no-drop');
     },
   });
@@ -428,18 +468,10 @@ export function setUpInterface(reload_project) {
   const dv4 = section4.append('div')
     .style('margin', 'auto')
     .append('ul')
-    .styles({
-      display: 'inline-block',
-      'list-style': 'outside none none',
-      'margin-top': '0px',
-      padding: '0px',
-      width: '100%',
-    });
+    .attr('class', 'config_map_options');
 
   const e = dv4.append('li')
     .styles({
-      margin: '1px',
-      padding: '4px',
       'text-align': 'center',
     });
 
@@ -458,7 +490,7 @@ export function setUpInterface(reload_project) {
     .html(sys_run_button.replace('submit', 'Title properties'))
     .on('click', handle_title_properties);
 
-  const f = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const f = dv4.append('li');
   f.append('input')
     .styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' })
     .attrs({ type: 'color', id: 'bg_color', class: 'list_elem_section4 m_elem_right' })
@@ -470,7 +502,7 @@ export function setUpInterface(reload_project) {
       'data-i18n': '[html]app_page.section4.background_color',
     });
 
-  const a1 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const a1 = dv4.append('li');
   a1.append('input')
     .attrs({ id: 'input-width', type: 'number', class: 'list_elem_section4 m_elem_right' })
     .property('value', w)
@@ -497,7 +529,7 @@ export function setUpInterface(reload_project) {
       'data-i18n': '[html]app_page.section4.map_width',
     });
 
-  const a2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const a2 = dv4.append('li');
   a2.append('input')
     .attrs({ id: 'input-height', type: 'number', class: 'm_elem_right list_elem_section4' })
     .property('value', h)
@@ -524,7 +556,7 @@ export function setUpInterface(reload_project) {
       'data-i18n': '[html]app_page.section4.map_height',
     });
 
-  const b = dv4.append('li').styles({ margin: '1px', padding: '4px 0' });
+  const b = dv4.append('li');
   const ratio_select = b.append('select')
     .attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
   b.append('p').attr('class', 'list_elem_section4 i18n')
@@ -565,7 +597,7 @@ export function setUpInterface(reload_project) {
   });
   const zoom_prop = svg_map.__zoom;
 
-  const d2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const d2 = dv4.append('li');
   d2.append('button')
     .styles({ margin: 0, padding: 0 })
     .attrs({
@@ -584,7 +616,7 @@ export function setUpInterface(reload_project) {
   d2.append('p').attr('class', 'list_elem_section4 i18n')
     .attr('data-i18n', '[html]app_page.section4.resize_fit');
 
-  const c = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const c = dv4.append('li');
   c.append('p')
     .attrs({
       class: 'list_elem_section4 i18n',
@@ -681,8 +713,8 @@ export function setUpInterface(reload_project) {
     });
 
   g.append('span')
-      .style('float', 'right')
-      .html('°');
+    .style('float', 'right')
+    .html('°');
 
   g.append('input')
     .attrs({
@@ -731,7 +763,7 @@ export function setUpInterface(reload_project) {
       document.getElementById('canvas_rotation_value_txt').value = this.value;
     });
 
-  const g2 = dv4.append('li').styles({ margin: '1px', padding: '4px' });
+  const g2 = dv4.append('li');
   g2.append('input')
     .styles({ margin: 0, padding: 0 })
     .attrs({
@@ -748,47 +780,67 @@ export function setUpInterface(reload_project) {
   const _i = dv4.append('li').styles({ 'text-align': 'center' });
   _i.insert('p')
     .styles({ clear: 'both', display: 'block', margin: 0 })
-    .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features' });
+    .attrs({
+      class: 'i18n', 'data-i18n': '[html]app_page.section4.layout_features',
+    });
   const p1 = _i.insert('p').styles({ display: 'inline-block', margin: 'auto' });
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.arrow' })
+    .attrs({
+      id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.arrow',
+    })
     .on('click', () => add_layout_feature('arrow'));
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.text_annot' })
+    .attrs({
+      id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.text_annot',
+    })
     .on('click', () => add_layout_feature('text_annot'));
   if (!window.isIE) {
     p1.insert('span')
       .insert('img')
-      .attrs({ id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.symbol' })
+      .attrs({
+        id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.symbol',
+      })
       .on('click', () => add_layout_feature('symbol'));
   }
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.rectangle' })
+    .attrs({
+      id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.rectangle',
+    })
     .on('click', () => add_layout_feature('rectangle'));
   p1.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.ellipse' })
+    .attrs({
+      id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.ellipse',
+    })
     .on('click', () => add_layout_feature('ellipse'));
 
   const p2 = _i.insert('p').styles({ display: 'inline-block', margin: 'auto' });
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.graticule' })
+    .attrs({
+      id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.graticule',
+    })
     .on('click', () => add_layout_feature('graticule'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.north_arrow' })
+    .attrs({
+      id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.north_arrow',
+    })
     .on('click', () => add_layout_feature('north_arrow'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.scale' })
+    .attrs({
+      id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.scale',
+    })
     .on('click', () => add_layout_feature('scale'));
   p2.insert('span')
     .insert('img')
-    .attrs({ id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.sphere' })
+    .attrs({
+      id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.sphere',
+    })
     .on('click', () => add_layout_feature('sphere'));
 
   add_simplified_land_layer();
@@ -1049,9 +1101,9 @@ export function setUpInterface(reload_project) {
     .attr('class', 'cont_map_btn')
     .insert('button')
     .attrs(elem => ({
-      'data-tippy-placement': elem.tooltip_position,
       class: elem.class,
       'data-i18n': elem.i18n,
+      'data-tippy-placement': elem.tooltip_position,
       id: elem.id,
     }))
     .html(elem => elem.html);
@@ -1090,8 +1142,9 @@ export function setUpInterface(reload_project) {
     // Check if there is a project to reload in the localStorage :
     const last_project = window.localStorage.getItem('magrit_project');
     if (last_project && last_project.length && last_project.length > 0) {
-      swal({ title: '',
-            // text: _tr('app_page.common.resume_last_project'),
+      swal({
+        title: '',
+        // text: _tr('app_page.common.resume_last_project'),
         allowOutsideClick: false,
         allowEscapeKey: false,
         type: 'question',
@@ -1133,8 +1186,6 @@ function handle_bg_color(color) {
 export function click_button_add_layer() {
   const self = this;
   const input = document.createElement('input');
-
-  let target_layer_on_add = false;
 
   if (self.id === 'img_data_ext' || self.id === 'data_ext') {
     input.setAttribute('accept', '.xls,.xlsx,.csv,.tsv,.ods,.txt');
@@ -1198,11 +1249,10 @@ export function askTypeLayer () {
 
 /**
 * @param {FileList} files - The files(s) to be handled for this layer
-* @param {HTMLElement} elem - Optionnal The parent element on which the file was dropped
 *
 * @return undefined
 */
-function handle_upload_files(files, elem) {
+function handle_upload_files(files) {
   const tot_size = Array.prototype.map.call(files, f => f.size).reduce((a, b) => a + b, 0);
   if (files[0] && !files[0]._ext) {
     files = prepareFileExt(files);
@@ -1286,9 +1336,9 @@ function handle_upload_files(files, elem) {
         type: 'error',
         customClass: 'swal2_custom',
         allowOutsideClick: false,
-        allowEscapeKey: false
+        allowEscapeKey: false,
       })
-      .then(valid => null, dismiss => null);
+      .then(() => null, () => null);
     } else {
       return swal({
         title: `${_tr('app_page.common.error')}!`,
@@ -1324,7 +1374,7 @@ function handleOneByOneShp(files) {
     }
   }
   let name = '';
-  let shp_slots = new Map();
+  const shp_slots = new Map();
   populate_shp_slot(shp_slots, files[0]);
 
   swal({
@@ -1528,10 +1578,9 @@ function convert_dataset(file) {
 * @param {Array} files - An array of files, containing the mandatory files
 *                       for correctly reading shapefiles
 *                       (.shp, .shx, .dbf, .prj and optionnaly .cpg).
-* @param {Bool} target_layer_on_add - Whether we are trying to add the target layer or not.
 * @return {void}
 */
-function handle_shapefile(files, target_layer_on_add) {
+function handle_shapefile(files) {
   askTypeLayer()
     .then((val) => {
       overlay_drop.style.display = 'none';
@@ -1737,7 +1786,7 @@ function handle_dataset(f, target_layer_on_add) {
 //     }
 // }
 
-function update_menu_dataset() {
+export function update_menu_dataset() {
   const d_name = data_manager.dataset_name.length > 20 ? [data_manager.dataset_name.substring(0, 17), '(...)'].join('') : data_manager.dataset_name,
     nb_features = data_manager.joined_dataset[0].length,
     field_names = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]),
@@ -1897,10 +1946,10 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   // Upate the zone allowed for displaying info on the target layer:
   d3.select('#target_layer_zone')
     .styles({
-      'text-align': 'initial',
-      padding: null,
       border: null,
       color: 'black',
+      padding: null,
+      'text-align': 'initial',
     })
     .html(`<div style="display:inline-block;">
 <img src="${_button}" width="26" height="26"></img>
@@ -1914,7 +1963,7 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 <img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_target">
 <img width="14" height="14" src="static/img/dataset.png" id="table_layer_s1">
 <img width="14" height="14" src="static/img/replace_target_layer.svg" id="downgrade_target">
-</div>`)
+</div>`);
 
   // const remove_target = document.getElementById('remove_target');
   document.getElementById('remove_target').onclick = () => { remove_layer(Object.getOwnPropertyNames(data_manager.user_data)[0]); };
@@ -1961,7 +2010,7 @@ const display_table_target_layer = () => {
   boxExplore2.create(layer_name);
 };
 
-function updateLayer(layer_name) {
+export function updateLayer(layer_name) {
   const fields = Object.keys(data_manager.user_data[layer_name][0]);
   data_manager.current_layers[layer_name].n_features = data_manager.user_data[layer_name].length;
   data_manager.current_layers[layer_name].original_fields = new Set(fields);

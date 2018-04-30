@@ -1,4 +1,4 @@
-import { Mmax, Mminx, Mpow, Msqrt, Mabs, Mround, Mceil } from './helpers_math';
+import { Mmax, Mmin, /*Mpow,*/ Msqrt, Mabs, Mround, /*Mceil*/ } from './helpers_math';
 
 const sin = Math.sin;
 const cos = Math.cos;

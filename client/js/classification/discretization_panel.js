@@ -2,23 +2,24 @@ import { getColorBrewerArray, hexToRgb, randomColor, rgb2hex } from './../colors
 import { make_dialog_container, overlay_under_modal } from './../dialogs';
 import { isNumber, make_content_summary } from './../helpers';
 import { accordionize } from './../interface';
-import { get_nb_left_separator, get_precision_axis, round_value } from './../helpers_calc';
-import { Mabs, Mceil, Mmax, Mmin, Mround, Msqrt } from './../helpers_math';
+import { get_precision_axis } from './../helpers_calc';
+import { Mabs, Mceil, Mmax, Mround, Msqrt } from './../helpers_math';
 import {
-  discretiz_geostats_switch, discretize_to_colors,
-  getBreaksQ6, getBreaks, getBreaksStdDev, getBreaks_userDefined,
+  discretiz_geostats_switch, getBreaksQ6, getBreaksStdDev, getBreaks_userDefined,
 } from './common';
 
 export const display_discretization = (layer_name, field_name, nb_class, options) => {
   const make_no_data_section = () => {
     const section = d3.select('#color_div')
-      .append('div').attr('id', 'no_data_section')
+      .append('div')
+      .attr('id', 'no_data_section')
       .append('p')
       .html(_tr('disc_box.withnodata', { count: +no_data }));
 
     section.append('input')
-      .attrs({ type: 'color', value: '#ebebcd', id: 'no_data_color' })
-      .style('margin', '0px 10px');
+      .attrs({ type: 'color', id: 'no_data_color' })
+      .style('margin', '0px 10px')
+      .property('value', '#ebebcd');
   };
 
   const make_sequ_button = () => {
@@ -48,12 +49,13 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     ['Blues', 'BuGn', 'BuPu', 'GnBu', 'OrRd',
       'PuBu', 'PuBuGn', 'PuRd', 'RdPu', 'YlGn',
       'Greens', 'Greys', 'Oranges', 'Purples',
-      'Reds'].forEach((name) => {
-        sequential_color_select.append('option')
-          .text(name)
-          .attrs({ value: name, title: name })
-          .styles({ 'background-image': `url(/static/img/palettes/${name}.png)` });
-      });
+      'Reds',
+    ].forEach((name) => {
+      sequential_color_select.append('option')
+        .text(name)
+        .attrs({ value: name, title: name })
+        .style('background-image', `url(/static/img/palettes/${name}.png)`);
+    });
 
     if (_app.custom_palettes) {
       const additional_colors = Array.from(_app.custom_palettes.entries());
@@ -66,9 +68,12 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       }
     }
 
-    const button_reverse = d3.select('.color_txt').insert('p').style('text-align', 'center')
+    // Button allowing the reverse a color palette:
+    d3.select('.color_txt')
+      .insert('p')
+      .style('text-align', 'center')
       .insert('button')
-      .styles({ 'margin-top': '10px' })
+      .style('margin-top', '10px')
       .attrs({ class: 'button_st3', id: 'reverse_pal_btn' })
       .html(_tr('disc_box.reverse_palette'))
       .on('click', () => {
@@ -257,7 +262,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     document.getElementById('nb_class_range').value = value;
     nb_class = value;
     const color_select = document.querySelector('.color_params');
-    if (!color_select) return; // Only do stuff with the custom palettes if we are using a "sequential" scheme:
+    // Only do stuff related to custom palettes if we are using a "sequential" scheme:
+    if (!color_select) return;
     const selected_index = color_select.selectedIndex;
     const select_options = color_select.querySelectorAll('option');
     for (let ixc = 0; ixc < select_options.length; ixc++) {
@@ -272,7 +278,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     // const color_select_right = document.querySelectorAll('.color_params_right > option');
     // for (let ixc = 0; ixc < color_select_left.length; ixc++) {
     //   if (color_select_left[ixc].value.startsWith('user_')) {
-    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors')) ? false : true;
+    //     const is_disabled = (nb_class === +color_select_left[ixc].getAttribute('nb_colors'))
+    //        ? false : true;
     //     color_select_left[ixc].disabled = is_disabled;
     //     color_select_right[ixc].disabled = is_disabled;
     //   }
@@ -370,7 +377,13 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .data(values.map(i => ({ value: +i })))
       .enter()
       .insert('line')
-      .attrs(d => ({ class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom }))
+      .attrs(d => ({
+        class: 'indiv',
+        x1: x(d.value),
+        y1: svg_h - margin.bottom - 10,
+        x2: x(d.value),
+        y2: svg_h - margin.bottom,
+      }))
       .styles({ stroke: 'red', fill: 'none', 'stroke-width': 1 });
   };
 
@@ -458,8 +471,8 @@ export const display_discretization = (layer_name, field_name, nb_class, options
         stock_class = Array.prototype.slice.call(serie.counter);
       }
       // In order to avoid class limit falling out the serie limits with Std class :
-//            breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-//            ^^^ well finally not ?
+      // breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+      // ^^ well finally not ?
       if (stock_class.length === 0) {
         deferred.resolve(false);
         return deferred.promise;
@@ -700,8 +713,12 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   input_section_stddev.insert('span')
     .html(_tr('disc_box.stddev_share_txt1'));
   input_section_stddev.insert('input')
-    .attrs({ type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share' })
-    .styles({ width: '45px', 'margin-left': '10px', 'margin-right': '10px' })
+    .attrs({
+      type: 'number', min: 0.1, max: 10, step: 0.1, class: 'without_spinner', id: 'stddev_share',
+    })
+    .styles({
+      width: '45px', 'margin-left': '10px', 'margin-right': '10px',
+    })
     .property('value', std_dev_params.share)
     .on('change', function () {
       const val = this.value;
@@ -715,7 +732,6 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       redisplay.compute().then((v) => {
         if (v) redisplay.draw();
       });
-
     });
   input_section_stddev.insert('span')
     .html(_tr('disc_box.stddev_share_txt2'));
@@ -723,8 +739,10 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   std_dev_mean_choice.insert('p')
     .style('margin', 'auto')
     .html(_tr('disc_box.stddev_role_mean'));
-  [[_tr('disc_box.stddev_center_mean'), 'center'],
-   [_tr('disc_box.stddev_break_mean'), 'bound'],
+
+  [
+    [_tr('disc_box.stddev_center_mean'), 'center'],
+    [_tr('disc_box.stddev_break_mean'), 'bound'],
   ].forEach((el) => {
     std_dev_mean_choice
       .insert('input')
@@ -818,9 +836,12 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   if (values.length < 500) { // Only allow for beeswarm plot if there isn't too many values
       // as it seems to be costly due to the "simulation" + the voronoi
     let current_histo = 'histogram';
-    const choice_histo = ref_histo_box.append('p').style('text-align', 'center');
-    choice_histo.insert('button')
-      .attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' })
+    ref_histo_box.append('p')
+      .style('text-align', 'center')
+      .insert('button')
+      .attrs({
+        id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo',
+      })
       .styles({ padding: '3px', 'font-size': '10px' })
       .html(_tr('disc_box.switch_ref_histo'))
       .on('click', () => {
@@ -847,12 +868,12 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       id: 'svg_discretization',
       width: svg_w + margin.left + margin.right,
       height: svg_h + margin.top + margin.bottom,
-    })
+    });
 
   make_box_histo_option();
 
   let svg_histo = div_svg.append('g')
-    .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+    .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
   let x = d3.scaleLinear()
     .domain([min_serie, max_serie])
@@ -890,12 +911,14 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     .attr('id', 'color_div')
     .style('text-align', 'center');
 
-  [[_tr('disc_box.sequential'), 'sequential'],
-   [_tr('disc_box.diverging'), 'diverging'],
+  [
+    [_tr('disc_box.sequential'), 'sequential'],
+    [_tr('disc_box.diverging'), 'diverging'],
   ].forEach((el) => {
     color_scheme.insert('label').style('margin', '20px').html(el[0])
       .insert('input')
-      .attrs({ type: 'radio', name: 'color_scheme', value: el[1], id: `button_${el[1]}` })
+      .attrs({ type: 'radio', name: 'color_scheme', id: `button_${el[1]}` })
+      .property('value', el[1])
       .on('change', function () {
         if (this.value === 'sequential') {
           make_sequ_button();
@@ -1049,8 +1072,16 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       }
       col_schema.push(document.querySelector('.color_params_right').value);
     }
-    deferred.resolve(
-      [nb_class, type, breaks, color_array, colors_map, col_schema, no_data_color, type === 'stddev_f' ? std_dev_params : undefined]);
+    deferred.resolve([
+      nb_class,
+      type,
+      breaks,
+      color_array,
+      colors_map,
+      col_schema,
+      no_data_color,
+      type === 'stddev_f' ? std_dev_params : undefined,
+    ]);
     document.removeEventListener('keydown', helper_esc_key_twbs);
     container.remove();
     const p = reOpenParent();
@@ -1068,7 +1099,9 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   container.querySelector('#xclose').onclick = _onclose;
   const helper_esc_key_twbs = (evt) => {
     const _event = evt || window.event;
-    const isEscape = ('key' in _event) ? (_event.key === 'Escape' || _event.key === 'Esc') : (_event.keyCode === 27);
+    const isEscape = ('key' in _event)
+      ? (_event.key === 'Escape' || _event.key === 'Esc')
+      : (_event.keyCode === 27);
     if (isEscape) {
       _event.stopPropagation();
       _onclose();
@@ -1108,7 +1141,10 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
 
   newbox.append('h3').html('');
   newbox.append('p')
-      .html(_tr('app_page.symbol_typo_box.field_categ', { field: field, nb_class: +nb_class, nb_features: +nb_features }));
+    .html(_tr(
+      'app_page.symbol_typo_box.field_categ',
+      { field: field, nb_class: +nb_class, nb_features: +nb_features },
+    ));
 
   newbox.append('ul')
     .style('padding', 'unset')
@@ -1254,7 +1290,9 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
   container.querySelector('#xclose').onclick = _onclose;
   function helper_esc_key_twbs(evt) {
     const _event = evt || window.event;
-    const isEscape = ('key' in _event) ? (_event.key === 'Escape' || _event.key === 'Esc') : (_event.keyCode === 27);
+    const isEscape = ('key' in _event)
+      ? (_event.key === 'Escape' || _event.key === 'Esc')
+      : (_event.keyCode === 27);
     if (isEscape) {
       _event.stopPropagation();
       _onclose();
@@ -1305,12 +1343,12 @@ const prepare_ref_histo = (parent_node, serie, formatCount) => {
     .rangeRound([0, m_width]);
 
   let svg_ref_histo = c.append('g')
-    .attr('transform', 'translate(' + (m_margin.left + m_margin.right) + ',' + m_margin.top + ')');
+    .attr('transform', `translate(${m_margin.left + m_margin.right}, ${m_margin.top})`);
 
   return (type) => {
     svg_ref_histo.remove();
     svg_ref_histo = c.append('g')
-      .attr('transform', 'translate(' + (m_margin.left + m_margin.right) + ',' + m_margin.top + ')');
+      .attr('transform', `translate(${m_margin.left + m_margin.right}, ${m_margin.top})`);
     if (type === 'histogram') {
       const data = d3.histogram()
         .domain(x.domain())
@@ -1538,8 +1576,8 @@ function make_box_custom_palette(nb_class, existing_colors) {
       document.querySelector('.swal2-confirm').disabled = true;
     },
   }).then(
-    v => [ref_colors, pal_name],
-    dismissValue => null,
+    () => [ref_colors, pal_name],
+    () => null,
   );
 }
 

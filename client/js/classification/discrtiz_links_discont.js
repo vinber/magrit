@@ -1,7 +1,7 @@
 import { make_dialog_container } from './../dialogs';
 import { make_content_summary } from './../helpers';
 
-const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
+export const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
   const make_box_histo_option = function () {
     const histo_options = newBox.append('div')
       .attrs({ id: 'histo_options', class: 'row equal' })
@@ -85,54 +85,66 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       stddev = serie.stddev();
 
     line_mean = overlay_svg.append('line')
-      .attr('class', 'line_mean')
-      .attr('x1', x(mean_val))
-      .attr('y1', 10)
-      .attr('x2', x(mean_val))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'line_mean',
+        x1: x(mean_val),
+        y1: 10,
+        x2: x(mean_val),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'blue', fill: 'none' })
       .classed('active', false);
 
     txt_mean = overlay_svg.append('text')
-      .attr('y', 0)
-      .attr('dy', '0.75em')
-      .attr('x', x(mean_val))
+      .attrs({
+        dy: '0.75em',
+        x: x(mean_val),
+        y: 0,
+        'text-anchor': 'middle',
+      })
       .style('fill', 'none')
-      .attr('text-anchor', 'middle')
       .text(_tr('disc_box.mean'));
 
     line_median = overlay_svg.append('line')
-      .attr('class', 'line_med')
-      .attr('x1', x(serie.median()))
-      .attr('y1', 10)
-      .attr('x2', x(serie.median()))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'line_med',
+        x1: x(serie.median()),
+        y1: 10,
+        x2: x(serie.median()),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'darkgreen', fill: 'none' })
       .classed('active', false);
 
     txt_median = overlay_svg.append('text')
-      .attr('y', 0)
-      .attr('dy', '0.75em')
-      .attr('x', x(serie.median()))
+      .attrs({
+        dy: '0.75em',
+        x: x(serie.median()),
+        y: 0,
+        'text-anchor': 'middle',
+      })
       .style('fill', 'none')
-      .attr('text-anchor', 'middle')
       .text(_tr('disc_box.median'));
 
     line_std_left = overlay_svg.append('line')
-      .attr('class', 'lines_std')
-      .attr('x1', x(mean_val - stddev))
-      .attr('y1', 10)
-      .attr('x2', x(mean_val - stddev))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'lines_std',
+        x1: x(mean_val - stddev),
+        y1: 10,
+        x2: x(mean_val - stddev),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' })
       .classed('active', false);
 
     line_std_right = overlay_svg.append('line')
-      .attr('class', 'lines_std')
-      .attr('x1', x(mean_val + stddev))
-      .attr('y1', 10)
-      .attr('x2', x(mean_val + stddev))
-      .attr('y2', svg_h - margin.bottom)
+      .attrs({
+        class: 'lines_std',
+        x1: x(mean_val + stddev),
+        y1: 10,
+        x2: x(mean_val + stddev),
+        y2: svg_h - margin.bottom,
+      })
       .styles({ 'stroke-width': 0, stroke: 'grey', fill: 'none' })
       .classed('active', false);
 
@@ -142,7 +154,13 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       .data(values.map(i => ({ value: +i })))
       .enter()
       .insert('line')
-      .attrs(d => ({ class: 'indiv', x1: x(d.value), y1: svg_h - margin.bottom - 10, x2: x(d.value), y2: svg_h - margin.bottom }))
+      .attrs(d => ({
+        class: 'indiv',
+        x1: x(d.value),
+        y1: svg_h - margin.bottom - 10,
+        x2: x(d.value),
+        y2: svg_h - margin.bottom,
+      }))
       .styles({ stroke: 'red', fill: 'none', 'stroke-width': 1 });
   };
 
@@ -154,7 +172,8 @@ const display_discretization_links_discont = function (layer_name, field_name, n
         'margin-left': '25px',
         'margin-right': '50px',
         'font-size': '10px',
-        float: 'right' })
+        float: 'right',
+      })
       .insert('p')
       .html(['<b>', _tr('disc_box.summary'), '</b><br>', content_summary].join(''));
   };
@@ -171,7 +190,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     if (+tmp_breaks.mins[0] > +serie.min()) {
       nb_class += 1;
       txt_nb_class.node().value = nb_class;
-            // txt_nb_class.html(_tr("disc_box.class", {count: nb_class}));
+      // txt_nb_class.html(_tr("disc_box.class", {count: nb_class}));
       breaks_info.push([[serie.min(), +tmp_breaks.mins[0]], 0]);
     }
 
@@ -188,11 +207,16 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     compute() {
       bins = [];
       for (let i = 0, len = breaks_info.length; i < len; i++) {
-        const bin = {};
-        bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
-        bin.width = breaks[i + 1] - breaks[i];
-        bin.height = breaks_info[i][1];
-        bins[i] = bin;
+        // const bin = {};
+        // bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
+        // bin.width = breaks[i + 1] - breaks[i];
+        // bin.height = breaks_info[i][1];
+        // bins[i] = bin;
+        bins.push({
+          offset: i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset),
+          width: breaks[i + 1] - breaks[i],
+          height: breaks_info[i][1],
+        });
       }
       return true;
     },
@@ -213,21 +237,22 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
       const bar = svg_histo.selectAll('.bar')
         .data(bins)
-        .enter().append('rect')
-          .attrs((d, i) => ({
-            class: 'bar',
-            id: `bar_${i}`,
-            transform: 'translate(0, -17.5)',
-            x: x(d.offset),
-            y: y(d.height) - margin.bottom,
-            width: x(d.width),
-            height: svg_h - y(d.height),
-          }))
-          .styles(d => ({
-            opacity: 0.95,
-            'stroke-opacity': 1,
-            fill: d.color,
-          }));
+        .enter()
+        .append('rect')
+        .attrs((d, i) => ({
+          class: 'bar',
+          id: `bar_${i}`,
+          transform: 'translate(0, -17.5)',
+          x: x(d.offset),
+          y: y(d.height) - margin.bottom,
+          width: x(d.width),
+          height: svg_h - y(d.height),
+        }))
+        .styles(d => ({
+          opacity: 0.95,
+          'stroke-opacity': 1,
+          fill: d.color,
+        }));
 
       return true;
     },
@@ -296,7 +321,7 @@ const display_discretization_links_discont = function (layer_name, field_name, n
   const precisionAxis = get_precision_axis(serie.min(), serie.max(), serie.precision);
   const formatCount = d3.format(precisionAxis);
 
-  const discretization = newBox.append('div')
+  const discretization_panel = newBox.append('div')
     .attr('id', 'discretization_panel')
     .insert('p')
     .html('Type ')
@@ -338,7 +363,11 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     const choiceHisto = ref_histo_box.append('p').style('text-align', 'center');
     let currentHisto = 'histogram';
     choiceHisto.insert('button')
-      .attrs({ id: 'button_switch_plot', class: 'i18n button_st4', 'data-i18n': '[text]disc_box.switch_ref_histo' })
+      .attrs({
+        id: 'button_switch_plot',
+        class: 'i18n button_st4',
+        'data-i18n': '[text]disc_box.switch_ref_histo',
+      })
       .styles({ padding: '3px', 'font-size': '10px' })
       .html(_tr('disc_box.switch_ref_histo'))
       .on('click', () => {
@@ -355,29 +384,36 @@ const display_discretization_links_discont = function (layer_name, field_name, n
       });
   }
 
-  let txt_nb_class = d3.select('#discretization_panel').append('input')
-    .attrs({ type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, value: nb_class, step: 1 })
+  let txt_nb_class = discretization_panel
+    .append('input')
+    .attrs({
+      type: 'number', class: 'without_spinner', min: 2, max: max_nb_class, step: 1,
+    })
     .styles({ width: '30px', margin: '0 10px', 'vertical-align': 'calc(20%)' })
+    .property('value', nb_class)
     .on('change', function () {
       const a = disc_nb_class.node();
       a.value = this.value;
       a.dispatchEvent(new Event('change'));
     });
 
-  d3.select('#discretization_panel')
-      .append('span')
-      .html(_tr('disc_box.class'));
+  discretization_panel
+    .append('span')
+    .html(_tr('disc_box.class'));
 
-  let disc_nb_class = d3.select('#discretization_panel')
+  let disc_nb_class = discretization_panel
     .insert('input')
-    .styles({ display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px' })
+    .styles({
+      display: 'inline', width: '60px', 'vertical-align': 'middle', margin: '10px',
+    })
     .attrs({
       id: 'nb_class_range',
       type: 'range',
       min: 2,
       max: max_nb_class,
-      value: nb_class,
-      step: 1 })
+      step: 1,
+    })
+    .property('value', nb_class)
     .on('change', function () {
       type = discretization.node().value;
       if (type === 'user_defined') {
@@ -401,13 +437,18 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     height = svg_h - margin.top - margin.bottom;
 
   d3.select('#discretiz_charts').select('.modal-dialog')
-        .styles({ width: `${svg_w + margin.top + margin.bottom + 90}px`,
-          height: `${window.innerHeight - 60}px` });
+    .styles({
+      width: `${svg_w + margin.top + margin.bottom + 90}px`,
+      height: `${window.innerHeight - 60}px`,
+    });
 
   const div_svg = newBox.append('div')
-    .append('svg').attr('id', 'svg_discretization')
-    .attr('width', svg_w + margin.left + margin.right)
-    .attr('height', svg_h + margin.top + margin.bottom);
+    .append('svg')
+    .attrs({
+      id: 'svg_discretization',
+      width: svg_w + margin.left + margin.right,
+      height: svg_h + margin.top + margin.bottomn,
+    });
 
   make_box_histo_option();
 
@@ -418,8 +459,10 @@ const display_discretization_links_discont = function (layer_name, field_name, n
     .domain([serie.min(), serie.max()])
     .range([0, svg_w]);
 
-  let overlay_svg = div_svg.append('g').attr('transform', 'translate(30, 0)'),
-    line_mean,
+  const overlay_svg = div_svg.append('g')
+    .attr('transform', 'translate(30, 0)');
+
+  let line_mean,
     line_std_right,
     line_std_left,
     line_median,
@@ -429,18 +472,21 @@ const display_discretization_links_discont = function (layer_name, field_name, n
 
   make_overlay_elements();
 
-    // As the x axis and the mean didn't change, they can be drawn only once :
+  // As the x axis and the mean didn't change, they can be drawn only once :
   svg_histo.append('g')
-    .attr('class', 'x axis')
-    .attr('transform', `translate(0,${height})`)
+    .attrs({
+      class: 'x axis',
+      transform: `translate(0,${height})`,
+    })
     .call(d3.axisBottom()
-            .scale(x)
-            .tickFormat(formatCount));
+      .scale(x)
+      .tickFormat(formatCount));
 
   const box_content = newBox.append('div').attr('id', 'box_content');
   box_content.append('h3').style('margin', '0').html(_tr('disc_box.line_size'));
   const sizes_div = d3.select('#box_content')
-                            .append('div').attr('id', 'sizes_div');
+    .append('div')
+    .attr('id', 'sizes_div');
   const callback = function () {
     discretization.node().value = type;
     update_breaks(true);
@@ -463,7 +509,9 @@ const display_discretization_links_discont = function (layer_name, field_name, n
   };
   const helper_esc_key_twbs = (evt) => {
     const _event = evt || window.event;
-    const isEscape = ('key' in _event) ? (_event.key === 'Escape' || _event.key === 'Esc') : (_event.keyCode === 27);
+    const isEscape = ('key' in _event)
+      ? (_event.key === 'Escape' || _event.key === 'Esc')
+      : (_event.keyCode === 27);
     if (isEscape) {
       _event.preventDefault();
       _onclose();

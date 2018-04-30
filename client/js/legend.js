@@ -5,6 +5,7 @@ import { cloneObj } from './helpers';
 import { get_nb_decimals, get_nb_left_separator, getTranslateNewLegend, max_fast, min_fast, PropSizer, round_value } from './helpers_calc';
 import { Mmax, Mmin, Mpow, Msqrt, Mabs, Mround } from './helpers_math';
 import { handle_click_hand } from './interface';
+import { redraw_legends_symbols } from './map_ctrl';
 import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './layout_features/snap_lines';
 
 /**

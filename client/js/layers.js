@@ -4,10 +4,10 @@ import { check_layer_name } from './function';
 import {
   create_li_layer_elem, display_error_during_computation,
   get_display_name_on_layer_list,
-  isValidJSON, make_box_type_fields, request_data, setSelected, xhrequest
+  isValidJSON, make_box_type_fields, request_data, setSelected, xhrequest,
 } from './helpers';
 import { valid_join_check_display } from './join_popup';
-import { zoom, zoomClick, zoom_without_redraw } from './map_ctrl';
+import { zoom_without_redraw } from './map_ctrl';
 import {
   addLastProjectionSelect, change_projection, change_projection_4,
   handleClipPath, tryFindNameProj } from './projections';
@@ -124,45 +124,44 @@ export function add_sample_layer() {
     ['commune_dep_976', ['proj4', 'EPSG:7075']],
   ]);
   const target_layers = [
-   [_tr('app_page.sample_layer_box.target_layer'), ''],
-   [_tr('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
-   [_tr('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
-   [_tr('app_page.sample_layer_box.martinique'), 'martinique'],
-   [_tr('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
-   [_tr('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
-   [_tr('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
-   [_tr('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
-   [_tr('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
-   [_tr('app_page.sample_layer_box.brazil'), 'brazil'],
-   [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
-   [_tr('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'],
-   [_tr('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'],
-   [_tr('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'],
-   [_tr('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'],
-   [_tr('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'],
-   [_tr('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'],
-   [_tr('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'],
-   [_tr('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'],
-   [_tr('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'],
-   [_tr('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'],
-   [_tr('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'],
-   [_tr('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'],
-   [_tr('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'],
-   [_tr('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'],
-   [_tr('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'],
-   [_tr('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'],
-   [_tr('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
-   [_tr('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
-   [_tr('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
-   [_tr('app_page.layout_layer_box.nuts0'), 'nuts0'],
-   [_tr('app_page.layout_layer_box.nuts1'), 'nuts1'],
-   [_tr('app_page.layout_layer_box.nuts2'), 'nuts2'],
-   [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
-   [_tr('app_page.layout_layer_box.world_countries'), 'world_country'],
-   [_tr('app_page.layout_layer_box.world_capitals'), 'world_cities'],
-   [_tr('app_page.layout_layer_box.tissot'), 'tissot'],
+    [_tr('app_page.sample_layer_box.target_layer'), ''],
+    [_tr('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
+    [_tr('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
+    [_tr('app_page.sample_layer_box.martinique'), 'martinique'],
+    [_tr('app_page.sample_layer_box.departements_2016_2-2'), 'departements_2016_2-2'],
+    [_tr('app_page.layout_layer_box.departements_vor_2016_2-2'), 'departements_vor_2016_2-2'],
+    [_tr('app_page.sample_layer_box.regions_2016_2-2'), 'regions_2016_2-2'],
+    [_tr('app_page.layout_layer_box.france_contour_2016_2-2'), 'france_contour_2016_2-2'],
+    [_tr('app_page.sample_layer_box.nuts2_data'), 'nuts2-2013-data'],
+    [_tr('app_page.sample_layer_box.brazil'), 'brazil'],
+    [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+    [_tr('app_page.sample_layer_box.communes_reg_11'), 'communes_reg_11'],
+    [_tr('app_page.sample_layer_box.communes_reg_24'), 'communes_reg_24'],
+    [_tr('app_page.sample_layer_box.communes_reg_27'), 'communes_reg_27'],
+    [_tr('app_page.sample_layer_box.communes_reg_28'), 'communes_reg_28'],
+    [_tr('app_page.sample_layer_box.communes_reg_32'), 'communes_reg_32'],
+    [_tr('app_page.sample_layer_box.communes_reg_44'), 'communes_reg_44'],
+    [_tr('app_page.sample_layer_box.communes_reg_52'), 'communes_reg_52'],
+    [_tr('app_page.sample_layer_box.communes_reg_53'), 'communes_reg_53'],
+    [_tr('app_page.sample_layer_box.communes_reg_75'), 'communes_reg_75'],
+    [_tr('app_page.sample_layer_box.communes_reg_76'), 'communes_reg_76'],
+    [_tr('app_page.sample_layer_box.communes_reg_84'), 'communes_reg_84'],
+    [_tr('app_page.sample_layer_box.communes_reg_93'), 'communes_reg_93'],
+    [_tr('app_page.sample_layer_box.communes_reg_94'), 'communes_reg_94'],
+    [_tr('app_page.sample_layer_box.commune_dep_971'), 'commune_dep_971'],
+    [_tr('app_page.sample_layer_box.commune_dep_972'), 'commune_dep_972'],
+    [_tr('app_page.sample_layer_box.commune_dep_973'), 'commune_dep_973'],
+    [_tr('app_page.sample_layer_box.commune_dep_974'), 'commune_dep_974'],
+    [_tr('app_page.sample_layer_box.commune_dep_976'), 'commune_dep_976'],
+    [_tr('app_page.sample_layer_box.voronoi_communes_2016_2-2'), 'voronoi_communes_2016_2-2'],
+    [_tr('app_page.layout_layer_box.nuts0'), 'nuts0'],
+    [_tr('app_page.layout_layer_box.nuts1'), 'nuts1'],
+    [_tr('app_page.layout_layer_box.nuts2'), 'nuts2'],
+    [_tr('app_page.sample_layer_box.world_countries'), 'world_countries_data'],
+    [_tr('app_page.layout_layer_box.world_countries'), 'world_country'],
+    [_tr('app_page.layout_layer_box.world_capitals'), 'world_cities'],
+    [_tr('app_page.layout_layer_box.tissot'), 'tissot'],
   ];
-  const dialog_res = [];
   let selec,
     selec_url,
     content;
@@ -260,7 +259,13 @@ export function add_sample_layer() {
     if (selec) setSelected(t_layer_selec.node(), selec);
   }
 
-  const box_body = d3.select('.sampleDialogBox').select('.modal-body');
+  const container = d3.select('.sampleDialogBox')
+    .styles({
+      width: '625px',
+      display: 'flex',
+    });
+   container.select('.modal-content').style('width', '625px');
+  const box_body = container.select('.modal-body')
   setTimeout((_) => { document.querySelector('select.sample_target').focus(); }, 500);
   make_panel1();
 }
@@ -272,7 +277,8 @@ function add_sample_geojson(name, options) {
   xhrequest('POST', 'sample', formToSend, true)
     .then((data) => {
       add_layer_topojson(data, options);
-    }).catch((err) => {
+    })
+    .catch((err) => {
       display_error_during_computation();
       console.log(err);
     });
@@ -387,8 +393,7 @@ export function add_layer_topojson(text, options = {}) {
 
   const field_names = topoObj_objects.geometries[0].properties
     ? Object.getOwnPropertyNames(topoObj_objects.geometries[0].properties) : [];
-  const path_to_use = options.pointRadius
-    ? path.pointRadius(options.pointRadius) : path;
+  const path_to_use = options.pointRadius ? path.pointRadius(options.pointRadius) : path;
   const nb_fields = field_names.length;
   topoObj_objects.geometries.forEach((d, ix) => {
     if (data_to_load && nb_fields > 0) {
@@ -450,7 +455,12 @@ export function add_layer_topojson(text, options = {}) {
         : '[title]app_page.func_description.grid');
     localize('#button_grid');
   } else if (result_layer_on_add) {
-    create_li_layer_elem(lyr_name_to_add, nb_ft, type, 'result');
+    create_li_layer_elem(
+      lyr_name_to_add,
+      nb_ft,
+      [type, options.func_name],
+      'result',
+    );
   } else {
     create_li_layer_elem(lyr_name_to_add, nb_ft, type, '');
   }
@@ -495,7 +505,7 @@ export function add_layer_topojson(text, options = {}) {
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
         }
-      }, (dismiss) => {
+      }, () => {
         if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {
@@ -522,7 +532,7 @@ export function add_layer_topojson(text, options = {}) {
         } else if (target_layer_on_add) {
           make_box_type_fields(lyr_name_to_add);
         }
-      }, (dismiss) => {
+      }, () => {
         if (target_layer_on_add && data_manager.joined_dataset.length > 0) {
           ask_join_now(lyr_name_to_add);
         } else if (target_layer_on_add) {

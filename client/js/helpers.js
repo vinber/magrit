@@ -1,12 +1,16 @@
-import { make_confirm_dialog2, make_dialog_container, overlay_under_modal } from './dialogs';
+import { make_dialog_container, overlay_under_modal } from './dialogs';
 import { round_value } from './helpers_calc';
 import { binds_layers_buttons, handle_click_hand } from './interface';
-import { button_legend, button_replace, button_result_type, button_table, button_trash, button_type, button_zoom_fit, eye_open0, sys_run_button, sys_run_button_t2 } from './ui/buttons';
+import {
+  button_legend, button_replace, button_result_type,
+  button_table, button_trash, button_type,
+  button_zoom_fit, eye_open0, sys_run_button_t2,
+} from './ui/buttons';
 
 
 export const isNumber = (value) => {
  return value != null && value !== '' && isFinite(value) && !Number.isNaN(+value);
-}
+};
 
 export const createWaitingOverlay = () => {
   const bg = document.createElement('div');
@@ -48,7 +52,7 @@ export const createWaitingOverlay = () => {
     bg.style.display = 'none';
   };
   return {
-    display: (opts = {}) => {
+    display(opts = {}) {
       bg.style.display = '';
       if (opts.cancel_button && opts.cancel_button === false) {
         btn.style.display = 'none';
@@ -57,7 +61,7 @@ export const createWaitingOverlay = () => {
         bg.style.zIndex = opts.zIndex;
       }
     },
-    hide: () => {
+    hide() {
       bg.style.display = 'none';
       bg.style.zIndex = '';
       btn.style.display = '';
@@ -191,26 +195,26 @@ function path_to_geojson(layerName) {
     features: result_geojson,
   });
 }
-
-function path_to_geojson2(layerName) {
-  const id_layer = ['#', global._app.layer_to_id.get(layerName)].join('');
-  const result_geojson = [];
-  d3.select(id_layer)
-    .selectAll('path')
-    .each((d, i) => {
-      result_geojson.push({
-        type: 'Feature',
-        id: i,
-        properties: d.properties,
-        geometry: d.geometry,
-      });
-    });
-  return JSON.stringify({
-    type: 'FeatureCollection',
-    crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
-    features: result_geojson,
-  });
-}
+//
+// function path_to_geojson2(layerName) {
+//   const id_layer = ['#', global._app.layer_to_id.get(layerName)].join('');
+//   const result_geojson = [];
+//   d3.select(id_layer)
+//     .selectAll('path')
+//     .each((d, i) => {
+//       result_geojson.push({
+//         type: 'Feature',
+//         id: i,
+//         properties: d.properties,
+//         geometry: d.geometry,
+//       });
+//     });
+//   return JSON.stringify({
+//     type: 'FeatureCollection',
+//     crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+//     features: result_geojson,
+//   });
+// }
 
 export function display_error_during_computation(msg) {
   const message = message ? `<br><i>${_tr('app_page.common.details')}:</i> ${msg}` : '';
@@ -394,8 +398,8 @@ export function get_other_layer_names() {
 
 export function get_display_name_on_layer_list(layer_name_to_add) {
   return +layer_name_to_add.length > 40
-      ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
-      : layer_name_to_add;
+    ? [layer_name_to_add.substring(0, 37), '(...)'].join('')
+    : layer_name_to_add;
 }
 
 /**
@@ -478,9 +482,11 @@ export const type_col = function type_col(layerName, target) {
 //  for the fields of the selected layer.
 // If target is set to "number" it should return an array containing only the name of the numerical fields
 // ------------------- "string" ---------------------------------------------------------non-numerial ----
-  const table = data_manager.user_data.hasOwnProperty(layerName) ? data_manager.user_data[layerName]
-                  : data_manager.result_data.hasOwnProperty(layerName) ? data_manager.result_data[layerName]
-                  : data_manager.joined_dataset[0];
+  const table = data_manager.user_data.hasOwnProperty(layerName)
+    ? data_manager.user_data[layerName]
+    : data_manager.result_data.hasOwnProperty(layerName)
+      ? data_manager.result_data[layerName]
+      : data_manager.joined_dataset[0];
   const fields = Object.getOwnPropertyNames(table[0]);
   const nbFeatures = table.length;
   const deepthTest = nbFeatures > 100 ? 100 : nbFeatures - 1;
@@ -677,7 +683,9 @@ export function make_box_type_fields(layerName) {
     };
     function helper_esc_key_twbs(_evt) {
       const evt = _evt || window.event;
-      const isEscape = ('key' in evt) ? (evt.key === 'Escape' || evt.key === 'Esc') : (evt.keyCode === 27);
+      const isEscape = ('key' in evt)
+        ? (evt.key === 'Escape' || evt.key === 'Esc')
+        : (evt.keyCode === 27);
       if (isEscape) {
         evt.stopPropagation();
         data_manager.current_layers[layerName].fields_type = tmp.slice();
@@ -699,9 +707,9 @@ export function make_box_type_fields(layerName) {
       });
 
     box_select.selectAll('li')
-        .data(fields_type)
-        .enter()
-        .append('li');
+      .data(fields_type)
+      .enter()
+      .append('li');
 
     box_select.selectAll('li')
       .insert('span')
@@ -734,7 +742,6 @@ export function make_box_type_fields(layerName) {
     }
     overlay_under_modal.display();
     setTimeout((_) => { container.querySelector('button.btn_ok').focus(); }, 400);
-    // return deferred.promise;
   });
 }
 
@@ -757,7 +764,7 @@ export function getAvailablesFunctionnalities(layerName) {
     func_ratio,
     func_categ,
     func_id;
-  if (data_manager.current_layers[layerName].type === 'Line') {  // Layer type is Line
+  if (data_manager.current_layers[layerName].type === 'Line') { // Layer type is Line
     const elems = section.querySelectorAll('#button_grid, #button_discont, #button_smooth, #button_cartogram, #button_typosymbol, #button_flow');
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
@@ -766,7 +773,7 @@ export function getAvailablesFunctionnalities(layerName) {
     func_stock = section.querySelectorAll('#button_prop');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo');
-  } else if (data_manager.current_layers[layerName].type === 'Point') {  // layer type is Point
+  } else if (data_manager.current_layers[layerName].type === 'Point') { // layer type is Point
     const elems = section.querySelectorAll('#button_discont, #button_cartogram');
     for (let i = 0, len_i = elems.length; i < len_i; i++) {
       elems[i].style.filter = 'grayscale(100%)';
@@ -775,7 +782,7 @@ export function getAvailablesFunctionnalities(layerName) {
     func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop');
     func_categ = section.querySelectorAll('#button_typo, #button_proptypo, #button_typosymbol');
-  } else {  // Layer type is Polygon
+  } else { // Layer type is Polygon
     func_id = section.querySelectorAll('#button_flow');
     func_stock = section.querySelectorAll('#button_smooth, #button_prop, #button_grid, #button_cartogram, #button_discont');
     func_ratio = section.querySelectorAll('#button_choro, #button_choroprop, #button_discont');
@@ -856,10 +863,7 @@ export const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename)
           onClose() {
             URL.revokeObjectURL(blobUrl);
           },
-        }).then(
-          inputValue => null,
-          dismissValue => null,
-        );
+        }).then(() => null, () => null);
       } else {
         dlAnchorElem.style.display = 'none';
         document.body.appendChild(dlAnchorElem);
@@ -887,8 +891,8 @@ export function prepareFileExt(files_to_send) {
   Array.prototype.forEach.call(files_to_send, (f) => {
     f._ext = '';
     if (f.name.indexOf('.') > -1) {
-      const name = f.name.substring(0, f.name.lastIndexOf("."));
-      const ext = f.name.substring(f.name.lastIndexOf(".") + 1, f.name.length);
+      const name = f.name.substring(0, f.name.lastIndexOf('.'));
+      const ext = f.name.substring(f.name.lastIndexOf('.') + 1, f.name.length);
       f._name = [name, ext.toLowerCase()].join('.');
       f._ext = ext.toLowerCase();
     }
@@ -896,15 +900,15 @@ export function prepareFileExt(files_to_send) {
   return files_to_send;
 }
 
-/**
-* Take an array to reverse it (acting on a copy of the input).
-*
-* @param {Array} arr - The array to be copied and reversed.
-* @return {Array} The resulting Array, letting the input Array untouched.
-*/
-function getCopyReversed(arr) {
-  return arr.slice().reverse();
-}
+// /**
+// * Take an array to reverse it (acting on a copy of the input).
+// *
+// * @param {Array} arr - The array to be copied and reversed.
+// * @return {Array} The resulting Array, letting the input Array untouched.
+// */
+// function getCopyReversed(arr) {
+//   return arr.slice().reverse();
+// }
 
 /**
 * Try to parse a JSON string into. Returns an Array of two elements :
@@ -915,7 +919,7 @@ function getCopyReversed(arr) {
 * parsing the string sucedded or not) and the second is the resulting object or
 * the error thrown.
 */
-export const isValidJSON = txt => {
+export const isValidJSON = (txt) => {
   try {
     const a = JSON.parse(txt);
     return [true, a];

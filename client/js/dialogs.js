@@ -44,8 +44,12 @@ export const overlay_under_modal = (function () {
   bg.style.display = 'none';
   twbs_div.insertBefore(bg, twbs_div.childNodes[0]);
   return {
-    display: function () { bg.style.display = ''; },
-    hide: function () { bg.style.display = 'none'; },
+    display() {
+      bg.style.display = '';
+    },
+    hide () {
+      bg.style.display = 'none';
+    },
   };
 })();
 
@@ -73,8 +77,9 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
     container.setAttribute('role', 'dialog');
     container.setAttribute('aria-labelledby', 'myModalLabel');
     container.setAttribute('aria-hidden', 'true');
-    container.innerHTML = options.widthFitContent ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>'
-                        : '<div class="modal-dialog"><div class="modal-content"></div></div>';
+    container.innerHTML = options.widthFitContent
+      ? '<div class="modal-dialog fitContent"><div class="modal-content"></div></div>'
+      : '<div class="modal-dialog"><div class="modal-content"></div></div>';
     document.getElementById('twbs').appendChild(container);
 
     container = document.getElementById(`myModal_${new_id}`);

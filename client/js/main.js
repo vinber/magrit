@@ -134,11 +134,12 @@ function getEpsgProjection() {
 }
 
 (function () {
-  const { map_div, map, svg_map, defs } = makeSvgMap();
-  global.map_div = map_div;
-  global.map = map;
-  global.svg_map = svg_map;
-  global.defs = defs;
+  Object.assign(global, makeSvgMap());
+  // const { map_div, map, svg_map, defs } = makeSvgMap();
+  // global.map_div = map_div;
+  // global.map = map;
+  // global.svg_map = svg_map;
+  // global.defs = defs;
   let lang = docCookies.getItem('user_lang') || window.navigator.language.split('-')[0];
   const params = {};
   document.querySelector('noscript').remove();

@@ -1,57 +1,4 @@
 import colorbrewer from 'colorbrewer';
-/**
-* Helper function in order to have a colorbrewer color ramp with
-* non-supported number of value using interpolation between the colorbrewer color
-* to fit the requested number of classes.
-* If the number of class fit the size of a colorbrewer ramp (3 < nb_class < 9)
-* the genuine colorbrewer array is directly returned.
-*
-* @param {interger} nbClass - The number of classes/colors wanted.
-* @param {integer} name - The name of the colorBrewer palette to use
-* @return {array} - An array of color with the desired length
-*/
-export const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
-  if (nbClass < 10 && nbClass >= 3) {
-    const colors = colorbrewer[name][nbClass];
-    return colors;
-  } else if (nbClass < 3) {
-    const colors = colorbrewer[name][3];
-    return [
-      rgb2hex(interpolateColor(hexToRgb(colors[0]), hexToRgb(colors[1]))),
-      rgb2hex(interpolateColor(hexToRgb(colors[1]), hexToRgb(colors[2]))),
-    ];
-  } else if (nbClass > 9 && nbClass < 18) {
-    const colors = colorbrewer[name][9];
-    const diff = nbClass - 9;
-    return interp_n(colors, diff, 9);
-  } else if (nbClass >= 18) {
-    let colors = colorbrewer[name][9];
-    colors = interp_n(colors, 8, 9);
-    return interp_n(colors, nbClass - colors.length, nbClass);
-  }
-};
-
-/**
-* Function to make color interpolation from "colors" (an array of n colors)
-* to a larger array of "k" colors (using same start and stop than the original)
-*
-* @param {array} colors - An array of colors
-* @param {integer} diff -
-* @param {number} k - The length of the targeted color palette
-* @return {array} - An array of k colors.
-*/
-export const interp_n = function interp_n(colors, diff, k) {
-  const tmp = [];
-  const new_colors = [];
-  for (let i = 0; i < diff; ++i) {
-    tmp.push(rgb2hex(interpolateColor(hexToRgb(colors[i]), hexToRgb(colors[i + 1]))));
-  }
-  for (let i = 0; i < k; ++i) {
-    new_colors.push(colors[i]);
-    if (tmp[i]) new_colors.push(tmp[i]);
-  }
-  return new_colors;
-};
 
 /**
 * Convert rgb color to hexcode.
@@ -94,6 +41,65 @@ export function hexToRgb(hex, out) {
   }
   return res ? [parseInt(res[1], 16), parseInt(res[2], 16), parseInt(res[3], 16)] : null;
 }
+
+
+/**
+* Helper function in order to have a colorbrewer color ramp with
+* non-supported number of value using interpolation between the colorbrewer color
+* to fit the requested number of classes.
+* If the number of class fit the size of a colorbrewer ramp (3 < nb_class < 9)
+* the genuine colorbrewer array is directly returned.
+*
+* @param {interger} nbClass - The number of classes/colors wanted.
+* @param {integer} name - The name of the colorBrewer palette to use
+* @return {array} - An array of color with the desired length
+*/
+export const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
+  if (nbClass < 10 && nbClass >= 3) {
+    const colors = colorbrewer[name][nbClass];
+    return colors;
+  } else if (nbClass < 3) {
+    const colors = colorbrewer[name][3];
+    return [
+      rgb2hex(interpolateColor(hexToRgb(colors[0]), hexToRgb(colors[1]))),
+      rgb2hex(interpolateColor(hexToRgb(colors[1]), hexToRgb(colors[2]))),
+    ];
+  } else if (nbClass > 9 && nbClass < 18) {
+    const colors = colorbrewer[name][9];
+    const diff = nbClass - 9;
+    return interp_n(colors, diff, 9);
+  } // else if (nbClass >= 18) {
+  return interp_n(
+    interp_n(colorbrewer[name][9], 8, 9),
+    nbClass - colors.length,
+    nbClass,
+  );
+  // let colors = colorbrewer[name][9];
+  // colors = interp_n(colors, 8, 9);
+  // return interp_n(colors, nbClass - colors.length, nbClass);
+};
+
+/**
+* Function to make color interpolation from "colors" (an array of n colors)
+* to a larger array of "k" colors (using same start and stop than the original)
+*
+* @param {array} colors - An array of colors
+* @param {integer} diff -
+* @param {number} k - The length of the targeted color palette
+* @return {array} - An array of k colors.
+*/
+export const interp_n = function interp_n(colors, diff, k) {
+  const tmp = [];
+  const new_colors = [];
+  for (let i = 0; i < diff; ++i) {
+    tmp.push(rgb2hex(interpolateColor(hexToRgb(colors[i]), hexToRgb(colors[i + 1]))));
+  }
+  for (let i = 0; i < k; ++i) {
+    new_colors.push(colors[i]);
+    if (tmp[i]) new_colors.push(tmp[i]);
+  }
+  return new_colors;
+};
 
 // Return the interpolated value at "factor" (0<factor<1) between color1 and color2
 // (if no factor is provided the default value of 0.5 is used,
@@ -174,7 +180,7 @@ export const Colors = {
 };
 
 export const ColorsSelected = {
-    // These colors came from "Pastel1" and "Pastel2" coloramps from ColorBrewer
+  // These colors came from "Pastel1" and "Pastel2" coloramps from ColorBrewer
   colorCodes: ['#b3e2cd', '#fdcdac', '#cbd5e8', '#f4cae4', '#e6f5c9', '#fff2ae', '#f1e2cc', '#cccccc',
     '#fbb4ae', '#b3cde3', '#ccebc5', '#decbe4', '#fed9a6', '#ffffcc', '#e5d8bd', '#fddaec', '#f2f2f2'],
   // In order to avoid randomly returning the same color
@@ -185,7 +191,9 @@ export const ColorsSelected = {
     let seen = this.seen;
     let result_color = this.colorCodes[0],
       attempts = 40; // To avoid a while(true) if it went wrong for any reason
-    if (seen.size === nb_color) { seen = new Set(); }
+    if (seen.size === nb_color) {
+      seen = new Set();
+    }
     while (attempts > 0) {
       const ix = Math.round(Math.random() * (nb_color - 1));
       result_color = this.colorCodes[ix];
@@ -199,6 +207,15 @@ export const ColorsSelected = {
     return to_rgb ? hexToRgb(result_color) : result_color;
   },
 };
+
+function hue2rgb(p, q, t) {
+  if (t < 0) t += 1;
+  if (t > 1) t -= 1;
+  if (t < 1 / 6) return p + (q - p) * 6 * t;
+  if (t < 1 / 2) return q;
+  if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+  return p;
+}
 
 // Copy-paste from https://gist.github.com/jdarling/06019d16cb5fd6795edf
 //   itself adapted from http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
@@ -214,22 +231,12 @@ export const randomColor = (function () {
     if (s === 0) {
       r = g = b = l; // achromatic
     } else {
-      function hue2rgb(p, q, t) {
-        if (t < 0) t += 1;
-        if (t > 1) t -= 1;
-        if (t < 1 / 6) return p + (q - p) * 6 * t;
-        if (t < 1 / 2) return q;
-        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-        return p;
-      }
-
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
       r = hue2rgb(p, q, h + 1 / 3);
       g = hue2rgb(p, q, h);
       b = hue2rgb(p, q, h - 1 / 3);
     }
-
     return `#${Math.round(r * 255).toString(16)}${Math.round(g * 255).toString(16)}${Math.round(b * 255).toString(16)}`;
   };
 
@@ -242,4 +249,4 @@ export const randomColor = (function () {
 
 export const addNewCustomPalette = function addNewCustomPalette(palette_name, colors) {
   _app.custom_palettes.set(palette_name, colors);
-}
+};

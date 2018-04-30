@@ -1,3 +1,6 @@
+import { make_dialog_container, make_confirm_dialog2, overlay_under_modal } from './dialogs';
+
+
 export const display_box_symbol_typo = function (layer, field, categories) {
   const fetch_symbol_categories = function () {
     const categ = document.getElementsByClassName('typo_class');
@@ -46,18 +49,21 @@ export const display_box_symbol_typo = function (layer, field, categories) {
   newbox.append('p')
     .html(_tr('app_page.symbol_typo_box.field_categ', { field, nb_class, nb_features }));
   newbox.append('ul')
-    .style('padding', 'unset')
+    .styles({
+      'list-style': 'none',
+      'padding': 'unset',
+    })
     .attr('id', 'typo_categories')
     .selectAll('li')
     .data(cats).enter()
     .append('li')
-    .styles({ margin: 'auto', 'list-style': 'none' })
+    .style('margin', 'auto')
     .attr('class', 'typo_class')
     .attr('id', (_, i) => ['line', i].join('_'));
 
   newbox.selectAll('.typo_class')
     .append('span')
-    .attrs({ class: 'three_dots' })
+    .attr('class', 'three_dots')
     .style('cursor', 'grab');
 
   newbox.selectAll('.typo_class')
@@ -141,7 +147,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
   });
 };
 
-function box_choice_symbol(sample_symbols, parent_css_selector) {
+export function box_choice_symbol(sample_symbols, parent_css_selector) {
   const modal_box = make_dialog_container(
         'box_choice_symbol',
         _tr('app_page.box_choice_symbol.title'),

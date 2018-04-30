@@ -1,10 +1,15 @@
-import { rgb2hex } from './colors_helpers';
-import { reset_user_values, make_prop_line, make_prop_symbols, render_label } from './function';
+import ContextMenu from './context-menu';
+import { Colors, rgb2hex } from './colors_helpers';
+import {
+  reset_user_values, make_prop_line, make_prop_symbols,
+  render_categorical, render_label, render_twostocks_waffle,
+} from './function';
 import {
   add_simplified_land_layer, canvas_mod_size, handle_active_layer,
   handle_reload_TopoJSON, handle_title, remove_layer_cleanup,
+  update_menu_dataset,
 } from './interface';
-import { clickLinkFromDataUrl, isValidJSON } from './helpers';
+import { clickLinkFromDataUrl, getAvailablesFunctionnalities, isValidJSON } from './helpers';
 import { createDropShadow } from './layers_style_popup';
 import {
   createLegend_choro,
@@ -18,8 +23,12 @@ import { canvas_rotation_value, reproj_symbol_layer, rotate_global, zoom_without
 import {
   addLastProjectionSelect, available_projections, getD3ProjFromProj4, handleClipPath,
 } from './projections';
+import { make_style_box_indiv_symbol } from './symbols_picto';
+import UserArrow from './layout_features/arrow';
+import UserEllipse from './layout_features/ellipse';
 import { add_layout_feature } from './layout_features/helpers';
 import { northArrow } from './layout_features/north_arrow';
+import UserRectangle from './layout_features/rectangle';
 import { scaleBar } from './layout_features/scalebar';
 
 const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
@@ -879,10 +888,14 @@ export function apply_user_preferences(json_pref) {
   let at_end = [];
   let done = 0;
   const func_name_corresp = new Map([
-    ['LinksGraduated', 'flow'], ['Carto_doug', 'cartogram'],
-    ['OlsonCarto', 'cartogram'], ['Stewart', 'smooth'],
-    ['Gridded', 'grid'], ['DiscLayer', 'discont'],
-    ['Choropleth', 'choro'], ['Categorical', 'typo'],
+    ['LinksGraduated', 'flow'],
+    ['Carto_doug', 'cartogram'],
+    ['OlsonCarto', 'cartogram'],
+    ['Stewart', 'smooth'],
+    ['Gridded', 'grid'],
+    ['DiscLayer', 'discont'],
+    ['Choropleth', 'choro'],
+    ['Categorical', 'typo'],
   ]);
 
   // Set the dimension of the map (width and height) :

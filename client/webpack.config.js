@@ -1,6 +1,7 @@
 const webpack = require('webpack');
 const exec = require('child_process').exec;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = [{
   entry: {
@@ -17,12 +18,12 @@ module.exports = [{
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   module: {
     rules: [
-      {
-        enforce: "pre",
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: "eslint-loader",
-      },
+      // {
+      //   enforce: "pre",
+      //   test: /\.js$/,
+      //   exclude: /node_modules/,
+      //   loader: "eslint-loader",
+      // },
       {
         test: /\.js$/,
         use: 'babel-loader',
@@ -48,14 +49,14 @@ module.exports = [{
       },
       minimizer: [
         new UglifyJsPlugin({
-          // cache: true,
-          // parallel: true,
-          // uglifyOptions: {
-          //   compress: false,
-          //   ecma: 6,
-          //   mangle: false
-          // }
-          // sourceMap: true
+          cache: true,
+          parallel: true,
+          uglifyOptions: {
+            compress: false,
+            ecma: 6,
+            mangle: false
+          },
+          sourceMap: true
         })
       ]
   },
