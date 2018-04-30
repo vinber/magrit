@@ -457,7 +457,7 @@ export function getTranslateNewLegend() {
 * @return {void}
 *
 */
-function scale_to_bbox(bbox) {
+export function scale_to_bbox(bbox) {
   const [xmin, ymin, xmax, ymax] = bbox;
   const feature = {
     type: 'Feature',

@@ -81,13 +81,13 @@ export function setUpInterface(reload_project) {
     }
   }, false);
 
-  const bg_drop = document.createElement('div');
-  bg_drop.className = 'overlay_drop';
-  bg_drop.id = 'overlay_drop';
-  bg_drop.style.background = 'black';
-  bg_drop.style.opacity = '0.6';
-  bg_drop.style.display = 'none';
-  bg_drop.style.padding = '10px';
+  global.overlay_drop = document.createElement('div');
+  overlay_drop.className = 'overlay_drop';
+  overlay_drop.id = 'overlay_drop';
+  overlay_drop.style.background = 'black';
+  overlay_drop.style.opacity = '0.6';
+  overlay_drop.style.display = 'none';
+  overlay_drop.style.padding = '10px';
   const inner_div = document.createElement('div');
   inner_div.style.border = 'dashed 2px white';
   inner_div.style.margin = '10px';
@@ -110,8 +110,8 @@ export function setUpInterface(reload_project) {
   inner_p.setAttribute('data-i18n', '[html]app_page.common.drop_msg');
   inner_p.innerHTML = _tr('app_page.common.drop_msg');
   inner_div.appendChild(inner_p);
-  bg_drop.appendChild(inner_div);
-  document.body.appendChild(bg_drop);
+  overlay_drop.appendChild(inner_div);
+  document.body.appendChild(overlay_drop);
 
   const proj_options = d3.select('.header_options_projection')
     .append('div')
@@ -139,7 +139,9 @@ export function setUpInterface(reload_project) {
     .style('display', 'inline');
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n tt', id: 'new_project', 'data-i18n': '[title]app_page.tooltips.new_project', 'data-tippy-placement': 'bottom' })
+    .attrs({
+      class: 'const_buttons i18n tt', id: 'new_project', 'data-i18n': '[title]app_page.tooltips.new_project', 'data-tippy-placement': 'bottom',
+    })
     .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', () => {
       window.localStorage.removeItem('magrit_project');
@@ -148,17 +150,23 @@ export function setUpInterface(reload_project) {
     });
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n tt', id: 'load_project', 'data-i18n': '[title]app_page.tooltips.load_project_file', 'data-tippy-placement': 'bottom' })
+    .attrs({
+      class: 'const_buttons i18n tt', id: 'load_project', 'data-i18n': '[title]app_page.tooltips.load_project_file', 'data-tippy-placement': 'bottom',
+    })
     .html('<img src="static/img/header/Folder_open_alt_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', load_map_project);
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n tt', id: 'save_file_button', 'data-i18n': '[title]app_page.tooltips.save_file', 'data-tippy-placement': 'bottom' })
+    .attrs({
+      class: 'const_buttons i18n tt', id: 'save_file_button', 'data-i18n': '[title]app_page.tooltips.save_file', 'data-tippy-placement': 'bottom',
+    })
     .html('<img src="static/img/header/Breezeicons-actions-22-document-save-white.png" width="25" height="auto" alt="Save project to disk"/>')
     .on('click', save_map_project);
 
   const_options.append('button')
-    .attrs({ class: 'const_buttons i18n tt', id: 'documentation_link', 'data-i18n': '[title]app_page.tooltips.documentation', 'data-tippy-placement': 'bottom' })
+    .attrs({
+      class: 'const_buttons i18n tt', id: 'documentation_link', 'data-i18n': '[title]app_page.tooltips.documentation', 'data-tippy-placement': 'bottom',
+    })
     .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
     .on('click', () => {
       window.open('static/book/index.html', 'DocWindow', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
@@ -276,7 +284,7 @@ export function setUpInterface(reload_project) {
   <div id="section1" class="i18n tt_menuleft" data-i18n="[title]app_page.tooltips.section1" data-tippy-placement="right">
   </div>
 </div>
-<button id="btn_s2" class="accordion i18n" data-i18n="app_page.section1.title"></button>
+<button id="btn_s2" class="accordion i18n" data-i18n="app_page.section2.title"></button>
 <div class="panel" id="accordion2_pre">
   <div id="section2_pre"></div>
 </div>
@@ -1987,7 +1995,7 @@ function ask_replace_target_layer() {
     });
 }
 
-function ask_join_now(layer_name, on_add = 'layer') {
+export function ask_join_now(layer_name, on_add = 'layer') {
   swal({
     title: '',
     text: _tr('app_page.join_box.before_join_ask'),
@@ -2136,7 +2144,7 @@ export function fitLayer(layer_name) {
 * @param {string} sphere_id - The DOM id of the sphere.
 * @return {void}
 */
-function setSphereBottom(sphere_id) {
+export function setSphereBottom(sphere_id) {
   const layers_list = document.querySelector('.layer_list');
   layers_list.appendChild(layers_list.childNodes[0]);
   svg_map.insertBefore(svg_map.querySelector(`#${sphere_id}.layer`), svg_map.childNodes[0]);

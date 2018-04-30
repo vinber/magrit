@@ -1,6 +1,9 @@
+import alertify from 'alertifyjs';
 import { get_nb_decimals, round_value } from './helpers_calc';
-import { createLegend_symbol } from './legend';
+import { createLegend_symbol, createLegend_discont_links } from './legend';
 import { scaleBar } from './layout_features/scalebar';
+import { northArrow } from './layout_features/north_arrow';
+
 
 export const zoom = d3.zoom().on('zoom', zoom_without_redraw);
 export let canvas_rotation_value = null;

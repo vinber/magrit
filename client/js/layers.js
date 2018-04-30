@@ -13,7 +13,8 @@ import {
   handleClipPath, tryFindNameProj } from './projections';
 
 import {
-  askTypeLayer, binds_layers_buttons, center_map, handle_click_hand,
+  ask_join_now, askTypeLayer, binds_layers_buttons,
+  center_map, handle_click_hand,
   remove_layer_cleanup, scale_to_lyr, update_section1,
 } from './interface';
 

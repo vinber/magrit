@@ -1488,7 +1488,7 @@ function display_box_value_symbol(layer_name) {
   return prom;
 }
 
-function createlegendEditBox_symbol() {
+export function createlegendEditBox_symbol(legend_id, layer_name) {
   function bind_selections() {
     box_class = [layer_id, '_legend_popup'].join('');
     legend_node = svg_map.querySelector(['#', legend_id, '.lgdf_', layer_id].join(''));

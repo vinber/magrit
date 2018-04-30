@@ -1,15 +1,19 @@
 import ContextMenu from './context-menu';
 import { Colors, rgb2hex } from './colors_helpers';
 import {
-  reset_user_values, make_prop_line, make_prop_symbols,
+  clean_menu_function, make_prop_line, make_prop_symbols,
   render_categorical, render_label, render_twostocks_waffle,
+  reset_user_values,
 } from './function';
 import {
   add_simplified_land_layer, canvas_mod_size, handle_active_layer,
   handle_reload_TopoJSON, handle_title, remove_layer_cleanup,
   update_menu_dataset,
 } from './interface';
-import { clickLinkFromDataUrl, getAvailablesFunctionnalities, isValidJSON } from './helpers';
+import {
+  clickLinkFromDataUrl, create_li_layer_elem, drag_elem_geo,
+  getAvailablesFunctionnalities, isValidJSON,
+} from './helpers';
 import { createDropShadow } from './layers_style_popup';
 import {
   createLegend_choro,
@@ -26,10 +30,11 @@ import {
 import { make_style_box_indiv_symbol } from './symbols_picto';
 import UserArrow from './layout_features/arrow';
 import UserEllipse from './layout_features/ellipse';
-import { add_layout_feature } from './layout_features/helpers';
+import { add_layout_feature, add_single_symbol } from './layout_features/helpers';
 import { northArrow } from './layout_features/north_arrow';
 import UserRectangle from './layout_features/rectangle';
 import { scaleBar } from './layout_features/scalebar';
+import Textbox from './text_annotation';
 
 const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
   const layer = svg_map.querySelector(`#${_app.layer_to_id.get(layer_name)}`).querySelectorAll('path');

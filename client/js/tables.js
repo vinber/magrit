@@ -1,5 +1,8 @@
 import { make_confirm_dialog2, make_dialog_container, overlay_under_modal } from './dialogs';
-import { type_col } from './helpers';
+import {
+  display_error_during_computation, getAvailablesFunctionnalities,
+  type_col, type_col2, xhrequest,
+} from './helpers';
 
 /**
 * Return a basic operator as a function, each one taking two numbers in arguments

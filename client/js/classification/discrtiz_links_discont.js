@@ -1,5 +1,7 @@
 import { make_dialog_container } from './../dialogs';
+import { make_min_max_tableau, fetch_min_max_table_value, } from './../interface';
 import { make_content_summary } from './../helpers';
+import { get_precision_axis, max_fast, min_fast } from './../helpers_calc';
 
 export const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
   const make_box_histo_option = function () {
@@ -345,13 +347,13 @@ export const display_discretization_links_discont = function (layer_name, field_
     });
 
   available_functions.forEach((func) => {
-    discretization.append('option').text(func[0]).attr('value', func[1]);
+    discretization_panel.append('option').text(func[0]).attr('value', func[1]);
   });
 
   const ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
   ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
 
-  discretization.node().value = type;
+  discretization_panel.node().value = type;
 
   make_summary();
 
@@ -415,10 +417,10 @@ export const display_discretization_links_discont = function (layer_name, field_
     })
     .property('value', nb_class)
     .on('change', function () {
-      type = discretization.node().value;
+      type = discretization_panel.node().value;
       if (type === 'user_defined') {
         type = 'equal_interval';
-        discretization.node().value = 'equal_interval';
+        discretization_panel.node().value = 'equal_interval';
       }
       if (type === 'Q6') {
         this.value = 6;
@@ -488,7 +490,7 @@ export const display_discretization_links_discont = function (layer_name, field_
     .append('div')
     .attr('id', 'sizes_div');
   const callback = function () {
-    discretization.node().value = type;
+    discretization_panel.node().value = type;
     update_breaks(true);
     redisplay.compute();
     redisplay.draw();

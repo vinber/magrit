@@ -1,6 +1,6 @@
-import { getColorBrewerArray, hexToRgb, randomColor, rgb2hex } from './../colors_helpers';
+import { addNewCustomPalette, getColorBrewerArray, hexToRgb, randomColor, rgb2hex } from './../colors_helpers';
 import { make_dialog_container, overlay_under_modal } from './../dialogs';
-import { isNumber, make_content_summary } from './../helpers';
+import { isNumber, make_content_summary, setSelected } from './../helpers';
 import { accordionize } from './../interface';
 import { get_precision_axis } from './../helpers_calc';
 import { Mabs, Mceil, Mmax, Mround, Msqrt } from './../helpers_math';

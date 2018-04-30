@@ -359,7 +359,7 @@ function make_ok_button(parent, id, disabled = true) {
     .html(_tr('app_page.func_options.common.render'));
 }
 
-function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback) {
+export function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, max_size, id_parent, breaks, callback) {
   const parent_nd = document.getElementById(id_parent);
   parent_nd.innerHTML = '';
 
@@ -447,7 +447,7 @@ function make_min_max_tableau(values, nb_class, discontinuity_type, min_size, ma
   }
 }
 
-function fetch_min_max_table_value(parent_id) {
+export function fetch_min_max_table_value(parent_id) {
   let parent_node;
   if (parent_id) parent_node = document.getElementById(parent_id);
   else if (_app.current_functionnality.name === 'flow') document.getElementById('FlowMap_discTable');

@@ -1,5 +1,6 @@
 import { make_dialog_container, overlay_under_modal } from './dialogs';
 import { accordionize2 } from './helpers';
+import { scale_to_bbox } from './helpers_calc';
 import { scale_to_lyr, remove_layer_cleanup, fitLayer, center_map } from './interface';
 import { reproj_symbol_layer, zoom_without_redraw } from './map_ctrl';
 import { hatanoRaw, winkel1Raw } from './projection_others';

@@ -1,9 +1,9 @@
 import { Colors, getColorBrewerArray, randomColor, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
-import { display_discretization } from './classification/discretization_panel';
+import { display_discretization, display_categorical_box } from './classification/discretization_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
 import { available_fonts } from './fonts';
-import { render_label, render_label_graticule } from './function';
+import { check_layer_name, render_label, render_label_graticule } from './function';
 import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
 import { binds_layers_buttons } from './interface';

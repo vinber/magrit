@@ -1,5 +1,5 @@
 import { make_dialog_container, make_confirm_dialog2, overlay_under_modal } from './dialogs';
-
+import { cloneObj } from './helpers';
 
 export const display_box_symbol_typo = function (layer, field, categories) {
   const fetch_symbol_categories = function () {
