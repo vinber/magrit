@@ -1,14 +1,41 @@
 import { rgb2hex } from './colors_helpers';
-import { reset_user_values } from './function';
-import { canvas_mod_size, remove_layer_cleanup } from './interface';
+import { reset_user_values, make_prop_line, make_prop_symbols, render_label } from './function';
+import {
+  add_simplified_land_layer, canvas_mod_size, handle_active_layer,
+  handle_reload_TopoJSON, handle_title, remove_layer_cleanup,
+} from './interface';
 import { clickLinkFromDataUrl, isValidJSON } from './helpers';
-import { canvas_rotation_value } from './map_ctrl';
-import { addLastProjectionSelect, available_projections, getD3ProjFromProj4 } from './projections';
+import { createDropShadow } from './layers_style_popup';
+import {
+  createLegend_choro,
+  createLegend_choro_horizontal,
+  createLegend_discont_links,
+  createLegend_line_symbol,
+  createLegend_symbol,
+  createLegend_waffle,
+} from './legend';
+import { canvas_rotation_value, reproj_symbol_layer, rotate_global, zoom_without_redraw } from './map_ctrl';
+import {
+  addLastProjectionSelect, available_projections, getD3ProjFromProj4, handleClipPath,
+} from './projections';
+import { add_layout_feature } from './layout_features/helpers';
 import { northArrow } from './layout_features/north_arrow';
 import { scaleBar } from './layout_features/scalebar';
 
+const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
+  const layer = svg_map.querySelector(`#${_app.layer_to_id.get(layer_name)}`).querySelectorAll('path');
+  const n_features = layer.length;
+  const result_features = [];
+  for (let i = 0; i < n_features; i++) {
+    result_features.push(layer[i].__data__);
+  }
+  const to_convert = {};
+  to_convert[layer_name] = { type: 'FeatureCollection', features: result_features };
+  return Promise.resolve(JSON.stringify(topojson.topology(to_convert)));
+};
+
 /* eslint-disable no-loop-func */
-export function get_map_template() {
+export function get_map_project() {
   const getPropSymbolCurrentPos = (selection, type_symbol) => {
     const result = [];
     const nbFt = selection.length;
@@ -435,41 +462,40 @@ export function get_map_template() {
   //      ? xhrequest("GET", "/get_layer/" + obj.topo_geom, null, false) : null))
   return Promise.all(
     layers_style.map(obj => (obj.topo_geom ? serialize_layer_to_topojson(obj.layer_name) : null)))
-      .then((result) => {
-        for (let i = 0; i < layers_style.length; i++) {
-          if (result[i]) {
-            layers_style[i].topo_geom = result[i];
-          }
+    .then((result) => {
+      for (let i = 0; i < layers_style.length; i++) {
+        if (result[i]) {
+          layers_style[i].topo_geom = result[i];
         }
-      // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
-        return JSON.stringify({
-          map_config: map_config,
-          layers: layers_style,
-          info: { version: _app.version },
-        });
+      }
+    // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
+      return JSON.stringify({
+        map_config: map_config,
+        layers: layers_style,
+        info: { version: _app.version },
       });
+    });
 }
 
 // Function triggered when the user request a download of its map preferences
-export function save_map_template() {
+export function save_map_project() {
   _app.waitingOverlay.display();
-  get_map_template().then((json_params) => {
+  get_map_project().then((json_params) => {
     const url = `data:text/json;charset=utf-8,${encodeURIComponent(json_params)}`;
     _app.waitingOverlay.hide();
     clickLinkFromDataUrl(url, 'magrit_project.json');
   });
 }
 
-export function load_map_template() {
-  const prepareReading = (event) => {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onloadend = () => { apply_user_preferences(reader.result); };
-    reader.readAsText(file);
-  };
+export function load_map_project() {
   const input_button = d3.select(document.createElement('input'))
     .attrs({ type: 'file', name: 'file', accept: '.json' })
-    .on('change', () => { prepareReading(d3.event); });
+    .on('change', () => {
+      const file = d3.event.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => { apply_user_preferences(reader.result); };
+      reader.readAsText(file);
+    });
 
   input_button.node().dispatchEvent(new MouseEvent('click'));
 }
@@ -517,6 +543,122 @@ const remove_all_layers = () => {
   // Get a new object for where we are storing the main properties :
   data_manager.current_layers = {};
 };
+
+function reorder_layers(desired_order) {
+  const layers = svg_map.querySelectorAll('.layer'),
+    parent = layers[0].parentNode,
+    nb_layers = desired_order.length;
+  // eslint-disable-next-line no-param-reassign
+  desired_order = desired_order.map(el => _app.layer_to_id.get(el));
+  for (let i = 0; i < nb_layers; i++) {
+    const t = document.getElementById(desired_order[i]);
+    if (t) {
+      parent.insertBefore(t, parent.firstChild);
+    }
+  }
+  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+}
+
+function reorder_elem_list_layer(desired_order) {
+  const parent = document.getElementsByClassName('layer_list')[0],
+    layers = parent.childNodes,
+    nb_layers = desired_order.length;
+  for (let i = 0; i < nb_layers; i++) {
+    const selec = parent.querySelector(`li.${_app.layer_to_id.get(desired_order[i])}`);
+    if (selec) {
+      parent.insertBefore(selec, parent.firstChild);
+    }
+  }
+}
+
+function reorder_layers_elem_legends(desired_order) {
+  const elems = svg_map.querySelectorAll('.legend,.layer');
+  const parent = elems[0].parentNode;
+  const nb_elems = desired_order.length;
+  for (let i = 0; i < nb_elems; i++) {
+    const t = svg_map.querySelector(desired_order[i]);
+    if (t) {
+      parent.appendChild(t);
+    }
+  }
+  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
+}
+
+function rehandle_legend(layer_name, properties) {
+  for (let i = 0; i < properties.length; i++) {
+    const prop = properties[i];
+    if (prop.type === 'legend_root') {
+      createLegend_choro(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.boxgap,
+        prop.rect_fill_value,
+        prop.rounding_precision,
+        prop.no_data_txt,
+        prop.bottom_note,
+      );
+    } else if (prop.type === 'legend_root_symbol') {
+      createLegend_symbol(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.nested_symbols,
+        prop.join_line,
+        prop.rect_fill_value,
+        prop.rounding_precision,
+        prop.bottom_note,
+       );
+    } else if (prop.type === 'legend_root_lines_class') {
+      createLegend_discont_links(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.rect_fill_value,
+        prop.rounding_precision,
+        prop.bottom_note,
+      );
+    } else if (prop.type === 'legend_root_lines_symbol') {
+      createLegend_line_symbol(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.rect_fill_value,
+        prop.rounding_precision,
+        prop.bottom_note,
+      );
+    } else if (prop.type === 'legend_root_waffle') {
+      createLegend_waffle(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.rect_fill_value,
+        prop.ratio_txt,
+        prop.bottom_note,
+      );
+    } else if (prop.type === 'legend_root_horiz') {
+      createLegend_choro_horizontal(
+        layer_name,
+        prop.field,
+        prop.title,
+        prop.subtitle,
+        prop.boxgap,
+        prop.rect_fill_value,
+        prop.rounding_precision,
+        prop.no_data_txt,
+        prop.bottom_note,
+      );
+    }
+    const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
+    lgd.setAttribute('transform', prop.transform);
+    if (prop.display === 'none') lgd.setAttribute('display', 'none');
+  }
+}
 
 export function apply_user_preferences(json_pref) {
   // Try to read the project-file provided by the user:
@@ -600,7 +742,7 @@ export function apply_user_preferences(json_pref) {
           desired_order.reverse();
           reorder_layers(desired_order);
         }
-       // Current method to reorder layers:
+      // Current method to reorder layers:
       } else if (map_config.global_order && map_config.global_order.length > 1
           && (p_version.minor > 4 || (p_version.minor === 4 && p_version.patch > 1))) {
         const order = layers.map(i => i.layer_name);
@@ -794,8 +936,8 @@ export function apply_user_preferences(json_pref) {
     const _layer = layers[i];
     let layer_name = _layer.layer_name,
       layer_type = _layer.layer_type,
-      layer_id,
-      symbol;
+      layer_id;
+      // symbol;
 
     // Reload the sphere differently as some ("breaking") changes were made
     // when updating to 0.3.3
@@ -1012,7 +1154,7 @@ export function apply_user_preferences(json_pref) {
           'stroke-opacity': stroke_opacity,
         });
         if (_layer.fill_color.random) {
-          layer_selec.style('fill', _ => Colors.names[Colors.random()]);
+          layer_selec.style('fill', () => Colors.names[Colors.random()]);
         }
         if (_layer.current_position) {
           at_end.push([restorePreviousPos, layer_id, _layer.current_position, _layer.symbol]);
@@ -1129,118 +1271,3 @@ export function apply_user_preferences(json_pref) {
   }
 }
 /* eslint-enable no-loop-func */
-
-function reorder_layers(desired_order) {
-  const layers = svg_map.querySelectorAll('.layer'),
-    parent = layers[0].parentNode,
-    nb_layers = desired_order.length;
-  // eslint-disable-next-line no-param-reassign
-  desired_order = desired_order.map(el => _app.layer_to_id.get(el));
-  for (let i = 0; i < nb_layers; i++) {
-    if (document.getElementById(desired_order[i])) {
-      parent.insertBefore(document.getElementById(desired_order[i]), parent.firstChild);
-    }
-  }
-  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
-}
-
-function reorder_elem_list_layer(desired_order) {
-  const parent = document.getElementsByClassName('layer_list')[0],
-    layers = parent.childNodes,
-    nb_layers = desired_order.length;
-  for (let i = 0; i < nb_layers; i++) {
-    const selec = `li.${_app.layer_to_id.get(desired_order[i])}`;
-    if (parent.querySelector(selec)) {
-      parent.insertBefore(parent.querySelector(selec), parent.firstChild);
-    }
-  }
-}
-
-function reorder_layers_elem_legends(desired_order) {
-  const elems = svg_map.querySelectorAll('.legend,.layer');
-  const parent = elems[0].parentNode;
-  const nb_elems = desired_order.length;
-  for (let i = 0; i < nb_elems; i++) {
-    const t = svg_map.querySelector(desired_order[i]);
-    if (t) {
-      parent.appendChild(t);
-    }
-  }
-  svg_map.insertBefore(defs.node(), svg_map.childNodes[0]);
-}
-
-function rehandle_legend(layer_name, properties) {
-  for (let i = 0; i < properties.length; i++) {
-    const prop = properties[i];
-    if (prop.type === 'legend_root') {
-      createLegend_choro(layer_name,
-                         prop.field,
-                         prop.title,
-                         prop.subtitle,
-                         prop.boxgap,
-                         prop.rect_fill_value,
-                         prop.rounding_precision,
-                         prop.no_data_txt,
-                         prop.bottom_note);
-    } else if (prop.type === 'legend_root_symbol') {
-      createLegend_symbol(layer_name,
-                          prop.field,
-                          prop.title,
-                          prop.subtitle,
-                          prop.nested_symbols,
-                          prop.join_line,
-                          prop.rect_fill_value,
-                          prop.rounding_precision,
-                          prop.bottom_note);
-    } else if (prop.type === 'legend_root_lines_class') {
-      createLegend_discont_links(layer_name,
-                                 prop.field,
-                                 prop.title,
-                                 prop.subtitle,
-                                 prop.rect_fill_value,
-                                 prop.rounding_precision,
-                                 prop.bottom_note);
-    } else if (prop.type === 'legend_root_lines_symbol') {
-      createLegend_line_symbol(layer_name,
-                               prop.field,
-                               prop.title,
-                               prop.subtitle,
-                               prop.rect_fill_value,
-                               prop.rounding_precision,
-                               prop.bottom_note);
-    } else if (prop.type === 'legend_root_waffle') {
-      createLegend_waffle(layer_name,
-                          prop.field,
-                          prop.title,
-                          prop.subtitle,
-                          prop.rect_fill_value,
-                          prop.ratio_txt,
-                          prop.bottom_note);
-    } else if (prop.type === 'legend_root_horiz') {
-      createLegend_choro_horizontal(layer_name,
-                                    prop.field,
-                                    prop.title,
-                                    prop.subtitle,
-                                    prop.boxgap,
-                                    prop.rect_fill_value,
-                                    prop.rounding_precision,
-                                    prop.no_data_txt,
-                                    prop.bottom_note);
-    }
-    const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
-    lgd.setAttribute('transform', prop.transform);
-    if (prop.display === 'none') lgd.setAttribute('display', 'none');
-  }
-}
-
-const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
-  const layer = svg_map.querySelector(`#${_app.layer_to_id.get(layer_name)}`).querySelectorAll('path');
-  const n_features = layer.length;
-  const result_features = [];
-  for (let i = 0; i < n_features; i++) {
-    result_features.push(layer[i].__data__);
-  }
-  const to_convert = {};
-  to_convert[layer_name] = { type: 'FeatureCollection', features: result_features };
-  return Promise.resolve(JSON.stringify(topojson.topology(to_convert)));
-};

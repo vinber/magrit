@@ -286,7 +286,7 @@ export const drag_legend_func = function drag_legend_func(legend_group) {
     });
 };
 
-function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ratio_txt, note_bottom) {
+export function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ratio_txt, note_bottom) {
   const space_elem = 18;
   const boxheight = 18;
   const boxwidth = 18;
@@ -407,7 +407,7 @@ function createLegend_waffle(layer, fields, title, subtitle, rect_fill_value, ra
   return legend_root;
 }
 
-function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
+export function createLegend_discont_links(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
   const space_elem = 18,
     boxgap = 12,
     xpos = 30,
@@ -901,7 +901,7 @@ export function createLegend_symbol(layer, field, title, subtitle, nested = 'fal
   return legend_root;
 }
 
-function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
+export function createLegend_line_symbol(layer, field, title, subtitle, rect_fill_value, rounding_precision, note_bottom) {
   const space_elem = 18,
     boxgap = 12,
     xpos = 30,
@@ -1055,7 +1055,7 @@ const get_lgd_display_precision = function (breaks) {
   return undefined;
 };
 
-function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom) {
+export function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom) {
   const boxheight = 18,
     boxwidth = 18,
     xpos = 30,
@@ -1226,7 +1226,7 @@ function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fil
   return legend_root;
 }
 
-function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom) {
+export function createLegend_choro_horizontal(layer, field, title, subtitle, box_gap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom) {
   const boxheight = 16,
     boxwidth = 42,
     xpos = 30,
@@ -2529,9 +2529,9 @@ const get_max_nb_dec = function (layer_name) {
   return max;
 };
 
-function _get_max_nb_left_sep(values) {
-  return max_fast(values.map(d => (`${d}`).split('.')[0].length));
-}
+// function _get_max_nb_left_sep(values) {
+//   return max_fast(values.map(d => (`${d}`).split('.')[0].length));
+// }
 
 const get_max_nb_left_sep = function (layer_name) {
   if (!(data_manager.current_layers[layer_name]) || !(data_manager.current_layers[layer_name].colors_breaks)) { return; }

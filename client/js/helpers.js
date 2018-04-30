@@ -24,6 +24,7 @@ export const createWaitingOverlay = () => {
   <div class="rect5"></div>
 </div>
 <span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
+  // TODO :
   const btn = document.createElement('button');
   btn.style.fontSize = '13px';
   btn.style.background = '#4b9cdb';
@@ -855,8 +856,10 @@ export const clickLinkFromDataUrl = function clickLinkFromDataUrl(url, filename)
           onClose() {
             URL.revokeObjectURL(blobUrl);
           },
-        }).then(inputValue => null,
-            dismissValue => null);
+        }).then(
+          inputValue => null,
+          dismissValue => null,
+        );
       } else {
         dlAnchorElem.style.display = 'none';
         document.body.appendChild(dlAnchorElem);

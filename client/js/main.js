@@ -1,22 +1,19 @@
+import i18next from 'i18next';
+import i18nextXHRBackend from 'i18next-xhr-backend';
+import locI18next from 'loc-i18next';
 import './../css/style.css';
 import './../css/discretization.css';
 import './../node_modules/alertifyjs/build/css/alertify.min.css';
 import './../node_modules/alertifyjs/build/css/themes/semantic.min.css';
-
-import i18next from 'i18next';
-import i18nextXHRBackend from 'i18next-xhr-backend';
-import locI18next from 'loc-i18next';
-import { accordionize, add_sample_layer, add_simplified_land_layer, setUpInterface } from './interface';
+import { setUpInterface } from './interface';
 import { xhrequest } from './helpers';
-import { Mceil, Mround } from './helpers_math';
-import { round_value } from './helpers_calc';
+import { Mround } from './helpers_math';
 import { makeSvgMap } from './map_ctrl';
-import { available_projections } from './projections';
 import { bindTooltips } from './tooltips';
 
 Promise.config({
-    warnings: true,
-    longStackTraces: true,
+  warnings: true,
+  longStackTraces: true,
 });
 
 // /*
@@ -128,7 +125,7 @@ function loadI18next(lang) {
       }, (err, tr) => {
         if (err) reject(err);
         resolve(tr);
-      })
+      });
   });
 }
 
@@ -186,9 +183,9 @@ function getEpsgProjection() {
 global.get_map_xy0 = () => {
   const bbox = svg_map.getBoundingClientRect();
   return { x: bbox.left, y: bbox.top };
-}
+};
 
-global.get_bounding_rect = elem => {
+global.get_bounding_rect = (elem) => {
   const { x, y } = get_map_xy0();
   const bbox = elem.getBoundingClientRect();
   const a = {

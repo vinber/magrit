@@ -81,10 +81,12 @@ function valid_join_on(layer_name, join_values1, join_values2, field1, field2, h
   let val;
 
   if (hits >= join_values1.length) {
-    swal({ title: '',
+    swal({
+      title: '',
       text: _tr('app_page.common.success'),
       type: 'success',
-      allowOutsideClick: true });
+      allowOutsideClick: true,
+    });
     const fields_name_to_add = Object.getOwnPropertyNames(ext_dataset[0]);
     for (let i = 0, len = join_values1.length; i < len; i++) {
       val = data_manager.field_join_map[i];
@@ -272,37 +274,48 @@ function prepare_join_on(layer_name, field1, field2) {
 // the field names of the geometry layer, the other one containing those from
 // the external dataset, in order to let the user choose the common field to do
 // the join.
-const createJoinBox = function createJoinBox(layer) {
+export const createJoinBox = function createJoinBox(layer) {
   const geom_layer_fields = [...data_manager.current_layers[layer].original_fields.keys()];
   const ext_dataset_fields = Object.getOwnPropertyNames(global.data_manager.joined_dataset[0][0]);
-  const button1 = ['<select id=button_field1>'];
-  const button2 = ['<select id=button_field2>'];
+  const options_fields_layer = [];
+  const options_fields_ext_dataset = [];
   const lastChoice = { field1: geom_layer_fields[0], field2: ext_dataset_fields[0] };
 
   for (let i = 0, len = geom_layer_fields.length; i < len; i++) {
-    button1.push(['<option value="', geom_layer_fields[i], '">', geom_layer_fields[i], '</option>'].join(''));
+    options_fields_layer.push(
+      `<option value="${geom_layer_fields[i]}">${geom_layer_fields[i]}</option>`);
   }
-  button1.push('</select>');
 
   for (let i = 0, len = ext_dataset_fields.length; i < len; i++) {
     if (ext_dataset_fields[i].length > 0) {
-      button2.push(['<option value="', ext_dataset_fields[i], '">', ext_dataset_fields[i], '</option>'].join(''));
+      options_fields_ext_dataset.push(
+        `<option value="${ext_dataset_fields[i]}">${ext_dataset_fields[i]}</option>`);
     }
   }
-  button2.push('</select>');
 
-  const inner_box = [
-    '<p><b><i>',
-    _tr('app_page.join_box.select_fields'), '</i></b></p>',
-    '<div style="padding:10px"><p>',
-    _tr('app_page.join_box.geom_layer_field'), '</p>',
-    button1.join(''), '<em style="float:right;">(', layer, ')</em></div>',
-    '<div style="padding:15px 10px 10px"><p>',
-    _tr('app_page.join_box.ext_dataset_field'), '<br></p>',
-    button2.join(''), '<em style="float:right;">(', data_manager.dataset_name, '.csv)</em></div>',
-    '<br><p><strong>', _tr('app_page.join_box.ask_join'), '<strong></p></div>',
-  ].join('');
-
+  const inner_box =
+`<p><b><i>${_tr('app_page.join_box.select_fields')}</i></b></p>
+<div style="padding:10px"><p>${_tr('app_page.join_box.geom_layer_field')}</p>
+<select id=button_field1>${options_fields_layer.join('')}</select>
+<em style="float:right;">(${layer})</em>
+</div>
+<div style="padding:15px 10px 10px"><p>
+${_tr('app_page.join_box.ext_dataset_field')}<br></p>
+<select id=button_field2>${options_fields_ext_dataset.join('')}</select>
+<em style="float:right;">(${data_manager.dataset_name}.csv)</em>
+</div>
+<br><p><strong>${_tr('app_page.join_box.ask_join')}<strong></p></div>`;
+  // const inner_box = [
+  //   '<p><b><i>',
+  //   _tr('app_page.join_box.select_fields'), '</i></b></p>',
+  //   '<div style="padding:10px"><p>',
+  //   _tr('app_page.join_box.geom_layer_field'), '</p>',
+  //   options_fields_layer.join(''), '<em style="float:right;">(', layer, ')</em></div>',
+  //   '<div style="padding:15px 10px 10px"><p>',
+  //   _tr('app_page.join_box.ext_dataset_field'), '<br></p>',
+  //   options_fields_ext_dataset.join(''), '<em style="float:right;">(', data_manager.dataset_name, '.csv)</em></div>',
+  //   '<br><p><strong>', _tr('app_page.join_box.ask_join'), '<strong></p></div>',
+  // ].join('');
 
   make_confirm_dialog2('joinBox', _tr('app_page.join_box.title'), { html_content: inner_box, widthFitContent: true })
     .then((confirmed) => {
@@ -311,9 +324,20 @@ const createJoinBox = function createJoinBox(layer) {
       }
     });
 
-  d3.select('.joinBox').styles({ 'text-align': 'center', 'line-height': '0.9em' });
-  d3.select('#button_field1').style('float', 'left').on('change', function () { lastChoice.field1 = this.value; });
-  d3.select('#button_field2').style('float', 'left').on('change', function () { lastChoice.field2 = this.value; });
+  d3.select('.joinBox')
+    .styles({ 'text-align': 'center', 'line-height': '0.9em' });
+
+  d3.select('#button_field1')
+    .style('float', 'left')
+    .on('change', function () {
+      lastChoice.field1 = this.value;
+    });
+
+  d3.select('#button_field2')
+    .style('float', 'left')
+    .on('change', function () {
+      lastChoice.field2 = this.value;
+    });
 };
 
 const removeExistingJointure = (layer_name) => {

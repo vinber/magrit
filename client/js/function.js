@@ -7,7 +7,8 @@ import {
 } from './helpers';
 import { contains_empty_val, getBinsCount, get_nb_decimals, has_negative, haversine_dist, max_fast, PropSizer } from './helpers_calc';
 import { Mabs, Mmax, Mmin, Mround } from './helpers_math';
-import { add_layer_topojson, prepare_available_symbols, switch_accordion_section } from './interface';
+import { prepare_available_symbols, switch_accordion_section } from './interface';
+import { add_layer_topojson } from './layers';
 import { handle_legend } from './legend';
 import { zoom_without_redraw } from './map_ctrl';
 import { display_box_symbol_typo, make_style_box_indiv_symbol } from './symbols_picto';

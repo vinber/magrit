@@ -1,4 +1,5 @@
 import { clickLinkFromDataUrl, display_error_during_computation, xhrequest } from './helpers';
+import { Mceil } from './helpers_math';
 import { custom_fonts } from './fonts';
 
 function patchSvgForFonts() {
@@ -8,7 +9,6 @@ function patchSvgForFonts() {
       svg_map.getElementsByTagName('p'),
     ];
     const needed_definitions = [];
-    // elems.map(d => (d ? d : []));
     elems.map(d => d || []);
     for (let j = 0; j < 2; j++) {
       for (let i = 0; i < elems[j].length; i++) {
@@ -118,6 +118,21 @@ function check_output_name(name, extension) {
   return `export.${extension}`;
 }
 
+/*
+* Straight from http://stackoverflow.com/a/26047748/5050917
+*
+*/
+function changeResolution(canvas, scaleFactor) {
+  // Set up CSS size if it's not set up already
+  if (!canvas.style.width) canvas.style.width = `${canvas.width}px`; // eslint-disable-line no-param-reassign
+  if (!canvas.style.height) canvas.style.height = `${canvas.height}px`; // eslint-disable-line no-param-reassign
+
+  canvas.width = Mceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
+  canvas.height = Mceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
+  const ctx = canvas.getContext('2d');
+  ctx.scale(scaleFactor, scaleFactor);
+}
+
 export function export_compo_svg(output_name) {
   output_name = check_output_name(output_name, 'svg'); // eslint-disable-line no-param-reassign
   patchSvgForInkscape();
@@ -138,7 +153,7 @@ export function export_compo_svg(output_name) {
   source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
   const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
-  clickLinkFromDataUrl(url, output_name).then((a) => {
+  clickLinkFromDataUrl(url, output_name).then(() => {
     unpatchSvgForFonts();
     unpatchSvgForForeignObj(dimensions_foreign_obj);
     unpatchSvgForInkscape();
@@ -200,7 +215,7 @@ export function export_compo_png(type = 'web', scalefactor = 1, output_name) {
       display_error_during_computation(String(err));
       return;
     }
-    clickLinkFromDataUrl(imgUrl, output_name).then((_) => {
+    clickLinkFromDataUrl(imgUrl, output_name).then(() => {
       unpatchSvgForFonts();
       unpatchSvgForForeignObj(dimensions_foreign_obj);
       global._app.waitingOverlay.hide();
@@ -244,8 +259,8 @@ export function export_layer_geo(layer, type, projec, proj4str) {
           type: 'error',
           allowOutsideClick: false,
           allowEscapeKey: false,
-        }).then(() => null,
-          () => null);
+        })
+        .then(() => null, () => null);
         return;
       }
       const ext = extensions.get(type),
@@ -262,19 +277,4 @@ export function export_layer_geo(layer, type, projec, proj4str) {
     }, (error) => {
       console.log(error);
     });
-}
-
-/*
-* Straight from http://stackoverflow.com/a/26047748/5050917
-*
-*/
-function changeResolution(canvas, scaleFactor) {
-  // Set up CSS size if it's not set up already
-  if (!canvas.style.width) canvas.style.width = `${canvas.width}px`; // eslint-disable-line no-param-reassign
-  if (!canvas.style.height) canvas.style.height = `${canvas.height}px`; // eslint-disable-line no-param-reassign
-
-  canvas.width = Mceil(canvas.width * scaleFactor); // eslint-disable-line no-param-reassign
-  canvas.height = Mceil(canvas.height * scaleFactor); // eslint-disable-line no-param-reassign
-  const ctx = canvas.getContext('2d');
-  ctx.scale(scaleFactor, scaleFactor);
 }

@@ -33,10 +33,12 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       chooses_handler.new_name = this.value;
     } else { // Rollback to the last correct name  :
       this.value = chooses_handler.new_name;
-      swal({ title: `${_tr('Error')}!`,
+      swal({
+        title: `${_tr('Error')}!`,
         text: _tr('Unauthorized character!'),
         type: 'error',
-        allowOutsideClick: false });
+        allowOutsideClick: false,
+      });
     }
   }
 
@@ -49,10 +51,12 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     let opt_val = options.opt_val;
 
     if (!regexp_name.test(new_name_field)) {
-      swal({ title: '',
+      swal({
+        title: '',
         text: _tr('app_page.explore_box.add_field_box.invalid_name'),
         type: 'error',
-        allowOutsideClick: false });
+        allowOutsideClick: false,
+      });
       return Promise.reject('Invalid name');
     }
     if (options.type_operation === 'math_compute' && table.length > 3200) {
@@ -156,7 +160,6 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       string_operation.forEach((op) => {
         operator.append('option').text(op[0]).attr('value', op[1]);
       });
-      // for (const k in fields_type) {
       const _f = Object.getOwnPropertyNames(fields_type);
       for (let i = 0, n = _f.length; i < n; i++) {
         const k = _f[i];
@@ -208,42 +211,44 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       // reOpenParent('#browse_data_box');
       if (valid) {
         document.querySelector('body').style.cursor = 'wait';
-        compute_and_add(chooses_handler).then(
-          (resolved) => {
-            if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
-              const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
-              let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
-              if (existing < 0) {
-                data_manager.current_layers[layer_name].fields_type.push(type_field);
-              } else {
-                data_manager.current_layers[layer_name].fields_type[existing] = type_field;
-              }
-              getAvailablesFunctionnalities(layer_name);
-              if (window.fields_handler) {
-                fields_handler.unfill();
-                fields_handler.fill(layer_name);
-              }
+        compute_and_add(chooses_handler).then((resolved) => {
+          if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
+            const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
+            let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
+            if (existing < 0) {
+              data_manager.current_layers[layer_name].fields_type.push(type_field);
+            } else {
+              data_manager.current_layers[layer_name].fields_type[existing] = type_field;
             }
-            if (reOpenTableBox) {
-              boxExplore2.create(layer_name);
-              // parent.modal_box.show();
-              // parent.display_table(layer_name);
+            getAvailablesFunctionnalities(layer_name);
+            if (window.fields_handler) {
+              fields_handler.unfill();
+              fields_handler.fill(layer_name);
             }
-          }, (error) => {
-          if (error !== 'Invalid name') { display_error_during_computation(); }
+          }
+          if (reOpenTableBox) {
+            boxExplore2.create(layer_name);
+            // parent.modal_box.show();
+            // parent.display_table(layer_name);
+          }
+        }, (error) => {
+          if (error !== 'Invalid name') {
+            display_error_during_computation();
+          }
           console.log(error);
           document.querySelector('body').style.cursor = '';
-        }).done(() => { document.querySelector('body').style.cursor = ''; });
+        }).done(() => {
+          document.querySelector('body').style.cursor = '';
+        });
       }
     });
 
-  let current_fields = Object.getOwnPropertyNames(table),
-    fields_type = type_col(layer_name),
-    regexp_name = new RegExp(/^[a-z0-9_]+$/i), // Only allow letters (lower & upper cases), number and underscore in the field name
-    container = document.querySelector('.twbs > .addFieldBox'),
-    box_content = d3.select(container).select('.modal-body').append('div'),
-    div1 = box_content.append('div').attr('id', 'field_div1'),
-    div2 = box_content.append('div').attr('id', 'field_div2');
+  const fields_type = type_col(layer_name);
+  const regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
+  const container = document.querySelector('.twbs > .addFieldBox');
+  const box_content = d3.select(container).select('.modal-body').append('div');
+  const div1 = box_content.append('div').attr('id', 'field_div1');
+  const div2 = box_content.append('div').attr('id', 'field_div2');
 
   const new_name = div1.append('p')
     .html(_tr('app_page.explore_box.add_field_box.new_name'))
@@ -429,8 +434,8 @@ export const boxExplore2 = {
     box.style.height = null;
 
     setTimeout(() => {
-      const bbox = box.querySelector('#myTable').getBoundingClientRect(),
-        new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
+      const bbox = box.querySelector('#myTable').getBoundingClientRect();
+      // const new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
       let new_width = bbox.width;
       if (new_width > window.innerWidth * 0.85) {
         new_width = window.innerWidth * 0.9;

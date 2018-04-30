@@ -87,6 +87,37 @@ export const available_projections = new Map([
 ]);
 /* eslint-enable object-curly-newline,max-len */
 
+/**
+* Function to change (one of more of) the three rotations axis of a d3 projection
+* and redraw all the path (+ move symbols layers) in respect to that.
+*
+* @param {Array} param - The new [lambda, phi, gamma] properties to be used.
+* @return {void}
+*/
+function handle_proj_center_button(param) {
+  // Fetch the current rotation params :
+  const current_rotation = proj.rotate();
+  // Reuse it for the missing value passed in arguments and do the rotation:
+  // proj.rotate(param.map((val, i) => val !== null ? val : current_rotation[i]));
+  proj.rotate(param.map((val, i) => val || current_rotation[i]));
+  // Redraw the path and move the symbols :
+  map.selectAll('.layer').selectAll('path').attr('d', path);
+  reproj_symbol_layer();
+}
+
+function handle_parallels_change(parallels) {
+  const current_values = proj.parallels();
+  proj.parallels(parallels.map((val, i) => val || current_values[i]));
+  map.selectAll('.layer').selectAll('path').attr('d', path);
+  reproj_symbol_layer();
+}
+
+function handle_parallel_change(parallel) {
+  proj.parallel(parallel);
+  map.selectAll('.layer').selectAll('path').attr('d', path);
+  reproj_symbol_layer();
+}
+
 const createBoxProj4 = function createBoxProj4() {
   make_dialog_container(
     'box_projection_input',
@@ -261,8 +292,8 @@ export function addLastProjectionSelect(proj_name, proj4string, custom_name) {
   } else if (custom_name === 'ETRS89 / LAEA Europe') {
     proj_select.value = 'AzimuthalEqualAreaEurope';
   } else if (proj_select.options.length === 10) {
-    const prev_elem = proj_select.querySelector("[value='more']"),
-      new_option = document.createElement('option');
+    const prev_elem = proj_select.querySelector("[value='more']");
+    const new_option = document.createElement('option');
     new_option.className = 'i18n';
     new_option.value = 'last_projection';
     new_option.name = proj_name;
@@ -289,11 +320,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   function updateSelect(filter_in, filter_ex) {
     display_select_proj.remove();
     display_select_proj = p.append('select')
-      .attr('id', 'select_proj')
-      .attr('size', 18)
+      .attrs({ id: 'select_proj', size: 18 })
       .style('min-width', '195px');
     if (!filter_in && !filter_ex) {
-      // for (const proj_name of available_projections.keys()) { .. }
       Array.from(available_projections.keys()).forEach((proj_name) => {
         display_select_proj.append('option')
           .attrs({ class: 'i18n', value: proj_name, 'data-i18n': `app_page.projection_name.${proj_name}` })
@@ -337,10 +366,16 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     });
   }
   function onClickFilter() {
-    let filter1_val = Array.prototype.filter.call(document.querySelector('.switch-field.f1').querySelectorAll('input'), f => f.checked)[0];
+    let filter1_val = Array.prototype.filter.call(
+      document.querySelector('.switch-field.f1').querySelectorAll('input'),
+      f => f.checked,
+    )[0];
+    let filter2_val = Array.prototype.filter.call(
+      document.querySelector('.switch-field.f2').querySelectorAll('input'),
+      f => f.checked,
+    )[0];
     filter1_val = filter1_val === undefined ? undefined : filter1_val.value;
     if (filter1_val === 'any') filter1_val = undefined;
-    let filter2_val = Array.prototype.filter.call(document.querySelector('.switch-field.f2').querySelectorAll('input'), f => f.checked)[0];
     filter2_val = filter2_val === undefined ? undefined : filter2_val.value;
     if (filter2_val === 'any') filter2_val = undefined;
     updateSelect(filter1_val, filter2_val);
@@ -457,8 +492,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   const p = column3.append('p').style('margin', 'auto');
   let display_select_proj = p.append('select')
-    .attr('id', 'select_proj')
-    .attr('size', 18);
+    .attrs({ id: 'select_proj', size: 18 });
 
   updateSelect(null, null);
 
@@ -478,12 +512,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .html(_tr('app_page.projection_box.projection_options'));
   const accordion_choice_options = content.append('div')
     .attrs({ class: 'panel', id: 'accordion_choice_projection' })
-    .style('padding', '10px')
-    .style('width', '98%');
+    .styles({ padding: '10px', width: '98%' });
   const options_proj_content = accordion_choice_options.append('div')
     .attr('id', 'options_proj_content')
-    .style('width', '60%')
-    .style('transform', 'translateX(45%)');
+    .styles({ transform: 'translateX(45%)', width: '60%' });
 
   let rotate_section = options_proj_content.append('div').style('display', prev_rotate ? '' : 'none');
   const lambda_section = rotate_section.append('p');
@@ -525,7 +557,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   gamma_section.append('span')
     .style('float', 'left')
     .html(_tr('app_page.section5.projection_center_gamma'));
-  let gamma_input = gamma_section.append('input')
+  const gamma_input = gamma_section.append('input')
     .styles({
       width: '60px', float: 'right', height: '2rem',
     })
@@ -537,14 +569,15 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       handle_proj_center_button([null, null, -this.value]);
     });
 
-  let parallels_section = options_proj_content.append('div')
+  const parallels_section = options_proj_content.append('div')
     .styles({ 'text-align': 'center', clear: 'both' })
     .style('display', prev_parallels ? '' : 'none');
   parallels_section.append('span')
     .html(_tr('app_page.section5.parallels'));
   const inputs = parallels_section.append('p')
     .styles({ 'text-align': 'center', margin: 'auto' });
-  let sp1_input = inputs.append('input')
+
+  const sp1_input = inputs.append('input')
     .styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
     .attrs({ type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5 })
     .on('input', function () {
@@ -552,7 +585,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       else if (this.value < -90) this.value = -90;
       handle_parallels_change([this.value, null]);
     });
-  let sp2_input = inputs.append('input')
+  const sp2_input = inputs.append('input')
     .styles({ width: '60px', display: 'inline', 'margin-left': '2px' })
     .attrs({ type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5 })
     .on('input', function () {
@@ -561,13 +594,13 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       handle_parallels_change([null, this.value]);
     });
 
-  let parallel_section = options_proj_content.append('div')
+  const parallel_section = options_proj_content.append('div')
     .styles({ 'text-align': 'center', clear: 'both' })
     .style('display', prev_parallel ? '' : 'none');
   parallel_section.append('span')
     .html(_tr('app_page.section5.parallel'));
 
-  let sp_input = parallel_section.append('p')
+  const sp_input = parallel_section.append('p')
     .styles({ 'text-align': 'center', margin: 'auto' })
     .append('input')
     .styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
@@ -623,39 +656,6 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
   overlay_under_modal.display();
 };
 
-
-/**
-* Function to change (one of more of) the three rotations axis of a d3 projection
-* and redraw all the path (+ move symbols layers) in respect to that.
-*
-* @param {Array} param - The new [lambda, phi, gamma] properties to be used.
-* @return {void}
-*/
-function handle_proj_center_button(param) {
-  // Fetch the current rotation params :
-  const current_rotation = proj.rotate();
-  // Reuse it for the missing value passed in arguments and do the rotation:
-  // proj.rotate(param.map((val, i) => val !== null ? val : current_rotation[i]));
-  proj.rotate(param.map((val, i) => val || current_rotation[i]));
-  // Redraw the path and move the symbols :
-  map.selectAll('.layer').selectAll('path').attr('d', path);
-  reproj_symbol_layer();
-}
-
-function handle_parallels_change(parallels) {
-  const current_values = proj.parallels();
-  proj.parallels(parallels.map((val, i) => val || current_values[i]));
-  map.selectAll('.layer').selectAll('path').attr('d', path);
-  reproj_symbol_layer();
-}
-
-function handle_parallel_change(parallel) {
-  proj.parallel(parallel);
-  map.selectAll('.layer').selectAll('path').attr('d', path);
-  reproj_symbol_layer();
-}
-
-
 // const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
 //   // Create the custom d3 projection using proj 4 forward and inverse functions:
 //   const projRaw = function (lambda, phi) {
@@ -693,17 +693,18 @@ export const getD3ProjFromProj4 = function getD3ProjFromProj4(_proj) {
 };
 
 export const tryFindNameProj = (proj_str) => {
-  let o = Object.entries(_app.epsg_projections)
+  const o = Object.entries(_app.epsg_projections)
     .filter(proj => proj[1].proj4.indexOf(proj_str) > -1
       || proj[1].proj4.replace('+towgs84=0,0,0,0,0,0,0 ', '').indexOf(proj_str) > -1);
   if (o.length > 0) return o[0][1].name;
-  else return undefined;
+  return undefined;
 };
 
 export function isInterrupted(proj_name) {
-  return (proj_name.indexOf('interrupted') > -1
-          || proj_name.indexOf('armadillo') > -1
-          || proj_name.indexOf('healpix') > -1);
+  return (
+    proj_name.indexOf('interrupted') > -1
+    || proj_name.indexOf('armadillo') > -1
+    || proj_name.indexOf('healpix') > -1);
 }
 
 export function handleClipPath(proj_name = '', main_layer) {
@@ -804,7 +805,9 @@ export function change_projection(new_proj_name) {
     scale_to_bbox(def_proj.bounds);
   } else if (!layer_name) {
     const layers_active = Array.prototype.filter.call(
-      svg_map.querySelectorAll('.layer'), f => f.style.visibility !== 'hidden');
+      svg_map.querySelectorAll('.layer'),
+      f => f.style.visibility !== 'hidden',
+    );
     layer_name = layers_active.length > 0
       ? global._app.id_to_layer.get(layers_active[layers_active.length - 1].id)
       : undefined;

@@ -8,18 +8,17 @@ import { check_layer_name, clean_menu_function, get_menu_option, reset_user_valu
 import {
   create_li_layer_elem, createWaitingOverlay, display_error_during_computation,
   drag_elem_geo, getAvailablesFunctionnalities, get_display_name_on_layer_list,
-  isValidJSON, make_box_type_fields,
-  prepareFileExt, request_data, setSelected, type_col2, xhrequest
+  isValidJSON, make_box_type_fields, prepareFileExt, request_data, setSelected, type_col2, xhrequest
 } from './helpers';
 import { get_nb_decimals, round_value } from './helpers_calc';
 import { Mmax, Mround } from './helpers_math';
-import { valid_join_check_display } from './join_popup';
-import { handle_click_layer } from './layers_style_popup';
-import { add_sample_layer } from './layers';
+import { createJoinBox, valid_join_check_display } from './join_popup';
+import { createDropShadow, handle_click_layer } from './layers_style_popup';
+import { add_sample_layer, add_layer_topojson } from './layers';
 import { handle_legend, move_legends } from './legend';
 import { reproj_symbol_layer, rotate_global, zoom, zoomClick, zoom_without_redraw } from './map_ctrl';
 import { export_compo_png, export_compo_svg, export_layer_geo } from './map_export';
-import { apply_user_preferences, get_map_template, load_map_template, save_map_template } from './map_project';
+import { apply_user_preferences, get_map_project, load_map_project, save_map_project } from './map_project';
 import {
   addLastProjectionSelect, change_projection, change_projection_4,
   handleClipPath, handle_projection_select, shortListContent,
@@ -140,7 +139,6 @@ export function setUpInterface(reload_project) {
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n tt', id: 'new_project', 'data-i18n': '[title]app_page.tooltips.new_project', 'data-tippy-placement': 'bottom' })
-    .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', () => {
       window.localStorage.removeItem('magrit_project');
@@ -150,19 +148,16 @@ export function setUpInterface(reload_project) {
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n tt', id: 'load_project', 'data-i18n': '[title]app_page.tooltips.load_project_file', 'data-tippy-placement': 'bottom' })
-    .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/Folder_open_alt_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
-    .on('click', load_map_template);
+    .on('click', load_map_project);
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n tt', id: 'save_file_button', 'data-i18n': '[title]app_page.tooltips.save_file', 'data-tippy-placement': 'bottom' })
-    .styles({ cursor: 'pointer', background: 'transparent', margin: 'auto' })
     .html('<img src="static/img/header/Breezeicons-actions-22-document-save-white.png" width="25" height="auto" alt="Save project to disk"/>')
-    .on('click', save_map_template);
+    .on('click', save_map_project);
 
   const_options.append('button')
     .attrs({ class: 'const_buttons i18n tt', id: 'documentation_link', 'data-i18n': '[title]app_page.tooltips.documentation', 'data-tippy-placement': 'bottom' })
-    .styles({ cursor: 'pointer', background: 'transparent', 'margin-top': '5px' })
     .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
     .on('click', () => {
       window.open('static/book/index.html', 'DocWindow', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
@@ -175,7 +170,6 @@ export function setUpInterface(reload_project) {
       'data-i18n': '[title]app_page.help_box.tooltip_btn',
       'data-tippy-placement': 'bottom',
     })
-    .styles({ cursor: 'pointer', background: 'transparent' })
     .html('<img src="static/img/header/High-contrast-help-browser_white.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
     .on('click', () => {
       if (document.getElementById('menu_lang')) document.getElementById('menu_lang').remove();
@@ -228,10 +222,8 @@ export function setUpInterface(reload_project) {
     .attrs({ id: 'current_app_lang', class: 'const_buttons' })
     .styles({
       color: 'white',
-      cursor: 'pointer',
       'font-size': '14px',
       'vertical-align': 'super',
-      background: 'transparent',
       'font-weight': 'bold'
     })
     .html(i18next.language)
@@ -297,7 +289,7 @@ export function setUpInterface(reload_project) {
       'data-i18n': '[title]app_page.tooltips.section1',
       'data-tippy-placement': 'right',
     });
-  window.section2_pre = accordion2_pre.append('div').attr('id', 'section2_pre');
+  accordion2_pre.append('div').attr('id', 'section2_pre');
   window.section2 = accordion2.append('div').attr('id', 'section2');
   accordion3.append('div').attr('id', 'section3');
   accordion4.append('div').attr('id', 'section4');
@@ -1040,8 +1032,7 @@ export function setUpInterface(reload_project) {
   // Zoom-in, Zoom-out, Info, Hand-Move and RectZoom buttons (on the top of the map) :
   const lm = map_div
     .append('div')
-    .attr('class', 'light-menu')
-    .styles({ position: 'absolute', right: '0px', bottom: '0px' });
+    .attr('class', 'light-menu');
 
   const lm_buttons = [
     { id: 'zoom_out', i18n: '[title]app_page.lm_buttons.zoom-', tooltip_position: 'left', class: 'zoom_button i18n tt', html: '-' },
@@ -1056,13 +1047,13 @@ export function setUpInterface(reload_project) {
     .enter()
     .append('p')
     .attr('class', 'cont_map_btn')
-    .style('margin', 'auto')
     .insert('button')
     .attrs(elem => ({
       'data-tippy-placement': elem.tooltip_position,
       class: elem.class,
       'data-i18n': elem.i18n,
-      id: elem.id }))
+      id: elem.id,
+    }))
     .html(elem => elem.html);
 
   // Trigger actions when buttons are clicked and set-up the initial view :
@@ -1610,7 +1601,7 @@ function handle_TopoJSON_files(files) {
 * @return {String} - The actual name of the layer, once added to the map.
 *
 */
-function handle_reload_TopoJSON(text, param_add_func) {
+export function handle_reload_TopoJSON(text, param_add_func) {
   const ajaxData = new FormData();
   const f = new Blob([text], { type: 'application/json' });
   ajaxData.append('file[]', f);
@@ -2298,7 +2289,7 @@ function resetSection1() {
 }
 
 const beforeUnloadWindow = (event) => {
-  get_map_template().then((jsonParams) => {
+  get_map_project().then((jsonParams) => {
     window.localStorage.removeItem('magrit_project');
     if (jsonParams.length < 5500000) {
       window.localStorage.setItem('magrit_project', jsonParams);
@@ -2326,7 +2317,8 @@ function make_ico_choice() {
     'two_stocks.png',
   ];
 
-  const function_panel = section2_pre.append('div')
+  const function_panel = d3.select('#section2_pre')
+    .append('div')
     .attr('id', 'list_ico_func');
 
   for (let i = 0, len_i = list_fun_ico.length; i < len_i; i++) {
@@ -2405,7 +2397,7 @@ export function switch_accordion_section(id_elem) {
 
 
 // Function to handle the title add and changes
-function handle_title(txt) {
+export function handle_title(txt) {
   const title = d3.select('#map_title').select('text');
   if (title.node()) {
     title.text(txt);
@@ -2715,7 +2707,7 @@ export function displayInfoOnMove() {
 }
 
 // Function to switch the visibility of a layer the open/closed eye button
-function handle_active_layer(name) {
+export function handle_active_layer(name) {
   let fill_value,
     parent_div,
     selec,

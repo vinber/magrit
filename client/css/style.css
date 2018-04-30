@@ -144,20 +144,6 @@ h1.menu {
     color:#2e91ce;
     font-size:15px;
 }
-
-a.logo {
-    position: absolute;
-    left : 0px;
-    top : 0px;
-    height:30px;
-    padding:0px;
-    vertical-align:middle;
-    font-weight : bold;
-    font-family: 'Helvetica Neue', sans-serif;
-    font-size: 20px;
-    margin-left:5px
-}
-
 .icon {
     box-sizing: border-box;
     padding:10px;
@@ -280,7 +266,6 @@ p.params_section2 > select {
     z-index: 0;
     top: 0;
     left: 0;
-    /*background: rgba(197, 69, 168, 0.47);*/
     background: rgba(227, 227, 218, 0.5);
     font-family: Arimo;
     text-align: center;
@@ -291,6 +276,17 @@ p.params_section2 > select {
   font-weight: 800;
   width: 99%;
   height: 98%;
+}
+
+/* Styles for button located on the left of the map */
+light-menu {
+  bottom: '0px';
+  position: 'absolute';
+  right: '0px';
+}
+
+p.cont_map_btn {
+  margin: auto;
 }
 
 .cont_map_btn > button {
@@ -331,12 +327,75 @@ p.params_section2 > select {
   width: 32px;
   margin: 0;
 }
+/* End of styles for button located on the left of the map */
+
+/* Styles for elements located in the header */
+.header_options_right {
+    clear: both;
+    float: right;
+    display:inline;
+    color: #99a8c4;
+    font-size:12px;
+    margin: auto;
+}
+
+.header_options_projection {
+    position: absolute;
+    left: 350px;
+    top: 0px;
+    color: #99a8c4;
+    margin: auto;
+}
+
+a.logo {
+    position: absolute;
+    left : 0px;
+    top : 0px;
+    height:30px;
+    padding:0px;
+    vertical-align:middle;
+    font-weight : bold;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 20px;
+    margin-left:5px
+}
 
 .const_buttons {
-  border-radius: 10%;
-  height: 30px;
+  background: transparent;
   border-color:transparent;
+  border-radius: 10%;
+  cursor: pointer;
+  height: 30px;
+  margin-top: 5px;
 }
+
+.styled-select {
+   background: url(/static/img/arrow_select.png) no-repeat 100% 0;
+   height: 29px;
+   overflow: hidden;
+   background-color: #000;
+   -webkit-border-radius: 20px;
+   -moz-border-radius: 20px;
+   border-radius: 20px;
+   margin-top: 3px;
+   letter-spacing: 1.5px;
+}
+
+.styled-select select {
+   background: transparent;
+   border: none;
+   font-size: 14px;
+   height: 29px;
+   padding: 5px;
+   width: 340px;
+   color: #fff;
+}
+
+#form_projection2 * {
+  background-color: black;
+}
+/* End of styles for elements located in the header */
+
 
 #trash_button,#zoom_fit_button,.style_button,
 .style_target_layer,#legend_button,.active_button,#browse_data_button {
@@ -363,23 +422,6 @@ p.params_section2 > select {
   color: black;
   border-radius: 2%;
   font: 12px "Enriqueta", arial, sans-serif;
-}
-
-.header_options_right {
-    clear: both;
-    float: right;
-    display:inline;
-    color: #99a8c4;
-    font-size:12px;
-    margin: auto;
-}
-
-.header_options_projection {
-    position: absolute;
-    left: 350px;
-    top: 0px;
-    color: #99a8c4;
-    margin: auto;
 }
 
 #info_features {
@@ -437,11 +479,6 @@ p.params_section2 > select {
 
 .dataTable-sorter::before, .dataTable-sorter::after {
     position: unset !important;
-}
-
-#join_button {
-    border-color: transparent;
-    background-color: transparent;
 }
 
 .button_sys_run {
@@ -944,32 +981,6 @@ img.layout_ft_ico:hover {
     padding: 12px !important;
 }
 
-.styled-select {
-   background: url(/static/img/arrow_select.png) no-repeat 100% 0;
-   height: 29px;
-   overflow: hidden;
-   background-color: #000;
-   -webkit-border-radius: 20px;
-   -moz-border-radius: 20px;
-   border-radius: 20px;
-   margin-top: 3px;
-   letter-spacing: 1.5px;
-}
-
-.styled-select select {
-   background: transparent;
-   border: none;
-   font-size: 14px;
-   height: 29px;
-   padding: 5px;
-   width: 340px;
-   color: #fff;
-}
-
-#form_projection2 * {
-  background-color: black;
-}
-
 .alertify-notifier .ajs-message.ajs-warning {
     background: rgb(228, 144, 83) !important;
 }
@@ -1146,6 +1157,7 @@ p.breaks_vals > input[type="number"].size_class {
   width: 60px !important;
 }
 
+/* Styles for modal box allowing to choose the type of each field */
 #fields_select {
   display: grid;
 }
@@ -1170,6 +1182,7 @@ p.breaks_vals > input[type="number"].size_class {
   border-bottom-left-radius: 3px 3px;
   border-bottom-right-radius: 3px 3px;
 }
+/* End of styles for modal box allowing to choose the type of each field */
 
 /* Style for left menu section 1 */
 img#remove_target, img#downgrade_target, img#table_layer_s1, img#remove_dataset, img#table_dataset_s1 {
@@ -1186,4 +1199,8 @@ img#remove_target:hover, img#remove_dataset:hover {
   opacity: 1;
 }
 
+#join_button {
+    border-color: transparent;
+    background-color: transparent;
+}
 /* End of style for left menu section 1 */

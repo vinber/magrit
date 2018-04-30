@@ -116,7 +116,7 @@ export function reproj_symbol_layer() {
       } else if (symbol === 'image') { // Reproject pictograms :
         map.select(`#${global._app.layer_to_id.get(lyr_name)}`)
           .selectAll(symbol)
-          .attrs(function (d, i) {
+          .attrs(function (d) {
             const coords = path.centroid(d.geometry),
               size = +this.getAttribute('width').replace('px', '') / 2;
             return { x: coords[0] - size, y: coords[1] - size };
@@ -227,15 +227,17 @@ export function redraw_legends_symbols(targeted_node) {
     } : undefined;
 
     legend_nodes[i].remove();
-    createLegend_symbol(layer_name,
-                        rendered_field,
-                        lgd_title,
-                        lgd_subtitle,
-                        nested,
-                        join_line,
-                        rect_fill_value,
-                        rounding_precision,
-                        notes);
+    createLegend_symbol(
+      layer_name,
+      rendered_field,
+      lgd_title,
+      lgd_subtitle,
+      nested,
+      join_line,
+      rect_fill_value,
+      rounding_precision,
+      notes,
+    );
     const new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
     new_lgd.style.visibility = visible;
     if (transform_param) new_lgd.setAttribute('transform', transform_param);
@@ -272,13 +274,15 @@ export function redraw_legends_symbols(targeted_node) {
       } : undefined;
 
       legend_nodes_links_discont[i].remove();
-      createLegend_discont_links(layer_name,
-                                 rendered_field,
-                                 lgd_title,
-                                 lgd_subtitle,
-                                 rect_fill_value,
-                                 rounding_precision,
-                                 notes);
+      createLegend_discont_links(
+        layer_name,
+        rendered_field,
+        lgd_title,
+        lgd_subtitle,
+        rect_fill_value,
+        rounding_precision,
+        notes,
+      );
       const new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
       new_lgd.style.visibility = visible;
       if (transform_param) {

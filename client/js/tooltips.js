@@ -57,7 +57,7 @@ export function bindTooltips() {
     arrow: true,
     duration: [1, 50],
     flip: false,
-    onShow: function () {
+    onShow() {
       Array.prototype.slice.call(document.querySelectorAll('.tippy-popper')).forEach(popper => {
         const instance = popper._tippy;
         if (instance.state.visible) {
@@ -66,7 +66,7 @@ export function bindTooltips() {
         }
       });
     },
-    onShown: function () {
+    onShown() {
       const tr = getTransform(this);
       this.style.transform = `translate3d(${tr.translate.x + 360}px, ${tr.translate.y}px, 0)`;
     },

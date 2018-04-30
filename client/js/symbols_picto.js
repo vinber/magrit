@@ -3,8 +3,8 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     const categ = document.getElementsByClassName('typo_class');
     const symbol_map = new Map();
     for (let i = 0; i < categ.length; i++) {
-      let selec = categ[i].querySelector('.symbol_section'),
-        new_name = categ[i].querySelector('.typo_name').value;
+      const selec = categ[i].querySelector('.symbol_section');
+      const new_name = categ[i].querySelector('.typo_name').value;
       if (selec.style.backgroundImage.length > 7) {
         const img = selec.style.backgroundImage.split('url(')[1].substring(1).slice(0, -2);
         const size = +categ[i].querySelector('#symbol_size').value;
@@ -35,22 +35,25 @@ export const display_box_symbol_typo = function (layer, field, categories) {
   const nb_class = cats.length;
 
   const modal_box = make_dialog_container(
-        'symbol_box',
-        _tr('app_page.symbol_typo_box.title', { layer, nb_features }),
-        'dialog');
+    'symbol_box',
+    _tr('app_page.symbol_typo_box.title', { layer, nb_features }),
+    'dialog',
+  );
   const newbox = d3.select('#symbol_box').select('.modal-body')
-                    .styles({ 'overflow-y': 'scroll', 'max-height': `${window.innerHeight - 145}px` });
+    .styles({ 'overflow-y': 'scroll', 'max-height': `${window.innerHeight - 145}px` });
 
   newbox.append('h3').html('');
   newbox.append('p')
     .html(_tr('app_page.symbol_typo_box.field_categ', { field, nb_class, nb_features }));
-  newbox.append('ul').style('padding', 'unset').attr('id', 'typo_categories')
+  newbox.append('ul')
+    .style('padding', 'unset')
+    .attr('id', 'typo_categories')
     .selectAll('li')
     .data(cats).enter()
     .append('li')
     .styles({ margin: 'auto', 'list-style': 'none' })
     .attr('class', 'typo_class')
-    .attr('id', (d, i) => ['line', i].join('_'));
+    .attr('id', (_, i) => ['line', i].join('_'));
 
   newbox.selectAll('.typo_class')
     .append('span')
@@ -59,7 +62,13 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   newbox.selectAll('.typo_class')
     .append('input')
-    .styles({ width: '100px', height: 'auto', display: 'inline-block', 'vertical-align': 'middle', 'margin-right': '7.5px' })
+    .styles({
+      width: '100px',
+      height: 'auto',
+      display: 'inline-block',
+      'vertical-align': 'middle',
+      'margin-right': '7.5px',
+    })
     .attrs(d => ({ class: 'typo_name', id: d.name }))
     .property('value', d => d.new_name);
 
@@ -67,14 +76,16 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     .insert('p')
     .attrs({ class: 'symbol_section', title: _tr('app_page.symbol_typo_box.title_click') })
     .style('background-image', d => d.img)
-    .styles({ width: '32px',
+    .styles({
+      width: '32px',
       height: '32px',
       margin: '0px 1px 0px 1px',
       'border-radius': '10%',
       border: '1px dashed blue',
       display: 'inline-block',
       'background-size': '32px 32px',
-      'vertical-align': 'middle' })
+      'vertical-align': 'middle',
+    })
     .on('click', function () {
       modal_box.hide();
       box_choice_symbol(res_symbols, '.dialog')
@@ -103,7 +114,6 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 
   new Sortable(document.getElementById('typo_categories'));
 
-  // const deferred = Promise.pending();
   const container = document.getElementById('symbol_box');
   const fn_cb = (evt) => { helper_esc_key_twbs_cb(evt, _onclose); };
 
@@ -188,7 +198,7 @@ function box_choice_symbol(sample_symbols, parent_css_selector) {
       input.setAttribute('type', 'file');
       input.setAttribute('accept', '.jpeg,.jpg,.svg,.png,.gif');
       input.onchange = function (event) {
-        let file = event.target.files[0],
+        const file = event.target.files[0],
           file_name = file.name,
           reader = new FileReader();
         reader.onloadend = function () {

@@ -7,6 +7,7 @@ import { scaleBar } from './scalebar';
 import Textbox from './text_annotation';
 import { check_layer_name } from './../function';
 import { prepare_available_symbols } from './../interface';
+import { isInterrupted } from './../projections';
 
 
 function ask_existing_feature(feature_name) {
@@ -400,7 +401,7 @@ export function add_layout_feature(selected_feature, options = {}) {
       .datum({ type: 'Sphere' })
       .styles({ fill: fill, 'fill-opacity': fill_opacity, 'stroke-opacity': stroke_opacity, stroke: stroke })
       .attrs({ d: path });
-    if (isInterrupted(current_proj_name.toLowerCase())) {
+    if (isInterrupted(_app.current_proj_name.toLowerCase())) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem(layer_to_add, null, 'Polygon', 'sample');
@@ -444,7 +445,7 @@ export function add_layout_feature(selected_feature, options = {}) {
       step: step,
       dasharray: stroke_dasharray,
     };
-    if (isInterrupted(current_proj_name.toLowerCase())) {
+    if (isInterrupted(_app.current_proj_name.toLowerCase())) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');
     }
     create_li_layer_elem('Graticule', null, 'Line', 'sample');

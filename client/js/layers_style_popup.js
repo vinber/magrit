@@ -2491,7 +2491,7 @@ function make_style_box_indiv_label(label_node) {
 * @return {void}
 *
 */
-const createDropShadow = function createDropShadow(layerId) {
+export const createDropShadow = function createDropShadow(layerId) {
   const filt_to_use = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
   filt_to_use.setAttribute('id', `filt_${layerId}`);
   // filt_to_use.setAttribute("x", 0);
