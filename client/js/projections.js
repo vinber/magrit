@@ -421,7 +421,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     prev_parallels = proj.parallels ? proj.parallels() : undefined,
     prev_parallel = proj.parallel ? proj.parallel() : undefined;
 
-  const modal_box = make_dialog_container(
+  make_dialog_container(
     'box_projection_customization',
     _tr('app_page.section5.title'),
     'dialog',
@@ -435,7 +435,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   dialog.style.width = '700px';
 
-  const choice_proj = content.append('button')
+  content.append('button')
     .attrs({ class: 'accordion_proj active', id: 'btn_choice_proj' })
     .style('padding', '0 6px')
     .html(_tr('app_page.projection_box.choice_projection'));
@@ -507,7 +507,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       reproj(value);
     });
 
-  const choice_options = content.append('button')
+  content.append('button')
     .attrs({ class: 'accordion_proj', id: 'btn_choice_proj' })
     .style('padding', '0 6px')
     .html(_tr('app_page.projection_box.projection_options'));
@@ -850,8 +850,8 @@ export function change_projection_4(_proj) {
   // Disable the zoom by rectangle selection if the user is using it :
   map.select('.brush').remove();
 
-  // Only keep the first argument of the rotation parameter :
-  const prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
+  // // Only keep the first argument of the rotation parameter :
+  // const prev_rotate = proj.rotate ? [proj.rotate()[0], 0, 0] : [0, 0, 0];
 
   proj = getD3ProjFromProj4(_proj);
   path = d3.geoPath().projection(proj).pointRadius(4);

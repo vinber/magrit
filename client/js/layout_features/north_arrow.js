@@ -1,8 +1,8 @@
-import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
-import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { make_confirm_dialog2 } from './../dialogs';
 import { Mabs, Mmax, Mmin } from './../helpers_math';
 import { handle_click_hand } from './../interface';
+import { up_legend, down_legend } from './../legend';
 import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './snap_lines';
 
 export const northArrow = {

@@ -3,14 +3,16 @@ import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
 import { display_discretization, display_categorical_box } from './classification/discretization_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
 import { available_fonts } from './fonts';
-import { check_layer_name, render_label, render_label_graticule } from './function';
-import { cloneObj, type_col2, getFieldsType, setSelected } from './helpers';
+import {
+  check_layer_name, prepare_categories_array, render_label, render_label_graticule,
+} from './function';
+import { cloneObj, get_display_name_on_layer_list, type_col2, getFieldsType, setSelected } from './helpers';
 import { prop_sizer3_e, round_value } from './helpers_calc';
-import { binds_layers_buttons } from './interface';
+import { binds_layers_buttons, displayInfoOnMove } from './interface';
 import {
   createLegend_choro, createLegend_choro_horizontal,
   createLegend_discont_links, createLegend_line_symbol,
-  createLegend_symbol, createLegend_waffle,
+  createLegend_waffle,
 } from './legend';
 import { redraw_legends_symbols, zoom_without_redraw } from './map_ctrl';
 import { make_table } from './tables';
@@ -77,7 +79,7 @@ function make_random_color(layer, symbol = 'path') {
     .attr('id', 'random_color_btn')
     .styles({ cursor: 'pointer', 'text-align': 'center' })
     .html(_tr('app_page.layer_style_popup.toggle_colors'))
-    .on('click', (d, i) => {
+    .on('click', (d) => {
       map.select(`#${_app.layer_to_id.get(layer)}`)
         .selectAll(symbol)
         .transition()
@@ -177,8 +179,8 @@ function createStyleBoxTypoSymbols(layer_name) {
     rendered_field = data_manager.current_layers[layer_name].rendered_field;
 
   const prev_settings = [],
-    prev_settings_defaults = {},
-    zs = d3.zoomTransform(svg_map).k;
+    prev_settings_defaults = {};
+  // const zs = d3.zoomTransform(svg_map).k;
 
   get_prev_settings();
 
@@ -319,7 +321,7 @@ function createStyleBoxLabel(layer_name) {
 
   const selection = map.select(`#${_app.layer_to_id.get(layer_name)}`).selectAll('text'),
     ref_layer_name = data_manager.current_layers[layer_name].ref_layer_name;
-  const rendering_params = {};
+  // const rendering_params = {};
   let prev_settings_defaults = {};
   let prev_settings = [];
 
@@ -661,7 +663,7 @@ function createStyleBox_Line(layer_name) {
     prev_col_breaks = data_manager.current_layers[layer_name].colors_breaks.concat([]);
   } else if (fill_prev.random) {
     prev_random_colors = [];
-    selection.each(function (d) {
+    selection.each(function () {
       prev_random_colors.push(this.style.stroke);
     });
   }
@@ -945,7 +947,7 @@ function createStyleBox_Line(layer_name) {
     prev_min_display = +data_manager.current_layers[layer_name].min_display || 0;
     prev_size = data_manager.current_layers[layer_name].size.slice();
     prev_breaks = data_manager.current_layers[layer_name].breaks.slice();
-    const max_val = Math.max.apply(null, data_manager.result_data[layer_name].map(i => i.disc_value));
+    // const max_val = Math.max.apply(null, data_manager.result_data[layer_name].map(i => i.disc_value));
     const disc_part = popup.append('p').attr('class', 'line_elem');
     disc_part.append('span').html(_tr('app_page.layer_style_popup.discont_threshold'));
     disc_part.insert('input')
@@ -985,7 +987,7 @@ function createStyleBox_Line(layer_name) {
             data_manager.current_layers[layer_name].breaks = result[1];
             data_manager.current_layers[layer_name].size = [sizes[0], sizes[sizes.length - 1]];
             selection.style('fill-opacity', 0)
-              .style('stroke-width', (d, i) => sizes[serie.getClass(+d.properties.disc_value)]);
+              .style('stroke-width', d => sizes[serie.getClass(+d.properties.disc_value)]);
           }
         });
       });
@@ -1076,7 +1078,7 @@ function createStyleBox(layer_name) {
     prev_col_breaks = data_manager.current_layers[layer_name].colors_breaks.concat([]);
   } else if (fill_prev.random) {
     prev_random_colors = [];
-    selection.each(function (d) {
+    selection.each(function () {
       prev_random_colors.push(this.style.fill);
     });
   }
@@ -1084,10 +1086,7 @@ function createStyleBox(layer_name) {
     stroke_width = +data_manager.current_layers[layer_name]['stroke-width-const'];
   const table = [];
   let stroke_prev = selection.style('stroke');
-  let prev_min_display,
-    prev_size,
-    prev_breaks,
-    current_pt_size;
+  let current_pt_size;
 
   if (stroke_prev.startsWith('rgb')) {
     stroke_prev = rgb2hex(stroke_prev);
@@ -1226,9 +1225,11 @@ function createStyleBox(layer_name) {
     if (data_manager.current_layers[layer_name].targeted || data_manager.current_layers[layer_name].is_result) {
       const fields = getFieldsType('category', null, fields_layer);
       const fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
-      [[_tr('app_page.layer_style_popup.single_color'), 'single'],
-       [_tr('app_page.layer_style_popup.categorical_color'), 'categorical'],
-       [_tr('app_page.layer_style_popup.random_color'), 'random']].forEach((d, i) => {
+      [
+        [_tr('app_page.layer_style_popup.single_color'), 'single'],
+         [_tr('app_page.layer_style_popup.categorical_color'), 'categorical'],
+         [_tr('app_page.layer_style_popup.random_color'), 'random']
+       ].forEach((d) => {
          fill_method.append('option').text(d[0]).attr('value', d[1]);
        });
       popup.append('div').attrs({ id: 'fill_color_section' });
@@ -1488,7 +1489,7 @@ function createStyleBoxStewart(layer_name) {
         const zoom_scale = +d3.zoomTransform(map.node()).k;
         map.select(g_lyr_name).style('stroke-width', `${stroke_width / zoom_scale}px`);
         data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
-        const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
+        // const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
         recolor_stewart(prev_palette.name, prev_palette.reversed);
         if (document.querySelector(`.legend.legend_feature.lgdf_${_app.layer_to_id.get(layer_name)}`).id === 'legend_root') {
           redraw_legend('choro', layer_name, data_manager.current_layers[layer_name].rendered_field);
@@ -1702,7 +1703,7 @@ function make_generate_labels_section(parent_node, layer_name) {
             _fields.forEach(f_name => { sel.append('option').property('value', f_name).text(f_name); });
             if (fields_num.length > 0) {
               const section_filter = d3.select('#label_box_filter_section');
-              const filter_checkbox = section_filter.append('input')
+              section_filter.append('input')
                 .attrs({ type: 'checkbox', id: 'label_box_filter_chk' })
                 .on('change', function () {
                   if (this.checked) {
@@ -1758,9 +1759,9 @@ function make_generate_labels_section(parent_node, layer_name) {
               }
             }, 50);
           }),
-        }).then((value) => {
+        }).then(() => {
           //console.log(value);
-        }, (dismiss) => {
+        }, () => {
           //console.log(dismiss);
         });
       });
@@ -2417,7 +2418,7 @@ function createStyleBox_ProbSymbol(layer_name) {
 * @return {void}
 *
 */
-function make_style_box_indiv_label(label_node) {
+export function make_style_box_indiv_label(label_node) {
   const current_options = {
     size: label_node.style.fontSize,
     content: label_node.textContent,

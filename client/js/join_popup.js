@@ -1,4 +1,11 @@
 import { make_confirm_dialog2 } from './dialogs';
+import {
+  display_error_during_computation,
+  make_box_type_fields,
+  path_to_geojson2,
+  xhrequest,
+} from './helpers';
+import { has_duplicate } from './helpers_calc';
 import { updateLayer } from './interface';
 
 function handleJoin() {
@@ -59,7 +66,7 @@ export function valid_join_check_display(val, prop) {
     extDatasetImg.style.height = '28px';
     extDatasetImg.onclick = null;
 
-    const [v1, _] = prop.split('/').map(d => +d);
+    const [v1, ] = prop.split('/').map(d => +d);
 
     const joinSec = document.getElementById('join_section');
     joinSec.innerHTML = [' <b>', prop, _tr('app_page.join_box.match', { count: v1 }), '</b>'].join(' ');

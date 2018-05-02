@@ -125,3 +125,12 @@ export const make_confirm_dialog2 = (function (class_box, title, options) {
     });
   };
 })();
+
+export function reOpenParent(css_selector) {
+  const parent_style_box = css_selector !== undefined ? document.querySelector(css_selector) : document.querySelector('.styleBox');
+  if (parent_style_box && parent_style_box.modal && parent_style_box.modal.show) {
+    parent_style_box.modal.show();
+    return true;
+  }
+  return false;
+}

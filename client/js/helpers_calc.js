@@ -1,5 +1,5 @@
-import { Mmax, Mmin, /*Mpow,*/ Msqrt, Mabs, Mround, /*Mceil*/ } from './helpers_math';
-
+import { Mmax, /*Mmin, Mpow,*/ Msqrt, Mabs, Mround, /*Mceil*/ } from './helpers_math';
+import { reproj_symbol_layer, zoom_without_redraw } from './map_ctrl';
 const sin = Math.sin;
 const cos = Math.cos;
 const atan2 = Math.atan2;
@@ -65,7 +65,7 @@ export const contains_empty_val = function contains_empty_val(arr) {
 * @param {Array} arr - The array to test
 * @return {Boolean} result - True or False, according to whether it contains duplicate or not
 */
-function has_duplicate(arr) {
+export function has_duplicate(arr) {
   const _h = {},
     len_arr = arr.length;
   for (let i = 0; i < len_arr; i++) {

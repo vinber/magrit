@@ -20,7 +20,7 @@ export function makeSvgMap() {
     .append('svg')
     .attrs({ id: 'svg_map', width: w, height: h })
     .styles({ position: 'absolute', 'background-color': 'rgba(255, 255, 255, 0)' })
-    .on('contextmenu', (event) => { d3.event.preventDefault(); })
+    .on('contextmenu', () => { d3.event.preventDefault(); })
     .call(zoom);
 
   const svg_map = map.node();

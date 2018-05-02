@@ -1,7 +1,8 @@
-import { make_dialog_container } from './../dialogs';
+import { make_dialog_container, overlay_under_modal, reOpenParent } from './../dialogs';
 import { make_min_max_tableau, fetch_min_max_table_value, } from './../interface';
 import { make_content_summary } from './../helpers';
 import { get_precision_axis, max_fast, min_fast } from './../helpers_calc';
+import { prepare_ref_histo } from './common';
 
 export const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
   const make_box_histo_option = function () {
@@ -237,7 +238,7 @@ export const display_discretization_links_discont = function (layer_name, field_
       x.domain([0, d3.max(bins.map(d => d.offset + d.width))]);
       y.domain([0, d3.max(bins.map(d => d.height + d.height / 5))]);
 
-      const bar = svg_histo.selectAll('.bar')
+      svg_histo.selectAll('.bar')
         .data(bins)
         .enter()
         .append('rect')
@@ -275,7 +276,7 @@ export const display_discretization_links_discont = function (layer_name, field_
   let nb_values = db_data.length;
   let values = [];
   let no_data;
-
+  
   for (let i = 0; i < nb_values; i++) {
     if (db_data[i][field_name] != null) {
       values.push(+db_data[i][field_name]);
@@ -291,7 +292,7 @@ export const display_discretization_links_discont = function (layer_name, field_
   }
   const max_nb_class = nb_values > 20 ? 20 : nb_values;
   const sizes = data_manager.current_layers[layer_name].breaks.map(el => el[1]);
-  const stock_class = [];
+
   let serie = new geostats(values),
     breaks_info = [].concat(data_manager.current_layers[layer_name].breaks),
     breaks = [+breaks_info[0][0][0]],
@@ -485,8 +486,10 @@ export const display_discretization_links_discont = function (layer_name, field_
       .tickFormat(formatCount));
 
   const box_content = newBox.append('div').attr('id', 'box_content');
-  box_content.append('h3').style('margin', '0').html(_tr('disc_box.line_size'));
-  const sizes_div = d3.select('#box_content')
+  box_content.append('h3')
+    .style('margin', '0')
+    .html(_tr('disc_box.line_size'));
+  box_content
     .append('div')
     .attr('id', 'sizes_div');
   const callback = function () {

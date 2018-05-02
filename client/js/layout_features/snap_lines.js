@@ -24,6 +24,6 @@ export const make_red_line_snap = function (x1, x2, y1, y2, timeout = 750) {
     const line = map.append('line')
       .attrs({ x1, x2, y1, y2, class: 'snap_line' })
       .styles({ stroke: 'red', 'stroke-width': 0.7 });
-    current_timeout = setTimeout((_) => { line.remove(); }, timeout);
+    current_timeout = setTimeout(() => { line.remove(); }, timeout);
   }());
 };

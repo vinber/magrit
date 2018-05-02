@@ -1,9 +1,9 @@
-import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
-import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { make_confirm_dialog2 } from './../dialogs';
 import { coslaw_dist } from './../helpers_calc';
 import { Mround } from './../helpers_math';
-import { drag_legend_func } from './../legend';
+import { up_legend, down_legend, drag_legend_func } from './../legend';
+
 import { pos_lgds_elem } from './snap_lines';
 
 
@@ -70,7 +70,7 @@ export const scaleBar = {
       this.style.cursor = 'pointer';
       self.under_rect.style('fill-opacity', 0);
     })
-    .on('contextmenu dblclick', (d, i) => {
+    .on('contextmenu dblclick', (d) => {
       d3.event.preventDefault();
       d3.event.stopPropagation();
       return scale_context_menu
@@ -269,7 +269,7 @@ export const scaleBar = {
     e.append('input')
       .style('float', 'right')
       .attrs({ id: 'checkbox_start_end_bar', type: 'checkbox' })
-      .on('change', (_) => {
+      .on('change', () => {
         self.start_end_bar = self.start_end_bar !== true;
         self.handle_start_end_bar();
       });

@@ -1,6 +1,6 @@
 import './../css/context-menu.css';
 
-export default function () {
+export default function ContextMenu() {
   this.items = [];
 
   this.addItem = function addItem(item) {

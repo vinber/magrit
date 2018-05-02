@@ -214,26 +214,27 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       // reOpenParent('#browse_data_box');
       if (valid) {
         document.querySelector('body').style.cursor = 'wait';
-        compute_and_add(chooses_handler).then((resolved) => {
-          if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
-            const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
-            let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
-            if (existing < 0) {
-              data_manager.current_layers[layer_name].fields_type.push(type_field);
-            } else {
-              data_manager.current_layers[layer_name].fields_type[existing] = type_field;
+        compute_and_add(chooses_handler)
+          .then(() => {
+            if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
+              const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
+              let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
+              if (existing < 0) {
+                data_manager.current_layers[layer_name].fields_type.push(type_field);
+              } else {
+                data_manager.current_layers[layer_name].fields_type[existing] = type_field;
+              }
+              getAvailablesFunctionnalities(layer_name);
+              if (window.fields_handler) {
+                fields_handler.unfill();
+                fields_handler.fill(layer_name);
+              }
             }
-            getAvailablesFunctionnalities(layer_name);
-            if (window.fields_handler) {
-              fields_handler.unfill();
-              fields_handler.fill(layer_name);
+            if (reOpenTableBox) {
+              boxExplore2.create(layer_name);
+              // parent.modal_box.show();
+              // parent.display_table(layer_name);
             }
-          }
-          if (reOpenTableBox) {
-            boxExplore2.create(layer_name);
-            // parent.modal_box.show();
-            // parent.display_table(layer_name);
-          }
         }, (error) => {
           if (error !== 'Invalid name') {
             display_error_during_computation();
@@ -253,7 +254,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
   const div1 = box_content.append('div').attr('id', 'field_div1');
   const div2 = box_content.append('div').attr('id', 'field_div2');
 
-  const new_name = div1.append('p')
+  div1.append('p')
     .html(_tr('app_page.explore_box.add_field_box.new_name'))
     .insert('input')
     .property('value', _tr('app_page.explore_box.add_field_box.new_name_placeholder'))
@@ -268,9 +269,10 @@ function add_field_table(table, layer_name, reOpenTableBox) {
       refresh_type_content(this.value);
     });
 
-  [[_tr('app_page.explore_box.add_field_box.between_numerical'), 'math_compute'],
-   [_tr('app_page.explore_box.add_field_box.between_string'), 'string_field'],
-  ].forEach((d, i) => {
+  [
+    [_tr('app_page.explore_box.add_field_box.between_numerical'), 'math_compute'],
+     [_tr('app_page.explore_box.add_field_box.between_string'), 'string_field'],
+  ].forEach((d) => {
     type_content.append('option').text(d[0]).attr('value', d[1]);
   });
 

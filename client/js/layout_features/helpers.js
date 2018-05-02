@@ -10,6 +10,7 @@ import { check_layer_name } from './../function';
 import { create_li_layer_elem, drag_elem_geo } from './../helpers';
 import { Mround } from './../helpers_calc';
 import { prepare_available_symbols, setSphereBottom } from './../interface';
+import { up_legends, up_legend, down_legend } from './../legend';
 import { zoom_without_redraw } from './../map_ctrl';
 import { isInterrupted } from './../projections';
 import { box_choice_symbol, make_style_box_indiv_symbol } from './../symbols_picto';

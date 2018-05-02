@@ -1,7 +1,8 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
-import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { make_confirm_dialog2 } from './../dialogs';
 import { handle_click_hand } from './../interface';
+import { up_legend, down_legend } from './../legend';
 
 const atan2 = Math.atan2;
 const sin = Math.sin;
@@ -72,7 +73,7 @@ export default class UserEllipse {
     this.ellipse = this.svg_elem.append('g')
       .attrs({ class: 'user_ellipse legend scalable-legend', id: this.id, transform: svg_map.__zoom.toString() });
 
-    const e = this.ellipse.insert('ellipse')
+    this.ellipse.insert('ellipse')
       .attrs({
         rx: 30,
         ry: 40,
@@ -127,14 +128,14 @@ export default class UserEllipse {
   editStyle() {
     const self = this,
       ellipse_elem = self.ellipse.node().querySelector('ellipse'),
-      zoom_param = svg_map.__zoom,
+      // zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
       current_options = {
         pt1: this.pt1.slice(),
         rx: ellipse_elem.rx.baseVal.value,
         ry: ellipse_elem.ry.baseVal.value,
       };
-    const angle = (-this.calcAngle()).toFixed(0);
+    // const angle = (-this.calcAngle()).toFixed(0);
 
     if (!map_locked) handle_click_hand('lock');
     make_confirm_dialog2('styleBoxEllipse', _tr('app_page.ellipse_edit_box.title'), { widthFitContent: true })
@@ -262,7 +263,8 @@ export default class UserEllipse {
         cleanup_edit_state();
       });
 
-    const tmp_start_point = edit_layer.append('rect')
+    // Temporary start point:
+    edit_layer.append('rect')
       .attrs({
         id: 'pt1',
         class: 'ctrl_pt',
@@ -277,7 +279,9 @@ export default class UserEllipse {
         const dist = self.pt1[0] - (d3.event.x - zoom_param.x) / zoom_param.k;
         ellipse_elem.rx.baseVal.value = dist;
       }));
-    const tmp_end_point = edit_layer.append('rect')
+
+    // Temporary end point:
+    edit_layer.append('rect')
       .attrs({ class: 'ctrl_pt',
         height: 8,
         width: 8,

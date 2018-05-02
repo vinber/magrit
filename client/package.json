@@ -19,7 +19,6 @@
     "style-loader": "^0.21.0",
     "uglifyjs-webpack-plugin": "^1.2.5",
     "webpack": "^4.6.0",
-    "webpack-bundle-analyzer": "^2.11.1",
     "webpack-cli": "^2.0.15"
   },
   "scripts": {

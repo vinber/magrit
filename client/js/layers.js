@@ -3,7 +3,6 @@ import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
 import { check_layer_name } from './function';
 import {
   create_li_layer_elem, display_error_during_computation,
-  get_display_name_on_layer_list,
   isValidJSON, make_box_type_fields, request_data, setSelected, xhrequest,
 } from './helpers';
 import { valid_join_check_display } from './join_popup';
@@ -194,7 +193,7 @@ export function add_sample_layer() {
               xhrequest('POST', '/convert_extrabasemap', formToSend, true)
                 .then((data) => {
                   add_layer_topojson(data, { target_layer_on_add: target_layer });
-                }, (error) => {
+                }, () => {
                   display_error_during_computation();
                 });
             }
@@ -267,7 +266,7 @@ export function add_sample_layer() {
     });
    container.select('.modal-content').style('width', '625px');
   const box_body = container.select('.modal-body')
-  setTimeout((_) => { document.querySelector('select.sample_target').focus(); }, 500);
+  setTimeout(() => { document.querySelector('select.sample_target').focus(); }, 500);
   make_panel1();
 }
 
@@ -289,8 +288,8 @@ function add_sample_geojson(name, options) {
 * Add a TopoJSON layer to the 'svg' element.
 *
 * @param {String} text - the text content to be parsed as a JS object.
-* @param {Object} url - options regarding the layer to be added (such as wether skipping
-*     the 'success' alert or not, which name to use for the layer, etc.).
+* @param {Object} url - options regarding the layer to be added (such as wether
+*   skipping the 'success' alert or not, which name to use for the layer, etc.).
 * @return {String} The actual name of the layer once added, or `undefined` if
 *     something went wrong.
 */
@@ -301,7 +300,8 @@ export function add_layer_topojson(text, options = {}) {
     display_error_during_computation('Unable to load the layer');
     return;
   }
-  // Server returns a JSON reponse like {"Error":"The error"} if something went bad during the conversion:
+  // Server returns a JSON reponse like {"Error":"The error"}
+  // if something went bad during the conversion:
   if (parsedJSON.Error) {
     display_error_during_computation(parsedJSON.Error);
     return;

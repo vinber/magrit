@@ -1,7 +1,7 @@
 import { getColorBrewerArray } from './../colors_helpers';
 import { isNumber } from './../helpers';
 import { has_negative, round_value } from './../helpers_calc';
-import { Mround } from './../helpers_math';
+import { Mabs, Mceil, Mround, Msqrt } from './../helpers_math';
 
 const floor = Math.floor;
 const log10 = Math.log10;
@@ -218,3 +218,181 @@ export function getBreaks_userDefined(serie, breaks) {
     stock_class,
   };
 }
+
+export const prepare_ref_histo = (parent_node, serie, formatCount) => {
+  const svg_h = h / 7.25 > 80 ? h / 7.25 : 80,
+    svg_w = w / 4 > 320 ? 320 : w / 4,
+    values = serie.sorted(),
+    nb_bins = (values.length / 3) > 51 ? 50 : Mceil(Msqrt(values.length)) + 1;
+
+  const q5 = serie.getQuantile(4).map(v => +v);
+
+  const m_margin = { top: 10, right: 20, bottom: 10, left: 20 },
+    m_width = svg_w - m_margin.right - m_margin.left,
+    m_height = svg_h - m_margin.top - m_margin.bottom;
+
+  const ref_histo = parent_node.select('#ref_histo_box').select('#inner_ref_histo_box');
+
+  ref_histo.append('p')
+    .attrs({ id: 'ref_histo_title' })
+    .styles({ margin: 'auto', 'text-align': 'center' })
+    .html(`<b>${_tr('disc_box.hist_ref_title')}</b>`);
+
+  const c = ref_histo.append('svg')
+    .attrs({
+      id: 'svg_ref_histo',
+      width: svg_w + m_margin.left + m_margin.right,
+      height: svg_h + m_margin.top + m_margin.bottom,
+    });
+
+  const x = d3.scaleLinear()
+    .domain([serie.min(), serie.max()])
+    .rangeRound([0, m_width]);
+
+  let svg_ref_histo = c.append('g')
+    .attr('transform', `translate(${m_margin.left + m_margin.right}, ${m_margin.top})`);
+
+  return (type) => {
+    svg_ref_histo.remove();
+    svg_ref_histo = c.append('g')
+      .attr('transform', `translate(${m_margin.left + m_margin.right}, ${m_margin.top})`);
+    if (type === 'histogram') {
+      const data = d3.histogram()
+        .domain(x.domain())
+        .thresholds(x.ticks(nb_bins))(values);
+
+      const y = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.length)])
+        .range([m_height, 0]);
+
+      const bar = svg_ref_histo.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attrs(d => ({
+          class: 'bar',
+          width: Mabs(x(d.x1)) - Mabs(x(d.x0)),
+          height: m_height - y(d.length),
+          x: 0,
+          transform: 'translate(' + x(d.x0) + ',' + y(d.length) + ')',
+        }))
+        .styles({ fill: 'beige', stroke: 'black', 'stroke-width': '0.4px' });
+
+      svg_ref_histo.append('g')
+        .style('font-size', '10px')
+        .attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' })
+        .call(d3.axisBottom()
+          .scale(x)
+          .ticks(4)
+          .tickFormat(formatCount))
+        .selectAll('text')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
+        .style('text-anchor', 'end');
+
+      svg_ref_histo.append('g')
+        .attr('class', 'y_axis')
+        .style('font-size', '10px')
+        .call(d3.axisLeft()
+          .scale(y)
+          .ticks(5)
+          .tickFormat(d3.format('.0f')));
+    } else if (type === 'box_plot') {
+      svg_ref_histo.append('g')
+        .style('font-size', '10px')
+        .attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' })
+        .call(d3.axisBottom()
+          .scale(x)
+          .ticks(4)
+          .tickFormat(formatCount))
+        .selectAll('text')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
+        .style('text-anchor', 'end');
+
+      const y_mid = (m_margin.top + m_height - m_margin.bottom) / 2;
+
+      svg_ref_histo.append('g')
+        .insert('line')
+        .attrs({ x1: x(q5[0]), y1: m_margin.top * 2, x2: x(q5[0]), y2: m_height - m_margin.bottom * 2 })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'none' });
+
+      svg_ref_histo.append('g')
+        .insert('rect')
+        .attrs({ x: x(q5[1]), y: m_margin.top, width: x(q5[2]) - x(q5[1]), height: m_height - m_margin.bottom - m_margin.top })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'lightblue' });
+
+      svg_ref_histo.append('g')
+        .insert('line')
+        .attrs({ x1: x(q5[2]), y1: m_margin.top, x2: x(q5[2]), y2: m_height - m_margin.bottom })
+        .styles({ 'stroke-width': 3, stroke: 'black', fill: 'none' });
+
+      svg_ref_histo.append('g')
+        .insert('rect')
+        .attrs({ x: x(q5[2]), y: m_margin.top, width: x(q5[3]) - x(q5[2]), height: m_height - m_margin.bottom - m_margin.top })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'lightblue' });
+
+      svg_ref_histo.append('g')
+        .insert('line')
+        .attrs({ x1: x(q5[4]), y1: m_margin.top * 2, x2: x(q5[4]), y2: m_height - m_margin.bottom * 2 })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'none' });
+
+      svg_ref_histo.append('g')
+        .insert('line')
+        .attrs({ x1: x(q5[0]), y1: y_mid, x2: x(q5[1]), y2: y_mid })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'none', 'stroke-dasharray': '3,3' });
+
+      svg_ref_histo.append('g')
+        .insert('line')
+        .attrs({ x1: x(q5[3]), y1: y_mid, x2: x(q5[4]), y2: y_mid })
+        .styles({ 'stroke-width': 1, stroke: 'black', fill: 'none', 'stroke-dasharray': '3,3' });
+    } else if (type === 'beeswarm') {
+      const data = values.map(v => ({ value: +v }));
+
+      const simulation = d3.forceSimulation(data)
+        .force('x', d3.forceX(d => x(d.value)).strength(1))
+        .force('y', d3.forceY(m_height / 2).strength(2))
+        .force('collide', d3.forceCollide(4))
+        .stop();
+
+      for (let i = 0; i < 75; ++i) {
+        simulation.tick();
+      }
+      svg_ref_histo.append('g')
+        .style('font-size', '10px')
+        .attrs({ class: 'x_axis', transform: 'translate(0,' + m_height + ')' })
+        .call(d3.axisBottom()
+          .scale(x)
+          .ticks(4)
+          .tickFormat(formatCount))
+        .selectAll('text')
+        .attrs({ x: -4, y: 4, dy: '.45em', transform: 'rotate(-40)' })
+        .style('text-anchor', 'end');
+
+      const cell = svg_ref_histo.append('g')
+        .attr('class', 'cells')
+        .selectAll('g')
+        .data(d3.voronoi()
+          .extent([[0, 0], [m_width, m_height]])
+          .x(d => d.x)
+          .y(d => d.y)
+          .polygons(data))
+        .enter()
+        .append('g');
+
+      cell.append('circle')
+        .attrs((d) => {
+          if (d) {
+            return {
+              r: data.lenght < 250 ? 2.5 : data.lenght < 500 ? 1.5 : 1,
+              transform: `translate(${d.data.x},${d.data.y})` };
+          }
+          return undefined;
+        });
+
+      cell.append('path')
+        .attr('d', (d) => {
+          if (d) return `M${d.join('L')}Z`;
+          return undefined;
+        });
+    }
+  };
+};

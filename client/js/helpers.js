@@ -195,26 +195,26 @@ function path_to_geojson(layerName) {
     features: result_geojson,
   });
 }
-//
-// function path_to_geojson2(layerName) {
-//   const id_layer = ['#', global._app.layer_to_id.get(layerName)].join('');
-//   const result_geojson = [];
-//   d3.select(id_layer)
-//     .selectAll('path')
-//     .each((d, i) => {
-//       result_geojson.push({
-//         type: 'Feature',
-//         id: i,
-//         properties: d.properties,
-//         geometry: d.geometry,
-//       });
-//     });
-//   return JSON.stringify({
-//     type: 'FeatureCollection',
-//     crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
-//     features: result_geojson,
-//   });
-// }
+
+export function path_to_geojson2(layerName) {
+  const id_layer = ['#', global._app.layer_to_id.get(layerName)].join('');
+  const result_geojson = [];
+  d3.select(id_layer)
+    .selectAll('path')
+    .each((d, i) => {
+      result_geojson.push({
+        type: 'Feature',
+        id: i,
+        properties: d.properties,
+        geometry: d.geometry,
+      });
+    });
+  return JSON.stringify({
+    type: 'FeatureCollection',
+    crs: { type: 'name', properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' } },
+    features: result_geojson,
+  });
+}
 
 export function display_error_during_computation(msg) {
   const message = message ? `<br><i>${_tr('app_page.common.details')}:</i> ${msg}` : '';
@@ -741,7 +741,7 @@ export function make_box_type_fields(layerName) {
       }
     }
     overlay_under_modal.display();
-    setTimeout((_) => { container.querySelector('button.btn_ok').focus(); }, 400);
+    setTimeout(() => { container.querySelector('button.btn_ok').focus(); }, 400);
   });
 }
 

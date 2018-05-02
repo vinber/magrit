@@ -1,6 +1,7 @@
 import alertify from 'alertifyjs';
 import ContextMenu from './../context-menu';
 import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { up_legend, down_legend } from './../legend';
 import { Msqrt } from './../helpers_math';
 import { handle_click_hand } from './../interface';
 
@@ -52,7 +53,7 @@ export default class UserArrow {
       .on('drag', function () {
         d3.event.sourceEvent.preventDefault();
         const _t = this.querySelector('line'),
-          arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
+          // arrow_head_size = +_t.style.strokeWidth.replace('px', ''),
           subject = d3.event.subject,
           tx = (+d3.event.x - +subject.x) / svg_map.__zoom.k,
           ty = (+d3.event.y - +subject.y) / svg_map.__zoom.k;

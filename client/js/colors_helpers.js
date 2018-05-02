@@ -69,14 +69,9 @@ export const getColorBrewerArray = function getColorBrewerArray(nbClass, name) {
     const diff = nbClass - 9;
     return interp_n(colors, diff, 9);
   } // else if (nbClass >= 18) {
-  return interp_n(
-    interp_n(colorbrewer[name][9], 8, 9),
-    nbClass - colors.length,
-    nbClass,
-  );
-  // let colors = colorbrewer[name][9];
-  // colors = interp_n(colors, 8, 9);
-  // return interp_n(colors, nbClass - colors.length, nbClass);
+  let colors = colorbrewer[name][9];
+  colors = interp_n(colors, 8, 9);
+  return interp_n(colors, nbClass - colors.length, nbClass);
 };
 
 /**

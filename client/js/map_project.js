@@ -34,7 +34,7 @@ import { add_layout_feature, add_single_symbol } from './layout_features/helpers
 import { northArrow } from './layout_features/north_arrow';
 import UserRectangle from './layout_features/rectangle';
 import { scaleBar } from './layout_features/scalebar';
-import Textbox from './text_annotation';
+import Textbox from './layout_features/text_annotation';
 
 const serialize_layer_to_topojson = function serialize_layer_to_topojson(layer_name) {
   const layer = svg_map.querySelector(`#${_app.layer_to_id.get(layer_name)}`).querySelectorAll('path');
@@ -575,7 +575,7 @@ function reorder_layers(desired_order) {
 
 function reorder_elem_list_layer(desired_order) {
   const parent = document.getElementsByClassName('layer_list')[0],
-    layers = parent.childNodes,
+    // layers = parent.childNodes,
     nb_layers = desired_order.length;
   for (let i = 0; i < nb_layers; i++) {
     const selec = parent.querySelector(`li.${_app.layer_to_id.get(desired_order[i])}`);

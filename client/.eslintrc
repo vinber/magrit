@@ -1,5 +1,6 @@
 {
-  # "extends": "airbnb",
+  # "extends": "airbnb
+  # "extends": "eslint:recommended",
   "parser": "babel-eslint",
   "env": {
     "browser": true,
@@ -12,15 +13,19 @@
     "docCookies": true,
     "geostats": true,
     "i18next": true,
+    "localize": true,
+    "Modal": true,
     "proj4": true,
     "Sortable": true,
     "swal": true,
+    "Tooltip": true,
     "topojson": true,
     "_app": true,
     "_tr": true,
     "data_manager": true,
     "defs": true,
     "encodeId": true,
+    "fields_handler": true,
     "get_bounding_rect": true,
     "get_map_xy0": true,
     "helper_esc_key_twbs_cb": true,

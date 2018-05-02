@@ -10,6 +10,7 @@ import {
   drag_elem_geo, getAvailablesFunctionnalities,
   getImgDataUrl, isValidJSON,
   make_box_type_fields, prepareFileExt,
+  send_layer_server,
   type_col2, xhrequest,
 } from './helpers';
 import { get_nb_decimals, round_value } from './helpers_calc';
@@ -181,10 +182,10 @@ export function setUpInterface(reload_project) {
     })
     .html('<img src="static/img/header/High-contrast-help-browser_white.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
     .on('click', () => {
-      if (document.getElementById('menu_lang')) document.getElementById('menu_lang').remove();
-      const click_func = (window_name, target_url) => {
-        window.open(target_url, window_name, 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
-      };
+      if (document.getElementById('menu_lang')) {
+        document.getElementById('menu_lang').remove();
+      }
+
       const box_content = '<div class="about_content">' +
         '<p style="font-size: 0.8em; margin-bottom:auto;"><span>' +
         _tr('app_page.help_box.version', { version: global._app.version }) + '</span></p>' +
@@ -223,8 +224,7 @@ export function setUpInterface(reload_project) {
             window.open('https://www.github.com/riatelab/magrit', 'GitHubPage', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
           };
         },
-      }).then(inputValue => null,
-        dismissValue => null);
+      }).then(() => null, () => null);
     });
 
   const_options.append('button')
@@ -464,10 +464,10 @@ export function setUpInterface(reload_project) {
       }
       if (at_end) displayInfoOnMove();
     },
-    onStart(event) {
+    onStart() {
       document.body.classList.add('no-drop');
     },
-    onEnd(event) {
+    onEnd() {
       document.body.classList.remove('no-drop');
     },
   });
@@ -994,7 +994,7 @@ export function setUpInterface(reload_project) {
   geo_a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
 
-  const selec_layer = export_geo_options.insert('select')
+  export_geo_options.insert('select')
     .styles({ position: 'sticky', float: 'right' })
     .attrs({ id: 'layer_to_export', class: 'i18n m_elem_right' });
 
@@ -1102,7 +1102,7 @@ export function setUpInterface(reload_project) {
     { id: 'hand_button', i18n: '[title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button i18n tt', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
   ];
 
-  const selec = lm.selectAll('input')
+  lm.selectAll('input')
     .data(lm_buttons)
     .enter()
     .append('p')
@@ -1166,7 +1166,7 @@ export function setUpInterface(reload_project) {
         window.localStorage.removeItem('magrit_project');
         // Indicate that that no layer have been added for now :*
         global._app.first_layer = true;
-      }, (dismiss) => {
+      }, () => {
         apply_user_preferences(last_project);
       });
     } else {
@@ -1564,8 +1564,8 @@ function convert_dataset(file) {
           }
           data_manager.dataset_name = data.name;
           add_dataset(tmp_dataset);
-        }, dismiss => null);
-      }, (error) => {
+        }, () => null);
+      }, () => {
         display_error_during_computation();
       });
   };
@@ -1606,10 +1606,10 @@ function handle_shapefile(files) {
       xhrequest('POST', 'convert_to_topojson', ajaxData, true)
         .then((data) => {
           add_layer_topojson(data, { target_layer_on_add: target_layer_on_add });
-        }, (error) => {
+        }, () => {
           display_error_during_computation();
         });
-    }, (dismiss) => {
+    }, () => {
       overlay_drop.style.display = 'none';
     });
 }
@@ -1626,7 +1626,7 @@ function handle_TopoJSON_files(files) {
         target_layer_on_add = false;
       }
       const f = files[0],
-        name = files[0].name,
+        // name = files[0].name,
         reader = new FileReader(),
         ajaxData = new FormData();
       ajaxData.append('file[]', f);
@@ -1639,10 +1639,10 @@ function handle_TopoJSON_files(files) {
             add_layer_topojson(topoObjText, { target_layer_on_add: target_layer_on_add });
           };
           reader.readAsText(f);
-        }, (error) => {
+        }, () => {
           display_error_during_computation();
         });
-    }, (dismiss) => {
+    }, () => {
       overlay_drop.style.display = 'none';
     });
 }
@@ -1743,7 +1743,7 @@ function handle_dataset(f, target_layer_on_add) {
     ask_replace_dataset().then(() => {
       remove_ext_dataset_cleanup();
       check_dataset();
-    }, dismiss => null);
+    }, () => null);
   } else {
     check_dataset();
   }
@@ -1797,9 +1797,7 @@ function handle_dataset(f, target_layer_on_add) {
 export function update_menu_dataset() {
   const d_name = data_manager.dataset_name.length > 20 ? [data_manager.dataset_name.substring(0, 17), '(...)'].join('') : data_manager.dataset_name,
     nb_features = data_manager.joined_dataset[0].length,
-    field_names = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]),
-    data_ext = document.getElementById('ext_dataset_zone'),
-    parent_elem = data_ext.parentElement;
+    field_names = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]);
 
   d3.select('#ext_dataset_zone')
     .styles({
@@ -1909,7 +1907,7 @@ function add_csv_geom(file, name) {
     .then((data) => {
       data_manager.dataset_name = undefined;
       add_layer_topojson(data, { target_layer_on_add: true });
-    }, (error) => {
+    }, () => {
       display_error_during_computation();
     });
 }
@@ -1919,7 +1917,7 @@ function add_csv_geom(file, name) {
 * the converted layer added to the map
 * @param {File} file
 */
-function handle_single_file(file, target_layer_on_add) {
+function handle_single_file(file) {
   askTypeLayer()
     .then((val) => {
       overlay_drop.style.display = 'none';
@@ -1935,10 +1933,10 @@ function handle_single_file(file, target_layer_on_add) {
       xhrequest('POST', '/convert_to_topojson', ajaxData, true)
         .then((data) => {
           add_layer_topojson(data, { target_layer_on_add: target_layer_on_add });
-        }, (error) => {
+        }, () => {
           display_error_during_computation();
         });
-    }, (dismiss) => {
+    }, () => {
       overlay_drop.style.display = 'none';
     });
 }
@@ -2008,7 +2006,7 @@ export function ask_join_now(layer_name, on_add = 'layer') {
     cancelButtonText: _tr('app_page.common.no'),
   }).then(() => {
     createJoinBox(layer_name);
-  }, (dismiss) => {
+  }, () => {
     if (on_add === 'layer') make_box_type_fields(layer_name);
   });
 }
@@ -2223,7 +2221,7 @@ export function prepare_available_symbols() {
       return Promise.all(list_res.map(name => getImgDataUrl(`static/img/svg_symbols/${name}`)))
         .then((symbols) => {
           for (let i = 0; i < list_res.length; i++) {
-            default_symbols.push([list_res[i], symbols[i]]);
+            _app.default_symbols.push([list_res[i], symbols[i]]);
           }
         });
     });
@@ -2265,7 +2263,8 @@ function downgradeTargetLayer() {
 }
 
 function changeTargetLayer(new_target) {
-  const old_target = downgradeTargetLayer();
+  downgradeTargetLayer();
+  // const old_target = downgradeTargetLayer();
   data_manager.current_layers[new_target].targeted = true;
   _app.targeted_layer_added = true;
   data_manager.user_data[new_target] = Array.from(document.querySelector(`#${_app.layer_to_id.get(new_target)}`).querySelectorAll('path')).map(d => d.__data__.properties);
@@ -2381,7 +2380,7 @@ function make_ico_choice() {
   for (let i = 0, len_i = list_fun_ico.length; i < len_i; i++) {
     const ico_name = list_fun_ico[i],
       func_name = ico_name.split('.')[0],
-      func_desc = get_menu_option(func_name).desc,
+      // func_desc = get_menu_option(func_name).desc,
       margin_value = '5px 16px';
         // margin_value = i == 8 ? '5px 16px 5px 55px' : '5px 16px';
     function_panel
@@ -2674,7 +2673,7 @@ export function canvas_mod_size(shape) {
   } else {
     return;
   }
-  const zoom_params = svg_map.__zoom;
+  // const zoom_params = svg_map.__zoom;
   document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
   document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
   document.getElementById('input-width').value = w;

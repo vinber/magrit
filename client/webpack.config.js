@@ -1,7 +1,6 @@
 const webpack = require('webpack');
 const exec = require('child_process').exec;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 module.exports = [{
   entry: {

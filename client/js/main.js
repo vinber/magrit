@@ -57,6 +57,7 @@ global._app = {
   current_functionnality: undefined,
   current_proj_name: 'NaturalEarth2',
   custom_palettes: new Map(),
+  default_symbols: [],
   existing_lang: ['en', 'es', 'fr'],
   layer_to_id: new Map([['World', encodeId('World')], ['Graticule', encodeId('Graticule')]]),
   legendRedrawTimeout: null,

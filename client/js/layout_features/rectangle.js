@@ -3,7 +3,8 @@ import ContextMenu from './../context-menu';
 import { rgb2hex } from './../colors_helpers';
 import { Mabs } from './../helpers_math';
 import { handle_click_hand } from './../interface';
-import { check_remove_existing_box, make_confirm_dialog2 } from './../dialogs';
+import { make_confirm_dialog2 } from './../dialogs';
+import { up_legend, down_legend } from './../legend';
 
 export default class UserRectangle {
   constructor(id, origin_pt, parent = undefined, untransformed = false, width = 30, height = 40) {
@@ -110,7 +111,7 @@ export default class UserRectangle {
         id: this.id,
         transform: svg_map.__zoom.toString() });
 
-    const r = this.rectangle.insert('rect')
+    this.rectangle.insert('rect')
       .attrs({
         x: this.pt1[0],
         y: this.pt1[1],
@@ -194,7 +195,8 @@ export default class UserRectangle {
         cleanup_edit_state();
       });
 
-    const tmp_top_point = edit_layer.append('rect')
+    // Temporary top point:
+    edit_layer.append('rect')
       .attrs({
         class: 'ctrl_pt',
         id: 'pt_top',
@@ -216,7 +218,8 @@ export default class UserRectangle {
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
-    const tmp_left_point = edit_layer.append('rect')
+    // Temporary left point:
+    edit_layer.append('rect')
       .attrs({
         class: 'ctrl_pt',
         height: 8,
@@ -238,7 +241,8 @@ export default class UserRectangle {
         map.selectAll('#pt_top,#pt_bottom').attr('x', (topleft[0] + self.width / 2) * zoom_param.k + zoom_param.x);
       }));
 
-    const tmp_bottom_point = edit_layer.append('rect')
+    // Temporary bottom point:
+    edit_layer.append('rect')
       .attrs({
         class: 'ctrl_pt',
         id: 'pt_bottom',
@@ -257,7 +261,8 @@ export default class UserRectangle {
         map.selectAll('#pt_left,#pt_right').attr('y', (topleft[1] + self.height / 2) * zoom_param.k + zoom_param.y);
       }));
 
-    const tmp_right_point = edit_layer.append('rect')
+    // Temporary right point:
+    edit_layer.append('rect')
       .attrs({
         class: 'ctrl_pt',
         id: 'pt_right',
@@ -286,7 +291,7 @@ export default class UserRectangle {
   editStyle() {
     const self = this,
       rectangle_elem = self.rectangle.node().querySelector('rect'),
-      zoom_param = svg_map.__zoom,
+      // zoom_param = svg_map.__zoom,
       map_locked = !!map_div.select('#hand_button').classed('locked'),
       current_options = { pt1: this.pt1.slice() };
     if (!map_locked) handle_click_hand('lock');
@@ -320,7 +325,7 @@ export default class UserRectangle {
       .style('margin', 'auto')
       .html(_tr('app_page.rectangle_edit_box.stroke_width'));
 
-    const i1 = s1.append('input')
+    s1.append('input')
       .attrs({
         min: 0,
         max: 34,
@@ -379,9 +384,10 @@ export default class UserRectangle {
       .property('value', rectangle_elem.style.fillOpacity)
       .on('change', function () {
         rectangle_elem.style.fillOpacity = this.value;
-        txt_rx_value.html(`${rectangle_elem.style.fillOpacity}`);
+        txt_fillop_value.html(`${rectangle_elem.style.fillOpacity}`);
       });
-    const txt_fillop_value = s5.append('span')
+
+    const txt_fillop_value = s4.append('span')
       .styles({ float: 'right', margin: '0 5px 0 5px' })
       .html(`${rectangle_elem.style.fillOpacity}`);
 
