@@ -761,18 +761,15 @@ export function update_menu_dataset() {
       padding: null,
       'text-align': 'initial',
     })
-    .html([
-      '<div style="display:inline-block;"><img id="img_data_ext" class="user_panel" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img></div>',
-      '<div style="display:inline-block;margin-left: 4px;">',
-      ' <b>', d_name, '</b><br><i><span style="font-size:9px;">',
-      nb_features, ' ', _tr('app_page.common.feature', { count: +nb_features }), ' - ',
-      field_names.length, ' ', _tr('app_page.common.field', { count: +field_names.length }), '</i></span>',
-      '</div>',
-      '<div style="float:right;">',
-      '<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset">',
-      '<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1">',
-      '</div>',
-    ].join(''))
+    .html(`
+<div style="display:inline-block;"><img id="img_data_ext" src="static/img/b/tabular.png" width="26" height="26" alt="Additional dataset"></img></div>
+<div style="display:inline-block;margin-left: 4px;"> <b>${d_name}</b><br><i><span style="font-size:10px;">
+${nb_features} ${_tr('app_page.common.feature', { count: +nb_features })} - ${field_names.length} ${_tr('app_page.common.field', { count: +field_names.length })}</i></span>
+</div>
+<div style="float:right;">
+<img width="13" height="13" src="static/img/Trash_font_awesome.png" id="remove_dataset">
+<img width="14" height="14" src="static/img/dataset.png" id="table_dataset_s1">
+</div>`);
 
   document.getElementById('remove_dataset').onclick = () => {
     remove_ext_dataset();

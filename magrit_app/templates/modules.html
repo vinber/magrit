@@ -30,14 +30,45 @@
         <p class="header_options_projection"></p>
         <p class="header_options_right"></p>
       </div>
-      <div id="menu"></div>
+      <div id="menu" style="display:none;">
+        <button id="btn_s1" class="accordion i18n" data-i18n="app_page.section1.title"></button>
+        <div class="panel" id="accordion1">
+          <div id="section1" class="i18n tt_menuleft" data-i18n="[title]app_page.tooltips.section1" data-tippy-placement="right">
+          </div>
+        </div>
+        <button id="btn_s2" class="accordion i18n" data-i18n="app_page.section2.title"></button>
+        <div class="panel" id="accordion2_pre">
+          <div id="section2_pre"></div>
+        </div>
+        <button id="btn_s2b" class="accordion i18n" style="display: none;"></button>
+        <div class="panel" id="accordion2b" style="display: none;">
+          <div id="section2"></div>
+        </div>
+        <button id="btn_s3" class="accordion i18n" data-i18n="app_page.section3.title"></button>
+        <div class="panel" id="accordion3">
+          <div id="section3"></div>
+        </div>
+        <button id="btn_s4" class="accordion i18n" data-i18n="app_page.section4.title"></button>
+        <div class="panel" id="accordion14">
+          <div id="section4"></div>
+        </div>
+        <button id="btn_s5" class="accordion i18n" data-i18n="app_page.section5b.title"></button>
+        <div class="panel" id="accordion5b">
+          <div id="section5"></div>
+        </div>
+      </div>
   	  <div id="map"></div>
       <noscript>
         <div style="padding: 20px; text-align: center;">
           <span style="color:red">To use Magrit, you need to have JavaScript enabled in your browser.</span>
         </div>
       </noscript>
-    <script  src="static/vendor/bootstrap-native3.mod.min.js"></script>
+      <div class="overlay_drop" id="overlay_drop" style="display: none;">
+        <div class="overlay_drop inner">
+          <p class="i18n" data-i18n="app_page.common.drop_msg"></p>
+        </div>
+      </div>
+  <script  src="static/vendor/bootstrap-native3.mod.min.js"></script>
 	<script  src="static/dist/vendor.js"></script>
 	<script  src="static/dist/d3.custom.min.js"></script>
 	<script  src="static/dist/app.js"></script>
