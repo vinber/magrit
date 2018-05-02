@@ -220,6 +220,24 @@ function handleClickAddPicto() {
     map.style('cursor', '').on('click', null);
     document.removeEventListener('keydown', esc_cancel);
   };
+
+  const on_result = (result) => {
+    if (result) {
+      add_single_symbol(
+        result.split('url(')[1].substring(1).slice(0, -2),
+        click_pt[0],
+        click_pt[1],
+        45,
+        45,
+        `single_symbol_${symbol_id}`,
+      );
+    }
+  };
+
+  const display_box_symbol = () => {
+    box_choice_symbol(_app.default_symbols).then(on_result);
+  }
+
   const symbol_id = getIdLayoutFeature('single_symbol');
   if (symbol_id === null) {
     return;
@@ -231,8 +249,8 @@ function handleClickAddPicto() {
     prep_symbols,
     available_symbols = false;
 
-  if (!window.default_symbols) {
-    window.default_symbols = [];
+  if (!(_app.default_symbols) || _app.default_symbols.length === 0) {
+    _app.default_symbols = [];
     prep_symbols = prepare_available_symbols();
   } else {
     available_symbols = true;
@@ -253,19 +271,9 @@ function handleClickAddPicto() {
       map.style('cursor', '').on('click', null);
       document.body.style.cursor = '';
       if (!available_symbols) {
-        prep_symbols.then((confirmed) => {
-          box_choice_symbol(window.default_symbols).then((result) => {
-            if (result) {
-              add_single_symbol(result.split('url(')[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
-            }
-          });
-        });
+        prep_symbols.then(display_box_symbol);
       } else {
-        box_choice_symbol(window.default_symbols).then((result) => {
-          if (result) {
-            add_single_symbol(result.split('url(')[1].substring(1).slice(0, -2), click_pt[0], click_pt[1], 45, 45, `single_symbol_${symbol_id}`);
-          }
-        });
+        display_box_symbol();
       }
     });
 }
@@ -466,7 +474,7 @@ export function add_layout_feature(selected_feature, options = {}) {
         .then(() => {
           scaleBar.remove();
           handleClickAddOther('scalebar');
-        }, dismiss => null);
+        }, () => null);
     }
   } else if (selected_feature === 'north_arrow') {
     if (!(northArrow.displayed)) {
@@ -476,7 +484,7 @@ export function add_layout_feature(selected_feature, options = {}) {
         .then(() => {
           northArrow.remove();
           handleClickAddOther('north_arrow');
-        }, dismiss => null);
+        }, () => null);
     }
   } else if (selected_feature === 'arrow') {
     handleClickAddArrow();

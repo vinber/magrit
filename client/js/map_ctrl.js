@@ -52,7 +52,7 @@ export function zoom_without_redraw() {
       .duration(50)
       .attr('transform', t_val);
   } else {
-    t_val = d3.event.transform + rot_val;
+    t_val = d3.event.transform.toString() + rot_val;
     map.selectAll('.layer')
       .transition()
       .duration(50)
@@ -337,4 +337,10 @@ export function zoomClick() {
   view.x += center[0] - l[0];
   view.y += center[1] - l[1];
   interpolateZoom([view.x, view.y], view.k);
+}
+
+// Change color of the background
+// (ie the parent "svg" element on the top of which group of elements have been added)
+export function handle_bg_color(color) {
+  map.style('background-color', color);
 }

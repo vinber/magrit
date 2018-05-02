@@ -1,6 +1,6 @@
 {
   # "extends": "airbnb
-  # "extends": "eslint:recommended",
+  "extends": "eslint:recommended",
   "parser": "babel-eslint",
   "env": {
     "browser": true,
@@ -29,13 +29,11 @@
     "get_bounding_rect": true,
     "get_map_xy0": true,
     "helper_esc_key_twbs_cb": true,
-    "layer_list": true,
     "map": true,
     "map_div": true,
     "overlay_drop": true,
     "path": true,
     "proj": true,
-    "section2": true,
     "svg_map": true,
     "_target_layer_file": true,
     "t": true,

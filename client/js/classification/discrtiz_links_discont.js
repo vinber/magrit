@@ -276,7 +276,7 @@ export const display_discretization_links_discont = function (layer_name, field_
   let nb_values = db_data.length;
   let values = [];
   let no_data;
-  
+
   for (let i = 0; i < nb_values; i++) {
     if (db_data[i][field_name] != null) {
       values.push(+db_data[i][field_name]);
@@ -503,36 +503,36 @@ export const display_discretization_links_discont = function (layer_name, field_
   redisplay.compute();
   redisplay.draw();
 
-  const deferred = Promise.pending();
   const container = document.getElementById('discretiz_charts');
-  const _onclose = () => {
-    deferred.resolve(false);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent('.styleBox');
-    if (!p) overlay_under_modal.hide();
-  };
-  const helper_esc_key_twbs = (evt) => {
-    const _event = evt || window.event;
-    const isEscape = ('key' in _event)
-      ? (_event.key === 'Escape' || _event.key === 'Esc')
-      : (_event.keyCode === 27);
-    if (isEscape) {
-      _event.preventDefault();
-      _onclose();
-    }
-  };
-  container.querySelector('.btn_ok').onclick = () => {
-    breaks[0] = serie.min();
-    breaks[nb_class] = serie.max();
-    deferred.resolve([serie, breaks_info, breaks]);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent('.styleBox');
-    if (!p) overlay_under_modal.hide();
-  };
-  container.querySelector('.btn_cancel').onclick = _onclose;
-  container.querySelector('#xclose').onclick = _onclose;
-  document.addEventListener('keydown', helper_esc_key_twbs);
-  return deferred.promise;
+  return new Promise((resolve, reject) => {
+    const _onclose = () => {
+      resolve(false);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent('.styleBox');
+      if (!p) overlay_under_modal.hide();
+    };
+    const helper_esc_key_twbs = (evt) => {
+      const _event = evt || window.event;
+      const isEscape = ('key' in _event)
+        ? (_event.key === 'Escape' || _event.key === 'Esc')
+        : (_event.keyCode === 27);
+      if (isEscape) {
+        _event.preventDefault();
+        _onclose();
+      }
+    };
+    container.querySelector('.btn_ok').onclick = () => {
+      breaks[0] = serie.min();
+      breaks[nb_class] = serie.max();
+      resolve([serie, breaks_info, breaks]);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent('.styleBox');
+      if (!p) overlay_under_modal.hide();
+    };
+    container.querySelector('.btn_cancel').onclick = _onclose;
+    container.querySelector('#xclose').onclick = _onclose;
+    document.addEventListener('keydown', helper_esc_key_twbs);
+  });
 };

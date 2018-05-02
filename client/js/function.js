@@ -25,6 +25,8 @@ import { zoom_without_redraw } from './map_ctrl';
 import { isInterrupted } from './projections';
 import { display_box_symbol_typo, make_style_box_indiv_symbol } from './symbols_picto';
 
+const section2 = d3.select('#menu').select('#section2');
+
 export const get_menu_option = (function () {
   const menu_option = {
     smooth: {
@@ -528,9 +530,9 @@ function fillMenu_TwoStocks() {
       min: 1,
       max: 20,
       step: 1,
-      value: 3,
     })
-    .style('width', '50px');
+    .style('width', '50px')
+    .property('value', 3);
   c.append('span').html(' (px)');
 
   const d = dv2.append('p')
@@ -545,10 +547,10 @@ function fillMenu_TwoStocks() {
       type: 'number',
       min: 2,
       max: 8,
-      value: 2,
       step: 1,
     })
-    .style('width', '50px');
+    .style('width', '50px')
+    .property('value', 2);
 
   const e = dv2.append('p')
     .attr('class', 'params_section2');
@@ -562,10 +564,10 @@ function fillMenu_TwoStocks() {
       type: 'number',
       min: 1,
       max: 1000000,
-      value: 100,
       step: 1,
     })
-    .style('width', '50px');
+    .style('width', '50px')
+    .property('value', 100);
   e.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio_units' })
     .html(_tr('app_page.func_options.twostocks.waffle_ratio_units'));
@@ -759,7 +761,14 @@ export function render_twostocks_waffle(layer, rendering_params) {
             fill: _colors[i],
           });
       }
-      group.node().__data__ = { properties: data_manager.result_data[layer_to_add][j] };
+      group.node().__data__ = {
+        type: 'Feature',
+        properties: data_manager.result_data[layer_to_add][j],
+        geometry: {
+          type: 'Point',
+          coordinates: data_manager.result_data[layer_to_add][j].centroid,
+        },
+      };
       group.call(drag_waffle);
     }
   } else if (symbol_type === 'rect') {
@@ -787,7 +796,14 @@ export function render_twostocks_waffle(layer, rendering_params) {
             fill: _colors[i],
           });
       }
-      group.node().__data__ = { properties: data_manager.result_data[layer_to_add][j] };
+      group.node().__data__ = {
+        type: 'Feature',
+        properties: data_manager.result_data[layer_to_add][j],
+        geometry: {
+          type: 'Point',
+          coordinates: data_manager.result_data[layer_to_add][j].centroid,
+        },
+      };
       group.call(drag_waffle);
     }
   }
@@ -834,9 +850,10 @@ function fillMenu_PropSymbolChoro(layer) {
       class: 'params',
       min: 0.1,
       max: 100.0,
-      value: 60.0,
-      step: 'any' })
-    .style('width', '50px');
+      step: 'any',
+    })
+    .style('width', '50px')
+    .property('value', 60);
   b.append('span').html(' (px)');
 
   const c = dv2.append('p').attr('class', 'params_section2');
@@ -917,9 +934,10 @@ const fields_PropSymbolChoro = {
 
     if (data_manager.current_layers[layer].type === 'Line') {
       ref_size.attr('value', 10.0);
-      [['app_page.func_options.common.symbol_line', 'line'],
-       ['app_page.func_options.common.symbol_circle', 'circle'],
-       ['app_page.func_options.common.symbol_square', 'rect'],
+      [
+        ['app_page.func_options.common.symbol_line', 'line'],
+        ['app_page.func_options.common.symbol_circle', 'circle'],
+        ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
           .text(_tr(symb[0]))
@@ -927,8 +945,9 @@ const fields_PropSymbolChoro = {
       });
     } else {
       ref_size.attr('value', 60.0);
-      [['app_page.func_options.common.symbol_circle', 'circle'],
-       ['app_page.func_options.common.symbol_square', 'rect'],
+      [
+        ['app_page.func_options.common.symbol_circle', 'circle'],
+        ['app_page.func_options.common.symbol_square', 'rect'],
       ].forEach((symb) => {
         symb_selec.append('option')
           .text(_tr(symb[0]))
@@ -1119,13 +1138,15 @@ const fields_PropSymbolChoro = {
           layer,
           selected_field,
           self.rendering_params[selected_field].nb_class,
-          { schema: self.rendering_params[selected_field].schema,
+          {
+            schema: self.rendering_params[selected_field].schema,
             colors: self.rendering_params[selected_field].colors,
             no_data: self.rendering_params[selected_field].no_data,
             type: self.rendering_params[selected_field].type,
             breaks: self.rendering_params[selected_field].breaks,
-            extra_options: self.rendering_params[selected_field].extra_options },
-          );
+            extra_options: self.rendering_params[selected_field].extra_options,
+          },
+        );
       } else {
         conf_disc_box = display_discretization(layer, selected_field, opt_nb_class, { type: 'quantiles' });
       }
@@ -2687,7 +2708,7 @@ const fields_PropSymbolTypo = {
     const self = this,
       fields_num = getFieldsType('stock', layer),
       fields_categ = getFieldsType('category', layer),
-      nb_features = data_manager.user_data[layer].length,
+      // nb_features = data_manager.user_data[layer].length,
       field1_selec = section2.select('#PropSymbolTypo_field_1'),
       field2_selec = section2.select('#PropSymbolTypo_field_2'),
       ref_value_field = section2.select('#PropSymbolTypo_ref_value'),
@@ -2774,7 +2795,7 @@ const fields_PropSymbolTypo = {
       const col_map = self.rendering_params[selected_field]
         ? self.rendering_params[selected_field].color_map
         : undefined;
-      const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
+      const [cats, ] = prepare_categories_array(layer, selected_field, col_map);
 
       if (cats.length > 15) {
         swal({
@@ -3371,7 +3392,7 @@ function fillMenu_TypoSymbol() {
   make_layer_name_button(dv2, 'TypoSymbols_output_name');
   make_ok_button(dv2, 'yesTypoSymbols');
   dv2.selectAll('.params').attr('disabled', true);
-  if (!_app.default_symbols) {
+  if (!(_app.default_symbols) || _app.default_symbols.length === 0) {
     _app.default_symbols = [];
     prepare_available_symbols();
   }

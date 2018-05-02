@@ -404,93 +404,99 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       breaks = [];
       values = serie.sorted();
       const deferred = Promise.pending();
-      if (values.length > 7500 && type === 'jenks') {
-        const jenks_worker = new Worker('static/js/webworker_jenks.js');
-        _app.webworker_to_cancel = jenks_worker;
-        _app.waitingOverlay.display({ zIndex: 5000 });
-        jenks_worker.postMessage(
-          [values, nb_class]);
-        jenks_worker.onmessage = function (e) {
-          breaks = e.data;
+      return new Promise((resolve, reject) => {
+        if (values.length > 7500 && type === 'jenks') {
+          const jenks_worker = new Worker('static/js/webworker_jenks.js');
+          _app.webworker_to_cancel = jenks_worker;
+          _app.waitingOverlay.display({ zIndex: 5000 });
+          jenks_worker.postMessage(
+            [values, nb_class]);
+          jenks_worker.onmessage = function (e) {
+            breaks = e.data;
+            serie.setClassManually(breaks);
+            serie.doCount();
+            stock_class = Array.prototype.slice.call(serie.counter);
+           _app.waitingOverlay.hide();
+            _app.webworker_to_cancel = undefined;
+            bins = [];
+            for (let i = 0, len = stock_class.length; i < len; i++) {
+              const bin = {};
+              bin.val = stock_class[i];
+              bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
+              bin.width = breaks[i + 1] - breaks[i];
+              bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+              bins[i] = bin;
+            }
+            resolve(true);
+            jenks_worker.terminate();
+          };
+        }
+
+        if (type === 'Q6') {
+          tmp = getBreaksQ6(values, serie.precision);
+          // stock_class = tmp.stock_class;
+          breaks = tmp.breaks;
+          breaks[0] = min_serie;
+          breaks[6] = max_serie;
           serie.setClassManually(breaks);
           serie.doCount();
           stock_class = Array.prototype.slice.call(serie.counter);
-         _app.waitingOverlay.hide();
-          _app.webworker_to_cancel = undefined;
-          bins = [];
-          for (let i = 0, len = stock_class.length; i < len; i++) {
-            const bin = {};
-            bin.val = stock_class[i];
-            bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
-            bin.width = breaks[i + 1] - breaks[i];
-            bin.height = bin.val / (breaks[i + 1] - breaks[i]);
-            bins[i] = bin;
+        } else if (type === 'stddev_f') {
+          tmp = getBreaksStdDev(serie, std_dev_params.share, std_dev_params.role_mean, serie.precision);
+          update_nb_class(nb_class = tmp.nb_class);
+          breaks = tmp.breaks;
+          serie.setClassManually(tmp.breaks);
+          serie.doCount();
+          stock_class = Array.prototype.slice.call(serie.counter);
+        } else if (type === 'user_defined') {
+          tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
+          stock_class = tmp.stock_class;
+          breaks = tmp.breaks;
+          nb_class = tmp.breaks.length - 1;
+          update_nb_class(nb_class);
+
+          if (breaks[0] > min_serie) breaks[0] = min_serie;
+          if (breaks[nb_class] < max_serie) breaks[nb_class] = max_serie;
+
+          const breaks_serie = breaks.slice();
+          if (breaks_serie[0] < min_serie) {
+            breaks_serie[0] = min_serie;
           }
-          deferred.resolve(true);
-          jenks_worker.terminate();
-        };
-        return deferred.promise;
-      }
-
-      if (type === 'Q6') {
-        tmp = getBreaksQ6(values, serie.precision);
-        // stock_class = tmp.stock_class;
-        breaks = tmp.breaks;
-        breaks[0] = min_serie;
-        breaks[6] = max_serie;
-        serie.setClassManually(breaks);
-        serie.doCount();
-        stock_class = Array.prototype.slice.call(serie.counter);
-      } else if (type === 'stddev_f') {
-        tmp = getBreaksStdDev(serie, std_dev_params.share, std_dev_params.role_mean, serie.precision);
-        update_nb_class(nb_class = tmp.nb_class);
-        breaks = tmp.breaks;
-        serie.setClassManually(tmp.breaks);
-        serie.doCount();
-        stock_class = Array.prototype.slice.call(serie.counter);
-      } else if (type === 'user_defined') {
-        tmp = getBreaks_userDefined(serie.sorted(), user_break_list);
-        stock_class = tmp.stock_class;
-        breaks = tmp.breaks;
-        nb_class = tmp.breaks.length - 1;
-        update_nb_class(nb_class);
-
-        if (breaks[0] > min_serie) breaks[0] = min_serie;
-        if (breaks[nb_class] < max_serie) breaks[nb_class] = max_serie;
-
-        const breaks_serie = breaks.slice();
-        if (breaks_serie[0] < min_serie) {
-          breaks_serie[0] = min_serie;
+          if (breaks_serie[nb_class] > max_serie) {
+            breaks_serie[nb_class] = max_serie;
+          }
+          serie.setClassManually(breaks_serie);
+        } else {
+          breaks = serie[discretiz_geostats_switch.get(type)](nb_class);
+          // if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
+          serie.doCount();
+          stock_class = Array.prototype.slice.call(serie.counter);
         }
-        if (breaks_serie[nb_class] > max_serie) {
-          breaks_serie[nb_class] = max_serie;
+        // In order to avoid class limit falling out the serie limits with Std class :
+        // breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
+        // ^^ well finally not ?
+        if (stock_class.length === 0) {
+          resolve(false);
         }
-        serie.setClassManually(breaks_serie);
-      } else {
-        breaks = serie[discretiz_geostats_switch.get(type)](nb_class);
-        // if (serie.precision) breaks = breaks.map(val => round_value(val, serie.precision));
-        serie.doCount();
-        stock_class = Array.prototype.slice.call(serie.counter);
-      }
-      // In order to avoid class limit falling out the serie limits with Std class :
-      // breaks[0] = breaks[0] < serie.min() ? serie.min() : breaks[0];
-      // ^^ well finally not ?
-      if (stock_class.length === 0) {
-        deferred.resolve(false);
-        return deferred.promise;
-      }
 
-      bins = [];
-      for (let i = 0, len = stock_class.length; i < len; i++) {
-        const bin = {};
-        bin.val = stock_class[i];
-        bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
-        bin.width = breaks[i + 1] - breaks[i];
-        bin.height = bin.val / (breaks[i + 1] - breaks[i]);
-        bins[i] = bin;
-      }
-      deferred.resolve(true);
-      return deferred.promise;
+        bins = [];
+        for (let i = 0, len = stock_class.length; i < len; i++) {
+          // const bin = {};
+          // bin.val = stock_class[i];
+          // bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
+          // bin.width = breaks[i + 1] - breaks[i];
+          // bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+          // bins[i] = bin;
+          const _stock = stock_class[i];
+          bins[i].push({
+            val: stock_class[i],
+            offset: i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset),
+            height: _stock / (breaks[i + 1] - breaks[i]),
+            width: breaks[i + 1] - breaks[i]
+          });
+        }
+        resolve(true);
+      });
     },
 
     draw(provided_colors) {
@@ -1044,73 +1050,72 @@ export const display_discretization = (layer_name, field_name, nb_class, options
     if (v) redisplay.draw(options.colors);
   });
 
-  const deferred = Promise.pending();
-
-  container.querySelector('.btn_ok').onclick = function () {
-    breaks = breaks.map(i => +i);
-    const colors_map = [];
-    let no_data_color = null;
-    if (no_data > 0) {
-      no_data_color = document.getElementById('no_data_color').value;
-    }
-    for (let j = 0; j < db_data.length; ++j) {
-      const value = db_data[j][field_name];
-      // if (value !== null && value !== '' && !isNaN(+value)) {
-      if (isNumber(value)) {
-        const idx = serie.getClass(+value);
-        colors_map.push(color_array[idx]);
+  return new Promise((resolve, reject) => {
+    container.querySelector('.btn_ok').onclick = function () {
+      breaks = breaks.map(i => +i);
+      const colors_map = [];
+      let no_data_color = null;
+      if (no_data > 0) {
+        no_data_color = document.getElementById('no_data_color').value;
+      }
+      for (let j = 0; j < db_data.length; ++j) {
+        const value = db_data[j][field_name];
+        // if (value !== null && value !== '' && !isNaN(+value)) {
+        if (isNumber(value)) {
+          const idx = serie.getClass(+value);
+          colors_map.push(color_array[idx]);
+        } else {
+          colors_map.push(no_data_color);
+        }
+      }
+      const col_schema = [];
+      if (!d3.select('.color_params_left').node()) {
+        col_schema.push(document.querySelector('.color_params').value);
       } else {
-        colors_map.push(no_data_color);
+        col_schema.push(document.querySelector('.color_params_left').value);
+        if (document.querySelector('.central_color').querySelector('input').checked) {
+          col_schema.push(document.getElementById('central_color_val').value);
+        }
+        col_schema.push(document.querySelector('.color_params_right').value);
       }
-    }
-    const col_schema = [];
-    if (!d3.select('.color_params_left').node()) {
-      col_schema.push(document.querySelector('.color_params').value);
-    } else {
-      col_schema.push(document.querySelector('.color_params_left').value);
-      if (document.querySelector('.central_color').querySelector('input').checked) {
-        col_schema.push(document.getElementById('central_color_val').value);
-      }
-      col_schema.push(document.querySelector('.color_params_right').value);
-    }
-    deferred.resolve([
-      nb_class,
-      type,
-      breaks,
-      color_array,
-      colors_map,
-      col_schema,
-      no_data_color,
-      type === 'stddev_f' ? std_dev_params : undefined,
-    ]);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent();
-    if (!p) overlay_under_modal.hide();
-  };
+      resolve([
+        nb_class,
+        type,
+        breaks,
+        color_array,
+        colors_map,
+        col_schema,
+        no_data_color,
+        type === 'stddev_f' ? std_dev_params : undefined,
+      ]);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent();
+      if (!p) overlay_under_modal.hide();
+    };
 
-  const _onclose = () => {
-    deferred.resolve(false);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent();
-    if (!p) overlay_under_modal.hide();
-  };
-  container.querySelector('.btn_cancel').onclick = _onclose;
-  container.querySelector('#xclose').onclick = _onclose;
-  const helper_esc_key_twbs = (evt) => {
-    const _event = evt || window.event;
-    const isEscape = ('key' in _event)
-      ? (_event.key === 'Escape' || _event.key === 'Esc')
-      : (_event.keyCode === 27);
-    if (isEscape) {
-      _event.stopPropagation();
-      _onclose();
-    }
-  };
-  document.addEventListener('keydown', helper_esc_key_twbs);
-  overlay_under_modal.display();
-  return deferred.promise;
+    const _onclose = () => {
+      resolve(false);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent();
+      if (!p) overlay_under_modal.hide();
+    };
+    container.querySelector('.btn_cancel').onclick = _onclose;
+    container.querySelector('#xclose').onclick = _onclose;
+    const helper_esc_key_twbs = (evt) => {
+      const _event = evt || window.event;
+      const isEscape = ('key' in _event)
+        ? (_event.key === 'Escape' || _event.key === 'Esc')
+        : (_event.keyCode === 27);
+      if (isEscape) {
+        _event.stopPropagation();
+        _onclose();
+      }
+    };
+    document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display();
+  });
 };
 
 
@@ -1266,42 +1271,42 @@ export function display_categorical_box(data_layer, layer_name, field, cats) {
   }
 
   new Sortable(document.getElementById('sortable_typo_name'));
-
-  const deferred = Promise.pending();
   const container = document.getElementById('categorical_box');
-  const _onclose = () => {
-    deferred.resolve(false);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent();
-    if (!p) overlay_under_modal.hide();
-  };
 
-  container.querySelector('.btn_ok').onclick = () => {
-    const color_map = fetch_categorical_colors();
-    const colorByFeature = data_layer.map(ft => color_map.get(ft[field])[0]);
-    deferred.resolve([nb_class, color_map, colorByFeature]);
-    document.removeEventListener('keydown', helper_esc_key_twbs);
-    container.remove();
-    const p = reOpenParent();
-    if (!p) overlay_under_modal.hide();
-  };
+  return new Promise((resolve, reject) => {
+    const _onclose = () => {
+      resolve(false);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent();
+      if (!p) overlay_under_modal.hide();
+    };
 
-  container.querySelector('.btn_cancel').onclick = _onclose;
-  container.querySelector('#xclose').onclick = _onclose;
-  function helper_esc_key_twbs(evt) {
-    const _event = evt || window.event;
-    const isEscape = ('key' in _event)
-      ? (_event.key === 'Escape' || _event.key === 'Esc')
-      : (_event.keyCode === 27);
-    if (isEscape) {
-      _event.stopPropagation();
-      _onclose();
+    container.querySelector('.btn_ok').onclick = () => {
+      const color_map = fetch_categorical_colors();
+      const colorByFeature = data_layer.map(ft => color_map.get(ft[field])[0]);
+      resolve([nb_class, color_map, colorByFeature]);
+      document.removeEventListener('keydown', helper_esc_key_twbs);
+      container.remove();
+      const p = reOpenParent();
+      if (!p) overlay_under_modal.hide();
+    };
+
+    container.querySelector('.btn_cancel').onclick = _onclose;
+    container.querySelector('#xclose').onclick = _onclose;
+    function helper_esc_key_twbs(evt) {
+      const _event = evt || window.event;
+      const isEscape = ('key' in _event)
+        ? (_event.key === 'Escape' || _event.key === 'Esc')
+        : (_event.keyCode === 27);
+      if (isEscape) {
+        _event.stopPropagation();
+        _onclose();
+      }
     }
-  }
-  document.addEventListener('keydown', helper_esc_key_twbs);
-  overlay_under_modal.display();
-  return deferred.promise;
+    document.addEventListener('keydown', helper_esc_key_twbs);
+    overlay_under_modal.display();
+  });
 }
 
 function make_box_custom_palette(nb_class, existing_colors) {

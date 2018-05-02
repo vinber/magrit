@@ -166,7 +166,7 @@ export function export_compo_svg(output_name) {
 
 // Maybe PNGs should be rendered on server side in order to avoid limitations that
 //   could be encountered in the browser (as 'out of memory' error)
-export function export_compo_png(type = 'web', scalefactor = 1, output_name) {
+export function export_compo_png(scalefactor = 1, output_name) {
   global._app.waitingOverlay.display();
   output_name = check_output_name(output_name, 'png');
   const dimensions_foreign_obj = patchSvgForForeignObj();

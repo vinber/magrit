@@ -27,18 +27,15 @@ export const createWaitingOverlay = () => {
   <div class="rect4"></div>
   <div class="rect5"></div>
 </div>
-<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>`;
-  // TODO :
-  const btn = document.createElement('button');
-  btn.style.fontSize = '13px';
-  btn.style.background = '#4b9cdb';
-  btn.style.border = '1px solid #298cda';
-  btn.style.fontWeight = 'bold';
-  btn.className = 'button_st3 i18n';
-  btn.setAttribute('data-i18n', '[html]app_page.common.cancel');
-  bg.appendChild(btn);
-  document.body.appendChild(bg);
+<span class="i18n" style="z-index: 2;display: inline-block; margin-bottom: 20px;" data-i18n="[html]app_page.common.long_computation"></span><br>
+<button
+  data-i18n="[html]app_page.common.cancel"
+  style="font-size:13px;background:#4b9cdb;border:1px solid #298cda;font-weight:bold;"
+  class="button_st3 i18n">
+</button>`;
 
+  document.body.appendChild(bg);
+  const btn = bg.querySelector('button.button_st3');
   btn.onclick = () => {
     if (global._app.xhr_to_cancel) {
       global._app.xhr_to_cancel.abort();
@@ -414,7 +411,7 @@ export function get_display_name_on_layer_list(layer_name_to_add) {
 export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
   const listDisplayName = get_display_name_on_layer_list(layerName);
   const layerId = encodeId(layerName);
-  const layersListed = layer_list.node();
+  const layersListed = document.querySelector('#sortable.layer_list');
   const li = document.createElement('li');
   li.setAttribute('layer_name', layerName);
   if (typeLayer === 'result') {

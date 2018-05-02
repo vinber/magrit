@@ -79,7 +79,7 @@ function make_random_color(layer, symbol = 'path') {
     .attr('id', 'random_color_btn')
     .styles({ cursor: 'pointer', 'text-align': 'center' })
     .html(_tr('app_page.layer_style_popup.toggle_colors'))
-    .on('click', (d) => {
+    .on('click', () => {
       map.select(`#${_app.layer_to_id.get(layer)}`)
         .selectAll(symbol)
         .transition()
@@ -1259,7 +1259,7 @@ function createStyleBox(layer_name) {
       .html(_tr('app_page.layer_style_popup.choose_colors'))
       .on('click', () => {
         container.modal.hide();
-        const [cats, _] = prepare_categories_array(
+        const [cats, ] = prepare_categories_array(
           layer_name, rendered_field, data_manager.current_layers[layer_name].color_map);
         display_categorical_box(data_manager.result_data[layer_name], layer_name, rendered_field, cats)
           .then((confirmed) => {
@@ -2026,7 +2026,7 @@ function createStyleBox_ProbSymbol(layer_name) {
     prev_col_breaks = data_manager.current_layers[layer_name].break_val;
   } else if (fill_prev.random) {
     prev_random_colors = [];
-    selection.each(function (d) {
+    selection.each(function () {
       prev_random_colors.push(this.style.fill);
     });
   }
@@ -2040,12 +2040,12 @@ function createStyleBox_ProbSymbol(layer_name) {
         const lgd_prop_symb = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
         if (lgd_prop_symb) { redraw_legends_symbols(lgd_prop_symb); }
         if (type_symbol === 'circle') {
-          selection.each(function (d, i) {
+          selection.each(function (d) {
             d.properties.prop_value = this.getAttribute('r'); // eslint-disable-line no-param-reassign
             d.properties.color = rgb2hex(this.style.fill); // eslint-disable-line no-param-reassign
           });
         } else {
-          selection.each(function (d, i) {
+          selection.each(function (d) {
             d.properties.prop_value = this.getAttribute('height'); // eslint-disable-line no-param-reassign
             d.properties.color = rgb2hex(this.style.fill); // eslint-disable-line no-param-reassign
           });
@@ -2232,7 +2232,7 @@ function createStyleBox_ProbSymbol(layer_name) {
       .attr('class', 'button_disc')
       .html(_tr('app_page.layer_style_popup.choose_colors'))
       .on('click', () => {
-        const [cats, _] = prepare_categories_array(
+        const [cats, ] = prepare_categories_array(
           layer_name, field_color, data_manager.current_layers[layer_name].color_map);
         container.modal.hide();
         display_categorical_box(data_manager.result_data[layer_name], layer_name, field_color, cats)
@@ -2252,9 +2252,9 @@ function createStyleBox_ProbSymbol(layer_name) {
           });
       });
   } else {
-    const fields_all = type_col2(data_manager.result_data[layer_name]),
-      fields = getFieldsType('category', null, fields_all),
-      fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
+    // const fields_all = type_col2(data_manager.result_data[layer_name]),
+    //   fields = getFieldsType('category', null, fields_all);
+    const fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
 
     [
       [_tr('app_page.layer_style_popup.single_color'), 'single'],
@@ -2425,7 +2425,7 @@ export function make_style_box_indiv_label(label_node) {
     font: label_node.style.fontFamily,
     color: label_node.style.fill,
   };
-  const new_params = {};
+  // const new_params = {};
   if (current_options.color.startsWith('rgb')) {
     current_options.color = rgb2hex(current_options.color);
   }

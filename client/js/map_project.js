@@ -6,7 +6,7 @@ import {
   reset_user_values,
 } from './function';
 import {
-  add_simplified_land_layer, canvas_mod_size, handle_active_layer,
+  add_simplified_land_layer, handle_active_layer,
   handle_reload_TopoJSON, handle_title, remove_layer_cleanup,
   update_menu_dataset,
 } from './interface';
@@ -23,7 +23,7 @@ import {
   createLegend_symbol,
   createLegend_waffle,
 } from './legend';
-import { canvas_rotation_value, reproj_symbol_layer, rotate_global, zoom_without_redraw } from './map_ctrl';
+import { canvas_mod_size, canvas_rotation_value, reproj_symbol_layer, rotate_global, zoom_without_redraw } from './map_ctrl';
 import {
   addLastProjectionSelect, available_projections, getD3ProjFromProj4, handleClipPath,
 } from './projections';
@@ -549,7 +549,7 @@ const remove_all_layers = () => {
     _l[i].remove();
   }
   // Make sure there is no layers in the layer manager :
-  _l = layer_list.node().childNodes;
+  _l = document.querySelector('#sortable.layer_list').childNodes;
   _ll = _l.length;
   for (let i = _ll - 1; i > -1; i--) {
     _l[i].remove();
@@ -719,7 +719,7 @@ export function apply_user_preferences(json_pref) {
       }));
     }
   };
-  const restorePreviousPosWaffle = (layer_id, current_position, type_symbol) => {
+  const restorePreviousPosWaffle = (layer_id, current_position /*, type_symbol*/) => {
     map.select(`#${layer_id}`)
       .selectAll('g')
       .attr('transform', (d, i) => current_position[i]);
@@ -1289,3 +1289,16 @@ export function apply_user_preferences(json_pref) {
   }
 }
 /* eslint-enable no-loop-func */
+
+export const beforeUnloadWindow = (event) => {
+  get_map_project().then((jsonParams) => {
+    window.localStorage.removeItem('magrit_project');
+    if (jsonParams.length < 5500000) {
+      window.localStorage.setItem('magrit_project', jsonParams);
+    }
+  });
+  // eslint-disable-next-line no-param-reassign
+  event.returnValue = (global._app.targeted_layer_added
+    || Object.getOwnPropertyNames(data_manager.result_data).length > 0)
+      ? 'Confirm exit' : undefined;
+};

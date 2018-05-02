@@ -70,7 +70,7 @@ export const scaleBar = {
       this.style.cursor = 'pointer';
       self.under_rect.style('fill-opacity', 0);
     })
-    .on('contextmenu dblclick', (d) => {
+    .on('contextmenu dblclick', () => {
       d3.event.preventDefault();
       d3.event.stopPropagation();
       return scale_context_menu

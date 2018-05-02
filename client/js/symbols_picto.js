@@ -29,12 +29,17 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     for (let i = 0; i < nb_features; ++i) {
       const value = data_layer[i][field];
       const ret_val = categories.get(value);
-      if (ret_val) { categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]); } else { categories.set(value, [1, [i]]); }
+      if (ret_val) {
+        categories.set(value, [ret_val[0] + 1, [i].concat(ret_val[1])]);
+      } else {
+        categories.set(value, [1, [i]]);
+      }
     }
     categories.forEach((v, k) => { cats.push({ name: k, new_name: k, nb_elem: v[0], img: default_d_url }); });
   } else {
     categories.forEach((v, k) => { cats.push({ name: k, new_name: v[2], nb_elem: v[3], img: `url(${v[0]})` }); });
   }
+
   const nb_class = cats.length;
 
   const modal_box = make_dialog_container(
@@ -55,9 +60,13 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     })
     .attr('id', 'typo_categories')
     .selectAll('li')
-    .data(cats).enter()
+    .data(cats)
+    .enter()
     .append('li')
-    .style('margin', 'auto')
+    .styles({
+      margin: '1px',
+      display: 'inline-flex',
+    })
     .attr('class', 'typo_class')
     .attr('id', (_, i) => ['line', i].join('_'));
 
@@ -69,11 +78,9 @@ export const display_box_symbol_typo = function (layer, field, categories) {
   newbox.selectAll('.typo_class')
     .append('input')
     .styles({
-      width: '100px',
+      width: '200px',
       height: 'auto',
-      display: 'inline-block',
       'vertical-align': 'middle',
-      'margin-right': '7.5px',
     })
     .attrs(d => ({ class: 'typo_name', id: d.name }))
     .property('value', d => d.new_name);
@@ -85,7 +92,7 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     .styles({
       width: '32px',
       height: '32px',
-      margin: '0px 1px 0px 1px',
+      margin: 'auto auto auto 10px',
       'border-radius': '10%',
       border: '1px dashed blue',
       display: 'inline-block',
@@ -104,19 +111,20 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     });
 
   newbox.selectAll('.typo_class')
-    .insert('span')
-    .html(d => _tr('app_page.symbol_typo_box.count_feature', { nb_features: d.nb_elem }));
-
-  newbox.selectAll('.typo_class')
     .insert('input')
     .attrs({ type: 'number', id: 'symbol_size' })
-    .styles({ width: '50px', display: 'inline-block' })
+    .styles({ width: '50px', 'margin-left': '25px' })
     .property('value', 50);
 
   newbox.selectAll('.typo_class')
     .insert('span')
-    .style('display', 'inline-block')
+    .style('margin', 'auto auto auto 5px')
     .html(' px');
+
+  newbox.selectAll('.typo_class')
+    .insert('span')
+    .style('margin', 'auto auto auto 25px')
+    .html(d => _tr('app_page.symbol_typo_box.count_feature', { count: d.nb_elem }));
 
   new Sortable(document.getElementById('typo_categories'));
 
