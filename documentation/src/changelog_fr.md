@@ -30,167 +30,169 @@
 
 - Also allow to create proportionnal symbols map when analyzing a layer of points.
 
-- Allow to use rounded corners on rectangles available as layout features.
+- Permet d'utiliser des angles arrondis pour les rectangles utilisés en éléments d'habillage.
 
 - Slightly change the behavior when a result layer is added by not fitting anymore the viewport on it.
 
 - Fix the "fit-zoom" behavior when using Armadillo projection and a layer at world scale.
 
-- Change the stewart implementation to consume less memory (smoomapy package is dropped temporarily).
+- Changement de l'implémentation utilisée pour le calcul des potentiels, de manière à utiliser moins de mémoire sur le serveur.
 
 
 #### 0.7.1 (2018-03-09)
 
-- Fix typos in documentation.
+- Correction d'erreurs dans la documentation.
 
-- Add a new option for proportionnal symbols legends, allowing to display a line between the symbol and the value.
+- Nouveauté : ajout d'une option de personnalisation pour la légende des symboles proportionnels, permettant d'afficher une ligne entre le symbole et la valeur.
 
-- Enable the (still experimental) auto-alignment feature for text annotation.
+- Active également l'option d'aide à l'alignement des éléments d'habillage pour les annotations de texte.
 
 
 #### 0.7.0 (2018-03-05)
 
-- New: allow to analyze a layer of points by two means : through a regular grid or through an existing layer of polygons. Informations computed are either the density of items (weighted or not) in each cell/polygon or a statistical summary (mean or standard deviation) about the items belonging to each cell/polygon.
+- Nouveauté : permet l'analyse d'un semi de points par 2 moyens : via une grille régulière ou un maillage existant. Informations computed are either the density of items (weighted or not) in each cell/polygon or a statistical summary (mean or standard deviation) about the items belonging to each cell/polygon.
 
 
 #### 0.6.7 (2018-02-01)
 
-- Fix links creation on some cases when using integers as identifiers.
+- Corrige un bug avec la création de carte de liens lorsque l'identifiant est un nombre entier.
 
 
 #### 0.6.6 (2018-01-19)
 
-- Fix/improve some styling options in links menu and in links classification box.
+- Améliore certaines options de style lors de la personnalisation des cartes de liens.
 
-- Fix error occuring on labels creation when using a target layer with empty geometries and warn the user if it's the case (as for the other representations).
+- Corrige un bug se produisant lors de la création de labels lorsque la couche cible contient des géométries nulles (et prévient l'utilisateur si c'est le cas, comme sur les autres type de représentations).
 
 
 #### 0.6.5 (2018-01-12)
 
-- Be more tolerant with in the regular expression used to filter the name of exported maps (by allowing dot, dash and parantheses for example).
+- Change la manière dont sont filtrés les noms utilisés lors de l'export d'une carte (en autorisant maintenant des caractères comme point, tiret ou parenthèses).
 
-- Fix the displaying of the "waiting" overlay when loading a TopoJSON layer.
+- Corrige bug avec l'affiche du message d'attente (ne s'affichait pas lors du chargement d'un fichier TopoJSON).
 
 - Fix the displaying of the "horizontal layout" option for legend when used on a categorical choropleth map + rounding precision for "horizontal layout" legend and "proportionnal symbols" legend.
 
-- Fix bug when changing layer name when using particularily long names.
+- Corrige un bug survenant lors du changement de nom d'une couche lorsque celle-ci présentait un nom particulièrement long.
 
-- Compute jenks natural breaks in a web worker if the dataset contains more than 7500 features.
+- Le calcul de la discrétisation avec l'algo. de Jenks se passe désormais dans un webworker quand la couche contient plus de 7500 entités.
 
 
 #### 0.6.4 (2017-12-22)
 
-- Slightly change how field type is determined.
+- Change légèrement la manière dont le type des champs est déterminé.
 
-- Try to improve the 'active'/'pushed' effect on buttons located on the bottom-right of the map.
+- Améliore l'effet "enfoncé/activé" des boutons situés en bas à gauche de la carte.
 
-- Try to be lighter on the use of memory (by reducing the TTL of redis entries and by not saving (for later reuse) intermediate results anymore when computing potentials).
+- Réduit légèrement la consommation de mémoire coté serveur (en réduisant le TTL des entrées dans Redis et en ne sauvegardant plus, pour une réutilisation plus rapide ensuite, les résultats intermédiaires lors du calcul de potentiels).
 
-- Explicitly set locale and language parameters on docker image and make a better sanitizing of layer names.
+- Améliore le nettoyage des noms de champs dans les couches fournis par l'utilisateur.
+
+- Défini de manière explicite les paramètres de locale et de langage lors de la création de l'image Docker.
 
 
 #### 0.6.3 (2017-12-14)
 
-- Fix encoding issue of some sample basemaps (introduced in 0.6.1).
+- Corrige un problème d'encodage avec certains jeux de données d'exemple (bug introduit dans la version 0.6.1).
 
-- Fix some errors that appeared when loading some datasets (especially while converting a csv to geojson when some cells of the coordinate columns contains weird stuff).
+- Corrige bug survenant lors du chargement de certains jeux de données tabulaires contenant des coordonnées (lorsque les champs contenant les coordonnées contiennent aussi d'autres valeurs).
 
-- Fix error with line height on text annotation with custom font when reloading a project file.
+- Corrige un bug avec la hauteur de ligne dans les annotations de texte lors du rechargement d'un fichier projet.
 
 
 #### 0.6.2 (2017-12-12)
 
-- Fix bug when importing shapefiles (due to wrong hash computation / was introduced in 0.6.1).
+- Corrige un bug lors de l'ajout de shapefile (en raison d'une erreur avec la fonction de hash utilisée, bug introduit dans la version 0.6.1).
 
 
 #### 0.6.1 (2017-12-11)
 
-- New: add a new kind of layout for legends in use for choropleth maps.
+- Nouveauté : ajout d'une nouvelle disposition (horizontale) pour les légendes des cartes choroplèthes.
 
-- New: allow to create labels according to the values of a given field (such as creating "Name" labels only for cities with larger "Population" than xxx)
+- Nouveauté : autorise à créer des labels conditionnés par la valeur prise par un champ donné (permettant par exemple de créer une couche de labels sur le champs "nom" d'une couche, lorsque les valeurs du champs "population" sont supérieures à xxx, etc.)
 
-- Fix some bugs occuring while loading user files and improve the support for tabular file containing coordinates.
+- Correction de bugs survenant lors de l'ajout de couche par l'utilisateur et améliore la détection des fichiers tabulaire contenant des coordonnées.
 
-- Fix some typos in the interface and improve the displaying of the projection name when the projection is coming from a proj.4 string.
+- Correction de quelques erreurs dans l'interface et amélioration de l'affichage du nom des projections lorsque celles-ci ont viennent d'une chaîne de caractère proj.4.
 
-- Slightly improve support for Edge and Safari.
+- Améliore légèrement le support de Edge et Safari.
 
 
 #### 0.6.0 (2017-11-29)
 
-- New: ask the user if he wants to remove the un-joined features from his basemap (after a partial join).
+- Nouveauté : demande à l'utilisateur s'il veut supprimer les entités non-jointes de son fond de carte après une jointure partielle.
 
-- New: allow to make proportionnal links (ie. without data classification, only graduated links were available until now).
+- Nouveauté : permet de créer également des liens proportionnels (ie. sans discrétisation).
 
-- New: add some new basemaps for France.
+- Nouveauté : ajout de nouveaux fonds de carte pour la France.
 
 
 #### 0.5.7 (2017-11-08)
 
-- Fix minors typo in french translation.
+- Corrige des erreurs dans la traduction française de l'interface.
 
-- Fix bug preventing to modify the number of class when using a diverging classification scheme.
+- Corrige un bug empêchant de modifier le nombre de classe lors de l'utilisation d'une palette de couleur de divergente.
 
 
 #### 0.5.6 (2017-10-31)
 
-- Fix bug with projection rotation properties not applied when reloading a project file.
+- Corrige bug du paramètre de rotation des projections qui n'était pas conservé lors du rechargement d'un fichier projet.
 
 
 #### 0.5.5 (2017-10-12)
 
-- Fix bug with pictogram displaying in the appropriate box.
+- Corrige un bug dans l'affichage des pictogrammes dans la boite permettant de les sélectionner.
 
 
 #### 0.5.4 (2017-10-01)
 
-- Change the default font used in text/tspan SVG elements (in favor of verdana). Should fix (for real this time?) the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
+- Changement de la police utilisée par défaut dans les éléments SVG text ou tspan (en faveur du Verdana), afin de corriger un bug se produisant lors de l'ouverture (notamment dans Adobe Illustrator v16.0 CS6 sur MacOSX) d'un SVG généré par Magrit.
 
-- Disable the ability to use sphere and graticule with lambert conic conformal projection (the generated path, which is currently not clipped when using Proj4 projections, could be very heavy due to the conical nature of the projection).
+- Désactive la possibilité d'ajouter une sphère et le graticule lors de l'utilisation d'une projection Lambert Conique Conforme (le chemin SVG généré n'est pas découpé (avec attribut *clip-path*) lors de l'utilisation de certains projections et ce chemin peut s'avérer très lourd en raison de la nature de la projection).
 
-- Allow to cancel the ongoing addition of a layout item by pressing Esc (and so inform the user about that in the notification).
+- Nouveauté : autorise l'annulation de l'ajout d'un élément d'habillage en cours en pressant la touche "Échap".
 
-- Improve the legend for proportionnal symbols (only for "single color" ones) by also using the stroke color of the result layer in the legend.
+- Améliore la légende des symboles proportionnels en utilisant également le couleur de fond et la couleur de bordure dans la légendre (seulement lors de l'utilisation d'une couleur unique).
 
-- Add "Bertin 1953" projection to the list of available projections.
+- Nouveauté : ajout de la projection "Bertin 1953" parmi les projections disponibles.
 
 
 #### 0.5.3 (2017-09-22)
 
-- Change the default font used in text/tspan SVG elements (in favor of Arial). Should fix the bug occuring while trying to open the resulting SVG file with some software on systems where the font in use is not available (notably Adobe Illustrator v16.0 CS6 on MacOSX).
+- Changement de la police utilisée par défaut dans les éléments SVG text ou tspan (en faveur du Arial), afin de corriger un bug se produisant lors de l'ouverture (notamment dans Adobe Illustrator v16.0 CS6 sur MacOSX) d'un SVG généré par Magrit.
 
 
 #### 0.5.2 (2017-09-13)
 
-- Fix graticule style edition.
+- Corrige un bug avec la modification du style du graticule.
 
 
 #### 0.5.1 (2017-09-08)
 
-- Improve how rectangles are drawn and edited.
+- Améliore la manière dont les rectangles sont dessinés/édités.
 
-- Fix the tooltip displaying proj.4 string.
+- Correction d'un bug sur le tooltip affichant la chaîne de caractère proj.4 des projections.
 
-- Allow to select projection from EPSG code and display it's name in the menu.
+- Permet de sélectionner les projections à partir de leur code EPSG et affiche le nom officiel de la projection dans le menu.
 
-- Allow to reuse the colors and labels from an existing categorical layer.
+- Autorise à réutiliser les couleurs et les labels d'une représentation catégorielle existante.
 
-- Change the layout of the box displaying the table.
+- Modification de la disposition de la boite permettant d'afficher le tableau de données.
 
 
 #### 0.5.0 (2017-08-24)
 
-- Allow to create, use (and re-use) custom palette for choropleth maps.
+- Nouveauté : autorise la création et l'utilisation (ou réutilisation) de palettes de couleurs personnalisées pour les cartes choroplèthes.
 
-- Allow to hide/display the head of arrows.
+- Nouveauté : autorise à afficher/masquer la tête des flèches.
 
-- Notable change: some old project-files may no longer be loaded correctly (the impact is really quite limited, but precisely, the overlay order of layout features could be incorrect when opening these old project-files).
+- Changement notable : certains anciens fichiers-projets pourraient ne plus être chargés à l'identique (ceci étant limité à l'ordre d'affichage des éléments d'habillage qui risque de ne pas être respecté).
 
-- Fix error with legend customization box after changing the layer name.
+- Corrige une erreur avec la personnalisation de la légende (survenant après le changement de nom d'une couche).
 
-- Re-allow to display the table of the joined dataset and improve the table layout.
+- Autorise de nouveau à afficher la table correspondant au jeu de données externe + améliore l'affichage des tables.
 
-- Improve handling of fields containing mixed numerical and not numerical values for some representations.
+- Amélioration (pour certaines représentations) de la gestion des champs contenant des valeurs numériques et des valeurs non-numériques.
 
 
 #### 0.4.1 (2017-08-14)
