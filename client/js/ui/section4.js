@@ -2,8 +2,7 @@ import { fill_export_png_options } from './section5';
 import { get_nb_decimals, round_value } from './../helpers_calc';
 import { Mround } from './../helpers_math';
 import { handle_title, handle_title_properties } from './../interface';
-import { move_legends } from './../legend';
-import { handle_bg_color, rotate_global, zoom_without_redraw } from './../map_ctrl';
+import { canvas_mod_size, handle_bg_color, rotate_global, zoom_without_redraw } from './../map_ctrl';
 import { add_layout_feature } from './../layout_features/helpers';
 import { sys_run_button } from './../ui/buttons';
 
@@ -386,47 +385,4 @@ export function makeSection4() {
       id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.sphere',
     })
     .on('click', () => add_layout_feature('sphere'));
-}
-
-/** Function triggered by the change of map/canvas size
-* @param {Array} shape - An Array of two elements : [width, height] to use;
-*                generally only used once at the time so `shape` values
-*                are like [null, 750] or [800, null]
-*                but also works with the 2 params together like [800, 750])
-*/
-function canvas_mod_size(shape) {
-  if (shape[0]) {
-    w = +shape[0];
-    map.attr('width', w)
-      .call(zoom_without_redraw);
-    map_div.style('width', `${w}px`);
-    if (w + 360 + 33 < window.innerWidth) {
-      document.querySelector('.light-menu').style.right = '-33px';
-    } else {
-      document.querySelector('.light-menu').style.right = '0px';
-    }
-  }
-  if (shape[1]) {
-    h = +shape[1];
-    map.attr('height', h)
-      .call(zoom_without_redraw);
-    map_div.style('height', `${h}px`);
-  }
-  move_legends();
-
-  // Lets update the corresponding fields in the export section :
-  let ratio;
-  const format = document.getElementById('select_png_format').value;
-  if (format === 'web') {
-    ratio = 1;
-  } else if (format === 'user_defined') {
-    ratio = 118.11;
-  } else {
-    return;
-  }
-  // const zoom_params = svg_map.__zoom;
-  document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
-  document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
-  document.getElementById('input-width').value = w;
-  document.getElementById('input-height').value = h;
 }

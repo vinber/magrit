@@ -1284,7 +1284,7 @@ const fields_Typo = {
       uo_layer_name = section2.select('#Typo_output_name');
 
     const prepare_colors = (field) => {
-      const [cats, col_map] = prepare_categories_array(layer, field, null);
+      const [_, col_map] = prepare_categories_array(layer, field, null);
       const nb_class = col_map.size;
       const colorByFeature = data_manager.user_data[layer].map(ft => col_map.get(ft[field])[0]);
       self.rendering_params[field] = {
@@ -1315,12 +1315,11 @@ const fields_Typo = {
     }
 
     btn_typo_class.on('click', () => {
-      const selected_field = field_selec.node().value,
-        nb_features = data_manager.current_layers[layer].n_features;
+      const selected_field = field_selec.node().value;
       const col_map = self.rendering_params[selected_field]
         ? self.rendering_params[selected_field].color_map
         : undefined;
-      const [cats, c_map] = prepare_categories_array(layer, selected_field, col_map);
+      const [cats, ] = prepare_categories_array(layer, selected_field, col_map);
       if (cats.length > 15) {
         swal({
           title: '',
@@ -2226,10 +2225,10 @@ export function make_prop_line(rendering_params, geojson_line_layer) {
     if (rendering_params.break_val !== undefined && rendering_params.fill_color.two) {
       col1 = rendering_params.fill_color.two[0];
       col2 = rendering_params.fill_color.two[1];
-      get_color = (val, ix) => (val > rendering_params.break_val ? col2 : col1);
+      get_color = (val) => (val > rendering_params.break_val ? col2 : col1);
     } else if (rendering_params.fill_color instanceof Array
                 && rendering_params.fill_color.length === nb_features) {
-      get_color = (val, ix) => rendering_params.fill_color[ix];
+      get_color = (_, ix) => rendering_params.fill_color[ix];
     } else {
       get_color = () => rendering_params.fill_color;
     }
@@ -2367,10 +2366,10 @@ export function make_prop_symbols(rendering_params, _pt_layer) {
     if (rendering_params.break_val !== undefined && rendering_params.fill_color.two) {
       col1 = rendering_params.fill_color.two[0];
       col2 = rendering_params.fill_color.two[1];
-      get_color = (val, ix) => (val > rendering_params.break_val ? col2 : col1);
+      get_color = (val) => (val > rendering_params.break_val ? col2 : col1);
     } else if (rendering_params.fill_color instanceof Array
         && rendering_params.fill_color.length === nb_features) {
-      get_color = (val, ix) => rendering_params.fill_color[ix];
+      get_color = (_, ix) => rendering_params.fill_color[ix];
     } else {
       get_color = () => rendering_params.fill_color;
     }
@@ -2582,7 +2581,7 @@ function render_mini_chart_serie(values, parent, max_h, nb_bins) {
     x += barwidth;
   }
   canvas.setAttribute('tooltip-info', make_mini_summary(class_count));
-  const _ = new Tooltip(canvas, {
+  new Tooltip(canvas, {
     dataAttr: 'tooltip-info',
     animation: 'slideNfade',
     duration: 50,
@@ -3004,7 +3003,7 @@ const fields_Discont = {
   fill (layer) {
     if (!layer) return;
     const fields_num = getFieldsType('stock', layer).concat(getFieldsType('ratio', layer)),
-      fields_id = getFieldsType('id', layer),
+      // fields_id = getFieldsType('id', layer),
       select_type_discont = section2.select('#kind_Discont'),
       field_discont = section2.select('#field_Discont'),
       // field_id = section2.select("#field_id_Discont"),
@@ -3926,7 +3925,7 @@ function render_GriddedFromPts(params, new_user_layer_name) {
       display_error_during_computation(message);
       return;
     }
-  } else if (!params.polygon_layer in data_manager.current_layers) {
+  } else if (!(params.polygon_layer in data_manager.current_layers)) {
     display_error_during_computation('Unable to find the layer');
     return;
   }

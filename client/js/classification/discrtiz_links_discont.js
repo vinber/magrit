@@ -325,7 +325,8 @@ export const display_discretization_links_discont = function (layer_name, field_
   const formatCount = d3.format(precisionAxis);
 
   const discretization_panel = newBox.append('div')
-    .attr('id', 'discretization_panel')
+    .attr('id', 'discretization_panel');
+  const discretization_choice = discretization_panel
     .insert('p')
     .html('Type ')
     .insert('select')
@@ -348,13 +349,13 @@ export const display_discretization_links_discont = function (layer_name, field_
     });
 
   available_functions.forEach((func) => {
-    discretization_panel.append('option').text(func[0]).attr('value', func[1]);
+    discretization_choice.append('option').text(func[0]).attr('value', func[1]);
   });
 
   const ref_histo_box = newBox.append('div').attr('id', 'ref_histo_box');
   ref_histo_box.append('div').attr('id', 'inner_ref_histo_box');
 
-  discretization_panel.node().value = type;
+  discretization_choice.node().value = type;
 
   make_summary();
 
@@ -418,10 +419,10 @@ export const display_discretization_links_discont = function (layer_name, field_
     })
     .property('value', nb_class)
     .on('change', function () {
-      type = discretization_panel.node().value;
+      type = discretization_choice.node().value;
       if (type === 'user_defined') {
         type = 'equal_interval';
-        discretization_panel.node().value = 'equal_interval';
+        discretization_choice.node().value = 'equal_interval';
       }
       if (type === 'Q6') {
         this.value = 6;
@@ -493,7 +494,7 @@ export const display_discretization_links_discont = function (layer_name, field_
     .append('div')
     .attr('id', 'sizes_div');
   const callback = function () {
-    discretization_panel.node().value = type;
+    discretization_choice.node().value = type;
     update_breaks(true);
     redisplay.compute();
     redisplay.draw();

@@ -1,6 +1,9 @@
 import alertify from 'alertifyjs';
 import { get_nb_decimals, round_value } from './helpers_calc';
-import { createLegend_symbol, createLegend_discont_links } from './legend';
+import { Mround } from './helpers_math';
+import {
+  createLegend_symbol, createLegend_discont_links, move_legends,
+} from './legend';
 import { scaleBar } from './layout_features/scalebar';
 import { northArrow } from './layout_features/north_arrow';
 
@@ -343,4 +346,47 @@ export function zoomClick() {
 // (ie the parent "svg" element on the top of which group of elements have been added)
 export function handle_bg_color(color) {
   map.style('background-color', color);
+}
+
+/** Function triggered by the change of map/canvas size
+* @param {Array} shape - An Array of two elements : [width, height] to use;
+*                generally only used once at the time so `shape` values
+*                are like [null, 750] or [800, null]
+*                but also works with the 2 params together like [800, 750])
+*/
+export function canvas_mod_size(shape) {
+  if (shape[0]) {
+    w = +shape[0];
+    map.attr('width', w)
+      .call(zoom_without_redraw);
+    map_div.style('width', `${w}px`);
+    if (w + 360 + 33 < window.innerWidth) {
+      document.querySelector('.light-menu').style.right = '-33px';
+    } else {
+      document.querySelector('.light-menu').style.right = '0px';
+    }
+  }
+  if (shape[1]) {
+    h = +shape[1];
+    map.attr('height', h)
+      .call(zoom_without_redraw);
+    map_div.style('height', `${h}px`);
+  }
+  move_legends();
+
+  // Lets update the corresponding fields in the export section :
+  let ratio;
+  const format = document.getElementById('select_png_format').value;
+  if (format === 'web') {
+    ratio = 1;
+  } else if (format === 'user_defined') {
+    ratio = 118.11;
+  } else {
+    return;
+  }
+  // const zoom_params = svg_map.__zoom;
+  document.getElementById('export_png_width').value = Mround(w * ratio * 10) / 10;
+  document.getElementById('export_png_height').value = Mround(h * ratio * 10) / 10;
+  document.getElementById('input-width').value = w;
+  document.getElementById('input-height').value = h;
 }
