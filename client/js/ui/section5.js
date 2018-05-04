@@ -1,10 +1,8 @@
 import { Mround } from './../helpers_math';
-import {
-  export_compo_png, export_compo_svg, export_layer_geo,
-} from './../map_export';
+import { export_compo_png, export_compo_svg, export_layer_geo } from './../map_export';
 
 
-export function makeSection5 () {
+export function makeSection5() {
   const section5b = d3.select('#section5');
   const dv5b = section5b.append('div');
 
@@ -100,7 +98,9 @@ export function makeSection5 () {
 
   exp_a.append('input')
     .style('width', '60px')
-    .attrs({ id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1 })
+    .attrs({
+      id: 'export_png_width', class: 'm_elem_right', type: 'number', step: 0.1,
+    })
     .property('value', w)
     .on('change', function () {
       const ratio = h / w,
@@ -118,7 +118,9 @@ export function makeSection5 () {
 
   exp_b.append('input')
     .style('width', '60px')
-    .attrs({ id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1 })
+    .attrs({
+      id: 'export_png_height', class: 'm_elem_right', type: 'number', step: 0.1,
+    })
     .property('value', h)
     .on('change', function () {
       const ratio = h / w,
@@ -164,7 +166,9 @@ export function makeSection5 () {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
   const geo_c = export_geo_options.append('p').style('margin', 'auto');
   const selec_projection = geo_c.insert('select')
-    .styles({ position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px' })
+    .styles({
+      position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px',
+    })
     .attrs({ id: 'projection_to_use', disabled: true, class: 'i18n' });
 
   const proj4_input = export_geo_options.append('p')
@@ -178,10 +182,19 @@ export function makeSection5 () {
       float: 'right',
       'margin-right': '5px',
       'font-size': '10.5px',
-    })
-    .on('keyup', function () {
-      ok_button.disabled = this.value.length === 0 ? 'true' : '';
     });
+
+  const ok_button = dv5b.append('p').style('float', 'left')
+    .append('button')
+    .attrs({
+      id: 'export_button_section5b',
+      class: 'i18n button_st4',
+      'data-i18n': '[html]app_page.section5b.export_button',
+    });
+
+  proj4_input.on('keyup', function () {
+    ok_button.disabled = this.value.length === 0 ? 'true' : '';
+  });
 
   ['GeoJSON', 'TopoJSON', 'ESRI Shapefile', 'GML', 'KML'].forEach((name) => {
     selec_type.append('option').attr('value', name).text(name);
@@ -224,37 +237,30 @@ export function makeSection5 () {
     }
   });
 
-  const ok_button = dv5b.append('p').style('float', 'left')
-    .append('button')
-    .attrs({
-      id: 'export_button_section5b',
-      class: 'i18n button_st4',
-      'data-i18n': '[html]app_page.section5b.export_button',
-    })
-    .on('click', () => {
-      const type_exp = document.getElementById('select_export_type').value;
-      const exp_name = document.getElementById('export_filename').value;
+  ok_button.on('click', () => {
+    const type_exp = document.getElementById('select_export_type').value;
+    const exp_name = document.getElementById('export_filename').value;
 
-      if (type_exp === 'svg') {
-        export_compo_svg(exp_name);
-      } else if (type_exp === 'geo') {
-        const layer_name = document.getElementById('layer_to_export').value,
-          type = document.getElementById('datatype_to_use').value,
-          proj = document.getElementById('projection_to_use').value,
-          proj4value = document.getElementById('proj4str').value;
-        export_layer_geo(layer_name, type, proj, proj4value);
-      } else if (type_exp === 'png') {
-        const exp_format = document.getElementById('select_png_format').value;
-        const exp_height = +document.getElementById('export_png_height').value;
-        let ratio;
-        if (exp_format === 'web') {
-          ratio = exp_height / +h;
-        } else {
-          ratio = (exp_height * 118.11) / +h;
-        }
-        export_compo_png(ratio, exp_name);
+    if (type_exp === 'svg') {
+      export_compo_svg(exp_name);
+    } else if (type_exp === 'geo') {
+      const layer_name = document.getElementById('layer_to_export').value,
+        type = document.getElementById('datatype_to_use').value,
+        proj = document.getElementById('projection_to_use').value,
+        proj4value = document.getElementById('proj4str').value;
+      export_layer_geo(layer_name, type, proj, proj4value);
+    } else if (type_exp === 'png') {
+      const exp_format = document.getElementById('select_png_format').value;
+      const exp_height = +document.getElementById('export_png_height').value;
+      let ratio;
+      if (exp_format === 'web') {
+        ratio = exp_height / +h;
+      } else {
+        ratio = (exp_height * 118.11) / +h;
       }
-    });
+      export_compo_png(ratio, exp_name);
+    }
+  });
 }
 
 export function fill_export_png_options(displayed_ratio) {

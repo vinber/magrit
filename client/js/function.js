@@ -1,6 +1,7 @@
 import ContextMenu from './context-menu';
 import { getColorBrewerArray, ColorsSelected, randomColor } from './colors_helpers';
-import { display_categorical_box, display_discretization } from './classification/discretization_panel';
+import { display_discretization } from './classification/discretization_panel';
+import { display_categorical_box } from './classification/categorical_panel';
 import { getOptNbClass, discretize_to_colors, discretize_to_size } from './classification/common';
 import {
   cloneObj,
@@ -8,7 +9,7 @@ import {
   display_error_during_computation,
   drag_elem_geo, drag_elem_geo2,
   drag_waffle, getFieldsType,
-  get_other_layer_names, isNumber,
+  get_other_layer_names,
   send_layer_server,
   setSelected, xhrequest,
 } from './helpers';
@@ -462,7 +463,7 @@ export function fetch_min_max_table_value(parent_id) {
   const mins = Array.prototype.map.call(parent_node.querySelectorAll('.min_class'), el => +el.value),
     maxs = Array.prototype.map.call(parent_node.querySelectorAll('.max_class'), el => +el.value),
     sizes = Array.prototype.map.call(parent_node.querySelectorAll('.size_class'), el => +el.value),
-    nb_class = mins.length,
+    // nb_class = mins.length,
     comp_fun = (a, b) => a - b;
 
   const r_mins = [].concat(mins);
@@ -825,7 +826,7 @@ export function render_twostocks_waffle(layer, rendering_params) {
   create_li_layer_elem(layer_to_add, nb_features, ['Point', 'waffle'], 'result');
 }
 
-function fillMenu_PropSymbolChoro(layer) {
+function fillMenu_PropSymbolChoro() {
   const dv2 = make_template_functionnality(section2);
 
   const a = dv2.append('p').attr('class', 'params_section2');
@@ -1284,7 +1285,7 @@ const fields_Typo = {
       uo_layer_name = section2.select('#Typo_output_name');
 
     const prepare_colors = (field) => {
-      const [_, col_map] = prepare_categories_array(layer, field, null);
+      const [, col_map] = prepare_categories_array(layer, field, null);
       const nb_class = col_map.size;
       const colorByFeature = data_manager.user_data[layer].map(ft => col_map.get(ft[field])[0]);
       self.rendering_params[field] = {
@@ -2398,9 +2399,11 @@ export function make_prop_symbols(rendering_params, _pt_layer) {
           cy: path.centroid(d)[1],
         };
       })
-      .style('fill', d => d.properties.color)
-      .style('stroke', 'black')
-      .style('stroke-width', 1 / zs)
+      .styles(d => ({
+        fill: d.properties.color,
+        stroke: 'black',
+        'stroke-width': 1 / zs,
+      }))
       .call(drag_elem_geo2);
   } else if (symbol_type === 'rect') {
     map.insert('g', '.legend')
@@ -2420,9 +2423,11 @@ export function make_prop_symbols(rendering_params, _pt_layer) {
           y: path.centroid(d)[1] - size / 2,
         };
       })
-      .style('fill', d => d.properties.color)
-      .style('stroke', 'black')
-      .style('stroke-width', 1 / zs)
+      .styles(d => ({
+        fill: d.properties.color,
+        stroke: 'black',
+        'stroke-width': 1 / zs,
+      }))
       .call(drag_elem_geo2);
   }
 
@@ -2478,12 +2483,19 @@ export function render_categorical(layer, rendering_params) {
     .style('stroke-width', `${0.75 / d3.zoomTransform(svg_map).k}px`);
   if (data_manager.current_layers[layer_name].type === 'Line') {
     layer_to_render.selectAll('path')
-      .styles({ fill: 'transparent', 'stroke-opacity': 1 })
-      .style('stroke', (_, i) => colorsByFeature[i]);
+      .styles((_, i) => ({
+        fill: 'transparent',
+        stroke: colorsByFeature[i],
+        'stroke-opacity': 1,
+      }));
   } else {
     layer_to_render.selectAll('path')
-      .style('fill', (_, i) => colorsByFeature[i])
-      .styles({ 'fill-opacity': 0.9, 'stroke-opacity': 0.9, stroke: '#000' });
+      .styles((_, i) => ({
+        fill: colorsByFeature[i],
+        'fill-opacity': 0.9,
+        stroke: '#000',
+        'stroke-opacity': 0.9,
+      }));
   }
   data_manager.current_layers[layer_name].renderer = rendering_params.renderer;
   data_manager.current_layers[layer_name].rendered_field = field;
@@ -2700,6 +2712,19 @@ export function prepare_categories_array(layer_name, selected_field, col_map) {
   return [cats, col_map];
 }
 
+const askManyFeaturesCategorical = () => {
+  return swal({
+    title: '',
+    text: _tr('app_page.common.error_too_many_features_color'),
+    type: 'warning',
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonColor: '#DD6B55',
+    confirmButtonText: `${_tr('app_page.common.valid')}!`,
+    cancelButtonText: _tr('app_page.common.cancel'),
+  });
+}
+
 const fields_PropSymbolTypo = {
   fill (layer) {
     if (!layer) return;
@@ -2796,34 +2821,7 @@ const fields_PropSymbolTypo = {
         : undefined;
       const [cats, ] = prepare_categories_array(layer, selected_field, col_map);
 
-      if (cats.length > 15) {
-        swal({
-          title: '',
-          text: _tr('app_page.common.error_too_many_features_color'),
-          type: 'warning',
-          showCancelButton: true,
-          allowOutsideClick: false,
-          confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${_tr('app_page.common.valid')}!`,
-          cancelButtonText: _tr('app_page.common.cancel'),
-        }).then(() => {
-          display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
-            .then((confirmed) => {
-              if (confirmed) {
-                // ok_button.attr("disabled", null);
-                self.rendering_params[selected_field] = {
-                  nb_class: confirmed[0],
-                  color_map: confirmed[1],
-                  colorByFeature: confirmed[2],
-                  renderer: 'Categorical',
-                  rendered_field: selected_field,
-                  new_name: new_layer_name,
-                  skip_alert: true,
-                };
-              }
-            });
-        }, () => null);
-      } else {
+      const fun = () => {
         display_categorical_box(data_manager.user_data[layer], layer, selected_field, cats)
           .then((confirmed) => {
             if (confirmed) {
@@ -2839,6 +2837,11 @@ const fields_PropSymbolTypo = {
               };
             }
           });
+      };
+      if (cats.length > 15) {
+        askManyFeaturesCategorical().then(fun, () => null);
+      } else {
+        fun();
       }
     });
 
@@ -2856,18 +2859,7 @@ const fields_PropSymbolTypo = {
       const field_color = field2_selec.node().value;
       if (self.rendering_params[field_color].color_map.size > 15
               && !self.rendering_params[field_color].skip_alert) {
-        swal({
-          title: '',
-          text: _tr('app_page.common.error_too_many_features_color'),
-          type: 'warning',
-          showCancelButton: true,
-          allowOutsideClick: false,
-          confirmButtonColor: '#DD6B55',
-          confirmButtonText: `${_tr('app_page.common.valid')}!`,
-          cancelButtonText: _tr('app_page.common.cancel'),
-        }).then(() => {
-          render();
-        }, () => null);
+        askManyFeaturesCategorical().then(render, () => null);
       } else {
         render();
       }

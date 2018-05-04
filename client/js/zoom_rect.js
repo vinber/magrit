@@ -2,29 +2,6 @@ import { Mmax } from './helpers_math';
 import { displayInfoOnMove } from './interface';
 import { zoom_without_redraw } from './map_ctrl';
 
-
-/**
-* Function triggered when the user click on the "zoom by tracing a rectangle"
-* button.
-* If the feature is already active, it disable it. Otherwise it enable it.
-*
-* @return {void}
-*
-*/
-export const handleZoomRect = function () {
-  const b = map.select('.brush');
-  if (b.node()) {
-    d3.select('#brush_zoom_button').classed('active', false);
-    b.remove();
-  } else {
-    if (d3.select('#info_button').classed('active')) {
-      displayInfoOnMove();
-    }
-    d3.select('#brush_zoom_button').classed('active', true);
-    makeZoomRect();
-  }
-};
-
 /**
 * Function handling the click on the map and the brush effect when
 * the "zoom by tracing a rectangle" is enabled.
@@ -32,7 +9,7 @@ export const handleZoomRect = function () {
 *
 * @return {void}
 */
-const makeZoomRect = function () {
+const makeZoomRect = function makeZoomRect() {
   if (!proj.invert) return;
   const brush = d3.brush().on('end', brushended);
   const idleDelay = 350;
@@ -77,3 +54,25 @@ const makeZoomRect = function () {
     .attr('class', 'brush')
     .call(brush);
 };
+
+/**
+* Function triggered when the user click on the "zoom by tracing a rectangle"
+* button.
+* If the feature is already active, it disable it. Otherwise it enable it.
+*
+* @return {void}
+*
+*/
+export default function handleZoomRect() {
+  const b = map.select('.brush');
+  if (b.node()) {
+    d3.select('#brush_zoom_button').classed('active', false);
+    b.remove();
+  } else {
+    if (d3.select('#info_button').classed('active')) {
+      displayInfoOnMove();
+    }
+    d3.select('#brush_zoom_button').classed('active', true);
+    makeZoomRect();
+  }
+}

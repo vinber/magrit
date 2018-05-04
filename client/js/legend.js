@@ -2291,7 +2291,9 @@ function createlegendEditBox(legend_id, layer_name) {
       .attrs({ type: 'checkbox', id: 'style_lgd' })
       .property('checked', current_state)
       .on('change', () => {
-        const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field2
+          ? data_manager.current_layers[layer_name].rendered_field2
+          : data_manager.current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
         const boxgap = +legend_node.getAttribute('boxgap') == 0 ? 4 : 0;
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2309,7 +2311,8 @@ function createlegendEditBox(legend_id, layer_name) {
         }
         bind_selections();
         if (transform_param) {
-          svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`).setAttribute('transform', transform_param);
+          svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`)
+            .setAttribute('transform', transform_param);
         }
       });
     gap_section.append('label')
@@ -2340,7 +2343,8 @@ function createlegendEditBox(legend_id, layer_name) {
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
         bind_selections();
         if (transform_param) {
-          svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
+          svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''))
+            .setAttribute('transform', transform_param);
         }
       });
     gap_section.append('label')
@@ -2368,7 +2372,8 @@ function createlegendEditBox(legend_id, layer_name) {
         createLegend_symbol(layer_name, rendered_field, lgd_title, lgd_subtitle, nested, join_line, rect_fill_value, rounding_precision, note);
         bind_selections();
         if (transform_param) {
-          svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join('')).setAttribute('transform', transform_param);
+          svg_map.querySelector(['#legend_root_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''))
+            .setAttribute('transform', transform_param);
         }
       });
     join_line_section.append('label')
@@ -2414,22 +2419,29 @@ function createlegendEditBox(legend_id, layer_name) {
       make_underlying_rect(legend_node_d3, legend_node_d3.select('#under_rect'), rect_fill_value);
     });
 
-  if (legend_id === 'legend_root_horiz' || (legend_id === 'legend_root' && data_manager.current_layers[layer_name].options_disc)) {
+  if (legend_id === 'legend_root_horiz'
+      || (legend_id === 'legend_root'
+        && data_manager.current_layers[layer_name].options_disc)) {
     const change_legend_type = box_body.insert('p');
-    const vert_layout = change_legend_type.append('p')
+    // Vertical layout option:
+    change_legend_type.append('p')
       .attr('id', 'vert_layout')
       .attr('class', legend_id === 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
       .text(_tr('app_page.legend_style_box.lgd_layout_vertical'));
-    const horiz_layout = change_legend_type.append('p')
+    // Horizontal layout option:
+    change_legend_type.append('p')
       .attr('id', 'horiz_layout')
       .attr('class', legend_id !== 'legend_root' ? 'opts_lgd_layout selected' : 'opts_lgd_layout')
       .text(_tr('app_page.legend_style_box.lgd_layout_horizontal'));
+
     change_legend_type.selectAll('.opts_lgd_layout')
       .on('click', function () {
         if (this.classList.contains('selected')) { return; }
         change_legend_type.selectAll('.opts_lgd_layout').attr('class', 'opts_lgd_layout');
         this.classList.add('selected');
-        const rendered_field = data_manager.current_layers[layer_name].rendered_field2 ? data_manager.current_layers[layer_name].rendered_field2 : data_manager.current_layers[layer_name].rendered_field;
+        const rendered_field = data_manager.current_layers[layer_name].rendered_field2
+          ? data_manager.current_layers[layer_name].rendered_field2
+          : data_manager.current_layers[layer_name].rendered_field;
         legend_node = svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`);
         const boxgap = +legend_node.getAttribute('boxgap');
         const rounding_precision = legend_node.getAttribute('rounding_precision');
@@ -2442,15 +2454,36 @@ function createlegendEditBox(legend_id, layer_name) {
         legend_node.remove();
 
         if (this.id === 'horiz_layout') {
-          createLegend_choro_horizontal(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+          createLegend_choro_horizontal(
+            layer_name,
+            rendered_field,
+            lgd_title,
+            lgd_subtitle,
+            boxgap,
+            rect_fill_value,
+            rounding_precision,
+            _no_data_txt,
+            note,
+          );
           legend_id = 'legend_root_horiz';
         } else {
-          createLegend_choro(layer_name, rendered_field, lgd_title, lgd_subtitle, boxgap, rect_fill_value, rounding_precision, _no_data_txt, note);
+          createLegend_choro(
+            layer_name,
+            rendered_field,
+            lgd_title,
+            lgd_subtitle,
+            boxgap,
+            rect_fill_value,
+            rounding_precision,
+            _no_data_txt,
+            note,
+          );
           legend_id = 'legend_root';
         }
         bind_selections();
         if (transform_param) {
-          svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`).setAttribute('transform', transform_param);
+          svg_map.querySelector(`#${legend_id}.lgdf_${_app.layer_to_id.get(layer_name)}`)
+            .setAttribute('transform', transform_param);
         }
       });
   }
@@ -2475,14 +2508,14 @@ export function move_legends() {
         const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/);
         const trans_x = legend_bbox.left + legend_bbox.width - dim_width;
         legends_type[i].setAttribute('transform',
-            ['translate(', [+val_x - trans_x, val_y], ')'].join(''));
+           ['translate(', [+val_x - trans_x, val_y], ')'].join(''));
       }
       if ((legend_bbox.top + legend_bbox.height) > dim_height) {
         const current_transform = legends_type[i].getAttribute('transform');
         const [val_x, val_y] = /\(([^\)]+)\)/.exec(current_transform)[1].split(/[ ,]+/);
         const trans_y = legend_bbox.top + legend_bbox.height - dim_height;
         legends_type[i].setAttribute('transform',
-            ['translate(', [val_x, +val_y - trans_y], ')'].join(''));
+           ['translate(', [val_x, +val_y - trans_y], ')'].join(''));
       }
     }
   }
@@ -2493,9 +2526,9 @@ export function move_legends() {
     const legend_bbox = text_annot[i].getBoundingClientRect();
     if ((legend_bbox.left + legend_bbox.width) > dim_width) {
       const trans_x = legend_bbox.left + legend_bbox.width - dim_width;
-      let annot = d3.select(text_annot[i]);
-      let x_rect = +annot.select('rect').attr('x') - trans_x;
-      let x_txt = +annot.select('text').attr('x') - trans_x;
+      const annot = d3.select(text_annot[i]);
+      const x_rect = +annot.select('rect').attr('x') - trans_x;
+      const x_txt = +annot.select('text').attr('x') - trans_x;
       if (x_txt > 0) {
         annot.select('rect')
           .attr('x', x_rect);
@@ -2507,9 +2540,9 @@ export function move_legends() {
     }
     if ((legend_bbox.top + legend_bbox.height) > dim_height) {
       const trans_y = legend_bbox.top + legend_bbox.height - dim_height;
-      let annot = d3.select(text_annot[i]);
-      let y_rect = +annot.select('rect').attr('y') - trans_y;
-      let y_txt = +annot.select('text').attr('y') - trans_y;
+      const annot = d3.select(text_annot[i]);
+      const y_rect = +annot.select('rect').attr('y') - trans_y;
+      const y_txt = +annot.select('text').attr('y') - trans_y;
       if (y_txt > 0) {
         annot.select('rect')
           .attr('y', y_rect);

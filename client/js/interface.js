@@ -24,13 +24,13 @@ import { apply_user_preferences, beforeUnloadWindow } from './map_project';
 import { addLastProjectionSelect, change_projection } from './projections';
 import { world_topology } from './sample_topo';
 import { boxExplore2 } from './tables';
-import { handleZoomRect } from './zoom_rect';
+import handleZoomRect from './zoom_rect';
 import { button_type } from './ui/buttons';
 import makeHeader from './ui/header';
 import makeSection1 from './ui/section1';
 import { makeSection2 } from './ui/section2';
 import makeSection3 from './ui/section3';
-import { makeSection4 } from './ui/section4';
+import makeSection4 from './ui/section4';
 import { makeSection5 } from './ui/section5';
 
 /**

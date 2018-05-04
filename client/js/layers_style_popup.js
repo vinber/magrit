@@ -1,6 +1,7 @@
 import { Colors, getColorBrewerArray, randomColor, rgb2hex } from './colors_helpers';
 import { check_remove_existing_box, make_confirm_dialog2 } from './dialogs';
-import { display_discretization, display_categorical_box } from './classification/discretization_panel';
+import { display_discretization } from './classification/discretization_panel';
+import { display_categorical_box } from './classification/categorical_panel';
 import { display_discretization_links_discont } from './classification/discrtiz_links_discont';
 import { available_fonts } from './fonts';
 import {

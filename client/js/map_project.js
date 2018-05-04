@@ -482,7 +482,7 @@ export function get_map_project() {
           layers_style[i].topo_geom = result[i];
         }
       }
-    // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
+      // console.log(JSON.stringify({"map_config": map_config, "layers": layers_style}))
       return JSON.stringify({
         map_config: map_config,
         layers: layers_style,
@@ -919,7 +919,9 @@ export function apply_user_preferences(json_pref) {
   if (map_config.custom_projection) {
     proj = getD3ProjFromProj4(proj4(map_config.custom_projection));
     _app.last_projection = map_config.custom_projection;
-    let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
+    let custom_name = Object.keys(_app.epsg_projections)
+      .map(d => [d, _app.epsg_projections[d]])
+      .filter(ft => ft[1].proj4 === _app.last_projection);
     custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
     addLastProjectionSelect(_app.current_proj_name, _app.last_projection, custom_name);
   } else {

@@ -528,8 +528,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       width: '60px', float: 'right', height: '2rem',
     })
     .attrs({
-      type: 'number', value: prev_rotate ? -prev_rotate[0] : 0, min: -180, max: 180, step: 0.50,
+      type: 'number', min: -180, max: 180, step: 0.50,
     })
+    .property('value', prev_rotate ? -prev_rotate[0] : 0)
     .on('input', function () {
       if (this.value > 180) this.value = 180;
       else if (this.value < -180) this.value = -180;
@@ -546,8 +547,9 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       width: '60px', float: 'right', height: '2rem',
     })
     .attrs({
-      type: 'number', value: prev_rotate ? -prev_rotate[1] : 0, min: -180, max: 180, step: 0.5,
+      type: 'number', min: -180, max: 180, step: 0.5,
     })
+    .property('value', prev_rotate ? -prev_rotate[1] : 0)
     .on('input', function () {
       if (this.value > 180) { this.value = 180; } else if (this.value < -180) { this.value = -180; }
       handle_proj_center_button([null, -this.value, null]);
@@ -563,16 +565,20 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       width: '60px', float: 'right', height: '2rem',
     })
     .attrs({
-      type: 'number', value: prev_rotate ? -prev_rotate[2] : 0, min: -90, max: 90, step: 0.5,
+      type: 'number', min: -90, max: 90, step: 0.5,
     })
+    .property('value', prev_rotate ? -prev_rotate[2] : 0)
     .on('input', function () {
       if (this.value > 90) { this.value = 90; } else if (this.value < -90) { this.value = -90; }
       handle_proj_center_button([null, null, -this.value]);
     });
 
   const parallels_section = options_proj_content.append('div')
-    .styles({ 'text-align': 'center', clear: 'both' })
-    .style('display', prev_parallels ? '' : 'none');
+    .styles({
+      clear: 'both',
+      display: prev_parallels ? '' : 'none',
+      'text-align': 'center',
+    });
   parallels_section.append('span')
     .html(_tr('app_page.section5.parallels'));
   const inputs = parallels_section.append('p')
@@ -580,7 +586,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
 
   const sp1_input = inputs.append('input')
     .styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
-    .attrs({ type: 'number', value: prev_parallels ? prev_parallels[0] : 0, min: -90, max: 90, step: 0.5 })
+    .attrs({
+      type: 'number', min: -90, max: 90, step: 0.5,
+    })
+    .property('value', prev_parallels ? prev_parallels[0] : 0)
     .on('input', function () {
       if (this.value > 90) this.value = 90;
       else if (this.value < -90) this.value = -90;
@@ -588,7 +597,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     });
   const sp2_input = inputs.append('input')
     .styles({ width: '60px', display: 'inline', 'margin-left': '2px' })
-    .attrs({ type: 'number', value: prev_parallels ? prev_parallels[1] : 0, min: -90, max: 90, step: 0.5 })
+    .attrs({
+      type: 'number', min: -90, max: 90, step: 0.5,
+    })
+    .property('value', prev_parallels ? prev_parallels[1] : 0)
     .on('input', function () {
       if (this.value > 90) this.value = 90;
       else if (this.value < -90) this.value = -90;
@@ -605,7 +617,10 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     .styles({ 'text-align': 'center', margin: 'auto' })
     .append('input')
     .styles({ width: '60px', display: 'inline', 'margin-right': '2px' })
-    .attrs({ type: 'number', value: prev_parallel || 0, min: -90, max: 90, step: 0.5 })
+    .attrs({
+      type: 'number', min: -90, max: 90, step: 0.5,
+    })
+    .property('value', prev_parallel || 0)
     .on('input', function () {
       if (this.value > 90) this.value = 90;
       else if (this.value < -90) this.value = -90;
@@ -637,8 +652,11 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       addLastProjectionSelect(_app.current_proj_name);
     } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
-      let custom_name = Object.keys(_app.epsg_projections).map(d => [d, _app.epsg_projections[d]]).filter(ft => ft[1].proj4 === _app.last_projection);
-      custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1 ? custom_name[0][1].name : undefined;
+      let custom_name = Object.keys(_app.epsg_projections)
+        .map(d => [d, _app.epsg_projections[d]])
+        .filter(ft => ft[1].proj4 === _app.last_projection);
+      custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1
+        ? custom_name[0][1].name : undefined;
       addLastProjectionSelect(_app.current_proj_name, _app.last_projection, custom_name);
     }
     if (prev_rotate) {
@@ -872,7 +890,9 @@ export function change_projection_4(_proj) {
   let layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
   if (!layer_name) {
     const layers_active = Array.prototype.filter.call(
-      svg_map.querySelectorAll('.layer'), f => f.style.visibility !== 'hidden');
+      svg_map.querySelectorAll('.layer'),
+      f => f.style.visibility !== 'hidden',
+    );
     layer_name = layers_active.length > 0
       ? global._app.id_to_layer.get(layers_active[layers_active.length - 1].id) : undefined;
   }

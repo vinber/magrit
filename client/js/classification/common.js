@@ -171,7 +171,7 @@ export function discretize_to_colors(values, type, nb_class, col_ramp_name) {
     }
   }
   return [n_class, type, breaks, color_array, colors_map, no_data_color];
-};
+}
 
 /**
 * Parse a string of comma separated break values

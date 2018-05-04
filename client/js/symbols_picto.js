@@ -18,7 +18,8 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     }
     return symbol_map;
   };
-  var nb_features = data_manager.current_layers[layer].n_features,
+
+  const nb_features = data_manager.current_layers[layer].n_features,
     data_layer = data_manager.user_data[layer],
     cats = [],
     res_symbols = _app.default_symbols,
@@ -35,9 +36,17 @@ export const display_box_symbol_typo = function (layer, field, categories) {
         categories.set(value, [1, [i]]);
       }
     }
-    categories.forEach((v, k) => { cats.push({ name: k, new_name: k, nb_elem: v[0], img: default_d_url }); });
+    categories.forEach((v, k) => {
+      cats.push({
+        name: k, new_name: k, nb_elem: v[0], img: default_d_url,
+      });
+    });
   } else {
-    categories.forEach((v, k) => { cats.push({ name: k, new_name: v[2], nb_elem: v[3], img: `url(${v[0]})` }); });
+    categories.forEach((v, k) => {
+      cats.push({
+        name: k, new_name: v[2], nb_elem: v[3], img: `url(${v[0]})`,
+      });
+    });
   }
 
   const nb_class = cats.length;
@@ -55,8 +64,8 @@ export const display_box_symbol_typo = function (layer, field, categories) {
     .html(_tr('app_page.symbol_typo_box.field_categ', { field, nb_class, nb_features }));
   newbox.append('ul')
     .styles({
+      padding: 'unset',
       'list-style': 'none',
-      'padding': 'unset',
     })
     .attr('id', 'typo_categories')
     .selectAll('li')
@@ -153,10 +162,11 @@ export const display_box_symbol_typo = function (layer, field, categories) {
 };
 
 export function box_choice_symbol(sample_symbols, parent_css_selector) {
-  const modal_box = make_dialog_container(
-        'box_choice_symbol',
-        _tr('app_page.box_choice_symbol.title'),
-        'dialog');
+  make_dialog_container(
+    'box_choice_symbol',
+    _tr('app_page.box_choice_symbol.title'),
+    'dialog',
+  );
   overlay_under_modal.display();
   const container = document.getElementById('box_choice_symbol');
   const btn_ok = container.querySelector('.btn_ok');
@@ -164,11 +174,13 @@ export function box_choice_symbol(sample_symbols, parent_css_selector) {
   btn_ok.disabled = 'disabled';
   const newbox = d3.select(container).select('.modal-body').style('width', '220px');
   newbox.append('p')
-        .html(`<b>${_tr('app_page.box_choice_symbol.select_symbol')}</b>`);
+    .html(`<b>${_tr('app_page.box_choice_symbol.select_symbol')}</b>`);
 
   const box_select = newbox.append('div')
-        .styles({ width: '190px', height: '100px', overflow: 'auto', border: '1.5px solid #1d588b' })
-        .attr('id', 'symbols_select');
+    .styles({
+      width: '190px', height: '100px', overflow: 'auto', border: '1.5px solid #1d588b',
+    })
+    .attr('id', 'symbols_select');
 
   box_select.selectAll('p')
     .data(sample_symbols)
@@ -209,9 +221,9 @@ export function box_choice_symbol(sample_symbols, parent_css_selector) {
       input.setAttribute('type', 'file');
       input.setAttribute('accept', '.jpeg,.jpg,.svg,.png,.gif');
       input.onchange = function (event) {
-        const file = event.target.files[0],
-          file_name = file.name,
-          reader = new FileReader();
+        const file = event.target.files[0];
+        // const file_name = file.name;
+        const reader = new FileReader();
         reader.onloadend = function () {
           const dataUrl_res = ['url("', reader.result, '")'].join('');
           btn_ok.disabled = false;
@@ -289,7 +301,10 @@ export function make_style_box_indiv_symbol(symbol_node) {
         symbol_node.setAttribute('y', ref_coords.y - (current_options.size / 2));
         if (current_options.scalable) {
           const zoom_scale = svg_map.__zoom;
-          parent.setAttribute('transform', `translate(${zoom_scale.x},${zoom_scale.y}) scale(${zoom_scale.k},${zoom_scale.k})`);
+          parent.setAttribute(
+            'transform',
+            `translate(${zoom_scale.x},${zoom_scale.y}) scale(${zoom_scale.k},${zoom_scale.k})`,
+          );
           if (!parent.classList.contains('scalable-legend')) {
             parent.classList.add('scalable-legend');
           }
@@ -307,7 +322,9 @@ export function make_style_box_indiv_symbol(symbol_node) {
     .html(_tr('app_page.single_symbol_edit_box.image_size'));
   a.append('input')
     .style('float', 'right')
-    .attrs({ type: 'number', id: 'font_size', min: 0, max: 150, step: 'any' })
+    .attrs({
+      type: 'number', id: 'font_size', min: 0, max: 150, step: 'any',
+    })
     .property('value', current_options.size)
     .on('change', function () {
       const val = +this.value;

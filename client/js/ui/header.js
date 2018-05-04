@@ -1,8 +1,21 @@
 import { beforeUnloadWindow, load_map_project, save_map_project } from './../map_project';
-import {
-  handle_projection_select, shortListContent,
-} from './../projections';
+import { handle_projection_select, shortListContent } from './../projections';
 import { bindTooltips } from './../tooltips';
+
+
+function change_lang() {
+  const new_lang = this.name;
+  if (new_lang !== i18next.language) {
+    docCookies.setItem('user_lang', new_lang, 31536e3, '/');
+    i18next.changeLanguage(new_lang, () => {
+      localize('.i18n');
+      bindTooltips();
+    });
+    document.getElementById('current_app_lang').innerHTML = new_lang;
+    const menu = document.getElementById('menu_lang');
+    if (menu) menu.remove();
+  }
+}
 
 export default function makeHeader() {
   const proj_options = d3.select('.header_options_projection')
@@ -124,7 +137,7 @@ export default function makeHeader() {
       color: 'white',
       'font-size': '14px',
       'vertical-align': 'super',
-      'font-weight': 'bold'
+      'font-weight': 'bold',
     })
     .html(i18next.language)
     .on('click', () => {
@@ -149,8 +162,8 @@ export default function makeHeader() {
         const list_elems = document.createElement('ul');
         menu.appendChild(list_elems);
         for (let i = 0; i < actions.length; i++) {
-          const item = document.createElement('li'),
-            name = document.createElement('span');
+          const item = document.createElement('li');
+          const name = document.createElement('span');
           list_elems.appendChild(item);
           item.setAttribute('data-index', i);
           item.style.textAlign = 'right';
@@ -167,19 +180,4 @@ export default function makeHeader() {
         document.querySelector('body').appendChild(menu);
       }
     });
-}
-
-
-function change_lang() {
-  const new_lang = this.name;
-  if (new_lang !== i18next.language) {
-    docCookies.setItem('user_lang', new_lang, 31536e3, '/');
-    i18next.changeLanguage(new_lang, () => {
-      localize('.i18n');
-      bindTooltips();
-    });
-    document.getElementById('current_app_lang').innerHTML = new_lang;
-    const menu = document.getElementById('menu_lang');
-    if (menu) menu.remove();
-  }
 }

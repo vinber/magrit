@@ -208,33 +208,36 @@ function add_field_table(table, layer_name, reOpenTableBox) {
     new_name: _tr('app_page.explore_box.add_field_box.new_name_placeholder'),
   };
 
-  make_confirm_dialog2('addFieldBox', _tr('app_page.explore_box.button_add_field'),
-                  { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined })
-    .then((valid) => {
-      // reOpenParent('#browse_data_box');
-      if (valid) {
-        document.querySelector('body').style.cursor = 'wait';
-        compute_and_add(chooses_handler)
-          .then(() => {
-            if (data_manager.current_layers[layer_name] && data_manager.current_layers[layer_name].targeted) {
-              const type_field = type_col2(data_manager.user_data[layer_name], chooses_handler.new_name)[0];
-              let existing = data_manager.current_layers[layer_name].fields_type.findIndex(el => el.name === type_field.name);
-              if (existing < 0) {
-                data_manager.current_layers[layer_name].fields_type.push(type_field);
-              } else {
-                data_manager.current_layers[layer_name].fields_type[existing] = type_field;
-              }
-              getAvailablesFunctionnalities(layer_name);
-              if (window.fields_handler) {
-                fields_handler.unfill();
-                fields_handler.fill(layer_name);
-              }
+  make_confirm_dialog2(
+    'addFieldBox',
+    _tr('app_page.explore_box.button_add_field'),
+    { width: w > 430 ? 430 : undefined, height: h > 280 ? 280 : undefined },
+  ).then((valid) => {
+    // reOpenParent('#browse_data_box');
+    if (valid) {
+      document.querySelector('body').style.cursor = 'wait';
+      compute_and_add(chooses_handler)
+        .then(() => {
+          const prop_layer = data_manager.current_layers[layer_name];
+          if (prop_layer && prop_layer.targeted) {
+            const type_field = type_col2(prop_layer, chooses_handler.new_name)[0];
+            const existing = prop_layer.fields_type.findIndex(el => el.name === type_field.name);
+            if (existing < 0) {
+              prop_layer.fields_type.push(type_field);
+            } else {
+              prop_layer.fields_type[existing] = type_field;
             }
-            if (reOpenTableBox) {
-              boxExplore2.create(layer_name);
-              // parent.modal_box.show();
-              // parent.display_table(layer_name);
+            getAvailablesFunctionnalities(layer_name);
+            if (window.fields_handler) {
+              fields_handler.unfill();
+              fields_handler.fill(layer_name);
             }
+          }
+          if (reOpenTableBox) {
+            boxExplore2.create(layer_name);
+            // parent.modal_box.show();
+            // parent.display_table(layer_name);
+          }
         }, (error) => {
           if (error !== 'Invalid name') {
             display_error_during_computation();
@@ -244,11 +247,12 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         }).done(() => {
           document.querySelector('body').style.cursor = '';
         });
-      }
-    });
+    }
+  });
 
   const fields_type = type_col(layer_name);
-  const regexp_name = new RegExp(/^[a-z0-9_]+$/i); // Only allow letters (lower & upper cases), number and underscore in the field name
+  // Only allow letters (lower & upper cases), number and underscore in the field name:
+  const regexp_name = new RegExp(/^[a-z0-9_]+$/i);
   const container = document.querySelector('.twbs > .addFieldBox');
   const box_content = d3.select(container).select('.modal-body').append('div');
   const div1 = box_content.append('div').attr('id', 'field_div1');
@@ -271,7 +275,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
 
   [
     [_tr('app_page.explore_box.add_field_box.between_numerical'), 'math_compute'],
-     [_tr('app_page.explore_box.add_field_box.between_string'), 'string_field'],
+    [_tr('app_page.explore_box.add_field_box.between_string'), 'string_field'],
   ].forEach((d) => {
     type_content.append('option').text(d[0]).attr('value', d[1]);
   });
@@ -384,11 +388,14 @@ export const boxExplore2 = {
     }
 
     if (this.tables.get(table_name) && (table_name !== data_manager.dataset_name
-          || (table_name === data_manager.dataset_name && data_manager.field_join_map.length === 0))) {
+          || (table_name === data_manager.dataset_name
+            && data_manager.field_join_map.length === 0))) {
       this.footer
         .insert('button')
         .attrs({ id: 'add_field_button', class: 'button_st4' })
-        .styles({ position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em' })
+        .styles({
+          position: 'absolute', left: '15px', padding: '10px', 'font-size': '1.1em',
+        })
         .html(_tr('app_page.explore_box.button_add_field'))
         .on('click', () => {
           this.modal_box.hide();
@@ -426,7 +433,7 @@ export const boxExplore2 = {
         placeholder: _tr('app_page.table.search'), // The search input placeholder
         perPage: _tr('app_page.table.entries_page'), // per-page dropdown label
         noRows: _tr('app_page.table.no_rows'), // Message shown when there are no search results
-        info: _tr('app_page.table.info'),  // "Showing {start} to {end} of {rows} entries"
+        info: _tr('app_page.table.info'), // "Showing {start} to {end} of {rows} entries"
       },
     });
     // Adjust the size of the box (on opening and after adding a new field)
@@ -440,7 +447,8 @@ export const boxExplore2 = {
 
     setTimeout(() => {
       const bbox = box.querySelector('#myTable').getBoundingClientRect();
-      // const new_height = bbox.height + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
+      // const new_height = bbox.height
+      //     + box.querySelector('.dataTable-pagination').getBoundingClientRect().height;
       let new_width = bbox.width;
       if (new_width > window.innerWidth * 0.85) {
         new_width = window.innerWidth * 0.9;

@@ -6,7 +6,7 @@ import { canvas_mod_size, handle_bg_color, rotate_global, zoom_without_redraw } 
 import { add_layout_feature } from './../layout_features/helpers';
 import { sys_run_button } from './../ui/buttons';
 
-export function makeSection4() {
+export default function makeSection4() {
   const zoom_prop = svg_map.__zoom;
   const section4 = d3.select('#section4');
   const dv4 = section4.append('div')
@@ -30,13 +30,17 @@ export function makeSection4() {
     .on('keyup', function () { handle_title(this.value); });
 
   e.append('span')
-    .styles({ display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub' })
+    .styles({
+      display: 'inline', top: '4px', cursor: 'pointer', 'vertical-align': 'sub',
+    })
     .html(sys_run_button.replace('submit', 'Title properties'))
     .on('click', handle_title_properties);
 
   const f = dv4.append('li');
   f.append('input')
-    .styles({ position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px' })
+    .styles({
+      position: 'absolute', right: '20px', width: '60px', 'margin-left': '15px',
+    })
     .attrs({ type: 'color', id: 'bg_color', class: 'list_elem_section4 m_elem_right' })
     .property('value', '#ffffff')
     .on('change', function () { handle_bg_color(this.value); });
@@ -240,7 +244,9 @@ export function makeSection4() {
     })
     .property('value', () => {
       const _k = zoom_prop.k * proj.scale();
-      return _k > 2 || _k < -2 ? round_value(_k, 2) : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
+      return (_k > 2 || _k < -2)
+        ? round_value(_k, 2)
+        : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
     })
     .style('width', '80px')
     .on('change', function () {
@@ -268,7 +274,7 @@ export function makeSection4() {
       max: 360,
       step: 'any',
     })
-    .styles({ width: '30px', 'margin-left': '10px', float: 'right'})
+    .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
     .property('value', 0)
     .on('change', function () {
       const val = +this.value,
@@ -330,33 +336,48 @@ export function makeSection4() {
   p1.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_arrow', src: 'static/img/layout_icons/arrow-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.arrow',
+      id: 'btn_arrow',
+      src: 'static/img/layout_icons/arrow-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.arrow',
     })
     .on('click', () => add_layout_feature('arrow'));
   p1.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_text_annot', src: 'static/img/layout_icons/text-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.text_annot',
+      id: 'btn_text_annot',
+      src: 'static/img/layout_icons/text-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.text_annot',
     })
     .on('click', () => add_layout_feature('text_annot'));
   if (!window.isIE) {
     p1.insert('span')
       .insert('img')
       .attrs({
-        id: 'btn_symbol', src: 'static/img/layout_icons/symbols-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.symbol',
+        id: 'btn_symbol',
+        src: 'static/img/layout_icons/symbols-01.png',
+        class: 'layout_ft_ico i18n tt',
+        'data-i18n': '[title]app_page.layout_features_box.symbol',
       })
       .on('click', () => add_layout_feature('symbol'));
   }
   p1.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_rectangle', src: 'static/img/layout_icons/rect-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.rectangle',
+      id: 'btn_rectangle',
+      src: 'static/img/layout_icons/rect-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.rectangle',
     })
     .on('click', () => add_layout_feature('rectangle'));
   p1.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_ellipse', src: 'static/img/layout_icons/ellipse-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.ellipse',
+      id: 'btn_ellipse',
+      src: 'static/img/layout_icons/ellipse-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.ellipse',
     })
     .on('click', () => add_layout_feature('ellipse'));
 
@@ -364,25 +385,37 @@ export function makeSection4() {
   p2.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_graticule', src: 'static/img/layout_icons/graticule-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.graticule',
+      id: 'btn_graticule',
+      src: 'static/img/layout_icons/graticule-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.graticule',
     })
     .on('click', () => add_layout_feature('graticule'));
   p2.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_north', src: 'static/img/layout_icons/north-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.north_arrow',
+      id: 'btn_north',
+      src: 'static/img/layout_icons/north-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.north_arrow',
     })
     .on('click', () => add_layout_feature('north_arrow'));
   p2.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_scale', src: 'static/img/layout_icons/scale.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.scale',
+      id: 'btn_scale',
+      src: 'static/img/layout_icons/scale.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.scale',
     })
     .on('click', () => add_layout_feature('scale'));
   p2.insert('span')
     .insert('img')
     .attrs({
-      id: 'btn_sphere', src: 'static/img/layout_icons/sphere-01.png', class: 'layout_ft_ico i18n tt', 'data-i18n': '[title]app_page.layout_features_box.sphere',
+      id: 'btn_sphere',
+      src: 'static/img/layout_icons/sphere-01.png',
+      class: 'layout_ft_ico i18n tt',
+      'data-i18n': '[title]app_page.layout_features_box.sphere',
     })
     .on('click', () => add_layout_feature('sphere'));
 }

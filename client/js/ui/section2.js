@@ -28,7 +28,9 @@ export function makeSection2() {
       margin_value = '5px 16px';
     function_panel
       .insert('img')
-      .styles({ margin: margin_value, cursor: 'pointer', width: '50px', float: 'left' })
+      .styles({
+        margin: margin_value, cursor: 'pointer', width: '50px', float: 'left',
+      })
       .attrs({
         class: 'i18n tt_func',
         'data-i18n': ['[title]app_page.func_description.', func_name].join(''),
@@ -55,16 +57,23 @@ export function makeSection2() {
 
         // Replace the title of the section:
         const selec_title = document.getElementById('btn_s2b');
-        selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
-                                _tr('app_page.common.representation') +
-                                '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
-                                global._app.current_functionnality.name +
-                                '">' +
-                                _tr('app_page.func_title.' + global._app.current_functionnality.name) +
-                                '</span>';
+        // selec_title.innerHTML = '<span class="i18n" data-i18n="app_page.common.representation">' +
+        //                         _tr('app_page.common.representation') +
+        //                         '</span><span> : </span><span class="i18n" data-i18n="app_page.func_title.' +
+        //                         global._app.current_functionnality.name +
+        //                         '">' +
+        //                         _tr('app_page.func_title.' + global._app.current_functionnality.name) +
+        //                         '</span>';
+        selec_title.innerHTML = `
+<span class="i18n" data-i18n="app_page.common.representation">${_tr('app_page.common.representation')}</span>
+<span> : </span>
+<span class="i18n" data-i18n="app_page.func_title.${global._app.current_functionnality.name}">
+${_tr(['app_page.func_title.', global._app.current_functionnality.name].join(''))}</span>`;
+
         selec_title.style.display = '';
 
-        // Don't fill the menu / don't highlight the icon if the type of representation is not authorizhed :
+        // Don't fill the menu / don't highlight the icon
+        // if the type of representation is not allowed :
         if (this.style.filter !== 'grayscale(100%)') {
           this.classList.add('active');
           // Highlight the icon of the selected functionnality :

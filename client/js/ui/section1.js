@@ -44,7 +44,7 @@ export default function makeSection1() {
       'margin-bottom': '3px',
       border: '3px dashed #ccc',
       padding: '3px',
-      color: '#ccc'
+      color: '#ccc',
     })
     .html('Pas de couche cible');
 
@@ -71,7 +71,13 @@ export default function makeSection1() {
   const dv11 = dv1.append('div').style('width', 'auto');
 
   dv11.append('img')
-    .attrs({ id: 'img_in_geom', src: 'static/img/b/addgeom.png', width: '25', height: '25', alt: 'Geometry layer' })
+    .attrs({
+      id: 'img_in_geom',
+      src: 'static/img/b/addgeom.png',
+      width: '25',
+      height: '25',
+      alt: 'Geometry layer',
+    })
     .style('cursor', 'pointer')
     .on('click', click_button_add_layer);
 
@@ -89,18 +95,40 @@ export default function makeSection1() {
 
   const dv12 = dv1.append('div');
   dv12.append('img')
-    .attrs({ id: 'img_data_ext', src: 'static/img/b/addtabular.png', width: '25', height: '25', alt: 'Additional dataset' })
+    .attrs({
+      id: 'img_data_ext',
+      src: 'static/img/b/addtabular.png',
+      width: '25',
+      height: '25',
+      alt: 'Additional dataset',
+    })
     .style('cursor', 'pointer')
     .on('click', click_button_add_layer);
 
   dv12.append('p')
-    .attrs({ id: 'data_ext', class: 'i18n', 'data-i18n': '[html]app_page.section1.add_ext_dataset' })
-    .styles({ display: 'inline', cursor: 'pointer', 'margin-left': '4px', 'vertical-align': 'super', 'font-weight': 'bold' })
+    .attrs({
+      id: 'data_ext',
+      class: 'i18n',
+      'data-i18n': '[html]app_page.section1.add_ext_dataset',
+    })
+    .styles({
+      cursor: 'pointer',
+      display: 'inline',
+      'font-weight': 'bold',
+      'margin-left': '4px',
+      'vertical-align': 'super',
+    })
     .on('click', click_button_add_layer);
 
   const div_sample = dv1.append('div').attr('id', 'sample_zone');
   div_sample.append('img')
-    .attrs({ id: 'sample_button', src: 'static/img/b/addsample.png', width: '25', height: '25', alt: 'Sample layers' })
+    .attrs({
+      alt: 'Sample layers',
+      id: 'sample_button',
+      width: '25',
+      height: '25',
+      src: 'static/img/b/addsample.png',
+    })
     .style('cursor', 'pointer')
     .on('click', add_sample_layer);
 
@@ -111,11 +139,11 @@ export default function makeSection1() {
       'data-i18n': '[html]app_page.section1.add_sample_data',
     })
     .styles({
-      display: 'inline',
       cursor: 'pointer',
+      display: 'inline',
+      'font-weight': 'bold',
       'margin-left': '4px',
       'vertical-align': 'super',
-      'font-weight': 'bold',
     })
     .on('click', add_sample_layer);
 
