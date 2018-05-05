@@ -1,5 +1,3 @@
-import tippy from 'tippy.js';
-
 /* eslint-disable object-property-newline */
 function parseMatrix(matrixString) {
   const c = matrixString.split(/\s*[(),]\s*/).slice(1, -1);
@@ -52,40 +50,6 @@ function getTransform(elem) {
 }
 
 export function bindTooltips() {
-  tippy('.tt_menuleft', {
-    // appendTo: document.querySelector('.twbs'),
-    arrow: true,
-    duration: [1, 50],
-    flip: false,
-    onShow() {
-      Array.prototype.slice.call(document.querySelectorAll('.tippy-popper')).forEach(popper => {
-        const instance = popper._tippy;
-        if (instance.state.visible) {
-          instance.popperInstance.disableEventListeners();
-          instance.hide();
-        }
-      });
-    },
-    onShown() {
-      const tr = getTransform(this);
-      this.style.transform = `translate3d(${tr.translate.x + 360}px, ${tr.translate.y}px, 0)`;
-    },
-    placement: 'right',
-  });
-
-  tippy('.tt', {
-    // appendTo: document.querySelector('.twbs'),
-    arrow: true,
-    duration: [50, 50],
-    flip: false,
-  });
-
-  tippy('.tt_func', {
-    // appendTo: document.querySelector('.twbs'),
-    arrow: true,
-    distance: 45,
-    duration: [20, 20],
-    flip: false,
-    placement: 'right',
-  });
+  Opentip.defaultStyle = 'dark';
+  Opentip.findElements();
 }

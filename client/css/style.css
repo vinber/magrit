@@ -782,27 +782,35 @@ div.panel {
   overflow: hidden;
   visibility: hidden;
   width: 335px;
-  max-height: 0;
-  //opacity: 0;
+  height: 0;
+  /* max-height: 0; */
   border: 1px solid #aaaaaa;
   border-top-color: rgb(170, 170, 170);
   border-top-style: solid;
   border-top-width: 1px;
   border-bottom-right-radius: 8px;
   border-bottom-left-radius: 8px;
-  transition: all 400ms ease-in-out;
-  transform: scaleY(0);
+  transition: all 350ms ease-in-out;
+  /* transform: scaleY(0); */
 }
 
 div.panel.show {
-  //opacity: 1;
+  height: auto;
   max-height: 775px;
   width: 335px;
   margin: auto;
   margin-bottom: 5px;
   overflow: auto;
   visibility: visible;
-  transform: scaleY(1);
+  transition: all 350ms ease-in-out;
+  /* transform: scaleY(1); */
+}
+
+.panel > div {
+  opacity:0;
+}
+.panel.show > div {
+  opacity: 1;
 }
 
 .twbs .panel {
@@ -1107,12 +1115,6 @@ img.layout_ft_ico:hover {
   z-index: 1001;
   overflow-wrap: break-word;
 }
-
-.tippy-popper {
-  font-family: Verdana,Arial,sans-serif;
-  font-size: 11px;
-}
-
 /*
 Spinner adapted from https://github.com/tobiasahlin/SpinKit
 Copyright (c) 2015 Tobias Ahlin (license MIT)

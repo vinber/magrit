@@ -45,7 +45,11 @@ export default function makeHeader() {
 
   const_options.append('button')
     .attrs({
-      class: 'const_buttons i18n tt', id: 'new_project', 'data-i18n': '[title]app_page.tooltips.new_project', 'data-tippy-placement': 'bottom',
+      class: 'const_buttons i18n tt',
+      id: 'new_project',
+      'data-i18n': '[data-ot]app_page.tooltips.new_project',
+      'data-ot-fixed': true,
+      'data-ot-target': true,
     })
     .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', () => {
@@ -56,21 +60,33 @@ export default function makeHeader() {
 
   const_options.append('button')
     .attrs({
-      class: 'const_buttons i18n tt', id: 'load_project', 'data-i18n': '[title]app_page.tooltips.load_project_file', 'data-tippy-placement': 'bottom',
+      class: 'const_buttons i18n tt',
+      'data-i18n': '[data-ot]app_page.tooltips.load_project_file',
+      'data-ot-fixed': true,
+      'data-ot-target': true,
+      id: 'load_project',
     })
     .html('<img src="static/img/header/Folder_open_alt_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
     .on('click', load_map_project);
 
   const_options.append('button')
     .attrs({
-      class: 'const_buttons i18n tt', id: 'save_file_button', 'data-i18n': '[title]app_page.tooltips.save_file', 'data-tippy-placement': 'bottom',
+      class: 'const_buttons i18n tt',
+      'data-i18n': '[data-ot]app_page.tooltips.save_file',
+      'data-ot-fixed': true,
+      'data-ot-target': true,
+      id: 'save_file_button',
     })
     .html('<img src="static/img/header/Breezeicons-actions-22-document-save-white.png" width="25" height="auto" alt="Save project to disk"/>')
     .on('click', save_map_project);
 
   const_options.append('button')
     .attrs({
-      class: 'const_buttons i18n tt', id: 'documentation_link', 'data-i18n': '[title]app_page.tooltips.documentation', 'data-tippy-placement': 'bottom',
+      class: 'const_buttons i18n tt',
+      'data-i18n': '[data-ot]app_page.tooltips.documentation',
+      'data-ot-fixed': true,
+      'data-ot-target': true,
+      id: 'documentation_link',
     })
     .html('<img src="static/img/header/Documents_icon_-_noun_project_5020_white.png" width="20" height="auto" alt="Documentation"/>')
     .on('click', () => {
@@ -79,10 +95,11 @@ export default function makeHeader() {
 
   const_options.append('button')
     .attrs({
-      id: 'help_btn',
       class: 'const_buttons i18n tt',
-      'data-i18n': '[title]app_page.help_box.tooltip_btn',
-      'data-tippy-placement': 'bottom',
+      'data-i18n': '[data-ot]app_page.help_box.tooltip_btn',
+      'data-ot-fixed': true,
+      'data-ot-target': true,
+      id: 'help_btn',
     })
     .html('<img src="static/img/header/High-contrast-help-browser_white.png" width="20" height="20" alt="export_load_preferences" style="margin-bottom:3px;"/>')
     .on('click', () => {

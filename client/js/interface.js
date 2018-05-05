@@ -99,11 +99,11 @@ export function setUpInterface(reload_project) {
     .attr('class', 'light-menu');
 
   const lm_buttons = [
-    { id: 'zoom_out', i18n: '[title]app_page.lm_buttons.zoom-', tooltip_position: 'left', class: 'zoom_button i18n tt', html: '-' },
-    { id: 'zoom_in', i18n: '[title]app_page.lm_buttons.zoom+', tooltip_position: 'left', class: 'zoom_button i18n tt', html: '+' },
-    { id: 'info_button', i18n: '[title]app_page.lm_buttons.i', tooltip_position: 'left', class: 'info_button i18n tt', html: 'i' },
-    { id: 'brush_zoom_button', i18n: '[title]app_page.lm_buttons.zoom_rect', tooltip_position: 'left', class: 'brush_zoom_button i18n tt', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' },
-    { id: 'hand_button', i18n: '[title]app_page.lm_buttons.hand_button', tooltip_position: 'left', class: 'hand_button i18n tt', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
+    { id: 'zoom_out', i18n: '[data-ot]app_page.lm_buttons.zoom-', class: 'zoom_button i18n tt', html: '-' },
+    { id: 'zoom_in', i18n: '[data-ot]app_page.lm_buttons.zoom+', class: 'zoom_button i18n tt', html: '+' },
+    { id: 'info_button', i18n: '[data-ot]app_page.lm_buttons.i', class: 'info_button i18n tt', html: 'i' },
+    { id: 'brush_zoom_button', i18n: '[data-ot]app_page.lm_buttons.zoom_rect', class: 'brush_zoom_button i18n tt', html: '<img src="static/img/Inkscape_icons_zoom_fit_selection_blank.png" width="18" height="18" alt="Zoom_select"/>' },
+    { id: 'hand_button', i18n: '[data-ot]app_page.lm_buttons.hand_button', class: 'hand_button i18n tt', html: '<img src="static/img/Twemoji_1f513.png" width="18" height="18" alt="Hand_closed"/>' },
   ];
 
   lm.selectAll('input')
@@ -115,7 +115,9 @@ export function setUpInterface(reload_project) {
     .attrs(elem => ({
       class: elem.class,
       'data-i18n': elem.i18n,
-      'data-tippy-placement': elem.tooltip_position,
+      'data-ot-delay': 0,
+      'data-ot-fixed': true,
+      'data-ot-target': true,
       id: elem.id,
     }))
     .html(elem => elem.html);
