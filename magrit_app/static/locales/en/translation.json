@@ -130,7 +130,11 @@
             "title": "Add your data",
             "add_geom": "Add a basemap",
             "add_ext_dataset": "Add a dataset",
-            "add_sample_data": "Select a sample basemap (data is included)"
+            "add_sample_data": "Select a sample basemap",
+            "no_target": "No target layer",
+            "no_ext_dataset": "No additional dataset",
+            "plus_layout_layers": "+ {{count}} layout layer",
+            "plus_layout_layers_plural": "+ {{count}} layout layers"
         },
         "section2": {
             "title": "Choose a representation"
@@ -273,10 +277,7 @@
             "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Mean : {{mean}} | Median : {{median}}<br> Std Deviation : {{stddev}}"
         },
         "tooltips": {
-            "section1": "Drop a GeoJSON, GML, TopoJSON, zipped shapefile project or KML file here or add manually a layer by clicking here",
-            "section3": "Drop a layout GeoJSON, GML, TopoJSON, shapefile project or KML here or add manually a layer by clicking here",
-            "section3_add_layout": "Add layout layer",
-            "section3_add_layout_sample": "Add sample layout layer",
+            "section1": "Drop a GeoJSON, GML, TopoJSON, zipped shapefile project or KML file in the window or add manually a layer by clicking here",
             "load_project_file": "Load a project file",
             "save_file": "Save project as a file",
             "new_project": "Create a new empty project",

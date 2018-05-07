@@ -49,6 +49,7 @@ export default function makeHeader() {
       id: 'new_project',
       'data-i18n': '[data-ot]app_page.tooltips.new_project',
       'data-ot-fixed': true,
+      'data-ot-remove-elements-on-hide': true,
       'data-ot-target': true,
     })
     .html('<img src="static/img/header/File_font_awesome_white.png" width="25" height="auto" alt="Load project file"/>')
@@ -63,6 +64,7 @@ export default function makeHeader() {
       class: 'const_buttons i18n tt',
       'data-i18n': '[data-ot]app_page.tooltips.load_project_file',
       'data-ot-fixed': true,
+      'data-ot-remove-elements-on-hide': true,
       'data-ot-target': true,
       id: 'load_project',
     })
@@ -74,6 +76,7 @@ export default function makeHeader() {
       class: 'const_buttons i18n tt',
       'data-i18n': '[data-ot]app_page.tooltips.save_file',
       'data-ot-fixed': true,
+      'data-ot-remove-elements-on-hide': true,
       'data-ot-target': true,
       id: 'save_file_button',
     })
@@ -85,6 +88,7 @@ export default function makeHeader() {
       class: 'const_buttons i18n tt',
       'data-i18n': '[data-ot]app_page.tooltips.documentation',
       'data-ot-fixed': true,
+      'data-ot-remove-elements-on-hide': true,
       'data-ot-target': true,
       id: 'documentation_link',
     })
@@ -98,6 +102,7 @@ export default function makeHeader() {
       class: 'const_buttons i18n tt',
       'data-i18n': '[data-ot]app_page.help_box.tooltip_btn',
       'data-ot-fixed': true,
+      'data-ot-remove-elements-on-hide': true,
       'data-ot-target': true,
       id: 'help_btn',
     })

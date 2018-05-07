@@ -125,7 +125,11 @@
             "title": "Importar datos",
             "add_geom": "Agregar una capa base",
             "add_ext_dataset": "Agregar un conjunto de datos",
-            "add_sample_data": "Seleccionar una capa base de ejemplo (con datos incluidos)"
+            "add_sample_data": "Seleccionar una capa base de ejemplo",
+            "no_target": "Sin capa objetivo",
+            "no_ext_dataset": "Sin conjunto de datos externo",
+            "plus_layout_layers": "+ {{count}} capa de diseño",
+            "plus_layout_layers_plural": "+ {{count}} capas de diseño"
         },
         "section2": {
             "title": "Escoger tipo de mapa"
@@ -268,10 +272,7 @@
             "mini_summary" : "Mínimo: {{min}} | Máximo: {{max}}<br>Promedio: {{mean}} | Mediana: {{median}}<br>Desviación estándar: {{stddev}}"
         },
         "tooltips": {
-            "section1": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML en esta zona o bien agregue manualmente una capa seleccionando una opción",
-            "section3": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML de diseño en esta zona o bien agregue manualmente una capa seleccionando una opción",
-            "section3_add_layout": "Agregar una capa de diseño",
-            "section3_add_layout_sample": "Agregar une ejemplo de capa base de diseño",
+            "section1": "Deslice un archivo GeoJSON, GML, TopoJSON, Shapefile o KML en la ventana o bien agregue manualmente una capa seleccionando una opción",
             "load_project_file": "Cargar un proyecto",
             "save_file": "Guardar el proyecto",
             "new_project": "Crear un proyecto",

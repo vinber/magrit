@@ -51,5 +51,12 @@ function getTransform(elem) {
 
 export function bindTooltips() {
   Opentip.defaultStyle = 'dark';
+  Array.prototype.slice.call(document.querySelectorAll('div.opentip-container'))
+    .forEach((el) => {
+      el.remove();
+    });
   Opentip.findElements();
+  Opentip.tips.forEach((el) => {
+    if (el.options.target) el.setContent(() => el.options.target[0].getAttribute('data-ot'));
+  });
 }

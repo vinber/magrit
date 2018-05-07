@@ -14,7 +14,8 @@ import {
 import {
   ask_join_now, askTypeLayer, binds_layers_buttons,
   center_map, handle_click_hand,
-  remove_layer_cleanup, scale_to_lyr, update_section1,
+  remove_layer_cleanup, scale_to_lyr,
+  update_section1, update_section1_layout,
 } from './interface';
 
 /**
@@ -430,6 +431,7 @@ export function add_layer_topojson(text, options = {}) {
       'fill-opacity': type !== 'Line' ? 0.90 : 0,
     });
   d3.select('#layer_to_export').append('option').attr('value', lyr_name_to_add).text(lyr_name_to_add);
+  update_section1_layout();
   if (target_layer_on_add) {
     data_manager.current_layers[lyr_name_to_add].original_fields = new Set(Object.getOwnPropertyNames(data_manager.user_data[lyr_name_to_add][0]));
     if (data_manager.joined_dataset.length !== 0) {

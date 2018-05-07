@@ -31,8 +31,8 @@ export default function makeSection3() {
         //   lyr2 = document.getElementById(desired_order[i + 1]) ||
         //     document.getElementById(desired_order[i]);
         // svg_map.insertBefore(lyr2, lyr1);
-        const lyr1 = document.getElementById(desired_order[i]);
-        svg_map.insertBefore(lyr1, document.getElementById(desired_order[i + 1]) || lyr1);
+        const lyr = document.getElementById(desired_order[i]);
+        svg_map.insertBefore(document.getElementById(desired_order[i + 1]) || lyr, lyr);
       }
       if (at_end) displayInfoOnMove();
     },

@@ -756,6 +756,7 @@ export function update_menu_dataset() {
     field_names = Object.getOwnPropertyNames(data_manager.joined_dataset[0][0]);
 
   d3.select('#ext_dataset_zone')
+    .attr('data-i18n', null)
     .styles({
       border: null,
       color: 'black',
@@ -894,9 +895,30 @@ function handle_single_file(file) {
     });
 }
 
+export function update_section1_layout() {
+  let nb_layout_layer = 0;
+  Object.keys(data_manager.current_layers).forEach((k) => {
+    if (!data_manager.current_layers[k].is_result && !data_manager.current_layers[k].targeted) {
+      nb_layout_layer += 1;
+    }
+  });
+  if (nb_layout_layer > 0) {
+    d3.select('#layout_layers_section')
+      .style('display', 'inline-flex')
+      .html(`<div>
+<img src="static/img/type_geom/layer_waffle.png" width="26" height="26" style="filter:opacity(0.7)"></img></div>
+<div style="margin-top: 7px;margin-left: 4px; font-style: italic;font-size: 90%;">
+${_tr('app_page.section1.plus_layout_layers', { count: nb_layout_layer})}</div>`);
+  } else {
+    d3.select('#layout_layers_section')
+      .style('display', 'none')
+      .html('');
+  }
+}
+
 export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
-  const nb_char_display = lyr_name_to_add.length + nb_fields.toString().length + nb_ft.toString().length;
-  const _lyr_name_display = +nb_char_display > 40 ? [lyr_name_to_add.substring(0, 35), '(...)'].join('') : lyr_name_to_add;
+  const nb_char_display = lyr_name_to_add.length;
+  const _lyr_name_display = +nb_char_display > 35 ? [lyr_name_to_add.substring(0, 30), '(...)'].join('') : lyr_name_to_add;
 
   // Prepare an icon according to the type of geometry:
   let _button = button_type.get(type);
@@ -904,6 +926,7 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
 
   // Upate the zone allowed for displaying info on the target layer:
   d3.select('#target_layer_zone')
+    .attr('data-i18n', null)
     .styles({
       border: null,
       color: 'black',
@@ -1253,13 +1276,18 @@ function changeTargetLayer(new_target) {
 function resetSection1() {
   // Remove infos and buttons about the target layer:
   d3.select('#target_layer_zone')
-    .styles({
-      'text-align': 'center',
-      border: '3px dashed #ccc',
-      padding: '3px',
-      color: '#ccc',
+    .attrs({
+      class: 'i18n',
+      'data-i18n': '[html]app_page.section1.no_target',
     })
-    .html('Pas de couche cible');
+    .styles({
+      border: '3px dashed #ccc',
+      color: '#ccc',
+      'margin-bottom': '3px',
+      padding: '3px',
+      'text-align': 'center',
+    })
+    .html(_tr('app_page.section1.no_target'));
 
   // Restore the state of the bottom of the section 1 :
   document.getElementById('join_section').innerHTML = '';
@@ -1625,13 +1653,14 @@ function remove_ext_dataset_cleanup() {
   data_manager.joined_dataset = [];
   data_manager.dataset_name = undefined;
   d3.select('#ext_dataset_zone')
+    .attr('data-i18n', '[html]app_page.section1.no_ext_dataset')
     .styles({
       border: '3px dashed #ccc',
       color: 'rgb(204, 204, 204)',
       padding: '3px',
       'text-align': 'center',
     })
-    .html('Pas de jeu de donnée externe');
+    .html(_tr('app_page.section1.no_ext_dataset'));
   document.getElementById('join_section').innerHTML = '';
 }
 

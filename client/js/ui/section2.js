@@ -34,9 +34,10 @@ export function makeSection2() {
       .attrs({
         class: 'i18n tt_func',
         'data-i18n': ['[data-ot]app_page.func_description.', func_name].join(''),
-        'data-ot-fixed': true,
-        'data-ot-target': true,
         'data-ot-delay': 0,
+        'data-ot-fixed': true,
+        'data-ot-hideDelay': 0,
+        'data-ot-target': true,
         id: `button_${func_name}`,
         src: ['static/img/func_icons2/', ico_name].join(''),
       })

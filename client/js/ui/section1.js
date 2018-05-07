@@ -35,40 +35,67 @@ function click_button_add_layer() {
 export default function makeSection1() {
   const section1 = d3.select('#menu').select('#section1');
 
-  const dv1 = section1.append('div');
   // Section for current target layer:
-  dv1.append('div')
-    .attr('id', 'target_layer_zone')
-    .styles({
-      'text-align': 'center',
-      'margin-bottom': '3px',
-      border: '3px dashed #ccc',
-      padding: '3px',
-      color: '#ccc',
+  section1.append('div')
+    .attrs({
+      class: 'i18n',
+      id: 'target_layer_zone',
+      'data-i18n': '[html]app_page.section1.no_target',
     })
-    .html('Pas de couche cible');
+    .styles({
+      border: '3px dashed #ccc',
+      color: '#ccc',
+      'margin-bottom': '3px',
+      padding: '3px',
+      'text-align': 'center',
+    });
 
   // Section for current dataset:
-  dv1.append('div')
-    .attr('id', 'ext_dataset_zone')
-    .styles({
-      'text-align': 'center',
-      'margin-bottom': '3px',
-      border: '3px dashed #ccc',
-      padding: '3px',
-      color: '#ccc',
+  section1.append('div')
+    .attrs({
+      class: 'i18n',
+      id: 'ext_dataset_zone',
+      'data-i18n': '[html]app_page.section1.no_ext_dataset',
     })
-    .html('Pas de jeu de donnée externe');
+    .styles({
+      border: '3px dashed #ccc',
+      color: '#ccc',
+      'margin-bottom': '3px',
+      padding: '3px',
+      'text-align': 'center',
+    });
 
   // Section about joining target layer and external dataset:
-  dv1.append('p')
+  section1.append('p')
     .attr('id', 'join_section')
-    .styles({ 'text-align': 'center', 'margin-top': '2px' })
+    .styles({ 'text-align': 'center', 'margin-top': '2px', 'margin-bottom': '1px' })
     .html('');
 
-  dv1.append('hr').style('border-top', '2px #ccc');
+  section1.append('p')
+    .attr('id', 'layout_layers_section')
+    .styles({ display: 'none', 'margin-top': '2px' });
 
-  const dv11 = dv1.append('div').style('width', 'auto');
+  section1.append('hr')
+    .style('border-top', '2px #ccc');
+
+  section1.append('p')
+    .attrs({
+      id: 'info_section1',
+      class: 'i18n',
+      'data-i18n': '[data-ot]app_page.tooltips.section1',
+      'data-ot-remove-elements-on-hide': true,
+    })
+    .styles({
+      margin: 'auto',
+      float: 'right',
+    })
+    .append('img')
+    .attrs({
+      alt: 'info',
+      src: 'static/img/Information.png',
+    });
+
+  const dv11 = section1.append('div').style('width', 'auto');
 
   dv11.append('img')
     .attrs({
@@ -93,7 +120,7 @@ export default function makeSection1() {
     .attr('data-i18n', '[html]app_page.section1.add_geom')
     .on('click', click_button_add_layer);
 
-  const dv12 = dv1.append('div');
+  const dv12 = section1.append('div');
   dv12.append('img')
     .attrs({
       id: 'img_data_ext',
@@ -120,7 +147,7 @@ export default function makeSection1() {
     })
     .on('click', click_button_add_layer);
 
-  const div_sample = dv1.append('div').attr('id', 'sample_zone');
+  const div_sample = section1.append('div').attr('id', 'sample_zone');
   div_sample.append('img')
     .attrs({
       alt: 'Sample layers',
@@ -147,7 +174,7 @@ export default function makeSection1() {
     })
     .on('click', add_sample_layer);
 
-  dv1.append('p')
+  section1.append('p')
     .styles({ 'text-align': 'center', margin: '5px' })
     .insert('button')
     .attrs({
@@ -157,14 +184,14 @@ export default function makeSection1() {
       disabled: true,
     })
     .styles({
-      cursor: 'pointer',
       'border-radius': '4px',
+      cursor: 'pointer',
       border: '1px solid lightgrey',
       padding: '3.5px',
     })
     .html(_tr('app_page.box_type_fields.title'))
     .on('click', () => {
-      const layer_name = Object.getOwnPropertyNames(data_manager.user_data)[0];
+      const layer_name = Object.keys(data_manager.user_data)[0];
       make_box_type_fields(layer_name);
     });
 }

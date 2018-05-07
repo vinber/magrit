@@ -131,7 +131,11 @@
             "title": "Import des données",
             "add_geom": "Ajout d'un fond de carte",
             "add_ext_dataset": "Ajout d'un jeu de données",
-            "add_sample_data": "Sélection d'un fond de carte d'exemple (avec données)"
+            "add_sample_data": "Sélection d'un fond de carte d'exemple",
+            "no_target": "Pas de couche cible",
+            "no_ext_dataset": "Pas de jeu de données externe",
+            "plus_layout_layers": "+ {{count}} couche d'habillage",
+            "plus_layout_layers_plural": "+ {{count}} couches d'habillage"
         },
         "section2": {
             "title": "Choix de la représentation"
@@ -274,10 +278,7 @@
             "mini_summary" : "Min : {{min}} | Max : {{max}}<br>Moyenne : {{mean}} | Médianne : {{median}}<br>Écart-type : {{stddev}}"
         },
         "tooltips": {
-            "section1": "Faites glissez un fichier GeoJSON, GML, TopoJSON, Shapefile ou KML dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "section3": "Faites glissez un fichier GeoJSON, GML, TopoJSON, Shapefile ou KML d'habillage dans cette zone ou ajoutez manuellement une couche en cliquant sur le bouton",
-            "section3_add_layout": "Ajout d'un fond de carte d'habillage",
-            "section3_add_layout_sample": "Ajout d'un fond de carte d'habillage d'exemple",
+            "section1": "Faites glissez un fichier GeoJSON, GML, TopoJSON, Shapefile ou KML dans la fenêtre ou ajoutez manuellement une couche en cliquant sur le bouton",
             "load_project_file": "Chargement d'un fichier projet",
             "save_file": "Sauvegarde d'un fichier-projet",
             "new_project": "Création d'un nouveau projet",
