@@ -1044,47 +1044,50 @@ Ce type de limite permet également de s'interroger sur l’intérêt d'une cart
 <a class="header" href="print.html#080-2018-xx-xx" id="080-2018-xx-xx"><h4>0.8.0 (2018-xx-xx)</h4></a>
 <ul>
 <li>
-<p>New: Allow to promote any layout layer (or result layer) to be a target layer. This functionality makes it possible to combine some representations more efficiently and more quickly (for example, making a chroropleth map on the result of an anamorphosis, etc.).</p>
+<p>Nouveauté : Autorise à &quot;promouvoir&quot; n'importe quelle couche d'habillage (et certaines couches de résultat) vers le statut de couche cible. Cette fonctionnalité permet de combiner plusieurs type de représentations de manière plus simple/rapide et en évitant des suppressions/imports inutiles de couches (rend par exemple possible de faire une carte choroplèthe sur le résultat d'une anamorphose, etc.)</p>
 </li>
 <li>
-<p>Change how are imported target/layout layers: a message asking whether the newly imported layer is a target layer or a layout layer ?</p>
+<p>Change la façon dont sont importées les couches. Un message demande désormais toujours s'il s'agit d'une couche cible ou d'une couche d'habillage.</p>
 </li>
 <li>
-<p>Fix position of context menu when opened on layout features located on near the right/bottom of the window.</p>
+<p>Corrige la position de la boite de menu contextuel lorsque ouverte sur des éléments d'habillage situé près du coin inférieur droit de la carte.</p>
 </li>
 <li>
-<p>Try to improve the style of the box asking to type the various fields of the layer.</p>
+<p>Changement du style de la boite proposant de choisir le type des champs (pour améliorer un peu sa lisibilité).</p>
+</li>
+<li>
+<p>Changement de la manière dont est préparé le code JS/CSS (en utilisant désormais webpack).</p>
 </li>
 </ul>
 <a class="header" href="print.html#074-2018-04-18" id="074-2018-04-18"><h4>0.7.4 (2018-04-18)</h4></a>
 <ul>
-<li>Prevent some error when opening layer with non unique entries in field named 'id' (internally caused by the fact we use geojson and fiona is failing on opening geojson with duplicates in that field).</li>
+<li>Corrige une erreur survenant lors de l'utilisation d'une couche contenant un champ nommé &quot;id&quot; et des valeurs non-uniques dans ce champs (causé, en interne, par le fait que le format geojson est utilisé et que fiona échoue lors de l'ouverture d'un GeoJSON avec des valeurs non-uniques dans ce champs).</li>
 </ul>
 <a class="header" href="print.html#073-2018-03-21" id="073-2018-03-21"><h4>0.7.3 (2018-03-21)</h4></a>
 <ul>
 <li>
-<p>Multiple small bug fixes related to styles.</p>
+<p>Correction de plusieurs petits bugs dans les styles de l'interface.</p>
 </li>
 <li>
-<p>Fix badly set value on some input range elements.</p>
+<p>Corrige la valeur de départ de certains éléments &quot;input&quot; de type &quot;range&quot; qui état incorrecte.</p>
 </li>
 </ul>
 <a class="header" href="print.html#072-2018-03-19" id="072-2018-03-19"><h4>0.7.2 (2018-03-19)</h4></a>
 <ul>
 <li>
-<p>Removes arithmetic progression classification method.</p>
+<p>Suppression de la méthode de discrétisation &quot;progression arithmétique&quot;.</p>
 </li>
 <li>
-<p>Also allow to create proportionnal symbols map when analyzing a layer of points.</p>
+<p>Nouveauté: autorise également la création de symboles proportionnels lors de l'analyse d'un semi de points.</p>
 </li>
 <li>
 <p>Permet d'utiliser des angles arrondis pour les rectangles utilisés en éléments d'habillage.</p>
 </li>
 <li>
-<p>Slightly change the behavior when a result layer is added by not fitting anymore the viewport on it.</p>
+<p>Change légèrement le comportement du zoom lors de l'ajout d'une nouvelle couche de résultat (on ne zoomant plus sur cette dernière).</p>
 </li>
 <li>
-<p>Fix the &quot;fit-zoom&quot; behavior when using Armadillo projection and a layer at world scale.</p>
+<p>Corrige l'option de &quot;zoom à l'emprise de la couche&quot; lors de l'utilisation de la projection Armadillo et d'une couche sur l'emprise du monde.</p>
 </li>
 <li>
 <p>Changement de l'implémentation utilisée pour le calcul des potentiels, de manière à utiliser moins de mémoire sur le serveur.</p>
@@ -1104,7 +1107,7 @@ Ce type de limite permet également de s'interroger sur l’intérêt d'une cart
 </ul>
 <a class="header" href="print.html#070-2018-03-05" id="070-2018-03-05"><h4>0.7.0 (2018-03-05)</h4></a>
 <ul>
-<li>Nouveauté : permet l'analyse d'un semi de points par 2 moyens : via une grille régulière ou un maillage existant. Informations computed are either the density of items (weighted or not) in each cell/polygon or a statistical summary (mean or standard deviation) about the items belonging to each cell/polygon.</li>
+<li>Nouveauté : permet l'analyse d'un semi de points par 2 moyens : via une grille régulière ou un maillage existant. Les informations calculés peuvent être la densité d'item (nombre d'item par km²), pondéré ou non, dans chaque cellule/polygone ou un résumé statistique (moyenne ou écart type) sur les items localisés dans chaque cellule/polygone.</li>
 </ul>
 <a class="header" href="print.html#067-2018-02-01" id="067-2018-02-01"><h4>0.6.7 (2018-02-01)</h4></a>
 <ul>
@@ -1128,7 +1131,7 @@ Ce type de limite permet également de s'interroger sur l’intérêt d'une cart
 <p>Corrige bug avec l'affiche du message d'attente (ne s'affichait pas lors du chargement d'un fichier TopoJSON).</p>
 </li>
 <li>
-<p>Fix the displaying of the &quot;horizontal layout&quot; option for legend when used on a categorical choropleth map + rounding precision for &quot;horizontal layout&quot; legend and &quot;proportionnal symbols&quot; legend.</p>
+<p>Corrige l'affichage des légendes horizontales lors de l'utilisation de la réalisation d'une carte chroroplèthe de catégories + corrige l'affichage de l'arrondi des valeurs pour les légendes des cartes chroroplèthes et symboles proportionnels.</p>
 </li>
 <li>
 <p>Corrige un bug survenant lors du changement de nom d'une couche lorsque celle-ci présentait un nom particulièrement long.</p>

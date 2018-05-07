@@ -3,38 +3,40 @@
 #### 0.8.0 (2018-xx-xx)
 
 
-- New: Allow to promote any layout layer (or result layer) to be a target layer. This functionality makes it possible to combine some representations more efficiently and more quickly (for example, making a chroropleth map on the result of an anamorphosis, etc.).
+- Nouveauté : Autorise à "promouvoir" n'importe quelle couche d'habillage (et certaines couches de résultat) vers le statut de couche cible. Cette fonctionnalité permet de combiner plusieurs type de représentations de manière plus simple/rapide et en évitant des suppressions/imports inutiles de couches (rend par exemple possible de faire une carte choroplèthe sur le résultat d'une anamorphose, etc.)
 
-- Change how are imported target/layout layers: a message asking whether the newly imported layer is a target layer or a layout layer ?
+- Change la façon dont sont importées les couches. Un message demande désormais toujours s'il s'agit d'une couche cible ou d'une couche d'habillage.
 
-- Fix position of context menu when opened on layout features located on near the right/bottom of the window.
+- Corrige la position de la boite de menu contextuel lorsque ouverte sur des éléments d'habillage situé près du coin inférieur droit de la carte.
 
-- Try to improve the style of the box asking to type the various fields of the layer.
+- Changement du style de la boite proposant de choisir le type des champs (pour améliorer un peu sa lisibilité).
+
+- Changement de la manière dont est préparé le code JS/CSS (en utilisant désormais webpack).
 
 
 #### 0.7.4 (2018-04-18)
 
-- Prevent some error when opening layer with non unique entries in field named 'id' (internally caused by the fact we use geojson and fiona is failing on opening geojson with duplicates in that field).
+- Corrige une erreur survenant lors de l'utilisation d'une couche contenant un champ nommé "id" et des valeurs non-uniques dans ce champs (causé, en interne, par le fait que le format geojson est utilisé et que fiona échoue lors de l'ouverture d'un GeoJSON avec des valeurs non-uniques dans ce champs).
 
 
 #### 0.7.3 (2018-03-21)
 
-- Multiple small bug fixes related to styles.
+- Correction de plusieurs petits bugs dans les styles de l'interface.
 
-- Fix badly set value on some input range elements.
+- Corrige la valeur de départ de certains éléments "input" de type "range" qui état incorrecte.
 
 
 #### 0.7.2 (2018-03-19)
 
-- Removes arithmetic progression classification method.
+- Suppression de la méthode de discrétisation "progression arithmétique".
 
-- Also allow to create proportionnal symbols map when analyzing a layer of points.
+- Nouveauté: autorise également la création de symboles proportionnels lors de l'analyse d'un semi de points.
 
 - Permet d'utiliser des angles arrondis pour les rectangles utilisés en éléments d'habillage.
 
-- Slightly change the behavior when a result layer is added by not fitting anymore the viewport on it.
+- Change légèrement le comportement du zoom lors de l'ajout d'une nouvelle couche de résultat (on ne zoomant plus sur cette dernière).
 
-- Fix the "fit-zoom" behavior when using Armadillo projection and a layer at world scale.
+- Corrige l'option de "zoom à l'emprise de la couche" lors de l'utilisation de la projection Armadillo et d'une couche sur l'emprise du monde.
 
 - Changement de l'implémentation utilisée pour le calcul des potentiels, de manière à utiliser moins de mémoire sur le serveur.
 
@@ -50,7 +52,7 @@
 
 #### 0.7.0 (2018-03-05)
 
-- Nouveauté : permet l'analyse d'un semi de points par 2 moyens : via une grille régulière ou un maillage existant. Informations computed are either the density of items (weighted or not) in each cell/polygon or a statistical summary (mean or standard deviation) about the items belonging to each cell/polygon.
+- Nouveauté : permet l'analyse d'un semi de points par 2 moyens : via une grille régulière ou un maillage existant. Les informations calculés peuvent être la densité d'item (nombre d'item par km²), pondéré ou non, dans chaque cellule/polygone ou un résumé statistique (moyenne ou écart type) sur les items localisés dans chaque cellule/polygone.
 
 
 #### 0.6.7 (2018-02-01)
@@ -71,7 +73,7 @@
 
 - Corrige bug avec l'affiche du message d'attente (ne s'affichait pas lors du chargement d'un fichier TopoJSON).
 
-- Fix the displaying of the "horizontal layout" option for legend when used on a categorical choropleth map + rounding precision for "horizontal layout" legend and "proportionnal symbols" legend.
+- Corrige l'affichage des légendes horizontales lors de l'utilisation de la réalisation d'une carte chroroplèthe de catégories + corrige l'affichage de l'arrondi des valeurs pour les légendes des cartes chroroplèthes et symboles proportionnels.
 
 - Corrige un bug survenant lors du changement de nom d'une couche lorsque celle-ci présentait un nom particulièrement long.
 
