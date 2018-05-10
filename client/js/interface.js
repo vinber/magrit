@@ -1271,6 +1271,13 @@ function changeTargetLayer(new_target) {
   if (!data_manager.current_layers[new_target].key_name) {
     send_layer_server(new_target, '/layers/add');
   }
+
+  // Replace the proposed variables in the options of the current representation
+  // if any:
+  if (_app.current_functionnality !== undefined) {
+    fields_handler.unfill();
+    fields_handler.fill(new_target);
+  }
 }
 
 function resetSection1() {

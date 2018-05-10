@@ -416,10 +416,9 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
   li.setAttribute('layer_name', layerName);
   if (typeLayer === 'result') {
     li.setAttribute('class', ['sortable_result ', layerId].join(''));
-    let replace_but;
-    if (!data_manager.current_layers[layerName].symbol || data_manager.current_layers[layerName].symbol === 'path') {
-      replace_but = button_replace;
-    }
+    const promotable = [ 'flow', 'grid', 'discont', 'cartogram', 'smooth'];
+    const replace_but = promotable.indexOf(typeGeom[1]) > -1
+      ? button_replace : undefined;
     li.innerHTML = [
       listDisplayName,
       '<div class="layer_buttons">',
