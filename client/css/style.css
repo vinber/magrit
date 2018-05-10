@@ -182,7 +182,7 @@ h3 {
 }
 
 #section2 {
-  padding: 2px 8px;
+  padding: 2px 8px 10px 8px;
 }
 
 #section2 input[type="text"], #section2 input[type="number"], #section2 input[type="color"] {
@@ -221,7 +221,7 @@ p.params_section2 > select {
   min-width: 40px;
   font-size: 12px;
   right: 20px;
-  max-width: 300px;
+  max-width: 280px;
 }
 
 #section3 {
@@ -235,6 +235,7 @@ p.params_section2 > select {
 
 ul.config_map_options {
   display: inline-block;
+  line-height: 17px;
   list-style: outside none none;
   margin-top: 0px;
   padding: 0px;
@@ -244,6 +245,15 @@ ul.config_map_options {
 .config_map_options li {
   margin: 1px;
   padding: 4px;
+
+}
+
+li.to_hide {
+  margin-left: 8px;
+}
+
+li.to_hide > input[type="number"] {
+  width: 80px;
 }
 
 .list_elem_section4 {
@@ -763,11 +773,6 @@ button.accordion.active:after, button.accordion_disc.active:after, button.accord
   font-size: 14px;
   color: #777;
   margin-left: 4px;
-}
-
-li.to_hide {
-  padding: 4px;
-  margin-left: 8px;
 }
 
 #map_center_menu_ico.active:after {

@@ -108,7 +108,7 @@ export default function makeSection4() {
   const ratio_select = b.append('select')
     .attrs({ class: 'list_elem_section4 i18n m_elem_right', id: 'map_ratio_select' });
   b.append('p').attr('class', 'list_elem_section4 i18n')
-    .style('padding', '4px')
+    .style('padding', '4px 0')
     .attr('data-i18n', '[html]app_page.section4.map_ratio');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_user').attr('value', 'ratio_user');
   ratio_select.append('option').text('').attr('data-i18n', '[html]app_page.section4.ratio_landscape').attr('value', 'landscape');
@@ -196,7 +196,6 @@ export default function makeSection4() {
       'data-i18n': '[html]app_page.section4.map_center_x',
     });
   c1.append('input')
-    .style('width', '80px')
     .attrs({
       id: 'input-center-x',
       class: 'm_elem_right',
@@ -223,7 +222,6 @@ export default function makeSection4() {
       step: 'any',
     })
     .property('value', round_value(zoom_prop.y, 2))
-    .style('width', '80px')
     .on('change', function () {
       svg_map.__zoom.y = +this.value;
       zoom_without_redraw();
@@ -248,7 +246,6 @@ export default function makeSection4() {
         ? round_value(_k, 2)
         : round_value(_k, Math.round(get_nb_decimals(_k) / 2));
     })
-    .style('width', '80px')
     .on('change', function () {
       svg_map.__zoom.k = +this.value / proj.scale();
       zoom_without_redraw();
