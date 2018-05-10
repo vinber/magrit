@@ -187,7 +187,7 @@ h3 {
 
 #section2 input[type="text"], #section2 input[type="number"], #section2 input[type="color"] {
   position: absolute;
-  right: 20px;
+  right: 33px;
   margin: auto;
   min-width: 40px;
   font-size: 12px;

@@ -145,12 +145,12 @@ export function makeSection5() {
     .style('display', 'none');
 
   const geo_a = export_geo_options.append('p')
-    .style('margin-bottom', '0');
+    .style('margin', '5px 5px 40px 0');
   geo_a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.export_box.option_layer' });
 
-  export_geo_options.insert('select')
-    .styles({ position: 'sticky', float: 'right' })
+  geo_a.insert('select')
+    .styles({ margin: '20px 0', 'max-width': '280px' })
     .attrs({ id: 'layer_to_export', class: 'i18n m_elem_right' });
 
   const geo_b = export_geo_options.append('p')
@@ -164,12 +164,13 @@ export function makeSection5() {
   export_geo_options.append('p')
     .style('margin', 'auto')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.export_box.option_projection' });
-  const geo_c = export_geo_options.append('p').style('margin', 'auto');
+  const geo_c = export_geo_options.append('p')
+    .style('margin', '5px 5px 30px 5px');
   const selec_projection = geo_c.insert('select')
     .styles({
-      position: 'relative', float: 'right', 'margin-right': '5px', 'font-size': '10.5px',
+      float: 'right', 'font-size': '10.5px',
     })
-    .attrs({ id: 'projection_to_use', disabled: true, class: 'i18n' });
+    .attrs({ id: 'projection_to_use', disabled: true, class: 'i18n m_elem_right' });
 
   const proj4_input = export_geo_options.append('p')
     .style('margin', 'auto')
