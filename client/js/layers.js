@@ -548,7 +548,7 @@ export function add_layer_topojson(text, options = {}) {
   // The 'default_projection' property is used for providing a custom projection
   // with our sample layer (it use a separate path compared to the previous
   // block of code, in order to not let the choice to the user)
-  if (options.default_projection) {
+  if (options.default_projection && options.target_layer_on_add) {
     if (options.default_projection[0] === 'proj4') {
       let proj_str = options.default_projection[1];
       let custom_name;
