@@ -177,15 +177,19 @@ export function check_layer_name(name) {
 }
 
 /**
-* Display a message when switching between functionnalitiesif the layer to render
+* Display a message when switching between functionnalities if the layer to render
 * doesn't have any interesting field to use.
 */
 function display_error_num_field() {
-  swal({
-    title: '',
-    text: _tr('app_page.common.error_type_fields'),
-    type: 'error',
-  });
+  // Actually we are not diplaying an error message anymore but closing
+  // closing the openend menu if their is no intersting field to be used for this
+  // kind of representation. TODO : Reflect that in function names etc.
+  clean_menu_function();
+  // swal({
+  //   title: '',
+  //   text: _tr('app_page.common.error_type_fields'),
+  //   type: 'error',
+  // });
 }
 
 /**

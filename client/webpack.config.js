@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const exec = require('child_process').exec;
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const ReplaceHashWebpackPlugin = require('replace-hash-webpack-plugin');
 const version = require('./package.json').version;
@@ -63,6 +64,9 @@ module.exports = [{
       ]
   },
   plugins: [
+    new CleanWebpackPlugin(['dist'], {
+      watch: true,
+    }),
     new webpack.ProvidePlugin({
         'Promise': 'bluebird',
     }),

@@ -624,6 +624,10 @@ export function make_box_type_fields(layerName) {
       container.remove();
       overlay_under_modal.hide();
       document.removeEventListener('keydown', helper_esc_key_twbs);
+      if (window.fields_handler) {
+        fields_handler.unfill();
+        fields_handler.fill(layerName);
+      }
     };
 
     if (f.length === 0) { // If the user dont have already selected the type :
@@ -671,10 +675,6 @@ export function make_box_type_fields(layerName) {
       resolve(true);
       data_manager.current_layers[layerName].fields_type = r.slice();
       getAvailablesFunctionnalities(layerName);
-      if (window.fields_handler) {
-        fields_handler.unfill();
-        fields_handler.fill(layerName);
-      }
       clean_up_box();
     };
     function helper_esc_key_twbs(_evt) {
