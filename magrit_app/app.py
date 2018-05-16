@@ -49,8 +49,6 @@ from concurrent.futures._base import CancelledError
 from pyexcel import get_book
 
 # Web related stuff :
-import jinja2
-import aiohttp_jinja2
 from aioredis import create_pool, create_redis_pool
 from aiohttp import web, ClientSession
 from aiohttp_session import get_session, session_middleware, redis_storage
@@ -86,7 +84,6 @@ except:
    from .helpers.error_middleware404 import error_middleware
 
 
-@aiohttp_jinja2.template('index.html')
 async def index_handler(request):
     """
     Handler for the index page.
@@ -101,27 +98,23 @@ async def index_handler(request):
             request.app['redis_conn'].incr('single_view_onepage'),
             loop=request.app.loop)
     session['already_seen'] = True
-    return {'app_name': request.app['app_name'],
-            'version': request.app['version']}
+    return web.FileResponse('./static/index.html')
 
 
-@aiohttp_jinja2.template('modules.html')
 async def serve_main_page(request):
     """
     Handler for the application real page.
     """
     session_redis = await get_session(request)
     get_user_id(session_redis, request.app['app_users'], request.app)
-    return {'app_name': request.app['app_name'],
-            'version': request.app['version']}
+    return web.FileResponse('./static/modules.html')
 
 
-@aiohttp_jinja2.template('contact_form.html')
 async def serve_contact_form(request):
     """
     Handler for the contact page.
     """
-    return {"app_name": request.app["app_name"]}
+    return web.FileResponse('./static/contact_form.html')
 
 
 async def geojson_to_topojson(data, layer_name):
@@ -1457,8 +1450,7 @@ async def on_shutdown(app):
 async def init(loop, port=None, watch_change=False):
     """
     Function creating the various routes for the application and setting up
-    middlewares (for custom 404 error page, redis cookie storage and jinja2
-    templates).
+    middlewares (for custom 404 error page and redis cookie storage).
     """
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("magrit_app.main")
@@ -1474,7 +1466,6 @@ async def init(loop, port=None, watch_change=False):
         middlewares=[
             error_middleware,
             session_middleware(redis_storage.RedisStorage(redis_cookie))])
-    aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)

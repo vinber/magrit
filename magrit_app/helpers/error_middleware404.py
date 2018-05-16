@@ -1,9 +1,8 @@
 from aiohttp import web
-from aiohttp_jinja2 import render_template
 
 
 async def handle_404(request, response):
-    return render_template('page404.html', request, {})
+    return web.FileResponse('./static/page404.html')
 
 async def error_middleware(app, handler):
     async def middleware_handler(request):

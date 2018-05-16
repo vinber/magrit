@@ -64,7 +64,7 @@ global._app = {
   id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   targeted_layer_added: false,
   to_cancel: undefined,
-  version: document.querySelector('#header').getAttribute('v'),
+  version: MAGRIT_VERSION,
 };
 
 global.proj = d3.geoNaturalEarth2().scale(1).translate([0, 0]);

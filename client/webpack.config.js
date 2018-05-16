@@ -1,6 +1,8 @@
 const webpack = require('webpack');
 const exec = require('child_process').exec;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const ReplaceHashWebpackPlugin = require('replace-hash-webpack-plugin');
+const version = require('./package.json').version;
 
 module.exports = [{
   entry: {
@@ -12,7 +14,8 @@ module.exports = [{
     ]
   },
   output: {
-    filename: '[name].[hash:6].js'
+    filename: '[name].[hash:6].js',
+    publicPath: 'static/dist/',
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   module: {
@@ -63,6 +66,14 @@ module.exports = [{
     new webpack.ProvidePlugin({
         'Promise': 'bluebird',
     }),
+    new ReplaceHashWebpackPlugin({
+      cwd: './',
+      src: './html/modules.html',
+      dest: 'dist',
+    }),
+    new webpack.DefinePlugin({
+      MAGRIT_VERSION: JSON.stringify(version),
+    }),
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
@@ -72,7 +83,7 @@ module.exports = [{
           });
         });
       }
-    }
+    },
   ],
   watchOptions: {
     poll: true
@@ -80,7 +91,7 @@ module.exports = [{
 },{
   entry: "./js/d3_custom.js",
   output: {
-    filename: "d3.[hash:6].custom.min.js",
+    filename: "d3-custom.min.js",
     library: "d3"
   },
   mode: 'production',
