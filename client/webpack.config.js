@@ -12,7 +12,7 @@ module.exports = [{
     ]
   },
   output: {
-    filename: '[name].js'
+    filename: '[name].[hash:6].js'
   },
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   module: {
@@ -80,7 +80,7 @@ module.exports = [{
 },{
   entry: "./js/d3_custom.js",
   output: {
-    filename: "d3.custom.min.js",
+    filename: "d3.[hash:6].custom.min.js",
     library: "d3"
   },
   mode: 'production',
