@@ -1,5 +1,5 @@
 import { make_dialog_container, overlay_under_modal } from './dialogs';
-import { accordionize2 } from './helpers';
+import { accordionize2, getTargetLayerProps } from './helpers';
 import { scale_to_bbox } from './helpers_calc';
 import { scale_to_lyr, remove_layer_cleanup, fitLayer, center_map } from './interface';
 import { reproj_symbol_layer, zoom_without_redraw } from './map_ctrl';
@@ -87,6 +87,12 @@ export const available_projections = new Map([
   ['WinkelTriple', { name: 'geoWinkel3', scale: '400', param_in: 'pseudoplan', param_ex: 'aphylactic' }],
 ]);
 /* eslint-enable object-curly-newline,max-len */
+
+function storePrefProjection(type_proj, name_proj) {
+  const props = getTargetLayerProps();
+  if (!props) return;
+  props.last_projection = [type_proj, name_proj]
+}
 
 /**
 * Function to change (one of more of) the three rotations axis of a d3 projection
@@ -199,6 +205,7 @@ const createBoxProj4 = function createBoxProj4() {
       _app.last_projection = proj_str;
       addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
       _app.current_proj_name = 'def_proj4';
+      storePrefProjection('proj4', _app.last_projection);
     } else {
       swal({
         title: 'Oops...',
@@ -278,9 +285,11 @@ export function handle_projection_select() {
     _app.current_proj_name = val;
     change_projection_4(proj4(_app.last_projection));
     makeTooltipProj4(this, _app.last_projection);
+    storePrefProjection('proj4', _app.last_projection);
   } else {
     _app.current_proj_name = val;
     change_projection(_app.current_proj_name);
+    storePrefProjection('d3', _app.current_proj_name);
   }
 }
 
@@ -412,6 +421,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     addLastProjectionSelect(_app.current_proj_name);
     change_projection(_app.current_proj_name);
     updateProjOptions();
+    storePrefProjection('d3', _app.current_proj_name);
   }
 
   const prev_projection = _app.current_proj_name,
@@ -650,6 +660,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
     if (prev_projection !== 'def_proj4') {
       change_projection(_app.current_proj_name);
       addLastProjectionSelect(_app.current_proj_name);
+      storePrefProjection('d3', _app.current_proj_name);
     } else if (prev_projection === 'def_proj4') {
       change_projection_4(proj4(_app.last_projection));
       let custom_name = Object.keys(_app.epsg_projections)
@@ -658,6 +669,7 @@ const createBoxCustomProjection = function createBoxCustomProjection() {
       custom_name = custom_name && custom_name.length > 0 && custom_name[0].length > 1
         ? custom_name[0][1].name : undefined;
       addLastProjectionSelect(_app.current_proj_name, _app.last_projection, custom_name);
+      storePrefProjection('proj4', _app.last_projection);
     }
     if (prev_rotate) {
       handle_proj_center_button(prev_rotate);

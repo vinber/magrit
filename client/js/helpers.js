@@ -933,3 +933,13 @@ export function accordionize2(css_selector = '.accordion', parent = document) {
     };
   }
 }
+
+export function getTargetLayerProps() {
+  const names = Object.keys(data_manager.current_layers);
+  for (let i = 0, n_layer = names.length; i < n_layer; i++) {
+    if (data_manager.current_layers[names[i]].targeted) {
+      return data_manager.current_layers[names[i]];
+    }
+  }
+  return null;
+}

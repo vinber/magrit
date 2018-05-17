@@ -545,28 +545,37 @@ export function add_layer_topojson(text, options = {}) {
     }
   }
 
-  // The 'default_projection' property is used for providing a custom projection
-  // with our sample layer (it use a separate path compared to the previous
-  // block of code, in order to not let the choice to the user)
-  if (options.default_projection && options.target_layer_on_add) {
-    if (options.default_projection[0] === 'proj4') {
-      let proj_str = options.default_projection[1];
-      let custom_name;
-      if (proj_str.startsWith('EPSG:')) {
-        const code = +proj_str.split('EPSG:')[1];
-        const rv = _app.epsg_projections[code];
-        proj_str = rv.proj4;
-        custom_name = rv.name;
+  if (options.default_projection) {
+    // We are also storing this information for later use if the user promotes/downgrade
+    // some lmayers:
+    data_manager.current_layers[lyr_name_to_add].default_projection = options.default_projection;
+    if (options.target_layer_on_add) {
+      // The 'default_projection' property is used for providing a custom projection
+      // with our sample layer (it use a separate path compared to the previous
+      // block of code, in order to not let the choice to the user)
+      if (options.default_projection[0] === 'proj4') {
+        let proj_str = options.default_projection[1];
+        let custom_name;
+        if (proj_str.startsWith('EPSG:')) {
+          const code = +proj_str.split('EPSG:')[1];
+          const rv = _app.epsg_projections[code];
+          proj_str = rv.proj4;
+          custom_name = rv.name;
+        }
+        _app.current_proj_name = 'def_proj4';
+        _app.last_projection = proj_str;
+        change_projection_4(proj4(proj_str));
+        addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
+      } else if (options.default_projection[0] === 'd3') {
+        _app.current_proj_name = options.default_projection[1];
+        change_projection(options.default_projection[1]);
+        addLastProjectionSelect(_app.current_proj_name);
       }
-      _app.current_proj_name = 'def_proj4';
-      _app.last_projection = proj_str;
-      change_projection_4(proj4(proj_str));
-      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
-    } else if (options.default_projection[0] === 'd3') {
-      _app.current_proj_name = options.default_projection[1];
-      change_projection(options.default_projection[1]);
-      addLastProjectionSelect(_app.current_proj_name);
     }
+  } else if (parsedJSON.proj) {
+    // We are also storing informations about the projection read from the .proj file
+    // if any:
+    data_manager.current_layers[lyr_name_to_add].default_projection = ['proj4', parsedJSON.proj];
   }
   return lyr_name_to_add;
 }

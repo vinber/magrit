@@ -21,7 +21,7 @@ import { add_layer_topojson } from './layers';
 import { handle_legend } from './legend';
 import { reproj_symbol_layer, zoom, zoomClick, zoom_without_redraw } from './map_ctrl';
 import { apply_user_preferences, beforeUnloadWindow } from './map_project';
-import { addLastProjectionSelect, change_projection } from './projections';
+import { addLastProjectionSelect, change_projection, change_projection_4 } from './projections';
 import { world_topology } from './sample_topo';
 import { boxExplore2 } from './tables';
 import handleZoomRect from './zoom_rect';
@@ -1239,6 +1239,26 @@ function downgradeTargetLayer() {
 }
 
 function changeTargetLayer(new_target) {
+  function _reproj(d_proj) {
+    if (d_proj[0] === 'proj4') {
+      let proj_str = d_proj[1];
+      let custom_name;
+      if (proj_str.startsWith('EPSG:')) {
+        const code = +proj_str.split('EPSG:')[1];
+        const rv = _app.epsg_projections[code];
+        proj_str = rv.proj4;
+        custom_name = rv.name;
+      }
+      _app.current_proj_name = 'def_proj4';
+      _app.last_projection = proj_str;
+      change_projection_4(proj4(proj_str));
+      addLastProjectionSelect('def_proj4', _app.last_projection, custom_name);
+    } else if (d_proj[0] === 'd3') {
+      _app.current_proj_name = d_proj[1];
+      change_projection(d_proj[1]);
+      addLastProjectionSelect(_app.current_proj_name);
+    }
+  }
   downgradeTargetLayer();
   // const old_target = downgradeTargetLayer();
   data_manager.current_layers[new_target].targeted = true;
@@ -1257,6 +1277,15 @@ function changeTargetLayer(new_target) {
   scale_to_lyr(new_target);
   center_map(new_target);
   zoom_without_redraw();
+
+  // Reproject the map to the default projection if any:
+  if (data_manager.current_layers[new_target].default_projection) {
+    const d_proj = data_manager.current_layers[new_target].default_projection;
+    _reproj(d_proj);
+  } else if (data_manager.current_layers[new_target].last_projection) {
+    const d_proj = data_manager.current_layers[new_target].last_projection;
+    _reproj(d_proj);
+  }
 
   const id_new_target_lyr = _app.layer_to_id.get(new_target);
   document.querySelector(`#sortable > .${id_new_target_lyr}`).classList.add('sortable_target');

@@ -21,12 +21,12 @@ module.exports = [{
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   module: {
     rules: [
-      {
-        enforce: "pre",
-        test: /\.js$/,
-        exclude: /node_modules/,
-        loader: "eslint-loader",
-      },
+      // {
+      //   enforce: "pre",
+      //   test: /\.js$/,
+      //   exclude: /node_modules/,
+      //   loader: "eslint-loader",
+      // },
       {
         test: /\.js$/,
         use: 'babel-loader',
@@ -122,5 +122,16 @@ module.exports = [{
         }
       })
     ]
-  }
+  },
+  plugins: [{
+    apply: (compiler) => {
+      compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
+        exec('cp dist/d3-custom.min.js ../magrit_app/static/dist/', (err, stdout, stderr) => {
+          if (stdout) process.stdout.write(stdout);
+          if (stderr) process.stderr.write(stderr);
+        });
+      });
+    }
+  },
+],
 }];
