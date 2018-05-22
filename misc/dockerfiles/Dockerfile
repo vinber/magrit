@@ -10,7 +10,6 @@ RUN apt-get update && apt-get install -y software-properties-common && add-apt-r
         libxslt1-dev libxml2 libxml2-dev libkml-dev locales \
     && npm -g install topojson \
     && rm -rf /var/lib/apt/lists/* \
-    && ln -s /usr/bin/nodejs /usr/bin/node \
     && sed -e '/save/ s/^#*/#/' -i /etc/redis/redis.conf \
     && sysctl vm.overcommit_memory=1 \
     && locale-gen fr_FR.UTF-8
