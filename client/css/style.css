@@ -1198,6 +1198,13 @@ p.breaks_vals > input[type="number"].size_class {
   width: 60px !important;
 }
 
+#sizes_div > div > p.breaks_vals > input[type="number"] {
+  width: 70px !important;
+  margin: 1px !important;
+  height: 2.5em !important;
+}
+
+
 /* Styles for modal box allowing to choose the type of each field */
 #fields_select {
   display: grid;

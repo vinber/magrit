@@ -1,7 +1,8 @@
 import { make_dialog_container, overlay_under_modal, reOpenParent } from './../dialogs';
-import { make_min_max_tableau, fetch_min_max_table_value, } from './../interface';
+import { fetch_min_max_table_value, make_min_max_tableau } from './../function';
 import { make_content_summary } from './../helpers';
 import { get_precision_axis, max_fast, min_fast } from './../helpers_calc';
+import { Mabs } from './../helpers_math';
 import { prepare_ref_histo } from './common';
 
 export const display_discretization_links_discont = function (layer_name, field_name, nb_class, type) {
@@ -190,7 +191,7 @@ export const display_discretization_links_discont = function (layer_name, field_
     breaks_info = [];
     last_min = tmp_breaks.sizes[0];
     last_max = tmp_breaks.sizes[tmp_breaks.sizes.length - 1];
-    if (+tmp_breaks.mins[0] > +serie.min()) {
+    if (Mabs(+serie.min() - +tmp_breaks.mins[0]) > 0.01) {
       nb_class += 1;
       txt_nb_class.node().value = nb_class;
       // txt_nb_class.html(_tr("disc_box.class", {count: nb_class}));
