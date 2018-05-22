@@ -436,7 +436,7 @@
         },
         "box_type_fields": {
             "title": "Data type",
-            "message_invite": "Selet/modify the data type (in each field)",
+            "message_invite": "Select or modify the data type (in each field)",
             "stock": "Stock",
             "ratio": "Ratio",
             "category": "Category",
