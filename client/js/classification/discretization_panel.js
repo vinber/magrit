@@ -515,7 +515,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
               bin.val = stock_class[i];
               bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
               bin.width = breaks[i + 1] - breaks[i];
-              bin.height = bin.val / (breaks[i + 1] - breaks[i]);
+              bin.height = bin.val / bin.width;
               bins[i] = bin;
             }
             resolve(true);
@@ -572,18 +572,13 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
         bins = [];
         for (let i = 0, len = stock_class.length; i < len; i++) {
-          // const bin = {};
-          // bin.val = stock_class[i];
-          // bin.offset = i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset);
-          // bin.width = breaks[i + 1] - breaks[i];
-          // bin.height = bin.val / (breaks[i + 1] - breaks[i]);
-          // bins[i] = bin;
           const _stock = stock_class[i];
-          bins[i].push({
-            val: stock_class[i],
+          const _bin_width = breaks[i + 1] - breaks[i];
+          bins.push({
+            val: _stock,
             offset: i === 0 ? 0 : (bins[i - 1].width + bins[i - 1].offset),
-            height: _stock / (breaks[i + 1] - breaks[i]),
-            width: breaks[i + 1] - breaks[i]
+            height: _stock / _bin_width,
+            width: _bin_width,
           });
         }
         resolve(true);

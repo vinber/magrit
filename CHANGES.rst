@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.8.1 (2018-05-22)
+------------------
+
+- Fix the displaying of bar chart in classification panel.
+
+
 0.8.0 (2018-05-22)
 ------------------
 

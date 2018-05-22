@@ -1,6 +1,6 @@
 {
   "name": "magrit-client",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "homepage": "https://github.com/riatelab/magrit",
   "devDependencies": {
     "babel-core": "^6.26.0",

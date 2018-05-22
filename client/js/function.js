@@ -459,11 +459,15 @@ export function make_min_max_tableau(values, nb_class, discontinuity_type, min_s
 
 export function fetch_min_max_table_value(parent_id) {
   let parent_node;
-  if (parent_id) parent_node = document.getElementById(parent_id);
-  else if (_app.current_functionnality.name === 'flow') document.getElementById('FlowMap_discTable');
-  else if (_app.current_functionnality.name === 'discont') document.getElementById('Discont_discTable');
-  else return;
-
+  if (parent_id) {
+    parent_node = document.getElementById(parent_id);
+  } else if (_app.current_functionnality.name === 'flow') {
+    parent_node = document.getElementById('FlowMap_discTable');
+  } else if (_app.current_functionnality.name === 'discont') {
+    parent_node = document.getElementById('Discont_discTable');
+  } else {
+    return;
+  }
   const mins = Array.prototype.map.call(parent_node.querySelectorAll('.min_class'), el => +el.value),
     maxs = Array.prototype.map.call(parent_node.querySelectorAll('.max_class'), el => +el.value),
     sizes = Array.prototype.map.call(parent_node.querySelectorAll('.size_class'), el => +el.value),
@@ -482,7 +486,6 @@ export function fetch_min_max_table_value(parent_id) {
       && r_maxs.every((d, i) => sorted_max[i] === d)
       && r_sizes.every((d, i) => sorted_sizes[i] === d))) {
     swal('', _tr('app_page.common.error_values_order'), 'error');
-    return false;
   }
 
   return { mins: sorted_min, maxs: sorted_max, sizes: sorted_sizes };
