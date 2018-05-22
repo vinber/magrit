@@ -26,26 +26,28 @@ Most users should go on :
 - the [blog](http://magrit.hypotheses.org)
 
 
-## Simple installation / Installation for development
-The only targeted/tested OS for development is currently GNU/Linux.   
-However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX) which is the preferred solution if you want to install Magrit for using it but don't want to do any development:   
-- [Installation with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
-
-To install Magrit directly on your GNU/Linux system you have to install some shared libraries and python libraries.
-Once installed, the python server application will take care to concatenate/transpile/etc. the JS and CSS code.
-These steps are detailed in the Wiki:
-- [Installing for development](https://github.com/riatelab/magrit/wiki/Installation-for-development)
-- [Installing for development (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
-
 ## Examples
 <p><img src="https://github.com/mthh/example-magrit-projects/raw/master/nuts3_cagr2.png" height="220"/><img src="https://github.com/mthh/example-magrit-projects/raw/master/cinema_pot2.png" height="230"/><img src="https://magrit.hypotheses.org/files/2017/02/worldpop.png" height="230"/></p>
 
 More maps are available in the [gallery](http://magrit.hypotheses.org/galerie).
 
 
+## Simple installation / Installation for development
+The only targeted/tested OS for development is currently GNU/Linux.   
+However, you can install it on other platforms, which are supported by Docker (GNU/Linux, FreeBSD, Windows 64bits, MAC OSX) which is the preferred solution if you want to install Magrit for using it but don't want to do any development:   
+- [Installation with Docker](https://github.com/riatelab/magrit/wiki/Installation-with-Docker)
+
+To install Magrit directly on your GNU/Linux system you have to install some shared libraries and python libraries.
+Once installed, the python server application can take care to concatenate/transpile/etc. the JS and CSS code.
+These steps are detailed in the Wiki and in the `CONTRIBUTING.md` file:
+- [Installing for development](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Installing for development (with a python virtual environnement)](https://github.com/riatelab/magrit/wiki/Installation-for-development)
+- [Instructions for contributions](https://github.com/riatelab/magrit/blob/master/CONTRIBUTING.md)
+
+
 ## Contributing to Magrit
-Contributions are welcome! There are various way to contribute to the project:
-- Feedback and bug reports: don't hesitate to open a issue on this page!
-- Translation (French, English and Spanish languages are currently available)
-- Code contribution (you're in the right place! Clone the repo, fix what you want to be fixed and submit a pull request)
-- Contribute to the [gallery](http://magrit.hypotheses.org/galerie) by submitting your best maps
+Contributions are welcome! There are various way to contribute to the project which are detailed in [CONTRIBUTING](https://github.com/riatelab/magrit/blob/master/CONTRIBUTING.md) file! You can notably:
+- Report bugs or send us feedback.
+- Add new translations or fix existing ones.
+- Contribute code (you're in the right place! Clone the repo, fix what you want to be fixed and submit a pull request).
+- Contribute to the [gallery](http://magrit.hypotheses.org/galerie) by submitting your best maps.

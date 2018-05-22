@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.8.0 (2018-xx-xx)
+0.8.0 (2018-05-22)
 ------------------
 
 - New: Allow to promote layout layers (or some result layers) to be a target layer. This functionality makes it possible to combine some representations more efficiently and more quickly (for example, making a chroropleth map on the result of an anamorphosis, etc.).
