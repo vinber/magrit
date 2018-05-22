@@ -57,11 +57,6 @@
 /******/ 		"app": 0
 /******/ 	};
 /******/
-/******/ 	// script path function
-/******/ 	function jsonpScriptSrc(chunkId) {
-/******/ 		return __webpack_require__.p + "" + ({}[chunkId]||chunkId) + "." + "d56b71" + ".js"
-/******/ 	}
-/******/
 /******/ 	var deferredModules = [];
 /******/
 /******/ 	// The require function
