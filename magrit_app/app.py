@@ -312,9 +312,6 @@ async def _convert(request, tmp_dir):
                     tmp_dir,
                     '{}_{}.{}'.format(user_id, clean_name(name), ext.lower())
                     )
-                # file_name = ''.join(
-                #     ['/tmp/', user_id, '_', '.'.join(
-                #         [clean_name(name), ext.lower()])])
                 list_files.append(file_name)
                 content = field.file.read()
                 savefile(file_name, content)
@@ -373,16 +370,13 @@ async def _convert(request, tmp_dir):
              '}']))
 
     if "shp" in datatype:
-        # clean_files = lambda: [os.remove(_file) for _file in list_files]
         res = await request.app.loop.run_in_executor(
             request.app["ProcessPool"],
             ogr_to_geojson, shp_path)
         if not res:
-            # clean_files()
             return convert_error()
         result = await geojson_to_topojson(res, layer_name)
         if not result:
-            # clean_files()
             return convert_error()
 
         asyncio.ensure_future(
@@ -391,7 +385,6 @@ async def _convert(request, tmp_dir):
         # Read the orignal projection to propose it later (client side):
         proj_info_str = read_shp_crs(
             path_join(tmp_dir, name.replace('.shp', '.prj')))
-        # clean_files()
 
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
@@ -494,8 +487,6 @@ async def _convert(request, tmp_dir):
             request.app['redis_conn'].set(
                 f_name, result, pexpire=43200000))
 
-        # Remove the temporary file previously created:
-        os.remove(filepath)
     else:
         # Datatype was not detected; so nothing was done
         # (Shouldn't really occur as it has already been
@@ -589,7 +580,6 @@ async def carto_doug(posted_data, user_id, app):
             make_carto_doug,
             tmp_path, n_field_name, iterations)
 
-        os.remove(tmp_path)
         new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
         res = await geojson_to_topojson(result, new_name)
         hash_val = mmh3_hash(res)
@@ -901,9 +891,6 @@ async def compute_stewart(posted_data, user_id, app):
             n_field_name2,
             posted_data['user_breaks'])
 
-        os.remove(filenames['point_layer'])
-        if filenames['mask_layer']:
-            os.remove(filenames['mask_layer'])
         new_name = '_'.join(['Smoothed', n_field_name1])
         res = await geojson_to_topojson(res, new_name)
         hash_val = str(mmh3_hash(res))
@@ -1060,7 +1047,6 @@ async def handler_exists_layer2(request):
                     output_path, output_path.replace(".geojson", ext),
                     file_format, out_proj
                     )
-                os.remove(output_path)
                 raw_data, filename = zip_layer_folder(tmp_path, layer_name)
                 b64_zip = b64encode(raw_data)
                 return web.Response(
