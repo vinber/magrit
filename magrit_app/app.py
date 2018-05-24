@@ -290,6 +290,12 @@ async def convert(request):
     store it (in topojson format) in redis during the user session
     for a possible later use.
     """
+    with TemporaryDirectory() as tmp_dir:
+        return await _convert(request, tmp_dir)
+
+
+async def _convert(request, tmp_dir):
+
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
     user_id = get_user_id(session_redis, request.app['app_users'])
@@ -302,9 +308,13 @@ async def convert(request):
             for i in range(len(posted_data) - 1):
                 field = posted_data.getall('file[{}]'.format(i))[0]
                 name, ext = field.filename.rsplit('.', 1)
-                file_name = ''.join(
-                    ['/tmp/', user_id, '_', '.'.join(
-                        [clean_name(name), ext.lower()])])
+                file_name = path_join(
+                    tmp_dir,
+                    '{}_{}.{}'.format(user_id, clean_name(name), ext.lower())
+                    )
+                # file_name = ''.join(
+                #     ['/tmp/', user_id, '_', '.'.join(
+                #         [clean_name(name), ext.lower()])])
                 list_files.append(file_name)
                 content = field.file.read()
                 savefile(file_name, content)
@@ -312,9 +322,9 @@ async def convert(request):
                     tmp_buf.append(content)
             shp_path = [i for i in list_files if 'shp' in i][0]
             layer_name = shp_path.replace(
-                ''.join(['/tmp/', user_id, '_']), '').replace('.shp', '')
+                path_join(tmp_dir, '{}_'.format(user_id)), '').replace('.shp', '')
             hashed_input = mmh3_hash(b''.join(tmp_buf))
-            name = shp_path.split(os.path.sep)[2]
+            name = shp_path.rsplit(os.path.sep, 1)[1]
             datatype = "shp"
         except Exception as err:
             _tb = traceback.format_exc(limit=2)
@@ -331,7 +341,7 @@ async def convert(request):
             data = field.file.read()
             datatype = field.content_type
             hashed_input = mmh3_hash(data)
-            filepath = ''.join(['/tmp/', user_id, "_", name])
+            filepath = path_join(tmp_dir, '{}_{}'.format(user_id, name))
         except Exception as err:
             _tb = traceback.format_exc(limit=2)
             request.app['logger'].info(
@@ -353,7 +363,8 @@ async def convert(request):
             request.app['redis_conn'].pexpire(f_name, 43200000))
         if "shp" in datatype:
             # Read the orignal projection to propose it later:
-            proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
+            proj_info_str = read_shp_crs(
+                path_join(tmp_dir, name.replace('.shp', '.prj')))
 
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input),
@@ -362,28 +373,28 @@ async def convert(request):
              '}']))
 
     if "shp" in datatype:
-        clean_files = lambda: [os.remove(_file) for _file in list_files]
+        # clean_files = lambda: [os.remove(_file) for _file in list_files]
         res = await request.app.loop.run_in_executor(
             request.app["ProcessPool"],
             ogr_to_geojson, shp_path)
         if not res:
-            clean_files()
+            # clean_files()
             return convert_error()
         result = await geojson_to_topojson(res, layer_name)
         if not result:
-            clean_files()
+            # clean_files()
             return convert_error()
 
         asyncio.ensure_future(
             request.app['redis_conn'].set(f_name, result, pexpire=43200000))
-
+        print(name, path_join(tmp_dir, name.replace('.shp', '.prj')))
         # Read the orignal projection to propose it later (client side):
-        proj_info_str = read_shp_crs('/tmp/' + name.replace('.shp', '.prj'))
-        clean_files()
+        proj_info_str = read_shp_crs(
+            path_join(tmp_dir, name.replace('.shp', '.prj')))
+        # clean_files()
 
     elif datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
-        dir_path = '/tmp/{}{}/'.format(user_id, hashed_input)
 
         with ZipFile(dataZip) as myzip:
             list_files = myzip.namelist()
@@ -415,10 +426,9 @@ async def convert(request):
                     'Error with content of zip file : {}'.format(_tb))
                 return convert_error('Error with zip file content')
 
-            os.mkdir(dir_path)
             # Extract the content of the zip file and replace any uppercase
             # extension by its lowercase version :
-            slots = extractShpZip(myzip, slots, dir_path)
+            slots = extractShpZip(myzip, slots, tmp_dir)
             try:
                 res = await request.app.loop.run_in_executor(
                     request.app["ProcessPool"],
@@ -442,9 +452,6 @@ async def convert(request):
                 request.app['logger'].info(
                     'Error with content of zip file : {}\n{}'.format(err, _tb))
                 return convert_error('Error with zip file content')
-            finally:
-                [os.remove(dir_path + _file) for _file in os.listdir(dir_path)]
-                os.removedirs(dir_path)
 
     elif ('octet-stream' in datatype or 'text/json' in datatype
             or 'application/geo+json' in datatype
@@ -573,25 +580,24 @@ async def carto_doug(posted_data, user_id, app):
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    with TemporaryDirectory() as tmp_dir:
+        tmp_path = path_join(tmp_dir, '{}.geojson'.format(get_name()))
+        savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
 
-    tmp_part = get_name()
-    tmp_path = ''.join(['/tmp/', tmp_part, '.geojson'])
-    savefile(tmp_path, topojson_to_geojson(ref_layer).encode())
+        result = await app.loop.run_in_executor(
+            app["ThreadPool"],
+            make_carto_doug,
+            tmp_path, n_field_name, iterations)
 
-    result = await app.loop.run_in_executor(
-        app["ThreadPool"],
-        make_carto_doug,
-        tmp_path, n_field_name, iterations)
+        os.remove(tmp_path)
+        new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
+        res = await geojson_to_topojson(result, new_name)
+        hash_val = mmh3_hash(res)
+        asyncio.ensure_future(
+            app['redis_conn'].set('_'.join([
+                user_id, str(hash_val)]), res, pexpire=43200000))
 
-    os.remove(tmp_path)
-    new_name = '_'.join(["Carto_doug", str(iterations), n_field_name])
-    res = await geojson_to_topojson(result, new_name)
-    hash_val = mmh3_hash(res)
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([
-            user_id, str(hash_val)]), res, pexpire=43200000))
-
-    return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
+        return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
 # async def compute_discont(posted_data, user_id, app):
 #     st = time.time()
@@ -680,57 +686,58 @@ async def carto_gridded_point(posted_data, user_id, app):
     else:
         n_field_name = None
 
-    # Prepare the temporary filenames for the input layer(s) and for the result:
-    filenames = {
-        'src_layer': ''.join(['/tmp/', get_name(), '.geojson']),
-        'polygon_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['polygon_layer'] else None,
-        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson']) if posted_data['mask_layer'] else None,
-        'result': None
-    }
+    with TemporaryDirectory() as tmp_dir:
+        # Prepare the temporary filenames for the input layer(s) and for the result:
+        filenames = {
+            'src_layer': path_join(tmp_dir, '{}.geojson'.format(get_name)),
+            'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name)) if posted_data['polygon_layer'] else None,
+            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name)) if posted_data['mask_layer'] else None,
+            'result': None
+        }
 
-    # Save the necessary layer on the disk:
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+        # Save the necessary layer on the disk:
+        savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
-    if posted_data['mask_layer']:
-        f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
-        mask_layer = await app['redis_conn'].get(f_name)
-        savefile(filenames['mask_layer'],
-                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+        if posted_data['mask_layer']:
+            f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
+            mask_layer = await app['redis_conn'].get(f_name)
+            savefile(filenames['mask_layer'],
+                     topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
-    if posted_data['polygon_layer']:
-        f_name = '_'.join([user_id, str(posted_data['polygon_layer'])])
-        polygon_layer = await app['redis_conn'].get(f_name)
-        savefile(filenames['polygon_layer'],
-                 topojson_to_geojson(json.loads(polygon_layer.decode())).encode())
+        if posted_data['polygon_layer']:
+            f_name = '_'.join([user_id, str(posted_data['polygon_layer'])])
+            polygon_layer = await app['redis_conn'].get(f_name)
+            savefile(filenames['polygon_layer'],
+                     topojson_to_geojson(json.loads(polygon_layer.decode())).encode())
 
-    # Compute the result:
-    result_geojson = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_grid_layer_pt,
-        filenames['src_layer'],
-        posted_data["cellsize"],
-        n_field_name,
-        posted_data["grid_shape"].lower(),
-        filenames['mask_layer'],
-        filenames['polygon_layer'],
-        posted_data['func_type'],
-        )
+        # Compute the result:
+        result_geojson = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            get_grid_layer_pt,
+            filenames['src_layer'],
+            posted_data["cellsize"],
+            n_field_name,
+            posted_data["grid_shape"].lower(),
+            filenames['mask_layer'],
+            filenames['polygon_layer'],
+            posted_data['func_type'],
+            )
 
-    # Rename the result layer:
-    new_name = '_'.join(['Gridded',
-                         str(posted_data["cellsize"]),
-                         n_field_name or ''])
-    # Convert the result layer to TopoJSON:
-    res = await geojson_to_topojson(result_geojson.encode(), new_name)
+        # Rename the result layer:
+        new_name = '_'.join(['Gridded',
+                             str(posted_data["cellsize"]),
+                             n_field_name or ''])
+        # Convert the result layer to TopoJSON:
+        res = await geojson_to_topojson(result_geojson.encode(), new_name)
 
-    # Store it in redis:
-    hash_val = str(mmh3_hash(res))
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=43200000))
+        # Store it in redis:
+        hash_val = str(mmh3_hash(res))
+        asyncio.ensure_future(
+            app['redis_conn'].set('_'.join([
+                user_id, hash_val]), res, pexpire=43200000))
 
-    # Return it to the user:
-    return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
+        # Return it to the user:
+        return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
 async def carto_gridded(posted_data, user_id, app):
@@ -745,32 +752,31 @@ async def carto_gridded(posted_data, user_id, app):
     n_field_name = list(new_field.keys())[0]
     if len(new_field[n_field_name]) > 0:
         join_field_topojson(ref_layer, new_field[n_field_name], n_field_name)
+    with TemporaryDirectory() as tmp_dir:
+        filenames = {
+            "src_layer": path_join(tmp_dir, '{}.geojson'.format(get_name)),
+            "result": None
+        }
+        savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
 
-    tmp_part = get_name()
-    filenames = {
-        "src_layer": ''.join(['/tmp/', tmp_part, '.geojson']),
-        "result": None
-    }
-    savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+        result_geojson = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            get_grid_layer,
+            filenames['src_layer'],
+            posted_data["cellsize"],
+            n_field_name,
+            posted_data["grid_shape"].lower())
 
-    result_geojson = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        get_grid_layer,
-        filenames['src_layer'],
-        posted_data["cellsize"],
-        n_field_name,
-        posted_data["grid_shape"].lower())
+        new_name = '_'.join(['Gridded',
+                             str(posted_data["cellsize"]),
+                             n_field_name])
+        res = await geojson_to_topojson(result_geojson.encode(), new_name)
 
-    new_name = '_'.join(['Gridded',
-                         str(posted_data["cellsize"]),
-                         n_field_name])
-    res = await geojson_to_topojson(result_geojson.encode(), new_name)
-
-    hash_val = str(mmh3_hash(res))
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=43200000))
-    return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
+        hash_val = str(mmh3_hash(res))
+        asyncio.ensure_future(
+            app['redis_conn'].set('_'.join([
+                user_id, hash_val]), res, pexpire=43200000))
+        return ''.join(['{"key":', hash_val, ',"file":', res, '}'])
 
 
 async def compute_olson(posted_data, user_id, app):
@@ -827,18 +833,19 @@ async def compute_stewart(posted_data, user_id, app):
         f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
         mask_layer = await app['redis_conn'].get(f_name)
 
-    tmp_part = get_name()
-    filenames = {
-        'point_layer': ''.join(['/tmp/', tmp_part, '.geojson']),
-        'mask_layer': ''.join(['/tmp/', get_name(), '.geojson'])
-                      if posted_data['mask_layer'] != "" else None
+    with TemporaryDirectory() as tmp_dir:
+        tmp_part = get_name()
+        filenames = {
+            'point_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())),
+            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
+                          if posted_data['mask_layer'] != "" else None
         }
-    savefile(filenames['point_layer'],
-             topojson_to_geojson(point_layer).encode())
+        savefile(filenames['point_layer'],
+                 topojson_to_geojson(point_layer).encode())
 
-    if filenames['mask_layer']:
-        savefile(filenames['mask_layer'],
-                 topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+        if filenames['mask_layer']:
+            savefile(filenames['mask_layer'],
+                     topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
     # reusable_val = '_'.join([user_id,
     #                          str(posted_data['topojson']),
@@ -879,36 +886,36 @@ async def compute_stewart(posted_data, user_id, app):
     #         app['redis_conn'].set(
     #             reusable_val, dump_obj, pexpire=43200000))
 
-    res, breaks = await app.loop.run_in_executor(
-        app["ProcessPool"],
-        quick_stewart_mod,
-        filenames['point_layer'],
-        n_field_name1,
-        int(posted_data['span']),
-        float(posted_data['beta']),
-        posted_data['typefct'].lower(),
-        int(posted_data['nb_class']),
-        discretization,
-        posted_data['resolution'],
-        filenames["mask_layer"],
-        n_field_name2,
-        posted_data['user_breaks'])
+        res, breaks = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            quick_stewart_mod,
+            filenames['point_layer'],
+            n_field_name1,
+            int(posted_data['span']),
+            float(posted_data['beta']),
+            posted_data['typefct'].lower(),
+            int(posted_data['nb_class']),
+            discretization,
+            posted_data['resolution'],
+            filenames["mask_layer"],
+            n_field_name2,
+            posted_data['user_breaks'])
 
-    os.remove(filenames['point_layer'])
-    if filenames['mask_layer']:
-        os.remove(filenames['mask_layer'])
-    new_name = '_'.join(['Smoothed', n_field_name1])
-    res = await geojson_to_topojson(res, new_name)
-    hash_val = str(mmh3_hash(res))
+        os.remove(filenames['point_layer'])
+        if filenames['mask_layer']:
+            os.remove(filenames['mask_layer'])
+        new_name = '_'.join(['Smoothed', n_field_name1])
+        res = await geojson_to_topojson(res, new_name)
+        hash_val = str(mmh3_hash(res))
 
-    asyncio.ensure_future(
-        app['redis_conn'].set('_'.join([
-            user_id, hash_val]), res, pexpire=43200000))
+        asyncio.ensure_future(
+            app['redis_conn'].set('_'.join([
+                user_id, hash_val]), res, pexpire=43200000))
 
-    return "|||".join([
-        ''.join(['{"key":', hash_val, ',"file":', res, '}']),
-        json.dumps(breaks)
-        ])
+        return "|||".join([
+            ''.join(['{"key":', hash_val, ',"file":', res, '}']),
+            json.dumps(breaks)
+            ])
 
 
 async def geo_compute(request):
