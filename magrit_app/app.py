@@ -65,7 +65,7 @@ from multidict import MultiDict
 try:
     from helpers.misc import (
         run_calc, savefile, get_key, zip_layer_folder,
-        extractShpZip, guess_separator, clean_name)
+        extractShpZip, guess_separator, clean_name, find_geo2topo)
     from helpers.cy_misc import get_name, join_field_topojson
     from helpers.topo_to_geo import convert_from_topo
     from helpers.geo import (
@@ -79,7 +79,7 @@ try:
 except:
    from .helpers.misc import (
        run_calc, savefile, get_key, zip_layer_folder,
-       extractShpZip, guess_separator, clean_name)
+       extractShpZip, guess_separator, clean_name, find_geo2topo)
    from .helpers.cy_misc import get_name, join_field_topojson
    from .helpers.topo_to_geo import convert_from_topo
    from .helpers.geo import (
@@ -91,6 +91,7 @@ except:
    from .helpers.grid_layer_pt import get_grid_layer_pt
    from .helpers.error_middleware404 import error_middleware
 
+GEO2TOPO_PATH = None
 
 async def index_handler(request):
     """
@@ -142,7 +143,8 @@ async def geojson_to_topojson(data, layer_name):
     result: str
         The resulting TopoJSON file, as string.
     """
-    process = Popen(["geo2topo", "{}=-".format(layer_name), "--bbox"],
+    global GEO2TOPO_PATH
+    process = Popen([GEO2TOPO_PATH, "{}=-".format(layer_name), "--bbox"],
                     stdout=PIPE, stderr=PIPE, stdin=PIPE)
     stdout, _ = process.communicate(input=data)
     stdout = stdout.decode()
@@ -1598,6 +1600,9 @@ def _init(loop):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
+    # GEO2TOPO_PATH = find_geo2topo()
+    # if not GEO2TOPO_PATH:
+    #     sys.exit(1)
     return init(loop)
 
 
@@ -1611,6 +1616,10 @@ def create_app(app_name="Magrit"):
     app_real_path = os.path.dirname(os.path.realpath(__file__))
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
+    global GEO2TOPO_PATH
+    GEO2TOPO_PATH = find_geo2topo()
+    if not GEO2TOPO_PATH:
+        sys.exit('Unable to find required `geo2topo` binary.')
     loop = asyncio.get_event_loop()
     app = loop.run_until_complete(init(loop, None))
     app['app_name'] = app_name
@@ -1629,6 +1638,10 @@ def main():
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
     version = get_version()
+    global GEO2TOPO_PATH
+    GEO2TOPO_PATH = find_geo2topo()
+    if not GEO2TOPO_PATH:
+        sys.exit('Unable to find required `geo2topo` binary.')
     arguments = docopt.docopt(__doc__, version='Magrit ' + version)
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])

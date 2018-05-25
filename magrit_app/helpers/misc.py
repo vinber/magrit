@@ -5,13 +5,14 @@
 import os
 import re
 from contextlib import ContextDecorator
+from distutils.spawn import find_executable
 from io import BytesIO
 from random import choice
 from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
 from mmh3 import hash as mmh3_hash
 from ujson import dumps as json_dumps
-from os.path import join as path_join
+from os.path import join as path_join, abspath
 
 try:
     from .cy_misc import get_name
@@ -41,6 +42,15 @@ def run_calc(val1, val2, operator):
         "^": val1.__pow__
         }[operator](val2).tolist()
     return json_dumps(result)
+
+def find_geo2topo():
+    path = find_executable('geo2topo')
+    if not path:
+        import glob
+        rel_path = glob.glob('**/geo2topo')
+        if rel_path:
+            path = abspath(rel_path[0])
+    return path
 
 
 def savefile(path, raw_data):
