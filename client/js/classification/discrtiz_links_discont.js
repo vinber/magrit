@@ -452,7 +452,7 @@ export const display_discretization_links_discont = function (layer_name, field_
     .attrs({
       id: 'svg_discretization',
       width: svg_w + margin.left + margin.right,
-      height: svg_h + margin.top + margin.bottomn,
+      height: svg_h + margin.top + margin.bottom,
     });
 
   make_box_histo_option();
