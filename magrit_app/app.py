@@ -91,7 +91,10 @@ except:
    from .helpers.grid_layer_pt import get_grid_layer_pt
    from .helpers.error_middleware404 import error_middleware
 
+
 GEO2TOPO_PATH = None
+IS_WINDOWS = sys.platform.startswith('win')
+
 
 async def index_handler(request):
     """
@@ -145,7 +148,7 @@ async def geojson_to_topojson(data, layer_name):
     """
     global GEO2TOPO_PATH
     process = Popen([GEO2TOPO_PATH, "{}=-".format(layer_name), "--bbox"],
-                    stdout=PIPE, stderr=PIPE, stdin=PIPE)
+                    stdout=PIPE, stderr=PIPE, stdin=PIPE, shell=IS_WINDOWS)
     stdout, _ = process.communicate(input=data)
     stdout = stdout.decode()
     return stdout
@@ -1654,7 +1657,7 @@ def main():
 
     watch_change = True if arguments['--dev'] else False
     use_redis = False \
-        if arguments['--standalone'] or sys.platform.startswith('win') \
+        if arguments['--standalone'] or IS_WINDOWS \
         else True
 
     if uvloop:
