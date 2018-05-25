@@ -351,9 +351,8 @@ function handleOneByOneShp(files) {
       return false;
     }
   }
-  let name = '';
+  let name = files[0].name.substring(0, files[0].name.lastIndexOf('.'));
   const shp_slots = new Map();
-  populate_shp_slot(shp_slots, files[0]);
 
   swal({
     title: '',
@@ -403,6 +402,8 @@ function handleOneByOneShp(files) {
     overlay_drop.style.display = 'none';
     console.log(dismiss);
   });
+
+  populate_shp_slot(shp_slots, files[0]);
   document.getElementById('dv_drop_shp').addEventListener('drop', function (event) {
     event.preventDefault();
     event.stopPropagation();
@@ -434,7 +435,7 @@ function handleOneByOneShp(files) {
 export function prepare_drop_section() {
   let timeout;
   Array.prototype.forEach.call(
-    document.querySelectorAll('#map,.overlay_drop'),
+    document.querySelectorAll('body, .overlay_drop'),
     (elem) => {
         elem.addEventListener('dragenter', (e) => {
           e.preventDefault(); e.stopPropagation();
@@ -484,7 +485,7 @@ export function prepare_drop_section() {
           const files = prepareFileExt(e.dataTransfer.files);
           if (files.length === 1
               && (files[0]._ext === 'shp' || files[0]._ext === 'dbf' || files[0]._ext === 'shx' || files[0]._ext === 'prj' || files[0]._ext === 'cpg')) {
-            Array.prototype.slice.call(document.querySelectorAll('#map,.overlay_drop'))
+            Array.prototype.slice.call(document.querySelectorAll('body, .overlay_drop'))
               .forEach((_elem) => {
                 _elem.removeEventListener('drop', _drop_func);
               });
@@ -569,7 +570,7 @@ function handle_shapefile(files) {
         target_layer_on_add = false;
       }
       const ajaxData = new FormData();
-      ajaxData.append('action', 'submit_form');
+      ajaxData.append('type', 'multiple');
       for (let j = 0; j < files.length; j++) {
         ajaxData.append(`file[${j}]`, files[j]);
       }
@@ -882,7 +883,7 @@ function handle_single_file(file) {
         target_layer_on_add = false;
       }
       const ajaxData = new FormData();
-      ajaxData.append('action', 'single_file');
+      ajaxData.append('type', 'single');
       ajaxData.append('file[]', file);
       xhrequest('POST', '/convert_to_topojson', ajaxData, true)
         .then((data) => {

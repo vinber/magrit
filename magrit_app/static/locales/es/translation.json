@@ -105,7 +105,7 @@
             "drop_msg": "Suelta los archivos en la ventana ...",
             "incorrect_value": "Valor incorrecto",
             "shp_one_by_one_msg1": "Shapefile detectado - Falta archivos para cargar",
-            "shp_one_by_one_msg2": "(Nombre de archivo : {name})",
+            "shp_one_by_one_msg2": "(Nombre de archivo : {{name}})",
             "shp_one_by_one_msg3": "Arrastra los archivos faltantes a esta área",
             "shp_one_by_one_missing_files": "Falta archivos"
         },

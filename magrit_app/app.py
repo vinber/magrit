@@ -290,89 +290,75 @@ async def convert(request):
     store it (in topojson format) in redis during the user session
     for a possible later use.
     """
-    with TemporaryDirectory() as tmp_dir:
-        return await _convert(request, tmp_dir)
-
-
-async def _convert(request, tmp_dir):
-
     posted_data, session_redis = \
         await asyncio.gather(*[request.post(), get_session(request)])
+    if not 'type' in posted_data:
+        return convert_error('Invalid request')
+    type_input = posted_data.get('type')
     user_id = get_user_id(session_redis, request.app['app_users'])
-    proj_info_str = None
-    # If a shapefile is provided as multiple files
-    # (.shp, .dbf, .shx, and .prj are expected), not ziped :
-    if "action" in posted_data and "file[]" not in posted_data:
-        try:
-            list_files, tmp_buf = [], []
-            for i in range(len(posted_data) - 1):
-                field = posted_data.getall('file[{}]'.format(i))[0]
-                name, ext = field.filename.rsplit('.', 1)
-                file_name = path_join(
-                    tmp_dir,
-                    '{}_{}.{}'.format(user_id, clean_name(name), ext.lower())
-                    )
-                list_files.append(file_name)
-                content = field.file.read()
-                savefile(file_name, content)
-                if '.shp' in file_name or '.dbf' in file_name:
-                    tmp_buf.append(content)
-            shp_path = [i for i in list_files if 'shp' in i][0]
-            layer_name = shp_path.replace(
-                path_join(tmp_dir, '{}_'.format(user_id)), '').replace('.shp', '')
-            hashed_input = mmh3_hash(b''.join(tmp_buf))
-            name = shp_path.rsplit(os.path.sep, 1)[1]
-            datatype = "shp"
-        except Exception as err:
-            _tb = traceback.format_exc(limit=2)
-            request.app['logger'].info(
-                'Error while loading shapefile : {}\n{}\n{}'.format(err, _tb, list_files))
-            return convert_error('Error while loading shapefile')
 
-    # If there is a single file (geojson, kml, gml or zip) to handle :
-    elif "action" in posted_data and "file[]" in posted_data:
-        try:
-            field = posted_data.get('file[]')
-            name = field.filename
-            layer_name = name.rsplit('.', 1)[0]
-            data = field.file.read()
-            datatype = field.content_type
-            hashed_input = mmh3_hash(data)
-            filepath = path_join(tmp_dir, '{}_{}'.format(user_id, name))
-        except Exception as err:
-            _tb = traceback.format_exc(limit=2)
-            request.app['logger'].info(
-                'Error while loading single file : {}\n{}'.format(err, _tb))
-            request.app['logger'].info(
-                "Posted data :\n{}\nName:\n{}".format(posted_data, field.filename))
-            return convert_error('Incorrect datatype')
+    with TemporaryDirectory() as tmp_dir:
+        if type_input == 'single':
+            return await _convert_from_single_file(
+                request.app,posted_data, user_id, tmp_dir)
+        elif type_input == 'multiple':
+            return await _convert_from_multiple_files(
+                request.app, posted_data, user_id, tmp_dir)
+        else:
+            return convert_error('Invalid request')
+
+async def _convert_from_multiple_files(app, posted_data, user_id, tmp_dir):
+    proj_info_str = None
+    try:
+        list_files, tmp_buf = [], []
+        for i in range(len(posted_data) - 1):
+            field = posted_data.getall('file[{}]'.format(i))[0]
+            name, ext = field.filename.rsplit('.', 1)
+            file_name = path_join(
+                tmp_dir,
+                '{}_{}.{}'.format(user_id, clean_name(name), ext.lower())
+                )
+            list_files.append(file_name)
+            content = field.file.read()
+            savefile(file_name, content)
+            if '.shp' in file_name or '.dbf' in file_name:
+                tmp_buf.append(content)
+        shp_path = [i for i in list_files if 'shp' in i][0]
+        layer_name = shp_path.replace(
+            path_join(tmp_dir, '{}_'.format(user_id)), '').replace('.shp', '')
+        hashed_input = mmh3_hash(b''.join(tmp_buf))
+        name = shp_path.rsplit(os.path.sep, 1)[1]
+    except Exception as err:
+        _tb = traceback.format_exc(limit=2)
+        app['logger'].info(
+            'Error while loading shapefile : {}\n{}\n{}'.format(err, _tb, list_files))
+        return convert_error('Error while loading shapefile')
 
     f_name = '_'.join([user_id, str(hashed_input)])
 
     asyncio.ensure_future(
-        request.app['redis_conn'].incr('layers'))
+        app['redis_conn'].incr('layers'))
 
-    result = await request.app['redis_conn'].get(f_name)
+    result = await app['redis_conn'].get(f_name)
     if result:
         # We know this user and his layer has already been loaded into Redis,
         # so let's use it instead of doing a new conversion again:
         asyncio.ensure_future(
-            request.app['redis_conn'].pexpire(f_name, 43200000))
-        if "shp" in datatype:
-            # Read the orignal projection to propose it later:
-            proj_info_str = read_shp_crs(
-                path_join(tmp_dir, name.replace('.shp', '.prj')))
+            app['redis_conn'].pexpire(f_name, 43200000))
+        # Read the orignal projection to propose it later:
+        proj_info_str = read_shp_crs(
+            path_join(tmp_dir, name.replace('.shp', '.prj')))
 
         return web.Response(text=''.join(
             ['{"key":', str(hashed_input),
              ',"file":', result.decode(),
              ',"proj":', json.dumps(get_proj4_string(proj_info_str)),
              '}']))
-
-    if "shp" in datatype:
-        res = await request.app.loop.run_in_executor(
-            request.app["ProcessPool"],
-            ogr_to_geojson, shp_path)
+    else:
+        res = await app.loop.run_in_executor(
+            app["ProcessPool"],
+            ogr_to_geojson,
+            shp_path)
         if not res:
             return convert_error()
         result = await geojson_to_topojson(res, layer_name)
@@ -380,13 +366,57 @@ async def _convert(request, tmp_dir):
             return convert_error()
 
         asyncio.ensure_future(
-            request.app['redis_conn'].set(f_name, result, pexpire=43200000))
-        print(name, path_join(tmp_dir, name.replace('.shp', '.prj')))
+            app['redis_conn'].set(f_name, result, pexpire=43200000))
+
         # Read the orignal projection to propose it later (client side):
         proj_info_str = read_shp_crs(
             path_join(tmp_dir, name.replace('.shp', '.prj')))
 
-    elif datatype in ('application/x-zip-compressed', 'application/zip'):
+        return web.Response(text=''.join(
+            ['{"key":', str(hashed_input),
+             ',"file":', result,
+             ',"proj":', json.dumps(get_proj4_string(proj_info_str)),
+             '}']))
+
+
+async def _convert_from_single_file(app, posted_data, user_id, tmp_dir):
+    proj_info_str = None
+    try:
+        field = posted_data.get('file[]')
+        name = field.filename
+        layer_name = name.rsplit('.', 1)[0]
+        data = field.file.read()
+        datatype = field.content_type
+        hashed_input = mmh3_hash(data)
+        filepath = path_join(tmp_dir, '{}_{}'.format(user_id, name))
+    except Exception as err:
+        _tb = traceback.format_exc(limit=2)
+        app['logger'].info(
+            'Error while loading single file : {}\n{}'.format(err, _tb))
+        app['logger'].info(
+            "Posted data :\n{}\nName:\n{}".format(posted_data, field.filename))
+        return convert_error('Incorrect datatype')
+
+    f_name = '_'.join([user_id, str(hashed_input)])
+
+    asyncio.ensure_future(
+        app['redis_conn'].incr('layers'))
+
+    result = await app['redis_conn'].get(f_name)
+    if result:
+        # We know this user and his layer has already been loaded into Redis,
+        # so let's use it instead of doing a new conversion again:
+        asyncio.ensure_future(
+            app['redis_conn'].pexpire(f_name, 43200000))
+
+        return web.Response(text=''.join(
+            ['{"key":', str(hashed_input),
+             ',"file":', result.decode(),
+             ',"proj":', json.dumps(get_proj4_string(proj_info_str)),
+             '}']))
+
+
+    if datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
 
         with ZipFile(dataZip) as myzip:
@@ -415,7 +445,7 @@ async def _convert(request, tmp_dir):
                 assert(all(name == names[0] for name in names))
             except Exception as err:
                 _tb = traceback.format_exc(limit=2)
-                request.app['logger'].info(
+                app['logger'].info(
                     'Error with content of zip file : {}'.format(_tb))
                 return convert_error('Error with zip file content')
 
@@ -423,9 +453,10 @@ async def _convert(request, tmp_dir):
             # extension by its lowercase version :
             slots = extractShpZip(myzip, slots, tmp_dir)
             try:
-                res = await request.app.loop.run_in_executor(
-                    request.app["ProcessPool"],
-                    ogr_to_geojson, slots['shp'])
+                res = await app.loop.run_in_executor(
+                    app["ProcessPool"],
+                    ogr_to_geojson,
+                    slots['shp'])
                 if not res:
                     return convert_error()
                 result = await geojson_to_topojson(res, layer_name)
@@ -436,13 +467,13 @@ async def _convert(request, tmp_dir):
                 proj_info_str = read_shp_crs(slots['prj'])
 
                 asyncio.ensure_future(
-                    request.app['redis_conn'].set(
+                    app['redis_conn'].set(
                         f_name, result, pexpire=43200000))
             except (asyncio.CancelledError, CancelledError):
                 return
             except Exception as err:
                 _tb = traceback.format_exc(limit=2)
-                request.app['logger'].info(
+                app['logger'].info(
                     'Error with content of zip file : {}\n{}'.format(err, _tb))
                 return convert_error('Error with zip file content')
 
@@ -465,13 +496,14 @@ async def _convert(request, tmp_dir):
         elif 'kml' in ext.lower():
             new_ext = 'kml'
         filepath = ''.join([clean_name(fname), new_ext])
-
+        tmp_path = path_join(tmp_dir, filepath)
         # Convert the file to a GeoJSON file with sanitized column names:
-        with open(filepath, 'wb') as f:
+        with open(tmp_path, 'wb') as f:
             f.write(data)
-        res = await request.app.loop.run_in_executor(
-            request.app["ThreadPool"],
-            ogr_to_geojson, filepath)
+        res = await app.loop.run_in_executor(
+            app["ThreadPool"],
+            ogr_to_geojson,
+            tmp_path)
 
         if not res:
             return convert_error(
@@ -484,14 +516,14 @@ async def _convert(request, tmp_dir):
 
         # Store it in redis for possible later use:
         asyncio.ensure_future(
-            request.app['redis_conn'].set(
+            app['redis_conn'].set(
                 f_name, result, pexpire=43200000))
 
     else:
         # Datatype was not detected; so nothing was done
         # (Shouldn't really occur as it has already been
         # checked client side before sending it):
-        request.app['logger'].info("Incorrect datatype :\n{}name:\n{}"
+        app['logger'].info("Incorrect datatype :\n{}name:\n{}"
                    .format(datatype, name))
         return convert_error('Incorrect datatype')
 

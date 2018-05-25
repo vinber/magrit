@@ -104,7 +104,7 @@
             "drop_msg": "Drop your file(s) in the window ...",
             "incorrect_value": "Incorrect value",
             "shp_one_by_one_msg1": "Shapefile detected - Missing files to upload",
-            "shp_one_by_one_msg2": "(filename: {name})",
+            "shp_one_by_one_msg2": "(filename: {{name}})",
             "shp_one_by_one_msg3": "Drag and drop the missing files into this area",
             "shp_one_by_one_missing_files": "Missing files"
         },
