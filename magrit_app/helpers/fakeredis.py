@@ -1,14 +1,20 @@
-import time
-from threading import RLock, Timer
-from collections import deque
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: mthh
+"""
 
+import time
+from threading import Timer
+from collections import deque
+from asyncio import Lock
 
 class FakeAioRedisConnection:
     def __init__(self, max_age_seconds=120):
         assert max_age_seconds >= 1
         self.store = {}
         self.max_age = max_age_seconds
-        self.lock = RLock()
+        self.lock = Lock()
         self.closed = False
         self.clean_keys()
 
@@ -16,21 +22,21 @@ class FakeAioRedisConnection:
         self.expire(key, pexpire / 1000)
 
     async def expire(self, key, expire):
-        with self.lock:
+        with (await self.lock):
             item = self.store.get(key, None)
             if not item:
                 return None
             self.store[key] = (item[0], time.time() + expire)
 
     async def persist(self, key):
-        with self.lock:
+        with (await self.lock):
             item = self.store.get(key, None)
             if not item:
                 return None
             self.store[key] = (item[0], float('inf'))
 
     async def set(self, key, value, pexpire=None):
-        with self.lock:
+        with (await self.lock):
             if not pexpire:
                 self.store[key] = (
                         str(value).encode(), float('inf'))
@@ -39,14 +45,14 @@ class FakeAioRedisConnection:
                         str(value).encode(), time.time() + pexpire / 1000)
 
     async def get(self, key):
-        with self.lock:
+        with (await self.lock):
             item = self.store.get(key, None)
             if not item:
                 return None
             return item[0]
 
     async def delete(self, key, default=None):
-        with self.lock:
+        with (await self.lock):
             item = self.store.get(key, None)
             if not item:
                 return None
@@ -54,7 +60,7 @@ class FakeAioRedisConnection:
             return item[0]
 
     async def lpush(self, key, value):
-        with self.lock:
+        with (await self.lock):
             li, timeout = self.store.get(key, (None, None))
             if not li:
                 self.store[key] = (deque([value]), float('inf'))
@@ -64,7 +70,7 @@ class FakeAioRedisConnection:
             return
 
     async def lpushx(self, key, value):
-        with self.lock:
+        with (await self.lock):
             li, timeout = self.store.get(key, (None, None))
             if not li:
                 return None
@@ -73,7 +79,7 @@ class FakeAioRedisConnection:
             return
 
     async def rpush(self, key, value):
-        with self.lock:
+        with (await self.lock):
             li, timeout = self.store.get(key, (None, None))
             if not li:
                 self.store[key] = (deque([value]), float('inf'))
@@ -83,7 +89,7 @@ class FakeAioRedisConnection:
             return
 
     async def rpushx(self, key, value):
-        with self.lock:
+        with (await self.lock):
             li, timeout = self.store.get(key, (None, None))
             if not li:
                 return None
@@ -92,7 +98,7 @@ class FakeAioRedisConnection:
             return
 
     async def lpop(self, key):
-        with self.lock:
+        with (await self.lock):
             li, _ = self.store.get(key, (None, None))
             if not li:
                 return None
@@ -100,7 +106,7 @@ class FakeAioRedisConnection:
             return elem
 
     async def rpop(self, key):
-        with self.lock:
+        with (await self.lock):
             li, _ = self.store.get(key, (None, None))
             if not li:
                 return None
@@ -108,7 +114,7 @@ class FakeAioRedisConnection:
             return elem
 
     async def lrange(self, key, start, end):
-        with self.lock:
+        with (await self.lock):
             li, _ = self.store.get(key, (None, None))
             if not li:
                 return []
@@ -117,26 +123,26 @@ class FakeAioRedisConnection:
             return li[start, end]
 
     async def llen(self, key):
-        with self.lock:
+        with (await self.lock):
             li, _ = self.store.get(key, (None, None))
             if not li:
                 return None
             return len(li)
 
     async def incr(self, key):
-        with self.lock:
+        with (await self.lock):
             value, timeout = self.store.get(key, (0, float('inf')))
             value += 1
             self.store[key] = (value, timeout)
 
     async def incrby(self, key, increment):
-        with self.lock:
+        with (await self.lock):
             value, timeout = self.store.get(key, (0, float('inf')))
             value += increment
             self.store[key] = (value, timeout)
 
     async def quit(self):
-        with self.lock:
+        with (await self.lock):
             self.closed = True
             self.store = {}
         return
@@ -145,7 +151,7 @@ class FakeAioRedisConnection:
         if self.closed:
             return
         for k in list(self.store.keys()):
-            with self.lock:
+            if not self.lock.locked():
                 item = self.store[k]
                 if time.time() > item[1]:
                     del self.store[k]

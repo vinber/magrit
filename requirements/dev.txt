@@ -1,0 +1,4 @@
+-r prod.txt
+flaky >= 3.3.0
+selenium == 2.53.6
+pytest >= 3.0.7

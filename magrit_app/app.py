@@ -5,17 +5,19 @@ magrit
 
 Usage:
   magrit
-  magrit [--port <port_nb> --name-app <name> --dev]
-  magrit [-p <port_nb> -n <name> -d]
+  magrit [--port <port_nb> --name-app <name> --dev --standalone]
+  magrit [-p <port_nb> -n <name> -d -s]
+  magrit --standalone
   magrit --version
   magrit --help
 
 Options:
   -h, --help                        Show this screen.
   --version                         Show version.
-  -p <port>, --port <port>          Port number to use (exit if not available) [default: 9999]
-  -d, --dev                         Watch for changes in js/css files and update the transpiled/minified versions
-  -n <name>, --name-app <name>      Name of the application [default: Magrit]
+  -p <port>, --port <port>          Port number to use (exit if not available).[default: 9999]
+  -d, --dev                         Watch for changes in js/css files and update the transpiled/minified versions.
+  -s, --standalone                  Start the Magrit server application for a single use (without using Redis).
+  -n <name>, --name-app <name>      Name of the application. [default: Magrit]
 """
 
 import os
@@ -28,19 +30,23 @@ import docopt
 import logging
 
 import asyncio
-import uvloop
+try:
+    import uvloop
+except:
+    uvloop = None
 import pandas as pd
 import numpy as np
 import matplotlib; matplotlib.use('Agg')
 
 from tempfile import TemporaryDirectory
-from base64 import b64encode
+from base64 import b64encode, urlsafe_b64decode
 from contextlib import closing
 from zipfile import ZipFile
 from datetime import datetime
 from io import StringIO, BytesIO
 from os.path import join as path_join
 
+from cryptography import fernet
 from subprocess import Popen, PIPE
 from socket import socket, AF_INET, SOCK_STREAM
 from mmh3 import hash as mmh3_hash
@@ -49,9 +55,11 @@ from concurrent.futures._base import CancelledError
 from pyexcel import get_book
 
 # Web related stuff :
-from aioredis import create_pool, create_redis_pool
+# from aioredis import create_pool, create_redis_pool
 from aiohttp import web, ClientSession
-from aiohttp_session import get_session, session_middleware, redis_storage
+from aiohttp_session import (
+    cookie_storage, get_session, session_middleware, redis_storage,
+    setup as aiohttp_session_setup)
 from multidict import MultiDict
 
 try:
@@ -1472,25 +1480,39 @@ async def on_shutdown(app):
             task.cancel()
 
 
-async def init(loop, port=None, watch_change=False):
+async def init(loop, port=None, watch_change=False, use_redis=True):
     """
     Function creating the various routes for the application and setting up
     middlewares (for custom 404 error page and redis cookie storage).
     """
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger("magrit_app.main")
-    # redis connection used for server side cookie storage:
-    redis_cookie = await create_pool(
-        ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
-    # redis connection used for temporarily storing layers:
-    redis_conn = await create_redis_pool(
-        ('0.0.0.0', 6379), db=1, loop=loop)
-    app = web.Application(
-        loop=loop,
-        client_max_size=17408**2,
-        middlewares=[
-            error_middleware,
-            session_middleware(redis_storage.RedisStorage(redis_cookie))])
+    if use_redis:
+        from aioredis import create_pool, create_redis_pool
+        # redis connection used for server side cookie storage:
+        redis_cookie = await create_pool(
+            ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
+        # redis connection used for temporarily storing layers:
+        redis_conn = await create_redis_pool(
+            ('0.0.0.0', 6379), db=1, loop=loop)
+        app = web.Application(
+            loop=loop,
+            client_max_size=17408**2,
+            middlewares=[
+                error_middleware,
+                session_middleware(redis_storage.RedisStorage(redis_cookie))])
+        app['redis_conn'] = redis_conn
+    else:
+        from helpers.fakeredis import FakeAioRedisConnection
+        fernet_key = fernet.Fernet.generate_key()
+        secret_key = urlsafe_b64decode(fernet_key)
+        app = web.Application(
+            loop=loop,
+            client_max_size=17408**2,
+            middlewares=[error_middleware])
+        aiohttp_session_setup(app, cookie_storage.EncryptedCookieStorage(secret_key))
+        app['redis_conn'] = FakeAioRedisConnection(max_age_seconds=3600)
+
     add_route = app.router.add_route
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
@@ -1519,7 +1541,7 @@ async def init(loop, port=None, watch_change=False):
 
     # Store in the 'app' variable a reference to each variable we will need
     # to reuse a various place (to avoid global variables):
-    app['redis_conn'] = redis_conn
+    # app['redis_conn'] = redis_conn
     app['app_users'] = set()
     app['logger'] = logger
     app['version'] = get_version()
@@ -1618,11 +1640,17 @@ def main():
         sys.exit("Error : Selected port is already in use")
 
     watch_change = True if arguments['--dev'] else False
+    use_redis = False \
+        if arguments['--standalone'] or sys.platform.startswith('win') \
+        else True
 
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    if uvloop:
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
-    srv, app, handler = loop.run_until_complete(init(loop, port, watch_change))
+    srv, app, handler = loop.run_until_complete(
+        init(loop, port, watch_change, use_redis))
     app['app_name'] = arguments["--name-app"]
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
     try:

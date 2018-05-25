@@ -7,7 +7,7 @@ from distutils.extension import Extension
 #from Cython.Build import cythonize
 import magrit_app
 
-with open("requirements.txt") as f:
+with open("requirements/common.txt") as f:
     requirements = f.read().split('\n')
 
 exts = [Extension("magrit_app.helpers.cy_misc",
