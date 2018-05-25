@@ -9,6 +9,7 @@ import magrit_app
 
 with open("requirements/common.txt") as f:
     requirements = f.read().split('\n')
+    requirements = [i for i in requirements if not i.startswith('-e')]
 
 exts = [Extension("magrit_app.helpers.cy_misc",
                   ["magrit_app/helpers/cy_misc.pyx"], ["."],
