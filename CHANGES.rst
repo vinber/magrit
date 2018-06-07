@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.8.2 (2018-06-07)
+------------------
+
+- Fix height of svg chart for values classification for links and discontinuities.
+
+- Internal modifications to allow local use of the server application without redis (and possibly easier installation/use on windows).
+
+
 0.8.1 (2018-05-22)
 ------------------
 
