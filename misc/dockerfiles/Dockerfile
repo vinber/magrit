@@ -51,7 +51,7 @@ RUN rm -rf $GDALBUILD && mkdir /home/app && cd /home/app && wget https://github.
 RUN wget https://bootstrap.pypa.io/get-pip.py && python3.6 get-pip.py
 
 RUN cd /home/app/magrit/ \
-    && pip3.6 install -U setuptools \
+    && pip3.6 install -U setuptools numpy \
     && pip3.6 install https://github.com/mthh/smoomapy-magrit/archive/master.zip \
     && pip3.6 install -U -r requirements/prod.txt \
     && python3.6 setup.py build_ext --inplace
