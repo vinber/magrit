@@ -76,7 +76,6 @@ COPY magrit /home/app/magrit
 
 RUN cd /home/app/magrit/ \
     && pip3.6 install -U -r requirements/prod.txt \
-    && pip3.6 install https://github.com/mthh/smoomapy-magrit/archive/master.zip \
     && python3.6 setup.py build_ext --inplace \
     && ln -s /usr/bin/nodejs /usr/bin/node
 
