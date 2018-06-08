@@ -1636,14 +1636,21 @@ def main():
     Or when installed and started like :
     $ magrit --name AppName --port 9999
     """
-    app_real_path = os.path.dirname(os.path.realpath(__file__))
+    if getattr(sys, 'frozen', False):
+        app_real_path = os.path.dirname(os.path.realpath(sys._MEIPASS))
+    else:
+        app_real_path = os.path.dirname(os.path.realpath(__file__))
+
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
+
     version = get_version()
+
     global GEO2TOPO_PATH
     GEO2TOPO_PATH = find_geo2topo()
     if not GEO2TOPO_PATH:
         sys.exit('Unable to find required `geo2topo` binary.')
+
     arguments = docopt.docopt(__doc__, version='Magrit ' + version)
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
