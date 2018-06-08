@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.8.3 (2018-06-08)
+------------------
+
+- Fix error while getting temporary filename on some functions.
+
+
 0.8.2 (2018-06-07)
 ------------------
 
