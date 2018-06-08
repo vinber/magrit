@@ -5,8 +5,8 @@ magrit
 
 Usage:
   magrit
-  magrit [--port <port_nb> --name-app <name> --dev --standalone]
-  magrit [-p <port_nb> -n <name> -d -s]
+  magrit [--port <port_nb> --dev --standalone]
+  magrit [-p <port_nb> -d -s]
   magrit --standalone
   magrit --version
   magrit --help
@@ -17,7 +17,6 @@ Options:
   -p <port>, --port <port>          Port number to use (exit if not available).[default: 9999]
   -d, --dev                         Watch for changes in js/css files and update the transpiled/minified versions.
   -s, --standalone                  Start the Magrit server application for a single use (without using Redis).
-  -n <name>, --name-app <name>      Name of the application. [default: Magrit]
 """
 
 import os
@@ -1553,7 +1552,8 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
     with open('static/json/sample_layers.json', 'r') as f:
         app['db_layers'] = json.loads(f.read())
     app['ThreadPool'] = ThreadPoolExecutor(6)
-    app['ProcessPool'] = ProcessPoolExecutor(6)
+    app['ProcessPool'] = \
+        ProcessPoolExecutor(6) if not IS_WINDOWS else ThreadPoolExecutor(6)
     app['app_name'] = "Magrit"
     app['geo_function'] = {
         "stewart": compute_stewart,
@@ -1609,7 +1609,7 @@ def _init(loop):
     return init(loop)
 
 
-def create_app(app_name="Magrit"):
+def create_app():
     """
     Entry point when using Gunicorn to run the application with something like :
     $ gunicorn "magrit_app.app:create_app('AppName')" \
@@ -1625,7 +1625,6 @@ def create_app(app_name="Magrit"):
         sys.exit('Unable to find required `geo2topo` binary.')
     loop = asyncio.get_event_loop()
     app = loop.run_until_complete(init(loop, None))
-    app['app_name'] = app_name
     return app
 
 
@@ -1667,7 +1666,6 @@ def main():
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(
         init(loop, port, watch_change, use_redis))
-    app['app_name'] = arguments["--name-app"]
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
     try:
         loop.run_forever()
