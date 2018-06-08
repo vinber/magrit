@@ -15,6 +15,7 @@ develop-eggs/
 downloads/
 eggs/
 .eggs/
+src/
 
 # Virtual environnements
 venv/
@@ -84,3 +85,4 @@ jspm_packages/
 
 # Exception for the builded js file of Magrit:
 !magrit_app/static/dist
+
