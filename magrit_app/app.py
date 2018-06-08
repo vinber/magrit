@@ -724,9 +724,9 @@ async def carto_gridded_point(posted_data, user_id, app):
     with TemporaryDirectory() as tmp_dir:
         # Prepare the temporary filenames for the input layer(s) and for the result:
         filenames = {
-            'src_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()),
-            'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()) if posted_data['polygon_layer'] else None,
-            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()) if posted_data['mask_layer'] else None,
+            'src_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())),
+            'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())) if posted_data['polygon_layer'] else None,
+            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())) if posted_data['mask_layer'] else None,
             'result': None
         }
 
