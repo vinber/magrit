@@ -1636,10 +1636,7 @@ def main():
     Or when installed and started like :
     $ magrit --name AppName --port 9999
     """
-    if getattr(sys, 'frozen', False):
-        app_real_path = os.path.dirname(os.path.realpath(sys._MEIPASS))
-    else:
-        app_real_path = os.path.dirname(os.path.realpath(__file__))
+    app_real_path = os.path.dirname(os.path.realpath(__file__))
 
     if app_real_path != os.getcwd():
         os.chdir(app_real_path)
