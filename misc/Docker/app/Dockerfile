@@ -21,7 +21,7 @@
 #
 
 
-FROM ubuntu:latest
+FROM ubuntu:18.04
 MAINTAINER mth
 
 RUN apt-get update && apt-get install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa \
@@ -78,8 +78,7 @@ RUN cd /home/app/magrit/ \
     && pip3.6 install -U setuptools numpy \
     && pip3.6 install https://github.com/mthh/smoomapy-magrit/archive/master.zip \
     && pip3.6 install -U -r requirements/prod.txt \
-    && python3.6 setup.py build_ext --inplace \
-    && ln -s /usr/bin/nodejs /usr/bin/node
+    && python3.6 setup.py build_ext --inplace
 
 EXPOSE 9999
 
