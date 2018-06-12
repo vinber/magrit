@@ -1631,10 +1631,10 @@ def create_app():
 def main():
     """
     Entry point used when the application is started directly like :
-    $ ./magrit_app/app.py --name AppName --port 9999
+    $ ./magrit_app/app.py --port 9999
 
     Or when installed and started like :
-    $ magrit --name AppName --port 9999
+    $ magrit --port 9999
     """
     app_real_path = os.path.dirname(os.path.realpath(__file__))
 
