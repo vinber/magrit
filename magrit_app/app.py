@@ -93,7 +93,7 @@ except:
 
 GEO2TOPO_PATH = None
 IS_WINDOWS = sys.platform.startswith('win')
-
+IS_FROZEN = True if getattr(sys, 'frozen', False) else False
 
 async def index_handler(request):
     """
@@ -1660,7 +1660,7 @@ def main():
 
     watch_change = True if arguments['--dev'] else False
     use_redis = False \
-        if arguments['--standalone'] or IS_WINDOWS \
+        if arguments['--standalone'] or IS_WINDOWS or IS_FROZEN \
         else True
 
     if uvloop:
