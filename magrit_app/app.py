@@ -343,7 +343,8 @@ async def _convert_from_multiple_files(app, posted_data, user_id, tmp_dir):
     except Exception as err:
         _tb = traceback.format_exc(limit=2)
         app['logger'].info(
-            'Error while loading shapefile : {}\n{}\n{}'.format(err, _tb, list_files))
+            'Error while loading shapefile : {}\n{}\n{}'
+            .format(err, _tb, list_files))
         return convert_error('Error while loading shapefile')
 
     f_name = '_'.join([user_id, str(hashed_input)])
@@ -724,25 +725,31 @@ async def carto_gridded_point(posted_data, user_id, app):
         # Prepare the temporary filenames for the input layer(s) and for the result:
         filenames = {
             'src_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())),
-            'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())) if posted_data['polygon_layer'] else None,
-            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())) if posted_data['mask_layer'] else None,
+            'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
+                             if posted_data['polygon_layer'] else None,
+            'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
+                          if posted_data['mask_layer'] else None,
             'result': None
         }
 
         # Save the necessary layer on the disk:
-        savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+        savefile(
+            filenames['src_layer'],
+            topojson_to_geojson(ref_layer).encode())
 
         if posted_data['mask_layer']:
             f_name = '_'.join([user_id, str(posted_data['mask_layer'])])
             mask_layer = await app['redis_conn'].get(f_name)
-            savefile(filenames['mask_layer'],
-                     topojson_to_geojson(json.loads(mask_layer.decode())).encode())
+            savefile(
+                filenames['mask_layer'],
+                topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
         if posted_data['polygon_layer']:
             f_name = '_'.join([user_id, str(posted_data['polygon_layer'])])
             polygon_layer = await app['redis_conn'].get(f_name)
-            savefile(filenames['polygon_layer'],
-                     topojson_to_geojson(json.loads(polygon_layer.decode())).encode())
+            savefile(
+                filenames['polygon_layer'],
+                topojson_to_geojson(json.loads(polygon_layer.decode())).encode())
 
         # Compute the result:
         result_geojson = await app.loop.run_in_executor(
@@ -791,7 +798,8 @@ async def carto_gridded(posted_data, user_id, app):
             "src_layer": path_join(tmp_dir, '{}.geojson'.format(get_name())),
             "result": None
         }
-        savefile(filenames['src_layer'], topojson_to_geojson(ref_layer).encode())
+        savefile(filenames['src_layer'],
+                 topojson_to_geojson(ref_layer).encode())
 
         result_geojson = await app.loop.run_in_executor(
             app["ProcessPool"],
@@ -878,47 +886,9 @@ async def compute_stewart(posted_data, user_id, app):
                  topojson_to_geojson(point_layer).encode())
 
         if filenames['mask_layer']:
-            savefile(filenames['mask_layer'],
-                     topojson_to_geojson(json.loads(mask_layer.decode())).encode())
-
-    # reusable_val = '_'.join([user_id,
-    #                          str(posted_data['topojson']),
-    #                          n_field_name1,
-    #                          n_field_name2 if n_field_name2 else "",
-    #                          str(posted_data["span"]),
-    #                          str(posted_data['beta']),
-    #                          str(posted_data['resolution']),
-    #                          posted_data['typefct'].lower()])
-    # existing_obj = await app['redis_conn'].get(reusable_val)
-    # if existing_obj:
-    #     res, breaks = await app.loop.run_in_executor(
-    #         app["ThreadPool"],
-    #         resume_stewart,
-    #         existing_obj,
-    #         int(posted_data['nb_class']),
-    #         discretization,
-    #         posted_data['user_breaks'],
-    #         filenames["mask_layer"])
-
-    # else:
-    #     res, breaks, dump_obj = await app.loop.run_in_executor(
-    #         app["ProcessPool"],
-    #         quick_stewart_mod,
-    #         filenames['point_layer'],
-    #         n_field_name1,
-    #         int(posted_data['span']),
-    #         float(posted_data['beta']),
-    #         posted_data['typefct'].lower(),
-    #         int(posted_data['nb_class']),
-    #         discretization,
-    #         posted_data['resolution'],
-    #         filenames["mask_layer"],
-    #         n_field_name2,
-    #         posted_data['user_breaks'])
-    #
-    #     asyncio.ensure_future(
-    #         app['redis_conn'].set(
-    #             reusable_val, dump_obj, pexpire=43200000))
+            savefile(
+                filenames['mask_layer'],
+                topojson_to_geojson(json.loads(mask_layer.decode())).encode())
 
         res, breaks = await app.loop.run_in_executor(
             app["ProcessPool"],
@@ -1131,7 +1101,8 @@ async def rawcsv_to_geo(data, logger):
     # Determine what is the line separator in use:
     sp = '\r\n' if '\r\n' in data else '\n'
     # Remove "empty lines" if any
-    # (sometimes some csv input are coming with one or more line containing only commas)
+    # (sometimes some csv inputs are coming with one or more
+    # line(s) containing only commas)
     data = [d for d in data.split(sp) if not all((c == ',') for c in d)]
     data.append(sp)
     data = sp.join(data)
@@ -1143,18 +1114,22 @@ async def rawcsv_to_geo(data, logger):
     # Replace spaces in columns names:
     df.columns = [i.replace(' ', '_') for i in df.columns]
     # Fetch the name of the column containing latitude coordinates
-    geo_col_y, name_geo_col_y = [(colnb + 1, col) for colnb, col in enumerate(df.columns)
-                 if col.lower() in {"y", "latitude", "lat"}][0]
+    geo_col_y, name_geo_col_y = [
+        (colnb + 1, col) for colnb, col in enumerate(df.columns)
+        if col.lower() in {"y", "latitude", "lat"}
+        ][0]
     # Fetch the name of the column containing longitude coordinates
-    geo_col_x, name_geo_col_x = [(colnb + 1, col) for colnb, col in enumerate(df.columns)
-                 if col.lower() in {"x", "longitude", "lon", "lng", "long"}
-                 ][0]
+    geo_col_x, name_geo_col_x = [
+        (colnb + 1, col) for colnb, col in enumerate(df.columns)
+        if col.lower() in {"x", "longitude", "lon", "lng", "long"}
+        ][0]
     # Drop records containing empty values for latitude and/or longitude:
     df.dropna(subset=[name_geo_col_x, name_geo_col_y], inplace=True)
     # Replace NaN values by empty string (some column type might be changed to
     # 'Object' if thay contains empty values)
     df.replace(np.NaN, '', inplace=True)
-    # Let's try to be sure there isn't empty values in the latitude/longitude columns:
+    # Let's try to be sure there isn't empty values
+    # in the latitude/longitude columns:
     try:
         if df[name_geo_col_x].dtype == object:
             df = df[df[name_geo_col_x] != '']
@@ -1182,8 +1157,8 @@ async def rawcsv_to_geo(data, logger):
             'Latitude/Longitude columns conversion failed using \'astype\':'
             '\n{}\n{}'.format(err, _tb))
         # Conversion failed so we are gonna look in each cell of the x and y
-        # columns and creating a boolean array based on wheter the x and y columns
-        # contains number:
+        # columns and creating a boolean array based on wheter
+        # the x and y columns contains number:
         reg = re.compile('[+-]?\d+(?:\.\d+)?')
         mat = df[[name_geo_col_x, name_geo_col_y]].applymap(
             lambda x: True if re.match(reg, x) else False)
@@ -1311,19 +1286,23 @@ async def get_stats_json(request):
             and mmh3_hash(posted_data['data']) == 1163649321):
         return web.Response()
     redis_conn = request.app['redis_conn']
-    stewart, doug, gridded, olson, links = await asyncio.gather(*[
+    stewart, doug, gridded, gridded_pt, olson, links = await asyncio.gather(*[
         redis_conn.lrange('stewart_time', 0, -1),
         redis_conn.lrange('carto_doug_time', 0, -1),
         redis_conn.lrange('gridded_time', 0, -1),
+        redis_conn.lrange('gridded__point_time', 0, -1),
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
         ])
     layers, sample_layers, extra_sample_layers = await asyncio.gather(*[
         redis_conn.get('layers'),
         redis_conn.get('sample_layers'),
-        redis_conn.get('extra_sample_layers')])
+        redis_conn.get('extra_sample_layers'),
+        ])
     view_onepage, single_view_onepage = await asyncio.gather(*[
-        redis_conn.get('view_onepage'), redis_conn.get('single_view_onepage')])
+        redis_conn.get('view_onepage'),
+        redis_conn.get('single_view_onepage'),
+        ])
     contact = await redis_conn.lrange('contact', 0, -1)
     count = await redis_conn.get('single_view_modulepage')
     return web.Response(text=json.dumps({
@@ -1336,7 +1315,9 @@ async def get_stats_json(request):
         "contact": contact,
         "t": {
             "stewart": stewart, "dougenik": doug,
-            "gridded": gridded, "olson": olson, "links": links}
+            "gridded": gridded, "gridded_point": gridded_pt,
+            "olson": olson, "links": links
+            }
         }))
 
 
@@ -1514,7 +1495,8 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
             loop=loop,
             client_max_size=17408**2,
             middlewares=[error_middleware])
-        aiohttp_session_setup(app, cookie_storage.EncryptedCookieStorage(secret_key))
+        aiohttp_session_setup(
+            app, cookie_storage.EncryptedCookieStorage(secret_key))
         app['redis_conn'] = FakeAioRedisConnection(max_age_seconds=3600)
 
     add_route = app.router.add_route
@@ -1565,7 +1547,9 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
         }
     if watch_change:
         webpack_logger = logging.getLogger("webpack")
-        asyncio.ensure_future(execute(webpack_logger, 'cd ../client && ./node_modules/webpack/bin/webpack.js --watch'))
+        asyncio.ensure_future(execute(
+            webpack_logger,
+            'cd ../client && ./node_modules/webpack/bin/webpack.js --watch'))
 
     app.on_shutdown.append(on_shutdown)
     prepare_list_svg_symbols()
