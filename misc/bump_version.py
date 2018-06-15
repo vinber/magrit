@@ -60,6 +60,7 @@ if __name__ == '__main__':
     os.chdir('../client')
     print('- Replacing version number in package.json ...')
     save_version_packagejson(current_version_txt)
-    print('- Building minified JS/CSS files ...')
-    rebuild_assets()
+    if os.path.exists('node_modules/webpack/bin/webpack.js'):
+        print('- Building minified JS/CSS files ...')
+        rebuild_assets()
     print('\nDone! ', old_version, ' -> ', current_version_txt)
