@@ -100,6 +100,8 @@ function createLegend(layer, title) {
     el = createLegend_line_symbol(layer, field, title, field);
   } else if (renderer.indexOf('TwoStocksWaffle') !== -1) {
     el = createLegend_waffle(layer, field, title, '');
+  } else if (!renderer) {
+    el = createLegend_layout(layer, data_manager.current_layers[layer].type, title, '');
   } else {
     swal('Oops..',
          `${_tr('No legend available for this representation')}.<br>${
@@ -1054,6 +1056,87 @@ const get_lgd_display_precision = function (breaks) {
   }
   return undefined;
 };
+
+export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill_value, text_value, note_bottom) {
+  const space_elem = 18;
+  const boxheight = 18;
+  const boxwidth = 18;
+  const xpos = 30;
+  const ypos = 30;
+  const tmp_class_name = `legend legend_feature lgdf_${_app.layer_to_id.get(layer)}`;
+  const color_layer = data_manager.current_layers[layer].fill_color.single;
+  const legend_root = map.insert('g')
+    .styles({ cursor: 'grab', 'font-size': '11px', 'font-family': 'verdana' })
+    .attrs({
+      id: 'legend_root_layout',
+      class: tmp_class_name,
+      transform: 'translate(0,0)',
+      layer_name: layer,
+    });
+  const rect_under_legend = legend_root.insert('rect');
+
+  legend_root.insert('text')
+    .attrs(subtitle != ''
+      ? { id: 'legendtitle', x: xpos + boxheight, y: ypos }
+      : { id: 'legendtitle', x: xpos + boxheight, y: ypos + 15 }
+    )
+    .styles({
+      'font-size': '12px',
+      'font-family': 'verdana',
+      'font-weight': 'bold',
+    })
+    .text(title || '');
+
+  legend_root.insert('text')
+    .attrs({ id: 'legendsubtitle', x: xpos + boxheight, y: ypos + 15 })
+    .styles({
+      'font-size': '12px',
+      'font-family': 'verdana',
+      'font-style': 'italic',
+    })
+    .text(subtitle);
+
+  const legend_elems = legend_root
+    .append('g')
+    .insert('g')
+    .attr('class', (d, i) => `lg legend_0`);
+
+  if (type_geom === 'Polygon') {
+    legend_elems
+      .append('rect')
+      .attrs({
+        x: xpos + boxwidth,
+        y: ypos + boxheight * 1.8,
+        width: boxwidth,
+        height: boxheight
+      })
+      .styles({ fill: color_layer, stroke: color_layer });
+
+    legend_elems
+      .append('text')
+      .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
+      .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
+      .text(text_value || layer);
+  }
+  // else if (type_geom === 'Line') {
+  //
+  // } else if (type_geom === 'Point') {
+  //
+  // }
+  legend_root.append('g')
+    .insert('text')
+    .attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: ypos + boxheight * 3.4 })
+    .styles({
+      'font-size': '11px',
+      'font-family': 'verdana',
+    })
+    .text(note_bottom != null ? note_bottom : '');
+
+  legend_root.call(drag_legend_func(legend_root));
+  make_underlying_rect(legend_root, rect_under_legend, rect_fill_value);
+  make_legend_context_menu(legend_root, layer);
+  return legend_root;
+}
 
 export function createLegend_choro(layer, field, title, subtitle, box_gap = 0, rect_fill_value, rounding_precision, no_data_txt, note_bottom) {
   const boxheight = 18,
@@ -2063,7 +2146,7 @@ function createlegendEditBox(legend_id, layer_name) {
     title_content,
     subtitle_content,
     note_content;
-  // let source_content;
+
   let legend_node_d3,
     legend_boxes,
     no_data_txt,
@@ -2082,6 +2165,7 @@ function createlegendEditBox(legend_id, layer_name) {
     no_data_txt: no_data_txt != null ? no_data_txt.textContent : null,
     ratio_waffle_txt: ratio_waffle_txt != null ? ratio_waffle_txt.textContent : null,
     boxgap: +legend_node.getAttribute('boxgap'),
+    layout_text_value: legend_id === 'legend_root_layout' ? legend_node.querySelector('.lg.legend_0 > text').innerHTML : undefined,
   }; // , source_content: source_content.textContent ? source_content.textContent : ""
 
   if (legend_node.getAttribute('visible_rect') === 'true') {
@@ -2106,6 +2190,9 @@ function createlegendEditBox(legend_id, layer_name) {
           ratio_waffle_txt.textContent = original_params.ratio_waffle_txt;
         }
         rect_fill_value = original_rect_fill_value;
+        if (original_params.layout_text_value) {
+          legend_node.querySelector('.lg.legend_0 > text').innerHTML = original_params.layout_text_value;
+        }
       }
       make_underlying_rect(legend_node_d3,
                            legend_node_d3.select('#under_rect'),
@@ -2352,7 +2439,8 @@ function createlegendEditBox(legend_id, layer_name) {
       .html(_tr('app_page.legend_style_box.nested_symbols'));
 
     const current_state_line = legend_node.getAttribute('join_line') === 'true';
-    const join_line_section = box_body.insert('p').style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
+    const join_line_section = box_body.insert('p')
+      .style('display', current_state_nested && (type_symbol === 'circle') ? null : 'none');
     join_line_section.append('input')
       .style('margin-left', '0px')
       .attrs({ id: 'style_lgd_join_line', type: 'checkbox' })
@@ -2379,6 +2467,16 @@ function createlegendEditBox(legend_id, layer_name) {
     join_line_section.append('label')
       .attrs({ for: 'style_lgd_join_line', class: 'i18n', 'data-i18n': '[html]app_page.legend_style_box.join_line' })
       .html(_tr('app_page.legend_style_box.join_line'));
+  } else if (legend_id === 'legend_root_layout') {
+      const text_value_section = box_body.insert('p');
+      text_value_section.insert('span')
+        .html(_tr('app_page.legend_style_box.layout_legend_text_value'));
+      text_value_section.insert('input')
+        .styles({ float: 'right', 'font-family': '12px Gill Sans Extrabold, sans-serif' })
+        .property('value', legend_node.querySelector('.lg.legend_0 > text').innerHTML)
+        .on('keyup', function () {
+          legend_node.querySelector('.lg.legend_0 > text').innerHTML = this.value;
+        });
   }
 // Todo : Reactivate this functionnality :
 //    box_body.insert("p").html("Display features count ")

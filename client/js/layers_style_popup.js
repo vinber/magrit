@@ -12,8 +12,8 @@ import { prop_sizer3_e, round_value } from './helpers_calc';
 import { binds_layers_buttons, displayInfoOnMove } from './interface';
 import {
   createLegend_choro, createLegend_choro_horizontal,
-  createLegend_discont_links, createLegend_line_symbol,
-  createLegend_waffle,
+  createLegend_discont_links, createLegend_layout,
+  createLegend_line_symbol, createLegend_waffle,
 } from './legend';
 import { redraw_legends_symbols, zoom_without_redraw } from './map_ctrl';
 import { make_table } from './tables';
@@ -1418,7 +1418,8 @@ function createStyleBox(layer_name) {
     .property('checked', map.select(g_lyr_name).attr('filter') ? true : null)
     .attrs({
       type: 'checkbox',
-      id: 'checkbox_shadow_layer' });
+      id: 'checkbox_shadow_layer',
+    });
   shadow_section.insert('label')
     .attr('for', 'checkbox_shadow_layer')
     .html(_tr('app_page.layer_style_popup.layer_shadow'));
@@ -1432,6 +1433,31 @@ function createStyleBox(layer_name) {
     }
   });
   make_generate_labels_section(popup, layer_name);
+
+  if (data_manager.current_layers[layer_name].renderer === undefined
+      && data_manager.current_layers[layer_name].type === 'Polygon') {
+    const generate_legend_section = popup.append('p');
+    const generate_lgd_chkbox = generate_legend_section.insert('input')
+      .style('margin', 0)
+      .property('checked', data_manager.current_layers[layer_name].layout_legend_displayed === true)
+      .attrs({
+        type: 'checkbox',
+        id: 'checkbox_layout_legend',
+      });
+    generate_legend_section.insert('label')
+      .attr('for', 'checkbox_layout_legend')
+      .html(_tr('app_page.layer_style_popup.layout_legend'));
+    generate_lgd_chkbox.on('change', function () {
+      if (this.checked) {
+        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name);
+        data_manager.current_layers[layer_name].layout_legend_displayed = true;
+      } else {
+        document.querySelector(['#legend_root_layout.lgdf_', _app.layer_to_id.get(layer_name)].join('')).remove();
+        data_manager.current_layers[layer_name].layout_legend_displayed = false;
+      }
+    });
+  }
+
 }
 
 function createStyleBoxStewart(layer_name) {
