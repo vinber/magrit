@@ -953,13 +953,17 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   // const table_target = document.getElementById('table_layer_s1');
   document.getElementById('table_layer_s1').onclick = display_table_target_layer;
   // const downgrade_target = document.getElementById('downgrade_target');
-  document.getElementById('downgrade_target').onclick = downgradeTargetLayer;
+  document.getElementById('downgrade_target').onclick = () => {
+    ask_replace_target_layer().then(() => {
+      downgradeTargetLayer();
+    }, () => null);
+  };
 }
 
 function ask_replace_target_layer() {
   return swal({
       title: '',
-      text: _tr('app_page.join_box.before_join_ask'),
+      text: _tr('app_page.common.replace_target'),
       allowOutsideClick: false,
       allowEscapeKey: true,
       type: 'question',
@@ -1790,7 +1794,13 @@ export function binds_layers_buttons(layer_name) {
   sortable_elem.select('.style_target_layer').on('click', () => { handle_click_layer(layer_name); });
   sortable_elem.select('#legend_button').on('click', () => { handle_legend(layer_name); });
   sortable_elem.select('#browse_data_button').on('click', () => { boxExplore2.create(layer_name); });
-  sortable_elem.select('#replace_button').on('click', () => { changeTargetLayer(layer_name); });
+  sortable_elem.select('#replace_button')
+    .on('click', () => {
+      ask_replace_target_layer()
+        .then(() => {
+          changeTargetLayer(layer_name);
+        }, () => null);
+    });
   sortable_elem.select('#zoom_fit_button').on('click', () => {
     center_map(layer_name);
     zoom_without_redraw();
