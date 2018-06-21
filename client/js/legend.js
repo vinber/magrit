@@ -1134,10 +1134,22 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(text_value || layer);
+  } else if (type_geom === 'Point') {
+    const radius = data_manager.current_layers[layer].pointRadius;
+    legend_elems
+      .append('circle')
+      .styles({ fill: color_layer, stroke: 'lightgray', 'fill-opacity': 1 })
+      .attrs({
+        cx: xpos + boxwidth / 2,
+        cy: ypos + boxheight * 1.9 + radius,
+        r: radius,
+      });
+    legend_elems.append('text')
+      .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + (boxheight * 2.6) + radius / 2 })
+      .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
+      .text(text_value || layer);
   }
-  // else if (type_geom === 'Point') {
-  //
-  // }
+
   legend_root.append('g')
     .insert('text')
     .attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: ypos + boxheight * 3.4 })

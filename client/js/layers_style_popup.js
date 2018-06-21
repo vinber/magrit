@@ -1457,8 +1457,7 @@ function createStyleBox(layer_name) {
   });
   make_generate_labels_section(popup, layer_name);
 
-  if (data_manager.current_layers[layer_name].renderer === undefined
-      && data_manager.current_layers[layer_name].type === 'Polygon') {
+  if (data_manager.current_layers[layer_name].renderer === undefined) {
     const generate_legend_section = popup.append('p');
     const generate_lgd_chkbox = generate_legend_section.insert('input')
       .style('margin', 0)
