@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.8.5 (2018-06-xx)
+------------------
+
+- New: Allow to create a legend also for layout layers.
+
+- New: Display a message before promoting/downgrading a layer to/from the status of target layer.
+
+
 0.8.4 (2018-06-08)
 ------------------
 
