@@ -490,7 +490,8 @@
             "choice_break_symbol": "Customize symbols values...",
             "ratio_waffle_txt": "Text corresponding to the ratio",
             "lgd_layout_horizontal": "Horizontal layout",
-            "lgd_layout_vertical": "Vertical layout"
+            "lgd_layout_vertical": "Vertical layout",
+            "layout_legend_text_value": "Legend content"
         },
         "legend_symbol_values_box": {
             "reset": "Reset to default values",
@@ -632,8 +633,9 @@
             "let_draggable": "Allow moving symbols",
             "ref_colors": "Colors:",
             "ref_size": "Symbol size",
-            "filter_label": "Filter labels according to the value of a field?"
-        },
+            "filter_label": "Filter labels according to the value of a field?",
+            "layout_legend": "Create a legend for this layout layer"
+          },
         "lm_buttons":{
             "zoom+": "Zoom in",
             "zoom-": "Zoom out",

@@ -1060,6 +1060,29 @@ function createStyleBox_Line(layer_name) {
   }
 
   make_generate_labels_section(popup, layer_name);
+
+  if (data_manager.current_layers[layer_name].renderer === undefined) {
+    const generate_legend_section = popup.append('p');
+    const generate_lgd_chkbox = generate_legend_section.insert('input')
+      .style('margin', 0)
+      .property('checked', data_manager.current_layers[layer_name].layout_legend_displayed === true)
+      .attrs({
+        type: 'checkbox',
+        id: 'checkbox_layout_legend',
+      });
+    generate_legend_section.insert('label')
+      .attr('for', 'checkbox_layout_legend')
+      .html(_tr('app_page.layer_style_popup.layout_legend'));
+    generate_lgd_chkbox.on('change', function () {
+      if (this.checked) {
+        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name);
+        data_manager.current_layers[layer_name].layout_legend_displayed = true;
+      } else {
+        document.querySelector(['#legend_root_layout.lgdf_', _app.layer_to_id.get(layer_name)].join('')).remove();
+        data_manager.current_layers[layer_name].layout_legend_displayed = false;
+      }
+    });
+  }
 }
 
 function createStyleBox(layer_name) {
@@ -1457,7 +1480,6 @@ function createStyleBox(layer_name) {
       }
     });
   }
-
 }
 
 function createStyleBoxStewart(layer_name) {

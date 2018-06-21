@@ -489,7 +489,8 @@
             "choice_break_symbol": "Personnaliser les valeurs des symboles...",
             "ratio_waffle_txt": "Texte correspondant au ratio",
             "lgd_layout_horizontal": "Disposition horizontale",
-            "lgd_layout_vertical": "Disposition verticale"
+            "lgd_layout_vertical": "Disposition verticale",
+            "layout_legend_text_value": "Contenu de la légende"
         },
         "legend_symbol_values_box": {
             "reset": "Remise à zéro des valeurs",
@@ -631,7 +632,8 @@
             "let_draggable": "Autoriser le déplacement des symboles",
             "ref_colors": "Couleurs:",
             "ref_size": "Taille du symbole",
-            "filter_label": "Filtrer les labels selon la valeur d'un champ ?"
+            "filter_label": "Filtrer les labels selon la valeur d'un champ ?",
+            "layout_legend": "Créer une légende pour cette couche d'habillage"
         },
         "lm_buttons":{
             "zoom+": "Zoom positif",

@@ -19,6 +19,7 @@ import {
   createLegend_choro,
   createLegend_choro_horizontal,
   createLegend_discont_links,
+  createLegend_layout,
   createLegend_line_symbol,
   createLegend_symbol,
   createLegend_waffle,
@@ -106,6 +107,10 @@ export function get_map_project() {
       const lyr_name = lgd_node.getAttribute('layer_name');
       result.field = data_manager.current_layers[lyr_name].rendered_field;
       result.ratio_txt = lgd_node.querySelector('#ratio_txt').innerHTML;
+    } else if (type_lgd === 'legend_root_layout') {
+      const lyr_name = lgd_node.getAttribute('layer_name');
+      result.text_value = lgd_node.querySelector('g.legend_0 > text').innerHTML;
+      result.type_geom = data_manager.current_layers[lyr_name].type;
     }
     return result;
   };
@@ -262,6 +267,8 @@ export function get_map_project() {
     layer_style_i.layer_type = layer_type;
     layer_style_i.n_features = nb_ft;
     layer_style_i.visible = layers._groups[0][i].style.visibility !== 'hidden' ? '' : 'hidden';
+    layer_style_i.layout_legend_displayed = current_layer_prop.layout_legend_displayed;
+
     const lgd = document.getElementsByClassName(`lgdf_${layer_id}`);
     if (lgd.length === 0) {
       layer_style_i.legend = undefined;
@@ -667,6 +674,16 @@ function rehandle_legend(layer_name, properties) {
         prop.no_data_txt,
         prop.bottom_note,
       );
+    } else if (prop.type === 'legend_root_layout') {
+      createLegend_layout(
+        layer_name,
+        prop.type_geom,
+        prop.title,
+        prop.subtitle,
+        prop.rect_fill_value,
+        prop.text_value,
+        prop.note_bottom,
+      );
     }
     const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
     lgd.setAttribute('transform', prop.transform);
@@ -1002,7 +1019,7 @@ export function apply_user_preferences(json_pref) {
       const layer_selec = map.select(`#${layer_id}`);
 
       current_layer_prop.rendered_field = _layer.rendered_field;
-
+      if (_layer.layout_legend_displayed) current_layer_prop.layout_legend_displayed = _layer.layout_legend_displayed;
       if (_layer.ref_layer_name) current_layer_prop.ref_layer_name = _layer.ref_layer_name;
       if (_layer.size) current_layer_prop.size = _layer.size;
       if (_layer.colors_breaks) current_layer_prop.colors_breaks = _layer.colors_breaks;
@@ -1044,9 +1061,9 @@ export function apply_user_preferences(json_pref) {
             renderer: 'Categorical',
           });
         }
-        if (_layer.legend) {
-          rehandle_legend(layer_name, _layer.legend);
-        }
+      }
+      if (_layer.legend) {
+        rehandle_legend(layer_name, _layer.legend);
       }
       if (_layer.stroke_color) {
         layer_selec.selectAll('path').style('stroke', _layer.stroke_color);

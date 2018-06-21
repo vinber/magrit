@@ -483,7 +483,8 @@
             "choice_break_symbol": "Personalizar el valor de los símbolos...",
             "ratio_waffle_txt": "Texto correspondiente a la proporción",
             "lgd_layout_horizontal": "Disposición horizontal",
-            "lgd_layout_vertical": "Disposición vertical"
+            "lgd_layout_vertical": "Disposición vertical",
+            "layout_legend_text_value": "Contenido de la leyenda"
         },
         "legend_symbol_values_box": {
             "reset": "Valores de reseteado",
@@ -625,8 +626,9 @@
             "let_draggable": "Permitir símbolos mover",
             "ref_colors": "Colores:",
             "ref_size": "Tamaño del símbolo",
-            "filter_label": "Filtrar las etiquetas de acuerdo con el valor de un campo?"
-        },
+            "filter_label": "Filtrar las etiquetas de acuerdo con el valor de un campo?",
+            "layout_legend": "Crea una leyenda para esta capa de diseño"
+          },
         "lm_buttons":{
             "zoom+": "Acercar",
             "zoom-": "Alejar",

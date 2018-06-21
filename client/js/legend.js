@@ -1117,10 +1117,25 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(text_value || layer);
+  } else if (type_geom === 'Line') {
+    const stroke_width = data_manager.current_layers[layer]['stroke-width-const'];
+    legend_elems
+      .append('rect')
+      .styles({ fill: color_layer, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1, 'stroke-width': 0 })
+      .attrs({
+        x: xpos + boxwidth,
+        y: ypos + boxheight * 1.9 + (boxheight / 2) -(stroke_width / 2),
+        width: boxwidth,
+        height: stroke_width,
+      });
+
+    legend_elems
+      .append('text')
+      .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
+      .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
+      .text(text_value || layer);
   }
-  // else if (type_geom === 'Line') {
-  //
-  // } else if (type_geom === 'Point') {
+  // else if (type_geom === 'Point') {
   //
   // }
   legend_root.append('g')

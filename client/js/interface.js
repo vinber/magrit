@@ -1708,16 +1708,19 @@ export function remove_layer_cleanup(name) {
   if (!data_manager.current_layers[name]) return;
   const layer_id = global._app.layer_to_id.get(name);
   // Making some clean-up regarding the result layer :
-  if (data_manager.current_layers[name].is_result) {
+  if (data_manager.current_layers[name].is_result
+      || data_manager.current_layers[name].layout_legend_displayed) {
     map.selectAll(['.lgdf_', layer_id].join('')).remove();
-    if (data_manager.result_data.hasOwnProperty(name)) {
-      delete data_manager.result_data[name];
-    }
-    if (data_manager.current_layers[name].hasOwnProperty('key_name')
-         && data_manager.current_layers[name].renderer.indexOf('Choropleth') < 0
-         && data_manager.current_layers[name].renderer.indexOf('Categorical') < 0) {
-      send_remove_server(name);
-    }
+  }
+  // Making some clean-up regarding the result layer :
+  if (data_manager.result_data.hasOwnProperty(name)) {
+    delete data_manager.result_data[name];
+  }
+  if (data_manager.current_layers[name].hasOwnProperty('key_name')
+       && data_manager.current_layers[name].renderer
+       && data_manager.current_layers[name].renderer.indexOf('Choropleth') < 0
+       && data_manager.current_layers[name].renderer.indexOf('Categorical') < 0) {
+    send_remove_server(name);
   }
   // Is the layer using a filter ? If yes, remove it:
   const filter_id = map.select(`#${layer_id}`).attr('filter');
