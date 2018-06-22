@@ -599,7 +599,8 @@ function redraw_legend(type_legend, layer_name, field) {
        type_legend === 'choro_horiz' ? [['#legend_root_horiz.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_choro_horizontal] :
        type_legend === 'line_class' ? [['#legend_root_lines_class.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_discont_links] :
        type_legend === 'line_symbol' ? [['#legend_root_lines_symbol.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_line_symbol] :
-       type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] : undefined;
+       type_legend === 'waffle' ? [['#legend_root_waffle.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_waffle] :
+       type_legend === 'layout' ? [['#legend_root_layout.lgdf_', _app.layer_to_id.get(layer_name)].join(''), createLegend_layout] : undefined;
   let lgd = document.querySelector(selector);
   if (lgd) {
     const transform_param = lgd.getAttribute('transform'),
@@ -612,7 +613,6 @@ function redraw_legend(type_legend, layer_name, field) {
       color: lgd.querySelector('#under_rect').style.fill,
       opacity: lgd.querySelector('#under_rect').style.fillOpacity,
     } : undefined;
-
     if (type_legend.indexOf('choro') > -1) {
       let no_data_txt = lgd.querySelector('#no_data_txt');
       no_data_txt = no_data_txt != null ? no_data_txt.textContent : null;
@@ -630,6 +630,16 @@ function redraw_legend(type_legend, layer_name, field) {
     } else if (type_legend === 'waffle') {
       lgd.remove();
       legend_func(layer_name, field, lgd_title, lgd_subtitle, rect_fill_value, note);
+    } else if (type_legend === 'layout'){
+      lgd.remove();
+      const text_value = lgd.querySelector('g.lg.legend_0 > text').innerHTML;
+      legend_func(layer_name,
+                  data_manager.current_layers[layer_name].type,
+                  lgd_title,
+                  lgd_subtitle,
+                  rect_fill_value,
+                  text_value,
+                  note);
     } else {
       lgd.remove();
       legend_func(layer_name,
@@ -1110,7 +1120,7 @@ function createStyleBox(layer_name) {
     stroke_width = +data_manager.current_layers[layer_name]['stroke-width-const'];
   const table = [];
   let stroke_prev = selection.style('stroke');
-  let current_pt_size;
+  const previous_point_radius = data_manager.current_layers[layer_name].pointRadius;
 
   if (stroke_prev.startsWith('rgb')) {
     stroke_prev = rgb2hex(stroke_prev);
@@ -1125,9 +1135,6 @@ function createStyleBox(layer_name) {
     .then((confirmed) => {
       if (confirmed) {
         // Update the object holding the properties of the layer if Yes is clicked
-        if (type === 'Point' && data_manager.current_layers[layer_name].pointRadius) {
-          data_manager.current_layers[layer_name].pointRadius = +current_pt_size;
-        }
         if (renderer !== undefined
              && rendering_params !== undefined && renderer !== 'Categorical') {
           data_manager.current_layers[layer_name].fill_color = { class: rendering_params.colorsByFeature };
@@ -1160,6 +1167,8 @@ function createStyleBox(layer_name) {
           } else {
             redraw_legend('choro_horiz', layer_name, data_manager.current_layers[layer_name].rendered_field);
           }
+        } else if (data_manager.current_layers[layer_name].layout_legend_displayed) {
+          redraw_legend('layout', layer_name);
         }
         // Change the layer name if requested :
         if (new_layer_name !== layer_name) {
@@ -1175,6 +1184,7 @@ function createStyleBox(layer_name) {
         data_manager.current_layers[layer_name]['stroke-width-const'] = stroke_width;
         const fill_meth = Object.getOwnPropertyNames(fill_prev)[0];
         if (type === 'Point' && data_manager.current_layers[layer_name].pointRadius) {
+          data_manager.current_layers[layer_name].pointRadius = previous_point_radius;
           selection.attr('d', path.pointRadius(+data_manager.current_layers[layer_name].pointRadius));
         } else {
           if (fill_meth === 'single') {
@@ -1215,22 +1225,35 @@ function createStyleBox(layer_name) {
   }
 
   if (type === 'Point') {
-    current_pt_size = data_manager.current_layers[layer_name].pointRadius;
     const pt_size = popup.append('p').attr('class', 'line_elem');
     pt_size.append('span').html(_tr('app_page.layer_style_popup.point_radius'));
     pt_size.append('input')
       .attrs({ type: 'range', min: 0, max: 80, id: 'point_radius_size' })
-      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
-      .property('value', current_pt_size)
+      .styles({
+        width: '58px',
+        'vertical-align': 'middle',
+        display: 'inline',
+        float: 'right',
+        'margin-right': '0px',
+      })
+      .property('value', previous_point_radius)
       .on('change', function () {
-        current_pt_size = +this.value;
+        let current_pt_size = +this.value;
+        data_manager.current_layers[layer_name].pointRadius = current_pt_size;
         document.getElementById('point_radius_size_txt').value = current_pt_size;
         selection.attr('d', path.pointRadius(current_pt_size));
       });
     pt_size.append('input')
-      .attrs({ type: 'number', min: 0, max: 80, step: 'any', class: 'without_spinner', id: 'point_radius_size_txt' })
+      .attrs({
+        type: 'number',
+        min: 0,
+        max: 80,
+        step: 'any',
+        class: 'without_spinner',
+        id: 'point_radius_size_txt',
+      })
       .styles({ width: '30px', 'margin-left': '10px', float: 'right' })
-      .property('value', +current_pt_size)
+      .property('value', +previous_point_radius)
       .on('change', function () {
         const pt_size_range = document.getElementById('point_radius_size');
         const old_value = pt_size_range.value;
@@ -1238,9 +1261,10 @@ function createStyleBox(layer_name) {
           this.value = old_value;
         } else {
           this.value = round_value(+this.value, 2);
-          pt_size_range.value = this.value;
-          current_pt_size = this.value;
-          selection.attr('d', path.pointRadius(this.value));
+          let current_pt_size = this.value;
+          pt_size_range.value = current_pt_size;
+          data_manager.current_layers[layer_name].pointRadius = current_pt_size;
+          selection.attr('d', path.pointRadius(current_pt_size));
         }
       });
   }

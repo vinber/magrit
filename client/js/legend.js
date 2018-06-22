@@ -1124,7 +1124,7 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .styles({ fill: color_layer, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1, 'stroke-width': 0 })
       .attrs({
         x: xpos + boxwidth,
-        y: ypos + boxheight * 1.9 + (boxheight / 2) -(stroke_width / 2),
+        y: ypos + boxheight * 1.9 + (boxheight / 2) - (stroke_width / 2),
         width: boxwidth,
         height: stroke_width,
       });
@@ -1135,17 +1135,17 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(text_value || layer);
   } else if (type_geom === 'Point') {
-    const radius = data_manager.current_layers[layer].pointRadius;
+    const radius = data_manager.current_layers[layer].pointRadius * svg_map.__zoom.k;
     legend_elems
       .append('circle')
       .styles({ fill: color_layer, stroke: 'lightgray', 'fill-opacity': 1 })
       .attrs({
         cx: xpos + boxwidth / 2,
-        cy: ypos + boxheight * 1.9 + radius,
+        cy: ypos + boxheight * 1.2 + radius,
         r: radius,
       });
     legend_elems.append('text')
-      .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + (boxheight * 2.6) + radius / 2 })
+      .attrs({ x: xpos + boxwidth * 2 + 10 + radius / 2, y: ypos + (boxheight * 1.9) + radius / 2 })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(text_value || layer);
   }
@@ -2317,7 +2317,8 @@ function createlegendEditBox(legend_id, layer_name) {
       });
   }
   if ((data_manager.current_layers[layer_name].renderer !== 'TwoStocksWaffle' && data_manager.current_layers[layer_name].renderer !== 'Categorical' && data_manager.current_layers[layer_name].renderer !== 'TypoSymbols')
-      && !(data_manager.current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('legend_root_symbol') < 0)) {
+      && !(data_manager.current_layers[layer_name].renderer === 'PropSymbolsTypo' && legend_id.indexOf('legend_root_symbol') < 0)
+      && !data_manager.current_layers[layer_name].layout_legend_displayed) {
     // Float precision for label in the legend
     // (actually it's not really the float precision but an estimation based on
     // the string representation of only two values but it will most likely do the job in many cases)
