@@ -10,6 +10,8 @@ Changes
 
 - Fix layer projection before computing Dougenik cartograms.
 
+- Fix export to shapefile (by not also including the geojson file in the archive created).
+
 
 0.8.4 (2018-06-08)
 ------------------

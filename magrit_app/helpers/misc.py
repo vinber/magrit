@@ -4,25 +4,18 @@
 """
 import os
 import re
-from contextlib import ContextDecorator
 from distutils.spawn import find_executable
 from io import BytesIO
 from random import choice
-from time import time
 from zipfile import ZipFile, ZIP_DEFLATED
-from mmh3 import hash as mmh3_hash
 from ujson import dumps as json_dumps
 from os.path import join as path_join, abspath
-
-try:
-    from .cy_misc import get_name
-except:
-    from magrit_app.helpers.cy_misc import get_name
 
 
 LIST_CHAR = [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 97, 98, 99, 100,
              101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112,
              113, 114, 115, 116, 117, 118, 119, 120, 121, 122]
+
 
 reg_a = re.compile("[àáâãäæ]")
 reg_i = re.compile("[ïîì]")
@@ -35,6 +28,7 @@ reg_E = re.compile("[ÊËÉÈ]")
 reg_O = re.compile("[ÒÓÔÖ]")
 reg_U = re.compile("[ÛÜÙ]")
 
+
 def run_calc(val1, val2, operator):
     result = {
         "+": val1.__add__, "-": val1.__sub__,
@@ -42,6 +36,7 @@ def run_calc(val1, val2, operator):
         "^": val1.__pow__
         }[operator](val2).tolist()
     return json_dumps(result)
+
 
 def find_geo2topo():
     path = find_executable('geo2topo')
@@ -70,7 +65,7 @@ def savefile(path, raw_data):
 
 
 def get_key(var):
-    """Find and return an available key (ie. which is not in 'var')"""
+    """Find and return an available key (ie. which is not in 'var')."""
     while True:
         k = ''.join([chr(choice(LIST_CHAR))
                     for i in range(25)])
@@ -91,8 +86,7 @@ def clean_name(name):
 
 def guess_separator(file, raw_data=None):
     """
-    Ugly helper function to return the (guessed) separator of a csv file
-    (TODO: replace by something better)
+    Ugly helper function to return the (guessed) separator of a csv file.
 
     Parameters
     ----------
@@ -144,6 +138,7 @@ def guess_separator(file, raw_data=None):
 def extractShpZip(myzip, slots, directory):
     """
     Extract in "directory" the members of "myzip" which are listed in "slots".
+
     Replace any extension in uppercase by its lowercase couterpart and updated
     the "slots" dictionnary according to hold the real path of the extracted
     files.
@@ -169,7 +164,7 @@ def extractShpZip(myzip, slots, directory):
     """
     for ext, member in slots.items():
         rv = myzip.extract(member, path=directory)
-        if not ext in rv:
+        if ext not in rv:
             os.rename(rv, rv.replace(ext.upper(), ext))
             slots[ext] = rv.replace(ext.upper(), ext)
         else:
@@ -203,8 +198,9 @@ def zip_layer_folder(dir_path, layer_name):
     zip_stream = BytesIO()
     myZip = ZipFile(zip_stream, "w", compression=ZIP_DEFLATED)
     for filename in filenames:
-        f_name = path_join(dir_path, filename)
-        myZip.write(f_name, filename, ZIP_DEFLATED)
+        if not filename.endswith('.geojson'):
+            f_name = path_join(dir_path, filename)
+            myZip.write(f_name, filename, ZIP_DEFLATED)
     myZip.close()
     zip_stream.seek(0)
     return zip_stream.read(), ''.join([layer_name, ".zip"])
