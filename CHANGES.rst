@@ -8,6 +8,8 @@ Changes
 
 - New: Display a message before promoting/downgrading a layer to/from the status of target layer.
 
+- Fix layer projection before computing Dougenik cartograms.
+
 
 0.8.4 (2018-06-08)
 ------------------
