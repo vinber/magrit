@@ -353,6 +353,11 @@ def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij
 
 def make_carto_doug(file_path, field_name, iterations):
     gdf, replaced_id_field = try_open_geojson(file_path)
+    proj_robinson = (
+            "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+            "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+
+    gdf.to_crs(proj_robinson, inplace=True)
     if replaced_id_field and field_name == 'id':
         field_name = '_id'
     if not gdf[field_name].dtype in (int, float):
@@ -361,7 +366,8 @@ def make_carto_doug(file_path, field_name, iterations):
     gdf = gdf[gdf[field_name].notnull()]
     gdf = gdf.iloc[gdf[field_name].nonzero()]
     gdf.index = range(len(gdf))
-    result_json = json.loads(make_cartogram(gdf.copy(), field_name, iterations))
+    make_cartogram(gdf, field_name, iterations)
+    result_json = json.loads(gdf.to_crs({"init": "epsg:4326"}).to_json())
     repairCoordsPole(result_json)
     return json.dumps(result_json).encode()
 

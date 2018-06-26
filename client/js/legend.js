@@ -1108,7 +1108,7 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
         x: xpos + boxwidth,
         y: ypos + boxheight * 1.8,
         width: boxwidth,
-        height: boxheight
+        height: boxheight,
       })
       .styles({ fill: color_layer, stroke: color_layer });
 
