@@ -932,7 +932,7 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
       border: null,
       color: 'black',
       padding: null,
-      'text-align': 'initial',
+      'text-align': 'left',
     })
     .html(`<div style="display:inline-block;">
 <img src="${_button}" width="26" height="26"></img>
@@ -954,16 +954,31 @@ export function update_section1(type, nb_fields, nb_ft, lyr_name_to_add) {
   document.getElementById('table_layer_s1').onclick = display_table_target_layer;
   // const downgrade_target = document.getElementById('downgrade_target');
   document.getElementById('downgrade_target').onclick = () => {
-    ask_replace_target_layer().then(() => {
+    ask_downgrade_target_layer(Object.keys(data_manager.user_data)[0]).then(() => {
       downgradeTargetLayer();
     }, () => null);
   };
 }
 
-function ask_replace_target_layer() {
+function ask_downgrade_target_layer(name_layer) {
   return swal({
       title: '',
-      text: _tr('app_page.common.replace_target'),
+      text: _tr('app_page.common.replace_target_downgrade', { name_layer }),
+      allowOutsideClick: false,
+      allowEscapeKey: true,
+      type: 'question',
+      showConfirmButton: true,
+      showCancelButton: true,
+      confirmButtonText: _tr('app_page.common.yes'),
+      cancelButtonText: _tr('app_page.common.no'),
+    });
+}
+
+
+function ask_replace_target_layer(name_layer) {
+  return swal({
+      title: '',
+      text: _tr('app_page.common.replace_target_promote', { name_layer }),
       allowOutsideClick: false,
       allowEscapeKey: true,
       type: 'question',
@@ -1796,7 +1811,7 @@ export function binds_layers_buttons(layer_name) {
   sortable_elem.select('#browse_data_button').on('click', () => { boxExplore2.create(layer_name); });
   sortable_elem.select('#replace_button')
     .on('click', () => {
-      ask_replace_target_layer()
+      ask_replace_target_layer(layer_name)
         .then(() => {
           changeTargetLayer(layer_name);
         }, () => null);

@@ -13,6 +13,8 @@
             "layer_success_and_proj": "Résultat ajouté à la carte! Souhaitez-vous utiliser les informations de projection contenues dans le fichier ?",
             "ask_replace_dataset": "Un jeu de données a déjà été fourni. Remplacer par ces nouvelles données ?",
             "ask_replace_target_layer": "Un fond de carte principal est déjà présent. Le remplacer par ces nouvelles données ?<br>(L'ancien fond restera disponible comme fond de carte d'habillage)",
+            "replace_target_promote": "Voulez-vous faire de <i>{{name_layer}}</i> la couche principale ?",
+            "replace_target_downgrade": "Voulez-vous transformer la couche <i>{{name_layer}}</i> en couche d'habillage ?",
             "error_message": "Une erreur s'est produite - L'opération en cours a été stoppée.",
             "error_discretization": "Une erreur s'est produite lors de la discrétisation (essayez avec un {{arg}} nombre de classes ou une autre méthode)",
             "error_only_layout": "Seules les couches d'habillages peuvent être insérées ici!",
