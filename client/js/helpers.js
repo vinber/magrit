@@ -447,6 +447,8 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
       '</div>',
     ].join('');
   } else {
+    const replace_but = !data_manager.current_layers[layerName].graticule &&
+      !data_manager.current_layers[layerName].sphere ? button_replace : undefined;
     li.setAttribute('class', ['sortable ', layerId].join(''));
     li.innerHTML = [
       listDisplayName,
@@ -457,7 +459,7 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
       button_table,
       eye_open0,
       button_type.get(typeGeom),
-      button_replace,
+      replace_but,
       '</div> ',
     ].join('');
   }

@@ -497,11 +497,15 @@ function createStyleBoxGraticule(layer_name) {
       const step_val = +this.value;
       const dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
       data_manager.current_layers.Graticule.step = step_val;
+      let graticule = d3.geoGraticule().step([step_val, step_val]);
+      if (data_manager.current_layers.Graticule.extent) {
+        graticule = graticule.extent(data_manager.current_layers.Graticule.extent);
+      }
       map.select('#L_Graticule').remove();
       map.append('g')
         .attrs({ id: 'L_Graticule', class: 'layer' })
         .append('path')
-        .datum(d3.geoGraticule().step([step_val, step_val]))
+        .datum(graticule)
         .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
         .styles({ fill: 'none', stroke: data_manager.current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
       zoom_without_redraw();
@@ -541,47 +545,51 @@ function createStyleBoxGraticule(layer_name) {
       grat_range.dispatchEvent(new MouseEvent('change'));
     });
 
-  const clip_extent_section = popup.append('p').attr('class', 'line_elem');
-  clip_extent_section.append('input')
-    .attrs({ type: 'checkbox', id: 'clip_graticule' })
-    .property('checked', current_params.extent ? true : null)
-    .on('change', function () {
-      const next_layer = selection_strokeW.node().nextSibling,
-        step_val = +document.getElementById('graticule_step_txt').value,
-        dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
-      let graticule = d3.geoGraticule().step([step_val, step_val]);
-      map.select('#L_Graticule').remove();
-      if (this.checked) {
-        const bbox_layer = _target_layer_file.bbox;
-        const extent_grat = [
-          [Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10],
-          [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10],
-        ];
+  // Only append this section if there is currently a target layer :
+  if (Object.keys(data_manager.user_data).length) {
+    const clip_extent_section = popup.append('p').attr('class', 'line_elem');
+    clip_extent_section.append('input')
+      .attrs({ type: 'checkbox', id: 'clip_graticule' })
+      .property('checked', current_params.extent ? true : null)
+      .on('change', function () {
+        const next_layer = selection_strokeW.node().nextSibling,
+          step_val = +document.getElementById('graticule_step_txt').value,
+          dasharray_val = +document.getElementById('graticule_dasharray_txt').value;
+        let graticule = d3.geoGraticule().step([step_val, step_val]);
+        map.select('#L_Graticule').remove();
+        if (this.checked) {
+          const bbox_layer = _target_layer_file.bbox;
+          const extent_grat = [
+            [Math.round((bbox_layer[0] - 12) / 10) * 10, Math.round((bbox_layer[1] - 12) / 10) * 10],
+            [Math.round((bbox_layer[2] + 12) / 10) * 10, Math.round((bbox_layer[3] + 12) / 10) * 10],
+          ];
 
-        if (extent_grat[0] < -180) extent_grat[0] = -180;
-        if (extent_grat[1] < -90) extent_grat[1] = -90;
-        if (extent_grat[2] > 180) extent_grat[2] = 180;
-        if (extent_grat[3] > 90) extent_grat[3] = 90;
-        graticule = graticule.extent(extent_grat);
-        data_manager.current_layers.Graticule.extent = extent_grat;
-      } else {
-        data_manager.current_layers.Graticule.extent = undefined;
-      }
-      map.append('g')
-        .attrs({ id: 'L_Graticule', class: 'layer' })
-        .append('path')
-        .datum(graticule)
-        .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
-        .styles({ fill: 'none', stroke: data_manager.current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
-      zoom_without_redraw();
-      selection = map.select('#L_Graticule').selectAll('path');
-      selection_strokeW = map.select('#L_Graticule');
-      svg_map.insertBefore(selection_strokeW.node(), next_layer);
-    });
-  clip_extent_section.append('label')
-    .attrs({ for: 'clip_graticule' })
-    .html(_tr('app_page.layer_style_popup.graticule_clip'));
+          if (extent_grat[0] < -180) extent_grat[0] = -180;
+          if (extent_grat[1] < -90) extent_grat[1] = -90;
+          if (extent_grat[2] > 180) extent_grat[2] = 180;
+          if (extent_grat[3] > 90) extent_grat[3] = 90;
+          graticule = graticule.extent(extent_grat);
+          data_manager.current_layers.Graticule.extent = extent_grat;
+        } else {
+          data_manager.current_layers.Graticule.extent = undefined;
+        }
+        map.append('g')
+          .attrs({ id: 'L_Graticule', class: 'layer' })
+          .append('path')
+          .datum(graticule)
+          .attrs({ class: 'graticule', d: path, 'clip-path': 'url(#clip)' })
+          .styles({ fill: 'none', stroke: data_manager.current_layers.Graticule.fill_color.single, 'stroke-dasharray': dasharray_val });
+        zoom_without_redraw();
+        selection = map.select('#L_Graticule').selectAll('path');
+        selection_strokeW = map.select('#L_Graticule');
+        svg_map.insertBefore(selection_strokeW.node(), next_layer);
+      });
+    clip_extent_section.append('label')
+      .attrs({ for: 'clip_graticule' })
+      .html(_tr('app_page.layer_style_popup.graticule_clip'));
+  }
 
+  // Allow to create label for each line of the graticule
   make_generate_labels_graticule_section(popup);
 }
 
