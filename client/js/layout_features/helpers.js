@@ -430,13 +430,18 @@ export function add_layout_feature(selected_feature, options = {}) {
     const stroke_dasharray = options.stroke_dasharray || 5;
     const step = options.step || 10;
     let graticule = d3.geoGraticule().step([step, step]);
+    let extent;
     if (options.extent) {
-      const bbox_layer = _target_layer_file.bbox;
-      const extent = [
-        [Mround((bbox_layer[0] - 10) / 10) * 10, Mround((bbox_layer[1] - 10) / 10) * 10],
-        [Mround((bbox_layer[2] + 10) / 10) * 10, Mround((bbox_layer[3] + 10) / 10) * 10]];
+      if (options.extent instanceof Array) {
+        extent = options.extent;
+      } else {
+        const bbox_layer = _target_layer_file.bbox;
+        extent = [
+          [Mround((bbox_layer[0] - 10) / 10) * 10, Mround((bbox_layer[1] - 10) / 10) * 10],
+          [Mround((bbox_layer[2] + 10) / 10) * 10, Mround((bbox_layer[3] + 10) / 10) * 10],
+        ];
+      }
       graticule = graticule.extent(extent);
-      data_manager.current_layers.Graticule.extent = extent;
     }
     const layer_to_add = 'Graticule';
     const layer_id = encodeId(layer_to_add);
@@ -450,14 +455,15 @@ export function add_layout_feature(selected_feature, options = {}) {
       .attrs({ d: path, class: 'graticule' })
       .styles({ 'stroke-dasharray': stroke_dasharray, fill: 'none', stroke: stroke });
     data_manager.current_layers.Graticule = {
-      graticule: true,
-      type: 'Line',
-      n_features: 1,
-      'stroke-width-const': +stroke_width.slice(0, -2),
+      dasharray: stroke_dasharray,
+      extent: extent,
       fill_color: { single: stroke },
+      graticule: true,
+      n_features: 1,
       opacity: stroke_opacity,
       step: step,
-      dasharray: stroke_dasharray,
+      'stroke-width-const': +stroke_width.slice(0, -2),
+      type: 'Line',
     };
     if (isInterrupted(_app.current_proj_name.toLowerCase())) {
       map.select(`g#${layer_id}`).attr('clip-path', 'url(#clip)');

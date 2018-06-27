@@ -313,6 +313,7 @@ export function get_map_project() {
       if (layer_type === 'graticule') {
         layer_style_i.stroke_dasharray = data_manager.current_layers.Graticule.dasharray;
         layer_style_i.step = data_manager.current_layers.Graticule.step;
+        layer_style_i.extent = data_manager.current_layers.Graticule.extent;
       }
     } else if (!current_layer_prop.renderer) {
       selection = map.select(`#${layer_id}`).selectAll('path');
@@ -1123,6 +1124,7 @@ export function apply_user_preferences(json_pref) {
           options.fill = 'none';
           options.stroke_dasharray = _layer.stroke_dasharray;
           options.step = _layer.step;
+          options.extent = _layer.extent;
         } else {
           options.fill = _layer.fill_color;
         }
