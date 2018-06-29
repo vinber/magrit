@@ -6,6 +6,25 @@ import { up_legend, down_legend, drag_legend_func } from './../legend';
 
 import { pos_lgds_elem } from './snap_lines';
 
+const convert_dist = (unit_in, unit_out, value) => {
+  if (unit_in === unit_out) {
+    return value;
+  } else if (unit_in === 'km' && unit_out === 'm') {
+    return +value * 1000;
+  } else if (unit_in === 'km' && unit_out === 'mi') {
+    return +value * 0.621371;
+  } else if (unit_in === 'm' && unit_out === 'km') {
+    return +value / 1000;
+  } else if (unit_in === 'm' && unit_out === 'mi') {
+    return +value * 0.000621371;
+  } else if (unit_in === 'mi' && unit_out === 'km') {
+    return +value * 1.60934;
+  } else if (unit_in === 'mi' && unit_out === 'm') {
+    return +value * 1609.34;
+  } else {
+    console.log('error');
+  }
+}
 
 /**
 * Handler for the scale bar (only designed for one scale bar)
@@ -104,7 +123,7 @@ export const scaleBar = {
       z_trans = [transform.x, transform.y],
       z_scale = transform.k;
 
-    if (isNaN(this.bar_size)) {
+    if (isNaN(+this.bar_size)) {
       console.log('scaleBar.bar_size : NaN');
       this.bar_size = 50;
     }
@@ -140,7 +159,7 @@ export const scaleBar = {
       this.remove();
       return;
     }
-    this.Scale.select('#text_limit_sup_scale').text(`${this.fixed_size} ${this.unit}`);
+    this.Scale.select('#text_limit_sup_scale').text(`${this.dist_txt} ${this.unit}`);
     this.handle_start_end_bar();
   },
   update() {
@@ -179,23 +198,44 @@ export const scaleBar = {
   },
   editStyle() {
     let new_val;
-    const self = this,
-      redraw_now = () => {
-        if (new_val) { self.resize(new_val); } else {
-          self.fixed_size = false;
-          self.update();
-        }
-      };
+    const self = this;
+    const initial_params = {
+      bar_size: self.bar_size,
+      displayed: self.displayed,
+      dist: self.dist,
+      dist_txt: self.dist_txt,
+      fixed_size: self.fixed_size,
+      precision: self.precision,
+      unit: self.unit,
+      x: self.x,
+      y: self.y,
+      transform: self.Scale._groups[0][0].getAttribute('transform') || '',
+    };
+    console.log(initial_params);
+
     make_confirm_dialog2('scaleBarEditBox', _tr('app_page.scale_bar_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {
-        if (confirmed) {
-          redraw_now();
+        if (!confirmed) {
+          let _t = self.dist_txt;
+          self.bar_size = initial_params.bar_size;
+          self.displayed = initial_params.displayed;
+          self.dist = initial_params.dist;
+          self.dist_txt = initial_params.dist_txt;
+          self.fixed_size = initial_params.fixed_size;
+          self.precision = initial_params.precision;
+          self.unit = initial_params.unit;
+          self.x = initial_params.x;
+          self.y = initial_params.y;
+          if (_t == initial_params.dist_txt) {
+            self.update();
+          } else {
+            self.resize(+_t);
+          }
         }
       });
     const box_body = d3.select('.scaleBarEditBox').select('.modal-body').style('width', '295px');
         // box_body.node().parentElement.style.width = "auto";
-    box_body.append('h3')
-            .html(_tr('app_page.scale_bar_edit_box.title'));
+    box_body.append('h3').html(_tr('app_page.scale_bar_edit_box.title'));
     const a = box_body.append('p').attr('class', 'line_elem2');
     a.append('span')
       .html(_tr('app_page.scale_bar_edit_box.fixed_size'));
@@ -206,25 +246,27 @@ export const scaleBar = {
         id: 'scale_fixed_field',
         type: 'number',
       })
-      .property('disabled', self.fixed_size ? null : true)
+      .property('disabled', initial_params.fixed_size ? null : true)
       .property('value', +this.dist_txt)
       .on('change', function () {
-        new_val = +this.value;
-        redraw_now();
+        const v = convert_dist(self.unit, 'km', +this.value);
+        self.resize(v);
       });
 
     a.append('input')
       .style('float', 'right')
       .attrs({ type: 'checkbox', checked: self.fixed_size ? true : null })
       .on('change', () => {
-        if (box_body.select('#scale_fixed_field').attr('disabled')) {
-          box_body.select('#scale_fixed_field').attr('disabled', null);
-          new_val = +box_body.select('#scale_fixed_field').attr('value');
+        if (!self.fixed_size) {
+          box_body.select('#scale_fixed_field').property('disabled', false);
+          const v = convert_dist(self.unit, 'km', +box_body.select('#scale_fixed_field').property('value'));
+          self.fixed_size = v;
+          self.resize(v);
         } else {
-          box_body.select('#scale_fixed_field').attr('disabled', true);
-          new_val = false;
+          box_body.select('#scale_fixed_field').property('disabled', true);
+          self.fixed_size = false;
+          self.update()
         }
-        redraw_now();
       });
 
     const b = box_body.append('p').attr('class', 'line_elem2');
@@ -245,7 +287,7 @@ export const scaleBar = {
       .property('value', +self.precision)
       .on('change', function () {
         self.precision = +this.value;
-        redraw_now();
+        self.update();
       });
 
     const c = box_body.append('p').attr('class', 'line_elem2');
@@ -255,8 +297,18 @@ export const scaleBar = {
       .style('float', 'right')
       .attr('id', 'scale_unit')
       .on('change', function () {
+        const old_unit = self.unit;
+        let v;
         self.unit = this.value;
-        redraw_now();
+        if (self.fixed_size != false) {
+          v = convert_dist(old_unit, self.unit, +self.fixed_size).toFixed(self.precision);
+          self.fixed_size = +self.dist;
+        } else {
+          v = convert_dist(old_unit, self.unit, +self.dist_txt)
+            .toFixed(self.precision);
+        }
+        box_body.select('#scale_fixed_field').property('value', +v);
+        self.update();
       });
     unit_select.append('option').text('km').attr('value', 'km');
     unit_select.append('option').text('m').attr('value', 'm');
