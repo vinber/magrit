@@ -247,8 +247,11 @@ export function add_sample_layer() {
     content = box_body.append('div').attr('id', 'panel1');
     content.append('h3').html(_tr('app_page.sample_layer_box.subtitle1'));
 
-    const t_layer_selec = content.append('p').html('').insert('select').attr('class', 'sample_target');
-    target_layers.forEach((layer_info) => { t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]); });
+    const t_layer_selec = content.append('p').html('')
+      .insert('select').attr('class', 'sample_target');
+    target_layers.forEach((layer_info) => {
+      t_layer_selec.append('option').html(layer_info[0]).attr('value', layer_info[1]);
+    });
     t_layer_selec.on('change', function () { selec = this.value; });
     content.append('p')
       .styles({ margin: 'auto', 'text-align': 'right', cursor: 'pointer' })
@@ -257,15 +260,14 @@ export function add_sample_layer() {
       .on('click', () => {
         make_panel2();
       });
-    if (selec) setSelected(t_layer_selec.node(), selec);
+    if (selec) {
+      setSelected(t_layer_selec.node(), selec);
+    }
   }
 
   const container = d3.select('.sampleDialogBox')
-    .styles({
-      width: '625px',
-      display: 'flex',
-    });
-   container.select('.modal-content').style('width', '625px');
+    .styles({ width: '625px', display: 'flex' });
+  container.select('.modal-content').style('width', '625px');
   const box_body = container.select('.modal-body')
   setTimeout(() => { document.querySelector('select.sample_target').focus(); }, 500);
   make_panel1();
@@ -359,20 +361,19 @@ export function add_layer_topojson(text, options = {}) {
   }
 
   // Some special operations if this is the first layer to be added:
-  if (_app.first_layer) {
+  if (data_manager.current_layers.World && data_manager.current_layers.World.default_layer) {
     // Remove the 'world' layout layer displayed when the application starts:
     remove_layer_cleanup('World');
+  }
 
-    // Read the projection information provided with the layer, if any:
-    if (parsedJSON.proj) {
-      try {
-        _proj = proj4(parsedJSON.proj);
-      } catch (e) {
-        _proj = undefined;
-        console.log(e);
-      }
+  // Read the projection information provided with the layer, if any:
+  if (parsedJSON.proj) {
+    try {
+      _proj = proj4(parsedJSON.proj);
+    } catch (e) {
+      _proj = undefined;
+      console.log(e);
     }
-    // delete _app.first_layer;
   }
 
   data_manager.current_layers[lyr_name_to_add] = {
@@ -494,8 +495,10 @@ export function add_layer_topojson(text, options = {}) {
     if (fields_type) {
       data_manager.current_layers[lyr_name_to_add].fields_type = fields_type;
     }
-    // No projection was provided was the layer :
+
+    // No projection was provided with the layer
     if (_proj === undefined) {
+    // if (_proj === undefined || !target_layer_on_add) {
       swal({
         title: '',
         text: _tr('app_page.common.layer_success'),
@@ -515,7 +518,7 @@ export function add_layer_topojson(text, options = {}) {
           make_box_type_fields(lyr_name_to_add);
         }
       });
-    } else {
+    } else { // A projection was provided with the layer:
       swal({
         title: '',
         text: _tr('app_page.common.layer_success_and_proj'),

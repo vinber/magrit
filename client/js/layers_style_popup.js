@@ -1030,7 +1030,7 @@ function createStyleBox_Line(layer_name) {
     .html(` ${border_opacity}`);
 
   if (!renderer || (!renderer.startsWith('PropSymbols') && !renderer.startsWith('Links') && renderer !== 'DiscLayer')) {
-    const width_section = popup.append('p');
+    const width_section = popup.append('p').attr('class', 'line_elem');
     width_section.append('span')
       .html(_tr('app_page.layer_style_popup.width'));
     width_section.insert('input')
@@ -1077,8 +1077,6 @@ function createStyleBox_Line(layer_name) {
       });
   }
 
-  make_generate_labels_section(popup, layer_name);
-
   if (data_manager.current_layers[layer_name].renderer === undefined) {
     const generate_legend_section = popup.append('p');
     const generate_lgd_chkbox = generate_legend_section.insert('input')
@@ -1101,6 +1099,8 @@ function createStyleBox_Line(layer_name) {
       }
     });
   }
+
+  make_generate_labels_section(popup, layer_name);
 }
 
 function createStyleBox(layer_name) {
@@ -1453,7 +1453,7 @@ function createStyleBox(layer_name) {
     .styles({ display: 'inline', float: 'right' })
     .html(` ${border_opacity}`);
 
-  const width_section = popup.append('p');
+  const width_section = popup.append('p').attr('class', 'line_elem');
   width_section.append('span')
     .html(_tr('app_page.layer_style_popup.border_width'));
   width_section.insert('input')
@@ -1487,7 +1487,6 @@ function createStyleBox(layer_name) {
       map.select(g_lyr_name).attr('filter', null);
     }
   });
-  make_generate_labels_section(popup, layer_name);
 
   if (data_manager.current_layers[layer_name].renderer === undefined) {
     const generate_legend_section = popup.append('p');
@@ -1511,6 +1510,8 @@ function createStyleBox(layer_name) {
       }
     });
   }
+
+  make_generate_labels_section(popup, layer_name);
 }
 
 function createStyleBoxStewart(layer_name) {
@@ -1524,7 +1525,9 @@ function createStyleBoxStewart(layer_name) {
 
   const recolor_stewart = function (coloramp_name, reversed) {
     const new_coloramp = getColorBrewerArray(nb_ft, coloramp_name);
-    if (reversed) new_coloramp.reverse();
+    if (reversed === false) {
+      new_coloramp.reverse();
+    }
     for (let i = 0; i < nb_ft; ++i) {
       rendering_params.breaks[i][1] = new_coloramp[i];
     }
@@ -1668,7 +1671,7 @@ function createStyleBoxStewart(layer_name) {
     .styles({ display: 'inline', float: 'right' })
     .html(` ${border_opacity}`);
 
-  const width_section = popup.append('p');
+  const width_section = popup.append('p').attr('class', 'line_elem');
   width_section.append('span')
     .html(_tr('app_page.layer_style_popup.border_width'));
   width_section.insert('input')

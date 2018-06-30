@@ -170,14 +170,9 @@ export function setUpInterface(reload_project) {
         // If we don't want to resume from the last project, we can
         // remove it :
         window.localStorage.removeItem('magrit_project');
-        // Indicate that that no layer have been added for now :*
-        global._app.first_layer = true;
       }, () => {
         apply_user_preferences(last_project);
       });
-    } else {
-        // Indicate that that no layer have been added for now :*
-      global._app.first_layer = true;
     }
   }
   // Set the properties for the notification zone :
@@ -1169,6 +1164,7 @@ export function add_simplified_land_layer(options = {}) {
     n_features: 125,
     'stroke-width-const': +stroke_width.slice(0, -2),
     fill_color: { single: fill },
+    default_layer: true,
   };
   map.insert('g', '.legend')
     .attrs({ id: world_id, class: 'layer', 'clip-path': 'url(#clip)' })
@@ -1791,6 +1787,12 @@ export function remove_layer_cleanup(name) {
   // There is probably better ways in JS to delete the object,
   // but in order to make it explicit that we are removing it :
   delete data_manager.current_layers[name];
+
+  // Lastly remove it from the mapping 'layer name' <-> DOM id :
+  if (name !== 'Graticule') {
+    global._app.layer_to_id.delete(name);
+    global._app.id_to_layer.delete(layer_id);
+  }
 }
 
 

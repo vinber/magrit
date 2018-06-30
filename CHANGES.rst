@@ -10,7 +10,9 @@ Changes
 
 - Fix layer projection before computing Dougenik cartograms.
 
-- Fix export to shapefile (by not also including the geojson file in the archive created).
+- Fix unexpected GeoJSON file also present in zip archive when exporting to shapefile.
+
+- Fix incorect behavior when editing scalebar properties (+ fix the behaviour of the its cancel button).
 
 
 0.8.4 (2018-06-08)

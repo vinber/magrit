@@ -113,7 +113,7 @@ export function clean_menu_function() {
     previous_button.classList.remove('active');
     _app.current_functionnality = undefined;
   }
-  section2.select('.form-rendering').remove();
+  section2.select('.func-options').remove();
   document.getElementById('accordion2b').style.display = 'none';
   const btn_s2b = document.getElementById('btn_s2b');
   btn_s2b.innerHTML = _tr('app_page.section2_.title_no_choice');
@@ -272,7 +272,7 @@ const color_disc_icons = (function () {
 }());
 
 function make_template_functionnality(parent_node) {
-  return parent_node.append('div').attr('class', 'form-rendering');
+  return parent_node.append('div').attr('class', 'func-options');
 }
 
 
@@ -284,14 +284,21 @@ function make_template_functionnality(parent_node) {
 * @param {String} margin_top - The margin on the top of the input element (in px).
 * @return {void}
 */
-function make_layer_name_button(parent, id, margin_top) {
+function make_layer_name_input(parent, id) {
   const a = parent.append('p').style('clear', 'both');
   a.append('span')
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.common.output' })
     .html(_tr('app_page.func_options.common.output'));
   a.insert('input')
-    .styles({ width: '240px', 'font-size': '11.5px', 'margin-top': margin_top })
-    .attrs({ class: 'params', id: id });
+    .attrs({ class: 'params', id: id })
+    .styles({
+      width: '240px',
+      float: 'right',
+      'font-size': '11.5px',
+      'margin-bottom': '20px',
+      'margin-right': '20px',
+      'margin-top': '8px',
+     });
 }
 
 function make_discretization_icons(discr_section) {
@@ -358,7 +365,7 @@ function make_discretization_icons(discr_section) {
 
 function make_ok_button(parent, id, disabled = true) {
   const a = parent.append('p')
-    .styles({ clear: 'both', 'text-align': 'right', margin: 'auto' });
+    .styles({ clear: 'both', 'text-align': 'center', margin: 'auto' });
   a.append('button')
     .attrs({
       id: id,
@@ -580,7 +587,7 @@ function fillMenu_TwoStocks() {
     .attrs({ class: 'i18n', 'data-i18n': '[html]app_page.func_options.twostocks.waffle_ratio_units' })
     .html(_tr('app_page.func_options.twostocks.waffle_ratio_units'));
 
-  make_layer_name_button(dv2, 'TwoStocks_output_name', '15px');
+  make_layer_name_input(dv2, 'TwoStocks_output_name');
   make_ok_button(dv2, 'twoStocks_yes');
   dv2.selectAll('.params').attr('disabled', true);
 }
@@ -905,7 +912,7 @@ function fillMenu_PropSymbolChoro() {
   //     .styles({"font-size": "0.8em", "text-align": "center"})
   //     .html(_tr("app_page.func_options.common.discretization_choice"));
 
-  make_layer_name_button(dv2, 'PropSymbolChoro_output_name', '15px');
+  make_layer_name_input(dv2, 'PropSymbolChoro_output_name');
   make_ok_button(dv2, 'propChoro_yes');
   dv2.selectAll('.params').attr('disabled', true);
 }
@@ -1275,7 +1282,7 @@ const fillMenu_Typo = function fillMenu_Typo() {
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
     .html(_tr('app_page.func_options.typo.color_choice'));
 
-  make_layer_name_button(dv2, 'Typo_output_name');
+  make_layer_name_input(dv2, 'Typo_output_name');
   make_ok_button(dv2, 'Typo_yes');
   dv2.selectAll('.params').attr('disabled', true);
 };
@@ -1432,7 +1439,7 @@ function fillMenu_Choropleth() {
     .styles({ margin: '16px 50px 0px 4px', float: 'right' });
   make_discretization_icons(discr_section);
 
-  make_layer_name_button(dv2, 'Choro_output_name', '15px');
+  make_layer_name_input(dv2, 'Choro_output_name');
   make_ok_button(dv2, 'choro_yes');
   dv2.selectAll('.params').attr('disabled', true);
 }
@@ -1949,7 +1956,7 @@ function fillMenu_Stewart() {
       .attrs({ value: fun_name[0], 'data-i18n': `[text]${fun_name[1]}` });
   });
 
-  make_layer_name_button(dialog_content, 'stewart_output_name');
+  make_layer_name_input(dialog_content, 'stewart_output_name');
   make_ok_button(dialog_content, 'stewart_yes', false);
   dialog_content.selectAll('.params').attr('disabled', true);
 }
@@ -2147,7 +2154,7 @@ function fillMenu_Anamorphose() {
     algo_selec.append('option').text(fun_name[0]).attr('value', fun_name[1]);
   });
 
-  make_layer_name_button(dialog_content, 'Anamorph_output_name');
+  make_layer_name_input(dialog_content, 'Anamorph_output_name');
   make_ok_button(dialog_content, 'Anamorph_yes', false);
 
   dialog_content.selectAll('.params').attr('disabled', true);
@@ -2690,7 +2697,7 @@ function fillMenu_PropSymbolTypo() {
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
     .html(_tr('app_page.func_options.typo.color_choice'));
 
-  make_layer_name_button(dv2, 'PropSymbolTypo_output_name');
+  make_layer_name_input(dv2, 'PropSymbolTypo_output_name');
   make_ok_button(dv2, 'propTypo_yes');
   section2.selectAll('.params').attr('disabled', true);
 }
@@ -2992,7 +2999,7 @@ function fillMenu_Discont() {
   f.insert('input')
     .attrs({ class: 'params', id: 'color_Discont', type: 'color', value: ColorsSelected.random() });
 
-  make_layer_name_button(dv2, 'Discont_output_name');
+  make_layer_name_input(dv2, 'Discont_output_name');
   make_ok_button(dv2, 'yes_Discont', false);
 
   dv2.selectAll('.params').attr('disabled', true);
@@ -3247,7 +3254,7 @@ function fillMenu_PropSymbol() {
     .attrs({ id: 'PropSymbol_break_val', type: 'number', class: 'params' })
     .styles({ display: 'none', width: '75px' });
 
-  make_layer_name_button(dialog_content, 'PropSymbol_output_name');
+  make_layer_name_input(dialog_content, 'PropSymbol_output_name');
   make_ok_button(dialog_content, 'PropSymbol_yes', false);
   dialog_content.selectAll('.params').attr('disabled', true);
 }
@@ -3387,7 +3394,7 @@ function fillMenu_TypoSymbol() {
     .styles({ 'font-size': '0.8em', 'text-align': 'center' })
     .html(_tr('app_page.func_options.typosymbol.symbols_choice'));
 
-  make_layer_name_button(dv2, 'TypoSymbols_output_name');
+  make_layer_name_input(dv2, 'TypoSymbols_output_name');
   make_ok_button(dv2, 'yesTypoSymbols');
   dv2.selectAll('.params').attr('disabled', true);
   if (!(_app.default_symbols) || _app.default_symbols.length === 0) {
@@ -3771,7 +3778,7 @@ function fillMenu_griddedMap() {
       .attrs({ value: shape[1], 'data-i18n': `[text]${shape[0]}` });
   });
 
-  make_layer_name_button(dialog_content, 'Gridded_output_name');
+  make_layer_name_input(dialog_content, 'Gridded_output_name');
   make_ok_button(dialog_content, 'Gridded_yes', false);
   section2.selectAll('.params').attr('disabled', true);
 }
@@ -4209,7 +4216,7 @@ function fillMenu_FlowMap() {
   join_field_section.insert('select')
     .attrs({ class: 'params', id: 'FlowMap_field_join' });
 
-  make_layer_name_button(dv2, 'FlowMap_output_name');
+  make_layer_name_input(dv2, 'FlowMap_output_name');
   make_ok_button(dv2, 'FlowMap_yes', false);
 
   d3.selectAll('.params').attr('disabled', true);
