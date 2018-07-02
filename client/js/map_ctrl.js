@@ -209,7 +209,7 @@ export function rotate_global(angle) {
 
 export function redraw_legends_symbols(targeted_node) {
   const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol,#legend_root_layout');
-  const hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
+  const hide = svg_map.__zoom.k > 5 || svg_map.__zoom.k < 0.15;
   let hidden_message = false;
 
   for (let i = 0; i < legend_nodes.length; ++i) {
@@ -244,7 +244,7 @@ export function redraw_legends_symbols(targeted_node) {
                           notes);
 
       new_lgd = document.querySelector(['#legend_root_layout.lgdf_', layer_id].join(''));
-    } else {
+    } else if (rendered_field) {
       const nested = legend_nodes[i].getAttribute('nested'),
         join_line = legend_nodes[i].getAttribute('join_line');
 
@@ -261,13 +261,16 @@ export function redraw_legends_symbols(targeted_node) {
         notes,
       );
       new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
+    } else {
+      continue;
     }
     new_lgd.style.visibility = visible;
-    if (transform_param) new_lgd.setAttribute('transform', transform_param);
-
+    if (transform_param) {
+      new_lgd.setAttribute('transform', transform_param);
+    }
     if (display_value) {
       new_lgd.setAttribute('display', display_value);
-    } else if (hide && type_lgd_layout === 'Point') {
+    } else if (hide && rendered_field) {
       new_lgd.setAttribute('display', 'none');
       hidden_message = true;
     }
@@ -311,14 +314,9 @@ export function redraw_legends_symbols(targeted_node) {
     if (transform_param) {
       new_lgd.setAttribute('transform', transform_param);
     }
-
     if (display_value) {
       new_lgd.setAttribute('display', display_value);
     }
-    //   hidden.push(true);
-    // } else if (hide) {
-    //   new_lgd.setAttribute('display', 'none');
-    // }
   }
 }
 

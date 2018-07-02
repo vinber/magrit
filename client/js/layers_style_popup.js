@@ -756,6 +756,8 @@ function createStyleBox_Line(layer_name) {
           });
           // Also change the legend if there is one displayed :
           redraw_legend('line_class', layer_name);
+        } else if (data_manager.current_layers[layer_name].layout_legend_displayed) {
+          redraw_legend('layout', layer_name);
         }
 
         if (renderer && (renderer.startsWith('PropSymbols') || renderer === 'LinksProportional')) {
@@ -1091,7 +1093,7 @@ function createStyleBox_Line(layer_name) {
       .html(_tr('app_page.layer_style_popup.layout_legend'));
     generate_lgd_chkbox.on('change', function () {
       if (this.checked) {
-        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name);
+        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name, '', undefined, layer_name);
         data_manager.current_layers[layer_name].layout_legend_displayed = true;
       } else {
         document.querySelector(['#legend_root_layout.lgdf_', _app.layer_to_id.get(layer_name)].join('')).remove();
@@ -1502,7 +1504,7 @@ function createStyleBox(layer_name) {
       .html(_tr('app_page.layer_style_popup.layout_legend'));
     generate_lgd_chkbox.on('change', function () {
       if (this.checked) {
-        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name);
+        createLegend_layout(layer_name, data_manager.current_layers[layer_name].type, layer_name, '', undefined, layer_name);
         data_manager.current_layers[layer_name].layout_legend_displayed = true;
       } else {
         document.querySelector(['#legend_root_layout.lgdf_', _app.layer_to_id.get(layer_name)].join('')).remove();

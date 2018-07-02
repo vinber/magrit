@@ -683,7 +683,7 @@ function rehandle_legend(layer_name, properties) {
         prop.subtitle,
         prop.rect_fill_value,
         prop.text_value,
-        prop.note_bottom,
+        prop.bottom_note,
       );
     }
     const lgd = svg_map.querySelector(`#${prop.type}.lgdf_${_app.layer_to_id.get(layer_name)}`);
@@ -1063,9 +1063,6 @@ export function apply_user_preferences(json_pref) {
           });
         }
       }
-      if (_layer.legend) {
-        rehandle_legend(layer_name, _layer.legend);
-      }
       if (_layer.stroke_color) {
         layer_selec.selectAll('path').style('stroke', _layer.stroke_color);
       }
@@ -1075,6 +1072,9 @@ export function apply_user_preferences(json_pref) {
       }
       if (_layer.fixed_stroke) {
         current_layer_prop.fixed_stroke = _layer.fixed_stroke;
+      }
+      if (_layer.legend) {
+        rehandle_legend(layer_name, _layer.legend);
       }
       if (_layer.fill_color && _layer.fill_color.single && _layer.renderer !== 'DiscLayer') {
         layer_selec

@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.8.5 (2018-06-xx)
+0.8.5 (2018-07-02)
 ------------------
 
 - New: Allow to create a legend also for layout layers.

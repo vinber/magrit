@@ -101,7 +101,7 @@ function createLegend(layer, title) {
   } else if (renderer.indexOf('TwoStocksWaffle') !== -1) {
     el = createLegend_waffle(layer, field, title, '');
   } else if (!renderer) {
-    el = createLegend_layout(layer, data_manager.current_layers[layer].type, title, '');
+    el = createLegend_layout(layer, data_manager.current_layers[layer].type, title, '', undefined, layer);
   } else {
     swal('Oops..',
          `${_tr('No legend available for this representation')}.<br>${
@@ -1062,7 +1062,7 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
   const boxheight = 18;
   const boxwidth = 18;
   const xpos = 30;
-  const ypos = 30;
+  let ypos = 30;
   const tmp_class_name = `legend legend_feature lgdf_${_app.layer_to_id.get(layer)}`;
   const color_layer = data_manager.current_layers[layer].fill_color.single;
   const legend_root = map.insert('g')
@@ -1116,9 +1116,10 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .append('text')
       .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-      .text(text_value || layer);
+      .text(text_value);
+    ypos += (30 + boxheight);
   } else if (type_geom === 'Line') {
-    const stroke_width = data_manager.current_layers[layer]['stroke-width-const']  * svg_map.__zoom.k;
+    const stroke_width = +data_manager.current_layers[layer]['stroke-width-const'];
     legend_elems
       .append('rect')
       .styles({ fill: color_layer, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1, 'stroke-width': 0 })
@@ -1133,7 +1134,8 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .append('text')
       .attrs({ x: xpos + boxwidth * 2 + 10, y: ypos + boxheight * 2.6 })
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-      .text(text_value || layer);
+      .text(text_value);
+    ypos = ypos + boxheight * 1.9 + (boxheight / 2) + (stroke_width / 2);
   } else if (type_geom === 'Point') {
     const radius = data_manager.current_layers[layer].pointRadius * svg_map.__zoom.k;
     const dist_to_title = 30;
@@ -1151,12 +1153,13 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
           y: ypos + dist_to_title + 1 + radius,
         }))
         .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-        .text(text_value || layer);
+        .text(text_value);
+      ypos = ypos + dist_to_title + 1 + radius * 2;
   }
 
   legend_root.append('g')
     .insert('text')
-    .attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: ypos + boxheight * 3.4 })
+    .attrs({ id: 'legend_bottom_note', x: xpos + boxheight, y: ypos + boxheight})
     .styles({
       'font-size': '11px',
       'font-family': 'verdana',
