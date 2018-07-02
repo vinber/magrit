@@ -21,9 +21,8 @@ const convert_dist = (unit_in, unit_out, value) => {
     return +value * 1.60934;
   } else if (unit_in === 'mi' && unit_out === 'm') {
     return +value * 1609.34;
-  } else {
-    console.log('error');
   }
+  throw 'Invalid unit';
 }
 
 /**
@@ -211,7 +210,6 @@ export const scaleBar = {
       y: self.y,
       transform: self.Scale._groups[0][0].getAttribute('transform') || '',
     };
-    console.log(initial_params);
 
     make_confirm_dialog2('scaleBarEditBox', _tr('app_page.scale_bar_edit_box.title'), { widthFitContent: true })
       .then((confirmed) => {

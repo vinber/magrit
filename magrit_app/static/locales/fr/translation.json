@@ -374,7 +374,7 @@
         "sample_layer_box": {
             "title": "Jeux de données d'exemple",
             "subtitle1": "Choix d'une couche géographique à ajouter :",
-            "target_layer": "<i>Couche cible</i>",
+            "target_layer": "<i>Couche à ajouter</i>",
             "grandparismunicipalities": "Communes du Grand Paris <i>(Polygones)</i>",
             "quartier_paris": "Quartiers administratifs de Paris <i>(Polygones)</i>",
             "martinique": "Communes de Martinique (région française d'outre-mer) <i>(Polygones)</i>",

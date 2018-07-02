@@ -368,7 +368,7 @@
         "sample_layer_box": {
             "title": "Conjunto de datos de ejemplo",
             "subtitle1": "Seleccionar la capa geográfica que se desea agregar:",
-            "target_layer": "<i>Capa objetivo</i>",
+            "target_layer": "<i>Capa</i>",
             "grandparismunicipalities": "Comunas de la zona metropolitana de París <i>(Polígonos)</i>",
             "quartier_paris": "Distritos administrativos de París <i>(Polígonos)</i>",
             "martinique": "Comunas de Martinica (región francesa de ultramar) <i>(Polígonos)</i>",

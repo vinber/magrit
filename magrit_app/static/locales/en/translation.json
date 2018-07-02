@@ -373,7 +373,7 @@
         "sample_layer_box": {
             "title": "Sample dataset",
             "subtitle1": "Choose a layer to be rendered :",
-            "target_layer": "<i>Target layer</i>",
+            "target_layer": "<i>Layer to add</i>",
             "grandparismunicipalities": "Grand Paris municipalities <i>(Polygons)</i>",
             "quartier_paris": "Administrative districts of Paris <i>(Polygons)</i>",
             "martinique": "Martinique (FR overseas region) communes <i>(Polygons)</i>",

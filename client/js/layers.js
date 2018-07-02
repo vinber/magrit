@@ -125,7 +125,7 @@ export function add_sample_layer() {
     ['commune_dep_976', ['proj4', 'EPSG:7075']],
   ]);
   const target_layers = [
-    [_tr('app_page.sample_layer_box.target_layer'), ''],
+    [_tr('app_page.sample_layer_box.layer'), ''],
     [_tr('app_page.sample_layer_box.grandparismunicipalities'), 'GrandParisMunicipalities'],
     [_tr('app_page.sample_layer_box.quartier_paris'), 'quartier_paris'],
     [_tr('app_page.sample_layer_box.martinique'), 'martinique'],
