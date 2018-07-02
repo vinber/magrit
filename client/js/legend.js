@@ -1118,7 +1118,7 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
       .text(text_value || layer);
   } else if (type_geom === 'Line') {
-    const stroke_width = data_manager.current_layers[layer]['stroke-width-const'];
+    const stroke_width = data_manager.current_layers[layer]['stroke-width-const']  * svg_map.__zoom.k;
     legend_elems
       .append('rect')
       .styles({ fill: color_layer, stroke: 'rgb(0, 0, 0)', 'fill-opacity': 1, 'stroke-width': 0 })
@@ -1136,18 +1136,22 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
       .text(text_value || layer);
   } else if (type_geom === 'Point') {
     const radius = data_manager.current_layers[layer].pointRadius * svg_map.__zoom.k;
-    legend_elems
-      .append('circle')
-      .styles({ fill: color_layer, stroke: 'lightgray', 'fill-opacity': 1 })
-      .attrs({
-        cx: xpos + boxwidth / 2,
-        cy: ypos + boxheight * 1.2 + radius,
-        r: radius,
-      });
-    legend_elems.append('text')
-      .attrs({ x: xpos + boxwidth * 2 + 10 + radius / 2, y: ypos + (boxheight * 1.9) + radius / 2 })
-      .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
-      .text(text_value || layer);
+    const dist_to_title = 30;
+      legend_elems
+        .append('circle')
+        .styles({ fill: color_layer, stroke: 'lightgray', 'fill-opacity': 1 })
+        .attrs(d => ({
+          cx: xpos + space_elem + 4 + radius / 2,
+          cy: ypos + dist_to_title + radius,
+          r: radius,
+        }));
+      legend_elems.append('text')
+        .attrs(d => ({
+          x: xpos + space_elem + 4 + (radius * 2) * 0.75 + 7,
+          y: ypos + dist_to_title + 1 + radius,
+        }))
+        .styles({ 'alignment-baseline': 'middle', 'font-size': '10px' })
+        .text(text_value || layer);
   }
 
   legend_root.append('g')

@@ -187,6 +187,7 @@ export function setUpInterface(reload_project) {
 */
 export function askTypeLayer () {
   const opts = { target: _tr('app_page.common.target_l'), layout: _tr('app_page.common.layout_l') };
+  const target_layer_added = Object.keys(data_manager.user_data).length > 0;
   let first_reject = false;
   return swal({
     title: '',
@@ -199,6 +200,7 @@ export function askTypeLayer () {
     confirmButtonColor: '#DD6B55',
     confirmButtonText: _tr('app_page.common.confirm'),
     input: 'select',
+    inputValue: target_layer_added ? 'layout' : 'target',
     inputPlaceholder: _tr('app_page.common.layer_type_selection'),
     inputOptions: opts,
     inputValidator: (value) => {

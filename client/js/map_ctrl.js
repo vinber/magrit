@@ -2,7 +2,7 @@ import alertify from 'alertifyjs';
 import { get_nb_decimals, round_value } from './helpers_calc';
 import { Mround } from './helpers_math';
 import {
-  createLegend_symbol, createLegend_discont_links, move_legends,
+  createLegend_symbol, createLegend_layout, createLegend_discont_links, move_legends,
 } from './legend';
 import { scaleBar } from './layout_features/scalebar';
 import { northArrow } from './layout_features/north_arrow';
@@ -208,19 +208,14 @@ export function rotate_global(angle) {
 }
 
 export function redraw_legends_symbols(targeted_node) {
-  const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol');
+  const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol,#legend_root_layout');
   const hide = svg_map.__zoom.k > 4 || svg_map.__zoom.k < 0.15;
-  const hidden = [];
+  let hidden_message = false;
 
   for (let i = 0; i < legend_nodes.length; ++i) {
     const layer_id = legend_nodes[i].classList[2].split('lgdf_')[1],
       layer_name = global._app.id_to_layer.get(layer_id),
-      rendered_field = data_manager.current_layers[layer_name].rendered_field,
-      nested = legend_nodes[i].getAttribute('nested'),
-      join_line = legend_nodes[i].getAttribute('join_line'),
-      display_value = legend_nodes[i].getAttribute('display'),
-      visible = legend_nodes[i].style.visibility;
-
+      rendered_field = data_manager.current_layers[layer_name].rendered_field;
     const transform_param = legend_nodes[i].getAttribute('transform'),
       rounding_precision = legend_nodes[i].getAttribute('rounding_precision'),
       lgd_title = legend_nodes[i].querySelector('#legendtitle').innerHTML,
@@ -232,77 +227,98 @@ export function redraw_legends_symbols(targeted_node) {
       opacity: legend_nodes[i].querySelector('#under_rect').style.fillOpacity,
     } : undefined;
 
-    legend_nodes[i].remove();
-    createLegend_symbol(
-      layer_name,
-      rendered_field,
-      lgd_title,
-      lgd_subtitle,
-      nested,
-      join_line,
-      rect_fill_value,
-      rounding_precision,
-      notes,
-    );
-    const new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
+    const display_value = legend_nodes[i].getAttribute('display'),
+      visible = legend_nodes[i].style.visibility;
+    const type_lgd_layout = data_manager.current_layers[layer_name].type;
+    let new_lgd;
+
+    if (!rendered_field && type_lgd_layout === 'Point') {
+      const text_value = legend_nodes[i].querySelector('g.lg.legend_0 > text').innerHTML;
+      legend_nodes[i].remove();
+      createLegend_layout(layer_name,
+                          type_lgd_layout,
+                          lgd_title,
+                          lgd_subtitle,
+                          rect_fill_value,
+                          text_value,
+                          notes);
+
+      new_lgd = document.querySelector(['#legend_root_layout.lgdf_', layer_id].join(''));
+    } else {
+      const nested = legend_nodes[i].getAttribute('nested'),
+        join_line = legend_nodes[i].getAttribute('join_line');
+
+      legend_nodes[i].remove();
+      createLegend_symbol(
+        layer_name,
+        rendered_field,
+        lgd_title,
+        lgd_subtitle,
+        nested,
+        join_line,
+        rect_fill_value,
+        rounding_precision,
+        notes,
+      );
+      new_lgd = document.querySelector(['#legend_root_symbol.lgdf_', layer_id].join(''));
+    }
     new_lgd.style.visibility = visible;
     if (transform_param) new_lgd.setAttribute('transform', transform_param);
 
     if (display_value) {
       new_lgd.setAttribute('display', display_value);
-      hidden.push(true);
-    } else if (hide) {
+    } else if (hide && type_lgd_layout === 'Point') {
       new_lgd.setAttribute('display', 'none');
+      hidden_message = true;
     }
   }
-  if (hide && !(hidden.length === legend_nodes.length)) {
+  if (hidden_message) {
     alertify.notify(_tr('app_page.notification.warning_deactivation_prop_symbol_legend'), 'warning', 5);
   }
 
-  if (!targeted_node) {
-    const legend_nodes_links_discont = document.querySelectorAll('#legend_root_lines_class');
-    for (let i = 0; i < legend_nodes_links_discont.length; ++i) {
-      const layer_id = legend_nodes_links_discont[i].classList[2].split('lgdf_')[1],
-        layer_name = global._app.id_to_layer.get(layer_id),
-        rendered_field = data_manager.current_layers[layer_name].rendered_field,
-        display_value = legend_nodes_links_discont[i].getAttribute('display'),
-        visible = legend_nodes_links_discont[i].style.visibility;
+  // if (!targeted_node) {
+  const legend_nodes_links_discont = document.querySelectorAll('#legend_root_lines_class');
+  for (let i = 0; i < legend_nodes_links_discont.length; ++i) {
+    const layer_id = legend_nodes_links_discont[i].classList[2].split('lgdf_')[1],
+      layer_name = global._app.id_to_layer.get(layer_id),
+      rendered_field = data_manager.current_layers[layer_name].rendered_field,
+      display_value = legend_nodes_links_discont[i].getAttribute('display'),
+      visible = legend_nodes_links_discont[i].style.visibility;
 
-      const transform_param = legend_nodes_links_discont[i].getAttribute('transform'),
-        rounding_precision = legend_nodes_links_discont[i].getAttribute('rounding_precision'),
-        lgd_title = legend_nodes_links_discont[i].querySelector('#legendtitle').innerHTML,
-        lgd_subtitle = legend_nodes_links_discont[i].querySelector('#legendsubtitle').innerHTML,
-        notes = legend_nodes_links_discont[i].querySelector('#legend_bottom_note').innerHTML;
+    const transform_param = legend_nodes_links_discont[i].getAttribute('transform'),
+      rounding_precision = legend_nodes_links_discont[i].getAttribute('rounding_precision'),
+      lgd_title = legend_nodes_links_discont[i].querySelector('#legendtitle').innerHTML,
+      lgd_subtitle = legend_nodes_links_discont[i].querySelector('#legendsubtitle').innerHTML,
+      notes = legend_nodes_links_discont[i].querySelector('#legend_bottom_note').innerHTML;
 
-      const rect_fill_value = legend_nodes_links_discont[i].getAttribute('visible_rect') === 'true' ? {
-        color: legend_nodes_links_discont[i].querySelector('#under_rect').style.fill,
-        opacity: legend_nodes_links_discont[i].querySelector('#under_rect').style.fillOpacity,
-      } : undefined;
+    const rect_fill_value = legend_nodes_links_discont[i].getAttribute('visible_rect') === 'true' ? {
+      color: legend_nodes_links_discont[i].querySelector('#under_rect').style.fill,
+      opacity: legend_nodes_links_discont[i].querySelector('#under_rect').style.fillOpacity,
+    } : undefined;
 
-      legend_nodes_links_discont[i].remove();
-      createLegend_discont_links(
-        layer_name,
-        rendered_field,
-        lgd_title,
-        lgd_subtitle,
-        rect_fill_value,
-        rounding_precision,
-        notes,
-      );
-      const new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
-      new_lgd.style.visibility = visible;
-      if (transform_param) {
-        new_lgd.setAttribute('transform', transform_param);
-      }
-
-      if (display_value) {
-        new_lgd.setAttribute('display', display_value);
-      }
-      //   hidden.push(true);
-      // } else if (hide) {
-      //   new_lgd.setAttribute('display', 'none');
-      // }
+    legend_nodes_links_discont[i].remove();
+    createLegend_discont_links(
+      layer_name,
+      rendered_field,
+      lgd_title,
+      lgd_subtitle,
+      rect_fill_value,
+      rounding_precision,
+      notes,
+    );
+    const new_lgd = document.querySelector(['#legend_root_lines_class.lgdf_', layer_id].join(''));
+    new_lgd.style.visibility = visible;
+    if (transform_param) {
+      new_lgd.setAttribute('transform', transform_param);
     }
+
+    if (display_value) {
+      new_lgd.setAttribute('display', display_value);
+    }
+    //   hidden.push(true);
+    // } else if (hide) {
+    //   new_lgd.setAttribute('display', 'none');
+    // }
   }
 }
 
