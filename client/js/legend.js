@@ -1102,6 +1102,8 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
     .attr('class', (d, i) => `lg legend_0`);
 
   if (type_geom === 'Polygon') {
+    const stroke_color = map.select(`#${_app.layer_to_id.get(layer)}`).select('path').style('stroke');
+    const stroke_width = map.select(`#${_app.layer_to_id.get(layer)}`).select('path').style('stroke-width');
     legend_elems
       .append('rect')
       .attrs({
@@ -1110,7 +1112,11 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
         width: boxwidth,
         height: boxheight,
       })
-      .styles({ fill: color_layer, stroke: color_layer });
+      .styles({
+        fill: color_layer,
+        stroke: stroke_color,
+        'stroke-width': stroke_width,
+      });
 
     legend_elems
       .append('text')
@@ -1138,10 +1144,18 @@ export function createLegend_layout(layer, type_geom, title, subtitle, rect_fill
     ypos = ypos + boxheight * 1.9 + (boxheight / 2) + (stroke_width / 2);
   } else if (type_geom === 'Point') {
     const radius = data_manager.current_layers[layer].pointRadius * svg_map.__zoom.k;
+    const stroke_color = map.select(`#${_app.layer_to_id.get(layer)}`).select('path').style('stroke');
+    const stroke_width = map.select(`#${_app.layer_to_id.get(layer)}`).style('stroke-width');
+    console.log(stroke_color, stroke_width);
     const dist_to_title = 30;
       legend_elems
         .append('circle')
-        .styles({ fill: color_layer, stroke: 'lightgray', 'fill-opacity': 1 })
+        .styles({
+          fill: color_layer,
+          stroke: stroke_color,
+          'fill-opacity': 1,
+          'stroke-width': stroke_width,
+        })
         .attrs(d => ({
           cx: xpos + space_elem + 4 + radius / 2,
           cy: ypos + dist_to_title + radius,

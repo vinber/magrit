@@ -159,7 +159,7 @@
             "background_color": "Color de fondo",
             "canvas_rotation": "Rotación del mapa",
             "layout_features": "<b>Agregar elementos de diseño:</b>",
-            "autoalign_features": "Alinear los elementos (experimental)"
+            "autoalign_features": "Alinear los elementos"
         },
         "section5b": {
             "title": "Exportar el mapa",
@@ -368,7 +368,7 @@
         "sample_layer_box": {
             "title": "Conjunto de datos de ejemplo",
             "subtitle1": "Seleccionar la capa geográfica que se desea agregar:",
-            "target_layer": "<i>Capa</i>",
+            "layer": "<i>Capa</i>",
             "grandparismunicipalities": "Comunas de la zona metropolitana de París <i>(Polígonos)</i>",
             "quartier_paris": "Distritos administrativos de París <i>(Polígonos)</i>",
             "martinique": "Comunas de Martinica (región francesa de ultramar) <i>(Polígonos)</i>",
