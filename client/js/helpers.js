@@ -417,6 +417,8 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
   if (typeLayer === 'result') {
     li.setAttribute('class', ['sortable_result ', layerId].join(''));
     const promotable = [ 'flow', 'grid', 'discont', 'cartogram', 'smooth'];
+    const legend_but = typeGeom[1] !== 'cartogram'
+      ? button_legend : undefined;
     const replace_but = promotable.indexOf(typeGeom[1]) > -1
       ? button_replace : undefined;
     li.innerHTML = [
@@ -427,7 +429,7 @@ export function create_li_layer_elem(layerName, nbFt, typeGeom, typeLayer) {
       button_zoom_fit,
       button_table,
       eye_open0,
-      button_legend,
+      legend_but,
       button_result_type.get(typeGeom[1]),
       replace_but,
       '</div> ',

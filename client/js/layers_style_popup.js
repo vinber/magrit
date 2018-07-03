@@ -928,7 +928,13 @@ function createStyleBox_Line(layer_name) {
     //   using the minimum value of the serie (skipping unused class if necessary)
     threshold_section.insert('input')
       .attrs({ type: 'range', min: 0, max: max_val, step: 0.5 })
-      .styles({ width: '58px', 'vertical-align': 'middle', display: 'inline', float: 'right', 'margin-right': '0px' })
+      .styles({
+        width: '58px',
+        'vertical-align': 'middle',
+        display: 'inline',
+        float: 'right',
+        'margin-right': '0px',
+      })
       .property('value', prev_min_display)
       .on('change', function () {
         const val = +this.value;
@@ -1490,7 +1496,9 @@ function createStyleBox(layer_name) {
     }
   });
 
-  if (data_manager.current_layers[layer_name].renderer === undefined) {
+  if (data_manager.current_layers[layer_name].renderer === undefined
+      || data_manager.current_layers[layer_name].renderer === 'Carto_doug'
+      || data_manager.current_layers[layer_name].renderer === 'OlsonCarto') {
     const generate_legend_section = popup.append('p');
     const generate_lgd_chkbox = generate_legend_section.insert('input')
       .style('margin', 0)

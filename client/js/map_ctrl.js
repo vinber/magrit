@@ -208,7 +208,9 @@ export function rotate_global(angle) {
 }
 
 export function redraw_legends_symbols(targeted_node) {
-  const legend_nodes = targeted_node ? [targeted_node] : document.querySelectorAll('#legend_root_symbol,#legend_root_layout');
+  const legend_nodes = targeted_node
+    ? [targeted_node]
+    : document.querySelectorAll('#legend_root_symbol,#legend_root_layout');
   const hide = svg_map.__zoom.k > 5 || svg_map.__zoom.k < 0.15;
   let hidden_message = false;
 
@@ -244,7 +246,7 @@ export function redraw_legends_symbols(targeted_node) {
                           notes);
 
       new_lgd = document.querySelector(['#legend_root_layout.lgdf_', layer_id].join(''));
-    } else if (rendered_field) {
+    } else if (rendered_field  && ['Carto_doug', 'OlsonCarto'].indexOf(data_manager.current_layers[layer_name].renderer) < 0) {
       const nested = legend_nodes[i].getAttribute('nested'),
         join_line = legend_nodes[i].getAttribute('join_line');
 
