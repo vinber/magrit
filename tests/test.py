@@ -13,8 +13,6 @@ from magrit_app.helpers.geo import check_projection
 #from aiohttp import FormData
 #from aiohttp.test_utils import make_mocked_request
 
-pytest_plugins = 'aiohttp.pytest_plugin'
-
 
 @pytest.fixture
 def read_topo():

@@ -27,9 +27,8 @@ install:
   - pip install --upgrade "setuptools>=25.1" pip
   - pip install -r requirements/dev.txt
   - python setup.py install
-# before_script:
-#   - magrit -p 9999
-#   - sleep 10
+before_script:
+  - ln -s /usr/lib/chromium-browser/chromedriver ~/bin/chromedriver
 script:
   - magrit --help
   - py.test tests/test.py -p no:flaky
@@ -62,3 +61,4 @@ addons:
       - libkml-dev
       - google-chrome-stable
       - fluxbox
+      - chromium-chromedriver

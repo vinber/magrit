@@ -252,8 +252,7 @@ class ProjectRoundTrip(TestBase):
 #        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory": self.tmp_folder})
-        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
-                                       chrome_options=chromeOptions)
+        self.driver = webdriver.Chrome(chrome_options=chromeOptions)
 
         self.driver.set_window_size(1600, 900)
         self.driver.implicitly_wait(2)
@@ -358,7 +357,7 @@ class ProjectRoundTrip(TestBase):
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_value("nuts2-2013-data")
         driver.find_element_by_css_selector(".btn_ok").click()
-        
+
         self.waitClickButtonTypeLayer(type_layer='target')
         self.waitClickButtonSwal()
 
@@ -519,7 +518,7 @@ class MainFunctionnalitiesTest(TestBase):
 #        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory" : self.tmp_folder})
-        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
+        self.driver = webdriver.Chrome(chrome_options=chromeOptions)
 
         # profile = webdriver.FirefoxProfile()
         # profile.set_preference("browser.download.folderList", 2)
@@ -795,7 +794,7 @@ class MainFunctionnalitiesTest(TestBase):
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_value("nuts2-2013-data")
         driver.find_element_by_css_selector(".btn_ok").click()
-        # 
+        #
         self.waitClickButtonTypeLayer(type_layer='target')
         # Export the project file corresponding to the current state E
         self.waitClickButtonSwal()
@@ -1354,7 +1353,7 @@ class MainFunctionnalitiesTest(TestBase):
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_value("martinique")
         driver.find_element_by_css_selector(".btn_ok").click()
-        
+
         self.waitClickButtonTypeLayer(type_layer='target')
         self.waitClickButtonSwal()
 
@@ -1794,7 +1793,7 @@ class MainFunctionnalitiesTest(TestBase):
         Select(driver.find_element_by_css_selector('#panel2 > p > select')
             ).select_by_visible_text('Canada')
         driver.find_element_by_css_selector(".btn_ok").click()
-        
+
         self.waitClickButtonTypeLayer(type_layer='target')
         self.waitClickButtonSwal()
 
