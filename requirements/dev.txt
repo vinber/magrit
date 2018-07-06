@@ -2,4 +2,4 @@
 flaky >= 3.3.0
 selenium == 2.53.6
 pytest >= 3.0.7
-PIL = 4.1.1
+pillow == 4.1.1
