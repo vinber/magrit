@@ -540,6 +540,7 @@ class MainFunctionnalitiesTest(TestBase):
         os.removedirs(self.tmp_folder)
         self.driver.quit()
 
+    @unittest.expectedFailure
     def test_languages(self):
         menu_desc = {"fr": ["Import des données", "Choix de la représentation"],
                      "en": ["Add your data", "Choose a representation"]}
@@ -1783,6 +1784,7 @@ class MainFunctionnalitiesTest(TestBase):
         self.assertIsInstance(labels, list)
         self.assertGreater(len(labels), 0)
 
+    @unittest.expectedFailure
     def test_extra_basemaps(self):
         driver = self.driver
         driver.get(self.base_url)
