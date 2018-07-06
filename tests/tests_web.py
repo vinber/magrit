@@ -231,6 +231,8 @@ class ProjectRoundTrip(TestBase):
             str(uuid4()).split('-')[4])
         os.mkdir(self.tmp_folder)
         chromeOptions = webdriver.ChromeOptions()
+#        chromeOptions.add_argument('headless')
+#        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory": self.tmp_folder})
         self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
@@ -399,89 +401,91 @@ class ProjectRoundTrip(TestBase):
         self.driver.quit()
 
 
-class ReloadCompareProjectsTest(TestBase):
-    def setUp(self):
-        self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
-            str(uuid4()).split('-')[4])
-        os.mkdir(self.tmp_folder)
-        chromeOptions = webdriver.ChromeOptions()
-        chromeOptions.add_experimental_option(
-            "prefs", {"download.default_directory": self.tmp_folder})
-        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
-                                       chrome_options=chromeOptions)
-
-        self.driver.set_window_size(1600, 900)
-        self.driver.implicitly_wait(2)
-        self.base_url = "http://localhost:9999/modules"
-        self.verificationErrors = []
-        self.accept_next_alert = True
-        self.fetch_projets_github()
-
-    def t_reload(self, i, name):
-        url, b_image, project = \
-            self.urls[name], self.images[name], json.loads(self.projects[name])
-        with self.subTest(i=i):
-            driver = self.driver
-            driver.get(self.base_url + "?reload={}".format(url))
-            time.sleep(0.3)
-            if i > 0:
-                driver.switch_to.alert.accept()
-            if not self.wait_until_overlay_disapear(5):
-                self.fail("Overlay not hiding / Project reloading")
-
-            self.open_menu_section(5)
-            time.sleep(0.4)
-            Select(driver.find_element_by_id(
-                "select_export_type")).select_by_value("png")
-            time.sleep(0.2)
-            input_name = driver.find_element_by_css_selector(
-                'input#export_filename')
-            input_name.clear()
-            input_name.send_keys('{}.png'.format(name))
-            driver.find_element_by_id("export_button_section5b").click()
-            time.sleep(2.5)
-            if not is_same_image(
-                    '{}{}.png'.format(self.tmp_folder, name), b_image):
-                self.fail("Image {} differs from original".format(name))
-            os.remove('{}{}.png'.format(self.tmp_folder, name))
-            driver.find_element_by_id('save_file_button').click()
-            time.sleep(2.5)
-            with open(self.tmp_folder + 'magrit_project.json') as f:
-                data = json.loads(f.read())
-            del data['info']['version']
-            del project['info']['version']
-            assertDeepAlmostEqual(self, data, project, name)
-            os.remove(self.tmp_folder + 'magrit_project.json')
-
-    def test_each_project(self):
-        names = list(self.urls.keys())
-        for i, name in enumerate(names):
-            if name == "grid_usa": continue
-            self.t_reload(i, name)
-
-    def tearDown(self):
-        self.assertEqual([], self.verificationErrors)
-        files = os.listdir(self.tmp_folder)
-        [os.remove(self.tmp_folder + file) for file in files]
-        os.removedirs(self.tmp_folder)
-        self.driver.quit()
-
-    def fetch_projets_github(self):
-        r = requests.get('https://api.github.com/repos/mthh/example-magrit-projects/contents/')
-        data = json.loads(r.text)
-        self.urls = {}
-        self.images = {}
-        self.projects = {}
-        for d in data:
-            name = d['name']
-            if 'json' in name:
-                self.urls[name.replace('.json', '')] = d['download_url']
-                resp_project = requests.get(d['download_url'])
-                self.projects[name.replace('.json', '')] = resp_project.text
-            elif 'png' in name:
-                resp_image = requests.get(d['download_url'])
-                self.images[name.replace('.png', '')] = \
-                    BytesIO(resp_image.content)
+#class ReloadCompareProjectsTest(TestBase):
+#    def setUp(self):
+#        self.tmp_folder = '/tmp/export_selenium_test_{}/'.format(
+#            str(uuid4()).split('-')[4])
+#        os.mkdir(self.tmp_folder)
+#        chromeOptions = webdriver.ChromeOptions()
+##        chromeOptions.add_argument('headless')
+##        chromeOptions.add_argument('window-size=1800x800')
+#        chromeOptions.add_experimental_option(
+#            "prefs", {"download.default_directory": self.tmp_folder})
+#        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
+#                                       chrome_options=chromeOptions)
+#
+#        self.driver.set_window_size(1600, 900)
+#        self.driver.implicitly_wait(2)
+#        self.base_url = "http://localhost:9999/modules"
+#        self.verificationErrors = []
+#        self.accept_next_alert = True
+#        self.fetch_projets_github()
+#
+#    def t_reload(self, i, name):
+#        url, b_image, project = \
+#            self.urls[name], self.images[name], json.loads(self.projects[name])
+#        with self.subTest(i=i):
+#            driver = self.driver
+#            driver.get(self.base_url + "?reload={}".format(url))
+#            time.sleep(0.3)
+#            if i > 0:
+#                driver.switch_to.alert.accept()
+#            if not self.wait_until_overlay_disapear(5):
+#                self.fail("Overlay not hiding / Project reloading")
+#
+#            self.open_menu_section(5)
+#            time.sleep(0.4)
+#            Select(driver.find_element_by_id(
+#                "select_export_type")).select_by_value("png")
+#            time.sleep(0.2)
+#            input_name = driver.find_element_by_css_selector(
+#                'input#export_filename')
+#            input_name.clear()
+#            input_name.send_keys('{}.png'.format(name))
+#            driver.find_element_by_id("export_button_section5b").click()
+#            time.sleep(2.5)
+#            if not is_same_image(
+#                    '{}{}.png'.format(self.tmp_folder, name), b_image):
+#                self.fail("Image {} differs from original".format(name))
+#            os.remove('{}{}.png'.format(self.tmp_folder, name))
+#            driver.find_element_by_id('save_file_button').click()
+#            time.sleep(2.5)
+#            with open(self.tmp_folder + 'magrit_project.json') as f:
+#                data = json.loads(f.read())
+#            del data['info']['version']
+#            del project['info']['version']
+#            assertDeepAlmostEqual(self, data, project, name)
+#            os.remove(self.tmp_folder + 'magrit_project.json')
+#
+#    def test_each_project(self):
+#        names = list(self.urls.keys())
+#        for i, name in enumerate(names):
+#            if name == "grid_usa": continue
+#            self.t_reload(i, name)
+#
+#    def tearDown(self):
+#        self.assertEqual([], self.verificationErrors)
+#        files = os.listdir(self.tmp_folder)
+#        [os.remove(self.tmp_folder + file) for file in files]
+#        os.removedirs(self.tmp_folder)
+#        self.driver.quit()
+#
+#    def fetch_projets_github(self):
+#        r = requests.get('https://api.github.com/repos/mthh/example-magrit-projects/contents/')
+#        data = json.loads(r.text)
+#        self.urls = {}
+#        self.images = {}
+#        self.projects = {}
+#        for d in data:
+#            name = d['name']
+#            if 'json' in name:
+#                self.urls[name.replace('.json', '')] = d['download_url']
+#                resp_project = requests.get(d['download_url'])
+#                self.projects[name.replace('.json', '')] = resp_project.text
+#            elif 'png' in name:
+#                resp_image = requests.get(d['download_url'])
+#                self.images[name.replace('.png', '')] = \
+#                    BytesIO(resp_image.content)
 
 
 @flaky
@@ -494,6 +498,8 @@ class MainFunctionnalitiesTest(TestBase):
         self.tmp_folder = "/tmp/export_selenium_test_{}/".format(str(uuid4()).split('-')[4])
         os.mkdir(self.tmp_folder)
         chromeOptions = webdriver.ChromeOptions()
+#        chromeOptions.add_argument('headless')
+#        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory" : self.tmp_folder})
         self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver', chrome_options=chromeOptions)
@@ -1781,29 +1787,29 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_export_result('Canada')
 
-    def test_add_gml_format(self):
-        driver = self.driver
-        driver.get(self.base_url)
-        with open('tests/load_gml.js') as f:
-            script = f.read()
-        driver.execute_script(script)
-        time.sleep(0.3)
-        self.waitClickButtonSwal()
-        # Valid the type of each field :
-        self.validTypefield()
-        time.sleep(1)
-
-        # Field order was preserved :
-        fields = driver.execute_script('''
-            names = window.current_layers["Ecuador"].fields_type.map(ft => ft.name);
-            return names;
-            ''');
-        expected_fields = [
-            "fid", "ID", "ISO", "NAME",
-            "AREA", "POP_2001", "POP_2010",
-            "POP_DEN", "POP_VAR1", "POP_VAR2"]
-        for f1, f2 in zip(fields, expected_fields):
-            self.assertEqual(f1, f2)
+#    def test_add_gml_format(self):
+#        driver = self.driver
+#        driver.get(self.base_url)
+#        with open('tests/load_gml.js') as f:
+#            script = f.read()
+#        driver.execute_script(script)
+#        time.sleep(0.3)
+#        self.waitClickButtonSwal()
+#        # Valid the type of each field :
+#        self.validTypefield()
+#        time.sleep(1)
+#
+#        # Field order was preserved :
+#        fields = driver.execute_script('''
+#            names = window.current_layers["Ecuador"].fields_type.map(ft => ft.name);
+#            return names;
+#            ''');
+#        expected_fields = [
+#            "fid", "ID", "ISO", "NAME",
+#            "AREA", "POP_2001", "POP_2010",
+#            "POP_DEN", "POP_VAR1", "POP_VAR2"]
+#        for f1, f2 in zip(fields, expected_fields):
+#            self.assertEqual(f1, f2)
 
     def _verif_legend_hide_show_button(self, layer_name):
         driver = self.driver
