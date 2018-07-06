@@ -220,7 +220,7 @@ function add_field_table(table, layer_name, reOpenTableBox) {
         .then(() => {
           const prop_layer = data_manager.current_layers[layer_name];
           if (prop_layer && prop_layer.targeted) {
-            const type_field = type_col2(prop_layer, chooses_handler.new_name)[0];
+            const type_field = type_col2(table).find(el => el.name === chooses_handler.new_name);
             const existing = prop_layer.fields_type.findIndex(el => el.name === type_field.name);
             if (existing < 0) {
               prop_layer.fields_type.push(type_field);
