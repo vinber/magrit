@@ -21,6 +21,7 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3
+  - fluxbox >/dev/null 2>&1 &
 install:
   - npm -g install topojson
   - pip install --upgrade "setuptools>=25.1" pip
@@ -32,10 +33,12 @@ install:
 script:
   - magrit --help
   - py.test tests/test.py -p no:flaky
+  - py.test tests/tests_web.py
 addons:
   apt:
     sources:
       - deadsnakes
+      - google-chrome
     packages:
       - python3.6
       - libopenblas-base
@@ -57,3 +60,5 @@ addons:
       - libxml2
       - libxml2-dev
       - libkml-dev
+      - google-chrome-stable
+      - fluxbox

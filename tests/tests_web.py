@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 
+from subprocess import Popen
 from flaky import flaky
 from functools import wraps
 from io import BytesIO
@@ -15,13 +16,29 @@ from scipy import average
 from uuid import uuid4
 import unittest
 import time
-import requests
+#import requests
 import os
 try:
     import ujson as json
 except ImportError:
     import json
 
+p = None
+
+def setUpModule():
+    start_magrit()
+
+def tearDownModule():
+    close_magrit()
+
+def start_magrit():
+    global p
+    p = Popen(['./magrit_app/app.py'])
+    time.sleep(0.5)
+
+def close_magrit():
+    p.terminate()
+    p.wait()
 
 def retry(ExceptionToCheck, tries=4, delay=2):
     """
