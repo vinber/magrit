@@ -27,6 +27,7 @@ install:
   - pip install --upgrade "setuptools>=25.1" pip
   - pip install -r requirements/dev.txt
   - python setup.py install
+  - python setup.py build_ext --inplace
 before_script:
   - ln -s /usr/lib/chromium-browser/chromedriver ~/bin/chromedriver
 script:
