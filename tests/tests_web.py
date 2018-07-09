@@ -38,7 +38,7 @@ def tearDownModule():
 def start_magrit():
     global p
     p = Popen(['./magrit_app/app.py'])
-    time.sleep(0.5)
+    time.sleep(1)
 
 
 def close_magrit():
@@ -387,7 +387,7 @@ class ProjectRoundTrip(TestBase):
             driver.find_element_by_id("Gridded_field")
             ).select_by_visible_text("POP")
         driver.find_element_by_id("Gridded_cellsize").clear()
-        driver.find_element_by_id("Gridded_cellsize").send_keys("145")
+        driver.find_element_by_id("Gridded_cellsize").send_keys("275")
         Select(
             driver.find_element_by_id("Gridded_shape")
             ).select_by_value("Diamond")
@@ -776,6 +776,63 @@ class MainFunctionnalitiesTest(TestBase):
 #        self._verif_legend_hide_show_button('result_layer')
 #        self._verif_export_result('result_layer')
 
+    def test_legends_layout_layer(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        # Add a layout layer of points:
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('world_cities')
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonTypeLayer(type_layer='layout')
+        self.waitClickButtonSwal()
+
+        self.open_menu_section(3)
+        # Open the box allowing to modify style properties:
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.L_world_cities > div > .style_target_layer"))
+        time.sleep(0.4)
+        # Create a legend:
+        driver.find_element_by_id('checkbox_layout_legend').click()
+        # Close the box:
+        driver.find_element_by_css_selector(".btn_ok").click()
+
+        # Is the legend displayed ?
+        if not self.try_element_present(
+                By.CSS_SELECTOR,
+                '.lgdf_L_world_cities', 5):
+            self.fail('Legend not displayed for layout layer of points')
+
+        # Add a layout layer of polygons:
+        self.open_menu_section(1)
+        self.clickWaitTransition('#sample_link')
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('world_country')
+        driver.find_element_by_css_selector(".btn_ok").click()
+        self.waitClickButtonTypeLayer(type_layer='layout')
+        self.waitClickButtonSwal()
+
+        self.open_menu_section(3)
+        # Open the box allowing to modify style properties:
+        self.click_elem_retry(
+            driver.find_element_by_css_selector(
+                "li.L_world_country > div > .style_target_layer"))
+        time.sleep(0.4)
+        # Create a legend:
+        driver.find_element_by_id('checkbox_layout_legend').click()
+        # Close the box:
+        driver.find_element_by_css_selector(".btn_ok").click()
+
+        # Is the legend displayed ?
+        if not self.try_element_present(
+                By.CSS_SELECTOR,
+                '.lgdf_L_world_country', 5):
+            self.fail('Legend not displayed for layout layer of points')
+
+
     def test_f_Gridded(self):
         driver = self.driver
         driver.get(self.base_url)
@@ -793,20 +850,29 @@ class MainFunctionnalitiesTest(TestBase):
         self.open_menu_section(2)
         self.clickWaitTransition("#button_grid")
 
-        Select(
-            driver.find_element_by_id("Gridded_field")
-            ).select_by_visible_text("POP")
-        driver.find_element_by_id("Gridded_cellsize").clear()
-        driver.find_element_by_id("Gridded_cellsize").send_keys("145")
-        Select(
-            driver.find_element_by_id("Gridded_shape")
-            ).select_by_value("Diamond")
-        driver.find_element_by_id("Gridded_yes").click()
+        input_grid_size = driver.find_element_by_id("Gridded_cellsize")
+        output_name = driver.find_element_by_id('Gridded_output_name')
+        for i, shape in enumerate(('Square', 'Diamond', 'Hexagon')):
+            if i > 0:
+                self.open_menu_section('2b')
+            Select(
+                driver.find_element_by_id("Gridded_field")
+                ).select_by_visible_text("POP")
+            input_grid_size.clear()
+            input_grid_size.send_keys("220")
+            Select(
+                driver.find_element_by_id("Gridded_shape")
+                ).select_by_value(shape)
+            output_name.clear()
+            output_name.send_keys('gridded_{}'.format(shape))
+            driver.find_element_by_id("Gridded_yes").click()
 
-        self.waitClickButtonSwal()
+            self.waitClickButtonSwal()
 
-        if not self.try_element_present(By.ID, "legend_root", 5):
-            self.fail("Legend not displayed on grid map")
+            if not self.try_element_present(
+                    By.CSS_SELECTOR,
+                    '.lgdf_L_gridded_{}'.format(shape), 5):
+                self.fail("Legend not displayed on grid map")
 
     def test_generate_labels(self):
         driver = self.driver
@@ -869,14 +935,10 @@ class MainFunctionnalitiesTest(TestBase):
             'value = window._app.current_proj_name; return value;')
         self.assertEqual(proj_name, "HEALPix")
         # Layer have a clip-path (as this projection is interrupted) :
-#        clip_path_value1 = driver.execute_script(
-#            '''val = document.getElementById("L_World").getAttribute("clip-path");
-#            return val;''');
-        clip_path_value2 = driver.execute_script('''
+        clip_path_value = driver.execute_script('''
 val = document.getElementById("L_nuts2-2013-data").getAttribute("clip-path");
 return val;''')
-#        self.assertEqual("url(#clip)", clip_path_value1)
-        self.assertEqual("url(#clip)", clip_path_value2)
+        self.assertEqual("url(#clip)", clip_path_value)
 
         # Change for a non-interrupted projection :
         Select(
@@ -889,14 +951,10 @@ return val;''')
             'value = window._app.current_proj_name; return value;')
         self.assertEqual(proj_name, "Robinson")
         # Layer don't have a clip-path anymore :
-#        clip_path_value1 = driver.execute_script(
-#            '''val = document.getElementById("L_World").getAttribute("clip-path");
-#            return val;''');
-        clip_path_value2 = driver.execute_script('''
+        clip_path_value = driver.execute_script('''
 val = document.getElementById("L_nuts2-2013-data").getAttribute("clip-path");
 return val;''')
-#        self.assertEqual(None, clip_path_value1)
-        self.assertEqual(None, clip_path_value2)
+        self.assertEqual(None, clip_path_value)
 
         # Test that after reprojecting, the map is still centered
         # on the targeted layer
@@ -916,7 +974,9 @@ return val;''')
         # Nothing should have change :
         self.assertEqual(zoom_val, zoom_val2)
 
-        # Click on the "fit-zoom" button of an other layer and fetch the new zoom value :
+        # TODO : adding a new layout layer
+        #  then clicking on the "fit-zoom" button and fetch the new zoom value
+        #    to verify that it changed:
 #        self.click_elem_retry(
 #            driver.find_element_by_css_selector(
 #                "li.L_World > div > #eye_closed"))
@@ -944,7 +1004,8 @@ return val;''')
             'return window._app.last_projection;')
         self.assertEqual(
             proj_string,
-            "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ")
+            '+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 '
+            '+ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ')
 
     def test_change_projection_from_proj4_box(self):
         driver = self.driver
@@ -1133,7 +1194,7 @@ return val;''')
             driver.find_element_by_id("Gridded_field")
             ).select_by_visible_text("GDP")
         driver.find_element_by_id("Gridded_cellsize").clear()
-        driver.find_element_by_id("Gridded_cellsize").send_keys("200")
+        driver.find_element_by_id("Gridded_cellsize").send_keys("300")
         Select(
             driver.find_element_by_id("Gridded_shape")
             ).select_by_value("Square")
@@ -1199,12 +1260,12 @@ return val;''')
 
         # Assert our layers have been reloaded :
         layers = driver.execute_script('''
-            return Object.getOwnPropertyNames(window.data_manager.current_layers);''')
+            return Object.keys(window.data_manager.current_layers);''')
         expected_layers = {
             'Sphere',
             'Graticule',
             'nuts2-2013-data',
-            'Gridded_200000_GDP'
+            'Gridded_300000_GDP'
             }
         self.assertEqual(len(expected_layers), len(layers))
         for name in layers:
@@ -1359,12 +1420,16 @@ return val;''')
             driver.find_element_by_css_selector('select.sample_target')
             ).select_by_value('martinique')
         driver.find_element_by_css_selector('.btn_ok').click()
-
+        # Add a new target layer:
         self.waitClickButtonTypeLayer(type_layer='target')
         self.waitClickButtonSwal()
         self.validTypefield()
 
+        # Downgrade it with the dedicated button in the section 1
+        # of the left menu:
         driver.find_element_by_id('downgrade_target').click()
+
+        # Confirmation message:
         self.waitClickButtonSwal()
 
     def test_promoting_result_layer_to_target(self):
@@ -1377,6 +1442,7 @@ return val;''')
             ).select_by_value('martinique')
         driver.find_element_by_css_selector('.btn_ok').click()
 
+        # Add a target layer:
         self.waitClickButtonTypeLayer(type_layer='target')
         self.waitClickButtonSwal()
         self.validTypefield()
@@ -1389,12 +1455,13 @@ return val;''')
         output_name.send_keys('choro_martinique')
         driver.find_element_by_id('choro_yes').click()
         time.sleep(0.1)
+        # The icon allowing to promote the layer should not be present:
         elem_promote = driver.find_element_by_css_selector(
             "li.L_choro_martinique"
             ).find_elements_by_css_selector("#replace_button")
         self.assertEqual(len(elem_promote), 0)
 
-        # Render a map not allowing to promote its result:
+        # Render a map allowing to promote its result:
         self.open_menu_section(2)
         self.clickWaitTransition('#button_cartogram')
         Select(driver.find_element_by_css_selector(
@@ -1410,11 +1477,14 @@ return val;''')
         button_ok = self.get_button_ok_displayed()
         button_ok.click()
         time.sleep(0.1)
+        # The icon allowing to promote the layer should be present:
         elem_promote = driver.find_element_by_css_selector(
             "li.L_carto_doug"
             ).find_element_by_css_selector("#replace_button")
         self.assertNotEqual(elem_promote, None)
+        # Click on it to promote the layer:
         elem_promote.click()
+        # Confirmation message:
         self.waitClickButtonSwal()
 
     def test_promoting_layout_layer_to_target_layer(self):
@@ -1437,6 +1507,7 @@ return val;''')
             ).find_element_by_css_selector("#replace_button")
         self.assertNotEqual(elem_promote, None)
         elem_promote.click()
+        # Confirmation message:
         self.waitClickButtonSwal()
 
         # Render a choropleth with it:
@@ -1447,6 +1518,8 @@ return val;''')
         output_name.send_keys('choro_martinique')
         driver.find_element_by_id('choro_yes').click()
         time.sleep(0.1)
+        # The icon allowing to promote this result layer
+        # should not be present:
         elem_promote = driver.find_element_by_css_selector(
             "li.L_choro_martinique"
             ).find_elements_by_css_selector("#replace_button")
@@ -1480,7 +1553,8 @@ return val;''')
             driver.find_element_by_id("type_content_select")
             ).select_by_value("string_field")
         time.sleep(0.3)
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys('Pays')
 
@@ -1614,8 +1688,8 @@ return val;''')
         time.sleep(0.1)
         current_layers, data_layer_name = driver.execute_script('''
             return [
-                Object.getOwnPropertyNames(data_manager.current_layers),
-                Object.getOwnPropertyNames(data_manager.user_data)
+                Object.keys(data_manager.current_layers),
+                Object.keys(data_manager.user_data)
             ];
         ''')
         self.assertNotIn('nuts2-2013-data', current_layers)
@@ -1635,8 +1709,8 @@ return val;''')
         time.sleep(0.5)
         current_layers, result_layer_name = driver.execute_script('''
             return [
-                Object.getOwnPropertyNames(data_manager.current_layers),
-                Object.getOwnPropertyNames(data_manager.result_data)
+                Object.keys(data_manager.current_layers),
+                Object.keys(data_manager.result_data)
             ];
         ''')
         # Problematic char have been escaped correctly:
@@ -1658,8 +1732,8 @@ return val;''')
         # The new name is correctly in use and the old name is not present:
         current_layers, result_layer_name = driver.execute_script('''
             return [
-                Object.getOwnPropertyNames(data_manager.current_layers),
-                Object.getOwnPropertyNames(data_manager.result_data)
+                Object.keys(data_manager.current_layers),
+                Object.keys(data_manager.result_data)
             ];
         ''')
         self.assertIn('Smoothed_result', current_layers)
@@ -1757,7 +1831,8 @@ return val;''')
         custom_breaks = driver.find_element_by_id('stewart_breaks')
         custom_breaks.clear()
         custom_breaks.send_keys(
-            '''0 - 800000 - 2150000 - 4000000 - 7575000 - 13550000 - 25432798.18274938''')
+            '0 - 800000 - 2150000 - 4000000 - 7575000 - '
+            '13550000 - 25432798.18274938')
         output_name = driver.find_element_by_id("stewart_output_name")
         output_name.clear()
         output_name.send_keys('my_result_2')
@@ -1804,7 +1879,8 @@ return val;''')
         # and the stock of empty dwellings (P13_LOGVAC)
         # to obtain the stock of non empty dwellings (P13_LOGNONVAC) :
         self.clickWaitTransition("#add_field_button")
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys("P13_LOGNONVAC")
         Select(driver.find_element_by_css_selector(
@@ -1873,7 +1949,8 @@ return val;''')
         # Test adding fields to the existing table :
         self.clickWaitTransition("#add_field_button")
 
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys("NewFieldName3")
 
@@ -1890,11 +1967,13 @@ return val;''')
         time.sleep(0.4)
 
         self.clickWaitTransition("#add_field_button")
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys("NewFieldName2")
 
-        # One field based on an operation betweeen a numerical variable and a constant :
+        # One field based on an operation betweeen
+        # a numerical variable and a constant :
         Select(driver.find_element_by_css_selector(
             "#field_div1 > select")).select_by_visible_text("POP")
         Select(driver.find_element_by_xpath(
@@ -1913,7 +1992,8 @@ return val;''')
         time.sleep(0.4)
 
         self.clickWaitTransition("#add_field_button")
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys("NewFieldName1")
 
@@ -2007,7 +2087,8 @@ return val;''')
         Select(
             driver.find_element_by_xpath("//div[@id='field_div1']/select[3]")
             ).select_by_visible_text("P13_POP")
-        in_elem = driver.find_element_by_css_selector('#field_div1 > p > input')
+        in_elem = driver.find_element_by_css_selector(
+            '#field_div1 > p > input')
         in_elem.clear()
         in_elem.send_keys("Ratio")
         driver.find_element_by_css_selector(
@@ -2176,10 +2257,12 @@ return val;''')
         # be the same as the number of layers displayed in the UI
         # in the "Gestion des couches"/"Layers" section in our left menu:
         nb_layer_t1 = driver.execute_script(
-            '''a = Object.getOwnPropertyNames(data_manager.current_layers).length; return a;''')
+            '''a = Object.keys(data_manager.current_layers).length;
+            return a;''')
         self.assertEqual(nb_layer_t1, 2)
         nb_layer_t2 = driver.execute_script(
-            '''a = document.querySelector('.layer_list').childNodes.length; return a;''')
+            '''a = document.querySelector('.layer_list').childNodes.length;
+            return a;''')
         self.assertEqual(nb_layer_t2, 2)
 
     def test_f_PropSymbols(self):
@@ -2320,7 +2403,8 @@ return val;''')
         self.make_double_click(elem)
         time.sleep(0.1)
         if not self.try_element_present(By.CSS_SELECTOR, ".context-menu"):
-            self.fail("Context menu of {} won't display on dblclick".format(info))
+            self.fail(
+                "Context menu of {} won't display on dblclick".format(info))
         self.click_elem_retry(self.driver.find_element_by_id('svg_map'))
 
     def _verif_context_menu(self, elem, info):
