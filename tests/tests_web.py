@@ -14,6 +14,7 @@ from scipy.misc import imread
 from scipy.linalg import norm
 from scipy import average
 from uuid import uuid4
+import pytest
 import unittest
 import time
 #import requests
@@ -541,7 +542,7 @@ class MainFunctionnalitiesTest(TestBase):
         self.driver.quit()
 
     # Not yet sure why but it seems to always fail when runned on Travis:
-    @unittest.expectedFailure
+    @pytest.mark.xfail(strict=False)
     def test_languages(self):
         menu_desc = {"fr": ["Import des données", "Choix de la représentation"],
                      "en": ["Add your data", "Choose a representation"]}
@@ -566,7 +567,7 @@ class MainFunctionnalitiesTest(TestBase):
         self.assertEqual(menu2.text, menu_desc[new_lang][1])
 
     # Not yet sure why but it seems to always fail when runned on Travis:
-    @unittest.expectedFailure
+    @pytest.mark.xfail(strict=False)
     def test_extra_basemaps(self):
         driver = self.driver
         driver.get(self.base_url)
