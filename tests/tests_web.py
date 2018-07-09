@@ -157,7 +157,7 @@ class TestBase(unittest.TestCase):
         b = self.driver.find_element_by_id("btn_s{}".format(nb_section))
         if b:
             self.click_elem_retry(b)
-            time.sleep(0.5)
+            time.sleep(0.3)
         else:
             self.fail("Failed to open menu ", nb_section)
 
@@ -945,6 +945,137 @@ return val;''')
         self.assertEqual(
             proj_string,
             "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ")
+
+    def test_change_projection_from_proj4_box(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('martinique')
+        driver.find_element_by_css_selector('.btn_ok').click()
+        self.waitClickButtonTypeLayer(type_layer='target')
+        self.waitClickButtonSwal()
+        self.validTypefield()
+
+        Select(
+            driver.find_element_by_id('form_projection2')
+            ).select_by_value('proj4')
+        time.sleep(0.3)
+
+        # Try to put a correct EPSG code:
+        input_elem = driver.find_element_by_id('input_proj_string')
+        input_elem.clear()
+        input_elem.send_keys('EPSG:4326')
+
+        # Confirm and close the box:
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        # Verify that the correct name is displayed:
+        name = driver.find_element_by_css_selector(
+            '#form_projection2 > option[value="last_projection"]').text
+        self.assertEqual(name, 'WGS 84')
+
+        # Verify we can retrieve the proj.4 string corresponding to
+        # that EPSG code:
+        proj_string = driver.execute_script('''
+            return window._app.last_projection;''')
+
+        self.assertEqual(proj_string, "+proj=longlat +datum=WGS84 +no_defs ")
+
+        # Retry with a proj4 string this time:
+        Select(
+            driver.find_element_by_id('form_projection2')
+            ).select_by_value('proj4')
+        time.sleep(0.3)
+
+        # Try to put a correct proj4 string:
+        input_elem = driver.find_element_by_id('input_proj_string')
+        input_elem.clear()
+        input_elem.send_keys((
+            '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 '
+            '+y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs'))
+
+        # Confirm and close the box:
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        # Verify that the correct name is displayed:
+        name = driver.find_element_by_css_selector(
+            '#form_projection2 > option[value="last_projection"]').text
+        self.assertEqual(
+            name, 'Popular Visualisation CRS / Mercator (deprecated)')
+
+        # Verify we can retrieve the proj.4 string corresponding to
+        # that EPSG code:
+        proj_string = driver.execute_script('''
+            return window._app.last_projection;''')
+
+        self.assertEqual(proj_string, (
+            '+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 '
+            '+y_0=0 +k=1.0 +units=m +nadgrids=@null +wktext +no_defs'))
+
+        # Retry with a OGC WKT string this time:
+        Select(
+            driver.find_element_by_id('form_projection2')
+            ).select_by_value('proj4')
+        time.sleep(0.3)
+
+        # Try to put a correct WKT definition:
+        input_elem = driver.find_element_by_id('input_proj_string')
+        input_elem.clear()
+        input_elem.send_keys((
+            'PROJCS["World Equidistant Cylindrical (Sphere)",'
+            'GEOGCS["Unspecified datum based upon the GRS 1980 Authalic Sphere'
+            '",DATUM["Not_specified_based_on_GRS_1980_Authalic_Sphere",'
+            'SPHEROID["GRS 1980 Authalic Sphere",6371007,0,'
+            'AUTHORITY["EPSG","7048"]],AUTHORITY["EPSG","6047"]],'
+            'PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],'
+            'UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],'
+            'AUTHORITY["EPSG","4047"]],UNIT["metre",1,AUTHORITY["EPSG","9001"]'
+            '],PROJECTION["Equirectangular"],PARAMETER["latitude_of_origin",0]'
+            ',PARAMETER["central_meridian",0],PARAMETER["false_easting",0],'
+            'PARAMETER["false_northing",0],AUTHORITY["EPSG","3786"],'
+            'AXIS["X",EAST],AXIS["Y",NORTH]]'))
+
+        # Confirm and close the box:
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        # Verify that the name was changed compared to the previous projection:
+        name = driver.find_element_by_css_selector(
+            '#form_projection2 > option[value="last_projection"]').text
+        self.assertNotEqual(
+            name, 'Popular Visualisation CRS / Mercator (deprecated)')
+
+        # Verify we can retrieve the WKT string:
+        wkt_string = driver.execute_script('''
+            return window._app.last_projection;''')
+
+        self.assertIn('World Equidistant Cylindrical (Sphere)', wkt_string)
+
+        # Retry with an invalid string this time:
+        Select(
+            driver.find_element_by_id('form_projection2')
+            ).select_by_value('proj4')
+        time.sleep(0.3)
+
+        # Try to put a correct WKT definition:
+        input_elem = driver.find_element_by_id('input_proj_string')
+        input_elem.clear()
+        input_elem.send_keys('bogus value')
+
+        # Confirm and close the box:
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        # There is an error message:
+        self.waitClickButtonSwal()
+
+        # Verify the WKT string for the current projection didn't change
+        # as the projection didn't changed:
+        wkt_string2 = driver.execute_script('''
+            return window._app.last_projection;''')
+
+        self.assertEqual(wkt_string2, wkt_string)
+
 
     def test_change_projection_from_box(self):
         driver = self.driver
