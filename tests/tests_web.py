@@ -43,7 +43,10 @@ def start_magrit():
 
 def close_magrit():
     for child in p.children(recursive=True):
-        child.kill()
+        try:
+            child.kill()
+        except:
+            pass
     p.kill()
     p.wait()
 
