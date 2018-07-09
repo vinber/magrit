@@ -9,7 +9,7 @@ from selenium.common.exceptions import NoAlertPresentException
 from subprocess import Popen
 from flaky import flaky
 from functools import wraps
-from io import BytesIO
+#from io import BytesIO
 from scipy.misc import imread
 from scipy.linalg import norm
 from scipy import average
@@ -540,6 +540,7 @@ class MainFunctionnalitiesTest(TestBase):
         os.removedirs(self.tmp_folder)
         self.driver.quit()
 
+    # Not yet sure why but it seems to always fail when runned on Travis:
     @unittest.expectedFailure
     def test_languages(self):
         menu_desc = {"fr": ["Import des données", "Choix de la représentation"],
@@ -563,6 +564,28 @@ class MainFunctionnalitiesTest(TestBase):
         menu2 = driver.find_element_by_css_selector("#btn_s2")
         self.assertEqual(menu1.text, menu_desc[new_lang][0])
         self.assertEqual(menu2.text, menu_desc[new_lang][1])
+
+    # Not yet sure why but it seems to always fail when runned on Travis:
+    @unittest.expectedFailure
+    def test_extra_basemaps(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        driver.find_element_by_css_selector("#panel1 > p > span").click()
+        time.sleep(0.2)
+        # Select an extra basemap :
+        Select(driver.find_element_by_css_selector('#panel2 > p > select')
+            ).select_by_visible_text('Canada')
+        driver.find_element_by_css_selector(".btn_ok").click()
+
+        self.waitClickButtonTypeLayer(type_layer='target')
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field :
+        self.validTypefield()
+        time.sleep(0.5)
+
+        self._verif_export_result('Canada')
 
     def test_layout_features(self):
         driver = self.driver
@@ -727,7 +750,7 @@ class MainFunctionnalitiesTest(TestBase):
 #        self._verif_legend_hide_show_button('result_layer')
 #        self._verif_export_result('result_layer')
 
-    def test_gridded(self):
+    def test_f_Gridded(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
@@ -795,9 +818,7 @@ class MainFunctionnalitiesTest(TestBase):
         Select(driver.find_element_by_css_selector("select.sample_target")
             ).select_by_value("nuts2-2013-data")
         driver.find_element_by_css_selector(".btn_ok").click()
-        #
         self.waitClickButtonTypeLayer(type_layer='target')
-        # Export the project file corresponding to the current state E
         self.waitClickButtonSwal()
         # Valid the type of each field :
         self.validTypefield()
@@ -875,13 +896,46 @@ class MainFunctionnalitiesTest(TestBase):
             ).select_by_value("AzimuthalEqualAreaEurope")
         time.sleep(2)
 
-        # Global value was updated :
+        # Global value was updated:
         proj_name = driver.execute_script('value = window._app.current_proj_name; return value;');
         self.assertEqual(proj_name, "def_proj4")
+        # The proj.4 string value can be retrieved:
         proj_string = driver.execute_script('return window._app.last_projection;')
         self.assertEqual(
             proj_string,
             "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs ")
+
+    def test_change_projection_from_box(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition("#sample_link")
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("nuts2-2013-data")
+        driver.find_element_by_css_selector(".btn_ok").click()
+        #
+        self.waitClickButtonTypeLayer(type_layer='target')
+
+        self.waitClickButtonSwal()
+        # Valid the type of each field :
+        self.validTypefield()
+
+        # Open the box allowing to choose more projections:
+        Select(driver.find_element_by_id("form_projection2")
+            ).select_by_value("more")
+        time.sleep(0.4)
+
+        # Select the Gall-Peters projection in the list:
+        Select(driver.find_element_by_id('select_proj')
+            ).select_by_value('GallPeters')
+
+        driver.find_element_by_id('btn_valid_reproj').click()
+        time.sleep(1)
+        # Close the box:
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        # Global value was updated:
+        proj_name = driver.execute_script('value = window._app.current_proj_name; return value;');
+        self.assertEqual(proj_name, "GallPeters")
 
     def test_reload_project_localStorage(self):
         driver = self.driver
@@ -975,7 +1029,7 @@ class MainFunctionnalitiesTest(TestBase):
         for name in layers:
             self.assertIn(name, expected_layers)
 
-    def test_project_reload_from_url(self):
+    def test_reload_project_from_url(self):
         driver = self.driver
         driver.get(
             self.base_url + "?reload=mthh/dac7915b55a3d0704af0a04ebe43fe04")
@@ -1089,7 +1143,7 @@ class MainFunctionnalitiesTest(TestBase):
             True, os.path.exists(self.tmp_folder + "nuts2-2013-data.zip"))
         os.remove(self.tmp_folder + "nuts2-2013-data.zip")
 
-    def test_Typo(self):
+    def test_f_Typo(self):
         driver = self.driver
         driver.get(self.base_url)
         time.sleep(0.2)
@@ -1156,6 +1210,64 @@ class MainFunctionnalitiesTest(TestBase):
             self.fail("Legend not displayed for Categorical map")
 
         self._verif_legend_hide_show_button('result_layer')
+
+    def test_f_TypoPicto(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        # Open the box of sample layers:
+        self.clickWaitTransition("#sample_link")
+        # Select the "Martinique" layer:
+        Select(driver.find_element_by_css_selector("select.sample_target")
+            ).select_by_value("martinique")
+        driver.find_element_by_css_selector(".btn_ok").click()
+
+        self.waitClickButtonTypeLayer(type_layer='target')
+        self.waitClickButtonSwal()
+
+        # Valid the type of each field:
+        self.validTypefield()
+
+        self.open_menu_section(2)
+        self.clickWaitTransition("#button_typosymbol")
+
+        Select(driver.find_element_by_id("field_Symbol")
+            ).select_by_visible_text("STATUT")
+
+        driver.find_element_by_id('selec_Symbol').click()
+        self.waitClickButtonSwal()
+        time.sleep(0.3)
+
+        # Change a symbol ...
+        driver.find_element_by_css_selector('#line_1 > p').click()
+        time.sleep(0.3)
+        driver.find_element_by_id('p_poi_place_city').click()
+
+        # .. and verify that all our symbol are displayed:
+        nb_symbols = len(
+            driver.find_elements_by_css_selector('#symbols_select > p'))
+        self.assertEqual(nb_symbols, 92)
+
+        driver.find_elements_by_css_selector('.btn_ok')[1].click()
+        time.sleep(0.3)
+
+        # Change another symbol
+        driver.find_element_by_css_selector('#line_2 > p').click()
+        time.sleep(0.3)
+        driver.find_element_by_id('p_tourist_beach').click()
+        driver.find_elements_by_css_selector('.btn_ok')[1].click()
+        time.sleep(0.3)
+
+        # Validate our choice of symbols:
+        driver.find_elements_by_css_selector('.btn_ok')[0].click()
+
+        # Render the layer
+        driver.find_element_by_id("yesTypoSymbols").click()
+        time.sleep(0.3)
+
+        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_L_Symbols_martinique", 5):
+            self.fail("Legend not displayed for Categorical map")
+
+        self._verif_legend_hide_show_button('Symbols_martinique')
 
     def test_rename(self):
         driver = self.driver
@@ -1227,7 +1339,7 @@ class MainFunctionnalitiesTest(TestBase):
             ".styleBox").find_elements_by_css_selector(
             ".btn_ok")[0].click()
 
-        # The new name is correctly in use and the old name is present:
+        # The new name is correctly in use and the old name is not present:
         current_layers, result_layer_name = driver.execute_script('''
             return [
                 Object.getOwnPropertyNames(data_manager.current_layers),
@@ -1245,7 +1357,7 @@ class MainFunctionnalitiesTest(TestBase):
         # The result can be exported correctly:
         self._verif_export_result('Smoothed_result')
 
-    def test_stewart(self):
+    def test_f_Stewart(self):
         driver = self.driver
         driver.get(self.base_url)
         time.sleep(0.2)
@@ -1345,7 +1457,7 @@ class MainFunctionnalitiesTest(TestBase):
         self.assertEqual(len(legend_elems), 6)
         self._verif_export_result('my_result_2')
 
-    def test_waffle(self):
+    def test_f_Waffle(self):
         driver = self.driver
         driver.get(self.base_url)
         # Open the box of sample layers:
@@ -1413,10 +1525,10 @@ class MainFunctionnalitiesTest(TestBase):
         if not self.try_element_present(By.ID, "legend_root_waffle", 5):
             self.fail("Legend not displayed on waffle map")
 
-#        # Can we hide and redisplay the legend ?
-#        self._verif_legend_hide_show_button('martinique_Waffle')
+        # Can we hide and redisplay the legend ?
+        self._verif_legend_hide_show_button('martinique_Waffle')
 
-    def test_cartogram_new_field(self):
+    def test_f_Cartogram_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
@@ -1532,7 +1644,7 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_export_result('carto_olson')
 
-    def test_new_field_choro(self):
+    def test_f_Choro_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
@@ -1593,7 +1705,7 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_legend_hide_show_button('my_result_layer')
 
-    def test_discont_new_field(self):
+    def test_f_Discont_new_field(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
@@ -1628,7 +1740,7 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_export_result('my_result_layer')
 
-    def test_propSymbolsTypo(self):
+    def test_f_PropSymbolsTypo(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition('#sample_link')
@@ -1665,7 +1777,7 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_legend_hide_show_button('my_result_layer')
 
-    def test_propSymbolsChoro_and_remove(self):
+    def test_f_PropSymbolsChoro_and_remove(self):
         driver = self.driver
         driver.get(self.base_url)
         # Add a sample layer :
@@ -1678,11 +1790,11 @@ class MainFunctionnalitiesTest(TestBase):
         self.validTypefield()
         time.sleep(0.4)
 
-        # Remove it to load another one :
+        # Remove it to load another one:
         driver.find_element_by_id('remove_target').click()
         self.waitClickButtonSwal()
 
-        # Add the layer we really want to add :
+        # Add the layer we really want to add:
         self.clickWaitTransition('#sample_link')
         Select(driver.find_element_by_css_selector("select.sample_target")
                 ).select_by_value('brazil')
@@ -1691,7 +1803,7 @@ class MainFunctionnalitiesTest(TestBase):
         self.waitClickButtonSwal()
         self.validTypefield()
 
-        # Render a "stock and ratio" map with its data :
+        # Render a "stock and ratio" map with its data:
         self.open_menu_section(2)
         self.clickWaitTransition('#button_choroprop')
         Select(driver.find_element_by_id('PropSymbolChoro_field_1')
@@ -1700,6 +1812,7 @@ class MainFunctionnalitiesTest(TestBase):
                 ).select_by_visible_text('popdensity2014')
         driver.find_element_by_id("ico_jenks").click()
 
+        # A "Sparkline" chart should be drawn in a canvas:
         if not self.is_element_present(By.CSS_SELECTOR, "#container_sparkline_propsymbolchoro > canvas"):
             self.fail("Missing mini sparkline canvas in the interface")
 
@@ -1714,6 +1827,9 @@ class MainFunctionnalitiesTest(TestBase):
 
         self._verif_legend_hide_show_button('my_result_layer')
 
+        # The number of layers in the "data_manager.current_layers" have to
+        # be the same as the number of layers displayed in the UI
+        # in the "Gestion des couches"/"Layers" section in our left menu:
         nb_layer_t1 = driver.execute_script(
             '''a = Object.getOwnPropertyNames(data_manager.current_layers).length; return a;''')
         self.assertEqual(nb_layer_t1, 2)
@@ -1721,7 +1837,7 @@ class MainFunctionnalitiesTest(TestBase):
             '''a = document.querySelector('.layer_list').childNodes.length; return a;''')
         self.assertEqual(nb_layer_t2, 2)
 
-    def test_propSymbols(self):
+    def test_f_PropSymbols(self):
         driver = self.driver
         driver.get(self.base_url)
         self.clickWaitTransition("#sample_link")
@@ -1783,27 +1899,6 @@ class MainFunctionnalitiesTest(TestBase):
             ).find_elements_by_css_selector("text")
         self.assertIsInstance(labels, list)
         self.assertGreater(len(labels), 0)
-
-    @unittest.expectedFailure
-    def test_extra_basemaps(self):
-        driver = self.driver
-        driver.get(self.base_url)
-        self.clickWaitTransition('#sample_link')
-        driver.find_element_by_css_selector("#panel1 > p > span").click()
-        time.sleep(0.2)
-        # Select an extra basemap :
-        Select(driver.find_element_by_css_selector('#panel2 > p > select')
-            ).select_by_visible_text('Canada')
-        driver.find_element_by_css_selector(".btn_ok").click()
-
-        self.waitClickButtonTypeLayer(type_layer='target')
-        self.waitClickButtonSwal()
-
-        # Valid the type of each field :
-        self.validTypefield()
-        time.sleep(0.5)
-
-        self._verif_export_result('Canada')
 
 #    def test_add_gml_format(self):
 #        driver = self.driver
