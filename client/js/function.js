@@ -2043,10 +2043,11 @@ const fields_Anamorphose = {
         }));
         xhrequest('POST', 'compute/olson', formToSend, true)
           .then((result) => {
-            const options = { result_layer_on_add: true, func_name: 'cartogram' };
-            if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-              options.choosed_name = new_user_layer_name;
-            }
+            const options = {
+              choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['OlsonCartogram', field_name, layer].join('_')),
+              func_name: 'cartogram',
+              result_layer_on_add: true,
+            };
             const n_layer_name = add_layer_topojson(result, options);
             data_manager.current_layers[n_layer_name].renderer = 'OlsonCarto';
             data_manager.current_layers[n_layer_name].rendered_field = field_name;
@@ -2086,10 +2087,11 @@ const fields_Anamorphose = {
 
         xhrequest('POST', 'compute/carto_doug', formToSend, true)
           .then((data) => {
-            const options = { result_layer_on_add: true, func_name: 'cartogram' };
-            if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-              options.choosed_name = new_user_layer_name;
-            }
+            const options = {
+              choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['Cartogram', field_name, layer].join('_')),
+              func_name: 'cartogram',
+              result_layer_on_add: true,
+            };
             const n_layer_name = add_layer_topojson(data, options);
             data_manager.current_layers[n_layer_name].fill_color = { random: true };
             data_manager.current_layers[n_layer_name].is_result = true;
@@ -3995,11 +3997,12 @@ function render_GriddedFromPts(params, new_user_layer_name) {
         switch_accordion_section();
         handle_legend(new_layer_name);
       } else {
-        const _options = { result_layer_on_add: true, func_name: 'grid' };
-        if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-          _options.choosed_name = new_user_layer_name;
-        }
         const rendered_field = params.func_type;
+        const _options = {
+          choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['PropSymbols', rendered_field, params.polygon_layer].join('_')),
+          func_name: 'grid',
+          result_layer_on_add: true,
+        };
         const n_layer_name = add_layer_topojson(data, _options);
         if (!n_layer_name) return;
         const res_data = data_manager.result_data[n_layer_name],
@@ -4065,10 +4068,11 @@ function render_Gridded(field_n, resolution, cell_shape, color_palette, new_user
 
   xhrequest('POST', 'compute/gridded', formToSend, true)
     .then((data) => {
-      const _options = { result_layer_on_add: true, func_name: 'grid' };
-      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-        _options.choosed_name = new_user_layer_name;
-      }
+      const _options = {
+        choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['Gridded', resolution, layer].join('_')),
+        func_name: 'grid',
+        result_layer_on_add: true,
+      };
       const rendered_field = `${field_n}_densitykm`;
       const n_layer_name = add_layer_topojson(data, _options);
       if (!n_layer_name) return;
@@ -4371,10 +4375,11 @@ function render_ProportionalFlowMap(field_i, field_j, field_fij, name_join_field
 
   xhrequest('POST', 'compute/links', formToSend, true)
     .then((data) => {
-      const options = { result_layer_on_add: true, func_name: 'flow' };
-      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-        options.choosed_name = new_user_layer_name;
-      }
+      const options = {
+        choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['Links', name_join_field].join('_')),
+        func_name: 'flow',
+        result_layer_on_add: true,
+      };
       const temp = JSON.parse(data);
       temp.file.objects.LinksLayer.geometries = temp.file.objects.LinksLayer.geometries.sort(
         (a, b) => +b.properties[field_fij] - +a.properties[field_fij]);
@@ -4439,11 +4444,11 @@ function render_GraduatedFlowMap(field_i, field_j, field_fij, name_join_field, d
 
   xhrequest('POST', 'compute/links', formToSend, true)
     .then((data) => {
-      const options = { result_layer_on_add: true, func_name: 'flow' };
-      if (new_user_layer_name.length > 0 && /^\w+$/.test(new_user_layer_name)) {
-        options.choosed_name = new_user_layer_name;
-      }
-
+      const options = {
+        choosed_name: check_layer_name(new_user_layer_name.length > 0 ? new_user_layer_name : ['Links', name_join_field].join('_')),
+        func_name: 'flow',
+        result_layer_on_add: true,
+      };
       const new_layer_name = add_layer_topojson(data, options);
       if (!new_layer_name) return;
       const layer_to_render = map.select(`#${_app.layer_to_id.get(new_layer_name)}`).selectAll('path'),

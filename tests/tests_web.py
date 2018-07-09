@@ -1267,7 +1267,7 @@ return val;''')
             'Sphere',
             'Graticule',
             'nuts2-2013-data',
-            'Gridded_300000_GDP'
+            'Gridded_GDP_nuts2-2013-data'
             }
         self.assertEqual(len(expected_layers), len(layers))
         for name in layers:
