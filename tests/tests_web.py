@@ -161,7 +161,7 @@ class TestBase(unittest.TestCase):
         else:
             self.fail("Failed to open menu ", nb_section)
 
-    def clickWaitTransition(self, css_selector, delay=0.5):
+    def clickWaitTransition(self, css_selector, delay=0.4):
         self.driver.find_element_by_css_selector(css_selector).click()
         time.sleep(delay)
 
@@ -1073,9 +1073,7 @@ return val;''')
         # as the projection didn't changed:
         wkt_string2 = driver.execute_script('''
             return window._app.last_projection;''')
-
         self.assertEqual(wkt_string2, wkt_string)
-
 
     def test_change_projection_from_box(self):
         driver = self.driver
@@ -1338,10 +1336,125 @@ return val;''')
             True, os.path.exists(self.tmp_folder + "nuts2-2013-data.zip"))
         os.remove(self.tmp_folder + "nuts2-2013-data.zip")
 
+    def test_about_box_and_version(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition("#help_btn", 0.2)
+        version_string = driver.find_element_by_css_selector(
+            '.about_content > p > span').text
+        self.assertIn('Magrit version 0.', version_string)
+
+        bouton_ressources = driver.find_elements_by_css_selector(
+            '.about_content > p > button')
+        self.assertEqual(len(bouton_ressources), 3)
+        driver.find_element_by_css_selector(
+            'button.swal2-cancel').click()
+
+    def test_downgrading_target_layer(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('martinique')
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        self.waitClickButtonTypeLayer(type_layer='target')
+        self.waitClickButtonSwal()
+        self.validTypefield()
+
+        driver.find_element_by_id('downgrade_target').click()
+        self.waitClickButtonSwal()
+
+    def test_promoting_result_layer_to_target(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('martinique')
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        self.waitClickButtonTypeLayer(type_layer='target')
+        self.waitClickButtonSwal()
+        self.validTypefield()
+
+        # Render a map not allowing to promote its result:
+        self.open_menu_section(2)
+        self.clickWaitTransition('#button_choro')
+        output_name = driver.find_element_by_id('Choro_output_name')
+        output_name.clear()
+        output_name.send_keys('choro_martinique')
+        driver.find_element_by_id('choro_yes').click()
+        time.sleep(0.1)
+        elem_promote = driver.find_element_by_css_selector(
+            "li.L_choro_martinique"
+            ).find_elements_by_css_selector("#replace_button")
+        self.assertEqual(len(elem_promote), 0)
+
+        # Render a map not allowing to promote its result:
+        self.open_menu_section(2)
+        self.clickWaitTransition('#button_cartogram')
+        Select(driver.find_element_by_css_selector(
+            "select.params")).select_by_visible_text('Dougenik & al. (1985)')
+        Select(driver.find_element_by_id(
+            "Anamorph_field")
+            ).select_by_visible_text('P13_POP')
+        output_name = driver.find_element_by_id('Anamorph_output_name')
+        output_name.clear()
+        output_name.send_keys('carto_doug')
+        driver.find_element_by_id('Anamorph_yes').click()
+
+        button_ok = self.get_button_ok_displayed()
+        button_ok.click()
+        time.sleep(0.1)
+        elem_promote = driver.find_element_by_css_selector(
+            "li.L_carto_doug"
+            ).find_element_by_css_selector("#replace_button")
+        self.assertNotEqual(elem_promote, None)
+        elem_promote.click()
+        self.waitClickButtonSwal()
+
+    def test_promoting_layout_layer_to_target_layer(self):
+        driver = self.driver
+        driver.get(self.base_url)
+        self.clickWaitTransition('#sample_link')
+        # Add a layout layer:
+        Select(
+            driver.find_element_by_css_selector('select.sample_target')
+            ).select_by_value('martinique')
+        driver.find_element_by_css_selector('.btn_ok').click()
+
+        self.waitClickButtonTypeLayer(type_layer='layout')
+        self.waitClickButtonSwal()
+
+        # Promote it to target layer:
+        self.open_menu_section(3)
+        elem_promote = driver.find_element_by_css_selector(
+            "li.L_martinique"
+            ).find_element_by_css_selector("#replace_button")
+        self.assertNotEqual(elem_promote, None)
+        elem_promote.click()
+        self.waitClickButtonSwal()
+
+        # Render a choropleth with it:
+        self.open_menu_section(2)
+        self.clickWaitTransition('#button_choro')
+        output_name = driver.find_element_by_id('Choro_output_name')
+        output_name.clear()
+        output_name.send_keys('choro_martinique')
+        driver.find_element_by_id('choro_yes').click()
+        time.sleep(0.1)
+        elem_promote = driver.find_element_by_css_selector(
+            "li.L_choro_martinique"
+            ).find_elements_by_css_selector("#replace_button")
+        self.assertEqual(len(elem_promote), 0)
+
     def test_f_Typo(self):
         driver = self.driver
         driver.get(self.base_url)
-        time.sleep(0.2)
         self.clickWaitTransition("#sample_link")
 
         Select(
@@ -1407,7 +1520,7 @@ return val;''')
 
         time.sleep(1)
 
-        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_L_result_layer", 5):
+        if not self.try_element_present(By.CSS_SELECTOR, '.lgdf_L_result_layer', 5):
             self.fail("Legend not displayed for Categorical map")
 
         self._verif_legend_hide_show_button('result_layer')
@@ -1467,7 +1580,7 @@ return val;''')
         driver.find_element_by_id("yesTypoSymbols").click()
         time.sleep(0.3)
 
-        if not self.try_element_present(By.CSS_SELECTOR, ".lgdf_L_Symbols_martinique", 5):
+        if not self.try_element_present(By.CSS_SELECTOR, '.lgdf_L_Symbols_martinique', 5):
             self.fail("Legend not displayed for Categorical map")
 
         self._verif_legend_hide_show_button('Symbols_martinique')
@@ -1475,7 +1588,6 @@ return val;''')
     def test_rename(self):
         driver = self.driver
         driver.get(self.base_url)
-        time.sleep(0.2)
 
         # Add a sample layer:
         self.clickWaitTransition("#sample_link")
@@ -1564,7 +1676,6 @@ return val;''')
     def test_f_Stewart(self):
         driver = self.driver
         driver.get(self.base_url)
-        time.sleep(0.2)
         self.clickWaitTransition("#sample_link")
 
         Select(
