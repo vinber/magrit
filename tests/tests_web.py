@@ -6,7 +6,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 
-from subprocess import Popen
+from psutil import Popen
 from flaky import flaky
 from functools import wraps
 #from io import BytesIO
@@ -42,7 +42,9 @@ def start_magrit():
 
 
 def close_magrit():
-    p.terminate()
+    for child in p.children(recursive=True):
+        child.kill()
+    p.kill()
     p.wait()
 
 
@@ -188,7 +190,7 @@ class TestBase(unittest.TestCase):
     def waitClickButtonSwal(self, selector="button.swal2-confirm.swal2-styled", delay=30):
         button_ok = self.get_button_ok_displayed(selector, delay)
         button_ok.click()
-        time.sleep(0.5)
+        time.sleep(0.55)
 
     def waitClickButtonTypeLayer(self,
                                  selector='button.swal2-confirm.swal2-styled',
