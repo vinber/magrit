@@ -9,7 +9,7 @@ Ce type de carte permet de représenter des entités surfaciques selon la valeur
 #### Exemple :
 
 <p style="text-align: center;">
-<img src="img/typo.png" alt="img_typo_map" style="width: 480px;"/>
+<img src="img/typo_EPT_Paris.png" alt="img_typo_map" style="width: 480px;"/>
 </p>
 
 - Champ utilisé : **LIBEPT**  
