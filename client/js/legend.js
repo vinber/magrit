@@ -374,22 +374,22 @@ export function createLegend_waffle(layer, fields, title, subtitle, rect_fill_va
   if (symbol === 'rect') {
     legend_symbol_size
       .insert('rect')
-      .attrs({ x: xpos + boxwidth, y: last_pos + 2 * space_elem, width: size_symbol, height: size_symbol })
+      .attrs({ x: xpos + boxwidth + (boxwidth - size_symbol) / 2, y: last_pos + 2 * space_elem, width: size_symbol, height: size_symbol })
       .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
     legend_symbol_size
       .insert('text')
-      .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 7, id: 'ratio_txt' })
-      .text(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol, y: last_pos + 2 * space_elem + size_symbol / 2 + 4, id: 'ratio_txt' })
+      .html(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol;
   } else {
     legend_symbol_size
       .insert('circle')
-      .attrs({ cx: xpos + boxwidth + size_symbol, cy: last_pos + 2 * space_elem + size_symbol, r: size_symbol })
+      .attrs({ cx: xpos + boxwidth * 1.5, cy: last_pos + 2 * space_elem + size_symbol, r: size_symbol })
       .styles({ fill: 'lightgray', stroke: 'black', 'stroke-width': '0.8px' });
     legend_symbol_size
       .insert('text')
-      .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 7, id: 'ratio_txt' })
-      .text(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
+      .attrs({ x: xpos + boxwidth + space_elem + size_symbol * 2, y: last_pos + 2 * space_elem + size_symbol + 4, id: 'ratio_txt' })
+      .html(ratio_txt || ` = ${data_manager.current_layers[layer].ratio}`);
     last_pos = last_pos + 3 * space_elem + size_symbol * 2;
   }
 
@@ -400,7 +400,7 @@ export function createLegend_waffle(layer, fields, title, subtitle, rect_fill_va
       'font-size': '11px',
       'font-family': 'verdana',
     })
-    .text(note_bottom != null ? note_bottom : '');
+    .html(note_bottom != null ? note_bottom : '');
 
   legend_root.call(drag_legend_func(legend_root));
 
