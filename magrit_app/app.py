@@ -1290,7 +1290,7 @@ async def get_stats_json(request):
         redis_conn.lrange('stewart_time', 0, -1),
         redis_conn.lrange('carto_doug_time', 0, -1),
         redis_conn.lrange('gridded_time', 0, -1),
-        redis_conn.lrange('gridded__point_time', 0, -1),
+        redis_conn.lrange('gridded_point_time', 0, -1),
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
         ])
