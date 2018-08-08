@@ -1,6 +1,16 @@
 Changes
 =======
 
+0.8.6 (2018-08-xx)
+------------------
+
+- Improve symbols positionning in waffle map legends.
+
+- Improve the tests suite.
+
+- Update some examples in documentation (notably to use Lambert-93 projection on some Paris map).
+
+
 0.8.5 (2018-07-02)
 ------------------
 
