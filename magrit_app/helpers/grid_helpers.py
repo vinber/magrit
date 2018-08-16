@@ -38,15 +38,15 @@ def hex_grid_gen(total_bounds, height):
     xspacing = xvertexlo + xvertexhi
 
     for col in range(ceil(cols * 1.5) + 1):
-        x1 = x_left_origin + (col * xspacing)	# far left
-        x2 = x1 + (xvertexhi - xvertexlo)	# left
-        x3 = x_left_origin + ((col + 1) * xspacing)	# right
-        x4 = x3 + (xvertexhi - xvertexlo)	# far right
+        x1 = x_left_origin + (col * xspacing)  # far left
+        x2 = x1 + (xvertexhi - xvertexlo)  # left
+        x3 = x_left_origin + ((col + 1) * xspacing)  # right
+        x4 = x3 + (xvertexhi - xvertexlo)  # far right
         t = col % 2
         for row in range(rows + 1):
-            y1 = y_bottom_origin + (((row * 2) + t) * half_height)	# hi
-            y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)	# mid
-            y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)	# lo
+            y1 = y_bottom_origin + (((row * 2) + t) * half_height)  # hi
+            y2 = y_bottom_origin + (((row * 2) + t + 1) * half_height)  # mid
+            y3 = y_bottom_origin + (((row * 2) + t + 2) * half_height)  # lo
 
             yield (
                 (x1, y1, x4, y3),
@@ -57,6 +57,7 @@ def hex_grid_gen(total_bounds, height):
             #     (x1, y2), (x2, y1), (x3, y1),
             #     (x4, y2), (x3, y3), (x2, y3), (x1, y2)]
             # yield (rect, cell)
+
 
 def diams_grid_gen(total_bounds, height):
     xmin, ymin, xmax, ymax = total_bounds
@@ -81,7 +82,8 @@ def diams_grid_gen(total_bounds, height):
             yield (
                 (x1, y1, x3, y3),
                 [(x1,  y2), (x2,  y1),
-                (x3,  y2), (x2,  y3), (x1,  y2)])
+                 (x3,  y2), (x2,  y3), (x1,  y2)])
+
 
 def square_grid_gen(total_bounds, height):
     xmin, ymin, xmax, ymax = total_bounds
@@ -93,7 +95,6 @@ def square_grid_gen(total_bounds, height):
     y_top_origin = ymax
     y_bottom_origin = ymax - height
 
-
     for countcols in range(cols):
         y_top = y_top_origin
         y_bottom = y_bottom_origin
@@ -102,7 +103,7 @@ def square_grid_gen(total_bounds, height):
             yield (
                 (x_left_origin, y_bottom, x_right_origin, y_top),
                 [(x_left_origin, y_top), (x_right_origin, y_top),
-                (x_right_origin, y_bottom), (x_left_origin, y_bottom)])
+                 (x_right_origin, y_bottom), (x_left_origin, y_bottom)])
             y_top = y_top - height
             y_bottom = y_bottom - height
         x_left_origin = x_left_origin + height

@@ -35,7 +35,8 @@ except:
     uvloop = None
 import pandas as pd
 import numpy as np
-import matplotlib; matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 from tempfile import TemporaryDirectory
 from base64 import b64encode, urlsafe_b64decode
@@ -76,24 +77,25 @@ try:
     from helpers.grid_layer_pt import get_grid_layer_pt
     from helpers.error_middleware404 import error_middleware
 except:
-   from .helpers.misc import (
-       run_calc, savefile, get_key, zip_layer_folder,
-       extractShpZip, guess_separator, clean_name, find_geo2topo)
-   from .helpers.cy_misc import get_name, join_field_topojson
-   from .helpers.topo_to_geo import convert_from_topo
-   from .helpers.geo import (
-       reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
-       check_projection, olson_transform, get_proj4_string,
-       make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
-   from .helpers.stewart_smoomapy import quick_stewart_mod
-   from .helpers.grid_layer import get_grid_layer
-   from .helpers.grid_layer_pt import get_grid_layer_pt
-   from .helpers.error_middleware404 import error_middleware
+    from .helpers.misc import (
+        run_calc, savefile, get_key, zip_layer_folder,
+        extractShpZip, guess_separator, clean_name, find_geo2topo)
+    from .helpers.cy_misc import get_name, join_field_topojson
+    from .helpers.topo_to_geo import convert_from_topo
+    from .helpers.geo import (
+        reproj_convert_layer_kml, reproj_convert_layer, make_carto_doug,
+        check_projection, olson_transform, get_proj4_string,
+        make_geojson_links, TopologicalError, ogr_to_geojson, read_shp_crs)
+    from .helpers.stewart_smoomapy import quick_stewart_mod
+    from .helpers.grid_layer import get_grid_layer
+    from .helpers.grid_layer_pt import get_grid_layer_pt
+    from .helpers.error_middleware404 import error_middleware
 
 
 GEO2TOPO_PATH = None
 IS_WINDOWS = sys.platform.startswith('win')
 IS_FROZEN = True if getattr(sys, 'frozen', False) else False
+
 
 async def index_handler(request):
     """
@@ -214,7 +216,7 @@ async def get_sample_layer(request):
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(''.join([user_id, '_']), ''), '}'
-            ]))
+        ]))
     else:
         with open(path, 'r') as f:
             data = f.read()
@@ -223,7 +225,7 @@ async def get_sample_layer(request):
                 f_name, data, pexpire=43200000))
         return web.Response(text=''.join(
             ['{"key":', hash_val, ',"file":', data, '}']
-            ))
+        ))
 
 
 def get_user_id(session_redis, app_users, app=None):
@@ -287,13 +289,13 @@ async def convert_topo(request):
         return web.Response(text=''.join([
             '{"key":', hash_val,
             ',"file":', result.replace(hash_val, name), '}'
-            ]))
+        ]))
 
     asyncio.ensure_future(
         request.app['redis_conn'].set(f_name, data, pexpire=43200000))
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":null}']
-        ))
+    ))
 
 
 async def convert(request):
@@ -312,12 +314,13 @@ async def convert(request):
     with TemporaryDirectory() as tmp_dir:
         if type_input == 'single':
             return await _convert_from_single_file(
-                request.app,posted_data, user_id, tmp_dir)
+                request.app, posted_data, user_id, tmp_dir)
         elif type_input == 'multiple':
             return await _convert_from_multiple_files(
                 request.app, posted_data, user_id, tmp_dir)
         else:
             return convert_error('Invalid request')
+
 
 async def _convert_from_multiple_files(app, posted_data, user_id, tmp_dir):
     proj_info_str = None
@@ -329,7 +332,7 @@ async def _convert_from_multiple_files(app, posted_data, user_id, tmp_dir):
             file_name = path_join(
                 tmp_dir,
                 '{}_{}.{}'.format(user_id, clean_name(name), ext.lower())
-                )
+            )
             list_files.append(file_name)
             content = field.file.read()
             savefile(file_name, content)
@@ -427,7 +430,6 @@ async def _convert_from_single_file(app, posted_data, user_id, tmp_dir):
              ',"file":', result.decode(),
              ',"proj":', json.dumps(get_proj4_string(proj_info_str)),
              '}']))
-
 
     if datatype in ('application/x-zip-compressed', 'application/zip'):
         dataZip = BytesIO(data)
@@ -537,7 +539,7 @@ async def _convert_from_single_file(app, posted_data, user_id, tmp_dir):
         # (Shouldn't really occur as it has already been
         # checked client side before sending it):
         app['logger'].info("Incorrect datatype :\n{}name:\n{}"
-                   .format(datatype, name))
+                           .format(datatype, name))
         return convert_error('Incorrect datatype')
 
     return web.Response(text=''.join(
@@ -602,7 +604,7 @@ async def store_contact_info(request):
                 "subject": posted_data.get('subject'),
                 "message": posted_data.get('message'),
                 "date": date
-                })))
+            })))
     return web.Response(text='')
 
 
@@ -671,6 +673,7 @@ async def carto_doug(posted_data, user_id, app):
 #
 #     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
+
 async def links_map(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
 
@@ -703,6 +706,7 @@ async def links_map(posted_data, user_id, app):
 
     return ''.join(['{"key":', str(hash_val), ',"file":', res, '}'])
 
+
 async def carto_gridded_point(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
 
@@ -726,9 +730,9 @@ async def carto_gridded_point(posted_data, user_id, app):
         filenames = {
             'src_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())),
             'polygon_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
-                             if posted_data['polygon_layer'] else None,
+            if posted_data['polygon_layer'] else None,
             'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
-                          if posted_data['mask_layer'] else None,
+            if posted_data['mask_layer'] else None,
             'result': None
         }
 
@@ -762,7 +766,7 @@ async def carto_gridded_point(posted_data, user_id, app):
             filenames['mask_layer'],
             filenames['polygon_layer'],
             posted_data['func_type'],
-            )
+        )
 
         # Rename the result layer:
         new_name = '_'.join(['Gridded',
@@ -880,7 +884,7 @@ async def compute_stewart(posted_data, user_id, app):
         filenames = {
             'point_layer': path_join(tmp_dir, '{}.geojson'.format(get_name())),
             'mask_layer': path_join(tmp_dir, '{}.geojson'.format(get_name()))
-                          if posted_data['mask_layer'] != "" else None
+            if posted_data['mask_layer'] != "" else None
         }
         savefile(filenames['point_layer'],
                  topojson_to_geojson(point_layer).encode())
@@ -916,7 +920,7 @@ async def compute_stewart(posted_data, user_id, app):
         return "|||".join([
             ''.join(['{"key":', hash_val, ',"file":', res, '}']),
             json.dumps(breaks)
-            ])
+        ])
 
 
 async def geo_compute(request):
@@ -942,7 +946,7 @@ async def geo_compute(request):
             data_response = await func(posted_data, user_id, request.app)
             asyncio.ensure_future(
                 request.app['redis_conn'].lpush(
-                '{}_time'.format(function), time.time()-s_t))
+                    '{}_time'.format(function), time.time()-s_t))
             request.app['logger'].info(
                 '{}: {:.4f}s'.format(function, time.time()-s_t))
 
@@ -1016,8 +1020,8 @@ async def handler_exists_layer2(request):
     file_format = posted_data.get('format')
     projection = json.loads(posted_data.get('projection'))
     res = await request.app['redis_conn'].get(
-            '_'.join([user_id, layer_name_redis])
-            )
+        '_'.join([user_id, layer_name_redis])
+    )
     if not res:
         request.app['logger'].info(
             '{} - Unable to fetch the requested layer ({}/{})'
@@ -1060,7 +1064,7 @@ async def handler_exists_layer2(request):
                 reproj_convert_layer(
                     output_path, output_path.replace(".geojson", ext),
                     file_format, out_proj
-                    )
+                )
                 raw_data, filename = zip_layer_folder(tmp_path, layer_name)
                 b64_zip = b64encode(raw_data)
                 return web.Response(
@@ -1117,12 +1121,12 @@ async def rawcsv_to_geo(data, logger):
     geo_col_y, name_geo_col_y = [
         (colnb + 1, col) for colnb, col in enumerate(df.columns)
         if col.lower() in {"y", "latitude", "lat"}
-        ][0]
+    ][0]
     # Fetch the name of the column containing longitude coordinates
     geo_col_x, name_geo_col_x = [
         (colnb + 1, col) for colnb, col in enumerate(df.columns)
         if col.lower() in {"x", "longitude", "lon", "lng", "long"}
-        ][0]
+    ][0]
     # Drop records containing empty values for latitude and/or longitude:
     df.dropna(subset=[name_geo_col_x, name_geo_col_y], inplace=True)
     # Replace NaN values by empty string (some column type might be changed to
@@ -1194,7 +1198,7 @@ async def rawcsv_to_geo(data, logger):
             },
             "properties": {},
             "type": "Feature"
-            }
+        }
         for nb_c, name_c in columns_to_keep:
             new_ft['properties'][name_c] = ft[nb_c]
         features.append(new_ft)
@@ -1258,14 +1262,14 @@ async def convert_csv_geo(request):
     if not res:
         return web.Response(text=json.dumps(
             {'Error': 'An error occured when trying to convert a tabular file'
-            '(containing coordinates) to a geographic layer'}))
+             '(containing coordinates) to a geographic layer'}))
 
     # Convert the GeoJSON file to a TopoJSON file:
     result = await geojson_to_topojson(res.encode(), file_name)
     if not result:
         return web.Response(text=json.dumps(
             {'Error': 'An error occured when trying to convert a tabular file'
-            '(containing coordinates) to a geographic layer'}))
+             '(containing coordinates) to a geographic layer'}))
 
     asyncio.ensure_future(
         request.app['redis_conn'].set(
@@ -1277,7 +1281,7 @@ async def convert_csv_geo(request):
 
     return web.Response(text=''.join(
         ['{"key":', hash_val, ',"file":', result, '}']
-        ))
+    ))
 
 
 async def get_stats_json(request):
@@ -1293,16 +1297,16 @@ async def get_stats_json(request):
         redis_conn.lrange('gridded_point_time', 0, -1),
         redis_conn.lrange('olson_time', 0, -1),
         redis_conn.lrange('links_time', 0, -1),
-        ])
+    ])
     layers, sample_layers, extra_sample_layers = await asyncio.gather(*[
         redis_conn.get('layers'),
         redis_conn.get('sample_layers'),
         redis_conn.get('extra_sample_layers'),
-        ])
+    ])
     view_onepage, single_view_onepage = await asyncio.gather(*[
         redis_conn.get('view_onepage'),
         redis_conn.get('single_view_onepage'),
-        ])
+    ])
     contact = await redis_conn.lrange('contact', 0, -1)
     count = await redis_conn.get('single_view_modulepage')
     return web.Response(text=json.dumps({
@@ -1317,8 +1321,8 @@ async def get_stats_json(request):
             "stewart": stewart, "dougenik": doug,
             "gridded": gridded, "gridded_point": gridded_pt,
             "olson": olson, "links": links
-            }
-        }))
+        }
+    }))
 
 
 async def convert_tabular(request):
@@ -1394,7 +1398,7 @@ async def get_extrabasemaps(request):
         list_url = await fetch_list_extrabasemaps(request.app.loop)
         list_url = json.dumps(list_url)
         asyncio.ensure_future(request.app['redis_conn'].set(
-                'extrabasemaps', list_url.encode(), pexpire=21600000))
+            'extrabasemaps', list_url.encode(), pexpire=21600000))
         return web.Response(text=list_url)
     else:
         return web.Response(text=list_url.decode())
@@ -1544,7 +1548,7 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
         "links": links_map,
         "carto_doug": carto_doug,
         "olson": compute_olson
-        }
+    }
     if watch_change:
         webpack_logger = logging.getLogger("webpack")
         asyncio.ensure_future(execute(
@@ -1564,21 +1568,24 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
             handler, '0.0.0.0', port)
         return srv, app, handler
 
+
 async def log_stream(log, stream):
     while not stream.at_eof():
         data = await stream.readline()
         line = data.decode().rstrip()
         log(line)
 
+
 async def execute(logger, command):
     proc = await asyncio.create_subprocess_shell(command,
-                                                stdout=PIPE,
-                                                stderr=PIPE)
+                                                 stdout=PIPE,
+                                                 stderr=PIPE)
     await asyncio.wait([
         asyncio.ensure_future(log_stream(logger.info, proc.stdout)),
         asyncio.ensure_future(log_stream(logger.error, proc.stderr)),
         asyncio.ensure_future(proc.wait())
-        ])
+    ])
+
 
 def _init(loop):
     """

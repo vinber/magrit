@@ -23,7 +23,7 @@ def get_func(func):
         return lambda a: (np.sum(a[0]) / a[1]) * 100000
         # value = np.sum(array_values[idx]) / cell.area
     elif func == 'density_count':
-       return lambda a: (len(a[0]) / a[1]) * 100000
+        return lambda a: (len(a[0]) / a[1]) * 100000
         # value = np.sum(array_values[idx]) / cell.area
     elif func == 'stddev':
         return lambda a: np.std(a[0])
@@ -32,6 +32,7 @@ def get_func(func):
         return lambda a: len(a[0])
     elif func == 'weighted':
         return lambda a: np.sum(a[0])
+
 
 def get_grid_layer_pt(input_file, height, field_name,
                       grid_shape="square", mask_layer=None,

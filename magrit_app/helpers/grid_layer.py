@@ -18,8 +18,8 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
     if speedups.available and not speedups.enabled:
         speedups.enable()
     proj_robinson = (
-            "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
-            "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+        "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+        "+ellps=WGS84 +datum=WGS84 +units=m +no_defs")
     gdf, replaced_id_field = try_open_geojson(input_file)
     if replaced_id_field and field_name == 'id':
         field_name = '_id'
@@ -33,9 +33,9 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
 
     mask = GeoSeries(
         cascaded_union(gdf.geometry.buffer(0)),
-#        cascaded_union(gdf.geometry),
+        #        cascaded_union(gdf.geometry),
         crs=gdf.crs
-        ).to_crs(crs=proj_robinson).values[0]
+    ).to_crs(crs=proj_robinson).values[0]
 
     try:
         mask = mask.buffer(1).buffer(-1)
@@ -48,7 +48,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
         "square": square_grid_gen,
         "diamond": diams_grid_gen,
         "hexagon": hex_grid_gen,
-        }[grid_shape]
+    }[grid_shape]
 
     res_geoms = get_dens_grid2(gdf, height, field_name, mask, cell_generator)
 
@@ -60,7 +60,7 @@ def get_grid_layer(input_file, height, field_name, grid_shape="square"):
               'total': [i[2] for i in res_geoms]},
         geometry=[i[0] for i in res_geoms],
         crs=gdf.crs
-        ).to_crs({"init": "epsg:4326"})
+    ).to_crs({"init": "epsg:4326"})
 
     total_bounds = grid.total_bounds
     if total_bounds[0] < -179.9999 or total_bounds[1] < -89.9999 \
@@ -184,7 +184,7 @@ def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
 #
 #     return res
 
-#def get_square_dens_grid2(gdf, height, field_name, mask):
+# def get_square_dens_grid2(gdf, height, field_name, mask):
 #    xmin, ymin, xmax, ymax = gdf.total_bounds
 #    rows = ceil((ymax-ymin) / height)
 #    cols = ceil((xmax-xmin) / height)
@@ -226,7 +226,7 @@ def get_dens_grid2(gdf, height, field_name, mask, cell_generator):
 #
 #    return res
 
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    import ujson as json
 #    import timeit
 #    import time

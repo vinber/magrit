@@ -34,7 +34,7 @@ def run_calc(val1, val2, operator):
         "+": val1.__add__, "-": val1.__sub__,
         "*": val1.__mul__, "/": val1.__truediv__,
         "^": val1.__pow__
-        }[operator](val2).tolist()
+    }[operator](val2).tolist()
     return json_dumps(result)
 
 
@@ -68,7 +68,7 @@ def get_key(var):
     """Find and return an available key (ie. which is not in 'var')."""
     while True:
         k = ''.join([chr(choice(LIST_CHAR))
-                    for i in range(25)])
+                     for i in range(25)])
         if k not in var:
             return k
 
@@ -76,10 +76,10 @@ def get_key(var):
 def clean_name(name):
     name = reg_i.sub(
         'i', reg_a.sub('a', reg_u.sub('u', reg_o.sub('o', reg_e.sub('e', name)
-        ))))
+                                                     ))))
     name = reg_I.sub(
         'I', reg_A.sub('A', reg_U.sub('U', reg_O.sub('O', reg_E.sub('E', name)
-        ))))
+                                                     ))))
     return re.sub(
         '[^a-z.A-Z0-9_-]+', '_', name.replace('ñ', 'n').replace('Ñ', 'N'))
 
@@ -104,25 +104,25 @@ def guess_separator(file, raw_data=None):
     """
     if file:
         with open(file, 'r') as f:
-            l = f.readline()
-            l2 = f.readline()
+            line = f.readline()
+            line2 = f.readline()
     elif raw_data:
         raw_data = raw_data.split('\r\n' if '\r\n' in raw_data else '\n')
-        l = raw_data[0]
-        l2 = raw_data[1]
+        line = raw_data[0]
+        line2 = raw_data[1]
     else:
         return None
-    c_comma1 = l.count(',')
-    c_smcol1 = l.count(';')
-    if '\t' in l and not (c_comma1 or c_smcol1):
+    c_comma1 = line.count(',')
+    c_smcol1 = line.count(';')
+    if '\t' in line and not (c_comma1 or c_smcol1):
         return '\t'
     elif c_comma1 and not c_smcol1:
         return ','
     elif c_smcol1 and not c_comma1:
         return ';'
     else:
-        c_comma2 = l2.count(',')
-        c_smcol2 = l2.count(';')
+        c_comma2 = line2.count(',')
+        c_smcol2 = line2.count(';')
         if c_comma2 == c_comma1:
             if c_smcol1 != c_smcol2:
                 return ','

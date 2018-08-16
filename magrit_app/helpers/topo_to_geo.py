@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 try:
     from .transform import from_topo
-except:
+except ImportError:
     from magrit_app.helpers.transform import from_topo
+
 
 def convert_from_topo(topojson):
     """

@@ -13,7 +13,7 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
                       mask=None, variable_name2=None,
                       user_defined_breaks=None):
     """
-    Modified function from smoomapy
+    Compute a smoothed map (modified function from smoomapy).
 
     Parameters
     ----------
@@ -73,7 +73,9 @@ def quick_stewart_mod(input_geojson_points, variable_name, span,
 
 def save_reload(result_layer):
     """
-    Saves the 'result_layer' geodataframe as a ShapeFile (with the hope of
+    Save the 'result_layer' geodataframe as a Shapefile and reload it.
+
+    Save the 'result_layer' geodataframe as a Shapefile (with the hope of
     taking advantage of the reparation of some geometries offered by one of the
     intermediate libraries used for saving it), then reload it and return it
     as a GeoJSON FeatureCollection, loaded in a python 'dict'.

@@ -137,6 +137,8 @@ def replace_field_names(raw_geojson, fields_map):
 
 def ogr_to_geojson(file_path):
     """
+    Convert the input layer to GeoJSON.
+
     Entry point to convert a layer (in a format supported by ogr) to a GeoJSON layer.
     This function takes care of creating a .cpg file if it is missing and if the
     encoding doesn't seems to be ISO-8859-1 or UTF-8; it also takes care
@@ -218,10 +220,10 @@ def vectorTranslate_to_geojson(file_path):
             ds = VectorTranslate(
                 path_join(tmpdirname, 'result.geojson'),
                 srcDS=srcDS,
-                format = 'GeoJSON',
+                format='GeoJSON',
                 dstSRS='EPSG:4326',
                 skipFailures=True,
-                layerCreationOptions = [
+                layerCreationOptions=[
                     'WRITE_BBOX=YES',
                     'WRITE_NAME=NO',
                     'SIGNIFICANT_FIGURES=20',
@@ -318,13 +320,15 @@ def convert_ogr_to_geojson(file_path, file_format):
         ]).encode()
 
 
-def make_geojson_links(ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
+def make_geojson_links(
+        ref_layer_geojson, csv_table, field_i, field_j, field_fij, join_field):
     gdf = GeoDataFrame.from_features(ref_layer_geojson["features"])
     gdf.loc[:, join_field] = gdf.loc[:, join_field].astype(str)
     gdf.set_index(join_field, inplace=True, drop=False)
     gdf.geometry = _compute_centroids(gdf.geometry)
     table = pd_read_json(csv_table)
-    table.loc[:, (field_i, field_j)] = table.loc[:, (field_i, field_j)].astype(str)
+    table.loc[:, (field_i, field_j)] = \
+        table.loc[:, (field_i, field_j)].astype(str)
     table = \
         table[table[field_i].isin(gdf.index) & table[field_j].isin(gdf.index)]
     geoms_loc = gdf.geometry.loc
@@ -374,18 +378,23 @@ def make_carto_doug(file_path, field_name, iterations):
 
 def olson_transform(geojson, scale_values):
     """
+    Scale GeoJSON features.
+
     Inplace scaling transformation of each polygon of the geojson provided
     according to the "scale values" also provided.
 
-    Args:
-        geojson, dict:
-            The geojson of polygon to transform
-            (it might be useful to have choosen an appropriate projection as we
-            want to deal with the area)
-        scale_values:
-            The pre-computed scale values for olson transformation
-            (1 = no transformation)
-    Return:
+    Parameters
+    ----------
+    geojson: dict
+        The geojson of polygon to transform
+        (it might be useful to have choosen an appropriate projection as we
+        want to deal with the area)
+    scale_values: list
+        The pre-computed scale values for olson transformation
+        (1 = no transformation)
+
+    Returns
+    -------
         Nothing
     """
     if len(geojson["features"]) != len(scale_values):
@@ -404,8 +413,10 @@ def olson_transform(geojson, scale_values):
 
 def reproj_convert_layer_kml(geojson_path):
     """
+    Convert a GeoJSON FeatureCollection to KML format.
+
     Convert a GeoJSON FeatureCollection to KML format
-    (used when the user requests an export).
+     when the user requests an export.
 
     Parameters
     ----------
@@ -428,6 +439,8 @@ def reproj_convert_layer_kml(geojson_path):
 
 def reproj_convert_layer(geojson_path, output_path, file_format, output_crs):
     """
+    Concert GeoJSON to GML or Shapefile and write it to disk.
+
     Convert a GeoJSON FeatureCollection to GML or ESRI Shapefile format and
     reproject the geometries if needed (used when the user requests an export).
 

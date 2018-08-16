@@ -12,8 +12,10 @@ import os
 def run():
     # To be run in the current folder to use theses paths:
     trad_file = '../static/locales/fr/translation.json'
-    paths = ['../static/js/' + i for i in os.listdir('../static/js') if 'js' in i] \
-        + ['../templates/' + i for i in os.listdir('../templates') if 'html' in i]
+    paths = [
+        '../static/js/' + i for i in os.listdir('../static/js') if 'js' in i] \
+        + [
+        '../templates/' + i for i in os.listdir('../templates') if 'html' in i]
 
     list_keys = make_list_translate_key(trad_file)
     unused_keys = scan_folder_code(paths, list_keys)
@@ -69,9 +71,10 @@ def scan_folder_code(paths, list_key):
             content = f.read()
         # Use a copy of the current list to not remove on itself directly:
         for key in list(list_key):
-            if key in content:\
+            if key in content:
                 list_key.remove(key)
     return list_key
+
 
 if __name__ == "__main__":
     import pprint
