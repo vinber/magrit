@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.8.6 (2018-08-xx)
+0.8.6 (2018-08-08)
 ------------------
 
 - Improve symbols positionning in waffle map legends.

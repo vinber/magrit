@@ -1,7 +1,51 @@
 # Historique des versions et des changements effectués
 
-#### 0.8.0 (2018-xx-xx)
 
+#### 0.8.6 (2018-08-08)
+
+- Améliore le positionnement du symbole dans la légende des cartes en gaufre.
+
+- Améliore la suite de tests.
+
+- Mise-à-jour de quelques exemples dans la documentation (notamment pour utiliser la projection Lambert-93 sur plusieurs cartes de Paris).
+
+
+#### 0.8.5 (2018-07-02)
+
+- Nouveauté : la création de légendes (d'un seul item) est possible pour les couches d'habillage.
+
+- Nouveauté : Affichage d'un message de confirmation avant de promouvoir/déclasser une couche (vers/depuis le statut de couche cible).
+
+- Corrige la projection à utiliser lors de la création de cartogrammes de Dougenik.
+
+- Corrige la présence d'un fichier GeoJSON non-souhaité, lors de l'export au format Shapefile, dans l'archive ZIP.
+
+- Corrige le comportement erroné de la barre d'échelle lorsque ses propriétés sont modifiées (+ correction du comportement du bouton "Annulation" de cette boite de dialogue).
+
+
+#### 0.8.4 (2018-06-08)
+
+- Correction d'une erreur de syntaxe.
+
+
+#### 0.8.3 (2018-06-08)
+
+- Corrige une erreur se produisant lors de la création de fichiers temporaires pour certaines représentations.
+
+
+#### 0.8.2 (2018-06-07)
+
+- Corrige la hauteur de l'élément SVG qui acceuile le bar chart dans le fenêtre de discrétisation des liens/discontinuités.
+
+- Modification du code pour permettre l'utilisation d'une instance locale sans redis (et donc permettre l'utilisation plus facile sur Windonws)
+
+
+#### 0.8.1 (2018-05-22)
+
+- Corrige l'affichage du bar chart dans la fenêtre de discrétisation des cartes choroplèthes.
+
+
+#### 0.8.0 (2018-05-22)
 
 - Nouveauté : Autorise à "promouvoir" n'importe quelle couche d'habillage (et certaines couches de résultat) vers le statut de couche cible. Cette fonctionnalité permet de combiner plusieurs type de représentations de manière plus simple/rapide et en évitant des suppressions/imports inutiles de couches (rend par exemple possible de faire une carte choroplèthe sur le résultat d'une anamorphose, etc.)
 
