@@ -2,7 +2,7 @@ language: python
 python:
   - "3.6"
 sudo: required
-dist: trusty
+dist: xenial
 services:
   - redis-server
 cache:
@@ -15,7 +15,7 @@ env:
     - GDALINST=$HOME/gdalinstall
     - GDALBUILD=$HOME/gdalbuild
 before_install:
-  - ./misc/install_gdal.sh
+  - travis_wait 30 ./misc/install_gdal.sh
   - export PATH=$GDALINST/gdal-2.2.3/bin:$PATH
   - export LD_LIBRARY_PATH=$GDALINST/gdal-2.2.3/lib:$LD_LIBRARY_PATH
   - "export DISPLAY=:99.0"
@@ -37,14 +37,15 @@ script:
 addons:
   apt:
     sources:
-      - deadsnakes
-      - google-chrome
+      - sourceline: 'ppa:deadsnakes/ppa'
+      - sourceline: 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+        key_url: 'https://dl-ssl.google.com/linux/linux_signing_key.pub'
     packages:
       - python3.6
       - libopenblas-base
       - libopenblas-dev
       - gdal-bin
-      - libuv-dev
+      - libuv1-dev
       - libgdal-dev
       - libproj-dev
       - libspatialindex-dev
