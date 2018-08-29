@@ -885,7 +885,6 @@ export function change_projection_4(_proj) {
 
   proj = getD3ProjFromProj4(_proj);
   path = d3.geoPath().projection(proj).pointRadius(4);
-
   // According to the availability of the invert method (as they both need it):
   //  - Enable or disable the 'brush zoom' button
   //      allowing to zoom according to a rectangle selection.

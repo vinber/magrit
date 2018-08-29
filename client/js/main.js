@@ -67,12 +67,12 @@ global._app = {
   version: MAGRIT_VERSION,
 };
 
+global.w = Mround(window.innerWidth - 361);
+global.h = window.innerHeight - 55;
 global.proj = d3.geoNaturalEarth2().scale(1).translate([0, 0]);
 global.path = d3.geoPath().projection(proj).pointRadius(4);
 global.t = proj.translate();
 global.s = proj.scale();
-global.w = Mround(window.innerWidth - 361);
-global.h = window.innerHeight - 55;
 
 /*
 A bunch of global variable, storing oftently reused informations :
@@ -90,7 +90,7 @@ global.data_manager = {
   field_join_map: [],
   result_data: {},
   user_data: {},
-}
+};
 
 function parseQuery(search) {
   const args = search.substring(1).split('&');

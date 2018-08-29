@@ -1,6 +1,8 @@
 import { clickLinkFromDataUrl, display_error_during_computation, xhrequest } from './helpers';
 import { Mceil } from './helpers_math';
 import { custom_fonts } from './fonts';
+import { reproj_symbol_layer } from './map_ctrl';
+
 
 function patchSvgForFonts() {
   function getListUsedFonts() {
@@ -95,16 +97,22 @@ function unpatchSvgForForeignObj(originals) {
 }
 
 function patchSvgBackground() {
-  const background = document.createElement('rect');
-  background.id = 'background';
-  background.setAttribute('width', '100%');
-  background.setAttribute('height', '100%');
-  background.setAttribute('fill', document.getElementById('bg_color').value);
-  svg_map.insertBefore(background, svg_map.firstChild);
+  d3.select(svg_map)
+    .insert('g', 'defs')
+    .attr('id', 'G_bg')
+    .insert('rect')
+    .attrs({
+      id: 'background',
+      width: w,
+      height: h,
+      x: 0,
+      y: 0,
+    })
+    .style('fill', document.getElementById('bg_color').value);
 }
 
 function unpatchSvgBackground() {
-  svg_map.querySelector('rect#background').remove();
+  svg_map.querySelector('#G_bg').remove();
 }
 
 function check_output_name(name, extension) {
@@ -133,11 +141,27 @@ function changeResolution(canvas, scaleFactor) {
   ctx.scale(scaleFactor, scaleFactor);
 }
 
-export function export_compo_svg(output_name) {
-  output_name = check_output_name(output_name, 'svg'); // eslint-disable-line no-param-reassign
+export function export_compo_svg(output_name, clip_to_viewport=true) {
+  const _finally = () => {
+    if (clip_to_viewport) {
+      proj = proj.clipExtent(null);
+      map.selectAll('.layer').selectAll('path').attr('d', path);
+      reproj_symbol_layer();
+    }
+  };
+  const zoom_params = svg_map.__zoom;
+  const _output_name = check_output_name(output_name, 'svg');
   patchSvgForInkscape();
   patchSvgForFonts();
   patchSvgBackground();
+  if (clip_to_viewport) {
+    proj = proj.clipExtent([
+      [0 - zoom_params.x / zoom_params.k, 0 - zoom_params.y / zoom_params.k],
+      [(w - zoom_params.x) / zoom_params.k, (h - zoom_params.y) / zoom_params.k],
+    ]);
+    map.selectAll('.layer').selectAll('path').attr('d', path);
+    reproj_symbol_layer();
+  }
   const dimensions_foreign_obj = patchSvgForForeignObj();
   const targetSvg = document.getElementById('svg_map'),
     serializer = new XMLSerializer();
@@ -153,14 +177,16 @@ export function export_compo_svg(output_name) {
   source = ['<?xml version="1.0" standalone="no"?>\r\n', source].join('');
 
   const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`;
-  clickLinkFromDataUrl(url, output_name).then(() => {
+  clickLinkFromDataUrl(url, _output_name).then(() => {
     unpatchSvgForFonts();
     unpatchSvgForForeignObj(dimensions_foreign_obj);
     unpatchSvgForInkscape();
     unpatchSvgBackground();
+    _finally();
   }).catch((err) => {
     display_error_during_computation();
     console.log(err);
+    _finally();
   });
 }
 
@@ -168,7 +194,7 @@ export function export_compo_svg(output_name) {
 //   could be encountered in the browser (as 'out of memory' error)
 export function export_compo_png(scalefactor = 1, output_name) {
   global._app.waitingOverlay.display();
-  output_name = check_output_name(output_name, 'png');
+  const _output_name = check_output_name(output_name, 'png');
   const dimensions_foreign_obj = patchSvgForForeignObj();
   patchSvgForFonts();
   const targetCanvas = d3.select('body').append('canvas')
@@ -205,7 +231,7 @@ export function export_compo_png(scalefactor = 1, output_name) {
   }
   let imgUrl;
   img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg_xml)}`;
-  img.onload = function () {
+  img.onload = () => {
     ctx.drawImage(img, 0, 0);
     try {
       imgUrl = targetCanvas.toDataURL(mime_type);
@@ -215,7 +241,7 @@ export function export_compo_png(scalefactor = 1, output_name) {
       display_error_during_computation(String(err));
       return;
     }
-    clickLinkFromDataUrl(imgUrl, output_name).then(() => {
+    clickLinkFromDataUrl(imgUrl, _output_name).then(() => {
       unpatchSvgForFonts();
       unpatchSvgForForeignObj(dimensions_foreign_obj);
       global._app.waitingOverlay.hide();
@@ -259,8 +285,7 @@ export function export_layer_geo(layer, type, projec, proj4str) {
           type: 'error',
           allowOutsideClick: false,
           allowEscapeKey: false,
-        })
-        .then(() => null, () => null);
+        }).then(() => null, () => null);
         return;
       }
       const ext = extensions.get(type),
