@@ -95,16 +95,22 @@ function unpatchSvgForForeignObj(originals) {
 }
 
 function patchSvgBackground() {
-  const background = document.createElement('rect');
-  background.id = 'background';
-  background.setAttribute('width', '100%');
-  background.setAttribute('height', '100%');
-  background.setAttribute('fill', document.getElementById('bg_color').value);
-  svg_map.insertBefore(background, svg_map.firstChild);
+  d3.select(svg_map)
+    .insert('g', 'defs')
+    .attr('id', 'G_bg')
+    .insert('rect')
+    .attrs({
+      id: 'background',
+      height: h,
+      width: w,
+      x: 0,
+      y: 0,
+    })
+    .style('fill', document.getElementById('bg_color').value);
 }
 
 function unpatchSvgBackground() {
-  svg_map.querySelector('rect#background').remove();
+  svg_map.querySelector('#G_bg').remove();
 }
 
 function check_output_name(name, extension) {
