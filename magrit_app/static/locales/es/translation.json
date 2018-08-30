@@ -165,6 +165,7 @@
             "title": "Exportar el mapa",
             "type": "Tipo",
             "filename": "Nombre del archivo",
+            "clip_svg_export": "Cortar el SVG en el derecho de paso actual",
             "format": "Formato de salida",
             "height": "Altura",
             "width": "Ancho",

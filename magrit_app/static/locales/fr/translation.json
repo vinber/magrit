@@ -172,6 +172,7 @@
             "type": "Type",
             "filename": "Nom du fichier",
             "format": "Format de sortie",
+            "clip_svg_export": "Découper le SVG sur l'emprise actuelle",
             "height": "Hauteur",
             "width": "Largeur",
             "web": "Web",

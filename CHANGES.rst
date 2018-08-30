@@ -1,6 +1,12 @@
 Changes
 =======
 
+0.8.7 (2018-xx-xx)
+------------------
+
+- Allow to clip the SVG export to the currently displayed extent.
+
+
 0.8.6 (2018-08-08)
 ------------------
 

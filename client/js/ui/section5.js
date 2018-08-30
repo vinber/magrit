@@ -17,18 +17,21 @@ export function makeSection5() {
       const type = this.value,
         export_filename = document.getElementById('export_filename');
       if (type === 'svg') {
+        document.getElementById('export_options_svg').style.display = '';
         document.getElementById('export_options_geo').style.display = 'none';
         document.getElementById('export_options_png').style.display = 'none';
         export_filename.value = 'export.svg';
         export_filename.style.display = '';
         export_filename.previousSibling.style.display = '';
       } else if (type === 'png') {
+        document.getElementById('export_options_svg').style.display = 'none';
         document.getElementById('export_options_geo').style.display = 'none';
         document.getElementById('export_options_png').style.display = '';
         export_filename.value = 'export.png';
         export_filename.style.display = '';
         export_filename.previousSibling.style.display = '';
       } else if (type === 'geo') {
+        document.getElementById('export_options_svg').style.display = 'none';
         document.getElementById('export_options_png').style.display = 'none';
         document.getElementById('export_options_geo').style.display = '';
         export_filename.style.display = 'none';
@@ -40,6 +43,28 @@ export function makeSection5() {
   select_type_export.append('option').text('PNG').attr('value', 'png');
   select_type_export.append('option').text('GEO').attr('value', 'geo');
 
+  const export_svg_options = dv5b.append('p')
+    .attr('id', 'export_options_svg')
+    .style('padding-top', '10px');
+
+  export_svg_options.append('label')
+    .attrs({
+      class: 'i18n',
+      'data-i18n': '[html]app_page.section5b.clip_svg_export',
+      for: 'clip_svg_export',
+    });
+
+  export_svg_options.append('input')
+    .attrs({
+      id: 'clip_svg_export',
+      type: 'checkbox',
+    })
+    .styles({
+      float: 'right',
+      margin: 'auto',
+    })
+    .property('checked', true);
+
   const export_png_options = dv5b.append('p')
     .attr('id', 'export_options_png')
     .style('display', 'none');
@@ -49,6 +74,7 @@ export function makeSection5() {
 
   const select_size_png = export_png_options.append('select')
     .attrs({ id: 'select_png_format', class: 'm_elem_right' });
+
   fill_export_png_options('user_defined');
 
   select_size_png.on('change', function () {
@@ -243,7 +269,8 @@ export function makeSection5() {
     const exp_name = document.getElementById('export_filename').value;
 
     if (type_exp === 'svg') {
-      export_compo_svg(exp_name);
+      const clip_svg = !!document.getElementById('clip_svg_export').checked;
+      export_compo_svg(exp_name, clip_svg);
     } else if (type_exp === 'geo') {
       const layer_name = document.getElementById('layer_to_export').value,
         type = document.getElementById('datatype_to_use').value,

@@ -141,7 +141,7 @@ function changeResolution(canvas, scaleFactor) {
   ctx.scale(scaleFactor, scaleFactor);
 }
 
-export function export_compo_svg(output_name, clip_to_viewport=true) {
+export function export_compo_svg(output_name, clip_to_viewport) {
   const _finally = () => {
     if (clip_to_viewport) {
       proj = proj.clipExtent(null);
