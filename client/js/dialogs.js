@@ -30,6 +30,7 @@ export function make_dialog_container(id_box, title, class_box) {
   return modal_box;
 }
 
+
 export const overlay_under_modal = (function () {
   const twbs_div = document.querySelector('.twbs');
   const bg = document.createElement('div');

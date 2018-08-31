@@ -10,12 +10,13 @@
 
     <title>Magrit</title>
     <link rel="icon" type="image/png" href="static/img/favicon.png" />
-    <link href="static/vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/vendor/css/bootstrap4.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/popper.js/dist/umd/popper.min.js"></script>
     <script src="static/vendor/jquery-2.2.1.min.js"></script>
     <script src="static/vendor/i18next.min.js"></script>
     <script src="static/vendor/loc-i18next.min.js"></script>
     <script src="static/vendor/i18nextXHRBackend.min.js"></script>
-    <script src="static/vendor/bootstrap.min.js"></script>
+    <script src="static/vendor/bootstrap4.min.js"></script>
     <script src="static/vendor/cookies.min.js"></script>
 <style>
 body, html {
@@ -40,81 +41,86 @@ body, html {
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000;
 }
 
-.intro-section {
-    //height: 100%;
-    padding-top: 50px;
-    text-align: center;
-    background: #fff;
-    padding-bottom: 115px;
+.intro-section, .template-section {
+  //height: 100%;
+  padding-top: 50px;
+  text-align: center;
+  background: #fff;
+  padding-bottom: 115px;
+}
+
+.template-section {
+  background: #e52726;
+  padding-bottom: 0px !important;
 }
 
 .navbar-default {
-    background: #000;
-    background-color: #000;
+  background: #000;
+  background-color: #000;
 }
 
 .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover {
-    color: #D71010;
-    background-color: transparent;
+  color: #D71010;
+  background-color: transparent;
 }
 
 .navbar-default .navbar-nav > li > a {
-    color: #FFF;
+  color: #FFF;
 }
 
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover {
-    color: #000;
-    background-color: #eee;
+  color: #000;
+  background-color: #eee;
 }
 
 .box1 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 #footer {
-    padding: 10px;
-    background: #eee;
-    font-size: 13px;
+  padding: 10px;
+  background: #eee;
+  font-size: 13px;
 }
 
 /* Gradient transparent - color - transparent, from https://css-tricks.com/examples/hrs/ */
 hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0)); margin-top: 15px;}
 
 img.hover_scale {
-    margin: 2px;
-    -webkit-transform: scale(0.9);
-    -webkit-transition: all .2s;
+  margin: 2px;
+  -webkit-transform: scale(0.9);
+  -webkit-transition: all .2s;
 }
 
 img.hover_scale:hover {
-    filter: none;
-    -webkit-transform: scale(1);
+  filter: none;
+  -webkit-transform: scale(1);
 }
 
 .grey_img {
-    margin: 1.5px;
-    -webkit-filter: grayscale(1);
-    -webkit-transform: scale(0.9);
-    -webkit-transition: all .2s;
+  margin: 1.5px;
+  -webkit-filter: grayscale(1);
+  -webkit-transform: scale(0.9);
+  -webkit-transition: all .2s;
 }
 
 .grey_img:hover {
-    -webkit-filter: grayscale(0);
-    -webkit-transform: scale(1);
-    -webkit-transition: all .2s;
+  -webkit-filter: grayscale(0);
+  -webkit-transform: scale(1);
+  -webkit-transition: all .2s;
 }
 
 .enter_button {
-  color: greenyellow;
+  color: greenyellow !important;
 }
 
 #btn-group-lang > button {
-  color: greenyellow;
+  color: greenyellow !important;
   background: transparent none repeat scroll 0% 0% border-box;
 }
 
 #btn-group-lang > ul > li > a {
-  color: greenyellow;
+  color: greenyellow !important;
 }
 </style>
 </head>
@@ -122,19 +128,19 @@ img.hover_scale:hover {
 <!-- The #page-top ID is part of the scrolling feature - the data-spy and data-target are part of the built-in Bootstrap scrollspy function -->
 
 <body id="page-top">
-
-
     <nav class="navbar navbar-default navbar-fixed-top" style="padding:0;">
         <div class="container">
             <div class="navbar-header">
                 <a class="navbar-brand" href="#page-top" style="padding-top: 2px;"><img src="static/img/logo_magrit.png" alt="Magrit" width="auto" height="38"></a>
             </div>
 
-            <div class="collapse navbar-collapse">
-                <a class="btn btn-default enter_button i18n" style="float:right;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;font-weight:800;" data-i18n="[html]index.buttons.start_now"></a>
+            <div class="navbar">
+                <div class="btn-group" style="float:right;margin:15px 15px 0 15px;";>
+                  <a href="http://riate.cnrs.fr"><img src="static/img/riate_green_grey.png" alt="RIATE logo" style="max-height:18px;"></a>
+                </div>
                 <div id="btn-group-lang" class="btn-group" style="float:right;margin-top:7px;";>
-                    <button id="lang_current" type="button" class="btn btn-default"></button>
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <button id="lang_current" type="button" class="btn btn-secondary"></button>
+                    <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown">
                         <span class="caret"></span>
                     </button>
                     <ul style="background: black;" class="dropdown-menu" role="menu">
@@ -143,9 +149,7 @@ img.hover_scale:hover {
                         <li><a id="lang3"></a></li>
                     </ul>
                 </div>
-            <div class="btn-group" style="float:right;margin:15px 15px 0 15px;";>
-              <a href="http://riate.cnrs.fr"><img src="static/img/riate_green_grey.png" alt="RIATE logo" style="max-height:18px;"></a>
-            </div>
+                <a class="btn btn-secondary enter_button i18n" style="float:right;background:transparent none repeat scroll 0% 0% border-box;margin-top:7px;font-weight:800;" data-i18n="[html]index.buttons.start_now"></a>
             </div>
             <!-- /.navbar-collapse -->
         </div>
@@ -155,10 +159,10 @@ img.hover_scale:hover {
 
     <section id="intro" class="intro-section">
         <div class="container">
+          <h1 id="title_app" style="font-family:Dosis;" class="i18n" data-i18n="index.title"></h1>
+          <a class="btn btn-secondary enter_button i18n" style="background:black;font-weight:800;border-color:none;" data-i18n="[html]index.buttons.start_now"></a>
+          <hr class="grad-transp"></hr>
             <div class="row">
-            <h1 id="title_app" style="font-family:Dosis;" class="i18n" data-i18n="index.title"></h1>
-            <a class="btn btn-default enter_button i18n" style="background:black;font-weight:800;border-color:none;" data-i18n="[html]index.buttons.start_now"></a>
-            <hr class="grad-transp"></hr>
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 text-center">
                     <div class="box1">
                             <div>
@@ -201,7 +205,7 @@ img.hover_scale:hover {
                             <h4 class="i18n" data-i18n="[html]index.bloc.customizable1"></h4>
                             <span class="i18n" data-i18n="[html]index.bloc.customizable2"></span>
                     </div>
-                <hr class="grad-transp hidden-lg"></hr>
+                <hr class="grad-transp d-block d-md-none"></hr>
                 </div>
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 text-center">
                     <div class="box1">
@@ -221,7 +225,7 @@ img.hover_scale:hover {
                         <h4 class="i18n" data-i18n="[html]index.bloc.box3_title"></h4>
                         <p class="i18n" data-i18n="[html]index.bloc.box3_text"></p>
                     </div>
-                <hr class="grad-transp hidden-lg hidden-md"></hr>
+                <hr class="grad-transp d-block d-md-none"></hr>
                 </div>
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-4 text-center">
                   <div class="box1">
@@ -252,6 +256,154 @@ img.hover_scale:hover {
                 <div class="box-wrap clearfix"></div>
             </div>
         </div>
+    </section>
+
+    <section id="templates" class="template-section">
+      <div class="album py-5 bg-light">
+        <div class="container">
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
+                <div class="card-body">
+                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                      <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
+                    </div>
+                    <small class="text-muted">9 mins</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <footer id="footer" class="footer navbar-fixed-bottom">
