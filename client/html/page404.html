@@ -10,13 +10,13 @@
 
     <title>Magrit - 404</title>
     <link rel="icon" type="image/png" href="static/img/favicon.png" />
-    <link href="static/vendor/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/vendor/css/bootstrap4.min.css" rel="stylesheet">
     <link href="static/vendor/css/style-index.css" rel="stylesheet">
     <script src="static/vendor/jquery-2.2.1.min.js"></script>
     <script src="static/vendor/i18next.min.js"></script>
     <script src="static/vendor/loc-i18next.min.js"></script>
     <script src="static/vendor/i18nextXHRBackend.min.js"></script>
-    <script src="static/vendor/bootstrap.min.js"></script>
+    <script src="static/vendor/bootstrap4.min.js"></script>
 </head>
 <style>
 
@@ -30,12 +30,10 @@
 }
 
 body, html {
-    width: 100%;
-    height: 100%;
-    font-size: 12px;
-    background: #f1f1f1;
-    font-family: 'Merriweather', sans-serif;
-    padding: 1em;
+  width: 100%;
+  height: 100%;
+  font-size: 12px;
+  background: #f1f1f1;
 }
 
 @font-face {
@@ -47,26 +45,33 @@ body, html {
 }
 
 .navbar-default {
-    background: #000;
-    background-color: #000;
+  background: #000;
+  background-color: #000;
+  padding: 0;
 }
 
 .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > li > a:hover {
-    color: #D71010;
-    background-color: transparent;
+  color: #D71010;
+  background-color: transparent;
+}
+
+.dropdown-menu > li {
+  margin-left: 8px;
+  width: 100%;
+  cursor: pointer;
 }
 
 .navbar-default .navbar-nav > li > a {
-    color: #FFF;
+  color: #FFF;
 }
 
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > .active > a:hover {
-    color: #000;
-    background-color: #eee;
+  color: #000;
+  background-color: #eee;
 }
 
 .box1 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 /* Gradient transparent - color - transparent, from https://css-tricks.com/examples/hrs/ */
@@ -85,47 +90,48 @@ hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to ri
   color: greenyellow;
 }
 </style>
-<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+<body id="page-top">
   <!-- Navigation -->
-  <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <nav class="navbar navbar-default navbar-fixed-top">
       <div class="container">
-          <div class="navbar-header page-scroll">
-            <a class="navbar-brand page-scroll" href="/" style="padding-top: 2px;"><img src="static/img/logo_magrit.png" alt="Magrit" width="auto" height="38"></a>
+          <div class="navbar-header">
+            <a class="navbar-brand" href="/" style="padding-top: 2px;"><img src="static/img/logo_magrit.png" alt="Magrit" width="auto" height="38"></a>
           </div>
-          <div id="btn-group-lang" class="btn-group" style="float:right;margin-top:7px;";>
-              <button id="lang_current" type="button" class="btn btn-default" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
-                  <span class="caret"></span>
-              </button>
-              <ul style="background: black;" class="dropdown-menu" role="menu">
-                  <li><a id="lang1"></a></li>
-                  <li><a id="lang2"></a></li>
-                  <li><a id="lang3"></a></li>
-              </ul>
+          <div class="navbar">
+            <div class="btn-group" style="float:right;margin:10px 15px 0 15px;";>
+              <a href="http://riate.cnrs.fr"><img src="static/img/riate_green_grey.png" alt="RIATE logo" style="max-height:18px;"></a>
+            </div>
+            <div id="btn-group-lang" class="btn-group" style="float:right;margin-top:7px;";>
+                <button id="lang_current" type="button" class="btn btn-secondary" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;"></button>
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" style="color:greenyellow;background:transparent none repeat scroll 0% 0% border-box;">
+                    <span class="caret"></span>
+                </button>
+                <ul style="background: black;" class="dropdown-menu" role="menu">
+                    <li><a id="lang1"></a></li>
+                    <li><a id="lang2"></a></li>
+                    <li><a id="lang3"></a></li>
+                </ul>
+            </div>
           </div>
-      <div class="btn-group" style="float:right;margin:10px 15px 0 15px;";>
-        <a href="http://riate.cnrs.fr"><img src="static/img/riate_green_grey.png" alt="RIATE logo" style="max-height:18px;"></a>
-      </div>
       </div>
   </nav>
 
   <section id="intro" class="contact-section">
       <div class="container">
-          <div class="row">
-          <h1 data-i18n="[html]page404.message1" class="i18n" style="font-family:Dosis; text-align: center; margin: 50px 0 40px 0;"></h1>
-          <hr class="grad-transp"></hr>
+        <h1 data-i18n="[html]page404.message1" class="i18n" style="font-family:Dosis; text-align: center; margin: 50px 0 40px 0;"></h1>
+        <hr class="grad-transp"></hr>
+        <div class="row">
           <div class="col-md-12">
           <p class="col-md-12 i18n" data-i18n="[html]page404.message2" style="padding: 0 12% 0 12%;"></p>
             <div class="content404 text-center">
-              <a class="btn btn-default enter_button i18n" data-i18n="[html]page404.back_application"></a>
-              <a class="btn btn-default documentation_button i18n" data-i18n="[html]page404.back_documentation"></a>
+              <a class="btn btn-secondary enter_button i18n" data-i18n="[html]page404.back_application"></a>
+              <a class="btn btn-secondary documentation_button i18n" data-i18n="[html]page404.back_documentation"></a>
             </div>
           </div>
           <div class="box-wrap clearfix"></div>
           </div>
       </div>
   </section>
-
 </body>
 <script>
 //i18n initialization :
@@ -160,13 +166,13 @@ function prepare_lang_buttons(){
     document.getElementById("lang_current").innerHTML = current_lang;
     let button_lang1 = document.getElementById("lang1");
     button_lang1.innerHTML = current_lang;
-    button_lang1.onclick = handle_change_lang;
+    button_lang1.parentElement.onclick = handle_change_lang;
     let button_lang2 = document.getElementById("lang2");
     button_lang2.innerHTML = other_langs[0];
-    button_lang2.onclick = handle_change_lang;
+    button_lang2.parentElement.onclick = handle_change_lang;
     let button_lang3 = document.getElementById("lang3");
     button_lang3.innerHTML = other_langs[1];
-    button_lang3.onclick = handle_change_lang;
+    button_lang3.parentElement.onclick = handle_change_lang;
 }
 
 function bind_buttons(){
@@ -179,10 +185,11 @@ function bind_buttons(){
 
 //Handle user click on the "language" buttons :
 function handle_change_lang(){
-    if(this.id == "lang1" && i18next.language == this.innerHTML){
+    let el = this.childNodes[0];
+    if(el.id == "lang1" && i18next.language == el.innerHTML){
         return;
     }
-    let lang = this.innerHTML,
+    let lang = el.innerHTML,
         old_lang = document.getElementById("lang_current").innerHTML;
     change_lang(lang, old_lang);
 }
