@@ -835,6 +835,9 @@
         },
         "footer": {
             "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Ver la galería</a>"
+        },
+        "template": {
+          "open": "Abrir"
         }
     },
     "contact_form": {
