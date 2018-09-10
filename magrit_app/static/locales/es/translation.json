@@ -836,8 +836,15 @@
         "footer": {
             "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Ver la galería</a>"
         },
-        "template": {
-          "open": "Abrir"
+        "templates": {
+          "open": "Abrir",
+          "descriptions": {
+            "France": "",
+            "Europe_NUTS2": "",
+            "Europe_NUTS3": "",
+            "Paris_quartiers": "",
+            "Paris_Grand_Paris": ""
+          }
         }
     },
     "contact_form": {

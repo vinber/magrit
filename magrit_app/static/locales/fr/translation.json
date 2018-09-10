@@ -842,8 +842,15 @@
         "footer": {
             "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Visiter la galerie</a>"
         },
-        "template": {
-          "open": "Ouvrir"
+        "templates": {
+          "open": "Ouvrir",
+          "descriptions": {
+            "France": "<b>Départements Français</b><br>Template utilisant le fond de carte des département (GEOFLA xxxx) comme fond de carte",
+            "Europe_NUTS2": "",
+            "Europe_NUTS3": "",
+            "Paris_quartiers": "",
+            "Paris_Grand_Paris": ""
+          }
         }
     },
     "contact_form": {
