@@ -1,5 +1,9 @@
 # Historique des versions et des changements effectués
 
+#### 0.8.7 (2018-09-10)
+
+- Nouveauté : Permet la découpe de l'export SVG à la limite de la vue actuelle (nouvelle option par défaut).
+
 
 #### 0.8.6 (2018-08-08)
 
