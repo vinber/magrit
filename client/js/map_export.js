@@ -32,9 +32,9 @@ function patchSvgForFonts() {
   const fonts_definitions = Array.prototype.filter.call(
     document.styleSheets,
     i => (i.href && i.href.indexOf('style-fonts.css') > -1 ? i : null),
-    )[0].cssRules;
-  const fonts_to_add = needed_definitions.map(
-    name => String(fonts_definitions[custom_fonts.indexOf(name)].cssText));
+  )[0].cssRules;
+  const fonts_to_add = needed_definitions
+    .map(name => String(fonts_definitions[custom_fonts.indexOf(name)].cssText));
   const style_elem = document.createElement('style');
   style_elem.innerHTML = fonts_to_add.join(' ');
   svg_map.querySelector('defs').appendChild(style_elem);

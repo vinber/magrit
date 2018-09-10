@@ -44,14 +44,10 @@ Promise.config({
 //   };
 // };
 global.i18next = i18next;
-global._tr = function(...args) { return i18next.t(...args); };
-global.encodeId = layer_name => (layer_name !== '')
+global._tr = (...args) => i18next.t(...args);
+global.encodeId = layer_name => ((layer_name !== '')
   ? `L_${layer_name.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`
-  : 'L_';
-// global.encodeId = function(s) {
-//   if (s === '') return 'L_';
-//   return `L_${s.replace(/[^a-zA-Z0-9_-]/g, match => `_${match[0].charCodeAt(0).toString(16)}_`)}`;
-// }
+  : 'L_');
 
 global._app = {
   current_functionnality: undefined,
@@ -64,7 +60,7 @@ global._app = {
   id_to_layer: new Map([[encodeId('World'), 'World'], [encodeId('Graticule'), 'Graticule']]),
   targeted_layer_added: false,
   to_cancel: undefined,
-  version: MAGRIT_VERSION,
+  version: MAGRIT_VERSION, // eslint-disable-line no-undef
 };
 
 global.w = Mround(window.innerWidth - 361);
@@ -134,7 +130,7 @@ function getEpsgProjection() {
   return xhrequest('GET', 'static/json/epsg.json', undefined, false);
 }
 
-(function () {
+(() => {
   Object.assign(global, makeSvgMap());
   // const { map_div, map, svg_map, defs } = makeSvgMap();
   // global.map_div = map_div;
