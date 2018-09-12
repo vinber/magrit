@@ -2,5 +2,5 @@
 flaky == 3.4.0
 selenium == 3.13.0
 pillow == 4.1.1
-pytest == 3.4.1
+pytest == 3.8.0
 pytest-aiohttp == 0.3.0
