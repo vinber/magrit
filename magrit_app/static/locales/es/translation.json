@@ -838,13 +838,8 @@
         },
         "templates": {
           "open": "Abrir",
-          "descriptions": {
-            "France": "",
-            "Europe_NUTS2": "",
-            "Europe_NUTS3": "",
-            "Paris_quartiers": "",
-            "Paris_Grand_Paris": ""
-          }
+          "details": "Ver los detalles de las capas utilizadas",
+          "description": {}
         }
     },
     "contact_form": {
