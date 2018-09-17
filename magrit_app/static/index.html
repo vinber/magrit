@@ -24,6 +24,90 @@ body, html {
     height: 100%;
     font-size: 12px;
 }
+.lds-roller {
+  display: inline-block;
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+.lds-roller div {
+  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  transform-origin: 32px 32px;
+}
+.lds-roller div:after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  margin: -3px 0 0 -3px;
+}
+.lds-roller div:nth-child(1) {
+  animation-delay: -0.036s;
+}
+.lds-roller div:nth-child(1):after {
+  top: 50px;
+  left: 50px;
+}
+.lds-roller div:nth-child(2) {
+  animation-delay: -0.072s;
+}
+.lds-roller div:nth-child(2):after {
+  top: 54px;
+  left: 45px;
+}
+.lds-roller div:nth-child(3) {
+  animation-delay: -0.108s;
+}
+.lds-roller div:nth-child(3):after {
+  top: 57px;
+  left: 39px;
+}
+.lds-roller div:nth-child(4) {
+  animation-delay: -0.144s;
+}
+.lds-roller div:nth-child(4):after {
+  top: 58px;
+  left: 32px;
+}
+.lds-roller div:nth-child(5) {
+  animation-delay: -0.18s;
+}
+.lds-roller div:nth-child(5):after {
+  top: 57px;
+  left: 25px;
+}
+.lds-roller div:nth-child(6) {
+  animation-delay: -0.216s;
+}
+.lds-roller div:nth-child(6):after {
+  top: 54px;
+  left: 19px;
+}
+.lds-roller div:nth-child(7) {
+  animation-delay: -0.252s;
+}
+.lds-roller div:nth-child(7):after {
+  top: 50px;
+  left: 14px;
+}
+.lds-roller div:nth-child(8) {
+  animation-delay: -0.288s;
+}
+.lds-roller div:nth-child(8):after {
+  top: 45px;
+  left: 10px;
+}
+@keyframes lds-roller {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 @font-face {
   font-family: 'Inconsolata';
@@ -266,116 +350,7 @@ img.hover_scale:hover {
       <div class="album py-5 bg-light">
         <div class="container">
           <div class="row">
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions.France"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card mb-4 box-shadow">
-                <img class="card-img-top" src="static/img/gallery/usadenspop.png" alt="Card image cap" style="height: 225px; width: 100%; display: block;">
-                <div class="card-body">
-                  <p class="card-text i18n" data-i18n="[html]index.templates.descriptions"></p>
-                  <div>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
           </div>
         </div>
       </div>
@@ -482,19 +457,10 @@ function handle_change_lang(){
     change_lang(lang);
 }
 
-// // Actually change the content of the page :
-// function change_lang(new_lang, old_lang){
-//     docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-//     i18next.changeLanguage(new_lang, () => { localize(".i18n");});
-//     document.getElementById("lang_current").innerHTML = new_lang;
-//     document.getElementById("lang2").innerHTML = old_lang;
-//     document.getElementById("lang1").innerHTML = new_lang;
-// }
-
 // Actually change the content of the page :
 function change_lang(new_lang){
   docCookies.setItem("user_lang", new_lang, 31536e3, "/");
-  i18next.changeLanguage(new_lang, function(){ localize(".i18n");});
+  i18next.changeLanguage(new_lang, () => { localize(".i18n"); });
   var other_langs = new_lang == "en" ? ["es", "fr"] : new_lang == "fr" ? ["en", "es"] : ["en", "fr"];
   document.getElementById("lang_current").innerHTML = new_lang;
   document.getElementById("lang3").innerHTML = other_langs[0];
@@ -569,9 +535,55 @@ function prepare_lang_buttons(){
       bind_enter_buttons();
       handle_div_cookie();
       prepare_lang_buttons();
+      xhrequest('GET', 'https://raw.githubusercontent.com/riatelab/magrit-templates-carto/master/description.json')
+        .then((result) => {
+          const templates = JSON.parse(result);
+          const k = Object.keys(templates);
+          const parent = document.querySelector('section#templates > div > div > div.row');
+          let fr = { 'templates': {} };
+          let en = { 'templates': {} };
+          let es = { 'templates': {} };
+          k.forEach((key) => {
+            fr['templates'][key] = templates[key]['fr'];
+            en['templates'][key] = templates[key]['en'];
+            es['templates'][key] = templates[key]['es'];
+            parent.innerHTML += `
+            <div class="col-md-4">
+              <div class="card mb-4 box-shadow">
+                <img class="img-fluid img-thumbnail" src="https://raw.githubusercontent.com/riatelab/magrit-templates-carto/master/${key}/export.png" alt="thumbnail">
+                <div class="card-body">
+                  <h5 class="card-text i18n" data-i18n="[html]templates.${key}.name"></h5>
+                  <p class="card-text i18n" data-i18n="[html]templates.${key}.description"></p>
+                  <div class="btn-group" role="group" aria-label="Button template">
+                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
+                  </div>
+                </div>
+              </div>
+            </div>`
+          });
+          i18next.addResourceBundle('fr', 'translation', fr);
+          i18next.addResourceBundle('en', 'translation', en);
+          i18next.addResourceBundle('es', 'translation', es);
+          localize(".i18n");
+          document.querySelector('.lds-roller').remove();
+        });
     }
   });
 })();
+
+const xhrequest = (method, url, data) => new Promise((resolve, reject) => {
+  const request = new XMLHttpRequest();
+  request.open(method, url, true);
+  request.onload = (resp) => {
+    resolve(resp.target.responseText);
+  };
+  request.onerror = (err) => {
+    reject(err);
+  };
+  request.send(data);
+});
+
 
 </script>
 </body>

@@ -844,7 +844,7 @@
         },
         "templates": {
           "open": "Ouvrir",
-          "details": "Voir le détail des couches utilisées",
+          "details": "Détails des couches",
           "description": {}
         }
     },

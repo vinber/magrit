@@ -844,7 +844,7 @@
         },
         "templates": {
           "open": "Open",
-          "details": "See details of layers used",
+          "details": "Layer details",
           "description": {}
         }
     },

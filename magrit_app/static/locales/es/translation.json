@@ -838,7 +838,7 @@
         },
         "templates": {
           "open": "Abrir",
-          "details": "Ver los detalles de las capas utilizadas",
+          "details": "Detalles de las capas",
           "description": {}
         }
     },
