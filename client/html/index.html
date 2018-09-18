@@ -24,91 +24,6 @@ body, html {
     height: 100%;
     font-size: 12px;
 }
-.lds-roller {
-  display: inline-block;
-  position: relative;
-  width: 64px;
-  height: 64px;
-}
-.lds-roller div {
-  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  transform-origin: 32px 32px;
-}
-.lds-roller div:after {
-  content: " ";
-  display: block;
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #fff;
-  margin: -3px 0 0 -3px;
-}
-.lds-roller div:nth-child(1) {
-  animation-delay: -0.036s;
-}
-.lds-roller div:nth-child(1):after {
-  top: 50px;
-  left: 50px;
-}
-.lds-roller div:nth-child(2) {
-  animation-delay: -0.072s;
-}
-.lds-roller div:nth-child(2):after {
-  top: 54px;
-  left: 45px;
-}
-.lds-roller div:nth-child(3) {
-  animation-delay: -0.108s;
-}
-.lds-roller div:nth-child(3):after {
-  top: 57px;
-  left: 39px;
-}
-.lds-roller div:nth-child(4) {
-  animation-delay: -0.144s;
-}
-.lds-roller div:nth-child(4):after {
-  top: 58px;
-  left: 32px;
-}
-.lds-roller div:nth-child(5) {
-  animation-delay: -0.18s;
-}
-.lds-roller div:nth-child(5):after {
-  top: 57px;
-  left: 25px;
-}
-.lds-roller div:nth-child(6) {
-  animation-delay: -0.216s;
-}
-.lds-roller div:nth-child(6):after {
-  top: 54px;
-  left: 19px;
-}
-.lds-roller div:nth-child(7) {
-  animation-delay: -0.252s;
-}
-.lds-roller div:nth-child(7):after {
-  top: 50px;
-  left: 14px;
-}
-.lds-roller div:nth-child(8) {
-  animation-delay: -0.288s;
-}
-.lds-roller div:nth-child(8):after {
-  top: 45px;
-  left: 10px;
-}
-@keyframes lds-roller {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 @font-face {
   font-family: 'Inconsolata';
   font-style: normal;
@@ -349,8 +264,9 @@ img.hover_scale:hover {
     <section id="templates" class="template-section">
       <div class="album py-5 bg-light">
         <div class="container">
+          <h2 id="title_app" style="font-family:Dosis;" class="i18n" data-i18n="index.template_title"></h2>
+          <hr class="grad-transp"></hr>
           <div class="row">
-            <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
           </div>
         </div>
       </div>
@@ -555,8 +471,8 @@ function prepare_lang_buttons(){
                   <h5 class="card-text i18n" data-i18n="[html]templates.${key}.name"></h5>
                   <p class="card-text i18n" data-i18n="[html]templates.${key}.description"></p>
                   <div class="btn-group" role="group" aria-label="Button template">
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open"></button>
-                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.details"></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary i18n" data-i18n="[html]index.templates.open" onclick="openTemplate('${key}')"></button>
+                    <a type="button" class="btn btn-sm btn-outline-secondary i18n" href="https://magrit.hypotheses.org/" target="_blank" data-i18n="[html]index.templates.details"></a>
                   </div>
                 </div>
               </div>
@@ -571,6 +487,9 @@ function prepare_lang_buttons(){
     }
   });
 })();
+const openTemplate = (name) => {
+  window.location += `modules?reload=https://raw.githubusercontent.com/riatelab/magrit-templates-carto/master/${name}/project.json`;
+};
 
 const xhrequest = (method, url, data) => new Promise((resolve, reject) => {
   const request = new XMLHttpRequest();

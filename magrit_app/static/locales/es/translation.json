@@ -801,6 +801,7 @@
     },
     "index":{
         "title": "Magrit - Cartografía temática",
+        "template_title": "Plantillas cartográficas",
         "buttons": {
             "enter": "Acceder",
             "start_now": "Iniciar"
