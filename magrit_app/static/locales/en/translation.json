@@ -807,6 +807,7 @@
     },
     "index":{
         "title": "Magrit - Thematic cartography",
+        "template_title": "Cartographic templates",
         "buttons": {
             "enter": "Enter!",
             "start_now": "Start now"
@@ -841,6 +842,11 @@
         },
         "footer": {
             "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Visit the gallery</a>"
+        },
+        "templates": {
+          "open": "Open",
+          "details": "Layer details",
+          "description": {}
         }
     },
     "contact_form": {

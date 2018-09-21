@@ -1385,7 +1385,7 @@ export function handle_title(txt) {
   }
 }
 
-function handle_title_properties() {
+export function handle_title_properties() {
   const title = d3.select('#map_title').select('text');
   if (!title.node() || title.text() === '') {
     swal({

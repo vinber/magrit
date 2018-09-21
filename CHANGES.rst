@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.8.8 (2018-09-xx)
+------------------
+
+- New: Change the index page to display some cartographic templates.
+
+- Fix bug with map title properties dialog opening.
+
+
 0.8.7 (2018-09-10)
 ------------------
 

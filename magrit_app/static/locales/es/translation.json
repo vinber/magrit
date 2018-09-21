@@ -801,6 +801,7 @@
     },
     "index":{
         "title": "Magrit - Cartografía temática",
+        "template_title": "Plantillas cartográficas",
         "buttons": {
             "enter": "Acceder",
             "start_now": "Iniciar"
@@ -835,6 +836,11 @@
         },
         "footer": {
             "gallery_link": "<a href=\"http://magrit.hypotheses.org/galerie\">Ver la galería</a>"
+        },
+        "templates": {
+          "open": "Abrir",
+          "details": "Detalles de las capas",
+          "description": {}
         }
     },
     "contact_form": {
