@@ -70,6 +70,11 @@ $ make -s -j 4
 $ sudo make install
 ```
 
+* **Python packages** *
+```
+$ pip3 install -r requirements/dev.txt
+```
+
 * **Other tools needed: topojson**
 ```
 $ sudo npm -g install topojson
