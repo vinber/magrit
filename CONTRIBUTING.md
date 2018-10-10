@@ -116,7 +116,7 @@ Some `cython` files need to be compiled after modification. It can be done by ru
 
 ### Testing
 
-The tests are intended to be played on Travis CI but also locally. We use [selenium](https://www.seleniumhq.org/) WebDriver to "talk" to the browser an automate testing actions.
+The tests are intended to be played on Travis CI but also locally. We use [selenium](https://www.seleniumhq.org/) WebDriver to "talk" to the browser and automate testing actions.
 
 Before running tests you need to download [ChromeDriver](http://chromedriver.chromium.org/downloads) and include its location in your `PATH` environment variable.
 
