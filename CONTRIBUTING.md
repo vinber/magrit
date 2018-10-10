@@ -116,11 +116,25 @@ Some `cython` files need to be compiled after modification. It can be done by ru
 
 ### Testing
 
-...
+The tests are intended to be played on Travis CI but also locally. We use [selenium](https://www.seleniumhq.org/) WebDriver to "talk" to the browser an automate testing actions.
+
+Before running tests you need to download [ChromeDriver](http://chromedriver.chromium.org/downloads) and include its location in your `PATH` environment variable.
+
+Then you can use py.test to run the test suite :
+
+```
+py.test tests/tests_web.py
+```
+
+If you are fixing a bug you should try to create a test case that exposes the bug before writing the fix. Then use that test case to verify that the bug is really fixed by your patch. 
+
 
 ### Contributing to the deployement recipes
 
-...
+Deployement recipes are located in the `misc` folder.  
+In `misc/Docker` you will find the two dockerfiles (one for `nginx` and the other for the `Magrit` app) used to create and run the Magrit instance available on [our server] (http://magrit.cnrs.fr).
+In `misc/dockerfiles` you will find the dockerfile used for the automated build on [Docker Hub](https://hub.docker.com/r/magrit/magrit/).
+
 
 ### Licencing
 
