@@ -191,21 +191,6 @@ hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to ri
         <div class="row">
           <div class="col-md-12">
           <p class="col-md-12 i18n" data-i18n="[html]contact_form.intro_text" style="padding: 0 12% 0 12%;"></p>
-            <div class="contact_form clearfix">
-                <form onsubmit='sendForm(); return false;'>
-                  <div class="half left">
-                    <input name="name" type="text" id="input-name" class="i18n" data-i18n="[placeholder]contact_form.name">
-                    <input name="email" type="email" id="input-email" class="i18n" data-i18n="[placeholder]contact_form.email">
-                    <input name="subject" type="text" id="input-subject" class="i18n" data-i18n="[placeholder]contact_form.subject">
-                  </div>
-                  <div class="half right">
-                    <textarea name="message" type="text" class="i18n" id="input-message" data-i18n="[placeholder]contact_form.message"></textarea>
-                  </div>
-                  <p class="col-md-12 i18n">
-                  <input type="submit" class="btn btn-success i18n" style="margin: 5px; width: auto;" data-i18n="[html]contact_form.send" id="send_button">
-                </p>
-                </form>
-            </div>
           </div>
           <div class="box-wrap clearfix"></div>
         </div>
@@ -214,34 +199,6 @@ hr.grad-transp { border: 0; height: 1px; background-image: linear-gradient(to ri
 
 </body>
 <script>
-
-function sendForm(){
-  let data = new FormData();
-  data.append('name', document.getElementById('input-name').value);
-  data.append('email', document.getElementById('input-email').value);
-  data.append('subject', document.getElementById('input-subject').value);
-  data.append('message', document.getElementById('input-message').value);
-
-  let request = new XMLHttpRequest();
-  request.open("POST", "/contact", true);
-  request.onload = resp => {
-    swal({title: "",
-          text: i18next.t("app_page.common.ok") + "!",
-          type: "success",
-          showCancelButton: false,
-          allowOutsideClick: false,
-        }).then(() => { return; }, dismiss => { return; });
-  };
-  request.onerror = err => {
-    swal({title: "",
-          text: i18next.t("app_page.common.error_msg") + "!",
-          type: "error",
-          showCancelButton: false,
-          allowOutsideClick: false,
-        }).then(() => { return; }, dismiss => { return; });
-  };
-  request.send(data);
-}
 
 //i18n initialization :
 (function(){
