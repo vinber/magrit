@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.8.8 (2018-09-xx)
+0.8.8 (2018-09-21)
 ------------------
 
 - New: Change the index page to display some cartographic templates.

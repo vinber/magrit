@@ -1,5 +1,13 @@
 # Historique des versions et des changements effectués
 
+#### 0.8.8 (2018-09-21)
+
+- Nouveauté : ajout de templates sur la page d'acceuil.  
+
+- Corrige l'ouverture du dialogue de modification du titre.
+
+
+
 #### 0.8.7 (2018-09-10)
 
 - Nouveauté : Permet la découpe de l'export SVG à la limite de la vue actuelle (nouvelle option par défaut).
