@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.8.9 (2018-10-15)
+------------------
+
+- Fix bug with translation on index page.
+
+- Remove the old contact form in favor of the contact form of RIATE website.
+
+
 0.8.8 (2018-09-21)
 ------------------
 
@@ -18,7 +26,7 @@ Changes
 0.8.6 (2018-08-08)
 ------------------
 
-- Improve symbols positionning in waffle map legends.
+- Improve symbols positioning in waffle map legends.
 
 - Improve the tests suite.
 
