@@ -588,26 +588,6 @@ async def convert_extrabasemap(request):
                 ['{"key":', str(hashed_input), ',"file":', result, '}']))
 
 
-async def store_contact_info(request):
-    """
-    Handle a message posted in the contact page by storing it (with the
-    relevant details) in JSON format in redis.
-    """
-    posted_data = await request.post()
-    date = datetime.fromtimestamp(
-        time.time()).strftime("%B %d, %Y at %H:%M:%S")
-    asyncio.ensure_future(
-        request.app['redis_conn'].lpush(
-            'contact', json.dumps({
-                "name": posted_data.get('name'),
-                "email": posted_data.get('email'),
-                "subject": posted_data.get('subject'),
-                "message": posted_data.get('message'),
-                "date": date
-            })))
-    return web.Response(text='')
-
-
 async def carto_doug(posted_data, user_id, app):
     posted_data = json.loads(posted_data.get("json"))
     f_name = '_'.join([user_id, str(posted_data['topojson'])])
@@ -1307,7 +1287,6 @@ async def get_stats_json(request):
         redis_conn.get('view_onepage'),
         redis_conn.get('single_view_onepage'),
     ])
-    contact = await redis_conn.lrange('contact', 0, -1)
     count = await redis_conn.get('single_view_modulepage')
     return web.Response(text=json.dumps({
         "view_onepage": view_onepage,
@@ -1316,7 +1295,6 @@ async def get_stats_json(request):
         "layer": layers,
         "sample": sample_layers,
         "extra_sample_layers": extra_sample_layers,
-        "contact": contact,
         "t": {
             "stewart": stewart, "dougenik": doug,
             "gridded": gridded, "gridded_point": gridded_pt,
@@ -1507,7 +1485,6 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
     add_route('GET', '/', index_handler)
     add_route('GET', '/index', index_handler)
     add_route('GET', '/contact', serve_contact_form)
-    add_route('POST', '/contact', store_contact_info)
     add_route('GET', '/modules', serve_main_page)
     add_route('GET', '/modules/', serve_main_page)
     add_route('GET', '/modules/{expr}', serve_main_page)

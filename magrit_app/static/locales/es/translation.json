@@ -844,14 +844,9 @@
         }
     },
     "contact_form": {
-        "send": "Enviar",
-        "name": "Nombre",
-        "email": "E-mail",
-        "subject": "Objeto",
-        "message": "Mensaje",
         "contact": "Contacto",
         "index": "Inicio",
-        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)? ¡Gracias de antemano por señalarlo en este formulario y compartirnos su experiencia!<br><span class=\"link_email\">riate [at] cnrs [punto] fr</span>"
+        "intro_text": "¿Algún comentario? ¿Sugerencia? ¿Error (bug)?<br>No dude en contactarnos y enviarnos sus comentarios utilizando <a target=\"_blank\" href=\"http://riate.cnrs.fr/?page_id=363\">el formulario de contacto de nuestro laboratorio</a>, o nuestro <a target=\"_blank\" href=\"https://github.com/riatelab/magrit/issues\">repositorio de código en GitHub </a> o nuestra dirección de correo electrónico : <br> <span class=\"link_email\">riate [at] cnrs [dot] fr</span>"
     },
     "page404": {
         "message1": "Error 404 - Página inválida",

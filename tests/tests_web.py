@@ -266,7 +266,7 @@ class ProjectRoundTrip(TestBase):
 #        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory": self.tmp_folder})
-        self.driver = webdriver.Chrome(chrome_options=chromeOptions)
+        self.driver = webdriver.Chrome(options=chromeOptions)
 
         self.driver.set_window_size(1600, 900)
         self.driver.implicitly_wait(2)
@@ -451,7 +451,7 @@ class ProjectRoundTrip(TestBase):
 #        chromeOptions.add_experimental_option(
 #            "prefs", {"download.default_directory": self.tmp_folder})
 #        self.driver = webdriver.Chrome(executable_path='/home/mz/chromedriver',
-#                                       chrome_options=chromeOptions)
+#                                       options=chromeOptions)
 #
 #        self.driver.set_window_size(1600, 900)
 #        self.driver.implicitly_wait(2)
@@ -542,7 +542,7 @@ class MainFunctionnalitiesTest(TestBase):
 #        chromeOptions.add_argument('window-size=1800x800')
         chromeOptions.add_experimental_option(
             "prefs", {"download.default_directory": self.tmp_folder})
-        self.driver = webdriver.Chrome(chrome_options=chromeOptions)
+        self.driver = webdriver.Chrome(options=chromeOptions)
 
         # profile = webdriver.FirefoxProfile()
         # profile.set_preference("browser.download.folderList", 2)

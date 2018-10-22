@@ -1,5 +1,12 @@
 # Historique des versions et des changements effectués
 
+#### 0.8.9 (2018-10-15)
+
+- Corrige bug de traduction de la page d'acceuil.
+
+- Enlève l'ancien formulaire de contact en faveur du formulaire de contact de site web du RIATE.
+
+
 #### 0.8.8 (2018-09-21)
 
 - Nouveauté : ajout de templates sur la page d'acceuil.  
