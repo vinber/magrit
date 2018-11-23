@@ -15,7 +15,7 @@
         "LIBCOM": "Paris 1er Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 635829924,
         "MENAGES_FISCAUX": 11473,
         "REVENUS_PAR_MENAGE": 55419.67
@@ -180,7 +180,7 @@
         "LIBCOM": "Paris 2e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 660063063,
         "MENAGES_FISCAUX": 15711,
         "REVENUS_PAR_MENAGE": 42012.8
@@ -309,7 +309,7 @@
         "LIBCOM": "Paris 3e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 1095591716,
         "MENAGES_FISCAUX": 24044,
         "REVENUS_PAR_MENAGE": 45566.12
@@ -438,7 +438,7 @@
         "LIBCOM": "Paris 4e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 898958278,
         "MENAGES_FISCAUX": 19366,
         "REVENUS_PAR_MENAGE": 46419.41
@@ -599,7 +599,7 @@
         "LIBCOM": "Paris 5e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 1664572969,
         "MENAGES_FISCAUX": 33691,
         "REVENUS_PAR_MENAGE": 49407.05
@@ -768,7 +768,7 @@
         "LIBCOM": "Paris 6e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 1845141188,
         "MENAGES_FISCAUX": 24324,
         "REVENUS_PAR_MENAGE": 75856.82
@@ -945,7 +945,7 @@
         "LIBCOM": "Paris 7e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3047058345,
         "MENAGES_FISCAUX": 31637,
         "REVENUS_PAR_MENAGE": 96313.13
@@ -1122,7 +1122,7 @@
         "LIBCOM": "Paris 8e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 1966219568,
         "MENAGES_FISCAUX": 23843,
         "REVENUS_PAR_MENAGE": 82465.28
@@ -1323,7 +1323,7 @@
         "LIBCOM": "Paris 9e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 1871933851,
         "MENAGES_FISCAUX": 39238,
         "REVENUS_PAR_MENAGE": 47707.17
@@ -1508,7 +1508,7 @@
         "LIBCOM": "Paris 10e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 2008333478,
         "MENAGES_FISCAUX": 63935,
         "REVENUS_PAR_MENAGE": 31412.11
@@ -1713,7 +1713,7 @@
         "LIBCOM": "Paris 11e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3343113210,
         "MENAGES_FISCAUX": 104719,
         "REVENUS_PAR_MENAGE": 31924.61
@@ -1962,7 +1962,7 @@
         "LIBCOM": "Paris 12e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3224257645,
         "MENAGES_FISCAUX": 96886,
         "REVENUS_PAR_MENAGE": 33278.88
@@ -2503,7 +2503,7 @@
         "LIBCOM": "Paris 13e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3419442638,
         "MENAGES_FISCAUX": 116306,
         "REVENUS_PAR_MENAGE": 29400.4
@@ -2748,7 +2748,7 @@
         "LIBCOM": "Paris 14e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3161771328,
         "MENAGES_FISCAUX": 86308,
         "REVENUS_PAR_MENAGE": 36633.58
@@ -2969,7 +2969,7 @@
         "LIBCOM": "Paris 15e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 6053063480,
         "MENAGES_FISCAUX": 145535,
         "REVENUS_PAR_MENAGE": 41591.81
@@ -3214,7 +3214,7 @@
         "LIBCOM": "Paris 16e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 7289553005,
         "MENAGES_FISCAUX": 93747,
         "REVENUS_PAR_MENAGE": 77757.72
@@ -3543,7 +3543,7 @@
         "LIBCOM": "Paris 17e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 5051054498,
         "MENAGES_FISCAUX": 104498,
         "REVENUS_PAR_MENAGE": 48336.37
@@ -3796,7 +3796,7 @@
         "LIBCOM": "Paris 18e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3486899427,
         "MENAGES_FISCAUX": 133526,
         "REVENUS_PAR_MENAGE": 26114.01
@@ -3997,7 +3997,7 @@
         "LIBCOM": "Paris 19e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 2942552772,
         "MENAGES_FISCAUX": 121483,
         "REVENUS_PAR_MENAGE": 24221.93
@@ -4294,7 +4294,7 @@
         "LIBCOM": "Paris 20e Arrondissement",
         "EPT": "T1",
         "LIBEPT": "Paris",
-        "DEP": 75,
+        "DEPARTEMENT": 75,
         "REVENUS": 3278325424,
         "MENAGES_FISCAUX": 130671,
         "REVENUS_PAR_MENAGE": 25088.39
@@ -4555,7 +4555,7 @@
         "LIBCOM": "Athis-Mons",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 454435072,
         "MENAGES_FISCAUX": 17626,
         "REVENUS_PAR_MENAGE": 25782.09
@@ -4908,7 +4908,7 @@
         "LIBCOM": "Juvisy-sur-Orge",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 266915144,
         "MENAGES_FISCAUX": 9618,
         "REVENUS_PAR_MENAGE": 27751.63
@@ -5197,7 +5197,7 @@
         "LIBCOM": "Morangis",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 218566447,
         "MENAGES_FISCAUX": 7040,
         "REVENUS_PAR_MENAGE": 31046.37
@@ -5454,7 +5454,7 @@
         "LIBCOM": "Paray-Vieille-Poste",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 122757388,
         "MENAGES_FISCAUX": 4240,
         "REVENUS_PAR_MENAGE": 28952.21
@@ -5739,7 +5739,7 @@
         "LIBCOM": "Savigny-sur-Orge",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 627949793,
         "MENAGES_FISCAUX": 20556,
         "REVENUS_PAR_MENAGE": 30548.25
@@ -6116,7 +6116,7 @@
         "LIBCOM": "Viry-Chatillon",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 91,
+        "DEPARTEMENT": 91,
         "REVENUS": 454935175,
         "MENAGES_FISCAUX": 17646,
         "REVENUS_PAR_MENAGE": 25781.21
@@ -6437,7 +6437,7 @@
         "LIBCOM": "Antony",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1334592470,
         "MENAGES_FISCAUX": 32974,
         "REVENUS_PAR_MENAGE": 40474.08
@@ -6898,7 +6898,7 @@
         "LIBCOM": "Asnieres-sur-Seine",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1661781923,
         "MENAGES_FISCAUX": 50107,
         "REVENUS_PAR_MENAGE": 33164.67
@@ -7267,7 +7267,7 @@
         "LIBCOM": "Bagneux",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 503851991,
         "MENAGES_FISCAUX": 22285,
         "REVENUS_PAR_MENAGE": 22609.47
@@ -7520,7 +7520,7 @@
         "LIBCOM": "Bois-Colombes",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 601899012,
         "MENAGES_FISCAUX": 15481,
         "REVENUS_PAR_MENAGE": 38879.85
@@ -7733,7 +7733,7 @@
         "LIBCOM": "Boulogne-Billancourt",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 3205466641,
         "MENAGES_FISCAUX": 68500,
         "REVENUS_PAR_MENAGE": 46795.13
@@ -7962,7 +7962,7 @@
         "LIBCOM": "Bourg-la-Reine",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 476785175,
         "MENAGES_FISCAUX": 10674,
         "REVENUS_PAR_MENAGE": 44667.9
@@ -8135,7 +8135,7 @@
         "LIBCOM": "Chatenay-Malabry",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 581080523,
         "MENAGES_FISCAUX": 17127,
         "REVENUS_PAR_MENAGE": 33927.75
@@ -8584,7 +8584,7 @@
         "LIBCOM": "Chatillon",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 708925667,
         "MENAGES_FISCAUX": 19825,
         "REVENUS_PAR_MENAGE": 35759.18
@@ -8829,7 +8829,7 @@
         "LIBCOM": "Chaville",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 456904289,
         "MENAGES_FISCAUX": 10953,
         "REVENUS_PAR_MENAGE": 41714.99
@@ -9090,7 +9090,7 @@
         "LIBCOM": "Clamart",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1096860003,
         "MENAGES_FISCAUX": 29246,
         "REVENUS_PAR_MENAGE": 37504.62
@@ -9587,7 +9587,7 @@
         "LIBCOM": "Clichy",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 839146523,
         "MENAGES_FISCAUX": 35619,
         "REVENUS_PAR_MENAGE": 23558.96
@@ -9740,7 +9740,7 @@
         "LIBCOM": "Colombes",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1369487078,
         "MENAGES_FISCAUX": 46793,
         "REVENUS_PAR_MENAGE": 29266.92
@@ -10041,7 +10041,7 @@
         "LIBCOM": "Courbevoie",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1956573678,
         "MENAGES_FISCAUX": 50038,
         "REVENUS_PAR_MENAGE": 39101.76
@@ -10294,7 +10294,7 @@
         "LIBCOM": "Fontenay-aux-Roses",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 445373591,
         "MENAGES_FISCAUX": 12800,
         "REVENUS_PAR_MENAGE": 34794.81
@@ -10527,7 +10527,7 @@
         "LIBCOM": "Garches",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 571165774,
         "MENAGES_FISCAUX": 9685,
         "REVENUS_PAR_MENAGE": 58974.27
@@ -10752,7 +10752,7 @@
         "LIBCOM": "La Garenne-Colombes",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 668313049,
         "MENAGES_FISCAUX": 16209,
         "REVENUS_PAR_MENAGE": 41230.99
@@ -10901,7 +10901,7 @@
         "LIBCOM": "Gennevilliers",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 451127725,
         "MENAGES_FISCAUX": 24563,
         "REVENUS_PAR_MENAGE": 18366.15
@@ -11242,7 +11242,7 @@
         "LIBCOM": "Issy-les-Moulineaux",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1558476995,
         "MENAGES_FISCAUX": 38720,
         "REVENUS_PAR_MENAGE": 40249.92
@@ -11555,7 +11555,7 @@
         "LIBCOM": "Levallois-Perret",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1627346213,
         "MENAGES_FISCAUX": 36331,
         "REVENUS_PAR_MENAGE": 44792.22
@@ -11700,7 +11700,7 @@
         "LIBCOM": "Malakoff",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 506933349,
         "MENAGES_FISCAUX": 17519,
         "REVENUS_PAR_MENAGE": 28936.2
@@ -11889,7 +11889,7 @@
         "LIBCOM": "Marnes-la-Coquette",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 73320806,
         "MENAGES_FISCAUX": 798,
         "REVENUS_PAR_MENAGE": 91880.71
@@ -12106,7 +12106,7 @@
         "LIBCOM": "Meudon",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1074868554,
         "MENAGES_FISCAUX": 25088,
         "REVENUS_PAR_MENAGE": 42843.93
@@ -12539,7 +12539,7 @@
         "LIBCOM": "Montrouge",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 991946675,
         "MENAGES_FISCAUX": 28981,
         "REVENUS_PAR_MENAGE": 34227.48
@@ -12660,7 +12660,7 @@
         "LIBCOM": "Nanterre",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1234654194,
         "MENAGES_FISCAUX": 50035,
         "REVENUS_PAR_MENAGE": 24675.81
@@ -12969,7 +12969,7 @@
         "LIBCOM": "Neuilly-sur-Seine",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 3022920574,
         "MENAGES_FISCAUX": 33495,
         "REVENUS_PAR_MENAGE": 90249.91
@@ -13130,7 +13130,7 @@
         "LIBCOM": "Le Plessis-Robinson",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 584148902,
         "MENAGES_FISCAUX": 15713,
         "REVENUS_PAR_MENAGE": 37176.15
@@ -13447,7 +13447,7 @@
         "LIBCOM": "Puteaux",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 919429565,
         "MENAGES_FISCAUX": 26228,
         "REVENUS_PAR_MENAGE": 35055.27
@@ -13676,7 +13676,7 @@
         "LIBCOM": "Rueil-Malmaison",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1965434072,
         "MENAGES_FISCAUX": 41699,
         "REVENUS_PAR_MENAGE": 47133.84
@@ -14097,7 +14097,7 @@
         "LIBCOM": "Saint-Cloud",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 985236733,
         "MENAGES_FISCAUX": 15272,
         "REVENUS_PAR_MENAGE": 64512.62
@@ -14458,7 +14458,7 @@
         "LIBCOM": "Sceaux",
         "EPT": "T2",
         "LIBEPT": "Sud Hauts-de-Seine",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 557357085,
         "MENAGES_FISCAUX": 10040,
         "REVENUS_PAR_MENAGE": 55513.65
@@ -14679,7 +14679,7 @@
         "LIBCOM": "Sevres",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 594936276,
         "MENAGES_FISCAUX": 12259,
         "REVENUS_PAR_MENAGE": 48530.57
@@ -15080,7 +15080,7 @@
         "LIBCOM": "Suresnes",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 1081902009,
         "MENAGES_FISCAUX": 25927,
         "REVENUS_PAR_MENAGE": 41728.78
@@ -15345,7 +15345,7 @@
         "LIBCOM": "Vanves",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 570907133,
         "MENAGES_FISCAUX": 15540,
         "REVENUS_PAR_MENAGE": 36737.91
@@ -15518,7 +15518,7 @@
         "LIBCOM": "Vaucresson",
         "EPT": "T4",
         "LIBEPT": "La Defense",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 319473422,
         "MENAGES_FISCAUX": 4318,
         "REVENUS_PAR_MENAGE": 73986.43
@@ -15751,7 +15751,7 @@
         "LIBCOM": "Ville-d'Avray",
         "EPT": "T3",
         "LIBEPT": "Grand Paris Sud Ouest",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 358198247,
         "MENAGES_FISCAUX": 5749,
         "REVENUS_PAR_MENAGE": 62306.18
@@ -16044,7 +16044,7 @@
         "LIBCOM": "Villeneuve-la-Garenne",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 92,
+        "DEPARTEMENT": 92,
         "REVENUS": 258031487,
         "MENAGES_FISCAUX": 12762,
         "REVENUS_PAR_MENAGE": 20218.73
@@ -16201,7 +16201,7 @@
         "LIBCOM": "Aubervilliers",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 639103745,
         "MENAGES_FISCAUX": 42748,
         "REVENUS_PAR_MENAGE": 14950.49
@@ -16498,7 +16498,7 @@
         "LIBCOM": "Aulnay-sous-Bois",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 928784314,
         "MENAGES_FISCAUX": 41949,
         "REVENUS_PAR_MENAGE": 22140.8
@@ -17039,7 +17039,7 @@
         "LIBCOM": "Bagnolet",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 412984022,
         "MENAGES_FISCAUX": 20026,
         "REVENUS_PAR_MENAGE": 20622.39
@@ -17236,7 +17236,7 @@
         "LIBCOM": "Le Blanc-Mesnil",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 539337987,
         "MENAGES_FISCAUX": 27375,
         "REVENUS_PAR_MENAGE": 19701.84
@@ -17661,7 +17661,7 @@
         "LIBCOM": "Bobigny",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 430743688,
         "MENAGES_FISCAUX": 26746,
         "REVENUS_PAR_MENAGE": 16104.98
@@ -17970,7 +17970,7 @@
         "LIBCOM": "Bondy",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 536887977,
         "MENAGES_FISCAUX": 27467,
         "REVENUS_PAR_MENAGE": 19546.66
@@ -18303,7 +18303,7 @@
         "LIBCOM": "Le Bourget",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 175938896,
         "MENAGES_FISCAUX": 8670,
         "REVENUS_PAR_MENAGE": 20292.84
@@ -18536,7 +18536,7 @@
         "LIBCOM": "Clichy-sous-Bois",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 211696270,
         "MENAGES_FISCAUX": 13580,
         "REVENUS_PAR_MENAGE": 15588.83
@@ -18797,7 +18797,7 @@
         "LIBCOM": "Coubron",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 82039119,
         "MENAGES_FISCAUX": 2450,
         "REVENUS_PAR_MENAGE": 33485.35
@@ -19018,7 +19018,7 @@
         "LIBCOM": "La Courneuve",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 315760724,
         "MENAGES_FISCAUX": 21431,
         "REVENUS_PAR_MENAGE": 14733.83
@@ -19399,7 +19399,7 @@
         "LIBCOM": "Drancy",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 752669315,
         "MENAGES_FISCAUX": 37406,
         "REVENUS_PAR_MENAGE": 20121.62
@@ -19764,7 +19764,7 @@
         "LIBCOM": "Dugny",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 97066799,
         "MENAGES_FISCAUX": 5326,
         "REVENUS_PAR_MENAGE": 18225.08
@@ -20073,7 +20073,7 @@
         "LIBCOM": "Epinay-sur-Seine",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 524725226,
         "MENAGES_FISCAUX": 27385,
         "REVENUS_PAR_MENAGE": 19161.05
@@ -20342,7 +20342,7 @@
         "LIBCOM": "Gagny",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 587717518,
         "MENAGES_FISCAUX": 21464,
         "REVENUS_PAR_MENAGE": 27381.55
@@ -20783,7 +20783,7 @@
         "LIBCOM": "Gournay-sur-Marne",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 139718446,
         "MENAGES_FISCAUX": 3567,
         "REVENUS_PAR_MENAGE": 39169.74
@@ -20948,7 +20948,7 @@
         "LIBCOM": "L'Ile-Saint-Denis",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 74894004,
         "MENAGES_FISCAUX": 4043,
         "REVENUS_PAR_MENAGE": 18524.36
@@ -21201,7 +21201,7 @@
         "LIBCOM": "Les Lilas",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 383073770,
         "MENAGES_FISCAUX": 13330,
         "REVENUS_PAR_MENAGE": 28737.72
@@ -21414,7 +21414,7 @@
         "LIBCOM": "Livry-Gargan",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 611243635,
         "MENAGES_FISCAUX": 23764,
         "REVENUS_PAR_MENAGE": 25721.41
@@ -21855,7 +21855,7 @@
         "LIBCOM": "Montfermeil",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 296692510,
         "MENAGES_FISCAUX": 12863,
         "REVENUS_PAR_MENAGE": 23065.58
@@ -22220,7 +22220,7 @@
         "LIBCOM": "Montreuil",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 1419570600,
         "MENAGES_FISCAUX": 63135,
         "REVENUS_PAR_MENAGE": 22484.69
@@ -22701,7 +22701,7 @@
         "LIBCOM": "Neuilly-Plaisance",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 346496434,
         "MENAGES_FISCAUX": 11429,
         "REVENUS_PAR_MENAGE": 30317.3
@@ -23026,7 +23026,7 @@
         "LIBCOM": "Neuilly-sur-Marne",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 435417018,
         "MENAGES_FISCAUX": 19039,
         "REVENUS_PAR_MENAGE": 22869.74
@@ -23395,7 +23395,7 @@
         "LIBCOM": "Noisy-le-Grand",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 937528087,
         "MENAGES_FISCAUX": 35691,
         "REVENUS_PAR_MENAGE": 26267.91
@@ -23892,7 +23892,7 @@
         "LIBCOM": "Noisy-le-Sec",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 456935469,
         "MENAGES_FISCAUX": 22656,
         "REVENUS_PAR_MENAGE": 20168.41
@@ -24241,7 +24241,7 @@
         "LIBCOM": "Pantin",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 637700970,
         "MENAGES_FISCAUX": 32316,
         "REVENUS_PAR_MENAGE": 19733.29
@@ -24566,7 +24566,7 @@
         "LIBCOM": "Les Pavillons-sous-Bois",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 307726573,
         "MENAGES_FISCAUX": 11957,
         "REVENUS_PAR_MENAGE": 25736.1
@@ -24795,7 +24795,7 @@
         "LIBCOM": "Pierrefitte-sur-Seine",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 258111446,
         "MENAGES_FISCAUX": 14795,
         "REVENUS_PAR_MENAGE": 17445.86
@@ -25064,7 +25064,7 @@
         "LIBCOM": "Le Pre-Saint-Gervais",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 226492398,
         "MENAGES_FISCAUX": 9933,
         "REVENUS_PAR_MENAGE": 22802.01
@@ -25209,7 +25209,7 @@
         "LIBCOM": "Le Raincy",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 325126345,
         "MENAGES_FISCAUX": 7990,
         "REVENUS_PAR_MENAGE": 40691.66
@@ -25394,7 +25394,7 @@
         "LIBCOM": "Romainville",
         "EPT": "T8",
         "LIBEPT": "Est Ensemble",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 304306692,
         "MENAGES_FISCAUX": 14740,
         "REVENUS_PAR_MENAGE": 20644.96
@@ -25747,7 +25747,7 @@
         "LIBCOM": "Rosny-sous-Bois",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 605351533,
         "MENAGES_FISCAUX": 25496,
         "REVENUS_PAR_MENAGE": 23743.0
@@ -26104,7 +26104,7 @@
         "LIBCOM": "Saint-Denis",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 1010086356,
         "MENAGES_FISCAUX": 58266,
         "REVENUS_PAR_MENAGE": 17335.78
@@ -26641,7 +26641,7 @@
         "LIBCOM": "Saint-Ouen",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 552718458,
         "MENAGES_FISCAUX": 28253,
         "REVENUS_PAR_MENAGE": 19563.18
@@ -26850,7 +26850,7 @@
         "LIBCOM": "Sevran",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 495100813,
         "MENAGES_FISCAUX": 25375,
         "REVENUS_PAR_MENAGE": 19511.36
@@ -27275,7 +27275,7 @@
         "LIBCOM": "Stains",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 296312296,
         "MENAGES_FISCAUX": 18210,
         "REVENUS_PAR_MENAGE": 16271.95
@@ -27548,7 +27548,7 @@
         "LIBCOM": "Tremblay-en-France",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 449982568,
         "MENAGES_FISCAUX": 18281,
         "REVENUS_PAR_MENAGE": 24614.77
@@ -28301,7 +28301,7 @@
         "LIBCOM": "Vaujours",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 96496630,
         "MENAGES_FISCAUX": 3662,
         "REVENUS_PAR_MENAGE": 26350.8
@@ -28626,7 +28626,7 @@
         "LIBCOM": "Villemomble",
         "EPT": "T9",
         "LIBEPT": "Grand-Paris Est",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 485770088,
         "MENAGES_FISCAUX": 16355,
         "REVENUS_PAR_MENAGE": 29701.63
@@ -28947,7 +28947,7 @@
         "LIBCOM": "Villepinte",
         "EPT": "T7",
         "LIBEPT": "Territoire des aeroports",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 387133328,
         "MENAGES_FISCAUX": 17456,
         "REVENUS_PAR_MENAGE": 22177.67
@@ -29396,7 +29396,7 @@
         "LIBCOM": "Villetaneuse",
         "EPT": "T6",
         "LIBEPT": "Plaine Commune",
-        "DEP": 93,
+        "DEPARTEMENT": 93,
         "REVENUS": 104721636,
         "MENAGES_FISCAUX": 6251,
         "REVENUS_PAR_MENAGE": 16752.78
@@ -29585,7 +29585,7 @@
         "LIBCOM": "Ablon-sur-Seine",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 87974035,
         "MENAGES_FISCAUX": 3058,
         "REVENUS_PAR_MENAGE": 28768.49
@@ -29782,7 +29782,7 @@
         "LIBCOM": "Alfortville",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 615898147,
         "MENAGES_FISCAUX": 26410,
         "REVENUS_PAR_MENAGE": 23320.64
@@ -30011,7 +30011,7 @@
         "LIBCOM": "Arcueil",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 309450687,
         "MENAGES_FISCAUX": 11678,
         "REVENUS_PAR_MENAGE": 26498.6
@@ -30252,7 +30252,7 @@
         "LIBCOM": "Boissy-Saint-Leger",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 206853724,
         "MENAGES_FISCAUX": 8835,
         "REVENUS_PAR_MENAGE": 23412.99
@@ -30517,7 +30517,7 @@
         "LIBCOM": "Bonneuil-sur-Marne",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 184132997,
         "MENAGES_FISCAUX": 8790,
         "REVENUS_PAR_MENAGE": 20948.01
@@ -30862,7 +30862,7 @@
         "LIBCOM": "Bry-sur-Marne",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 353623978,
         "MENAGES_FISCAUX": 8792,
         "REVENUS_PAR_MENAGE": 40221.11
@@ -31159,7 +31159,7 @@
         "LIBCOM": "Cachan",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 465422569,
         "MENAGES_FISCAUX": 15628,
         "REVENUS_PAR_MENAGE": 29781.33
@@ -31372,7 +31372,7 @@
         "LIBCOM": "Champigny-sur-Marne",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 1036219353,
         "MENAGES_FISCAUX": 43426,
         "REVENUS_PAR_MENAGE": 23861.73
@@ -31897,7 +31897,7 @@
         "LIBCOM": "Charenton-le-Pont",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 662960836,
         "MENAGES_FISCAUX": 17237,
         "REVENUS_PAR_MENAGE": 38461.5
@@ -32042,7 +32042,7 @@
         "LIBCOM": "Chennevieres-sur-Marne",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 304202113,
         "MENAGES_FISCAUX": 10481,
         "REVENUS_PAR_MENAGE": 29024.15
@@ -32439,7 +32439,7 @@
         "LIBCOM": "Chevilly-Larue",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 265568566,
         "MENAGES_FISCAUX": 10473,
         "REVENUS_PAR_MENAGE": 25357.45
@@ -32704,7 +32704,7 @@
         "LIBCOM": "Choisy-le-Roi",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 552460874,
         "MENAGES_FISCAUX": 23783,
         "REVENUS_PAR_MENAGE": 23229.23
@@ -33013,7 +33013,7 @@
         "LIBCOM": "Creteil",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 1170056288,
         "MENAGES_FISCAUX": 49490,
         "REVENUS_PAR_MENAGE": 23642.28
@@ -33490,7 +33490,7 @@
         "LIBCOM": "Fontenay-sous-Bois",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 945160235,
         "MENAGES_FISCAUX": 29583,
         "REVENUS_PAR_MENAGE": 31949.44
@@ -33895,7 +33895,7 @@
         "LIBCOM": "Fresnes",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 382268746,
         "MENAGES_FISCAUX": 13621,
         "REVENUS_PAR_MENAGE": 28064.66
@@ -34164,7 +34164,7 @@
         "LIBCOM": "Gentilly",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 233965342,
         "MENAGES_FISCAUX": 9800,
         "REVENUS_PAR_MENAGE": 23874.01
@@ -34321,7 +34321,7 @@
         "LIBCOM": "L'Hay-les-Roses",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 527532207,
         "MENAGES_FISCAUX": 16928,
         "REVENUS_PAR_MENAGE": 31163.29
@@ -34710,7 +34710,7 @@
         "LIBCOM": "Ivry-sur-Seine",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 736551560,
         "MENAGES_FISCAUX": 34476,
         "REVENUS_PAR_MENAGE": 21364.18
@@ -34979,7 +34979,7 @@
         "LIBCOM": "Joinville-le-Pont",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 359219873,
         "MENAGES_FISCAUX": 10389,
         "REVENUS_PAR_MENAGE": 34576.94
@@ -35224,7 +35224,7 @@
         "LIBCOM": "Le Kremlin-Bicetre",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 381564741,
         "MENAGES_FISCAUX": 14290,
         "REVENUS_PAR_MENAGE": 26701.52
@@ -35429,7 +35429,7 @@
         "LIBCOM": "Limeil-Brevannes",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 332973352,
         "MENAGES_FISCAUX": 13002,
         "REVENUS_PAR_MENAGE": 25609.39
@@ -35730,7 +35730,7 @@
         "LIBCOM": "Maisons-Alfort",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 973503660,
         "MENAGES_FISCAUX": 32166,
         "REVENUS_PAR_MENAGE": 30264.99
@@ -36039,7 +36039,7 @@
         "LIBCOM": "Mandres-les-Roses",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 84153775,
         "MENAGES_FISCAUX": 2338,
         "REVENUS_PAR_MENAGE": 35993.92
@@ -36200,7 +36200,7 @@
         "LIBCOM": "Marolles-en-Brie",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 110297147,
         "MENAGES_FISCAUX": 2293,
         "REVENUS_PAR_MENAGE": 48101.68
@@ -36445,7 +36445,7 @@
         "LIBCOM": "Nogent-sur-Marne",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 801856769,
         "MENAGES_FISCAUX": 18409,
         "REVENUS_PAR_MENAGE": 43557.87
@@ -36718,7 +36718,7 @@
         "LIBCOM": "Noiseau",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 86340543,
         "MENAGES_FISCAUX": 2356,
         "REVENUS_PAR_MENAGE": 36647.09
@@ -36995,7 +36995,7 @@
         "LIBCOM": "Orly",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 250423531,
         "MENAGES_FISCAUX": 12139,
         "REVENUS_PAR_MENAGE": 20629.67
@@ -37356,7 +37356,7 @@
         "LIBCOM": "Ormesson-sur-Marne",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 199544447,
         "MENAGES_FISCAUX": 5255,
         "REVENUS_PAR_MENAGE": 37972.3
@@ -37681,7 +37681,7 @@
         "LIBCOM": "Perigny",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 47868340,
         "MENAGES_FISCAUX": 1248,
         "REVENUS_PAR_MENAGE": 38356.04
@@ -37782,7 +37782,7 @@
         "LIBCOM": "Le Perreux-sur-Marne",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 753507555,
         "MENAGES_FISCAUX": 19042,
         "REVENUS_PAR_MENAGE": 39570.82
@@ -38031,7 +38031,7 @@
         "LIBCOM": "Le Plessis-Trevise",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 331622134,
         "MENAGES_FISCAUX": 10400,
         "REVENUS_PAR_MENAGE": 31886.74
@@ -38292,7 +38292,7 @@
         "LIBCOM": "La Queue-en-Brie",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 182163848,
         "MENAGES_FISCAUX": 5950,
         "REVENUS_PAR_MENAGE": 30615.77
@@ -38789,7 +38789,7 @@
         "LIBCOM": "Rungis",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 117332429,
         "MENAGES_FISCAUX": 3079,
         "REVENUS_PAR_MENAGE": 38107.32
@@ -39038,7 +39038,7 @@
         "LIBCOM": "Saint-Mande",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 614145820,
         "MENAGES_FISCAUX": 12077,
         "REVENUS_PAR_MENAGE": 50852.51
@@ -39211,7 +39211,7 @@
         "LIBCOM": "Saint-Maur-des-Fosses",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 1807954308,
         "MENAGES_FISCAUX": 43137,
         "REVENUS_PAR_MENAGE": 41911.92
@@ -39556,7 +39556,7 @@
         "LIBCOM": "Saint-Maurice",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 284501737,
         "MENAGES_FISCAUX": 7821,
         "REVENUS_PAR_MENAGE": 36376.64
@@ -39797,7 +39797,7 @@
         "LIBCOM": "Santeny",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 86983048,
         "MENAGES_FISCAUX": 1788,
         "REVENUS_PAR_MENAGE": 48648.24
@@ -39982,7 +39982,7 @@
         "LIBCOM": "Sucy-en-Brie",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 488092810,
         "MENAGES_FISCAUX": 13708,
         "REVENUS_PAR_MENAGE": 35606.42
@@ -40463,7 +40463,7 @@
         "LIBCOM": "Thiais",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 461237716,
         "MENAGES_FISCAUX": 16429,
         "REVENUS_PAR_MENAGE": 28074.61
@@ -40756,7 +40756,7 @@
         "LIBCOM": "Valenton",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 127564699,
         "MENAGES_FISCAUX": 6812,
         "REVENUS_PAR_MENAGE": 18726.47
@@ -41121,7 +41121,7 @@
         "LIBCOM": "Villecresnes",
         "EPT": "T11",
         "LIBEPT": "Plaine Centrale - Haut Val-de-Marne - Plateau Briard",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 179320171,
         "MENAGES_FISCAUX": 5063,
         "REVENUS_PAR_MENAGE": 35417.77
@@ -41422,7 +41422,7 @@
         "LIBCOM": "Villejuif",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 737162088,
         "MENAGES_FISCAUX": 31452,
         "REVENUS_PAR_MENAGE": 23437.69
@@ -41743,7 +41743,7 @@
         "LIBCOM": "Villeneuve-le-Roi",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 268646798,
         "MENAGES_FISCAUX": 11118,
         "REVENUS_PAR_MENAGE": 24163.23
@@ -42180,7 +42180,7 @@
         "LIBCOM": "Villeneuve-Saint-Georges",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 325830179,
         "MENAGES_FISCAUX": 18078,
         "REVENUS_PAR_MENAGE": 18023.57
@@ -42685,7 +42685,7 @@
         "LIBCOM": "Villiers-sur-Marne",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 425902390,
         "MENAGES_FISCAUX": 15577,
         "REVENUS_PAR_MENAGE": 27341.75
@@ -43018,7 +43018,7 @@
         "LIBCOM": "Vincennes",
         "EPT": "T10",
         "LIBEPT": "Association des Communes de l'Est Parisien",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 1201638108,
         "MENAGES_FISCAUX": 29408,
         "REVENUS_PAR_MENAGE": 40860.93
@@ -43247,7 +43247,7 @@
         "LIBCOM": "Vitry-sur-Seine",
         "EPT": "T12",
         "LIBEPT": "Val de Bievres - Seine Amond - Grand Orly",
-        "DEP": 94,
+        "DEPARTEMENT": 94,
         "REVENUS": 1083954760,
         "MENAGES_FISCAUX": 51294,
         "REVENUS_PAR_MENAGE": 21132.19
@@ -43656,7 +43656,7 @@
         "LIBCOM": "Argenteuil",
         "EPT": "T5",
         "LIBEPT": "Boucle Nord 92",
-        "DEP": 95,
+        "DEPARTEMENT": 95,
         "REVENUS": 1305826636,
         "MENAGES_FISCAUX": 60187,
         "REVENUS_PAR_MENAGE": 21696.16
