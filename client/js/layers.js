@@ -237,10 +237,18 @@ export function add_sample_layer() {
       selec_url = [_app.list_extrabasemaps[0][0], _app.list_extrabasemaps[0][1], 0];
     }
     content.select('#link1').on('click', () => {
-      window.open('http://www.naturalearthdata.com', 'Natural Earth', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
+      window.open(
+        'http://www.naturalearthdata.com',
+        'Natural Earth',
+        'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes',
+      ).focus();
     });
     content.select('#link2').on('click', () => {
-      window.open('https://github.com/riatelab/basemaps/tree/master/Countries', 'riatelab/basemaps', 'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes').focus();
+      window.open(
+        'https://github.com/riatelab/basemaps/tree/master/Countries',
+        'riatelab/basemaps',
+        'toolbar=yes,menubar=yes,resizable=yes,scrollbars=yes,status=yes',
+      ).focus();
     });
   }
 
@@ -270,7 +278,7 @@ export function add_sample_layer() {
   const container = d3.select('.sampleDialogBox')
     .styles({ width: '625px', display: 'flex' });
   container.select('.modal-content').style('width', '625px');
-  const box_body = container.select('.modal-body')
+  const box_body = container.select('.modal-body');
   setTimeout(() => { document.querySelector('select.sample_target').focus(); }, 500);
   make_panel1();
 }
@@ -301,7 +309,7 @@ function add_sample_geojson(name, options) {
 export function add_layer_topojson(text, options = {}) {
   const [valid, parsedJSON] = isValidJSON(text);
   // If JSON.parse failed:
-  if (!valid){
+  if (!valid) {
     display_error_during_computation('Unable to load the layer');
     return;
   }
