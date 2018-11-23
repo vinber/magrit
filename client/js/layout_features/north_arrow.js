@@ -5,7 +5,7 @@ import { handle_click_hand } from './../interface';
 import { up_legend, down_legend } from './../legend';
 import { get_coords_snap_lines, make_red_line_snap, pos_lgds_elem } from './snap_lines';
 
-export const northArrow = {
+export const northArrow = { /* eslint-disable-line import/prefer-default-export */
   display(x, y) {
     let x_pos = x || w - 100,
       y_pos = y || h - 100,
@@ -167,8 +167,6 @@ export const northArrow = {
       });
 
     const box_body = d3.select('.arrowEditBox').select('.modal-body').style('width', '295px');
-    box_body.append('h3')
-      .html(_tr('app_page.north_arrow_edit_box.title'));
     const a = box_body.append('p').attr('class', 'line_elem2');
     a.append('span').html(_tr('app_page.north_arrow_edit_box.size'));
     a.append('span')
@@ -196,7 +194,8 @@ export const northArrow = {
       });
 
     a.append('input')
-      .attrs({ type: 'range',
+      .attrs({
+        type: 'range',
         min: 1,
         max: 200,
         step: 1,
@@ -204,7 +203,7 @@ export const northArrow = {
       })
       .styles({
         'vertical-align': 'middle',
-        width: '140px',
+        width: '100px',
         float: 'right',
       })
       .property('value', old_dim)
@@ -219,7 +218,7 @@ export const northArrow = {
           x: bbox.x - 7.5,
           y: bbox.y - 7.5,
           height: bbox.height + 15,
-          width: bbox.width + 15
+          width: bbox.width + 15,
         });
         self.x_center = x_pos + new_size / 2;
         self.y_center = y_pos + new_size / 2;
@@ -262,11 +261,11 @@ export const northArrow = {
         max: 360,
         step: 0.1,
         id: 'range_rotate_n_arrow',
-       })
+      })
       .styles({
         float: 'right',
         'vertical-align': 'middle',
-        width: '140px',
+        width: '100px',
       })
       .property('value', old_rotate)
       .on('change', function () {

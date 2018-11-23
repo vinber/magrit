@@ -20,7 +20,7 @@ export default class UserArrow {
     this.hide_head = undefined;
     if (!untransformed) {
       const zoom_param = svg_map.__zoom;
-      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k],
+      this.pt1 = [(origin_pt[0] - zoom_param.x) / zoom_param.k, (origin_pt[1] - zoom_param.y) / zoom_param.k];
       this.pt2 = [(destination_pt[0] - zoom_param.x) / zoom_param.k, (destination_pt[1] - zoom_param.y) / zoom_param.k];
     } else {
       this.pt1 = origin_pt;
