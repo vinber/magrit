@@ -304,27 +304,20 @@ export const createJoinBox = function createJoinBox(layer) {
 
   const inner_box =
 `<p><b><i>${_tr('app_page.join_box.select_fields')}</i></b></p>
-<div style="padding:10px"><p>${_tr('app_page.join_box.geom_layer_field')}</p>
-<select id=button_field1>${options_fields_layer.join('')}</select>
-<em style="float:right;">(${layer})</em>
+<div style="padding:10px;">
+  <p>${_tr('app_page.join_box.geom_layer_field')}</p>
+  <select id="button_field1">${options_fields_layer.join('')}</select>
+  <em style="float:right;">(${layer})</em>
 </div>
-<div style="padding:15px 10px 10px"><p>
-${_tr('app_page.join_box.ext_dataset_field')}<br></p>
-<select id=button_field2>${options_fields_ext_dataset.join('')}</select>
-<em style="float:right;">(${data_manager.dataset_name}.csv)</em>
+<div style="padding:40px 10px 10px;">
+  <p>${_tr('app_page.join_box.ext_dataset_field')}</p>
+  <select id="button_field2">${options_fields_ext_dataset.join('')}</select>
+  <em style="float:right;">(${data_manager.dataset_name}.csv)</em>
 </div>
-<br><p><strong>${_tr('app_page.join_box.ask_join')}<strong></p></div>`;
-  // const inner_box = [
-  //   '<p><b><i>',
-  //   _tr('app_page.join_box.select_fields'), '</i></b></p>',
-  //   '<div style="padding:10px"><p>',
-  //   _tr('app_page.join_box.geom_layer_field'), '</p>',
-  //   options_fields_layer.join(''), '<em style="float:right;">(', layer, ')</em></div>',
-  //   '<div style="padding:15px 10px 10px"><p>',
-  //   _tr('app_page.join_box.ext_dataset_field'), '<br></p>',
-  //   options_fields_ext_dataset.join(''), '<em style="float:right;">(', data_manager.dataset_name, '.csv)</em></div>',
-  //   '<br><p><strong>', _tr('app_page.join_box.ask_join'), '<strong></p></div>',
-  // ].join('');
+<br>
+<div style="margin-top:35px; clear: both;">
+  <strong>${_tr('app_page.join_box.ask_join')}</strong>
+</div>`;
 
   make_confirm_dialog2('joinBox', _tr('app_page.join_box.title'), { html_content: inner_box, widthFitContent: true })
     .then((confirmed) => {
