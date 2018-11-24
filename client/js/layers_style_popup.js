@@ -1735,7 +1735,7 @@ function createStyleBoxStewart(layer_name) {
       display: 'inline',
       float: 'right',
     })
-    .property('value', 'border_opacity')
+    .property('value', border_opacity)
     .on('change', function () {
       opacity_section.select('#opacity_val_txt').html(` ${this.value}`);
       selection.style('stroke-opacity', this.value);
