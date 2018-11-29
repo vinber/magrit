@@ -206,7 +206,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .style('display', 'inline')
       .html(_tr('disc_box.left_colramp'))
       .insert('select')
-      .style('width', '116px')
+      .styles({ width: '116px', 'margin-left': '4px' })
       .attr('class', 'color_params_left')
       .on('change', function () {
         this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
@@ -217,7 +217,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .attr('class', 'color_txt2')
       .html(_tr('disc_box.right_colramp'))
       .insert('select')
-      .style('width', '116px')
+      .styles({ width: '116px', 'margin-left': '4px' })
       .attr('class', 'color_params_right')
       .on('change', function () {
         this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
@@ -251,7 +251,9 @@ export const display_discretization = (layer_name, field_name, nb_class, options
 
     document.getElementsByClassName('color_params_right')[0].selectedIndex = 14;
 
-    const central_color = col_div.insert('p').attr('class', 'central_color');
+    const central_color = col_div.insert('p')
+      .attr('class', 'central_color')
+      .style('padding-top', '15px');
     central_color.insert('input')
       .attrs({ type: 'checkbox', id: 'central_color_chkbx' })
       .on('change', function () {
