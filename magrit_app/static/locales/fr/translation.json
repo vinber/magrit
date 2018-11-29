@@ -6,7 +6,7 @@
             "save_preferences": "Sauvegarder le projet",
             "load_preferences": "Charger un projet",
             "too_large_input": "Fichier d'entrée trop volumineux (26Mo maximum)",
-            "alert_upload1": "Les couche doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
+            "alert_upload1": "Les couches doivent être téléversées une par une et l'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_shp": "L'ensemble des fichier requis (.shp, .dbf, .shx, .prj) pour lire un shapefile doit être fournis.",
             "alert_upload_invalid": "Source de données invalide (pas de GeoJSON/TopoJSON/zip/Shapefile/KML/GML détecté).",
             "layer_success": "Résultat ajouté à la carte!",
@@ -92,7 +92,7 @@
             "layer_type_selection": "Sélection du type d'élément",
             "target_l": "Fond de carte principal",
             "layout_l": "Fond de carte d'habillage",
-            "no_value": "Pas de valeur selectionnée",
+            "no_value": "Pas de valeur sélectionnée",
             "yes": "Oui",
             "no": "Non",
             "warn_xls_sheet": "Seules les données du fichier sont chargées (les formules et les propriétés de style sont ignorées).",
@@ -125,8 +125,8 @@
             "warning_deactivation_prop_symbol_legend": "Désactivation de la légende des symboles proportionnels",
             "instruction_brush_map": "Tracer un rectangle sur la carte en conservant le curseur appuyé. Appuyer sur 'Échap' pour annuler.",
             "instruction_click_map": "Cliquer sur la carte pour ajouter l'élément. Appuyer sur 'Échap' pour annuler.",
-            "instruction_click_map_arrow1": "Cliquer sur la carte localiser le point de départ de la fleche. Appuyer sur 'Échap' pour annuler.",
-            "instruction_click_map_arrow2": "Cliquer sur la carte localiser le point d'arrivée de la fleche. Appuyer sur 'Échap' pour annuler.",
+            "instruction_click_map_arrow1": "Cliquer sur la carte localiser le point de départ de la flèche. Appuyer sur 'Échap' pour annuler.",
+            "instruction_click_map_arrow2": "Cliquer sur la carte localiser le point d'arrivée de la flèche. Appuyer sur 'Échap' pour annuler.",
             "instruction_modify_feature": "Utiliser les poignées rouges pour modifier l'élément.<br>Double-cliquer pour quitter l'édition de l'élément."
         },
         "section1": {
@@ -143,7 +143,7 @@
             "title": "Choix de la représentation"
         },
         "section2_": {
-            "title_no_choice": "Pas de représentation selectionnée"
+            "title_no_choice": "Pas de représentation sélectionnée"
         },
         "section3": {
             "title": "Gestion des couches"
@@ -338,7 +338,7 @@
         },
         "proj4_box":{
             "title": "",
-            "enter_string": "Saisie d'une chaine de charactères au format proj4 ou WKT",
+            "enter_string": "Saisie d'une chaine de caractères au format proj4 ou WKT",
             "error": "Valeur invalide. (Détails: {{detail}})"
         },
         "layout_features_box": {
@@ -357,8 +357,8 @@
         },
         "layout_layer_box": {
             "title": "Couches d'habillage",
-            "msg_select_layer": "Selectionnez une ou plusieurs couches d'habillage : ",
-            "msg_select_multi": "<i>(plusieurs couches peuvent être selectionnées simultanément)</i>",
+            "msg_select_layer": "Sélectionnez une ou plusieurs couches d'habillage : ",
+            "msg_select_multi": "<i>(plusieurs couches peuvent être sélectionnées simultanément)</i>",
             "nuts0": "Nuts 0* (2013) Pays européens <i>(Polygones)</i>",
             "nuts1": "Nuts 1* (2013) Subdivisions européennes <i>(Polygones)</i>",
             "nuts2": "Nuts 2* (2013) Subdivisions européennes <i>(Polygones)</i>",
@@ -418,7 +418,7 @@
         },
         "join_box": {
             "title": "Option de jointure",
-            "ask_diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le meme nombre d'entités.<br>Continuer ?",
+            "ask_diff_nb_features": "La couche géographique et le jeu de données chargé n'ont pas le même nombre d'entités.<br>Continuer ?",
             "ask_forget_join": "Une jointure a déjà été réalisée. Effacer et en faire une nouvelle ?",
             "unable_join": "Impossible de joindre le jeu de données et la couche géographique.",
             "error_not_uniques": "Les colonnes sélectionnées ne doivent contenir que des valeurs uniques.",
@@ -427,7 +427,7 @@
             "geom_layer_field": "Champ de la couche géographique :",
             "ask_join": "Joindre les données ?",
             "button_join": "Joindre",
-            "select_fields": "Selection des champs à joindre ",
+            "select_fields": "Sélection des champs à joindre ",
             "match": "correspondance",
             "match_plural": "correspondances",
             "no_match": "Pas de correspondance trouvée entre les champs <i>{{field1}}</i> et <i>{{field2}}</i>",
@@ -462,9 +462,9 @@
                 "between_numerical": "Calcul d'une valeur entre champs numériques",
                 "between_string": "Opération sur un champ de valeur non-numériques",
                 "truncate": "Tronquer",
-                "concatenate": "Concatener",
-                "join_char": "Charactère à insérer entre les deux valeurs (peut rester vide) :<br>",
-                "keep_char": "Nombre de charactère à conserver (en partant de la gauche) :<br>",
+                "concatenate": "Concaténer",
+                "join_char": "Caractère à insérer entre les deux valeurs (peut rester vide) :<br>",
+                "keep_char": "Nombre de caractère à conserver (en partant de la gauche) :<br>",
                 "invalid_name": "Nom de colonne invalide !",
                 "constant_value": "Valeur constante..."
             }
@@ -511,7 +511,7 @@
             "credits": "Réalisé par Matthieu Viry, Timothée Giraud et Nicolas Lambert (<span id=\"credit_link\">UMS RIATE</span>)"
         },
         "north_arrow_edit_box": {
-            "title": "Options de la fleche d'orientation",
+            "title": "Options de la flèche d'orientation",
             "size": "Taille ",
             "rotation": "Rotation "
         },
@@ -519,7 +519,7 @@
             "title": "Option du rectangle",
             "stroke_width": "Épaisseur de la bordure",
             "stroke_color": "Couleur de la bordure",
-            "fill_color": "Couelur du remplissage",
+            "fill_color": "Couleur du remplissage",
             "fill_opacity": "Opacité du remplissage",
             "rounded_corner": "Coins arrondis"
         },
@@ -536,7 +536,7 @@
             "font_size": "Taille de la police ",
             "default_font": "Police par défault ",
             "content": "Contenu ",
-            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont authorisées.",
+            "info_tooltip": "L'utilisation de balises html telles que &lt;b&gt;, &lt;i&gt; ou &lt;u&gt; (gras, italique, souligné) sont autorisées.",
             "rotation": "Rotation",
             "buffer": "Tampon autour du texte"
         },
@@ -851,7 +851,7 @@
     },
     "contact_form": {
         "contact": "Contact",
-        "index": "Acceuil",
+        "index": "Accueil",
         "intro_text": "Une remarque ? Une suggestion ? Un bug à signaler?<br>N'hésitez pas à nous contacter et à nous faire part de vos commentaires en utilisant <a target=\"_blank\" href=\"http://riate.cnrs.fr/?page_id=363\">le formulaire de contact de notre laboratoire</a>, notre <a target=\"_blank\" href=\"https://github.com/riatelab/magrit/issues\">dépot de code sur GitHub</a> ou notre adresse e-mail : <br><span class=\"link_email\">riate [at] cnrs [point] fr</span>"
     },
     "page404": {
