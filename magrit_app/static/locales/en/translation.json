@@ -121,7 +121,7 @@
             "success_sphere_added": "Success: sphere added!",
             "success_graticule_added": "Success: graticule added!",
             "warning_deactivation_scalebar": "Scale bar disabled",
-            "warning_deactivation_prop_symbol_legend": "Proportionnal symbols legend disabled",
+            "warning_deactivation_prop_symbol_legend": "Proportional symbols legend disabled",
             "instruction_brush_map": "Draw a rectangle on the map while keeping the cursor pressed. Press 'Esc' to cancel.",
             "instruction_click_map": "Click on the map to add the element. Press 'Esc' to cancel.",
             "instruction_click_map_arrow1": "Click on the map to locate the arrow start point. Press 'Esc' to cancel.",
@@ -303,9 +303,9 @@
         },
         "func_title" : {
             "smooth": "Smoothed map (Stewart potentials)",
-            "prop": "Proportionnal symbols",
-            "choroprop": "Colored proportionnal symbols",
-            "proptypo": "Colored (by category) proportionnal symbols",
+            "prop": "Proportional symbols",
+            "choroprop": "Colored proportional symbols",
+            "proptypo": "Colored (by category) proportional symbols",
             "choro": "Choropleth map",
             "cartogram": "Cartogram map",
             "grid": "Gridded map",
@@ -705,7 +705,7 @@
                 "join_field": "Join field"
             },
             "grid": {
-                "type_stock": "Proportionnal symbols map",
+                "type_stock": "Proportional symbols map",
                 "type_ratio": "Choropleth map",
                 "field": "Field",
                 "cellsize": "Cell size <i>km</i> ",
@@ -814,7 +814,7 @@
         },
         "bloc": {
             "carto_thematic1": "Thematic cartography software",
-            "carto_thematic2": "Conventional cartographic methods coupled with innovative techniques <i>(proportionnal symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)</i>.",
+            "carto_thematic2": "Conventional cartographic methods coupled with innovative techniques <i>(proportional symbols, choropleth map, discontinuity map, smoothed map, gridded map, cartogram, etc.)</i>.",
             "interop1": "Interoperable",
             "interop2": "The application accepts many input formats. It allows you to export the final map in several formats as well as to save it in a \"project-file\".",
             "customizable1": "Customizable",
