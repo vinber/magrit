@@ -218,15 +218,6 @@ export function askTypeLayer () {
         resolve(value);
       }
     }),
-    // Take the 'Enter' keyup event on the 'selec' elem as a confirmation:
-    onOpen: () => {
-      d3.select('.swal2-select')
-        .on('keyup', (e) => {
-          if (e.key === 'Enter') {
-            d3.select('.swal2-confirm').dispatch('click');
-          }
-        });
-    },
   });
 }
 
