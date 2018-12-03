@@ -1,7 +1,7 @@
 Changes
 =======
 
-0.8.11 (2018-11-xx)
+0.8.11 (2018-12-xx)
 ------------------
 
 - Fix a misalignment in the fill color section in the layer style dialog (for layout layers).
@@ -16,7 +16,7 @@ Changes
 
 - Add some margin/padding to the elements in the classification dialog (when using 'diverging palette' option).
 
-- Fix many recurring typos in French (selection -> sélection; fleche -> flèche; charactère -> caractère) an in English (Proportionnal -> Proportional).
+- Fix many recurring typos in French (selection -> sélection; fleche -> flèche; charactère -> caractère) and in English (Proportionnal -> Proportional).
 
 
 0.8.10 (2018-11-22)

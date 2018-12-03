@@ -1,5 +1,21 @@
 # Historique des versions et des changements effectués
 
+#### 0.8.11 (2018-12-xx)
+
+- Corrige l'alignement de l'élément proposant la couleur de fond dans la fenêtre de style des couches d'habillage.
+
+- Améliore le style de la fenêtre de propriété de la flèche nord (taille des sliders, suppresion du titre dupliqué).
+
+- Corrige la valeur initial du slider de l'oppacité de la bordure dans la fenêtre de propriétés des cartes lisées.
+
+- Corrige la largeur de la fenêtre de proriétés pour les pictogrames (pour qu'elle ait la même taille que celle des autres éléments : flèche, ellipse, etc.).
+
+- Corrige l'alignement des éléments dans la fenêtre de jointure des données.
+
+- Ajoute de l'espace entre les éléments dans la fenêtre de discrétisation pour les options de palettes divergentes.
+
+- Corrige plusieurs erreurs récurrentes en français (selection -> sélection; fleche -> flèche; charactère -> caractère) et en anglais (Proportionnal -> Proportional).
+
 
 #### 0.8.10 (2018-11-22)
 

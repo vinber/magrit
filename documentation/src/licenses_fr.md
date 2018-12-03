@@ -7,7 +7,7 @@ Différentes bibliothèques et applications sont utilisées :
 
 | Nom                                                   | Version | Licence        |
 |-------------------------------------------------------|---------|----------------|
-| [aiohttp](http://aiohttp.readthedocs.io)              | 2.3     | Apache-2.0     |
+| [aiohttp](http://aiohttp.readthedocs.io)              | 3.4     | Apache-2.0     |
 | [Cython](http://cython.org)                           |         | Apache-2.0     |
 | [geostats](https://github.com/simogeo/geostats)       |         | MIT            |
 | [JsChardet](https://github.com/aadsm/jschardet)       |         | LPGL-2.1       |
@@ -20,11 +20,11 @@ Différentes bibliothèques et applications sont utilisées :
 | [ColorBrewer](http://colorbrewer2.org/)               |         | Apache-2.0     |
 | [d3.js](https://d3js.org/)                            | 4.x     | BSD-3-Clause   |
 | [Fiona](http://toblerity.org/fiona/)                  |         | BSD-3-Clause   |
-| [GDAL](http://gdal.org/)                              | 2.1     | X11/MIT        |
+| [GDAL](http://gdal.org/)                              | 2.2     | X11/MIT        |
 | [geopandas](http://geopandas.org)                     |         | BSD-3-Clause   |
 | [Gunicorn](http://gunicorn.org)                       |         | MIT            |
 | [i18next](https://www.i18next.com)                    |         | MIT            |
-| [matplotlib](https://matplotlib.org)                  | 2.1     | BSD-like       |
+| [matplotlib](https://matplotlib.org)                  | 2.2     | BSD-like       |
 | [nginx](https://nginx.org/)                           |         | BSD-2-Clause   |
 | [Node.js](https://nodejs.org)                         |         | X11            |
 | [npm](https://www.npmjs.com)                          |         | Artistic-2.0   |
