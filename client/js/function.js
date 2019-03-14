@@ -313,7 +313,7 @@ function make_discretization_icons(discr_section) {
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
       title: _tr('app_page.common.Q6'),
-      src: '/static/img/discr_icons/q6.png',
+      src: 'static/img/discr_icons/q6.png',
       id: 'ico_q6',
       class: 'i18n',
       'data-i18n': '[title]app_page.common.Q6',
@@ -322,7 +322,7 @@ function make_discretization_icons(discr_section) {
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
       title: _tr('app_page.common.jenks'),
-      src: '/static/img/discr_icons/jenks.png',
+      src: 'static/img/discr_icons/jenks.png',
       id: 'ico_jenks',
       class: 'i18n',
       'data-i18n': '[title]app_page.common.jenks',
@@ -331,7 +331,7 @@ function make_discretization_icons(discr_section) {
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
       title: _tr('app_page.common.equal_interval'),
-      src: '/static/img/discr_icons/equal_intervals.png',
+      src: 'static/img/discr_icons/equal_intervals.png',
       id: 'ico_equal_interval',
       class: 'i18n',
       'data-i18n': '[title]app_page.common.equal_interval',
@@ -340,7 +340,7 @@ function make_discretization_icons(discr_section) {
     .styles({ margin: '0 7.5px', cursor: 'pointer' })
     .attrs({
       title: _tr('app_page.common.quantiles'),
-      src: '/static/img/discr_icons/quantiles.png',
+      src: 'static/img/discr_icons/quantiles.png',
       id: 'ico_quantiles',
       class: 'i18n',
       'data-i18n': '[title]app_page.common.quantiles',
@@ -349,7 +349,7 @@ function make_discretization_icons(discr_section) {
     .styles({ margin: '0 7.5px', cursor: 'pointer', width: '20px' })
     .attrs({
       title: _tr('app_page.common.user_defined'),
-      src: '/static/img/High-contrast-system-run24.png',
+      src: 'static/img/High-contrast-system-run24.png',
       id: 'ico_others',
       class: 'i18n',
       'data-i18n': '[title]app_page.common.user_defined',
@@ -359,7 +359,7 @@ function make_discretization_icons(discr_section) {
     .styles({ float: 'right', 'margin-top': '5px', 'margin-left': '15px' });
   subsection2.append('img')
     .styles({ width: '15px', position: 'absolute', right: '25px' })
-    .attrs({ id: 'img_choice_disc', src: '/static/img/Red_x.png' });
+    .attrs({ id: 'img_choice_disc', src: 'static/img/Red_x.png' });
 }
 
 
@@ -1000,7 +1000,7 @@ const fields_PropSymbolChoro = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
       if (_values.length > 7500) {
@@ -1043,7 +1043,7 @@ const fields_PropSymbolChoro = {
       uo_layer_name.attr('value', ['PropSymbols', field_size.node().value, field_name, layer].join('_'));
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+        img_valid_disc.attr('src', 'static/img/Light_green_check.png');
         choro_mini_choice_disc.html([
           _tr(`app_page.common.${self.rendering_params[field_name].type}`),
           ', ',
@@ -1054,7 +1054,7 @@ const fields_PropSymbolChoro = {
       } else {
         prepare_disc_quantiles(field_name);
         // ok_button.attr('disabled', true);
-        // img_valid_disc.attr('src', '/static/img/Red_x.png');
+        // img_valid_disc.attr('src', 'static/img/Red_x.png');
         // choro_mini_choice_disc.html('');
       }
     });
@@ -1080,7 +1080,7 @@ const fields_PropSymbolChoro = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.jenks')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_quantiles.on('click', function () {
@@ -1104,7 +1104,7 @@ const fields_PropSymbolChoro = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_equal_interval.on('click', function () {
@@ -1128,7 +1128,7 @@ const fields_PropSymbolChoro = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.equal_interval')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_q6.on('click', function () {
@@ -1151,7 +1151,7 @@ const fields_PropSymbolChoro = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.Q6')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_disc.on('click', () => {
@@ -1179,7 +1179,7 @@ const fields_PropSymbolChoro = {
 
       conf_disc_box.then((confirmed) => {
         if (confirmed) {
-          img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+          img_valid_disc.attr('src', 'static/img/Light_green_check.png');
           choro_mini_choice_disc.html([
             _tr(`app_page.common.${confirmed[1]}`), ', ',
             _tr('app_page.common.class', { count: confirmed[0] })].join(''));
@@ -1499,7 +1499,7 @@ const fields_Choropleth = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
       uncolor_icons();
       ico_quantiles.style('border', 'solid 1px green');
       if (_values.length > 7500) {
@@ -1532,7 +1532,7 @@ const fields_Choropleth = {
       uo_layer_name.attr('value', ['Choro', field_name, layer].join('_'));
       if (self.rendering_params[field_name] !== undefined) {
         // ok_button.attr('disabled', null);
-        img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+        img_valid_disc.attr('src', 'static/img/Light_green_check.png');
         const keyi18n = `app_page.common.${self.rendering_params[field_name].type}`;
         choro_mini_choice_disc.html(
             `${_tr(keyi18n)}, ${_tr('app_page.common.class', { count: self.rendering_params[field_name].nb_class })}`);
@@ -1564,7 +1564,7 @@ const fields_Choropleth = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.jenks')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr('disabled', null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_quantiles.on('click', function () {
@@ -1588,7 +1588,7 @@ const fields_Choropleth = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.quantiles')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_equal_interval.on('click', function () {
@@ -1612,7 +1612,7 @@ const fields_Choropleth = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.equal_interval')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     ico_q6.on('click', function () {
@@ -1635,7 +1635,7 @@ const fields_Choropleth = {
       choro_mini_choice_disc.html(
         `${_tr('app_page.common.Q6')}, ${_tr('app_page.common.class', { count: nb_class })}`);
       // ok_button.attr("disabled", null);
-      img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+      img_valid_disc.attr('src', 'static/img/Light_green_check.png');
     });
 
     btn_class.on('click', () => {
@@ -1666,7 +1666,7 @@ const fields_Choropleth = {
       conf_disc_box.then((confirmed) => {
         if (confirmed) {
           // ok_button.attr("disabled", null);
-          img_valid_disc.attr('src', '/static/img/Light_green_check.png');
+          img_valid_disc.attr('src', 'static/img/Light_green_check.png');
           const keyi18n = `app_page.common.${confirmed[1]}`;
           choro_mini_choice_disc.html(
               `${_tr(keyi18n)}, ${_tr('app_page.common.class', { count: confirmed[0] })}`);
