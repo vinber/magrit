@@ -6,7 +6,7 @@ magrit
 Usage:
   magrit
   magrit [--addr <address> --redis-addr <address> --port <port_nb> --dev --standalone]
-  magrit [-p <port_nb> -a <addr> -r <address> -d -s]
+  magrit [-p <port_nb> -a <address> -r <address> -d -s]
   magrit --standalone
   magrit --version
   magrit --help
