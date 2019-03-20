@@ -205,21 +205,19 @@ export function askTypeLayer () {
     inputValue: target_layer_added ? 'layout' : 'target',
     inputPlaceholder: _tr('app_page.common.layer_type_selection'),
     inputOptions: opts,
-    inputValidator: (value) => {
-      return new Promise(function (resolve, reject) {
-        if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
-          reject(_tr('app_page.common.no_value'));
-        } else if (value.indexOf('target') > -1 && _app.targeted_layer_added && !first_reject) {
-          first_reject = true;
-          reject(_tr('app_page.common.ask_replace_target_layer'));
-        } else {
-          if (value.indexOf('target') > -1 && first_reject) {
-            downgradeTargetLayer();
-          }
-          resolve(value);
+    inputValidator: value => new Promise((resolve, reject) => {
+      if (value.indexOf('target') < 0 && value.indexOf('layout') < 0) {
+        reject(_tr('app_page.common.no_value'));
+      } else if (value.indexOf('target') > -1 && _app.targeted_layer_added && !first_reject) {
+        first_reject = true;
+        reject(_tr('app_page.common.ask_replace_target_layer'));
+      } else {
+        if (value.indexOf('target') > -1 && first_reject) {
+          downgradeTargetLayer();
         }
-      });
-    },
+        resolve(value);
+      }
+    }),
   });
 }
 

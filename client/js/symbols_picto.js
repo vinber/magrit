@@ -293,7 +293,7 @@ export function make_style_box_indiv_symbol(symbol_node) {
   const ref_coords2 = cloneObj(ref_coords);
   // const new_params = {};
   // const self = this;
-  make_confirm_dialog2('styleTextAnnotation', _tr('app_page.single_symbol_edit_box.title'))
+  make_confirm_dialog2('styleSingleSymbol', _tr('app_page.single_symbol_edit_box.title'), { widthFitContent: true })
     .then((confirmed) => {
       if (!confirmed) {
         symbol_node.setAttribute('width', `${current_options.size}px`);
@@ -317,12 +317,15 @@ export function make_style_box_indiv_symbol(symbol_node) {
         }
       }
     });
-  const box_content = d3.select('.styleTextAnnotation').select('.modal-body').insert('div');
+  const box_content = d3.select('.styleSingleSymbol')
+    .select('.modal-body')
+    .style('width', '295px')
+    .insert('div');
   const a = box_content.append('p').attr('class', 'line_elem');
   a.append('span')
     .html(_tr('app_page.single_symbol_edit_box.image_size'));
   a.append('input')
-    .style('float', 'right')
+    .styles({ float: 'right', width: '70px' })
     .attrs({
       type: 'number', id: 'font_size', min: 0, max: 150, step: 'any',
     })

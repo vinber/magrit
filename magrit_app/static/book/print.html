@@ -595,7 +595,7 @@ Deux méthodes de création de cartogrammes sont disponibles dans Magrit :</p>
 <li>Champ utilisé : <strong>pop2008</strong></li>
 <li><strong>5 itérations</strong></li>
 </ul>
-<p>(1) - Dougenik, James A.; Chrisman, Nicholas R.; Niemeyer, Duane R. (1985), &quot;An Algorithm to Construct Continuous Area Cartograms&quot;, The Professional Geographer, n°37.
+<p>(1) - Dougenik, James A.; Chrisman, Nicholas R.; Niemeyer, Duane R. (1985), &quot;An Algorithm to Construct Continuous Area Cartograms&quot;, The Professional Geographer, n°37.<br />
 (2) - Olson, Judy M. (1976). Noncontiguous Area Cartograms. Professional Geographer, n°28.</p>
 <a class="header" href="print.html#carte-lissée" id="carte-lissée"><h1>Carte lissée</h1></a>
 <p>Méthode d'analyse spatiale et de représentation basée sur le calcul de potentiels (dit &quot;de Stewart&quot;) et qui n’a pas vocation à annuler ou atténuer le bruit (information parasite qui tend à brouiller la lecture) mais s’affranchit complètement du maillage administratif de départ. Elle permet d’observer ainsi la répartition spatiale du phénomène étudié, quelque soit l’hétérogénéité du maillage affecté en tout point de la carte, la valeur de la densité du phénomène dans le voisinage de ce point. En fonction des paramètres utilisés, cette méthode permet <em>&quot;de voir aussi bien les spécificités locales d'un phénomène que ses tendances générales&quot;</em> (Lambert &amp; Zanin, 2016).</p>
@@ -1041,6 +1041,30 @@ Ce type de limite permet également de s'interroger sur l’intérêt d'une cart
 <a class="header" href="print.html#pourquoi-magrit-émet-un-message-davertissement-lorsque-la-géométrie-de-certaines-entités-dune-couche-est-nulle-" id="pourquoi-magrit-émet-un-message-davertissement-lorsque-la-géométrie-de-certaines-entités-dune-couche-est-nulle-"><h3>Pourquoi Magrit émet un message d'avertissement lorsque la géométrie de certaines entités d'une couche est nulle ?</h3></a>
 <a class="header" href="print.html#pourquoi-nest-il-pas-possible-dafficher-un-fond-type-openstreetmap-lors-de-la-réalisation-dune-carte-avec-magrit-" id="pourquoi-nest-il-pas-possible-dafficher-un-fond-type-openstreetmap-lors-de-la-réalisation-dune-carte-avec-magrit-"><h3>Pourquoi n'est-il pas possible d'afficher un fond type &quot;OpenStreetMap&quot; lors de la réalisation d'une carte avec Magrit ?</h3></a>
 <a class="header" href="print.html#historique-des-versions-et-des-changements-effectués" id="historique-des-versions-et-des-changements-effectués"><h1>Historique des versions et des changements effectués</h1></a>
+<a class="header" href="print.html#0811-2018-12-xx" id="0811-2018-12-xx"><h4>0.8.11 (2018-12-xx)</h4></a>
+<ul>
+<li>
+<p>Corrige l'alignement de l'élément proposant la couleur de fond dans la fenêtre de style des couches d'habillage.</p>
+</li>
+<li>
+<p>Améliore le style de la fenêtre de propriétés de la flèche nord (taille des sliders, suppression du titre dupliqué).</p>
+</li>
+<li>
+<p>Corrige la valeur initial du slider de l’opacité de la bordure dans la fenêtre de propriétés des cartes lissées.</p>
+</li>
+<li>
+<p>Corrige la largeur de la fenêtre de propriétés pour les pictogrammes (pour qu'elle ait la même taille que celle des autres éléments : flèche, ellipse, etc.).</p>
+</li>
+<li>
+<p>Corrige l'alignement des éléments dans la fenêtre de jointure des données.</p>
+</li>
+<li>
+<p>Ajoute de l'espace entre les éléments dans la fenêtre de discrétisation pour les options de palettes divergentes.</p>
+</li>
+<li>
+<p>Corrige plusieurs erreurs récurrentes en français (selection -&gt; sélection; fleche -&gt; flèche; charactère -&gt; caractère) et en anglais (Proportionnal -&gt; Proportional).</p>
+</li>
+</ul>
 <a class="header" href="print.html#0810-2018-11-22" id="0810-2018-11-22"><h4>0.8.10 (2018-11-22)</h4></a>
 <ul>
 <li>
@@ -1518,7 +1542,7 @@ Ces couches sont supprimées lors de la fermeture de la session par l'utilisateu
 Il s'agit d'une licence garantissant le respect des principes du logiciel libre : libre accès au code source, libre utilisation, libre modification, libre redistribution.</p>
 <p>Différentes bibliothèques et applications sont utilisées :</p>
 <table><thead><tr><th> Nom                                                   </th><th> Version </th><th> Licence        </th></tr></thead><tbody>
-<tr><td> <a href="http://aiohttp.readthedocs.io">aiohttp</a>              </td><td> 2.3     </td><td> Apache-2.0     </td></tr>
+<tr><td> <a href="http://aiohttp.readthedocs.io">aiohttp</a>              </td><td> 3.4     </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="http://cython.org">Cython</a>                           </td><td>         </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="https://github.com/simogeo/geostats">geostats</a>       </td><td>         </td><td> MIT            </td></tr>
 <tr><td> <a href="https://github.com/aadsm/jschardet">JsChardet</a>       </td><td>         </td><td> LPGL-2.1       </td></tr>
@@ -1531,11 +1555,11 @@ Il s'agit d'une licence garantissant le respect des principes du logiciel libre 
 <tr><td> <a href="http://colorbrewer2.org/">ColorBrewer</a>               </td><td>         </td><td> Apache-2.0     </td></tr>
 <tr><td> <a href="https://d3js.org/">d3.js</a>                            </td><td> 4.x     </td><td> BSD-3-Clause   </td></tr>
 <tr><td> <a href="http://toblerity.org/fiona/">Fiona</a>                  </td><td>         </td><td> BSD-3-Clause   </td></tr>
-<tr><td> <a href="http://gdal.org/">GDAL</a>                              </td><td> 2.1     </td><td> X11/MIT        </td></tr>
+<tr><td> <a href="http://gdal.org/">GDAL</a>                              </td><td> 2.2     </td><td> X11/MIT        </td></tr>
 <tr><td> <a href="http://geopandas.org">geopandas</a>                     </td><td>         </td><td> BSD-3-Clause   </td></tr>
 <tr><td> <a href="http://gunicorn.org">Gunicorn</a>                       </td><td>         </td><td> MIT            </td></tr>
 <tr><td> <a href="https://www.i18next.com">i18next</a>                    </td><td>         </td><td> MIT            </td></tr>
-<tr><td> <a href="https://matplotlib.org">matplotlib</a>                  </td><td> 2.1     </td><td> BSD-like       </td></tr>
+<tr><td> <a href="https://matplotlib.org">matplotlib</a>                  </td><td> 2.2     </td><td> BSD-like       </td></tr>
 <tr><td> <a href="https://nginx.org/">nginx</a>                           </td><td>         </td><td> BSD-2-Clause   </td></tr>
 <tr><td> <a href="https://nodejs.org">Node.js</a>                         </td><td>         </td><td> X11            </td></tr>
 <tr><td> <a href="https://www.npmjs.com">npm</a>                          </td><td>         </td><td> Artistic-2.0   </td></tr>
