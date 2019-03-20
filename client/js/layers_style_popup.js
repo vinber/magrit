@@ -76,9 +76,10 @@ function make_single_color_menu(layer, fill_prev, symbol = 'path') {
 
 function make_random_color(layer, symbol = 'path') {
   const block = d3.select('#fill_color_section');
-  block.insert('span')
+  block.insert('p')
+    .styles({ cursor: 'pointer', 'text-align': 'center', margin: 'auto !important' })
+    .insert('span')
     .attr('id', 'random_color_btn')
-    .styles({ cursor: 'pointer', 'text-align': 'center' })
     .html(_tr('app_page.layer_style_popup.toggle_colors'))
     .on('click', () => {
       map.select(`#${_app.layer_to_id.get(layer)}`)
@@ -99,7 +100,8 @@ function fill_categorical(layer, field_name, symbol, color_cat_map) {
 function make_categorical_color_menu(fields, layer, fill_prev, symbol = 'path') {
   const fill_color_section = d3.select('#fill_color_section').append('p');
   fill_color_section.insert('span').html(_tr('app_page.layer_style_popup.categorical_field'));
-  const field_selec = fill_color_section.insert('select');
+  const field_selec = fill_color_section.insert('select')
+    .styles({ display: 'inline', float: 'right'})
   fields.forEach((field) => {
     if (field !== 'id') field_selec.append('option').text(field).attr('value', field);
   });
@@ -1303,7 +1305,11 @@ function createStyleBox(layer_name) {
   if (data_manager.current_layers[layer_name].colors_breaks === undefined && renderer !== 'Categorical') {
     if (data_manager.current_layers[layer_name].targeted || data_manager.current_layers[layer_name].is_result) {
       const fields = getFieldsType('category', null, fields_layer);
-      const fill_method = popup.append('p').html(_tr('app_page.layer_style_popup.fill_color')).insert('select');
+      const fill_method_section = popup.append('p');
+      fill_method_section.append('span')
+        .html(_tr('app_page.layer_style_popup.fill_color'));
+      const fill_method = fill_method_section.insert('select')
+        .styles({ display: 'inline', float: 'right', width: '100%' });
       [
         [_tr('app_page.layer_style_popup.single_color'), 'single'],
         [_tr('app_page.layer_style_popup.categorical_color'), 'categorical'],
@@ -1311,7 +1317,9 @@ function createStyleBox(layer_name) {
       ].forEach((d) => {
         fill_method.append('option').text(d[0]).attr('value', d[1]);
       });
-      popup.append('div').attrs({ id: 'fill_color_section' });
+      popup.append('p')
+        .attrs({ id: 'fill_color_section' })
+        .styles({ clear: 'both', 'padding-top': '10px' });
       fill_method.on('change', function () {
         d3.select('#fill_color_section').html('').on('click', null);
         if (this.value === 'single') {
@@ -1727,7 +1735,7 @@ function createStyleBoxStewart(layer_name) {
       display: 'inline',
       float: 'right',
     })
-    .property('value', 'border_opacity')
+    .property('value', border_opacity)
     .on('change', function () {
       opacity_section.select('#opacity_val_txt').html(` ${this.value}`);
       selection.style('stroke-opacity', this.value);

@@ -1,6 +1,24 @@
 Changes
 =======
 
+0.8.11 (2018-12-xx)
+------------------
+
+- Fix a misalignment in the fill color section in the layer style dialog (for layout layers).
+
+- Fix the size of the two input ranges in the north arrow properties dialog and remove the duplicated title.
+
+- Fix the initial value of the range input for border opacity in smoothed map properties dialog.
+
+- Fix the width of the single symbol properties dialog (so it has the same size of arrow/ellipse/etc. dialog).
+
+- Fix alignment of elements in jointure dialog (and space more evenly the elements).
+
+- Add some margin/padding to the elements in the classification dialog (when using 'diverging palette' option).
+
+- Fix many recurring typos in French (selection -> sélection; fleche -> flèche; charactère -> caractère) and in English (Proportionnal -> Proportional).
+
+
 0.8.10 (2018-11-22)
 ------------------
 

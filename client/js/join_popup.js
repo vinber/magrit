@@ -303,28 +303,20 @@ export const createJoinBox = function createJoinBox(layer) {
   }
 
   const inner_box =
-`<p><b><i>${_tr('app_page.join_box.select_fields')}</i></b></p>
-<div style="padding:10px"><p>${_tr('app_page.join_box.geom_layer_field')}</p>
-<select id=button_field1>${options_fields_layer.join('')}</select>
-<em style="float:right;">(${layer})</em>
+`<p style="font-size: 12px;"><b><i>${_tr('app_page.join_box.select_fields')}</i></b></p>
+<div style="padding:20px 10px 10px;">
+  <p>${_tr('app_page.join_box.geom_layer_field')}</p>
+  <p><em>(${layer})</em></p>
+  <select id="button_field1">${options_fields_layer.join('')}</select>
 </div>
-<div style="padding:15px 10px 10px"><p>
-${_tr('app_page.join_box.ext_dataset_field')}<br></p>
-<select id=button_field2>${options_fields_ext_dataset.join('')}</select>
-<em style="float:right;">(${data_manager.dataset_name}.csv)</em>
+<div style="padding:30px 10px 10px;">
+  <p>${_tr('app_page.join_box.ext_dataset_field')}</p>
+  <p><em>(${data_manager.dataset_name}.csv)</em></p>
+  <select id="button_field2">${options_fields_ext_dataset.join('')}</select>
 </div>
-<br><p><strong>${_tr('app_page.join_box.ask_join')}<strong></p></div>`;
-  // const inner_box = [
-  //   '<p><b><i>',
-  //   _tr('app_page.join_box.select_fields'), '</i></b></p>',
-  //   '<div style="padding:10px"><p>',
-  //   _tr('app_page.join_box.geom_layer_field'), '</p>',
-  //   options_fields_layer.join(''), '<em style="float:right;">(', layer, ')</em></div>',
-  //   '<div style="padding:15px 10px 10px"><p>',
-  //   _tr('app_page.join_box.ext_dataset_field'), '<br></p>',
-  //   options_fields_ext_dataset.join(''), '<em style="float:right;">(', data_manager.dataset_name, '.csv)</em></div>',
-  //   '<br><p><strong>', _tr('app_page.join_box.ask_join'), '<strong></p></div>',
-  // ].join('');
+<div style="margin-top:30px; clear: both;">
+  <strong>${_tr('app_page.join_box.ask_join')}</strong>
+</div>`;
 
   make_confirm_dialog2('joinBox', _tr('app_page.join_box.title'), { html_content: inner_box, widthFitContent: true })
     .then((confirmed) => {
@@ -337,13 +329,11 @@ ${_tr('app_page.join_box.ext_dataset_field')}<br></p>
     .styles({ 'text-align': 'center', 'line-height': '0.9em' });
 
   d3.select('#button_field1')
-    .style('float', 'left')
     .on('change', function () {
       lastChoice.field1 = this.value;
     });
 
   d3.select('#button_field2')
-    .style('float', 'left')
     .on('change', function () {
       lastChoice.field2 = this.value;
     });
