@@ -5,18 +5,20 @@ magrit
 
 Usage:
   magrit
-  magrit [--port <port_nb> --dev --standalone]
-  magrit [-p <port_nb> -d -s]
+  magrit [--addr <address> --redis-addr <address> --port <port_nb> --dev --standalone]
+  magrit [-p <port_nb> -a <address> -r <address> -d -s]
   magrit --standalone
   magrit --version
   magrit --help
 
 Options:
-  -h, --help                        Show this screen.
-  --version                         Show version.
-  -p <port>, --port <port>          Port number to use (exit if not available).[default: 9999]
-  -d, --dev                         Watch for changes in js/css files and update the transpiled/minified versions.
-  -s, --standalone                  Start the Magrit server application for a single use (without using Redis).
+  -h, --help                                Show this screen.
+  --version                                 Show version.
+  -p <port>, --port <port>                  Port number to use (exit if not available).[default: 9999]
+  -a <address>, --addr <address>            The IP address to use to create the server. [default: 0.0.0.0]
+  -r <address>, --redis-addr <address>      The IP address to use for connecting to redis (if different from the one used to create the server).
+  -d, --dev                                 Watch for changes in js/css files and update the transpiled/minified versions.
+  -s, --standalone                          Start the Magrit server application for a single use (without using Redis).
 """
 
 import os
@@ -53,7 +55,7 @@ from mmh3 import hash as mmh3_hash
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from concurrent.futures._base import CancelledError
 from pyexcel import get_book
-
+from ipaddress import ip_address
 # Web related stuff :
 # from aioredis import create_pool, create_redis_pool
 from aiohttp import web, ClientSession
@@ -1394,12 +1396,36 @@ def prepare_list_svg_symbols():
         f.write(json.dumps(symbols))
 
 
-def check_port_available(port_nb):
+def check_valid_ip(addr):
+    """
+    Determine if a given string is a valid IPv4 address.
+
+    Parameters
+    ----------
+    addr: str
+        The address to be tested.
+
+    Returns
+    -------
+    boolean
+        Wheter the string is a valid IPv4 address.
+    """
+    try:
+        addr_valid = ip_address(addr)
+        return True
+    except:
+        return False
+
+
+def check_port_available(addr, port_nb):
     """
     Determine if a given port is currently available.
 
     Parameters
     ----------
+    addr: str
+        The address to be tested.
+
     port_nb: int
         The port number to check.
 
@@ -1411,7 +1437,7 @@ def check_port_available(port_nb):
     if port_nb < 7000:
         return False
     with closing(socket(AF_INET, SOCK_STREAM)) as sock:
-        if sock.connect_ex(("0.0.0.0", port_nb)) == 0:
+        if sock.connect_ex((addr, port_nb)) == 0:
             return False
     return True
 
@@ -1447,7 +1473,7 @@ async def on_shutdown(app):
             task.cancel()
 
 
-async def init(loop, port=None, watch_change=False, use_redis=True):
+async def init(loop, addr='0.0.0.0', port=None, watch_change=False, use_redis=True, redis_addr=None):
     """
     Function creating the various routes for the application and setting up
     middlewares (for custom 404 error page and redis cookie storage).
@@ -1456,12 +1482,17 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
     logger = logging.getLogger("magrit_app.main")
     if use_redis:
         from aioredis import create_pool, create_redis_pool
+        # redis server address defaults to application server address if not
+        # specified at this point, which is happening when testing with unittest
+        # or when launching it with gunicorn with default options
+        if not redis_addr:
+            redis_addr = addr
         # redis connection used for server side cookie storage:
         redis_cookie = await create_pool(
-            ('0.0.0.0', 6379), db=0, maxsize=50, loop=loop)
+            (redis_addr, 6379), db=0, maxsize=50, loop=loop)
         # redis connection used for temporarily storing layers:
         redis_conn = await create_redis_pool(
-            ('0.0.0.0', 6379), db=1, loop=loop)
+            (redis_addr, 6379), db=1, loop=loop)
         app = web.Application(
             loop=loop,
             client_max_size=17408**2,
@@ -1541,8 +1572,7 @@ async def init(loop, port=None, watch_change=False, use_redis=True):
     # we need to create the server :
     else:
         handler = app.make_handler()
-        srv = await loop.create_server(
-            handler, '0.0.0.0', port)
+        srv = await loop.create_server(handler, addr, port)
         return srv, app, handler
 
 
@@ -1577,10 +1607,10 @@ def _init(loop):
     return init(loop)
 
 
-def create_app():
+def create_app(redis_addr=None):
     """
     Entry point when using Gunicorn to run the application with something like :
-    $ gunicorn "magrit_app.app:create_app('AppName')" \
+    $ gunicorn "magrit_app.app:create_app()" \
       --bind 0.0.0.0:9999 \
       --worker-class aiohttp.worker.GunicornUVLoopWebWorker --workers 2
     """
@@ -1591,8 +1621,11 @@ def create_app():
     GEO2TOPO_PATH = find_geo2topo()
     if not GEO2TOPO_PATH:
         sys.exit('Unable to find required `geo2topo` binary.')
+    if redis_addr:
+        if not check_valid_ip(redis_addr):
+            sys.exit('Invalid redis server address.')
     loop = asyncio.get_event_loop()
-    app = loop.run_until_complete(init(loop, None))
+    app = loop.run_until_complete(init(loop, port=None, redis_addr=redis_addr))
     return app
 
 
@@ -1620,9 +1653,15 @@ def main():
     if not arguments["--port"].isnumeric():
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
         sys.exit("Error: Invalid port value")
-    port = int(arguments["--port"])
 
-    if not check_port_available(port):
+    port = int(arguments["--port"])
+    addr = arguments['--addr']
+
+    if not check_valid_ip(addr):
+        print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
+        sys.exit("Error : Selected server address is not valid")
+
+    if not check_port_available(addr, port):
         print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
         sys.exit("Error : Selected port is already in use")
 
@@ -1631,14 +1670,24 @@ def main():
         if arguments['--standalone'] or IS_WINDOWS or IS_FROZEN \
         else True
 
+    if arguments['--redis-addr'] and use_redis:
+        redis_addr = arguments['--redis-addr']
+        if not check_valid_ip(redis_addr):
+            print(__doc__[__doc__.find("Usage:"):__doc__.find("\nOptions")])
+            sys.exit("Error : Selected redis server address is not valid")
+    else:
+        redis_addr = addr
+
     if uvloop:
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
     srv, app, handler = loop.run_until_complete(
-        init(loop, port, watch_change, use_redis))
+        init(loop, addr, port, watch_change, use_redis, redis_addr))
+
     app['logger'].info('serving on' + str(srv.sockets[0].getsockname()))
+
     try:
         loop.run_forever()
     except KeyboardInterrupt:
