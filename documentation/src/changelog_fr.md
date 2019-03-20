@@ -1,6 +1,14 @@
 # Historique des versions et des changements effectués
 
-#### 0.8.11 (2018-12-xx)
+#### 0.8.11 (2019-03-20)
+
+- Permet de spécifier une adresse pour créer le serveur. 
+
+- Corrige l'opération de jointure utilisant un webworker (see #38).
+
+- Remplace certains chemins absolus.
+
+- Nouvelle version de webpack/webpack-cli. 
 
 - Corrige l'alignement de l'élément proposant la couleur de fond dans la fenêtre de style des couches d'habillage.
 

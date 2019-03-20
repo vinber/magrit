@@ -1,8 +1,16 @@
 Changes
 =======
 
-0.8.11 (2018-12-xx)
+0.8.11 (2019-03-20)
 ------------------
+
+- Allow to specify the address to use to create the server.
+
+- Fix join operation when using a webworker (should fix #38).
+  
+- Replace some absolute paths at forgotten places.
+
+- Bump webpack / webpack-cli version.
 
 - Fix a misalignment in the fill color section in the layer style dialog (for layout layers).
 
