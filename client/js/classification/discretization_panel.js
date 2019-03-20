@@ -132,10 +132,10 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .attr('class', 'color_params')
       .styles({
         width: '116px',
-        'background-image': 'url(/static/img/palettes/Blues.png)',
+        'background-image': 'url(static/img/palettes/Blues.png)',
       })
       .on('change', function () {
-        this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
+        this.style.backgroundImage = `url(static/img/palettes/${this.value}.png)`;
         redisplay.draw();
       });
 
@@ -147,7 +147,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       sequential_color_select.append('option')
         .text(name)
         .attrs({ value: name, title: name })
-        .style('background-image', `url(/static/img/palettes/${name}.png)`);
+        .style('background-image', `url(static/img/palettes/${name}.png)`);
     });
 
     if (_app.custom_palettes) {
@@ -209,7 +209,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .styles({ width: '116px', 'margin-left': '4px' })
       .attr('class', 'color_params_left')
       .on('change', function () {
-        this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
+        this.style.backgroundImage = `url(static/img/palettes/${this.value}.png)`;
         redisplay.draw();
       });
     const right_color_select = col_div.insert('p')
@@ -220,17 +220,17 @@ export const display_discretization = (layer_name, field_name, nb_class, options
       .styles({ width: '116px', 'margin-left': '4px' })
       .attr('class', 'color_params_right')
       .on('change', function () {
-        this.style.backgroundImage = `url(/static/img/palettes/${this.value}.png)`;
+        this.style.backgroundImage = `url(static/img/palettes/${this.value}.png)`;
         redisplay.draw();
       });
     pal_names.forEach((name) => {
       left_color_select.append('option')
         .attrs({ value: name, title: name })
-        .styles({ 'background-image': `url(/static/img/palettes/${name}.png)` })
+        .styles({ 'background-image': `url(static/img/palettes/${name}.png)` })
         .text(name);
       right_color_select.append('option')
         .attrs({ value: name, title: name })
-        .styles({ 'background-image': `url(/static/img/palettes/${name}.png)` })
+        .styles({ 'background-image': `url(static/img/palettes/${name}.png)` })
         .text(name);
     });
 
@@ -1117,7 +1117,7 @@ export const display_discretization = (layer_name, field_name, nb_class, options
   } else if (options.schema.length === 1) {
     make_sequ_button();
     document.querySelector('.color_params').value = options.schema[0];
-    document.querySelector('.color_params').style.backgroundImage = `url(/static/img/palettes/${options.schema[0]}.png)`;
+    document.querySelector('.color_params').style.backgroundImage = `url(static/img/palettes/${options.schema[0]}.png)`;
   } else if (options.schema.length > 1) {
     make_diverg_button();
     document.getElementById('button_diverging').checked = true;

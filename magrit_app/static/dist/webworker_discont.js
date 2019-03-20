@@ -1,4 +1,4 @@
-importScripts('/static/vendor/topojson-client.3.0.0.min.js');
+importScripts('../vendor/topojson-client.3.0.0.min.js');
 onmessage = function (e) {
   const [topo_to_use, layer, field, discontinuity_type, discretization_type, id_field] = e.data;
   let result_value = new Map(),

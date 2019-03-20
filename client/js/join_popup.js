@@ -43,7 +43,7 @@ function handleJoin() {
 export function valid_join_check_display(val, prop) {
   if (!val) {
     const extDatasetImg = document.getElementById('img_data_ext');
-    extDatasetImg.setAttribute('src', '/static/img/b/joinfalse.png');
+    extDatasetImg.setAttribute('src', 'static/img/b/joinfalse.png');
     extDatasetImg.setAttribute('alt', 'Non-validated join');
     extDatasetImg.style.width = '28px';
     extDatasetImg.style.height = '28px';
@@ -60,7 +60,7 @@ export function valid_join_check_display(val, prop) {
     joinSec.appendChild(button);
   } else {
     const extDatasetImg = document.getElementById('img_data_ext');
-    extDatasetImg.setAttribute('src', '/static/img/b/jointrue.png');
+    extDatasetImg.setAttribute('src', 'static/img/b/jointrue.png');
     extDatasetImg.setAttribute('alt', 'Validated join');
     extDatasetImg.style.width = '28px';
     extDatasetImg.style.height = '28px';

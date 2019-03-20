@@ -1,5 +1,5 @@
 -r common.txt
-aioredis == 1.1.0
-gunicorn == 19.8.1
-hiredis == 0.2.0
-uvloop == 0.11.2
+aioredis == 1.2.0
+gunicorn == 19.9.0
+hiredis == 0.3.0
+uvloop == 0.12.1

@@ -1,10 +1,10 @@
-aiohttp == 3.4.4
+aiohttp == 3.5.4
 aiohttp-session == 2.5.1
-cchardet == 2.1.1
+cchardet == 2.1.4
 cryptography == 2.3.1
 Cython >= 0.28
 docopt >= 0.6.2
-Fiona == 1.7.13
+Fiona == 1.8.5
 gdal == 2.2.3
 geopandas == 0.4.0
 jenkspy >= 0.1.4
@@ -12,7 +12,7 @@ matplotlib == 2.2.3
 mmh3 == 2.5.1
 numpy == 1.15.1
 pandas == 0.23.4
-pyproj == 1.9.5.1
+pyproj == 1.9.6
 Rtree == 0.8.3
 scipy == 1.1.0
 Shapely == 1.6.4
@@ -26,4 +26,3 @@ pyexcel-xls == 0.4.0
 pyexcel-xlsx == 0.4.1
 xlrd == 1.0.0
 -e git+https://github.com/mthh/smoomapy-magrit@bd58548bbbb71d4c5c850e2e8e4589bebbd4c7ac#egg=smoomacypy
-
