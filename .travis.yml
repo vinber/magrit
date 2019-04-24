@@ -25,17 +25,16 @@ install:
   - python setup.py install
   - python setup.py build_ext --inplace
 before_script:
-  - ln -s /usr/lib/chromium-browser/chromedriver ~/bin/chromedriver
+  - pushd /tmp && wget https://chromedriver.storage.googleapis.com/74.0.3729.6/chromedriver_linux64.zip && unzip chromedriver_linux64.zip -d ~/bin/ && popd
 script:
   - magrit --help
   - py.test tests/test.py -p no:flaky
   - py.test tests/tests_web.py
 addons:
+  chrome: stable
   apt:
     sources:
       - sourceline: 'ppa:deadsnakes/ppa'
-      - sourceline: 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-        key_url: 'https://dl-ssl.google.com/linux/linux_signing_key.pub'
     packages:
       - python3.6
       - libopenblas-base
@@ -56,6 +55,4 @@ addons:
       - libxml2
       - libxml2-dev
       - libkml-dev
-      - google-chrome-stable
       - fluxbox
-      - chromium-chromedriver
