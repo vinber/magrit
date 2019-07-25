@@ -64,4 +64,4 @@ Différents moyens permettent de trouver le système de coordonnées de référe
 - Utilisation d'une des projections d'emprise nationale suggérée à partir d'une [liste](./projection_list_fr.html) maintenue en parallèle de *Magrit*.
 - Recherche sur le site http://epsg.io (les deux options précédentes reposent sur ces données)
 
-De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur le projection à utiliser (Shapefile, GML).
+De plus l'application propose automatiquement l'utilisation de la projection fournit avec le jeux de données de l'utilisateur lorsque celui-ci contient des informations sur la projection à utiliser (Shapefile, GML).
